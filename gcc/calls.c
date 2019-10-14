@@ -1614,6 +1614,10 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	    if (!get_attr_nonstring_decl (arg))
 	      {
 		c_strlen_data lendata = { };
+		/* Set MAXBOUND to an arbitrary non-null non-integer
+		   node as a request to have it set to the length of
+		   the longest string in a PHI.  */
+		lendata.maxbound = arg;
 		get_range_strlen (arg, &lendata, /* eltsize = */ 1);
 		maxlen = lendata.maxbound;
 	      }
@@ -1639,6 +1643,10 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	if (!get_attr_nonstring_decl (arg))
 	  {
 	    c_strlen_data lendata = { };
+	    /* Set MAXBOUND to an arbitrary non-null non-integer
+	       node as a request to have it set to the length of
+	       the longest string in a PHI.  */
+	    lendata.maxbound = arg;
 	    get_range_strlen (arg, &lendata, /* eltsize = */ 1);
 	    maxlen = lendata.maxbound;
 	  }

@@ -821,10 +821,10 @@ package body Sem_Warn is
       function Generic_Body_Formal (E : Entity_Id) return Entity_Id;
       --  Warnings on unused formals of subprograms are placed on the entity
       --  in the subprogram body, which seems preferable because it suggests
-      --  a better codefix for GPS. The analysis of generic subprogram bodies
-      --  uses a different circuitry, so the choice for the proper placement
-      --  of the warning in the generic case takes place here, by finding the
-      --  body entity that corresponds to a formal in a spec.
+      --  a better codefix for GNAT Studio. The analysis of generic subprogram
+      --  bodies uses a different circuitry, so the choice for the proper
+      --  placement of the warning in the generic case takes place here, by
+      --  finding the body entity that corresponds to a formal in a spec.
 
       procedure May_Need_Initialized_Actual (Ent : Entity_Id);
       --  If an entity of a generic type has default initialization, then the
@@ -4546,9 +4546,15 @@ package body Sem_Warn is
       --  to capture the value. We are not going to capture any value, but
       --  the warning message depends on the same kind of conditions.
 
+      --  If the assignment appears as an out-parameter in a call within an
+      --  expression function it may be detected twice: once when expression
+      --  itself is analyzed, and once when the constructed body is analyzed.
+      --  We don't want to emit a spurious warning in this case.
+
       if Is_Assignable (Ent)
         and then not Is_Return_Object (Ent)
         and then Present (Last_Assignment (Ent))
+        and then Last_Assignment (Ent) /= N
         and then not Is_Imported (Ent)
         and then not Is_Exported (Ent)
         and then Safe_To_Capture_Value (N, Ent)

@@ -4447,8 +4447,7 @@ simple_operand_p_2 (tree exp)
 {
   enum tree_code code;
 
-  if (TREE_SIDE_EFFECTS (exp)
-      || tree_could_trap_p (exp))
+  if (TREE_SIDE_EFFECTS (exp) || generic_expr_could_trap_p (exp))
     return false;
 
   while (CONVERT_EXPR_P (exp))

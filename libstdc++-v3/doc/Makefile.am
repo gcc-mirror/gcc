@@ -476,7 +476,6 @@ ${docbook_outdir}/fo:
 
 ${docbook_outdir}/html:
 	mkdir -p ${docbook_outdir}/html
-	mkdir -p ${docbook_outdir}/html/ext
 	mkdir -p ${docbook_outdir}/html/images
 	mkdir -p ${docbook_outdir}/html/manual
 
@@ -544,6 +543,12 @@ stamp-html-docbook: $(xml_sources) ${docbook_outdir}/html
 	$(STAMP) stamp-html-docbook
 
 doc-html-docbook: stamp-html-docbook-data
+
+# Generate the HTML pages and copy them back to the source tree.
+doc-html-docbook-regenerate: doc-html-docbook
+	$(INSTALL_DATA) ${docbook_outdir}/html/*.html ${top_srcdir}/doc/html
+	$(INSTALL_DATA) ${docbook_outdir}/html/images/* ${top_srcdir}/doc/html/images
+	$(INSTALL_DATA) ${docbook_outdir}/html/manual/*.html ${top_srcdir}/doc/html/manual
 
 # HTML, all one page
 # NB: Have to generate customization XSL for UTF-8 output.

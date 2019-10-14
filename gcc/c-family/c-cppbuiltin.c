@@ -992,7 +992,13 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907");
 	}
       if (flag_concepts)
-	cpp_define (pfile, "__cpp_concepts=201507");
+        {
+          if (cxx_dialect >= cxx2a)
+            /* FIXME: Update this to the value required by the IS.  */
+            cpp_define (pfile, "__cpp_concepts=201907");
+          else
+            cpp_define (pfile, "__cpp_concepts=201507");
+        }
       if (flag_coroutines)
 	cpp_define (pfile, "__cpp_coroutines=201908"); /* n4830, C++20 WD */
       if (flag_tm)
@@ -1147,10 +1153,16 @@ c_cpp_builtins (cpp_reader *pfile)
 				      csuffix, FLOATN_NX_TYPE_NODE (i));
     }
 
-  /* For decfloat.h.  */
-  builtin_define_decimal_float_constants ("DEC32", "DF", dfloat32_type_node);
-  builtin_define_decimal_float_constants ("DEC64", "DD", dfloat64_type_node);
-  builtin_define_decimal_float_constants ("DEC128", "DL", dfloat128_type_node);
+  /* For float.h.  */
+  if (targetm.decimal_float_supported_p ())
+    {
+      builtin_define_decimal_float_constants ("DEC32", "DF",
+					      dfloat32_type_node);
+      builtin_define_decimal_float_constants ("DEC64", "DD",
+					      dfloat64_type_node);
+      builtin_define_decimal_float_constants ("DEC128", "DL",
+					      dfloat128_type_node);
+    }
 
   /* For fixed-point fibt, ibit, max, min, and epsilon.  */
   if (targetm.fixed_point_supported_p ())

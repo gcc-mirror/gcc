@@ -892,7 +892,7 @@ synthesize_method (tree fndecl)
 
   /* Reset the source location, we might have been previously
      deferred, and thus have saved where we were first needed.  */
-  if (!DECL_INHERITED_CTOR (fndecl))
+  if (DECL_ARTIFICIAL (fndecl) && !DECL_INHERITED_CTOR (fndecl))
     DECL_SOURCE_LOCATION (fndecl)
       = DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (fndecl)));
 
@@ -953,8 +953,9 @@ synthesize_method (tree fndecl)
   pop_deferring_access_checks ();
 
   if (error_count != errorcount || warning_count != warningcount + werrorcount)
-    inform (input_location, "synthesized method %qD first required here",
-	    fndecl);
+    if (DECL_ARTIFICIAL (fndecl))
+      inform (input_location, "synthesized method %qD first required here",
+	      fndecl);
 }
 
 /* Build a reference to type TYPE with cv-quals QUALS, which is an

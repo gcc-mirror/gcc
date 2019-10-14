@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-objc-common.h"
 #include "gcc-rich-location.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, const char **);
@@ -62,71 +64,120 @@ c_objc_common_init (void)
   return c_common_init ();
 }
 
-/* Return true if it's worth saying that TYPE1 is also known as TYPE2.  */
+/* Decide whether it's worth saying that TYPE is also known as some other
+   type.  Return the other type if so, otherwise return TYPE.  */
 
-static bool
-useful_aka_type_p (tree type1, tree type2)
+static tree
+get_aka_type (tree type)
 {
-  if (type1 == type2)
-    return false;
+  if (type == error_mark_node)
+    return type;
 
-  if (type1 == error_mark_node || type2 == error_mark_node)
-    return false;
-
-  if (TREE_CODE (type1) != TREE_CODE (type2))
-    return true;
-
-  if (typedef_variant_p (type1))
+  tree result;
+  if (typedef_variant_p (type))
     {
       /* Saying that "foo" is also known as "struct foo" or
 	 "struct <anonymous>" is unlikely to be useful, since users of
 	 structure-like types would already know that they're structures.
 	 The same applies to unions and enums; in general, printing the
 	 tag is only useful if it has a different name.  */
-      tree_code code = TREE_CODE (type2);
-      tree id2 = TYPE_IDENTIFIER (type2);
+      tree orig_type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
+      tree_code code = TREE_CODE (orig_type);
+      tree orig_id = TYPE_IDENTIFIER (orig_type);
       if ((code == RECORD_TYPE || code == UNION_TYPE || code == ENUMERAL_TYPE)
-	  && (!id2 || TYPE_IDENTIFIER (type1) == id2))
-	return false;
+	  && (!orig_id || TYPE_IDENTIFIER (type) == orig_id))
+	return type;
 
-      return true;
+      if (!user_facing_original_type_p (type))
+	return type;
+
+      result = get_aka_type (orig_type);
     }
   else
     {
-      switch (TREE_CODE (type1))
+      tree canonical = TYPE_CANONICAL (type);
+      if (canonical && TREE_CODE (type) != TREE_CODE (canonical))
+	return canonical;
+
+      /* Recursive calls might choose a middle ground between TYPE
+	 (which has no typedefs stripped) and CANONICAL (which has
+	 all typedefs stripped).  So try to reuse TYPE or CANONICAL if
+	 convenient, but be prepared to create a new type if necessary.  */
+      switch (TREE_CODE (type))
 	{
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
-	  return useful_aka_type_p (TREE_TYPE (type1), TREE_TYPE (type2));
+	  {
+	    tree target_type = get_aka_type (TREE_TYPE (type));
+
+	    if (target_type == TREE_TYPE (type))
+	      return type;
+
+	    if (canonical && target_type == TREE_TYPE (canonical))
+	      return canonical;
+
+	    result = (TREE_CODE (type) == POINTER_TYPE
+		      ? build_pointer_type (target_type)
+		      : build_reference_type (target_type));
+	    break;
+	  }
 
 	case ARRAY_TYPE:
-	  return (useful_aka_type_p (TYPE_DOMAIN (type1), TYPE_DOMAIN (type2))
-		  || useful_aka_type_p (TREE_TYPE (type1), TREE_TYPE (type2)));
+	  {
+	    tree element_type = get_aka_type (TREE_TYPE (type));
+	    tree index_type = (TYPE_DOMAIN (type)
+			       ? get_aka_type (TYPE_DOMAIN (type))
+			       : NULL_TREE);
+
+	    if (element_type == TREE_TYPE (type)
+		&& index_type == TYPE_DOMAIN (type))
+	      return type;
+
+	    if (canonical
+		&& element_type == TREE_TYPE (canonical)
+		&& index_type == TYPE_DOMAIN (canonical))
+	      return canonical;
+
+	    result = build_array_type (element_type, index_type,
+				       TYPE_TYPELESS_STORAGE (type));
+	    break;
+	  }
 
 	case FUNCTION_TYPE:
 	  {
-	    tree args1 = TYPE_ARG_TYPES (type1);
-	    tree args2 = TYPE_ARG_TYPES (type2);
-	    while (args1 != args2)
+	    tree return_type = get_aka_type (TREE_TYPE (type));
+
+	    tree args = TYPE_ARG_TYPES (type);
+	    if (args == error_mark_node)
+	      return type;
+
+	    auto_vec<tree, 32> arg_types;
+	    bool type_ok_p = true;
+	    while (args && args != void_list_node)
 	      {
-		/* Although this shouldn't happen, it seems to wrong to assert
-		   for it in a diagnostic routine.  */
-		if (!args1 || args1 == void_type_node)
-		  return true;
-		if (!args2 || args2 == void_type_node)
-		  return true;
-		if (useful_aka_type_p (TREE_VALUE (args1), TREE_VALUE (args2)))
-		  return true;
-		args1 = TREE_CHAIN (args1);
-		args2 = TREE_CHAIN (args2);
+		tree arg_type = get_aka_type (TREE_VALUE (args));
+		arg_types.safe_push (arg_type);
+		type_ok_p &= (arg_type == TREE_VALUE (args));
+		args = TREE_CHAIN (args);
 	      }
-	    return useful_aka_type_p (TREE_TYPE (type1), TREE_TYPE (type2));
+
+	    if (type_ok_p && return_type == TREE_TYPE (type))
+	      return type;
+
+	    unsigned int i;
+	    tree arg_type;
+	    FOR_EACH_VEC_ELT_REVERSE (arg_types, i, arg_type)
+	      args = tree_cons (NULL_TREE, arg_type, args);
+	    result = build_function_type (return_type, args);
+	    break;
 	  }
 
 	default:
-	  return true;
+	  return canonical ? canonical : type;
 	}
     }
+  return build_type_attribute_qual_variant (result, TYPE_ATTRIBUTES (type),
+					    TYPE_QUALS (type));
 }
 
 /* Print T to CPP.  */
@@ -150,11 +201,12 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted)
      stripped version.  But sometimes the stripped version looks
      exactly the same, so we don't want it after all.  To avoid
      printing it in that case, we play ugly obstack games.  */
-  if (TYPE_CANONICAL (t) && useful_aka_type_p (t, TYPE_CANONICAL (t)))
+  tree aka_type = get_aka_type (t);
+  if (aka_type != t)
     {
       c_pretty_printer cpp2;
       /* Print the stripped version into a temporary printer.  */
-      cpp2.type_id (TYPE_CANONICAL (t));
+      cpp2.type_id (aka_type);
       struct obstack *ob2 = cpp2.buffer->obstack;
       /* Get the stripped version from the temporary printer.  */
       const char *aka = (char *) obstack_base (ob2);
@@ -174,7 +226,7 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted)
       pp_c_whitespace (cpp);
       if (*quoted)
 	pp_begin_quote (cpp, pp_show_color (cpp));
-      cpp->type_id (TYPE_CANONICAL (t));
+      cpp->type_id (aka_type);
       if (*quoted)
 	pp_end_quote (cpp, pp_show_color (cpp));
       pp_right_brace (cpp);

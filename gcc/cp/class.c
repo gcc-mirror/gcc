@@ -7189,6 +7189,9 @@ finish_struct_1 (tree t)
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, ! LOCAL_CLASS_P (t));
 
+  /* Recalculate satisfaction that might depend on completeness.  */
+  clear_satisfaction_cache ();
+
   if (TYPE_TRANSPARENT_AGGR (t))
     {
       tree field = first_field (t);

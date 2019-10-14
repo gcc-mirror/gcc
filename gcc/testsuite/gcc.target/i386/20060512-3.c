@@ -23,13 +23,14 @@ self_aligning_function (int x, int y)
 int g_1 = 20;
 int g_2 = 22;
 
-static void
+static void __attribute__ ((__optimize__ ("-fno-omit-frame-pointer")))
 sse2_test (void)
 {
   int result;
-  asm ("pushl %esi");		/* Disalign runtime stack.  */
+  register int reg asm ("ecx");
+  asm ("pushl\t%0": : "r" (reg) : "memory"); /* Disalign runtime stack.  */
   result = self_aligning_function (g_1, g_2);
   if (result != 42)
     abort ();
-  asm ("popl %esi");
+  asm ("popl\t%0" : "=r" (reg));
 }

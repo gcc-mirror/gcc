@@ -47,729 +47,736 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "type-utils.h"
 
-namespace {
+/* Hash functions for atomic constrains.  */
 
-// Helper algorithms
-
-template<typename I>
-inline I
-next (I iter)
+struct constraint_hash : default_hash_traits<tree>
 {
-  return ++iter;
-}
-
-template<typename I, typename P>
-inline bool
-any_p (I first, I last, P pred)
-{
-  while (first != last)
-    {
-      if (pred(*first))
-        return true;
-      ++first;
-    }
-  return false;
-}
-
-bool prove_implication (tree, tree);
-
-/*---------------------------------------------------------------------------
-                           Proof state
----------------------------------------------------------------------------*/
-
-struct term_entry
-{
-  tree t;
-};
-
-/* Hashing function and equality for constraint entries.  */
-
-struct term_hasher : ggc_ptr_hash<term_entry>
-{
-  static hashval_t hash (term_entry *e)
+  static hashval_t hash (tree t)
   {
-    return iterative_hash_template_arg (e->t, 0);
+    return hash_atomic_constraint (t);
   }
 
-  static bool equal (term_entry *e1, term_entry *e2)
+  static bool equal (tree t1, tree t2)
   {
-    return cp_tree_equal (e1->t, e2->t);
+    return atomic_constraints_identical_p (t1, t2);
   }
 };
 
-/* A term list is a list of atomic constraints. It is used
-   to maintain the lists of assumptions and conclusions in a
-   proof goal.
+/* A conjunctive or disjunctive clause.
 
-   Each term list maintains an iterator that refers to the current
-   term. This can be used by various tactics to support iteration
-   and stateful manipulation of the list. */
-class term_list
+   Each clause maintains an iterator that refers to the current
+   term, which is used in the linear decomposition of a formula
+   into CNF or DNF.  */
+
+struct clause
 {
-public:
   typedef std::list<tree>::iterator iterator;
+  typedef std::list<tree>::const_iterator const_iterator;
 
-  term_list ();
-  term_list (tree);
+  /* Initialize a clause with an initial term.  */
 
-  bool includes (tree);
-  iterator insert (iterator, tree);
-  iterator push_back (tree);
-  iterator erase (iterator);
-  iterator replace (iterator, tree);
-  iterator replace (iterator, tree, tree);
+  clause (tree t)
+  {
+    m_terms.push_back (t);
+    if (TREE_CODE (t) == ATOMIC_CONSTR)
+      m_set.add (t);
 
-  iterator begin() { return seq.begin(); }
-  iterator end() { return seq.end(); }
+    m_current = m_terms.begin ();
+  }
 
-  std::list<tree>         seq;
-  hash_table<term_hasher> tab;
+  /* Create a copy of the current term. The current
+     iterator is set to point to the same position in the
+     copied list of terms.  */
+
+  clause (clause const& c)
+    : m_terms (c.m_terms), m_set (c.m_set), m_current (m_terms.begin ())
+  {
+    std::advance (m_current, std::distance (c.begin (), c.current ()));
+  }
+
+  /* Returns true when all terms are atoms.  */
+
+  bool done () const
+  {
+    return m_current == end ();
+  }
+
+  /* Advance to the next term.  */
+
+  void advance ()
+  {
+    gcc_assert (!done ());
+    ++m_current;
+  }
+
+  /* Replaces the current term at position ITER with T.  If
+     T is an atomic constraint that already appears in the
+     clause, remove but do not replace ITER. Returns a pair
+     containing an iterator to the replace object or past
+     the erased object and a boolean value which is true if
+     an object was erased.  */
+
+  std::pair<iterator, bool> replace (iterator iter, tree t)
+  {
+    gcc_assert (TREE_CODE (*iter) != ATOMIC_CONSTR);
+    if (TREE_CODE (t) == ATOMIC_CONSTR)
+      {
+	if (m_set.add (t))
+	  return std::make_pair (m_terms.erase (iter), true);
+      }
+    *iter = t;
+    return std::make_pair (iter, false);
+  }
+
+  /* Inserts T before ITER in the list of terms.  If T has 
+     already is an atomic constraint that already appears in
+     the clause, no action is taken, and the current iterator
+     is returned. Returns a pair of an iterator to the inserted
+     object or ITER if no insertion occurred and a boolean
+     value which is true if an object was inserted.  */
+
+  std::pair<iterator, bool> insert (iterator iter, tree t)
+  {
+    if (TREE_CODE (t) == ATOMIC_CONSTR)
+    {
+      if (m_set.add (t))
+	return std::make_pair (iter, false);
+    }
+    return std::make_pair (m_terms.insert (iter, t), true);
+  }
+
+  /* Replaces the current term with T. In the case where the
+     current term is erased (because T is redundant), update
+     the position of the current term to the next term.  */
+
+  void replace (tree t)
+  {
+    m_current = replace (m_current, t).first;
+  }
+
+  /* Replace the current term with T1 and T2, in that order.  */
+
+  void replace (tree t1, tree t2)
+  {
+    /* Replace the current term with t1. Ensure that iter points
+       to the term before which t2 will be inserted.  Update the
+       current term as needed.  */
+    std::pair<iterator, bool> rep = replace (m_current, t1);
+    if (rep.second)
+      m_current = rep.first;
+    else
+      ++rep.first;
+
+    /* Insert the t2. Make this the current term if we erased
+       the prior term.  */
+    std::pair<iterator, bool> ins = insert (rep.first, t2);
+    if (rep.second && ins.second)
+      m_current = ins.first;
+  }
+
+  /* Returns true if the clause contains the term T.  */
+
+  bool contains (tree t)
+  {
+    gcc_assert (TREE_CODE (t) == ATOMIC_CONSTR);
+    return m_set.contains (t);
+  }
+
+
+  /* Returns an iterator to the first clause in the formula.  */
+
+  iterator begin ()
+  {
+    return m_terms.begin ();
+  }
+
+  /* Returns an iterator to the first clause in the formula.  */
+
+  const_iterator begin () const
+  {
+    return m_terms.begin ();
+  }
+
+  /* Returns an iterator past the last clause in the formula.  */
+
+  iterator end ()
+  {
+    return m_terms.end ();
+  }
+
+  /* Returns an iterator past the last clause in the formula.  */
+
+  const_iterator end () const
+  {
+    return m_terms.end ();
+  }
+
+  /* Returns the current iterator.  */
+
+  const_iterator current () const
+  {
+    return m_current;
+  }
+
+  std::list<tree> m_terms; /* The list of terms.  */
+  hash_set<tree, false, constraint_hash> m_set; /* The set of atomic constraints.  */
+  iterator m_current; /* The current term.  */
 };
 
-inline
-term_list::term_list ()
-  : seq(), tab (11)
-{
-}
-
-/* Initialize a term list with an initial term. */
-
-inline
-term_list::term_list (tree t)
-  : seq (), tab (11)
-{
-  push_back (t);
-}
-
-/* Returns true if T is the in the tree. */
-
-inline bool
-term_list::includes (tree t)
-{
-  term_entry ent = {t};
-  return tab.find (&ent);
-}
-
-/* Append a term to the list. */
-inline term_list::iterator
-term_list::push_back (tree t)
-{
-  return insert (end(), t);
-}
-
-/* Insert a new (unseen) term T into the list before the proposition
-   indicated by ITER. Returns the iterator to the newly inserted
-   element.  */
-
-term_list::iterator
-term_list::insert (iterator iter, tree t)
-{
-  gcc_assert (!includes (t));
-  iter = seq.insert (iter, t);
-  term_entry ent = {t};
-  term_entry** slot = tab.find_slot (&ent, INSERT);
-  term_entry* ptr = ggc_alloc<term_entry> ();
-  *ptr = ent;
-  *slot = ptr;
-  return iter;
-}
-
-/* Remove an existing term from the list. Returns an iterator referring
-   to the element after the removed term.  This may be end().  */
-
-term_list::iterator
-term_list::erase (iterator iter)
-{
-  gcc_assert (includes (*iter));
-  term_entry ent = {*iter};
-  tab.remove_elt (&ent);
-  iter = seq.erase (iter);
-  return iter;
-}
-
-/* Replace the given term with that specified. If the term has
-   been previously seen, do not insert the term. Returns the
-   first iterator past the current term.  */
-
-term_list::iterator
-term_list::replace (iterator iter, tree t)
-{
-  iter = erase (iter);
-  if (!includes (t))
-    insert (iter, t);
-  return iter;
-}
-
-
-/* Replace the term at the given position by the supplied T1
-   followed by t2. This is used in certain logical operators to
-   load a list of assumptions or conclusions.  */
-
-term_list::iterator
-term_list::replace (iterator iter, tree t1, tree t2)
-{
-  iter = erase (iter);
-  if (!includes (t1))
-    insert (iter, t1);
-  if (!includes (t2))
-    insert (iter, t2);
-  return iter;
-}
-
-/* A goal (or subgoal) models a sequent of the form
-   'A |- C' where A and C are lists of assumptions and
-   conclusions written as propositions in the constraint
-   language (i.e., lists of trees). */
-
-class proof_goal
-{
-public:
-  term_list assumptions;
-  term_list conclusions;
-};
 
 /* A proof state owns a list of goals and tracks the
    current sub-goal. The class also provides facilities
    for managing subgoals and constructing term lists. */
 
-class proof_state : public std::list<proof_goal>
+struct formula
 {
-public:
-  proof_state ();
+  typedef std::list<clause>::iterator iterator;
+  typedef std::list<clause>::const_iterator const_iterator;
 
-  iterator branch (iterator i);
-  iterator discharge (iterator i);
+  /* Construct a formula with an initial formula in a
+     single clause.  */
+
+  formula (tree t)
+  {
+    /* This should call emplace_back(). There's a an extra copy being
+       invoked by using push_back().  */
+    m_clauses.push_back (t);
+    m_current = m_clauses.begin ();
+  }
+
+  /* Returns true when all clauses are atomic.  */
+  bool done () const
+  {
+    return m_current == end ();
+  }
+
+  /* Advance to the next term.  */
+  void advance ()
+  {
+    gcc_assert (!done ());
+    ++m_current;
+  }
+
+  /* Insert a copy of clause into the formula. This corresponds
+     to a distribution of one logical operation over the other.  */
+
+  clause& branch ()
+  {
+    gcc_assert (!done ());
+    m_clauses.push_back (*m_current);
+    return m_clauses.back ();
+  }
+
+  /* Returns the position of the current clause.  */
+
+  iterator current ()
+  {
+    return m_current;
+  }
+
+  /* Returns an iterator to the first clause in the formula.  */
+
+  iterator begin ()
+  {
+    return m_clauses.begin ();
+  }
+
+  /* Returns an iterator to the first clause in the formula.  */
+
+  const_iterator begin () const
+  {
+    return m_clauses.begin ();
+  }
+
+  /* Returns an iterator past the last clause in the formula.  */
+
+  iterator end ()
+  {
+    return m_clauses.end ();
+  }
+
+  /* Returns an iterator past the last clause in the formula.  */
+
+  const_iterator end () const
+  {
+    return m_clauses.end ();
+  }
+
+  std::list<clause> m_clauses; /* The list of clauses.  */
+  iterator m_current; /* The current clause.  */
 };
 
-/* Initialize the state with a single empty goal, and set that goal
-   as the current subgoal.  */
-
-inline
-proof_state::proof_state ()
-  : std::list<proof_goal> (1)
-{ }
-
-
-/* Branch the current goal by creating a new subgoal, returning a
-   reference to the new object. This does not update the current goal. */
-
-inline proof_state::iterator
-proof_state::branch (iterator i)
+void
+debug (clause& c)
 {
-  gcc_assert (i != end());
-  proof_goal& g = *i;
-  return insert (++i, g);
+  for (clause::iterator i = c.begin(); i != c.end(); ++i)
+    verbatim ("  # %E", *i);
 }
 
-/* Discharge the current goal, setting it equal to the
-   next non-satisfied goal. */
-
-inline proof_state::iterator
-proof_state::discharge (iterator i)
+void
+debug (formula& f)
 {
-  gcc_assert (i != end());
-  return erase (i);
-}
-
-
-/*---------------------------------------------------------------------------
-                        Debugging
----------------------------------------------------------------------------*/
-
-// void
-// debug (term_list& ts)
-// {
-//   for (term_list::iterator i = ts.begin(); i != ts.end(); ++i)
-//     verbatim ("  # %E", *i);
-// }
-//
-// void
-// debug (proof_goal& g)
-// {
-//   debug (g.assumptions);
-//   verbatim ("       |-");
-//   debug (g.conclusions);
-// }
-
-/*---------------------------------------------------------------------------
-                        Atomicity of constraints
----------------------------------------------------------------------------*/
-
-/* Returns true if T is not an atomic constraint.  */
-
-bool
-non_atomic_constraint_p (tree t)
-{
-  switch (TREE_CODE (t))
+  for (formula::iterator i = f.begin(); i != f.end(); ++i)
     {
-    case PRED_CONSTR:
-    case EXPR_CONSTR:
-    case TYPE_CONSTR:
-    case ICONV_CONSTR:
-    case DEDUCT_CONSTR:
-    case EXCEPT_CONSTR:
-      /* A pack expansion isn't atomic, but it can't decompose to prove an
-	 atom, so it shouldn't cause analyze_atom to return undecided.  */
-    case EXPR_PACK_EXPANSION:
-      return false;
-    case CHECK_CONSTR:
-    case PARM_CONSTR:
-    case CONJ_CONSTR:
-    case DISJ_CONSTR:
-      return true;
-    default:
-      gcc_unreachable ();
+      verbatim ("(((");
+      debug (*i);
+      verbatim (")))");
     }
 }
 
-/* Returns true if any constraints in T are not atomic.  */
+/* The logical rules used to analyze a logical formula. The
+   "left" and "right" refer to the position of formula in a
+   sequent (as in sequent calculus).  */
 
-bool
-any_non_atomic_constraints_p (term_list& t)
+enum rules
 {
-  return any_p (t.begin(), t.end(), non_atomic_constraint_p);
-}
-
-/*---------------------------------------------------------------------------
-                           Proof validations
----------------------------------------------------------------------------*/
-
-enum proof_result
-{
-  invalid,
-  valid,
-  undecided
+  left, right
 };
 
-proof_result check_term (term_list&, tree);
+/* Distribution counting.  */
 
-
-proof_result
-analyze_atom (term_list& ts, tree t)
+static inline bool
+disjunction_p (tree t)
 {
-  /* FIXME: Hook into special cases, if any. */
-  /*
-  term_list::iterator iter = ts.begin();
-  term_list::iterator end = ts.end();
-  while (iter != end)
+  return TREE_CODE (t) == DISJ_CONSTR;
+}
+
+static inline bool
+conjunction_p (tree t)
+{
+  return TREE_CODE (t) == CONJ_CONSTR;
+}
+
+static inline bool
+atomic_p (tree t)
+{
+  return TREE_CODE (t) == ATOMIC_CONSTR;
+}
+
+/* Recursively count the number of clauses produced when converting T
+   to DNF. Returns a pair containing the number of clauses and a bool
+   value signifying that the the tree would be rewritten as a result of
+   distributing. In general, a conjunction for which this flag is set
+   is considered a disjunction for the purpose of counting.  */
+
+static std::pair<int, bool>
+dnf_size_r (tree t)
+{
+  if (atomic_p (t))
+    /* Atomic constraints produce no clauses.  */
+    return std::make_pair (0, false);
+
+  /* For compound constraints, recursively count clauses and unpack
+     the results.  */
+  tree lhs = TREE_OPERAND (t, 0);
+  tree rhs = TREE_OPERAND (t, 1);
+  std::pair<int, bool> p1 = dnf_size_r (lhs);
+  std::pair<int, bool> p2 = dnf_size_r (rhs);
+  int n1 = p1.first, n2 = p2.first;
+  bool d1 = p1.second, d2 = p2.second;
+
+  if (disjunction_p (t))
     {
-      ++iter;
+      /* Matches constraints of the form P \/ Q. Disjunctions contribute
+	 linearly to the number of constraints.  When both P and Q are
+	 disjunctions, clauses are added. When only one of P and Q
+	 is a disjunction, an additional clause is produced. When neither
+	 P nor Q are disjunctions, two clauses are produced.  */
+      if (disjunction_p (lhs))
+	{
+	  if (disjunction_p (rhs) || (conjunction_p (rhs) && d2))
+	    /* Both P and Q are disjunctions.  */
+	    return std::make_pair (n1 + n2, d1 | d2);
+	  else
+	    /* Only LHS is a disjunction.  */
+	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	  gcc_unreachable ();
+	}
+      if (conjunction_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d1) || (conjunction_p (rhs) && d1 && d2))
+	    /* Both P and Q are disjunctions.  */
+	    return std::make_pair (n1 + n2, d1 | d2);
+	  if (disjunction_p (rhs)
+	      || (conjunction_p (rhs) && d1 != d2)
+	      || (atomic_p (rhs) && d1))
+	    /* Either LHS or RHS is a disjunction.  */
+	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	  else
+	    /* Neither LHS nor RHS is a disjunction.  */
+	    return std::make_pair (2, false);
+	}
+      if (atomic_p (lhs))
+	{
+	  if (disjunction_p (rhs) || (conjunction_p (rhs) && d2))
+	    /* Only RHS is a disjunction.  */
+	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	  else
+	    /* Neither LHS nor RHS is a disjunction.  */
+	    return std::make_pair (2, false);
+	}
     }
-  */
-
-  if (non_atomic_constraint_p (t))
-    return undecided;
-  if (any_non_atomic_constraints_p (ts))
-    return undecided;
-  return invalid;
-}
-
-/* Search for a pack expansion in the list of assumptions that would
-   make this expansion valid.  */
-
-proof_result
-analyze_pack (term_list& ts, tree t)
-{
-  tree c1 = normalize_expression (PACK_EXPANSION_PATTERN (t));
-  term_list::iterator iter = ts.begin();
-  term_list::iterator end = ts.end();
-  while (iter != end)
+  else /* conjunction_p (t)  */
     {
-      if (TREE_CODE (*iter) == TREE_CODE (t))
-        {
-          tree c2 = normalize_expression (PACK_EXPANSION_PATTERN (*iter));
-          if (prove_implication (c2, c1))
-            return valid;
-          else
-            return invalid;
-        }
-      ++iter;
+      /* Matches constraints of the form P /\ Q, possibly resulting
+         in the distribution of one side over the other. When both
+         P and Q are disjunctions, the number of clauses are multiplied.
+         When only one of P and Q is a disjunction, the the number of
+         clauses are added. Otherwise, neither side is a disjunction and
+         no clauses are created.  */
+      if (disjunction_p (lhs))
+	{
+	  if (disjunction_p (rhs) || (conjunction_p (rhs) && d2))
+	    /* Both P and Q are disjunctions.  */
+	    return std::make_pair (n1 * n2, true);
+	  else
+	    /* Only LHS is a disjunction.  */
+	    return std::make_pair (n1 + n2, true);
+	  gcc_unreachable ();
+	}
+      if (conjunction_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d1) || (conjunction_p (rhs) && d1 && d2))
+	    /* Both P and Q are disjunctions.  */
+	    return std::make_pair (n1 * n2, true);
+	  if (disjunction_p (rhs)
+	      || (conjunction_p (rhs) && d1 != d2)
+	      || (atomic_p (rhs) && d1))
+	    /* Either LHS or RHS is a disjunction.  */
+	    return std::make_pair (n1 + n2, true);
+	  else
+	    /* Neither LHS nor RHS is a disjunction.  */
+	    return std::make_pair (0, false);
+	}
+      if (atomic_p (lhs))
+	{
+	  if (disjunction_p (rhs) || (conjunction_p (rhs) && d2))
+	    /* Only RHS is a disjunction.  */
+	    return std::make_pair (n1 + n2, true);
+	  else
+	    /* Neither LHS nor RHS is a disjunction.  */
+	    return std::make_pair (0, false);
+	}
     }
-  return invalid;
+  gcc_unreachable ();
 }
 
-/* Search for concept checks in TS that we know subsume T. */
+/* Recursively count the number of clauses produced when converting T
+   to CNF. Returns a pair containing the number of clauses and a bool
+   value signifying that the the tree would be rewritten as a result of
+   distributing. In general, a disjunction for which this flag is set
+   is considered a conjunction for the purpose of counting.  */
 
-proof_result
-search_known_subsumptions (term_list& ts, tree t)
+static std::pair<int, bool>
+cnf_size_r (tree t)
 {
-  for (term_list::iterator i = ts.begin(); i != ts.end(); ++i)
-    if (TREE_CODE (*i) == CHECK_CONSTR)
-      {
-        if (bool* b = lookup_subsumption_result (*i, t))
-          return *b ? valid : invalid;
-      }
-  return undecided;
-}
+  if (atomic_p (t))
+    /* Atomic constraints produce no clauses.  */
+    return std::make_pair (0, false);
 
-/* Determine if the terms in TS provide sufficient support for proving
-   the proposition T. If any term in TS is a concept check that is known
-   to subsume T, then the proof is valid. Otherwise, we have to expand T
-   and continue searching for support.  */
+  /* For compound constraints, recursively count clauses and unpack
+     the results.  */
+  tree lhs = TREE_OPERAND (t, 0);
+  tree rhs = TREE_OPERAND (t, 1);
+  std::pair<int, bool> p1 = cnf_size_r (lhs);
+  std::pair<int, bool> p2 = cnf_size_r (rhs);
+  int n1 = p1.first, n2 = p2.first;
+  bool d1 = p1.second, d2 = p2.second;
 
-proof_result
-analyze_check (term_list& ts, tree t)
-{
-  proof_result r = search_known_subsumptions (ts, t);
-  if (r != undecided)
-    return r;
-
-  tree tmpl = CHECK_CONSTR_CONCEPT (t);
-  tree args = CHECK_CONSTR_ARGS (t);
-  tree c = expand_concept (tmpl, args);
-  return check_term (ts, c);
-}
-
-/* Recursively check constraints of the parameterized constraint. */
-
-proof_result
-analyze_parameterized (term_list& ts, tree t)
-{
-  return check_term (ts, PARM_CONSTR_OPERAND (t));
-}
-
-proof_result
-analyze_conjunction (term_list& ts, tree t)
-{
-  proof_result r = check_term (ts, TREE_OPERAND (t, 0));
-  if (r == invalid || r == undecided)
-    return r;
-  return check_term (ts, TREE_OPERAND (t, 1));
-}
-
-proof_result
-analyze_disjunction (term_list& ts, tree t)
-{
-  proof_result r = check_term (ts, TREE_OPERAND (t, 0));
-  if (r == valid)
-    return r;
-  return check_term (ts, TREE_OPERAND (t, 1));
-}
-
-proof_result
-analyze_term (term_list& ts, tree t)
-{
-  switch (TREE_CODE (t))
+  if (disjunction_p (t))
     {
-    case CHECK_CONSTR:
-      return analyze_check (ts, t);
-
-    case PARM_CONSTR:
-      return analyze_parameterized (ts, t);
-
-    case CONJ_CONSTR:
-      return analyze_conjunction (ts, t);
-    case DISJ_CONSTR:
-      return analyze_disjunction (ts, t);
-
-    case PRED_CONSTR:
-    case EXPR_CONSTR:
-    case TYPE_CONSTR:
-    case ICONV_CONSTR:
-    case DEDUCT_CONSTR:
-    case EXCEPT_CONSTR:
-      return analyze_atom (ts, t);
-
-    case EXPR_PACK_EXPANSION:
-      return analyze_pack (ts, t);
-
-    case ERROR_MARK:
-      /* Encountering an error anywhere in a constraint invalidates
-         the proof, since the constraint is ill-formed.  */
-      return invalid;
-    default:
-      gcc_unreachable ();
+      /* Matches constraints of the form P \/ Q, possibly resulting
+         in the distribution of one side over the other. When both
+         P and Q are conjunctions, the number of clauses are multiplied.
+         When only one of P and Q is a conjunction, the the number of
+         clauses are added. Otherwise, neither side is a conjunction and
+         no clauses are created.  */
+      if (disjunction_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d1 && d2) || (conjunction_p (rhs) && d1))
+	    /* Both P and Q are conjunctions.  */
+	    return std::make_pair (n1 * n2, true);
+	  if ((disjunction_p (rhs) && d1 != d2)
+	      || conjunction_p (rhs)
+	      || (atomic_p (rhs) && d1))
+	    /* Either LHS or RHS is a conjunction.  */
+	    return std::make_pair (n1 + n2, true);
+	  else
+	    /* Neither LHS nor RHS is a conjunction.  */
+	    return std::make_pair (0, false);
+	  gcc_unreachable ();
+	}
+      if (conjunction_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
+	    /* Both LHS and RHS are conjunctions.  */
+	    return std::make_pair (n1 * n2, true);
+	  else
+	    /* Only LHS is a conjunction.  */
+	    return std::make_pair (n1 + n2, true);
+	}
+      if (atomic_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
+	    /* Only RHS is a disjunction.  */
+	    return std::make_pair (n1 + n2, true);
+	  else
+	    /* Neither LHS nor RHS is a disjunction.  */
+	    return std::make_pair (0, false);
+	}
     }
-}
-
-/* Check if a single term can be proven from a set of assumptions.
-   If the proof is not valid, then it is incomplete when either
-   the given term is non-atomic or any term in the list of assumptions
-   is not-atomic.  */
-
-proof_result
-check_term (term_list& ts, tree t)
-{
-  /* Try the easy way; search for an equivalent term.  */
-  if (ts.includes (t))
-    return valid;
-
-  /* The hard way; actually consider what the term means.  */
-  return analyze_term (ts, t);
-}
-
-/* Check to see if any term is proven by the assumptions in the
-   proof goal. The proof is valid if the proof of any term is valid.
-   If validity cannot be determined, but any particular
-   check was undecided, then this goal is undecided.  */
-
-proof_result
-check_goal (proof_goal& g)
-{
-  term_list::iterator iter = g.conclusions.begin ();
-  term_list::iterator end = g.conclusions.end ();
-  bool incomplete = false;
-  while (iter != end)
+  else /* conjunction_p (t)  */
     {
-      proof_result r = check_term (g.assumptions, *iter);
-      if (r == valid)
-        return r;
-      if (r == undecided)
-        incomplete = true;
-      ++iter;
+      /* Matches constraints of the form P /\ Q. Conjunctions contribute
+	 linearly to the number of constraints.  When both P and Q are
+	 conjunctions, clauses are added. When only one of P and Q
+	 is a conjunction, an additional clause is produced. When neither
+	 P nor Q are conjunctions, two clauses are produced.  */
+      if (disjunction_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d1 && d2) || (conjunction_p (rhs) && d1))
+	    /* Both P and Q are conjunctions.  */
+	    return std::make_pair (n1 + n2, d1 | d2);
+	  if ((disjunction_p (rhs) && d1 != d2)
+	      || conjunction_p (rhs)
+	      || (atomic_p (rhs) && d1))
+	    /* Either LHS or RHS is a conjunction.  */
+	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	  else
+	    /* Neither LHS nor RHS is a conjunction.  */
+	    return std::make_pair (2, false);
+	  gcc_unreachable ();
+	}
+      if (conjunction_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
+	    /* Both LHS and RHS are conjunctions.  */
+	    return std::make_pair (n1 + n2, d1 | d2);
+	  else
+	    /* Only LHS is a conjunction.  */
+	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	}
+      if (atomic_p (lhs))
+	{
+	  if ((disjunction_p (rhs) && d2) || conjunction_p (rhs))
+	    /* Only RHS is a disjunction.  */
+	    return std::make_pair (1 + n1 + n2, d1 | d2);
+	  else
+	    /* Neither LHS nor RHS is a disjunction.  */
+	    return std::make_pair (2, false);
+	}
     }
-
-    /* Was the proof complete? */
-    if (incomplete)
-      return undecided;
-    else
-      return invalid;
+  gcc_unreachable ();
 }
 
-/* Check if the the proof is valid. This is the case when all
-   goals can be discharged. If any goal is invalid, then the
-   entire proof is invalid. Otherwise, the proof is undecided.  */
+/* Count the number conjunctive clauses that would be created
+   when rewriting T to DNF. */
 
-proof_result
-check_proof (proof_state& p)
+static int
+dnf_size (tree t)
 {
-  proof_state::iterator iter = p.begin();
-  proof_state::iterator end = p.end();
-  while (iter != end)
-    {
-      proof_result r = check_goal (*iter);
-      if (r == invalid)
-        return r;
-      if (r == valid)
-        iter = p.discharge (iter);
-      else
-        ++iter;
-    }
+  std::pair<int, bool> result = dnf_size_r (t);
+  return result.first == 0 ? 1 : result.first;
+}
 
-  /* If all goals are discharged, then the proof is valid.  */
-  if (p.empty())
-    return valid;
+
+/* Count the number disjunctive clauses that would be created
+   when rewriting T to CNF. */
+
+static int
+cnf_size (tree t)
+{
+  std::pair<int, bool> result = cnf_size_r (t);
+  return result.first == 0 ? 1 : result.first;
+}
+
+
+/* A left-conjunction is replaced by its operands.  */
+
+void
+replace_term (clause& c, tree t)
+{
+  tree t1 = TREE_OPERAND (t, 0);
+  tree t2 = TREE_OPERAND (t, 1);
+  return c.replace (t1, t2);
+}
+
+/* Create a new clause in the formula by copying the current
+   clause. In the current clause, the term at CI is replaced
+   by the first operand, and in the new clause, it is replaced
+   by the second.  */
+
+void
+branch_clause (formula& f, clause& c1, tree t)
+{
+  tree t1 = TREE_OPERAND (t, 0);
+  tree t2 = TREE_OPERAND (t, 1);
+  clause& c2 = f.branch ();
+  c1.replace (t1);
+  c2.replace (t2);
+}
+
+/* Decompose t1 /\ t2 according to the rules R.  */
+
+inline void
+decompose_conjuntion (formula& f, clause& c, tree t, rules r)
+{
+  if (r == left)
+    replace_term (c, t);
   else
-    return undecided;
+    branch_clause (f, c, t);
 }
 
-/*---------------------------------------------------------------------------
-                           Left logical rules
----------------------------------------------------------------------------*/
+/* Decompose t1 \/ t2 according to the rules R.  */
 
-term_list::iterator
-load_check_assumption (term_list& ts, term_list::iterator i)
+inline void
+decompose_disjunction (formula& f, clause& c, tree t, rules r)
 {
-  tree decl = CHECK_CONSTR_CONCEPT (*i);
-  tree tmpl = DECL_TI_TEMPLATE (decl);
-  tree args = CHECK_CONSTR_ARGS (*i);
-  return ts.replace(i, expand_concept (tmpl, args));
+  if (r == right)
+    replace_term (c, t);
+  else
+    branch_clause (f, c, t);
 }
 
-term_list::iterator
-load_parameterized_assumption (term_list& ts, term_list::iterator i)
+/* An atomic constraint is already decomposed.  */
+inline void
+decompose_atom (clause& c)
 {
-  return ts.replace(i, PARM_CONSTR_OPERAND(*i));
+  c.advance ();
 }
 
-term_list::iterator
-load_conjunction_assumption (term_list& ts, term_list::iterator i)
-{
-  tree t1 = TREE_OPERAND (*i, 0);
-  tree t2 = TREE_OPERAND (*i, 1);
-  return ts.replace(i, t1, t2);
-}
-
-/* Examine the terms in the list, and apply left-logical rules to move
-   terms into the set of assumptions. */
+/* Decompose a term of clause C (in formula F) according to the
+   logical rules R. */
 
 void
-load_assumptions (proof_goal& g)
+decompose_term (formula& f, clause& c, tree t, rules r)
 {
-  term_list::iterator iter = g.assumptions.begin();
-  term_list::iterator end = g.assumptions.end();
-  while (iter != end)
+  switch (TREE_CODE (t))
     {
-      switch (TREE_CODE (*iter))
-        {
-        case CHECK_CONSTR:
-          iter = load_check_assumption (g.assumptions, iter);
-          break;
-        case PARM_CONSTR:
-          iter = load_parameterized_assumption (g.assumptions, iter);
-          break;
-        case CONJ_CONSTR:
-          iter = load_conjunction_assumption (g.assumptions, iter);
-          break;
-        default:
-          ++iter;
-          break;
-        }
+      case CONJ_CONSTR:
+        return decompose_conjuntion (f, c, t, r);
+      case DISJ_CONSTR:
+	return decompose_disjunction (f, c, t, r);
+      default:
+	return decompose_atom (c);
     }
 }
 
-/* In each subgoal, load constraints into the assumption set.  */
+/* Decompose C (in F) using the logical rules R until it
+   is comprised of only atomic constraints.  */
 
 void
-load_assumptions(proof_state& p)
+decompose_clause (formula& f, clause& c, rules r)
 {
-  proof_state::iterator iter = p.begin();
-  while (iter != p.end())
-    {
-      load_assumptions (*iter);
-      ++iter;
-    }
+  while (!c.done ())
+    decompose_term (f, c, *c.current (), r);
+  f.advance ();
 }
+
+/* Decompose the logical formula F according to the logical
+   rules determined by R.  The result is a formula containing
+   clauses that contain only atomic terms.  */
 
 void
-explode_disjunction (proof_state& p, proof_state::iterator gi, term_list::iterator ti1)
+decompose_formula (formula& f, rules r)
 {
-  tree t1 = TREE_OPERAND (*ti1, 0);
-  tree t2 = TREE_OPERAND (*ti1, 1);
-
-  /* Erase the current term from the goal. */
-  proof_goal& g1 = *gi;
-  proof_goal& g2 = *p.branch (gi);
-
-  /* Get an iterator to the equivalent position in th enew goal. */
-  int n = std::distance (g1.assumptions.begin (), ti1);
-  term_list::iterator ti2 = g2.assumptions.begin ();
-  std::advance (ti2, n);
-
-  /* Replace the disjunction in both branches. */
-  g1.assumptions.replace (ti1, t1);
-  g2.assumptions.replace (ti2, t2);
+  while (!f.done ())
+    decompose_clause (f, *f.current (), r);
 }
 
+/* Fully decomposing T into a list of sequents, each comprised of
+   a list of atomic constraints, as if T were an antecedent.  */
 
-/* Search the assumptions of the goal for the first disjunction. */
-
-bool
-explode_goal (proof_state& p, proof_state::iterator gi)
+static formula
+decompose_antecedents (tree t)
 {
-  term_list& ts = gi->assumptions;
-  term_list::iterator ti = ts.begin();
-  term_list::iterator end = ts.end();
-  while (ti != end)
-    {
-      if (TREE_CODE (*ti) == DISJ_CONSTR)
-        {
-          explode_disjunction (p, gi, ti);
-          return true;
-        }
-      else ++ti;
-    }
-  return false;
+  formula f (t);
+  decompose_formula (f, left);
+  return f;
 }
 
-/* Search for the first goal with a disjunction, and then branch
-   creating a clone of that subgoal. */
+/* Fully decomposing T into a list of sequents, each comprised of
+   a list of atomic constraints, as if T were a consequent.  */
 
-void
-explode_assumptions (proof_state& p)
+static formula
+decompose_consequents (tree t)
 {
-  proof_state::iterator iter = p.begin();
-  proof_state::iterator end = p.end();
-  while (iter != end)
-    {
-      if (explode_goal (p, iter))
-        return;
-      ++iter;
-    }
+  formula f (t);
+  decompose_formula (f, right);
+  return f;
 }
 
+static bool derive_proof (clause&, tree, rules);
 
-/*---------------------------------------------------------------------------
-                           Right logical rules
----------------------------------------------------------------------------*/
+/* Derive a proof of both operands of T.  */
 
-term_list::iterator
-load_disjunction_conclusion (term_list& g, term_list::iterator i)
+static bool
+derive_proof_for_both_operands (clause& c, tree t, rules r)
 {
-  tree t1 = TREE_OPERAND (*i, 0);
-  tree t2 = TREE_OPERAND (*i, 1);
-  return g.replace(i, t1, t2);
+  if (!derive_proof (c, TREE_OPERAND (t, 0), r))
+    return false;
+  return derive_proof (c, TREE_OPERAND (t, 1), r);
 }
 
-/* Apply logical rules to the right hand side. This will load the
-   conclusion set with all tpp-level disjunctions.  */
+/* Derive a proof of either operand of T.  */
 
-void
-load_conclusions (proof_goal& g)
+static bool
+derive_proof_for_either_operand (clause& c, tree t, rules r)
 {
-  term_list::iterator iter = g.conclusions.begin();
-  term_list::iterator end = g.conclusions.end();
-  while (iter != end)
-    {
-      if (TREE_CODE (*iter) == DISJ_CONSTR)
-        iter = load_disjunction_conclusion (g.conclusions, iter);
-      else
-        ++iter;
-    }
-}
-
-void
-load_conclusions (proof_state& p)
-{
-  proof_state::iterator iter = p.begin();
-  while (iter != p.end())
-    {
-      load_conclusions (*iter);
-      ++iter;
-    }
-}
-
-
-/*---------------------------------------------------------------------------
-                          High-level proof tactics
----------------------------------------------------------------------------*/
-
-/* Given two constraints A and C, try to derive a proof that
-   A implies C.  */
-
-bool
-prove_implication (tree a, tree c)
-{
-  /* Quick accept. */
-  if (cp_tree_equal (a, c))
+  if (derive_proof (c, TREE_OPERAND (t, 0), r))
     return true;
+  return derive_proof (c, TREE_OPERAND (t, 1), r);
+}
 
-  /* Build the initial proof state. */
-  proof_state proof;
-  proof_goal& goal = proof.front();
-  goal.assumptions.push_back(a);
-  goal.conclusions.push_back(c);
+/* Derive a proof of the atomic constraint T in clause C.  */
 
-  /* Perform an initial right-expansion in the off-chance that the right
-     hand side contains disjunctions. */
-  load_conclusions (proof);
+static bool
+derive_atomic_proof (clause& c, tree t)
+{
+  return c.contains (t);
+}
 
-  int step_max = 1 << 10;
-  int step_count = 0;              /* FIXME: We shouldn't have this. */
-  std::size_t branch_limit = 1024; /* FIXME: This needs to be configurable. */
-  while (step_count < step_max && proof.size() < branch_limit)
-    {
-      /* Determine if we can prove that the assumptions entail the
-         conclusions. If so, we're done. */
-      load_assumptions (proof);
+/* Derive a proof of T from the terms in C.  */
 
-      /* Can we solve the proof based on this? */
-      proof_result r = check_proof (proof);
-      if (r != undecided)
-        return r == valid;
+static bool
+derive_proof (clause& c, tree t, rules r)
+{
+  switch (TREE_CODE (t))
+  {
+    case CONJ_CONSTR:
+      if (r == left)
+        return derive_proof_for_both_operands (c, t, r);
+      else
+	return derive_proof_for_either_operand (c, t, r);
+    case DISJ_CONSTR:
+      if (r == left)
+        return derive_proof_for_either_operand (c, t, r);
+      else
+	return derive_proof_for_both_operands (c, t, r);
+    default:
+      return derive_atomic_proof (c, t);
+  }
+}
 
-      /* If not, then we need to dig into disjunctions.  */
-      explode_assumptions (proof);
+/* Derive a proof of T from disjunctive clauses in F.  */
 
-      ++step_count;
-    }
+static bool
+derive_proofs (formula& f, tree t, rules r)
+{
+  for (formula::iterator i = f.begin(); i != f.end(); ++i)
+    if (!derive_proof (*i, t, r))
+      return false;
+  return true;
+}
 
-  if (step_count == step_max)
-    error ("subsumption failed to resolve");
+/* The largest number of clauses in CNF or DNF we accept as input
+   for subsumption. This an upper bound of 2^16 expressions.  */
+static int max_problem_size = 16;
 
-  if (proof.size() == branch_limit)
-    error ("exceeded maximum number of branches");
-
+static inline bool
+diagnose_constraint_size (tree t)
+{
+  error_at (input_location, "%qE exceeds the maximum constraint complexity", t);
   return false;
 }
 
@@ -777,31 +784,51 @@ prove_implication (tree a, tree c)
    This is done by deriving a proof of the conclusions on the RIGHT
    from the assumptions on the LEFT assumptions.  */
 
-bool
-subsumes_constraints_nonnull (tree left, tree right)
+static bool
+subsumes_constraints_nonnull (tree lhs, tree rhs)
 {
-  gcc_assert (check_constraint_info (left));
-  gcc_assert (check_constraint_info (right));
-
   auto_timevar time (TV_CONSTRAINT_SUB);
-  tree a = CI_ASSOCIATED_CONSTRAINTS (left);
-  tree c = CI_ASSOCIATED_CONSTRAINTS (right);
-  return prove_implication (a, c);
-}
 
-} /* namespace */
+  int n1 = dnf_size (lhs);
+  int n2 = cnf_size (rhs);
+
+  /* Make sure we haven't exceeded the largest acceptable problem.  */
+  if (std::min (n1, n2) >= max_problem_size)
+    {
+      if (n1 < n2)
+        diagnose_constraint_size (lhs);
+      else
+	diagnose_constraint_size (rhs);
+      return false;
+    }
+
+  /* Decompose the smaller of the two formulas, and recursively
+     check the implication using the larger.  Note that for
+     constraints that are largely comprised of conjunctions the
+     it will usually be the case that n1 <= n2. */
+  if (n1 <= n2)
+    {
+      formula dnf = decompose_antecedents (lhs);
+      return derive_proofs (dnf, rhs, left);
+    }
+  else
+    {
+      formula cnf = decompose_consequents (rhs);
+      return derive_proofs (cnf, lhs, right);
+    }
+}
 
 /* Returns true if the LEFT constraints subsume the RIGHT
    constraints.  */
 
 bool
-subsumes (tree left, tree right)
+subsumes (tree lhs, tree rhs)
 {
-  if (left == right)
+  if (lhs == rhs)
     return true;
-  if (!left)
+  if (!lhs || lhs == error_mark_node)
     return false;
-  if (!right)
+  if (!rhs || rhs == error_mark_node)
     return true;
-  return subsumes_constraints_nonnull (left, right);
+  return subsumes_constraints_nonnull (lhs, rhs);
 }

@@ -36,6 +36,14 @@ proc check_effective_target_msp430_mlarge_selected { } {
     return [check-flags [list "" { *-*-* } { "-mlarge" } { "" } ]]
 }
 
+proc check_effective_target_msp430_region_not_lower { } {
+    return [check-flags [list "" { *-*-* } { "-mdata-region=none" "-mdata-region=upper" "-mdata-region=either" } { "" } ]]
+}
+
+proc check_effective_target_msp430_region_lower { } {
+    return [check-flags [list "" { *-*-* } { "*" } { "-mdata-region=none" "-mdata-region=upper" "-mdata-region=either" } ]]
+}
+
 proc check_effective_target_msp430_hwmul_not_none { } {
     return [check-flags [list "" { *-*-* } \
     { "-mhwmult=16bit" "-mhwmult=32bit" "-mhwmult=f5series" } { "" } ]]

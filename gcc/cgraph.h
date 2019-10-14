@@ -2095,9 +2095,19 @@ public:
   friend struct cgraph_node;
   friend struct cgraph_edge;
 
-  symbol_table (): cgraph_max_uid (1), cgraph_max_summary_id (0),
-  edges_max_uid (1), edges_max_summary_id (0),
-  cgraph_released_summary_ids (), edge_released_summary_ids ()
+  symbol_table (): 
+  cgraph_count (0), cgraph_max_uid (1), cgraph_max_summary_id (0),
+  edges_count (0), edges_max_uid (1), edges_max_summary_id (0),
+  cgraph_released_summary_ids (), edge_released_summary_ids (),
+  nodes (NULL), asmnodes (NULL), asm_last_node (NULL),
+  order (0), global_info_ready (false), state (PARSING),
+  function_flags_ready (false), cpp_implicit_aliases_done (false),
+  section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
+  dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
+  m_first_edge_removal_hook (NULL), m_first_cgraph_removal_hook (NULL),
+  m_first_edge_duplicated_hook (NULL), m_first_cgraph_duplicated_hook (NULL),
+  m_first_cgraph_insertion_hook (NULL), m_first_varpool_insertion_hook (NULL),
+  m_first_varpool_removal_hook (NULL)
   {
   }
 
@@ -2343,6 +2353,9 @@ public:
   /* Vector of released summary IDS for cgraph nodes.  */
   vec<int> GTY ((skip)) edge_released_summary_ids;
 
+  /* Return symbol used to separate symbol name from suffix.  */
+  static char symbol_suffix_separator ();
+
   symtab_node* GTY(()) nodes;
   asm_node* GTY(()) asmnodes;
   asm_node* GTY(()) asm_last_node;
@@ -2371,9 +2384,6 @@ public:
   hash_map<symtab_node *, symbol_priority_map> *init_priority_hash;
 
   FILE* GTY ((skip)) dump_file;
-
-  /* Return symbol used to separate symbol name from suffix.  */
-  static char symbol_suffix_separator ();
 
   FILE* GTY ((skip)) ipa_clones_dump_file;
 

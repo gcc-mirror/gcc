@@ -33,7 +33,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2019-05-29 18:58+0300\n"
+"PO-Revision-Date: 2019-10-11 20:03+0300\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "Language: fi\n"
@@ -67,9 +67,9 @@ msgid "[cannot find %s]"
 msgstr "lähdetiedostoa %s ei löydy"
 
 #: collect2.c:1632
-#, fuzzy, c-format
+#, c-format
 msgid "collect2 version %s\n"
-msgstr "gcc-versio %s %s\n"
+msgstr "collect2-versio %s\n"
 
 #: collect2.c:1737
 #, c-format
@@ -118,9 +118,9 @@ msgid "const/copy propagation disabled"
 msgstr "const-/kopioinnin-eteneminen poistettu käytöstä"
 
 #: diagnostic.c:145
-#, fuzzy, c-format
+#, c-format
 msgid "%s: all warnings being treated as errors"
-msgstr "Käsittele kaikki varoitukset virheinä"
+msgstr "%s: kaikki varoitukset käsitellään virheinä"
 
 #: diagnostic.c:150
 #, c-format
@@ -6142,9 +6142,8 @@ msgid "gfortran does not support -E without -cpp"
 msgstr "gfortran ei tue valitsinta -E ilman valitsinta -cpp"
 
 #: objc/lang-specs.h:30 objc/lang-specs.h:41
-#, fuzzy
 msgid "GNU Objective C no longer supports traditional compilation"
-msgstr "GCC ei enää tue valitsinta -traditional ilman valitsinta -E"
+msgstr "GNU Objective C ei enää tue perinteistä kääntämistä"
 
 #: objc/lang-specs.h:55
 msgid "objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
@@ -6688,9 +6687,8 @@ msgid "Conform to the ISO Fortran 95 standard."
 msgstr "Noudata ISO Fortran 95 -standardia"
 
 #: fortran/lang.opt:827
-#, fuzzy
 msgid "Conform to nothing in particular."
-msgstr "Älä noudata mitään erityisesti"
+msgstr "Älä noudata mitään erityisesti."
 
 #: fortran/lang.opt:831
 msgid "Accept extensions to support legacy code."
@@ -6732,24 +6730,20 @@ msgid "-I <dir>\tAdd <dir> to the end of the main include path."
 msgstr "-isystem <hakemisto>\tLisää <hakemisto> järjestelmän include-polun alkuun"
 
 #: c-family/c.opt:217
-#, fuzzy
 msgid "Generate make dependencies."
-msgstr "Luo make-riippuvuudet"
+msgstr "Luo make-riippuvuudet."
 
 #: c-family/c.opt:221
-#, fuzzy
 msgid "Generate make dependencies and compile."
-msgstr "Luo make-riippuvuudet ja käännä"
+msgstr "Luo make-riippuvuudet ja käännä."
 
 #: c-family/c.opt:225
-#, fuzzy
 msgid "-MF <file>\tWrite dependency output to the given file."
-msgstr "Kirjoita riippuvuustuloste annettuun tiedostoon"
+msgstr "-MF <tiedosto>\tKirjoita riippuvuustuloste annettuun tiedostoon."
 
 #: c-family/c.opt:229
-#, fuzzy
 msgid "Treat missing header files as generated files."
-msgstr "Käsittele puuttuvia otsikkotiedostoja luotavina tiedostoina"
+msgstr "Käsittele puuttuvia otsikkotiedostoja luotavina tiedostoina."
 
 #: c-family/c.opt:233
 msgid "Like -M but ignore system header files."
@@ -6773,9 +6767,8 @@ msgid "-MT <target>\tAdd an unquoted target."
 msgstr ""
 
 #: c-family/c.opt:253
-#, fuzzy
 msgid "Do not generate #line directives."
-msgstr "Älä luo #line-direktiivejä"
+msgstr "Älä luo #line-direktiivejä."
 
 #: c-family/c.opt:257
 #, fuzzy
@@ -6817,11 +6810,9 @@ msgstr ""
 msgid "Enable most warning messages."
 msgstr "Subject: Fetchmailin varoitus liian suuresta viestistä"
 
-# vähän fuzzy
 #: c-family/c.opt:308
-#, fuzzy
 msgid "Warn on any use of alloca."
-msgstr "Varoita pragmain väärästä käytöstä."
+msgstr "Varoita kaikesta allocan käytöstä."
 
 #: c-family/c.opt:312
 #, fuzzy
@@ -6931,9 +6922,8 @@ msgstr "Varoita ”char”-tyypillä indeksoinnista."
 #: c-family/c.opt:1369 c-family/c.opt:1373 c-family/c.opt:1377
 #: c-family/c.opt:1381 c-family/c.opt:1385 c-family/c.opt:1389
 #: config/i386/i386.opt:967
-#, fuzzy
 msgid "Deprecated in GCC 9.  This switch has no effect."
-msgstr "Vanhentunut. Tämä valitsin ei vaikuta mihinkään."
+msgstr "Vanhentunut GCC 9:ssä. Tämä valitsin ei vaikuta mihinkään."
 
 #: c-family/c.opt:429
 msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\"."
@@ -6964,9 +6954,8 @@ msgid "Warn when all constructors and destructors are private."
 msgstr "Varoita kun kaikki muodostimet ja hajottimet ovat yksityisiä."
 
 #: c-family/c.opt:461
-#, fuzzy
 msgid "Warn about dangling else."
-msgstr "Varoita implisiittisistä funktioesittelyistä."
+msgstr "Varoita orvosta elsestä."
 
 #: c-family/c.opt:465
 msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage."
@@ -7119,9 +7108,8 @@ msgid "Warn whenever type qualifiers are ignored."
 msgstr "Varoita tyyppimääreiden huomiotta jättämisestä."
 
 #: c-family/c.opt:622
-#, fuzzy
 msgid "Warn whenever attributes are ignored."
-msgstr "Varoita tyyppimääreiden huomiotta jättämisestä."
+msgstr "Varoita attribuuttien huomiotta jättämisestä."
 
 #: c-family/c.opt:626
 #, fuzzy
@@ -7196,9 +7184,8 @@ msgid "Warn when a string or character literal is followed by a ud-suffix which 
 msgstr ""
 
 #: c-family/c.opt:701
-#, fuzzy
 msgid "Warn when a logical operator is suspiciously always evaluating to true or false."
-msgstr "Varoita vertailusta, joka on aina tosi tai aina epätosi."
+msgstr "Varoita, kun looginen operaattori on aina tosi tai aina epätosi."
 
 #: c-family/c.opt:705
 msgid "Warn when logical not is used on the left hand side operand of a comparison."
@@ -7429,9 +7416,8 @@ msgid "Warn about packed bit-fields whose offset changed in GCC 4.4."
 msgstr "Varoita pakatuista bittikentistä, joiden siirrososoite vaihtui GCC 4.4:ssä"
 
 #: c-family/c.opt:955
-#, fuzzy
 msgid "Warn about possibly missing parentheses."
-msgstr "Varoita mahdollisesti puuttuvista sulkeista"
+msgstr "Varoita mahdollisesti puuttuvista sulkeista."
 
 #: c-family/c.opt:963
 msgid "Warn about calling std::move on a local object in a return statement preventing copy elision."
@@ -7975,9 +7961,8 @@ msgid "Enable OpenMP's SIMD directives."
 msgstr "Luokittelematon lause IF-lauseessa kohdassa %C"
 
 #: c-family/c.opt:1681
-#, fuzzy
 msgid "Recognize C++ keywords like \"compl\" and \"xor\"."
-msgstr "Tunnista C++:n avainsanat kuten ”compl” ja ”xor”"
+msgstr "Tunnista C++:n avainsanat kuten ”compl” ja ”xor”."
 
 #: c-family/c.opt:1692
 msgid "Look for and use PCH files even when preprocessing."
@@ -8732,9 +8717,8 @@ msgid "Set the maximum amount for a single stack increment operation."
 msgstr ""
 
 #: config/mcore/mcore.opt:75
-#, fuzzy
 msgid "Always treat bitfields as int-sized."
-msgstr "Käsittele bittikenttiä aina int-kokoisina"
+msgstr "Käsittele bittikenttiä aina int-kokoisina."
 
 #: config/linux-android.opt:23
 msgid "Generate code for the Android platform."
@@ -19730,7 +19714,7 @@ msgstr "%qs-attribuuttia ei huomioida %qs:lle"
 #: cgraphunit.c:976 c/c-decl.c:11507
 #, fuzzy, gcc-internal-format
 msgid "%q+F used but never defined"
-msgstr "nimike %q+D määritelty mutta käytettämättä"
+msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #: cgraphunit.c:978 c/c-decl.c:11517
 #, fuzzy, gcc-internal-format
@@ -29294,7 +29278,7 @@ msgstr "%<X<=Y<=Z%> -tyylisillä vertailuilla on eri merkitys kuin matematiikass
 #: c-family/c-warn.c:2021
 #, gcc-internal-format
 msgid "label %q+D defined but not used"
-msgstr "nimike %q+D määritelty mutta käytettämättä"
+msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #: c-family/c-warn.c:2023
 #, gcc-internal-format
@@ -68642,7 +68626,7 @@ msgstr "(%qs:n alustuksen lähistöllä)"
 
 #, fuzzy
 #~ msgid "variable %q+D set but not used"
-#~ msgstr "nimike %q+D määritelty mutta käytettämättä"
+#~ msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #~ msgid "jump to label %q+D"
 #~ msgstr "hyppy nimiöön %q+D"
@@ -68659,7 +68643,7 @@ msgstr "(%qs:n alustuksen lähistöllä)"
 
 #, fuzzy
 #~ msgid "parameter %q+D set but not used"
-#~ msgstr "nimike %q+D määritelty mutta käytettämättä"
+#~ msgstr "nimike %q+D määritelty mutta käyttämättä"
 
 #~ msgid "%q+D declared here"
 #~ msgstr "%q+D esitelty täällä"

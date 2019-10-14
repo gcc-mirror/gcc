@@ -35,6 +35,7 @@
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"
+#include "varasm.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
@@ -82,7 +83,7 @@ struct GTY(()) machine_function
 };
 
 /* This is our init_machine_status, as set in
-   msp_option_override.  */
+   msp430_option_override.  */
 static struct machine_function *
 msp430_init_machine_status (void)
 {
@@ -263,9 +264,6 @@ msp430_option_override (void)
   else if (!TARGET_LARGE && msp430_code_region == MSP430_REGION_UPPER)
     error ("%<-mcode-region=upper%> requires the large memory model "
 	   "(%<-mlarge%>)");
-  else if (!TARGET_LARGE && msp430_code_region == MSP430_REGION_LOWER)
-    error ("%<-mcode-region=lower%> requires the large memory model "
-	   "(%<-mlarge%>)");
 
   if (!TARGET_LARGE && msp430_data_region == MSP430_REGION_EITHER)
     error ("%<-mdata-region=either%> requires the large memory model "
@@ -273,10 +271,6 @@ msp430_option_override (void)
   else if (!TARGET_LARGE && msp430_data_region == MSP430_REGION_UPPER)
     error ("%<-mdata-region=upper%> requires the large memory model "
 	   "(%<-mlarge%>)");
-  else if (!TARGET_LARGE && msp430_data_region == MSP430_REGION_LOWER)
-    error ("%<-mdata-region=lower%> requires the large memory model "
-	   "(%<-mlarge%>)");
-
 
   if (flag_exceptions || flag_non_call_exceptions
       || flag_unwind_tables || flag_asynchronous_unwind_tables)
@@ -1386,7 +1380,7 @@ msp430_section_attr (tree * node,
   if (has_attr (ATTR_NOINIT, *node))
     message = G_("ignoring attribute %qE because it conflicts with "
 		 "attribute %<noinit%>");
-  else if (has_attr ("section", *node))
+  else if (has_attr ("section", *node) && !TREE_NAME_EQ (name, "lower"))
     message = G_("ignoring attribute %qE because it conflicts with "
 		 "attribute %<section%>");
   /* It does not make sense to use upper/lower/either attributes without
@@ -1564,12 +1558,14 @@ msp430_handle_generic_attribute (tree *node,
 {
   const char *message = NULL;
 
+  /* The front end has set up an exclusion between the "noinit" and "section"
+     attributes.  */
   if (!(TREE_NAME_EQ (name, ATTR_NOINIT) || TREE_NAME_EQ (name, "section")))
     return NULL_TREE;
 
-  /* The front end has set up an exclusion between the "noinit" and "section"
-     attributes.  */
-  if (has_attr (ATTR_LOWER, *node))
+  /* We allow the "lower" attribute to be used on variables with the "section"
+     attribute.  */
+  if (has_attr (ATTR_LOWER, *node) && !TREE_NAME_EQ (name, "section"))
     message = G_("ignoring attribute %qE because it conflicts with "
 		 "attribute %<lower%>");
   else if (has_attr (ATTR_UPPER, *node))
@@ -1589,6 +1585,55 @@ msp430_handle_generic_attribute (tree *node,
     }
 
   return NULL_TREE;
+}
+
+/* Given a non-automatic VAR_DECL which can possibly have a section, return
+   true if the variable will definitely be placed in the lower memory
+   region (below address 0x10000).  */
+static bool
+msp430_var_in_low_mem (tree decl)
+{
+  gcc_assert (VAR_P (decl));
+
+  /* "noinit" variables are always placed in the lower memory region.  */
+  if (has_attr (ATTR_UPPER, decl)
+      || has_attr (ATTR_EITHER, decl)
+      || has_attr (ATTR_PERSIST, decl)
+      /* Unless the variable is marked with the lower or noinit attribute, we
+	 cannot assume that it is in the lower region if it is marked with the
+	 section attribute or -mdata-region={upper,either,none} have been
+	 passed.
+	 The noinit and section attributes conflict.  */
+      || (!has_attr (ATTR_LOWER, decl) && !has_attr (ATTR_NOINIT, decl)
+	  && (has_attr ("section", decl)
+	      || msp430_data_region == MSP430_REGION_UPPER
+	      || msp430_data_region == MSP430_REGION_EITHER
+	      || msp430_data_region == MSP430_REGION_ANY)))
+    return false;
+  return true;
+}
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO msp430_encode_section_info
+
+/* Encode whether a SYMBOL_REF is definitely in the lower memory region.  */
+static void
+msp430_encode_section_info (tree decl, rtx rtl, int first)
+{
+  rtx symbol;
+  default_encode_section_info (decl, rtl, first);
+
+  /* Careful not to prod global register variables.  */
+  if (!MEM_P (rtl))
+    return;
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  if (VAR_P (decl)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+      && msp430_var_in_low_mem (decl))
+    SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOW_MEM;
 }
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -1744,14 +1789,16 @@ gen_prefix (tree decl)
   if (has_section_name (".lowtext", decl))
     return NULL;
 
-  /* If the object has __attribute__((lower)) then use the ".lower." prefix.  */
+  /* Memory regions require the large memory model.  */
+  if (!TARGET_LARGE)
+    return NULL;
+
+  /* Note that we always apply the lower prefix when the attribute has been
+     used.  But we only apply the lower prefix when the lower region has been
+     specified by a command line option if -muse-lower-region-prefix has also
+     been passed.  */
   if (has_attr (ATTR_LOWER, decl))
     return lower_prefix;
-
-  /* If we are compiling for the MSP430 then we do not support the upper
-     region.  */
-  if (! msp430x)
-    return NULL;
 
   if (has_attr (ATTR_UPPER, decl))
     return upper_prefix;
@@ -1761,7 +1808,8 @@ gen_prefix (tree decl)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (msp430_code_region == MSP430_REGION_LOWER)
+      if ((msp430_code_region == MSP430_REGION_LOWER)
+	  && TARGET_USE_LOWER_REGION_PREFIX)
 	return lower_prefix;
 
       if (msp430_code_region == MSP430_REGION_UPPER)
@@ -1772,7 +1820,8 @@ gen_prefix (tree decl)
     }
   else
     {
-      if (msp430_data_region == MSP430_REGION_LOWER)
+      if ((msp430_data_region == MSP430_REGION_LOWER)
+	  && TARGET_USE_LOWER_REGION_PREFIX)
 	return lower_prefix;
 
       if (msp430_data_region == MSP430_REGION_UPPER)
@@ -1966,7 +2015,6 @@ msp430_unique_section (tree decl, int reloc)
 /* Emit a declaration of a common symbol.
    If a data region is in use then put the symbol into the
    equivalent .bss section instead.  */
-
 void
 msp430_output_aligned_decl_common (FILE *		  stream,
 				   const tree		  decl,
@@ -1976,7 +2024,9 @@ msp430_output_aligned_decl_common (FILE *		  stream,
 {
   /* Only emit a common symbol if the variable does not have a specific section
      assigned.  */
-  if (msp430_data_region == MSP430_REGION_ANY
+  if ((msp430_data_region == MSP430_REGION_ANY
+       || ((msp430_data_region == MSP430_REGION_LOWER)
+	   && !TARGET_USE_LOWER_REGION_PREFIX))
       && !(decl != NULL_TREE && DECL_SECTION_NAME (decl))
       && !has_attr (ATTR_EITHER, decl)
       && !has_attr (ATTR_LOWER, decl)
@@ -2021,6 +2071,80 @@ msp430_output_aligned_decl_common (FILE *		  stream,
     }
 }
 
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END msp430_file_end
+
+/* Emit MSPABI and GNU object attributes.
+   Tags and values for MSPABI attributes are:
+   OFBA_MSPABI_Tag_ISA		4
+     MSP430	1
+     MSP430X	2
+   OFBA_MSPABI_Tag_Code_Model	6
+     Small 	1
+     Large	2
+   OFBA_MSPABI_Tag_Data_Model	8
+     Small 	1
+     Large	2
+     Restricted	3 (Unused by GNU)
+   OFBA_MSPABI_Tag_enum_size	10 (Unused by GNU)
+   Note that Code_Model and Data_Model are always equal for GNU.
+   We define a new .gnu_attribute to keep track of the data region used.
+   Tag_GNU_MSP430_Data_Region	4
+     LOWER	1
+     ANY	2
+   See binutils-gdb/include/elf/msp430.h for the full details.  */
+static void
+msp430_file_end (void)
+{
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+  /* Enum for tag names.  */
+  enum
+    {
+      OFBA_MSPABI_Tag_ISA = 4,
+      OFBA_MSPABI_Tag_Code_Model = 6,
+      OFBA_MSPABI_Tag_Data_Model = 8,
+      Tag_GNU_MSP430_Data_Region = 4
+    };
+  /* Enum for tag values.  */
+  enum
+    {
+      OFBA_MSPABI_Val_ISA_MSP430 = 1,
+      OFBA_MSPABI_Val_ISA_MSP430X = 2,
+      OFBA_MSPABI_Val_Model_Small = 1,
+      OFBA_MSPABI_Val_Model_Large = 2,
+      Tag_GNU_MSP430_Data_Region_Lower = 1,
+      Tag_GNU_MSP430_Data_Region_Any = 2
+    };
+  /* .mspabi_attribute is a GNU assembler directive only.  The assembler will
+     construct a .MSP430.attributes section based on the options it is invoked
+     with.  The values it reads from these directives are used for validating
+     those options.  */
+  const char *msp430_attr = ".mspabi_attribute";
+  const char *gnu_attr = ".gnu_attribute";
+
+  /* Emit .mspabi_attribute directive for OFBA_MSPABI_Tag_ISA.  */
+  fprintf (asm_out_file, "\t%s %d, %d\n", msp430_attr, OFBA_MSPABI_Tag_ISA,
+	   msp430x ? OFBA_MSPABI_Val_ISA_MSP430X : OFBA_MSPABI_Val_ISA_MSP430);
+  /* Emit .mspabi_attribute directive for OFBA_MSPABI_Tag_Code_Model.  */
+  fprintf (asm_out_file, "\t%s %d, %d\n", msp430_attr,
+	   OFBA_MSPABI_Tag_Code_Model,
+	   TARGET_LARGE ? OFBA_MSPABI_Val_Model_Large
+	   : OFBA_MSPABI_Val_Model_Small);
+  /* Emit .mspabi_attribute directive for OFBA_MSPABI_Tag_Data_Model.  */
+  fprintf (asm_out_file, "\t%s %d, %d\n", msp430_attr,
+	   OFBA_MSPABI_Tag_Data_Model,
+	   TARGET_LARGE ? OFBA_MSPABI_Val_Model_Large
+	   : OFBA_MSPABI_Val_Model_Small);
+#ifdef HAVE_AS_MSPABI_ATTRIBUTE
+  /* Emit .gnu_attribute directive for Tag_GNU_MSP430_Data_Region.  */
+  fprintf (asm_out_file, "\t%s %d, %d\n", gnu_attr, Tag_GNU_MSP430_Data_Region,
+	   msp430_data_region == MSP430_REGION_LOWER
+	   ? Tag_GNU_MSP430_Data_Region_Lower
+	   : Tag_GNU_MSP430_Data_Region_Any);
+#endif
+#endif
+}
+
 bool
 msp430_do_not_relax_short_jumps (void)
 {
@@ -2031,9 +2155,7 @@ msp430_do_not_relax_short_jumps (void)
      end up in a low section.  */
   return
     msp430_code_region == MSP430_REGION_EITHER
-    || msp430_code_region == MSP430_REGION_LOWER
-    || has_attr (ATTR_EITHER, current_function_decl)
-    || has_attr (ATTR_LOWER, current_function_decl);
+    || has_attr (ATTR_EITHER, current_function_decl);
 }
 
 enum msp430_builtin
@@ -2484,7 +2606,7 @@ msp430_expand_epilogue (int is_eh)
   else if (is_reentrant_func ())
     emit_insn (gen_enable_interrupts ());
 
-  emit_jump_insn (gen_msp_return ());
+  emit_jump_insn (gen_msp430_return ());
 }
 
 /* Implements EH_RETURN_STACKADJ_RTX.  Saved and used later in
@@ -2719,6 +2841,29 @@ msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
     gcc_unreachable ();
 
   return rv;
+}
+
+int
+msp430_split_addsi (rtx *operands)
+{
+  operands[3] = msp430_subreg (HImode, operands[0], SImode, 0);
+  operands[4] = msp430_subreg (HImode, operands[1], SImode, 0);
+  operands[5] = msp430_subreg (HImode, operands[2], SImode, 0);
+  operands[6] = msp430_subreg (HImode, operands[0], SImode, 2);
+  operands[7] = msp430_subreg (HImode, operands[1], SImode, 2);
+  operands[8] = msp430_subreg (HImode, operands[2], SImode, 2);
+
+  /* BZ 64160: Do not use this splitter when the dest partially overlaps the
+     source.  */
+  if (reg_overlap_mentioned_p (operands[3], operands[7])
+      || reg_overlap_mentioned_p (operands[3], operands[8]))
+    return 1;
+
+  if (GET_CODE (operands[5]) == CONST_INT)
+    operands[9] = GEN_INT (INTVAL (operands[5]) & 0xffff);
+  else
+    operands[9] = gen_rtx_ZERO_EXTEND (SImode, operands[5]);
+  return 0;
 }
 
 /* Called by movsi_x to generate the HImode operands.  */
@@ -3074,6 +3219,36 @@ msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
   msp430_print_operand_raw (file, addr);
 }
 
+/* Determine whether an RTX is definitely not a MEM referencing an address in
+   the upper memory region.  Returns true if we've decided the address will be
+   in the lower memory region, or the RTX is not a MEM.  Returns false
+   otherwise.  */
+bool
+msp430_op_not_in_high_mem (rtx op)
+{
+  rtx op0;
+
+  if (!TARGET_LARGE || !MEM_P (op))
+    return true;
+
+  op0 = XEXP (op, 0);
+
+  if (SYMBOL_REF_P (op0) && (SYMBOL_REF_FLAGS (op0) & SYMBOL_FLAG_LOW_MEM))
+    /* msp430_encode_section_info decided this mem will be in lower
+       memory.  */
+    return true;
+
+  /* Catch (mem (const (plus ((symbol_ref) (const_int))))) e.g. &addr+2.  */
+  if ((GET_CODE (op0) == CONST)
+      && (GET_CODE (XEXP (op0, 0)) == PLUS)
+      && (SYMBOL_REF_P (XEXP (XEXP (op0, 0), 0)))
+      && (SYMBOL_REF_FLAGS (XEXP (XEXP (op0, 0), 0)) & SYMBOL_FLAG_LOW_MEM))
+    return true;
+
+  /* Return false when undecided.  */
+  return false;
+}
+
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND		msp430_print_operand
 
@@ -3245,15 +3420,21 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 
     case 'X':
       /* This is used to turn, for example, an ADD opcode into an ADDX
-	 opcode when we're using 20-bit addresses.  */
-      if (TARGET_LARGE || GET_MODE (op) == PSImode)
+	 opcode when we're using 20-bit addresses.
+	 This can be used for insns which have only one operand which might be
+	 a mem.
+	 If an insn has two different operands which could be memory operands,
+	 then the "Yx" constraint must be used to determine if the X suffix is
+	 required by checking both operands.  */
+      if (GET_MODE (op) == PSImode
+	  || !msp430_op_not_in_high_mem (op))
 	fprintf (file, "X");
-      /* We don't care which operand we use, but we want 'X' in the MD
-	 file, so we do it this way.  */
       return;
 
     case 'x':
-      /* Similarly, but only for PSImodes.  BIC, for example, needs this.  */
+      /* Similarly, but only for PSImodes.  BIC, and other insn patterns using
+	 the QHI mode iterator (which includes, QI, HI, and PSImode) use
+	 this.  */
       if (GET_MODE (op) == PSImode)
 	fprintf (file, "X");
       return;

@@ -6624,6 +6624,13 @@ package body Exp_Ch9 is
              Declarations               => Declarations (N),
              Handled_Statement_Sequence => Build_Accept_Body (N));
 
+         --  Reset the Scope of local entities associated with the accept
+         --  statement (that currently reference the entry scope) to the
+         --  block scope, to avoid having references to the locals treated
+         --  as up-level references.
+
+         Reset_Scopes_To (Block, Blkent);
+
          --  For the analysis of the generated declarations, the parent node
          --  must be properly set.
 

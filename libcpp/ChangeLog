@@ -1,3 +1,18 @@
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add dfp_constants and
+	cpp_warn_c11_c2x_compat.
+	(enum cpp_warning_reason): Add CPP_W_C11_C2X_COMPAT.
+	* init.c (struct lang_flags): Add dfp_constants.
+	(lang_defaults): Set dfp_constants to 1 for GNUC2X and STDC2X and
+	0 for other languages.
+	(cpp_set_lang): Set dfp_constants from language.
+	(cpp_create_reader): Set cpp_warn_c11_c2x_compat to -1.
+	* expr.c (interpret_float_suffix): Mention DFP constants as C2X in
+	comment.
+	(cpp_classify_number): Do not diagnose DFP constants for languages
+	setting dfp_constants, unless cpp_warn_c11_c2x_compat.
+
 2019-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/91991

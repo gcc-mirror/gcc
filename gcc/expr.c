@@ -5790,7 +5790,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 		copy_blkmode_from_reg (target, temp, TREE_TYPE (exp));
 	      else
 		store_bit_field (target,
-				 INTVAL (expr_size (exp)) * BITS_PER_UNIT,
+				 rtx_to_poly_int64 (expr_size (exp))
+				 * BITS_PER_UNIT,
 				 0, 0, 0, GET_MODE (temp), temp, reverse);
 	    }
 	  else

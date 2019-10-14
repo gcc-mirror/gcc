@@ -933,9 +933,6 @@ public:
      for loop vectorization.  */
   vect_memory_access_type memory_access_type;
 
-  /* For reduction loops, this is the type of reduction.  */
-  enum vect_reduction_type v_reduc_type;
-
   /* For CONST_COND_REDUCTION and INTEGER_INDUC_COND_REDUCTION, the
      reduction code.  */
   enum tree_code cond_reduc_code;
@@ -947,7 +944,7 @@ public:
   tree reduc_epilogue_adjustment;
 
   /* On a reduction PHI the reduction type as detected by
-     vect_force_simple_reduction.  */
+     vect_is_simple_reduction and vectorizable_reduction.  */
   enum vect_reduction_type reduc_type;
 
   /* The original reduction code, to be used in the epilogue.  */
@@ -963,6 +960,15 @@ public:
      On the def returned by vect_force_simple_reduction the
      corresponding PHI.  */
   stmt_vec_info reduc_def;
+
+  /* The vector input type relevant for reduction vectorization.  */
+  tree reduc_vectype_in;
+
+  /* Whether we force a single cycle PHI during reduction vectorization.  */
+  bool force_single_cycle;
+
+  /* Whether on this stmt reduction meta is recorded.  */
+  bool is_reduc_info;
 
   /* The number of scalar stmt references from active SLP instances.  */
   unsigned int num_slp_uses;
@@ -1046,11 +1052,11 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_STRIDED_P(S)	   	   (S)->strided_p
 #define STMT_VINFO_MEMORY_ACCESS_TYPE(S)   (S)->memory_access_type
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
-#define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
 #define STMT_VINFO_VEC_COND_REDUC_CODE(S)  (S)->cond_reduc_code
 #define STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL(S) (S)->induc_cond_initial_val
 #define STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT(S) (S)->reduc_epilogue_adjustment
 #define STMT_VINFO_REDUC_IDX(S)		   (S)->reduc_idx
+#define STMT_VINFO_FORCE_SINGLE_CYCLE(S)   (S)->force_single_cycle
 
 #define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_wrt_vec_loop.base_address
@@ -1084,6 +1090,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_REDUC_CODE(S)	(S)->reduc_code
 #define STMT_VINFO_REDUC_FN(S)		(S)->reduc_fn
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
+#define STMT_VINFO_REDUC_VECTYPE_IN(S)  (S)->reduc_vectype_in
 #define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
 
 #define DR_GROUP_FIRST_ELEMENT(S) \
@@ -1556,12 +1563,6 @@ extern bool vect_transform_stmt (stmt_vec_info, gimple_stmt_iterator *,
 extern void vect_remove_stores (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
-extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
-				    stmt_vec_info *, bool, int, slp_tree,
-				    stmt_vector_for_cost *);
-extern bool vectorizable_shift (stmt_vec_info, gimple_stmt_iterator *,
-				stmt_vec_info *, slp_tree,
-				stmt_vector_for_cost *);
 extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
@@ -1644,6 +1645,7 @@ extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
 				   unsigned int, tree);
 extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
 				unsigned int, tree, unsigned int);
+extern stmt_vec_info info_for_reduction (stmt_vec_info);
 
 /* Drive for loop transformation stage.  */
 extern class loop *vect_transform_loop (loop_vec_info);
@@ -1651,10 +1653,8 @@ extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
 						 vec_info_shared *);
 extern bool vectorizable_live_operation (stmt_vec_info, gimple_stmt_iterator *,
 					 slp_tree, slp_instance, int,
-					 stmt_vec_info *,
-					 stmt_vector_for_cost *);
-extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
-				    stmt_vec_info *, slp_tree, slp_instance,
+					 bool, stmt_vector_for_cost *);
+extern bool vectorizable_reduction (stmt_vec_info, slp_tree, slp_instance,
 				    stmt_vector_for_cost *);
 extern bool vectorizable_induction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree,

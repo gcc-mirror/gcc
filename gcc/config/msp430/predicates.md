@@ -18,7 +18,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_predicate "msp_volatile_memory_operand"
+(define_predicate "msp430_volatile_memory_operand"
   (and (match_code "mem")
        (match_test ("memory_address_addr_space_p (GET_MODE (op), XEXP (op, 0), MEM_ADDR_SPACE (op))")))
 )
@@ -26,16 +26,16 @@
 ; TRUE for any valid general operand.  We do this because
 ; general_operand refuses to match volatile memory refs.
 
-(define_predicate "msp_general_operand"
+(define_predicate "msp430_general_operand"
   (ior (match_operand 0 "general_operand")
-       (match_operand 0 "msp_volatile_memory_operand"))
+       (match_operand 0 "msp430_volatile_memory_operand"))
 )
 
 ; Likewise for nonimmediate_operand.
 
-(define_predicate "msp_nonimmediate_operand"
+(define_predicate "msp430_nonimmediate_operand"
   (ior (match_operand 0 "nonimmediate_operand")
-       (match_operand 0 "msp_volatile_memory_operand"))
+       (match_operand 0 "msp430_volatile_memory_operand"))
 )
 
 (define_predicate "ubyte_operand"

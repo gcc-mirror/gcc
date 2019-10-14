@@ -71,7 +71,10 @@ extern bool msp430x;
    is enabled  (the GDB testsuite relies upon unused entities not being
    deleted).  */
 #define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}} " \
-  "%{mcode-region=*:--code-region=%*} %{mdata-region=*:--data-region=%*}"
+  "%{mcode-region=*:--code-region=%:" \
+    "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
+  "%{mdata-region=*:--data-region=%:" \
+    "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
 
 #define DRIVER_SELF_SPECS \
   " %{!mlarge:%{mcode-region=*:%{mdata-region=*:%e-mcode-region and "	\
@@ -90,12 +93,16 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 extern const char * msp430_select_cpu (int, const char **);
 extern const char * msp430_set_driver_var (int, const char **);
 extern const char * msp430_check_path_for_devices (int, const char **);
+extern const char *msp430_propagate_region_opt (int, const char **);
 
+/* There must be a trailing comma after the last item, see gcc.c
+   "static_spec_functions".  */
 # define EXTRA_SPEC_FUNCTIONS				\
   { "msp430_hwmult_lib", msp430_select_hwmult_lib },	\
   { "msp430_select_cpu", msp430_select_cpu },		\
   { "msp430_set_driver_var", msp430_set_driver_var },		\
-  { "msp430_check_path_for_devices", msp430_check_path_for_devices },
+  { "msp430_check_path_for_devices", msp430_check_path_for_devices }, \
+  { "msp430_propagate_region_opt", msp430_propagate_region_opt },
 
 /* Specify the libraries to include on the linker command line.
 
@@ -482,3 +489,5 @@ typedef struct
 
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
   msp430_output_aligned_decl_common ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
+
+#define SYMBOL_FLAG_LOW_MEM (SYMBOL_FLAG_MACH_DEP << 0)

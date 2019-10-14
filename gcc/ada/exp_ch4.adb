@@ -9577,9 +9577,9 @@ package body Exp_Ch4 is
       Typ : constant Entity_Id := Etype (Left_Opnd (N));
 
    begin
-      --  Case of elementary type with standard operator.  But if
-      --  unnesting, handle elementary types whose Equivalent_Types are
-      --  records because there may be padding or undefined fields.
+      --  Case of elementary type with standard operator. But if unnesting,
+      --  handle elementary types whose Equivalent_Types are records because
+      --  there may be padding or undefined fields.
 
       if Is_Elementary_Type (Typ)
         and then Sloc (Entity (N)) = Standard_Location

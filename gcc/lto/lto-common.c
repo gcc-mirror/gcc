@@ -1646,11 +1646,13 @@ unify_scc (class data_in *data_in, unsigned from,
       tree t = streamer_tree_cache_get_tree (cache, from + i);
       scc->entries[i] = t;
       /* Do not merge SCCs with local entities inside them.  Also do
-	 not merge TRANSLATION_UNIT_DECLs and anonymous namespace types.  */
+	 not merge TRANSLATION_UNIT_DECLs and anonymous namespaces
+	 and types therein types.  */
       if (TREE_CODE (t) == TRANSLATION_UNIT_DECL
 	  || (VAR_OR_FUNCTION_DECL_P (t)
 	      && !(TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
 	  || TREE_CODE (t) == LABEL_DECL
+	  || (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAME (t))
 	  || (TYPE_P (t)
 	      && type_with_linkage_p (TYPE_MAIN_VARIANT (t))
 	      && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t))))
@@ -2779,7 +2781,6 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* At this stage we know that majority of GGC memory is reachable.
      Growing the limits prevents unnecesary invocation of GGC.  */
   ggc_grow ();
-  ggc_collect ();
 
   /* Set the hooks so that all of the ipa passes can read in their data.  */
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
@@ -2850,7 +2851,11 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (tree_with_vars)
     ggc_free (tree_with_vars);
   tree_with_vars = NULL;
-  ggc_collect ();
+  /* During WPA we want to prevent ggc collecting by default.  Grow limits
+     until after the IPA summaries are streamed in.  Basically all IPA memory
+     is explcitly managed by ggc_free and ggc collect is not useful.
+     Exception are the merged declarations.  */
+  ggc_grow ();
 
   timevar_pop (TV_IPA_LTO_DECL_MERGE);
   /* Each pass will set the appropriate timer.  */
@@ -2863,6 +2868,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     ipa_read_optimization_summaries ();
   else
     ipa_read_summaries ();
+
+  ggc_grow ();
 
   for (i = 0; all_file_decl_data[i]; i++)
     {

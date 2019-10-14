@@ -1068,6 +1068,7 @@ extern tree builtin_type_for_size (int, bool);
 extern void c_common_mark_addressable_vec (tree);
 
 extern void set_underlying_type (tree);
+extern bool user_facing_original_type_p (const_tree);
 extern void record_types_used_by_current_var_decl (tree);
 extern vec<tree, va_gc> *make_tree_vector (void);
 extern void release_tree_vector (vec<tree, va_gc> *);
@@ -1194,6 +1195,10 @@ extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
 extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
 extern bool c_omp_predefined_variable (tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
+extern tree c_omp_check_context_selector (location_t, tree);
+extern tree c_omp_get_context_selector (tree, const char *, const char *);
+extern void c_omp_mark_declare_variant (location_t, tree, tree);
+extern int c_omp_context_selector_matches (tree);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
 static inline tree
