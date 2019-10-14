@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "substring-locations.h"
 #include "spellcheck.h"
+#include "c-spellcheck.h"
 #include "selftest.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
@@ -7710,6 +7711,52 @@ set_underlying_type (tree x)
 	TREE_USED (tt) = 1;
 
       TREE_TYPE (x) = tt;
+    }
+}
+
+/* Return true if it is worth exposing the DECL_ORIGINAL_TYPE of TYPE to
+   the user in diagnostics, false if it would be better to use TYPE itself.
+   TYPE is known to satisfy typedef_variant_p.  */
+
+bool
+user_facing_original_type_p (const_tree type)
+{
+  gcc_assert (typedef_variant_p (type));
+  tree decl = TYPE_NAME (type);
+
+  /* Look through any typedef in "user" code.  */
+  if (!DECL_IN_SYSTEM_HEADER (decl) && !DECL_IS_BUILTIN (decl))
+    return true;
+
+  /* If the original type is also named and is in the user namespace,
+     assume it too is a user-facing type.  */
+  tree orig_type = DECL_ORIGINAL_TYPE (decl);
+  if (tree orig_id = TYPE_IDENTIFIER (orig_type))
+    if (!name_reserved_for_implementation_p (IDENTIFIER_POINTER (orig_id)))
+      return true;
+
+  switch (TREE_CODE (orig_type))
+    {
+    /* Don't look through to an anonymous vector type, since the syntax
+       we use for them in diagnostics isn't real C or C++ syntax.
+       And if ORIG_TYPE is named but in the implementation namespace,
+       TYPE is likely to be more meaningful to the user.  */
+    case VECTOR_TYPE:
+      return false;
+
+    /* Don't expose anonymous tag types that are presumably meant to be
+       known by their typedef name.  Also don't expose tags that are in
+       the implementation namespace, such as:
+
+         typedef struct __foo foo;  */
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+      return false;
+
+    /* Look through to anything else.  */
+    default:
+      return true;
     }
 }
 

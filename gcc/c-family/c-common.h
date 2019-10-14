@@ -1063,6 +1063,7 @@ extern tree builtin_type_for_size (int, bool);
 extern void c_common_mark_addressable_vec (tree);
 
 extern void set_underlying_type (tree);
+extern bool user_facing_original_type_p (const_tree);
 extern void record_types_used_by_current_var_decl (tree);
 extern vec<tree, va_gc> *make_tree_vector (void);
 extern void release_tree_vector (vec<tree, va_gc> *);

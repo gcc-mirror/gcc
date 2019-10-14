@@ -1,3 +1,11 @@
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/diag-aka-5.h: New test.
+	* gcc.dg/diag-aka-5a.c: Likewise.
+	* gcc.dg/diag-aka-5b.c: Likewise.
+	* gcc.target/aarch64/diag_aka_1.c (f): Expect an aka to be printed
+	for myvec.
+
 2019-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-variant-7.c: Add tests for clauses not
