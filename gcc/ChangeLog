@@ -1,3 +1,9 @@
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92069
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): For nested
+	cycles do not set vect_nested_cycle on the latch definition.
+
 2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* function-abi.h (expr_callee_abi): Declare.
