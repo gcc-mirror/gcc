@@ -1,3 +1,13 @@
+2019-10-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c: Use unsigned ints for the picbase label
+	counters, initialise the vars explicitly.
+	(update_pic_label_number_if_needed): Move a variable declaration
+	to where it's needed.
+	(machopic_output_function_base_name): Use a more strict checking
+	assert, and and unsigned int for the picbase label counter.
+	(machopic_get_function_picbase): Likewise.
+
 2019-10-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/92046
