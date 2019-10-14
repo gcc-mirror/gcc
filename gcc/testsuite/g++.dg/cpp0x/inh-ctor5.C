@@ -6,13 +6,13 @@ struct B1 {
 struct B2 {
   B2(double) { }
 };
-struct D1 : B1 {    // { dg-error "no match" }
+struct D1 : B1 {
   using B1::B1;	    // implicitly declares D1(int)
   int x;
 };
 void test() {
   D1 d(6);	    // OK: d.x is not initialized
-  D1 e;		    // { dg-error "deleted" } D1 has no default constructor
+  D1 e;		    // { dg-error "no match" } D1 has no default constructor
 }
 struct D2 : B2 {
   using B2::B2;	    // { dg-error "B1::B1" }
