@@ -1,3 +1,9 @@
+2019-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91930 - ICE with constrained inherited default ctor.
+	* name-lookup.c (do_class_using_decl): Set TYPE_HAS_USER_CONSTRUCTOR
+	for inherited constructor.
+
 2019-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (check_tag_decl): Use DECL_SOURCE_LOCATION.
