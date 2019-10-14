@@ -1,3 +1,10 @@
+2019-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range_base::set): Normalize unsigned ~[0,0]
+	into [1,MAX].
+	* tree-vrp.h (value_range_base::nonzero_p): Adjust for unsigned
+	non-zero being represented as [1,MAX].
+
 2019-10-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	* tree-sra.c (dump_access): Add missing braces.

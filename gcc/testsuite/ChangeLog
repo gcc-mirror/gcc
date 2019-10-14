@@ -1,3 +1,8 @@
+2019-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp4.c: Adjust for unsigned non-zero being
+	[1,MAX].
+
 2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/indirect-thunk-1.c: Allow 'l' or 'L' in
