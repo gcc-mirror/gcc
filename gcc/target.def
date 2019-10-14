@@ -1745,9 +1745,10 @@ rtx, (tree var),
 NULL)
 
 DEFHOOK
-(adjust_gangprivate_decl,
-"Tweak variable declaration for a gang-private variable.",
-void, (tree var),
+(adjust_private_decl,
+"Tweak variable declaration for a private variable at the specified\n\
+parallelism level.",
+void, (tree var, int),
 NULL)
 
 DEFHOOK

@@ -36,7 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #define IFN_UNIQUE_CODES				  \
   DEF(UNSPEC),	\
     DEF(OACC_FORK), DEF(OACC_JOIN),		\
-    DEF(OACC_HEAD_MARK), DEF(OACC_TAIL_MARK)
+    DEF(OACC_HEAD_MARK), DEF(OACC_TAIL_MARK),	\
+    DEF(OACC_PRIVATE)
 
 enum ifn_unique_kind {
 #define DEF(X) IFN_UNIQUE_##X

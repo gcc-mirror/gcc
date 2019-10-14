@@ -1131,7 +1131,9 @@ oacc_loop_xform_head_tail (gcall *from, int level)
 	    = ((enum ifn_unique_kind)
 	       TREE_INT_CST_LOW (gimple_call_arg (stmt, 0)));
 
-	  if (k == IFN_UNIQUE_OACC_FORK || k == IFN_UNIQUE_OACC_JOIN)
+	  if (k == IFN_UNIQUE_OACC_FORK
+	      || k == IFN_UNIQUE_OACC_JOIN
+	      || k == IFN_UNIQUE_OACC_PRIVATE)
 	    *gimple_call_arg_ptr (stmt, 2) = replacement;
 	  else if (k == kind && stmt != from)
 	    break;
@@ -1849,6 +1851,8 @@ execute_oacc_device_lower ()
   for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
     dims[i] = oacc_get_fn_dim_size (current_function_decl, i);
 
+  hash_set<tree> adjusted_vars;
+
   /* Now lower internal loop functions to target-specific code
      sequences.  */
   basic_block bb;
@@ -1925,6 +1929,43 @@ execute_oacc_device_lower ()
 		case IFN_UNIQUE_OACC_TAIL_MARK:
 		  remove = true;
 		  break;
+
+		case IFN_UNIQUE_OACC_PRIVATE:
+		  {
+		    HOST_WIDE_INT level
+		      = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
+		    if (level == -1)
+		      break;
+		    for (unsigned i = 3;
+			 i < gimple_call_num_args (call);
+			 i++)
+		      {
+			tree arg = gimple_call_arg (call, i);
+			gcc_assert (TREE_CODE (arg) == ADDR_EXPR);
+			tree decl = TREE_OPERAND (arg, 0);
+			if (dump_file && (dump_flags & TDF_DETAILS))
+			  {
+			    static char const *const axes[] =
+			      /* Must be kept in sync with GOMP_DIM
+				 enumeration.  */
+			      { "gang", "worker", "vector" };
+			    fprintf (dump_file, "Decl UID %u has %s "
+				     "partitioning:", DECL_UID (decl),
+				     axes[level]);
+			    print_generic_decl (dump_file, decl, TDF_SLIM);
+			    fputc ('\n', dump_file);
+			  }
+			if (targetm.goacc.adjust_private_decl)
+			  {
+			    tree oldtype = TREE_TYPE (decl);
+			    targetm.goacc.adjust_private_decl (decl, level);
+			    if (TREE_TYPE (decl) != oldtype)
+			      adjusted_vars.add (decl);
+			  }
+		      }
+		    remove = true;
+		  }
+		  break;
 		}
 	      break;
 	    }
@@ -1973,22 +2014,8 @@ execute_oacc_device_lower ()
      uses (2).  At least on AMD GCN, there are atomic operations that work
      directly in the LDS address space.  */
 
-  if (targetm.goacc.adjust_gangprivate_decl)
+  if (targetm.goacc.adjust_private_decl)
     {
-      tree var;
-      unsigned i;
-      hash_set<tree> adjusted_vars;
-
-      FOR_EACH_LOCAL_DECL (cfun, i, var)
-	{
-	  if (!VAR_P (var)
-	      || !lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (var)))
-	    continue;
-
-	  targetm.goacc.adjust_gangprivate_decl (var);
-	  adjusted_vars.add (var);
-	}
-
       FOR_ALL_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	     !gsi_end_p (gsi);

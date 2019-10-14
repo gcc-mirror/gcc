@@ -44,6 +44,7 @@
 #include "cgraph.h"
 #include "targhooks.h"
 #include "langhooks-def.h"
+#include "diagnostic-core.h"
 
 /* }}}  */
 /* {{{ OMP GCN pass.
@@ -697,8 +698,11 @@ gcn_goacc_create_propagation_record (tree record_type, bool sender,
 }
 
 void
-gcn_goacc_adjust_gangprivate_decl (tree var)
+gcn_goacc_adjust_private_decl (tree var, int level)
 {
+  if (level != GOMP_DIM_GANG)
+    return;
+
   tree type = TREE_TYPE (var);
   tree lds_type = build_qualified_type (type,
 		    TYPE_QUALS_NO_ADDR_SPACE (type)

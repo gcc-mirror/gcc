@@ -2624,6 +2624,8 @@ expand_UNIQUE (internal_fn, gcall *stmt)
       else
 	gcc_unreachable ();
       break;
+    case IFN_UNIQUE_OACC_PRIVATE:
+      break;
     }
 
   if (pattern)
