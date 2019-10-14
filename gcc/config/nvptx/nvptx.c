@@ -81,6 +81,7 @@
 #include "opts.h"
 #include "tree-hash-traits.h"
 #include "omp-sese.h"
+#include "tree-pretty-print.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -6171,6 +6172,28 @@ nvptx_truly_noop_truncation (poly_uint64, poly_uint64)
   return false;
 }
 
+/* Implement TARGET_GOACC_ADJUST_PRIVATE_DECL.  Set "oacc gangprivate"
+   attribute for gang-private variable declarations.  */
+
+void
+nvptx_goacc_adjust_private_decl (tree decl, int level)
+{
+  if (level != GOMP_DIM_GANG)
+    return;
+
+  if (!lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (decl)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Setting 'oacc gangprivate' attribute for decl:");
+	  print_generic_decl (dump_file, decl, TDF_SLIM);
+	  fputc ('\n', dump_file);
+	}
+      tree id = get_identifier ("oacc gangprivate");
+      DECL_ATTRIBUTES (decl) = tree_cons (id, NULL, DECL_ATTRIBUTES (decl));
+    }
+}
+
 /* Implement TARGET_GOACC_EXPAND_ACCEL_VAR.  Place "oacc gangprivate"
    variables in shared memory.  */
 
@@ -6597,6 +6620,9 @@ nvptx_expand_to_rtl_hook (void)
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_GOACC_ADJUST_PRIVATE_DECL
+#define TARGET_GOACC_ADJUST_PRIVATE_DECL nvptx_goacc_adjust_private_decl
 
 #undef TARGET_GOACC_EXPAND_ACCEL_VAR
 #define TARGET_GOACC_EXPAND_ACCEL_VAR nvptx_goacc_expand_accel_var

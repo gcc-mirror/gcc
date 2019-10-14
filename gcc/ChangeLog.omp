@@ -1,3 +1,55 @@
+2019-10-16  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (gcn_goacc_adjust_gangprivate_decl): Rename
+	to...
+	(gcn_goacc_adjust_private_decl): ...this.
+	* config/gcn/gcn-tree.c (diagnostic-core.h): Include.
+	(gcn_goacc_adjust_gangprivate_decl): Rename to...
+	(gcn_goacc_adjust_private_decl): ...this. Add LEVEL parameter.
+	* config/gcn/gcn.c (TARGET_GOACC_ADJUST_GANGPRIVATE_DECL): Rename to...
+	(TARGET_GOACC_ADJUST_PRIVATE_DECL): ...this.
+	* config/nvptx/nvptx.c (tree-pretty-print.h): Include.
+	(nvptx_goacc_adjust_private_decl): New function.
+	(TARGET_GOACC_ADJUST_PRIVATE_DECL): Define hook using above function.
+	* doc/tm.texi.in (TARGET_GOACC_ADJUST_GANGPRIVATE_DECL): Rename to...
+	(TARGET_GOACC_ADJUST_PRIVATE_DECL): ...this.
+	* doc/tm.texi: Regenerated.
+	* internal-fn.c (expand_UNIQUE): Handle IFN_UNIQUE_OACC_PRIVATE.
+	* internal-fn.h (IFN_UNIQUE_CODES): Add OACC_PRIVATE.
+	* omp-low.c (omp_context): Remove oacc_partitioning_levels field.
+	(lower_oacc_reductions): Add PRIVATE_MARKER parameter.  Insert before
+	fork.
+	(lower_oacc_head_tail): Add PRIVATE_MARKER parameter. Modify its
+	gimple call arguments as appropriate. Don't set
+	oacc_partitioning_levels in omp_context. Pass private_marker to
+	lower_oacc_reductions.
+	(oacc_record_private_var_clauses): Don't check for NULL ctx.
+	(mark_oacc_gangprivate): Remove unused function.
+	(make_oacc_private_marker): New function.
+	(lower_omp_for): Only call oacc_record_vars_in_bind for
+	OpenACC contexts.  Create private marker and pass to
+	lower_oacc_head_tail.
+	(lower_omp_target): Remove unnecessary call to
+	oacc_record_private_var_clauses. Remove call to mark_oacc_gangprivate.
+	Create private marker and pass to lower_oacc_reductions.
+	(process_oacc_gangprivate_1): Remove.
+	(lower_omp_1): Only call oacc_record_vars_in_bind for OpenACC.  Don't
+	iterate over contexts calling process_oacc_gangprivate_1.
+	(omp-offload.c (oacc_loop_xform_head_tail): Treat
+	private-variable markers like fork/join when transforming head/tail
+	sequences.
+	(execute_oacc_device_lower): Use IFN_UNIQUE_OACC_PRIVATE instead of
+	"oacc gangprivate" attributes to determine partitioning level of
+	variables.  Remove unused variables.
+	* omp-sese.c (find_gangprivate_vars): New function.
+	(find_local_vars_to_propagate): Use GANGPRIVATE_VARS parameter instead
+	of "oacc gangprivate" attribute to determine which variables are
+	gang-private.
+	(oacc_do_neutering): Use find_gangprivate_vars.
+	* target.def (adjust_gangprivate_decl): Rename to...
+	(adjust_private_decl): ...this.  Update documentation (briefly).
+
 2019-09-20  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (localize_reductions): Rewrite references for

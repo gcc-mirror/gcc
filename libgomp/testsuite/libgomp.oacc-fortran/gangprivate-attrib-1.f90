@@ -1,8 +1,8 @@
 ! Test for "oacc gangprivate" attribute on gang-private variables
 
 ! { dg-do run }
-! { dg-additional-options "-fdump-tree-omplower-details" }
-! { dg-final { scan-tree-dump-times "Setting 'oacc gangprivate' attribute for decl:  integer\\(kind=4\\) w;" 1 "omplower" } } */
+! { dg-additional-options "-fdump-tree-oaccdevlow-details" }
+! { dg-final { scan-tree-dump-times "Decl UID \[0-9\]+ has gang partitioning:  integer\\(kind=4\\) w;" 1 "oaccdevlow" } } */
 
 program main
   integer :: w, arr(0:31)
