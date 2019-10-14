@@ -1,5 +1,9 @@
 2019-10-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92084
+	* semantics.c (handle_omp_array_sections_1): Temporarily disable
+	-fstrong-eval-order also for in_reduction and task_reduction clauses.
+
 	* parser.c (cp_parser_omp_all_clauses): Change bool NESTED_P argument
 	into int NESTED, if it is 2, diagnose missing commas in between
 	clauses.
