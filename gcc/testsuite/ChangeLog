@@ -1,3 +1,10 @@
+2019-10-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backport from trunk.
+	2019-09-26  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pure-builtin-redundant-load.c:  New.
+
 2019-10-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/92022
