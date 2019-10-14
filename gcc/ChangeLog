@@ -1,3 +1,7 @@
+2019-10-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	* tree-sra.c (dump_access): Add missing braces.
+
 2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_indirection_name): Rework the
