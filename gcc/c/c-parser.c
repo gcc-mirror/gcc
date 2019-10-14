@@ -15215,13 +15215,14 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 /* Parse all OpenMP clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.
    FINISH_P set if c_finish_omp_clauses should be called.
-   NESTED_P set if clauses should be terminated by closing paren instead
-   of end of pragma.  */
+   NESTED non-zero if clauses should be terminated by closing paren instead
+   of end of pragma.  If it is 2, additionally commas are required in between
+   the clauses.  */
 
 static tree
 c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 			  const char *where, bool finish_p = true,
-			  bool nested_p = false)
+			  int nested = 0)
 {
   tree clauses = NULL;
   bool first = true;
@@ -15233,11 +15234,18 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
       const char *c_name;
       tree prev = clauses;
 
-      if (nested_p && c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+      if (nested && c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	break;
 
-      if (!first && c_parser_next_token_is (parser, CPP_COMMA))
-	c_parser_consume_token (parser);
+      if (!first)
+	{
+	  if (c_parser_next_token_is (parser, CPP_COMMA))
+	    c_parser_consume_token (parser);
+	  else if (nested == 2)
+	    error_at (c_parser_peek_token (parser)->location,
+		      "clauses in %<simd%> trait should be separated "
+		      "by %<,%>");
+	}
 
       here = c_parser_peek_token (parser)->location;
       c_kind = c_parser_omp_clause_name (parser);
@@ -15520,7 +15528,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
     }
 
  saw_error:
-  if (!nested_p)
+  if (!nested)
     c_parser_skip_to_pragma_eol (parser);
 
   if (finish_p)
@@ -19279,7 +19287,7 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 	      tree c;
 	      c = c_parser_omp_all_clauses (parser,
 					    OMP_DECLARE_SIMD_CLAUSE_MASK,
-					    "simd", true, true);
+					    "simd", true, 2);
 	      c = c_omp_declare_simd_clauses_to_numbers (parms
 							 == error_mark_node
 							 ? NULL_TREE : parms,
