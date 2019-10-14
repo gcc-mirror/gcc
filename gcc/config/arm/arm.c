@@ -3555,11 +3555,6 @@ arm_option_override (void)
 			   global_options.x_param_values,
 			   global_options_set.x_param_values);
 
-  /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
   int param_sched_autopref_queue_depth;
