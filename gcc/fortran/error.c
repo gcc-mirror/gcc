@@ -1,4 +1,3 @@
-#pragma GCC optimize("O0")
 /* Handle errors.
    Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen

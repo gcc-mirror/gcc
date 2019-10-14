@@ -1,5 +1,9 @@
 2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
 
+	* error.c: Remove debug pragma added in previous commit.
+
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR fortran/92072
 	* error.c (error_print, gfc_format_decoder): Fix %C column-
 	offset handling.
