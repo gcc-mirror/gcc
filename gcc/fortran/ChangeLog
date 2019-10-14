@@ -1,3 +1,19 @@
+2019-10-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92004
+	* array.c (expand_constructor): Set from_constructor on
+	expression.
+	* gfortran.h (gfc_symbol): Add maybe_array.
+	(gfc_expr): Add from_constructor.
+	* interface.c (maybe_dummy_array_arg): New function.
+	(compare_parameter): If the formal argument is generated from a
+	call, check the conditions where an array element could be
+	passed to an array.  Adjust error message for assumed-shape
+	or pointer array.  Use correct language for assumed shaped arrays.
+	(gfc_get_formal_from_actual_arglist): Set maybe_array on the
+	symbol if the actual argument is an array element fulfilling
+	the conditions of 15.5.2.4.
+
 2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* error.c: Remove debug pragma added in previous commit.

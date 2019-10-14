@@ -1782,6 +1782,7 @@ expand_constructor (gfc_constructor_base base)
 	  gfc_free_expr (e);
 	  return false;
 	}
+      e->from_constructor = 1;
       current_expand.offset = &c->offset;
       current_expand.repeat = &c->repeat;
       current_expand.component = c->n.component;
