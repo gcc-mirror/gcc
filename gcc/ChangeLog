@@ -1,3 +1,8 @@
+2019-10-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (arm_option_override): Don't override sched
+	pressure algorithm.
+
 2019-10-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92069
