@@ -1,3 +1,15 @@
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* dse.c (scan_insn): Use param max_active_local_stores.
+	(dse_step1): Get PARAM_MAX_DSE_ACTIVE_LOCAL_STORES and adjust
+	based on optimization level.
+	* loop-invariant.c (move_loop_invariants): Adjust
+	LOOP_INVARIANT_MAX_BBS_IN_LOOP based on optimization level.
+	* opts.c (default_options_optimization): Do not adjust
+	PARAM_MAX_DSE_ACTIVE_LOCAL_STORES and
+	LOOP_INVARIANT_MAX_BBS_IN_LOOP here.
+
 2019-10-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.c (arm_legitimize_address): Remove Thumb-2 bailout.
