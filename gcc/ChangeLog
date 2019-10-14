@@ -1,3 +1,11 @@
+2019-10-15  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/arm/vfp.md (fma<SDF:mode>4): Enable DF only when
+	TARGET_VFP_DOUBLE.
+	(*fmsub<SDF:mode>4): Likewise.
+	*fnmsub<SDF:mode>4): Likewise.
+	(*fnmadd<SDF:mode>4): Likewise.
+
 2019-10-14 Joel Hutton  <Joel.Hutton@arm.com>
 
 	* doc/tree-ssa.texi: Update renamed macro name.
