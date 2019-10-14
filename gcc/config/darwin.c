@@ -375,20 +375,22 @@ machopic_gen_offset (rtx orig)
     }
 }
 
-static GTY(()) const char * function_base_func_name;
-static GTY(()) int current_pic_label_num;
-static GTY(()) int emitted_pic_label_num;
+static GTY(()) const char * function_base_func_name = NULL;
+static GTY(()) unsigned current_pic_label_num = 0;
+static GTY(()) unsigned emitted_pic_label_num = 0;
 
+/* We need to keep one picbase label per function, but (when we emit code
+   to reload the picbase for setjump receiver) we might need to check for
+   a second use.  So, only update the picbase label counter when we see a
+   new function.  When there's no function decl, we assume that the call is
+   from the x86 stub generation code.  */
 static void
 update_pic_label_number_if_needed (void)
 {
-  const char *current_name;
-
-  /* When we are generating _get_pc thunks within stubs, there is no current
-     function.  */
   if (current_function_decl)
     {
-      current_name =
+
+      const char *current_name =
 	IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
       if (function_base_func_name != current_name)
 	{
@@ -406,11 +408,11 @@ update_pic_label_number_if_needed (void)
 void
 machopic_output_function_base_name (FILE *file)
 {
-  /* If dynamic-no-pic is on, we should not get here.  */
-  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
+  /* We should only get here for -fPIC.  */
+  gcc_checking_assert (MACHOPIC_PURE);
 
   update_pic_label_number_if_needed ();
-  fprintf (file, "L%d$pb", current_pic_label_num);
+  fprintf (file, "L%u$pb", current_pic_label_num);
 }
 
 char curr_picbasename[32];
@@ -418,11 +420,11 @@ char curr_picbasename[32];
 const char *
 machopic_get_function_picbase (void)
 {
-  /* If dynamic-no-pic is on, we should not get here.  */
-  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
+  /* We should only get here for -fPIC.  */
+  gcc_checking_assert (MACHOPIC_PURE);
 
   update_pic_label_number_if_needed ();
-  snprintf (curr_picbasename, 32, "L%d$pb", current_pic_label_num);
+  snprintf (curr_picbasename, 32, "L%u$pb", current_pic_label_num);
   return (const char *) curr_picbasename;
 }
 
