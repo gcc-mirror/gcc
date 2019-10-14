@@ -19,7 +19,7 @@ char testD[sizeof(C::D) == sizeof(A) ? 1 : -1];
 
 /* GNU extension.  */
 struct E {
-  struct { char z; };		/* { dg-error "prohibits anonymous structs" } */
+  struct { char z; };		/* { dg-error "10:ISO C\\+\\+ prohibits anonymous structs" } */
   char e;
 };
 
@@ -45,6 +45,6 @@ char testH[sizeof(H) == 2 * sizeof(A) ? 1 : -1];
 
 /* Make sure __extension__ gets turned back off.  */
 struct I {
-  struct { char z; };		/* { dg-error "prohibits anonymous structs" } */
+  struct { char z; };		/* { dg-error "10:ISO C\\+\\+ prohibits anonymous structs" } */
   char i;
 };

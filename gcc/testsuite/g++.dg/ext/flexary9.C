@@ -282,64 +282,64 @@ struct S_S_S_x {
 
 struct Anon1 {
   int n;
-  struct {                  // { dg-warning "invalid use \[^\n\r\]* with a zero-size array" }
+  struct {                  // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct|invalid use \[^\n\r\]* with a zero-size array" }
     int good[0];            // { dg-warning "forbids zero-size array" }
-  };                        // { dg-warning "anonymous struct" }
+  };
 };
 
 ASSERT_AT_END (Anon1, good);
 
 struct Anon2 {
-  struct {                  // { dg-warning "invalid use" }
+  struct {                  // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct|invalid use" }
     int n;
-    struct {
+    struct {                // { dg-warning "12:ISO C\\+\\+ prohibits anonymous struct" }
       int good[0];          // { dg-warning "zero-size array" }
-    };                      // { dg-warning "anonymous struct" }
-  };                        // { dg-warning "anonymous struct" }
+    };
+  };
 };
 
 ASSERT_AT_END (Anon2, good);
 
 struct Anon3 {
-  struct {                  // { dg-warning "invalid use" }
-    struct {
+  struct {                  // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct|invalid use" }
+    struct {                // { dg-warning "12:ISO C\\+\\+ prohibits anonymous struct" }
       int n;
       int good[0];          // { dg-warning "zero-size array" }
-    };                      // { dg-warning "anonymous struct" }
-  };                        // { dg-warning "anonymous struct" }
+    };
+  };
 };
 
 ASSERT_AT_END (Anon3, good);
 
 struct Anon4 {
-  struct {
+  struct {                  // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
     int in_empty_struct[0]; // { dg-warning "zero-size array|in an otherwise empty" }
-  };                        // { dg-warning "anonymous struct" }
+  };
 };
 
 struct Anon5 {
-  struct {
+  struct {                  // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
     int not_at_end[0];      // { dg-warning "zero-size array|not at end" }
-  };                        // { dg-warning "anonymous struct" }
+  };
   int n;
 };
 
 struct Anon6 {
-  struct {
-    struct {
+  struct {                  // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
+    struct {                // { dg-warning "12:ISO C\\+\\+ prohibits anonymous struct" }
       int not_at_end[0];    // { dg-warning "zero-size array|not at end" }
-    };                      // { dg-warning "anonymous struct" }
+    };
     int n;
-  };                        // { dg-warning "anonymous struct" }
+  };
 };
 
 
 struct Anon7 {
-  struct {
-    struct {
+  struct {                  // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
+    struct {                // { dg-warning "12:ISO C\\+\\+ prohibits anonymous struct" }
       int not_at_end[0];    // { dg-warning "zero-size array|not at end" }
-    };                      // { dg-warning "anonymous struct" }
-  };                        // { dg-warning "anonymous struct" }
+    };
+  };
   int n;
 };
 

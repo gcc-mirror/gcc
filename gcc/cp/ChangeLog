@@ -1,3 +1,7 @@
+2019-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_tag_decl): Use DECL_SOURCE_LOCATION.
+
 2019-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92084
