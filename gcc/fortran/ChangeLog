@@ -1,3 +1,9 @@
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92072
+	* error.c (error_print, gfc_format_decoder): Fix %C column-
+	offset handling.
+
 2019-10-13  Damian Rouson  <damain@sourceryinstitue.org>
 
 	PR fortran/91513
@@ -110,7 +116,8 @@
 
 2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
-	* error (error_print, gfc_format_decoder): Fix off-by one issue with %C.
+	* error.c (error_print, gfc_format_decoder): Fix off-by one issue
+	with %C.
 
 2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
