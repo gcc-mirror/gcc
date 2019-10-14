@@ -27,7 +27,11 @@ int f10 (float x, float y, float *q);
 int f11 (float x, float y, float *z);
 #pragma omp declare variant (f3) match (construct={simd(simdlen(4),inbranch,linear(y:1))})
 int f12 (int x, int y);
-#pragma omp declare variant (f3) match (construct={simd(inbranch,simdlen(5-1),linear(q:4-3))})
+#pragma omp declare variant (f3) match (construct={simd(inbranch, simdlen (5-1), linear (q:4-3))})
 int f13 (int x, int q);
 #pragma omp declare variant (f3) match (construct={simd(inbranch,simdlen(4),linear(q:2))})		/* { dg-error "'f3' used as a variant with incompatible 'constructor' selector sets" "" { target c } } */
 int f14 (int x, int q);
+#pragma omp declare variant (f3) match (construct={simd(inbranch simdlen (4) linear (q:1))})		/* { dg-error "clauses in 'simd' trait should be separated by ','" } */
+int f15 (int x, int q);
+#pragma omp declare variant (f3) match (construct={simd(inbranch, simdlen (5-1) linear (q:4-3))})	/* { dg-error "clauses in 'simd' trait should be separated by ','" } */
+int f16 (int x, int q);

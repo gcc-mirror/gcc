@@ -1,3 +1,11 @@
+2019-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_all_clauses): Change bool NESTED_P argument
+	into int NESTED, if it is 2, diagnose missing commas in between
+	clauses.
+	(cp_parser_omp_context_selector): Pass 2 as last argument to
+	cp_parser_omp_all_clauses.
+
 2019-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_context_selector): Improve error recovery.
