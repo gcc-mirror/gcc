@@ -1,3 +1,9 @@
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.h (user_facing_original_type_p): Declare.
+	* c-common.c: Include c-spellcheck.h.
+	(user_facing_original_type_p): New function.
+
 2019-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_omp_mark_declare_variant,

@@ -1,3 +1,11 @@
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-objc-common.c (useful_aka_type_p): Replace with...
+	(get_aka_type): ...this new function.  Given the original type,
+	decide which aka type to print (if any).  Only look through typedefs
+	if user_facing_original_type_p.
+	(print_type): Update accordingly.
+
 2019-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_all_clauses): Change bool NESTED_P argument
