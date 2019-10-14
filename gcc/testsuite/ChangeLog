@@ -1,3 +1,7 @@
+2019-10-14  Maya Rashish  <coypu@sdf.org>
+
+	* gcc.c-torture/compile/pr85401: New test.
+
 2019-10-14  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
 	* gcc.target/mips/constant-spill.c: New test.
