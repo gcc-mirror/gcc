@@ -3049,8 +3049,14 @@ darwin_file_end (void)
 bool
 darwin_binds_local_p (const_tree decl)
 {
-  return default_binds_local_p_1 (decl,
-				  TARGET_KEXTABI && DARWIN_VTABLE_P (decl));
+  /* We use the "shlib" input to indicate that a symbol should be
+     considered overridable; only relevant for vtables in kernel modules
+     on earlier system versions, and with a TODO to complete.  */
+  bool force_overridable = TARGET_KEXTABI && DARWIN_VTABLE_P (decl);
+  return default_binds_local_p_3 (decl, force_overridable /* shlib */,
+				  false /* weak dominate */,
+				  false /* extern_protected_data */,
+				  false /* common_local_p */);
 }
 
 /* The Darwin's implementation of TARGET_ASM_OUTPUT_ANCHOR.  Define the
