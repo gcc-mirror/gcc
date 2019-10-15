@@ -1,3 +1,15 @@
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91929
+	* tree-ssa-pre.c (pre_expr_d::loc): New member.
+	(get_or_alloc_expr_for_name): Initialize it.
+	(get_or_alloc_expr_for_constant): Likewise.
+	(phi_translate_1): Copy it.
+	(create_expression_by_pieces): Use the original location
+	of the expression for the inserted stmt.
+	(compute_avail): Record the location of the stmt for the
+	expressions created.
+
 2019-10-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-ssa-strlen.c (count_nonzero_bytes): Check tree_fits_uhwi_p
