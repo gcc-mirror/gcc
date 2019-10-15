@@ -227,13 +227,10 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      value_range_base vr_new;
 	      const value_range *name_range;
 	      // Calculate the same range with GORI.
-	      if (getenv("GORIME"))
-		{
-		  name = asserts[i].name;
-		  name_range = get_value_range (name);
-		  vr_values->outgoing_edge_range_p (vr_new, pred_e, name,
-						    name_range);
-		}
+	      name = asserts[i].name;
+	      name_range = get_value_range (name);
+	      vr_values->outgoing_edge_range_p (vr_new, pred_e, name,
+						name_range);
 
 	      value_range *vr = try_find_new_range (asserts[i].name,
 						    asserts[i].expr,
