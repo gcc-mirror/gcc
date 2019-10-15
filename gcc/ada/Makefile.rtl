@@ -2733,8 +2733,8 @@ s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 # use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
 
 a-except.o  : a-except.adb a-except.ads
-	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
-	  $(NO_INLINE_ADAFLAGS) $(NO_REORDER_ADAFLAGS) -O1 $(ADA_INCLUDES) \
+	$(ADAC) -c $(ALL_ADAFLAGS) -O1 $(FORCE_DEBUG_ADAFLAGS) \
+	  $(NO_INLINE_ADAFLAGS) $(NO_REORDER_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
 # Compile s-excdeb.o without optimization and with debug info to let the
