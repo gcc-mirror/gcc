@@ -1,3 +1,25 @@
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/constraints.md: Allow post_inc operand for "Ya"
+	constraint.
+	* config/msp430/msp430.c (msp430_legitimate_address_p): Handle
+	POST_INC.
+	(msp430_subreg): Likewise.
+	(msp430_split_addsi): Likewise.
+	(msp430_print_operand_addr): Likewise.
+	* config/msp430/msp430.h (HAVE_POST_INCREMENT): Define.
+	(USE_STORE_POST_INCREMENT): Define.
+	* config/msp430/msp430.md: Use the msp430_general_dst_operand or
+	msp430_general_dst_nonv_operand predicates for the lvalues of insns.
+	* config/msp430/predicates.md (msp430_nonpostinc_operand): New.
+	(msp430_general_dst_operand): New.
+	(msp430_general_dst_nonv_operand): New.
+	(msp430_nonsubreg_operand): Remove.
+	(msp430_nonsubreg_dst_operand): New.
+	(msp430_nonsubreg_or_imm_operand): Allow reg or mem operands in place
+	of defunct msp430_nonsubreg_operand.
+	(msp430_nonsubregnonpostinc_or_imm_operand): New.
+
 2019-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91929
