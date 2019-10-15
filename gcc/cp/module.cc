@@ -3006,7 +3006,8 @@ private:
 
 public:
   merge_kind get_merge_kind (depset *);
-  void key_mergeable (merge_kind, depset *, tree decl);
+  tree get_container (tree decl);
+  void key_mergeable (merge_kind, depset *, tree decl, tree container);
 
 public:
   bool is_for_mergeable () const
@@ -6902,9 +6903,15 @@ trees_out::decl_value (tree decl, depset *dep)
       gcc_assert (!type || !DECL_ORIGINAL_TYPE (inner));
     }
 
+  tree container = get_container (decl);
+
+  /* Stream the container, we want it correctly canonicalized before
+     we start emitting keys for this decl.  */
+  tree_node (container);
+
   /* Now write out the merging information, and then really
      install the tag values.  */
-  key_mergeable (mk, dep, decl);
+  key_mergeable (mk, dep, decl, container);
 
   if (streaming_p ())
     dump (dumper::MERGE)
@@ -6912,11 +6919,13 @@ trees_out::decl_value (tree decl, depset *dep)
 	       merge_kind_name[mk], TREE_CODE (decl), decl);
 
   if (TREE_CODE (inner) == FUNCTION_DECL)
+    // FIXME: Stream in the type here as that's where the default args are
     fn_parms_fini (inner);
 
   if (inner_tag != 0)
     {
       /* Template pieces.  */
+      // FIXME:Only need the default values here
       tree_node (DECL_TEMPLATE_PARMS (decl));
       /* DECL_TEMPLATE_RESULT is inner, so no need to stream that.  */
       tree_node_vals (decl);
@@ -7063,10 +7072,12 @@ trees_in::decl_value ()
   if (true)
     {
       /* Figure out if this decl is already known about.  */
-      tree container, key;
+      tree key;
       tree fn_args = NULL_TREE;
       tree r_type = NULL_TREE;
       int parm_tag = 0;
+
+      tree container = tree_node ();
 
       if (!key_mergeable (mk, res, inner, type,
 			  &container, &key, &fn_args, &r_type,
@@ -9576,35 +9587,14 @@ trees_out::get_merge_kind (depset *dep)
   return mk;
 }
 
-
-/* Write out key information about a mergeable DEP.  Does not write
-   the contents of DEP itself.  */
-// FIXME: constraints probably need streaming too?
-
-void
-trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
+tree
+trees_out::get_container (tree decl)
 {
-  if (dep && dep_hash->for_mergeable && !streaming_p ())
-    {
-      /* When /determining/ mergeable ordering, there's an indirection.  */
-      gcc_assert (dep->is_special ());
-      dep = dep->deps[0];
-    }
-
-  if (streaming_p ())
-    dump (dumper::MERGE)
-      && dump ("Writing %s key for mergeable %s %C:%N", merge_kind_name[mk],
-	       dep ? dep->entity_kind_name () : "unique",
-	       TREE_CODE (decl), decl);
-
-  tree inner = decl;
   tree container = NULL_TREE;
+
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    {
-      inner = DECL_TEMPLATE_RESULT (decl);
-      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-	container = DECL_CHAIN (decl);
-    }
+    if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+      container = DECL_CHAIN (decl);
   if (!container)
     container = CP_DECL_CONTEXT (decl);
   if (TYPE_P (container))
@@ -9631,16 +9621,36 @@ trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
       else if (!use_tpl)
 	container = TI_TEMPLATE (template_info);
     }
+  return container;
+}
 
-  /* Stream the container, even though it's only used to locate named
-     decls -- other decls will still refer to it, and we want it
-     correctly canonicalized before we start emitting keys for this
-     decl.  */
-  tree_node (container);
+/* Write out key information about a mergeable DEP.  Does not write
+   the contents of DEP itself.  */
+// FIXME: constraints probably need streaming too?
 
-  if (decl != inner)
-    /* A template needs its template parms for identification.  */
-    tpl_header (decl, container);
+void
+trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl, tree container)
+{
+  if (dep && dep_hash->for_mergeable && !streaming_p ())
+    {
+      /* When /determining/ mergeable ordering, there's an indirection.  */
+      gcc_assert (dep->is_special ());
+      dep = dep->deps[0];
+    }
+
+  if (streaming_p ())
+    dump (dumper::MERGE)
+      && dump ("Writing %s key for mergeable %s %C:%N", merge_kind_name[mk],
+	       dep ? dep->entity_kind_name () : "unique",
+	       TREE_CODE (decl), decl);
+
+  tree inner = decl;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      /* A template needs its template parms for identification.  */
+      inner = DECL_TEMPLATE_RESULT (decl);
+      tpl_header (decl, container);
+    }
 
   if (TREE_CODE (inner) == FUNCTION_DECL)
     fn_parms_init (inner);
@@ -9745,14 +9755,12 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
 			 tree *container, tree *key, tree *fn_args, tree *r_type,
 			 int *parm_tag)
 {
-  *container = *key = NULL_TREE;
+  *key = NULL_TREE;
   *fn_args = *r_type = NULL_TREE;
-
-  tree ctx = tree_node ();
 
   if (decl != inner)
     /* A template needs its template parms for identification.  */
-    if (!tpl_header (decl, ctx))
+    if (!tpl_header (decl, *container))
       return false;
 
   if (TREE_CODE (inner) == FUNCTION_DECL)
@@ -9766,7 +9774,7 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
     }
   else
     {
-      *container = STRIP_TEMPLATE (ctx); // FIXME: will want template
+      *container = STRIP_TEMPLATE (*container);
       *key = tree_node ();
 
       if (TREE_CODE (inner) == FUNCTION_DECL)
@@ -11445,7 +11453,9 @@ depset::hash::find_dependencies ()
 	      if (is_for_mergeable ())
 		{
 		  merge_kind mk = walker.get_merge_kind (current);
-		  walker.key_mergeable (mk, current, decl);
+		  tree container = walker.get_container (decl);
+		  walker.tree_node (container);
+		  walker.key_mergeable (mk, current, decl, container);
 
 		  if (mk & MK_template_mask)
 		    /* We also want to make specializations of members

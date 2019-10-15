@@ -1,5 +1,14 @@
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::get_container): New, broken out of ...
+	(trees_out::key_mergeable): ... here.  Add container parm.
+	(trees_in::key_mergeable): Container is already set.
+	(trees_{in,out}::decl_value): Stream container here.
+	(dpset::hash::find_dependencies): Adjust mergeable walk.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-1_a.C: Adjust scan.
+
 	Merge trunk r277002.
 
 	Revert TYPE_LAMBDA_P, it's unnecessary churn.
