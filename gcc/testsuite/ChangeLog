@@ -1,3 +1,8 @@
+2019-10-15  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/20191015-1.c: New test.
+	* gcc.c-torture/compile/20191015-2.c: New test.
+
 2019-10-15  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/92016
