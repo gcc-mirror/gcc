@@ -1,3 +1,23 @@
+2019-10-15  Hongyu Wang  <hongtao.wang@intel.com>
+
+	PR target/92035
+	* config/i386/avx512fintrin.h (_mm_mask_roundscale_ss,
+	_mm_maskz_roundscale_ss, _mm_maskz_roundscale_round_ss,
+	_mm_maskz_roundscale_round_ss, _mm_mask_roundscale_sd,
+	_mm_maskz_roundscale_sd, _mm_mask_roundscale_round_sd,
+	_mm_maskz_roundscale_round_sd): New intrinsics.
+	(_mm_roundscale_ss, _mm_roundscale_round_ss): Use
+	__builtin_ia32_rndscales?_mask_round builtins instead of
+	__builtin_ia32_rndscales?_round.
+	* config/i386/i386-builtin.def (__builtin_ia32_rndscaless_round,
+	__builtin_ia32_rndscalesd_round): Remove.
+	(__builtin_ia32_rndscaless_mask_round,
+	__builtin_ia32_rndscalesd_mask_round): New intrinsics.
+	* config/i386/sse.md
+	(avx512f_rndscale<mode><round_saeonly_name>): Renamed to ...
+	(avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	 ... this, adjust and add subst atrributes to make it maskable.
+
 2019-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/92046
