@@ -478,6 +478,18 @@ typedef struct
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 
+#define HAVE_POST_INCREMENT 1
+
+/* This (unsurprisingly) improves code size in the vast majority of cases, we
+   want to prevent any instructions using a "store post increment" from being
+   generated.  These will have to later be reloaded since msp430 does not
+   support post inc for the destination operand.  */
+#define USE_STORE_POST_INCREMENT(MODE)  0
+
+/* Many other targets set USE_LOAD_POST_INCREMENT to 0.  For msp430-elf
+   the benefit of disabling it is not clear.  When looking at code size, on
+   average, there is a slight advantage to leaving it enabled.  */
+
 #undef  ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
   msp430_start_function ((FILE), (NAME), (DECL))
