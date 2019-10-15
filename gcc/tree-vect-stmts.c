@@ -10906,13 +10906,16 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       && STMT_VINFO_REDUC_TYPE (reduc_info) != EXTRACT_LAST_REDUCTION)
     {
       gphi *phi;
+      edge e;
       if (!slp_node
 	  && (phi = dyn_cast <gphi *>
 		      (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt))
 	  && dominated_by_p (CDI_DOMINATORS,
-			     gimple_bb (orig_stmt_info->stmt), gimple_bb (phi)))
+			     gimple_bb (orig_stmt_info->stmt), gimple_bb (phi))
+	  && (e = loop_latch_edge (gimple_bb (phi)->loop_father))
+	  && (PHI_ARG_DEF_FROM_EDGE (phi, e)
+	      == gimple_get_lhs (orig_stmt_info->stmt)))
 	{
-	  edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
 	  stmt_vec_info phi_info
 	    = STMT_VINFO_VEC_STMT (STMT_VINFO_REDUC_DEF (orig_stmt_info));
 	  stmt_vec_info vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
@@ -10932,7 +10935,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  slp_tree phi_node = slp_node_instance->reduc_phis;
 	  gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
-	  edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
+	  e = loop_latch_edge (gimple_bb (phi)->loop_father);
 	  gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
 		      == SLP_TREE_VEC_STMTS (slp_node).length ());
 	  for (unsigned i = 0; i < SLP_TREE_VEC_STMTS (phi_node).length (); ++i)

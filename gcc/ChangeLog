@@ -1,3 +1,11 @@
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92094
+	* tree-vect-loop.c (vectorizable_reduction): For nested cycles
+	do not adjust the reduction definition def type.
+	* tree-vect-stmts.c (vect_transform_stmt): Verify the scalar stmt
+	defines the latch argument of the PHI.
+
 2019-10-15  Hongyu Wang  <hongtao.wang@intel.com>
 
 	PR target/92035
