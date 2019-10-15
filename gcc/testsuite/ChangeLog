@@ -1,3 +1,7 @@
+2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/load-thread-pointer-once.c: New test.
+
 2019-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92094
