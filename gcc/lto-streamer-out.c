@@ -120,6 +120,17 @@ output_type_ref (struct output_block *ob, tree node)
   lto_output_type_ref_index (ob->decl_state, ob->main_stream, node);
 }
 
+/* Wrapper around variably_modified_type_p avoiding type modification
+   during WPA streaming.  */
+
+static bool
+lto_variably_modified_type_p (tree type)
+{
+  return (in_lto_p
+	  ? TYPE_LANG_FLAG_0 (TYPE_MAIN_VARIANT (type))
+	  : variably_modified_type_p (type, NULL_TREE));
+}
+
 
 /* Return true if tree node T is written to various tables.  For these
    nodes, we sometimes want to write their phyiscal representation
@@ -134,7 +145,7 @@ tree_is_indexable (tree t)
      definition.  */
   if ((TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
       && DECL_CONTEXT (t))
-    return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
+    return lto_variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)));
   /* IMPORTED_DECL is put into BLOCK and thus it never can be shared.
      We should no longer need to stream it.  */
   else if (TREE_CODE (t) == IMPORTED_DECL)
@@ -154,10 +165,10 @@ tree_is_indexable (tree t)
      them we have to localize their members as well.
      ???  In theory that includes non-FIELD_DECLs as well.  */
   else if (TYPE_P (t)
-	   && variably_modified_type_p (t, NULL_TREE))
+	   && lto_variably_modified_type_p (t))
     return false;
   else if (TREE_CODE (t) == FIELD_DECL
-	   && variably_modified_type_p (DECL_CONTEXT (t), NULL_TREE))
+	   && lto_variably_modified_type_p (DECL_CONTEXT (t)))
     return false;
   else
     return (TYPE_P (t) || DECL_P (t) || TREE_CODE (t) == SSA_NAME);
