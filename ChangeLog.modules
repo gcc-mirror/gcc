@@ -1,3 +1,11 @@
+2019-10-15  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (merge_kind): Add MK_local_friend.
+	(trees_{in,out}::tpl_parms): New.
+	(trees_{in,out}::tpl_header): Adjust parm streaming
+	(trees_{in,out}::key_mergeable): Find containing template.
+
 2019-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r276888.

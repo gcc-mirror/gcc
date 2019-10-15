@@ -2751,6 +2751,7 @@ enum merge_kind
 			   Implicit member fn (cdtor/assop).  */
 
   MK_indirect_mask = 0x4,
+  MK_local_friend = MK_indirect_mask |0x1, /* Found by container, name.  */
   MK_linkage = MK_indirect_mask | 0x2,	/* Found by TYPEDEF name.  */
   MK_enum = MK_indirect_mask | 0x3,	/* Found by CTX, & 1stMemberNAME.  */
 
@@ -2843,7 +2844,10 @@ private:
 public:
   /* Read a tree node.  */
   tree tree_node ();
-  bool tpl_header (tree);
+
+private:
+  tree tpl_parms (tree outer_level);
+  bool tpl_header (tree decl, tree container);
   tree fn_arg_types ();
   int fn_parms_init (tree);
   void fn_parms_fini (int tag, tree fn, tree existing, bool has_defn);
@@ -2992,7 +2996,10 @@ public:
 
 public:
   void tree_node (tree);
-  void tpl_header (tree);
+
+private:
+  void tpl_parms (tree level, tree outer_level);
+  void tpl_header (tree decl, tree container);
   void fn_arg_types (tree);
   void fn_parms_init (tree);
   void fn_parms_fini (tree) {}
@@ -9279,48 +9286,38 @@ trees_in::tree_node ()
   return res;
 }
 
-/* PARMS is a LIST, one node per level.
-   TREE_VALUE is a TREE_VEC of parm info for that level.
-   each ELT is a TREE_LIST
-   TREE_VALUE is PARM_DECL, TYPE_DECL or TEMPLATE_DECL
-   TREE_PURPOSE is the default value.  */
-
 void
-trees_out::tpl_header (tree tpl)
+trees_out::tpl_parms (tree level, tree outer_level)
 {
-  tree parms = DECL_TEMPLATE_PARMS (tpl);
+  if (level == outer_level)
+    return;
 
-  for (tree level = parms; level; level = TREE_CHAIN (level))
-    {
-      tree vec = TREE_VALUE (level);
-      unsigned len = TREE_VEC_LENGTH (vec);
-      if (streaming_p ())
-	u (len);
-      for (unsigned ix = 0; ix != len; ix++)
-	{
-	  tree parm = TREE_VEC_ELT (vec, ix);
-	  tree decl = TREE_VALUE (parm);
+  tpl_parms (TREE_CHAIN (level), outer_level);
 
-	  if (TREE_CODE (decl) == TEMPLATE_TYPE_PARM
-	      && TEMPLATE_TYPE_PARAMETER_PACK (decl))
-	    gcc_unreachable (); // FIXME: Something
-
-	  tree_node (decl);
-	  tree_node (TEMPLATE_PARM_CONSTRAINTS (parm));
-	}
-    }
-
-  /* Mark end.  */
+  tree vec = TREE_VALUE (level);
+  unsigned len = TREE_VEC_LENGTH (vec);
   if (streaming_p ())
-    u (0);
+    u (len);
 
-  tree_node (TEMPLATE_PARM_CONSTRAINTS (parms));
+  for (unsigned ix = 0; ix != len; ix++)
+    {
+      tree parm = TREE_VEC_ELT (vec, ix);
+      tree decl = TREE_VALUE (parm);
+
+      if (TREE_CODE (decl) == TEMPLATE_TYPE_PARM
+	  && TEMPLATE_TYPE_PARAMETER_PACK (decl))
+	gcc_unreachable (); // FIXME: Something
+
+      tree_node (decl);
+      tree_node (TEMPLATE_PARM_CONSTRAINTS (parm));
+    }
 }
 
-bool
-trees_in::tpl_header (tree tpl)
+tree
+trees_in::tpl_parms (tree outer_level)
 {
-  tree parms = NULL_TREE;
+  tree parms = outer_level;
+
   while (unsigned len = u ())
     {
       tree vec = make_tree_vec (len);
@@ -9328,7 +9325,7 @@ trees_in::tpl_header (tree tpl)
 	{
 	  tree decl = tree_node ();
 	  if (!decl)
-	    return false;
+	    return NULL_TREE;
 
 	  tree parm = build_tree_list (NULL, decl);
 	  TEMPLATE_PARM_CONSTRAINTS (parm) = tree_node ();
@@ -9338,10 +9335,52 @@ trees_in::tpl_header (tree tpl)
       parms = tree_cons (NULL_TREE, vec, parms);
     }
 
-  parms = nreverse (parms);
+  return parms;
+}
+
+/* PARMS is a LIST, one node per level.
+   TREE_VALUE is a TREE_VEC of parm info for that level.
+   each ELT is a TREE_LIST
+   TREE_VALUE is PARM_DECL, TYPE_DECL or TEMPLATE_DECL
+   TREE_PURPOSE is the default value.  */
+
+void
+trees_out::tpl_header (tree tpl, tree container)
+{
+  /* If the container is a template definition, we stop at its parms.
+     Usually this means we stream just the innermost parms.  Except
+     for (a) implicit member templates, where we'll stream nothing and
+     (b) friend templates, where we'll stream some number of parms.   */
+  tree outer_parms = NULL_TREE;
+  if (TREE_CODE (container) == TEMPLATE_DECL)
+    outer_parms = DECL_TEMPLATE_PARMS (container);
+
+  tree parms = DECL_TEMPLATE_PARMS (tpl);
+  tpl_parms (parms, outer_parms);
+
+  /* Mark end.  */
+  if (streaming_p ())
+    u (0);
+
+  if (parms != outer_parms)
+    tree_node (TEMPLATE_PARM_CONSTRAINTS (parms));
+}
+
+bool
+trees_in::tpl_header (tree tpl, tree container)
+{
+  tree outer_parms = NULL_TREE;
+  if (TREE_CODE (container) == TEMPLATE_DECL)
+    outer_parms = DECL_TEMPLATE_PARMS (container);
+
+  tree parms = tpl_parms (outer_parms);
+  if (!parms)
+    return false;
+
   DECL_TEMPLATE_PARMS (tpl) = parms;
 
-  TEMPLATE_PARM_CONSTRAINTS (parms) = tree_node ();
+  if (parms != outer_parms)
+    TEMPLATE_PARM_CONSTRAINTS (parms) = tree_node ();
 
   return true;
 }
@@ -9545,8 +9584,6 @@ trees_out::get_merge_kind (depset *dep)
 void
 trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
 {
-  tree inner = STRIP_TEMPLATE (decl);
-
   if (dep && dep_hash->for_mergeable && !streaming_p ())
     {
       /* When /determining/ mergeable ordering, there's an indirection.  */
@@ -9560,18 +9597,50 @@ trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
 	       dep ? dep->entity_kind_name () : "unique",
 	       TREE_CODE (decl), decl);
 
-  /* Stream the context, even though it's only used to locate named
+  tree inner = decl;
+  tree container = NULL_TREE;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      inner = DECL_TEMPLATE_RESULT (decl);
+      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+	container = DECL_CHAIN (decl);
+    }
+  if (!container)
+    container = CP_DECL_CONTEXT (decl);
+  if (TYPE_P (container))
+    container = TYPE_STUB_DECL (container);
+
+  int use_tpl;
+  if (tree template_info = node_template_info (container, use_tpl))
+    {
+      if (use_tpl == 2)
+	{
+	  /* A partial or explicit specialization.  */
+	  // FIXME: We can't lookup in the depset hash because we're
+	  // called from the mergeable ordering sort.  Once that goes
+	  // away it'll be ok.
+	  for (tree partial
+		 = DECL_TEMPLATE_SPECIALIZATIONS (TI_TEMPLATE (template_info));
+	       partial; partial = TREE_CHAIN (partial))
+	    if (TREE_TYPE (partial) == TREE_TYPE (container))
+	      {
+		container = TREE_VALUE (partial);
+		break;
+	      }
+	}
+      else if (!use_tpl)
+	container = TI_TEMPLATE (template_info);
+    }
+
+  /* Stream the container, even though it's only used to locate named
      decls -- other decls will still refer to it, and we want it
      correctly canonicalized before we start emitting keys for this
      decl.  */
-  tree_node (CP_DECL_CONTEXT (decl));
+  tree_node (container);
 
   if (decl != inner)
     /* A template needs its template parms for identification.  */
-    // FIXME: Don't write the context of the tpl_tpl_parms!  We should
-    // probably never write them out, and leave it to the owning
-    // template to set it on import?
-    tpl_header (decl);
+    tpl_header (decl, container);
 
   if (TREE_CODE (inner) == FUNCTION_DECL)
     fn_parms_init (inner);
@@ -9683,7 +9752,7 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
 
   if (decl != inner)
     /* A template needs its template parms for identification.  */
-    if (!tpl_header (decl))
+    if (!tpl_header (decl, ctx))
       return false;
 
   if (TREE_CODE (inner) == FUNCTION_DECL)
@@ -9697,7 +9766,7 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
     }
   else
     {
-      *container = ctx;
+      *container = STRIP_TEMPLATE (ctx); // FIXME: will want template
       *key = tree_node ();
 
       if (TREE_CODE (inner) == FUNCTION_DECL)
