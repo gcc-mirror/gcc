@@ -1,3 +1,11 @@
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-out.c (lto_variably_modified_type_p): New.
+	(tree_is_indexable): Use it.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields):
+	Stream variably_modified_type_p as TYPE_LANG_FLAG_0.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Likewise.
+
 2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.md (zero_extendqipsi2): New.

@@ -326,6 +326,12 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_RESTRICT (expr), 1);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
+  unsigned vla_p;
+  if (in_lto_p)
+    vla_p = TYPE_LANG_FLAG_0 (TYPE_MAIN_VARIANT (expr));
+  else
+    vla_p = variably_modified_type_p (expr, NULL_TREE);
+  bp_pack_value (bp, vla_p, 1);
   /* We used to stream TYPE_ALIAS_SET == 0 information to let frontends mark
      types that are opaque for TBAA.  This however did not work as intended,
      because TYPE_ALIAS_SET == 0 was regularly lost in type merging.  */
