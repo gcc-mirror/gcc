@@ -1,5 +1,9 @@
 2019-10-15  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.c: Update description of fix and continue.
+
+2019-10-15  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin.c (darwin_binds_local_p): Update to call
 	default_binds_local_p_3 () directly. amend comments.
 
