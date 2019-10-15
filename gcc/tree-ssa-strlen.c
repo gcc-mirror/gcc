@@ -4026,10 +4026,10 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 
       /* The size of the MEM_REF access determines the number of bytes.  */
       tree type = TREE_TYPE (exp);
-      if (tree typesize = TYPE_SIZE_UNIT (type))
-	nbytes = tree_to_uhwi (typesize);
-      else
+      tree typesize = TYPE_SIZE_UNIT (type);
+      if (!typesize || !tree_fits_uhwi_p (typesize))
 	return false;
+      nbytes = tree_to_uhwi (typesize);
 
       /* Handle MEM_REF = SSA_NAME types of assignments.  */
       return count_nonzero_bytes (arg, offset, nbytes, lenrange, nulterm,
