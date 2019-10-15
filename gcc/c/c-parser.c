@@ -1400,7 +1400,7 @@ static struct c_arg_info *c_parser_parms_list_declarator (c_parser *, tree,
 							  tree);
 static struct c_parm *c_parser_parameter_declaration (c_parser *, tree);
 static tree c_parser_simple_asm_expr (c_parser *);
-static tree c_parser_attributes (c_parser *);
+static tree c_parser_gnu_attributes (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *);
 static struct c_expr c_parser_braced_init (c_parser *, tree, bool,
 					   struct obstack *);
@@ -1714,8 +1714,8 @@ add_debug_begin_stmt (location_t loc)
      init-declarator-list , init-declarator
 
    init-declarator:
-     declarator simple-asm-expr[opt] attributes[opt]
-     declarator simple-asm-expr[opt] attributes[opt] = initializer
+     declarator simple-asm-expr[opt] gnu-attributes[opt]
+     declarator simple-asm-expr[opt] gnu-attributes[opt] = initializer
 
    GNU extensions:
 
@@ -1726,11 +1726,11 @@ add_debug_begin_stmt (location_t loc)
    attribute ;
 
    Objective-C:
-     attributes objc-class-definition
-     attributes objc-category-definition
-     attributes objc-protocol-definition
+     gnu-attributes objc-class-definition
+     gnu-attributes objc-category-definition
+     gnu-attributes objc-protocol-definition
 
-   The simple-asm-expr and attributes are GNU extensions.
+   The simple-asm-expr and gnu-attributes are GNU extensions.
 
    This function does not handle __extension__; that is handled in its
    callers.  ??? Following the old parser, __extension__ may start
@@ -2043,7 +2043,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    asm_name = c_parser_simple_asm_expr (parser);
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 	    {
-	      postfix_attrs = c_parser_attributes (parser);
+	      postfix_attrs = c_parser_gnu_attributes (parser);
 	      if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 		{
 		  /* This means there is an attribute specifier after
@@ -2244,7 +2244,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		}
 	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-		all_prefix_attrs = chainon (c_parser_attributes (parser),
+		all_prefix_attrs = chainon (c_parser_gnu_attributes (parser),
 					    prefix_attrs);
 	      else
 		all_prefix_attrs = prefix_attrs;
@@ -2544,7 +2544,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
    6.7, C11 6.7), adding them to SPECS (which may already include some).
    Storage class specifiers are accepted iff SCSPEC_OK; type
    specifiers are accepted iff TYPESPEC_OK; alignment specifiers are
-   accepted iff ALIGNSPEC_OK; attributes are accepted at the start
+   accepted iff ALIGNSPEC_OK; gnu-attributes are accepted at the start
    iff START_ATTR_OK; __auto_type is accepted iff AUTO_TYPE_OK.
 
    declaration-specifiers:
@@ -2613,7 +2613,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
    GNU extensions:
 
    declaration-specifiers:
-     attributes declaration-specifiers[opt]
+     gnu-attributes declaration-specifiers[opt]
 
    type-qualifier:
      address-space
@@ -2906,7 +2906,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_ATTRIBUTE:
 	  if (!attrs_ok)
 	    goto out;
-	  attrs = c_parser_attributes (parser);
+	  attrs = c_parser_gnu_attributes (parser);
 	  declspecs_add_attrs (loc, specs, attrs);
 	  break;
 	case RID_ALIGNAS:
@@ -2939,12 +2939,14 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 /* Parse an enum specifier (C90 6.5.2.2, C99 6.7.2.2, C11 6.7.2.2).
 
    enum-specifier:
-     enum attributes[opt] identifier[opt] { enumerator-list } attributes[opt]
-     enum attributes[opt] identifier[opt] { enumerator-list , } attributes[opt]
-     enum attributes[opt] identifier
+     enum gnu-attributes[opt] identifier[opt] { enumerator-list }
+       gnu-attributes[opt]
+     enum gnu-attributes[opt] identifier[opt] { enumerator-list , }
+       gnu-attributes[opt]
+     enum gnu-attributes[opt] identifier
 
    The form with trailing comma is new in C99.  The forms with
-   attributes are GNU extensions.  In GNU C, we accept any expression
+   gnu-attributes are GNU extensions.  In GNU C, we accept any expression
    without commas in the syntax (assignment expressions, not just
    conditional expressions); assignment expressions will be diagnosed
    as non-constant.
@@ -2960,8 +2962,8 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
    GNU Extensions:
 
    enumerator:
-     enumeration-constant attributes[opt]
-     enumeration-constant attributes[opt] = constant-expression
+     enumeration-constant gnu-attributes[opt]
+     enumeration-constant gnu-attributes[opt] = constant-expression
 
 */
 
@@ -2975,7 +2977,7 @@ c_parser_enum_specifier (c_parser *parser)
   location_t ident_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ENUM));
   c_parser_consume_token (parser);
-  attrs = c_parser_attributes (parser);
+  attrs = c_parser_gnu_attributes (parser);
   enum_loc = c_parser_peek_token (parser)->location;
   /* Set the location in case we create a decl now.  */
   c_parser_set_source_position_from_token (c_parser_peek_token (parser));
@@ -3031,7 +3033,7 @@ c_parser_enum_specifier (c_parser *parser)
 	  decl_loc = value_loc = token->location;
 	  c_parser_consume_token (parser);
 	  /* Parse any specified attributes.  */
-	  tree enum_attrs = c_parser_attributes (parser);
+	  tree enum_attrs = c_parser_gnu_attributes (parser);
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
 	      c_parser_consume_token (parser);
@@ -3069,7 +3071,7 @@ c_parser_enum_specifier (c_parser *parser)
 	      break;
 	    }
 	}
-      postfix_attrs = c_parser_attributes (parser);
+      postfix_attrs = c_parser_gnu_attributes (parser);
       ret.spec = finish_enum (type, nreverse (values),
 			      chainon (attrs, postfix_attrs));
       ret.kind = ctsk_tagdef;
@@ -3102,9 +3104,9 @@ c_parser_enum_specifier (c_parser *parser)
 /* Parse a struct or union specifier (C90 6.5.2.1, C99 6.7.2.1, C11 6.7.2.1).
 
    struct-or-union-specifier:
-     struct-or-union attributes[opt] identifier[opt]
-       { struct-contents } attributes[opt]
-     struct-or-union attributes[opt] identifier
+     struct-or-union gnu-attributes[opt] identifier[opt]
+       { struct-contents } gnu-attributes[opt]
+     struct-or-union gnu-attributes[opt] identifier
 
    struct-contents:
      struct-declaration-list
@@ -3160,7 +3162,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
     }
   struct_loc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
-  attrs = c_parser_attributes (parser);
+  attrs = c_parser_gnu_attributes (parser);
 
   /* Set the location in case we create a decl now.  */
   c_parser_set_source_position_from_token (c_parser_peek_token (parser));
@@ -3276,7 +3278,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	         recovered already.  Go on with the next field. */
 	    }
 	}
-      postfix_attrs = c_parser_attributes (parser);
+      postfix_attrs = c_parser_gnu_attributes (parser);
       ret.spec = finish_struct (struct_loc, type, nreverse (contents),
 				chainon (attrs, postfix_attrs), struct_info);
       ret.kind = ctsk_tagdef;
@@ -3309,15 +3311,15 @@ c_parser_struct_or_union_specifier (c_parser *parser)
      type-specifier specifier-qualifier-list[opt]
      type-qualifier specifier-qualifier-list[opt]
      alignment-specifier specifier-qualifier-list[opt]
-     attributes specifier-qualifier-list[opt]
+     gnu-attributes specifier-qualifier-list[opt]
 
    struct-declarator-list:
      struct-declarator
-     struct-declarator-list , attributes[opt] struct-declarator
+     struct-declarator-list , gnu-attributes[opt] struct-declarator
 
    struct-declarator:
-     declarator attributes[opt]
-     declarator[opt] : constant-expression attributes[opt]
+     declarator gnu-attributes[opt]
+     declarator[opt] : constant-expression gnu-attributes[opt]
 
    GNU extensions:
 
@@ -3326,7 +3328,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
      specifier-qualifier-list
 
    Unlike the ISO C syntax, semicolons are handled elsewhere.  The use
-   of attributes where shown is a GNU extension.  In GNU C, we accept
+   of gnu-attributes where shown is a GNU extension.  In GNU C, we accept
    any expression without commas in the syntax (assignment
    expressions, not just conditional expressions); assignment
    expressions will be diagnosed as non-constant.  */
@@ -3446,7 +3448,7 @@ c_parser_struct_declaration (c_parser *parser)
 	      width = c_parser_expr_no_commas (parser, NULL).value;
 	    }
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-	    postfix_attrs = c_parser_attributes (parser);
+	    postfix_attrs = c_parser_gnu_attributes (parser);
 	  d = grokfield (c_parser_peek_token (parser)->location,
 			 declarator, specs, width, &all_prefix_attrs);
 	  decl_attributes (&d, chainon (postfix_attrs,
@@ -3454,7 +3456,7 @@ c_parser_struct_declaration (c_parser *parser)
 	  DECL_CHAIN (d) = decls;
 	  decls = d;
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-	    all_prefix_attrs = chainon (c_parser_attributes (parser),
+	    all_prefix_attrs = chainon (c_parser_gnu_attributes (parser),
 					prefix_attrs);
 	  else
 	    all_prefix_attrs = prefix_attrs;
@@ -3600,7 +3602,7 @@ c_parser_alignas_specifier (c_parser * parser)
 
    direct-declarator:
      identifier
-     ( attributes[opt] declarator )
+     ( gnu-attributes[opt] declarator )
      direct-declarator array-declarator
      direct-declarator ( parameter-type-list )
      direct-declarator ( identifier-list[opt] )
@@ -3611,9 +3613,9 @@ c_parser_alignas_specifier (c_parser * parser)
 
    type-qualifier-list:
      type-qualifier
-     attributes
+     gnu-attributes
      type-qualifier-list type-qualifier
-     type-qualifier-list attributes
+     type-qualifier-list gnu-attributes
 
    array-declarator:
      [ type-qualifier-list[opt] assignment-expression[opt] ]
@@ -3630,8 +3632,8 @@ c_parser_alignas_specifier (c_parser * parser)
      parameter-list , parameter-declaration
 
    parameter-declaration:
-     declaration-specifiers declarator attributes[opt]
-     declaration-specifiers abstract-declarator[opt] attributes[opt]
+     declaration-specifiers declarator gnu-attributes[opt]
+     declaration-specifiers abstract-declarator[opt] gnu-attributes[opt]
 
    identifier-list:
      identifier
@@ -3642,7 +3644,7 @@ c_parser_alignas_specifier (c_parser * parser)
      pointer[opt] direct-abstract-declarator
 
    direct-abstract-declarator:
-     ( attributes[opt] abstract-declarator )
+     ( gnu-attributes[opt] abstract-declarator )
      direct-abstract-declarator[opt] array-declarator
      direct-abstract-declarator[opt] ( parameter-type-list[opt] )
 
@@ -3660,7 +3662,7 @@ c_parser_alignas_specifier (c_parser * parser)
      parameter-list ;
      parameter-forward-declarations parameter-list ;
 
-   The uses of attributes shown above are GNU extensions.
+   The uses of gnu-attributes shown above are GNU extensions.
 
    Some forms of array declarator are not included in C99 in the
    syntax for abstract declarators; these are disallowed elsewhere.
@@ -3705,7 +3707,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
      parenthesized declarator.  In an abstract declarator or parameter
      declarator, they could start a parenthesized declarator or a
      parameter list.  To tell which, the open parenthesis and any
-     following attributes must be read.  If a declaration specifier
+     following gnu-attributes must be read.  If a declaration specifier
      follows, then it is a parameter list; if the specifier is a
      typedef name, there might be an ambiguity about redeclaring it,
      which is resolved in the direction of treating it as a typedef
@@ -3720,12 +3722,12 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
      parentheses.  The proper resolution of this ambiguity needs
      documenting.  At present we follow an accident of the old
      parser's implementation, whereby the first parameter must have
-     some declaration specifiers other than just attributes.  Thus as
+     some declaration specifiers other than just gnu-attributes.  Thus as
      a parameter declaration it is treated as a parenthesized
      parameter named x, and as an abstract declarator it is
      rejected.
 
-     ??? Also following the old parser, attributes inside an empty
+     ??? Also following the old parser, gnu-attributes inside an empty
      parameter list are ignored, making it a list not yielding a
      prototype, rather than giving an error or making it have one
      parameter with implicit type int.
@@ -3764,7 +3766,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       tree attrs;
       struct c_declarator *inner;
       c_parser_consume_token (parser);
-      attrs = c_parser_attributes (parser);
+      attrs = c_parser_gnu_attributes (parser);
       if (kind != C_DTR_NORMAL
 	  && (c_parser_next_token_starts_declspecs (parser)
 	      || c_parser_next_token_is (parser, CPP_CLOSE_PAREN)))
@@ -3903,7 +3905,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
       tree attrs;
       struct c_arg_info *args;
       c_parser_consume_token (parser);
-      attrs = c_parser_attributes (parser);
+      attrs = c_parser_gnu_attributes (parser);
       args = c_parser_parms_declarator (parser, id_present, attrs);
       if (args == NULL)
 	return NULL;
@@ -4051,7 +4053,7 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr)
 	  tree new_attrs;
 	  c_parser_consume_token (parser);
 	  mark_forward_parm_decls ();
-	  new_attrs = c_parser_attributes (parser);
+	  new_attrs = c_parser_gnu_attributes (parser);
 	  return c_parser_parms_list_declarator (parser, new_attrs, expr);
 	}
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
@@ -4162,7 +4164,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       return NULL;
     }
   if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-    postfix_attrs = c_parser_attributes (parser);
+    postfix_attrs = c_parser_gnu_attributes (parser);
 
   /* Generate a location for the parameter, ranging from the start of the
      initial token to the end of the final token.
@@ -4264,7 +4266,7 @@ c_parser_simple_asm_expr (c_parser *parser)
 }
 
 static tree
-c_parser_attribute_any_word (c_parser *parser)
+c_parser_gnu_attribute_any_word (c_parser *parser)
 {
   tree attr_name = NULL_TREE;
 
@@ -4329,20 +4331,20 @@ c_parser_attribute_any_word (c_parser *parser)
   return attr_name;
 }
 
-/* Parse (possibly empty) attributes.  This is a GNU extension.
+/* Parse (possibly empty) gnu-attributes.  This is a GNU extension.
 
-   attributes:
+   gnu-attributes:
      empty
-     attributes attribute
+     gnu-attributes gnu-attribute
 
-   attribute:
-     __attribute__ ( ( attribute-list ) )
+   gnu-attribute:
+     __attribute__ ( ( gnu-attribute-list ) )
 
-   attribute-list:
-     attrib
-     attribute_list , attrib
+   gnu-attribute-list:
+     gnu-attrib
+     gnu-attribute_list , gnu-attrib
 
-   attrib:
+   gnu-attrib:
      empty
      any-word
      any-word ( identifier )
@@ -4361,8 +4363,8 @@ c_parser_attribute_any_word (c_parser *parser)
    commas with no attributes in between.  */
 
 static tree
-c_parser_attribute (c_parser *parser, tree attrs,
-		    bool expect_comma = false, bool empty_ok = true)
+c_parser_gnu_attribute (c_parser *parser, tree attrs,
+			bool expect_comma = false, bool empty_ok = true)
 {
   bool comma_first = c_parser_next_token_is (parser, CPP_COMMA);
   if (!comma_first
@@ -4377,7 +4379,7 @@ c_parser_attribute (c_parser *parser, tree attrs,
 	return attrs;
     }
 
-  tree attr_name = c_parser_attribute_any_word (parser);
+  tree attr_name = c_parser_gnu_attribute_any_word (parser);
   if (attr_name == NULL_TREE)
     return NULL_TREE;
 
@@ -4476,7 +4478,7 @@ c_parser_attribute (c_parser *parser, tree attrs,
 }
 
 static tree
-c_parser_attributes (c_parser *parser)
+c_parser_gnu_attributes (c_parser *parser)
 {
   tree attrs = NULL_TREE;
   while (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
@@ -4503,7 +4505,7 @@ c_parser_attributes (c_parser *parser)
       for (bool expect_comma = false; ; expect_comma = true)
 	{
 	  /* Parse a single attribute.  */
-	  tree attr = c_parser_attribute (parser, attrs, expect_comma);
+	  tree attr = c_parser_gnu_attribute (parser, attrs, expect_comma);
 	  if (attr == error_mark_node)
 	    return attrs;
 	  if (!attr)
@@ -4974,8 +4976,8 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
    GNU syntax also permits (not shown above) labels at the end of
    compound statements, which yield an error.  We don't allow labels
    on declarations; this might seem like a natural extension, but
-   there would be a conflict between attributes on the label and
-   prefix attributes on the declaration.  ??? The syntax follows the
+   there would be a conflict between gnu-attributes on the label and
+   prefix gnu-attributes on the declaration.  ??? The syntax follows the
    old parser in requiring something after label declarations.
    Although they are erroneous if the labels declared aren't defined,
    is it useful for the syntax to be this way?
@@ -5209,7 +5211,7 @@ c_parser_all_labels (c_parser *parser)
 /* Parse a label (C90 6.6.1, C99 6.8.1, C11 6.8.1).
 
    label:
-     identifier : attributes[opt]
+     identifier : gnu-attributes[opt]
      case constant-expression :
      default :
 
@@ -5218,7 +5220,7 @@ c_parser_all_labels (c_parser *parser)
    label:
      case constant-expression ... constant-expression :
 
-   The use of attributes on labels is a GNU extension.  The syntax in
+   The use of gnu-attributes on labels is a GNU extension.  The syntax in
    GNU C accepts any expressions without commas, non-constant
    expressions being rejected later.  */
 
@@ -5268,7 +5270,7 @@ c_parser_label (c_parser *parser)
       c_parser_consume_token (parser);
       gcc_assert (c_parser_next_token_is (parser, CPP_COLON));
       c_parser_consume_token (parser);
-      attrs = c_parser_attributes (parser);
+      attrs = c_parser_gnu_attributes (parser);
       tlab = define_label (loc2, name);
       if (tlab)
 	{
@@ -5287,7 +5289,7 @@ c_parser_label (c_parser *parser)
       if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 	{
 	  location_t loc = c_parser_peek_token (parser)->location;
-	  tree attrs = c_parser_attributes (parser);
+	  tree attrs = c_parser_gnu_attributes (parser);
 	  if (attribute_fallthrough_p (attrs))
 	    {
 	      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
@@ -5359,7 +5361,7 @@ c_parser_label (c_parser *parser)
      goto * expression ;
 
    expression-statement:
-     attributes ;
+     gnu-attributes ;
 
    Objective-C:
 
@@ -5601,7 +5603,7 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	case RID_ATTRIBUTE:
 	  {
 	    /* Allow '__attribute__((fallthrough));'.  */
-	    tree attrs = c_parser_attributes (parser);
+	    tree attrs = c_parser_gnu_attributes (parser);
 	    if (attribute_fallthrough_p (attrs))
 	      {
 		if (c_parser_next_token_is (parser, CPP_SEMICOLON))
@@ -7703,7 +7705,7 @@ c_parser_has_attribute_expression (c_parser *parser)
   location_t atloc = c_parser_peek_token (parser)->location;
   /* Parse a single attribute.  Require no leading comma and do not
      allow empty attributes.  */
-  tree attr = c_parser_attribute (parser, NULL_TREE, false, false);
+  tree attr = c_parser_gnu_attribute (parser, NULL_TREE, false, false);
 
   parser->lex_untranslated_string = false;
 
@@ -10495,7 +10497,7 @@ c_parser_objc_maybe_method_attributes (c_parser* parser, tree* attributes)
     }
 
   if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-    *attributes = c_parser_attributes (parser);
+    *attributes = c_parser_gnu_attributes (parser);
 
   /* If there were no attributes here, just report any earlier error.  */
   if (*attributes == NULL_TREE || bad)
@@ -10520,7 +10522,7 @@ c_parser_objc_maybe_method_attributes (c_parser* parser, tree* attributes)
      objc-selector
      ( objc-type-name ) objc-keyword-selector objc-optparmlist
      objc-keyword-selector objc-optparmlist
-     attributes
+     gnu-attributes
 
    objc-keyword-selector:
      objc-keyword-decl
@@ -10585,7 +10587,7 @@ c_parser_objc_method_decl (c_parser *parser, bool is_class_method,
 	    }
 	  /* New ObjC allows attributes on method parameters.  */
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-	    param_attr = c_parser_attributes (parser);
+	    param_attr = c_parser_gnu_attributes (parser);
 	  if (c_parser_next_token_is_not (parser, CPP_NAME))
 	    {
 	      c_parser_error (parser, "expected identifier");
@@ -20559,7 +20561,7 @@ c_parser_omp_threadprivate (c_parser *parser)
 /* Parse a transaction attribute (GCC Extension).
 
    transaction-attribute:
-     attributes
+     gnu-attributes
      [ [ any-word ] ]
 
    The transactional memory language description is written for C++,
@@ -20572,7 +20574,7 @@ c_parser_transaction_attributes (c_parser *parser)
   tree attr_name, attr = NULL;
 
   if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-    return c_parser_attributes (parser);
+    return c_parser_gnu_attributes (parser);
 
   if (!c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
     return NULL_TREE;
@@ -20580,7 +20582,7 @@ c_parser_transaction_attributes (c_parser *parser)
   if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
     goto error1;
 
-  attr_name = c_parser_attribute_any_word (parser);
+  attr_name = c_parser_gnu_attribute_any_word (parser);
   if (attr_name)
     {
       c_parser_consume_token (parser);
