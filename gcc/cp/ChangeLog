@@ -1,3 +1,7 @@
+2019-10-15  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (build_clone): Refactor to clarify recursiveness.
+
 2019-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91930 - ICE with constrained inherited default ctor.
