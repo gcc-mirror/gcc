@@ -1,5 +1,10 @@
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (build_clones): Break out of clone_function_decl.  Just
+	build the clones.
+	(clone_function_decl): Call build_clones, then maybe add them to
+	the method vector.
+
 	* class.c (build_clone): Refactor to clarify recursiveness.
 
 2019-10-14  Jason Merrill  <jason@redhat.com>

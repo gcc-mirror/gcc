@@ -4699,30 +4699,21 @@ build_clone (tree fn, tree name)
   return clone;
 }
 
-/* Produce declarations for all appropriate clones of FN.  If
-   UPDATE_METHODS is true, the clones are added to the
-   CLASSTYPE_MEMBER_VEC.  */
+/* Build the clones of FN, return the number of clones built.  These
+   will be inserted onto DECL_CHAIN of FN.  */
 
-void
-clone_function_decl (tree fn, bool update_methods)
+unsigned
+build_clones (tree fn)
 {
-  tree clone;
-
-  /* Avoid inappropriate cloning.  */
-  if (DECL_CHAIN (fn)
-      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
-    return;
+  unsigned count = 0;
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
     {
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
-      clone = build_clone (fn, complete_ctor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
-      clone = build_clone (fn, base_ctor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
+      build_clone (fn, complete_ctor_identifier);
+      build_clone (fn, base_ctor_identifier);
+      count += 2;
     }
   else
     {
@@ -4739,20 +4730,40 @@ clone_function_decl (tree fn, bool update_methods)
 	 destructor.  */
       if (DECL_VIRTUAL_P (fn))
 	{
-	  clone = build_clone (fn, deleting_dtor_identifier);
-	  if (update_methods)
-	    add_method (DECL_CONTEXT (clone), clone, false);
+	  build_clone (fn, deleting_dtor_identifier);
+	  count++;
 	}
-      clone = build_clone (fn, complete_dtor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
-      clone = build_clone (fn, base_dtor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
+      build_clone (fn, complete_dtor_identifier);
+      build_clone (fn, base_dtor_identifier);
+      count += 2;
     }
+
+  return count;
+}
+
+/* Produce declarations for all appropriate clones of FN.  If
+   UPDATE_METHODS is true, the clones are added to the
+   CLASSTYPE_MEMBER_VEC.  */
+
+void
+clone_function_decl (tree fn, bool update_methods)
+{
+  /* Avoid inappropriate cloning.  */
+  if (DECL_CHAIN (fn)
+      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
+    return;
+
+  unsigned count = build_clones (fn);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;
+
+  if (update_methods)
+    for (tree clone = fn; count--;)
+      {
+	clone = DECL_CHAIN (clone);
+	add_method (DECL_CONTEXT (clone), clone, false);
+      }
 }
 
 /* DECL is an in charge constructor, which is being defined. This will
