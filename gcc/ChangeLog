@@ -1,3 +1,7 @@
+2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.md: Run %a0:DI splitters only after reload.
+
 2019-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92094
