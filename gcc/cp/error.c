@@ -2559,7 +2559,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 		}
 	    }
 	}
-      if (TREE_TYPE (t) && TYPE_LAMBDA_P (TREE_TYPE (t)))
+      if (TREE_TYPE (t) && LAMBDA_TYPE_P (TREE_TYPE (t)))
 	pp_string (pp, "<lambda closure object>");
       if (TREE_TYPE (t) && EMPTY_CONSTRUCTOR_P (t))
 	{

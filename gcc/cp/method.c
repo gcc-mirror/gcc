@@ -1571,7 +1571,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	 This is diagnosed in maybe_explain_implicit_delete.
 	 In C++2a, only lambda-expressions with lambda-captures have those
 	 deleted.  */
-      if (TYPE_LAMBDA_P (ctype)
+      if (LAMBDA_TYPE_P (ctype)
 	  && (sfk == sfk_constructor || sfk == sfk_copy_assignment)
 	  && (cxx_dialect < cxx2a
 	      || LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (ctype))
@@ -1807,7 +1807,7 @@ maybe_explain_implicit_delete (tree decl)
       input_location = DECL_SOURCE_LOCATION (decl);
 
       informed = false;
-      if (TYPE_LAMBDA_P (ctype))
+      if (LAMBDA_TYPE_P (ctype))
 	{
 	  informed = true;
 	  if (sfk == sfk_constructor)

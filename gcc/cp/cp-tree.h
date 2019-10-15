@@ -1416,13 +1416,10 @@ struct GTY (()) tree_trait_expr {
   (IDENTIFIER_NODE_CHECK(NODE)->base.protected_flag)
 
 /* Based off of TYPE_UNNAMED_P.  */
-#define TYPE_LAMBDA_P(NODE)					\
-  (TYPE_LINKAGE_IDENTIFIER (NODE)				\
+#define LAMBDA_TYPE_P(NODE)					\
+  (TREE_CODE (NODE) == RECORD_TYPE				\
+   && TYPE_LINKAGE_IDENTIFIER (NODE)				\
    && IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
-
-#define LAMBDA_TYPE_P(NODE)			\
-  (TREE_CODE (NODE) == RECORD_TYPE		\
-   && TYPE_LAMBDA_P (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
 #define LAMBDA_FUNCTION_P(FNDECL)				\

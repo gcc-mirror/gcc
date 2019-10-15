@@ -3232,7 +3232,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       TYPE_HAS_COPY_ASSIGN (t) = 1;
       TYPE_HAS_CONST_COPY_ASSIGN (t) = !cant_have_const_assignment;
       CLASSTYPE_LAZY_COPY_ASSIGN (t) = 1;
-      if (move_ok && !TYPE_LAMBDA_P (t))
+      if (move_ok && !LAMBDA_TYPE_P (t))
 	CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 1;
     }
 
@@ -5563,7 +5563,7 @@ finalize_literal_type_property (tree t)
 	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	   && (cxx_dialect < cxx2a || !type_maybe_constexpr_destructor (t)))
     CLASSTYPE_LITERAL_P (t) = false;
-  else if (CLASSTYPE_LITERAL_P (t) && TYPE_LAMBDA_P (t))
+  else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
     CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx17);
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && CLASSTYPE_NON_AGGREGATE (t)
@@ -5572,7 +5572,7 @@ finalize_literal_type_property (tree t)
 
   /* C++14 DR 1684 removed this restriction.  */
   if (cxx_dialect < cxx14
-      && !CLASSTYPE_LITERAL_P (t) && !TYPE_LAMBDA_P (t))
+      && !CLASSTYPE_LITERAL_P (t) && !LAMBDA_TYPE_P (t))
     for (fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_DECLARED_CONSTEXPR_P (fn)
@@ -5611,7 +5611,7 @@ explain_non_literal_class (tree t)
 
   auto_diagnostic_group d;
   inform (UNKNOWN_LOCATION, "%q+T is not literal because:", t);
-  if (cxx_dialect < cxx17 && TYPE_LAMBDA_P (t))
+  if (cxx_dialect < cxx17 && LAMBDA_TYPE_P (t))
     inform (UNKNOWN_LOCATION,
 	    "  %qT is a closure type, which is only literal in "
 	    "C++17 and later", t);
@@ -5623,7 +5623,7 @@ explain_non_literal_class (tree t)
 	    t);
   else if (CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_TRIVIAL_DFLT (t)
-	   && !TYPE_LAMBDA_P (t)
+	   && !LAMBDA_TYPE_P (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     {
       inform (UNKNOWN_LOCATION,
@@ -5872,7 +5872,7 @@ check_bases_and_members (tree t)
 	defaulted_late_check (fn);
       }
 
-  if (TYPE_LAMBDA_P (t))
+  if (LAMBDA_TYPE_P (t))
     /* "This class type is not an aggregate."  */
     CLASSTYPE_NON_AGGREGATE (t) = 1;
 
@@ -7398,7 +7398,7 @@ finish_struct (tree t, tree attributes)
 
   if (processing_template_decl && at_function_scope_p ()
       /* Lambdas are defined by the LAMBDA_EXPR.  */
-      && !TYPE_LAMBDA_P (t))
+      && !LAMBDA_TYPE_P (t))
     add_stmt (build_min (TAG_DEFN, t));
 
   return t;
@@ -7836,7 +7836,7 @@ tree
 current_nonlambda_class_type (void)
 {
   tree type = current_class_type;
-  while (type && TYPE_LAMBDA_P (type))
+  while (type && LAMBDA_TYPE_P (type))
     type = decl_type_context (TYPE_NAME (type));
   return type;
 }
@@ -8506,7 +8506,7 @@ maybe_note_name_used_in_class (tree name, tree decl)
   /* If we're not defining a class, there's nothing to do.  */
   if (!(innermost_scope_kind() == sk_class
 	&& TYPE_BEING_DEFINED (current_class_type)
-	&& !TYPE_LAMBDA_P (current_class_type)))
+	&& !LAMBDA_TYPE_P (current_class_type)))
     return;
 
   /* If there's already a binding for this NAME, then we don't have
