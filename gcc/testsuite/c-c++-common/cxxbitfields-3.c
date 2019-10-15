@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 --param allow-store-data-races=0" } */
+/* { dg-options "-O2 -fno-allow-store-data-races" } */
 
 /* Make sure we don't narrow down to a QI or HI to store into VAR.J,
    but instead use an SI.  */

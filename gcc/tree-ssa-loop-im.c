@@ -2100,7 +2100,7 @@ execute_sm (class loop *loop, vec<edge> exits, im_mem_ref *ref)
   for_each_index (&ref->mem.ref, force_move_till, &fmt_data);
 
   if (bb_in_transaction (loop_preheader_edge (loop)->src)
-      || (! PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES)
+      || (! flag_store_data_races
 	  && ! ref_always_accessed_p (loop, ref, true)))
     multi_threaded_model_p = true;
 
