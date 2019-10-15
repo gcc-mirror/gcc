@@ -1,3 +1,9 @@
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92048
+	* gcc.dg/vect/fast-math-vect-pr29925.c: Avoid unrolling of
+	inner loop.
+
 2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/load-thread-pointer-once.c: New test.
