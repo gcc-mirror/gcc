@@ -1,3 +1,8 @@
+2019-10-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssa-strlen.c (count_nonzero_bytes): Check tree_fits_uhwi_p
+	before using tree_to_uhwi.
+
 2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.md: Run %a0:DI splitters only after reload.
