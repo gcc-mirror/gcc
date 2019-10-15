@@ -1,6 +1,14 @@
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::core_vals): Don't assert template
+	arguments visited.
+	(trees_{in,out}::tpl_parms): Stream TMPL_DEPTH.
+	(trees_{in,out}::tpl_parms_fini): New.
+	(trees_{in,out}::decl_value): Don't stream template parms, use
+	tpl_parms_fini.
+
+	gcc/cp/
 	* module.cc (trees_out::get_container): New, broken out of ...
 	(trees_out::key_mergeable): ... here.  Add container parm.
 	(trees_in::key_mergeable): Container is already set.

@@ -2846,7 +2846,8 @@ public:
   tree tree_node ();
 
 private:
-  tree tpl_parms (tree outer_level);
+  tree tpl_parms (tree outer_parms);
+  bool tpl_parms_fini (tree decl, tree outer_parms);
   bool tpl_header (tree decl, tree container);
   tree fn_arg_types ();
   int fn_parms_init (tree);
@@ -2998,7 +2999,8 @@ public:
   void tree_node (tree);
 
 private:
-  void tpl_parms (tree level, tree outer_level);
+  void tpl_parms (tree parms, tree outer_parms);
+  void tpl_parms_fini (tree decl, tree outer_parms);
   void tpl_header (tree decl, tree container);
   void fn_arg_types (tree);
   void fn_parms_init (tree);
@@ -5927,8 +5929,9 @@ trees_out::core_vals (tree t)
 
     case TEMPLATE_DECL:
       /* Streamed with the template_decl node itself.  */
-      gcc_checking_assert
-	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
+      // FIXME: Not streamed, but right now maybe streamed
+      // gcc_checking_assert
+      //	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
       gcc_checking_assert
 	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
       if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (t))
@@ -6923,15 +6926,18 @@ trees_out::decl_value (tree decl, depset *dep)
     fn_parms_fini (inner);
 
   if (inner_tag != 0)
-    {
-      /* Template pieces.  */
-      // FIXME:Only need the default values here
-      tree_node (DECL_TEMPLATE_PARMS (decl));
-      /* DECL_TEMPLATE_RESULT is inner, so no need to stream that.  */
-      tree_node_vals (decl);
-    }
+    /* Template pieces.  */
+    tree_node_vals (decl);
 
   tree_node_vals (inner);
+
+  if (inner_tag != 0)
+    {
+      tpl_parms_fini (decl,
+		      TREE_CODE (container) == TEMPLATE_DECL
+		      ? DECL_TEMPLATE_PARMS (container) : NULL_TREE);
+      gcc_checking_assert (!TREE_VISITED (DECL_TEMPLATE_PARMS (decl)));
+    }
 
   if (type)
     tree_node_vals (type);
@@ -7068,7 +7074,9 @@ trees_in::decl_value ()
       /* Bail.  */
       return NULL_TREE;
     }
-
+  
+  // FIXME: this needs a cleanup
+  tree container_1 = tree_node ();
   if (true)
     {
       /* Figure out if this decl is already known about.  */
@@ -7077,7 +7085,7 @@ trees_in::decl_value ()
       tree r_type = NULL_TREE;
       int parm_tag = 0;
 
-      tree container = tree_node ();
+      tree container = container_1;
 
       if (!key_mergeable (mk, res, inner, type,
 			  &container, &key, &fn_args, &r_type,
@@ -7219,22 +7227,6 @@ trees_in::decl_value ()
   if (inner_tag != 0)
     {
       /* Template pieces.  */
-      // FIXME: should not be streamed like this
-      tree parms = tree_node ();
-      DECL_TEMPLATE_PARMS (res) = parms;
-
-      // FIXME: From push_template_decl_real, not sure how correct
-      // this is?
-      /* Give template template parms a DECL_CONTEXT of the template
-	 for which they are a parameter.  */
-      tree innermost = INNERMOST_TEMPLATE_PARMS (parms);
-      for (int i = TREE_VEC_LENGTH (innermost) - 1; i >= 0; --i)
-	{
-	  tree parm = TREE_VALUE (TREE_VEC_ELT (innermost, i));
-	  if (TREE_CODE (parm) == TEMPLATE_DECL)
-	    DECL_CONTEXT (parm) = res;
-	}
-
       gcc_checking_assert (DECL_TEMPLATE_RESULT (res) == inner);
       if (!tree_node_vals (res))
 	goto bail;
@@ -7242,6 +7234,12 @@ trees_in::decl_value ()
 
   if (!tree_node_vals (inner))
     goto bail;
+
+  if (inner_tag != 0)
+    if (!tpl_parms_fini (res,
+			 TREE_CODE (container_1) == TEMPLATE_DECL
+			 ? DECL_TEMPLATE_PARMS (container_1) : NULL_TREE))
+      goto bail;
 
   if (type)
     {
@@ -7328,6 +7326,7 @@ trees_in::decl_value ()
       if (!is_matching_decl (existing, res))
 	unmatched_duplicate (existing);
 
+      // FIXME: Check default tmpl and fn parms here
       /* And our result is the existing node.  */
       res = existing;
     }
@@ -9298,14 +9297,14 @@ trees_in::tree_node ()
 }
 
 void
-trees_out::tpl_parms (tree level, tree outer_level)
+trees_out::tpl_parms (tree parms, tree outer_parms)
 {
-  if (level == outer_level)
+  if (parms == outer_parms)
     return;
 
-  tpl_parms (TREE_CHAIN (level), outer_level);
+  tpl_parms (TREE_CHAIN (parms), outer_parms);
 
-  tree vec = TREE_VALUE (level);
+  tree vec = TREE_VALUE (parms);
   unsigned len = TREE_VEC_LENGTH (vec);
   if (streaming_p ())
     u (len);
@@ -9322,12 +9321,15 @@ trees_out::tpl_parms (tree level, tree outer_level)
       tree_node (decl);
       tree_node (TEMPLATE_PARM_CONSTRAINTS (parm));
     }
+
+  /* Depth.  */
+  tree_node TREE_PURPOSE (parms);
 }
 
 tree
-trees_in::tpl_parms (tree outer_level)
+trees_in::tpl_parms (tree outer_parms)
 {
-  tree parms = outer_level;
+  tree parms = outer_parms;
 
   while (unsigned len = u ())
     {
@@ -9343,10 +9345,58 @@ trees_in::tpl_parms (tree outer_level)
 
 	  TREE_VEC_ELT (vec, ix) = parm;
 	}
-      parms = tree_cons (NULL_TREE, vec, parms);
+
+      tree depth = tree_node ();
+      parms = tree_cons (depth, vec, parms);
     }
 
   return parms;
+}
+
+void
+trees_out::tpl_parms_fini (tree tmpl, tree outer_parms)
+{
+  for (tree parms = DECL_TEMPLATE_PARMS (tmpl); parms != outer_parms;
+       parms = TREE_CHAIN (parms))
+    {
+      tree vec = TREE_VALUE (parms);
+      for (unsigned ix = TREE_VEC_LENGTH (vec); ix--;)
+	{
+	  tree parm = TREE_VEC_ELT (vec, ix);
+	  tree dflt = TREE_PURPOSE (parm);
+	  tree_node (dflt);
+	  if (!dflt)
+	    break;
+	}
+    }
+}
+
+bool
+trees_in::tpl_parms_fini (tree tmpl, tree outer_parms)
+{
+  for (tree parms = DECL_TEMPLATE_PARMS (tmpl); parms != outer_parms;
+       parms = TREE_CHAIN (parms))
+    {
+      tree vec = TREE_VALUE (parms);
+      tree dflt = error_mark_node;
+
+      TREE_TYPE (vec) = tmpl;
+      for (unsigned ix = TREE_VEC_LENGTH (vec); ix--;)
+	{
+	  tree parm = TREE_VEC_ELT (vec, ix);
+	  if (dflt)
+	    {
+	      dflt = tree_node ();
+	      if (get_overrun ())
+		return false;
+	      TREE_PURPOSE (parm) = dflt;
+	    }
+	  tree decl = TREE_VALUE (parm);
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    DECL_CONTEXT (decl) = tmpl;
+	}
+    }
+  return true;
 }
 
 /* PARMS is a LIST, one node per level.
