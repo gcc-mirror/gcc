@@ -1,5 +1,9 @@
 2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.md: Group zero_extend* insns together.
+
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/constraints.md: Allow post_inc operand for "Ya"
 	constraint.
 	* config/msp430/msp430.c (msp430_legitimate_address_p): Handle
