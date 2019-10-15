@@ -724,7 +724,7 @@ struct GTY(()) maps_info_ordinary {
      or equal to ALLOCATED.  */
   unsigned int used;
 
-  unsigned int cache;
+  mutable unsigned int cache;
 };
 
 struct GTY(()) maps_info_macro {
@@ -739,7 +739,7 @@ struct GTY(()) maps_info_macro {
      or equal to ALLOCATED.  */
   unsigned int used;
 
-  unsigned int cache;
+  mutable unsigned int cache;
 };
 
 /* Data structure to associate a source_range together with an arbitrary
@@ -865,19 +865,8 @@ LINEMAPS_USED (line_maps *set, bool map_kind)
 /* Returns the index of the last map that was looked up with
    linemap_lookup. MAP_KIND shall be TRUE if we are interested in
    macro maps, FALSE otherwise.  */
-inline unsigned int
-LINEMAPS_CACHE (const line_maps *set, bool map_kind)
-{
-  if (map_kind)
-    return set->info_macro.cache;
-  else
-    return set->info_ordinary.cache;
-}
-
-/* As above, but by reference (e.g. as an lvalue).  */
-
 inline unsigned int &
-LINEMAPS_CACHE (line_maps *set, bool map_kind)
+LINEMAPS_CACHE (const line_maps *set, bool map_kind)
 {
   if (map_kind)
     return set->info_macro.cache;
@@ -927,9 +916,9 @@ LINEMAPS_ORDINARY_MAPS (const line_maps *set)
 inline line_map_ordinary *
 LINEMAPS_ORDINARY_MAP_AT (const line_maps *set, int index)
 {
-  linemap_assert (index >= 0);
-  linemap_assert ((unsigned int)index < set->info_ordinary.used);
-  return &set->info_ordinary.maps[index];
+  linemap_assert (index >= 0
+		  && (unsigned int)index < LINEMAPS_USED (set, false));
+  return (line_map_ordinary *)LINEMAPS_MAP_AT (set, false, index);
 }
 
 /* Return the number of ordinary maps allocated in the line table
@@ -949,16 +938,8 @@ LINEMAPS_ORDINARY_USED (const line_maps *set)
 
 /* Return the index of the last ordinary map that was looked up with
    linemap_lookup.  */
-inline unsigned int
-LINEMAPS_ORDINARY_CACHE (const line_maps *set)
-{
-  return LINEMAPS_CACHE (set, false);
-}
-
-/* As above, but by reference (e.g. as an lvalue).  */
-
 inline unsigned int &
-LINEMAPS_ORDINARY_CACHE (line_maps *set)
+LINEMAPS_ORDINARY_CACHE (const line_maps *set)
 {
   return LINEMAPS_CACHE (set, false);
 }
@@ -991,9 +972,9 @@ LINEMAPS_MACRO_MAPS (const line_maps *set)
 inline line_map_macro *
 LINEMAPS_MACRO_MAP_AT (const line_maps *set, int index)
 {
-  linemap_assert (index >= 0);
-  linemap_assert ((unsigned int)index < set->info_macro.used);
-  return &set->info_macro.maps[index];
+  linemap_assert (index >= 0
+		  && (unsigned int)index < LINEMAPS_USED (set, true));
+  return (line_map_macro *)LINEMAPS_MAP_AT (set, true, index);
 }
 
 /* Returns the number of macro maps that were allocated in the line
@@ -1011,18 +992,10 @@ LINEMAPS_MACRO_USED (const line_maps *set)
   return LINEMAPS_USED (set, true);
 }
 
-/* Returns the index of the last macro map looked up with
+/* Return the index of the last macro map that was looked up with
    linemap_lookup.  */
-inline unsigned int
-LINEMAPS_MACRO_CACHE (const line_maps *set)
-{
-  return LINEMAPS_CACHE (set, true);
-}
-
-/* As above, but by reference (e.g. as an lvalue).  */
-
 inline unsigned int &
-LINEMAPS_MACRO_CACHE (line_maps *set)
+LINEMAPS_MACRO_CACHE (const line_maps *set)
 {
   return LINEMAPS_CACHE (set, true);
 }
@@ -1130,7 +1103,7 @@ extern const line_map *linemap_add
    binary search. If no line map have been allocated yet, this
    function returns NULL.  */
 extern const line_map *linemap_lookup
-  (class line_maps *, location_t);
+  (const line_maps *, location_t);
 
 /* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */

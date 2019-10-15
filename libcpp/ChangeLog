@@ -1,3 +1,16 @@
+2019-10-15  Nathan Sidwell  <nathan@acm.org>
+
+	* include/line-map.h (struct maps_info_ordinary): Make cache
+	mutable.
+	(struct maps_info_macro): Likewise.
+	(LINEMAPS_CACHE): Remove non-ref accessor. Constify ref accessor.
+	(LINEMAPS_ORDINARY_CACHE, LINEMAPS_MACRO_CACHE): Likewise.
+	(LINEMAPS_ORDINARY_MAP_AT, LINEMAPS_MACRO_MAP_AT): Use
+	LINEMAPS_USED and LINEMAPS_MAP_AT.
+	(linemap_lookup): Constify line_map arg.
+	linemap.c (linemap_ordinary_map_lookup, linemap_macro_map_lookup):
+	Constify line_map arg.
+
 2019-10-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_options): Add dfp_constants and
