@@ -1,3 +1,9 @@
+2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92085
+	* gcc.dg/tree-ssa/pr92085-1.c: New test.
+	* gcc.dg/tree-ssa/pr92085-2.c: Likewise.
+
 2019-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/89943
