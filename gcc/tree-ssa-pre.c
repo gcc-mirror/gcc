@@ -257,6 +257,7 @@ typedef struct pre_expr_d : nofree_ptr_hash <pre_expr_d>
 {
   enum pre_expr_kind kind;
   unsigned int id;
+  location_t loc;
   pre_expr_union u;
 
   /* hash_table support.  */
@@ -421,6 +422,7 @@ get_or_alloc_expr_for_name (tree name)
 
   result = pre_expr_pool.allocate ();
   result->kind = NAME;
+  result->loc = UNKNOWN_LOCATION;
   PRE_EXPR_NAME (result) = name;
   alloc_expression_id (result);
   return result;
@@ -1077,6 +1079,7 @@ get_or_alloc_expr_for_constant (tree constant)
 
   newexpr = pre_expr_pool.allocate ();
   newexpr->kind = CONSTANT;
+  newexpr->loc = UNKNOWN_LOCATION;
   PRE_EXPR_CONSTANT (newexpr) = constant;
   alloc_expression_id (newexpr);
   value_id = get_or_alloc_constant_value_id (constant);
@@ -1334,6 +1337,7 @@ phi_translate_1 (bitmap_set_t dest,
 {
   basic_block pred = e->src;
   basic_block phiblock = e->dest;
+  location_t expr_loc = expr->loc;
   switch (expr->kind)
     {
     case NARY:
@@ -1436,6 +1440,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    expr = pre_expr_pool.allocate ();
 	    expr->kind = NARY;
 	    expr->id = 0;
+	    expr->loc = expr_loc;
 	    if (nary && !nary->predicated_values)
 	      {
 		PRE_EXPR_NARY (expr) = nary;
@@ -1587,6 +1592,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    expr = pre_expr_pool.allocate ();
 	    expr->kind = REFERENCE;
 	    expr->id = 0;
+	    expr->loc = expr_loc;
 
 	    if (newref)
 	      new_val_id = newref->value_id;
@@ -2789,6 +2795,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      args.quick_push (arg);
 	    }
 	  gcall *call = gimple_build_call_vec (fn, args);
+	  gimple_set_location (call, expr->loc);
 	  gimple_call_set_fntype (call, currop->type);
 	  if (sc)
 	    gimple_call_set_chain (call, sc);
@@ -2822,6 +2829,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	    return NULL_TREE;
 	  name = make_temp_ssa_name (exprtype, NULL, "pretmp");
 	  newstmt = gimple_build_assign (name, folded);
+	  gimple_set_location (newstmt, expr->loc);
 	  gimple_seq_add_stmt_without_update (&forced_stmts, newstmt);
 	  gimple_set_vuse (newstmt, BB_LIVE_VOP_ON_EXIT (block));
 	  folded = name;
@@ -2860,6 +2868,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	    folded = build_constructor (nary->type, elts);
 	    name = make_temp_ssa_name (exprtype, NULL, "pretmp");
 	    newstmt = gimple_build_assign (name, folded);
+	    gimple_set_location (newstmt, expr->loc);
 	    gimple_seq_add_stmt_without_update (&forced_stmts, newstmt);
 	    folded = name;
 	  }
@@ -2868,16 +2877,17 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	    switch (nary->length)
 	      {
 	      case 1:
-		folded = gimple_build (&forced_stmts, nary->opcode, nary->type,
-				       genop[0]);
+		folded = gimple_build (&forced_stmts, expr->loc,
+				       nary->opcode, nary->type, genop[0]);
 		break;
 	      case 2:
-		folded = gimple_build (&forced_stmts, nary->opcode, nary->type,
-				       genop[0], genop[1]);
+		folded = gimple_build (&forced_stmts, expr->loc, nary->opcode,
+				       nary->type, genop[0], genop[1]);
 		break;
 	      case 3:
-		folded = gimple_build (&forced_stmts, nary->opcode, nary->type,
-				       genop[0], genop[1], genop[2]);
+		folded = gimple_build (&forced_stmts, expr->loc, nary->opcode,
+				       nary->type, genop[0], genop[1],
+				       genop[2]);
 		break;
 	      default:
 		gcc_unreachable ();
@@ -3856,6 +3866,7 @@ compute_avail (void)
 		    result = pre_expr_pool.allocate ();
 		    result->kind = REFERENCE;
 		    result->id = 0;
+		    result->loc = gimple_location (stmt);
 		    PRE_EXPR_REFERENCE (result) = ref;
 
 		    get_or_alloc_expression_id (result);
@@ -3896,6 +3907,7 @@ compute_avail (void)
 		      result = pre_expr_pool.allocate ();
 		      result->kind = NARY;
 		      result->id = 0;
+		      result->loc = gimple_location (stmt);
 		      PRE_EXPR_NARY (result) = nary;
 		      break;
 		    }
@@ -4013,6 +4025,7 @@ compute_avail (void)
 		      result = pre_expr_pool.allocate ();
 		      result->kind = REFERENCE;
 		      result->id = 0;
+		      result->loc = gimple_location (stmt);
 		      PRE_EXPR_REFERENCE (result) = ref;
 		      break;
 		    }
