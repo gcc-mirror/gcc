@@ -1225,12 +1225,6 @@ DEFPARAM (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SPEED,
 	  "optimizing for speed.",
 	  800, 0, 0)
 
-/* Data race flags for C++0x memory model compliance.  */
-DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
-	  "allow-store-data-races",
-	  "Allow new data races on stores to be introduced.",
-	  0, 0, 1)
-
 /* Reassociation width to be used by tree reassoc optimization.  */
 DEFPARAM (PARAM_TREE_REASSOC_WIDTH,
 	  "tree-reassoc-width",

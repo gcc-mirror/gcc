@@ -1,3 +1,19 @@
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* common.opt (fallow-store-data-races): New.
+	* params.def (PARAM_ALLOW_STORE_DATA_RACES): Remove.
+	* params.h (ALLOW_STORE_DATA_RACES): Likewise.
+	* doc/invoke.texi (fallow-store-data-races): Document.
+	(--param allow-store-data-races): Remove docs.
+	* opts.c (default_options_table): Enable -fallow-store-data-races
+	at -Ofast.
+	(default_options_optimization): Do not enable --param
+	allow-store-data-races at -Ofast.
+	* tree-if-conv.c (ifcvt_memrefs_wont_trap): Use flag_store_data_races
+	instead of PARAM_ALLOW_STORE_DATA_RACES.
+	* tree-ssa-loop-im.c (execute_sm): Likewise.
+
 2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/92085

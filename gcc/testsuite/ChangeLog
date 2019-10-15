@@ -1,3 +1,21 @@
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* c-c++-common/cxxbitfields-3.c: Adjust.
+	* c-c++-common/cxxbitfields-6.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-1.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-2.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-3.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-4.c: Likewise.
+	* g++.dg/simulate-thread/bitfields-2.C: Likewise.
+	* g++.dg/simulate-thread/bitfields.C: Likewise.
+	* gcc.dg/lto/pr52097_0.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-2.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-3.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-4.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store.c: Likewise.
+	* gcc.dg/tree-ssa/20050314-1.c: Likewise.
+
 2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/92085
