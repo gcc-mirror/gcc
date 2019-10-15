@@ -1,3 +1,19 @@
+2019-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/92035
+	* gcc.target/i386/avx512f-vrndscaless-1.c: Add scan-assembler-times
+	directives for newly expected instructions.
+	* gcc.target/i386/avx512f-vrndscalesd-1.c: Likewise.
+	* gcc.target/i386/avx512f-vrndscaless-2.c
+	(avx512f_test): Add tests for new intrinsics.
+	* gcc.target/i386/avx512f-vrndscalesd-2.c: Likewise.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_rndscalefss_round,
+	__builtin_ia32_rndscalefsd_round): Remove.
+	(__builtin_ia32_rndscalefss_mask_round,
+	__builtin_ia32_rndscalefsd_mask_round): Define.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2019-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/92046
