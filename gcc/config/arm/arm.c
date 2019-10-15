@@ -3555,11 +3555,6 @@ arm_option_override (void)
 			   global_options.x_param_values,
 			   global_options_set.x_param_values);
 
-  /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
   int param_sched_autopref_queue_depth;
@@ -8939,13 +8934,8 @@ arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
 	return x;
     }
 
-  if (!TARGET_ARM)
-    {
-      /* TODO: legitimize_address for Thumb2.  */
-      if (TARGET_THUMB2)
-        return x;
-      return thumb_legitimize_address (x, orig_x, mode);
-    }
+  if (TARGET_THUMB1)
+    return thumb_legitimize_address (x, orig_x, mode);
 
   if (GET_CODE (x) == PLUS)
     {

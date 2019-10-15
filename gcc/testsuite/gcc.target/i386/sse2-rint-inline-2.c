@@ -2,7 +2,6 @@
    should be expanded even when spurious "inexact" not allowed.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -mfpmath=sse -fno-fp-int-builtin-inexact" } */
-/* { dg-add-options c99_runtime } */
 /* { dg-require-effective-target sse2 } */
 
 #define TEST(FN, TYPE)				\

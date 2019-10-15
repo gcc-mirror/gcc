@@ -800,13 +800,13 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
 	  kind = VR_RANGE;
 	}
       else if (is_min
-	       /* As a special exception preserve non-null ranges.  */
-	       && !(TYPE_UNSIGNED (TREE_TYPE (min))
-		    && integer_zerop (max)))
+	       /* Allow non-zero pointers to be normalized to [1,MAX].  */
+	       || (POINTER_TYPE_P (TREE_TYPE (min))
+		   && integer_zerop (min)))
         {
 	  tree one = build_int_cst (TREE_TYPE (max), 1);
 	  min = int_const_binop (PLUS_EXPR, max, one);
-	  max = vrp_val_max (TREE_TYPE (max));
+	  max = vrp_val_max (TREE_TYPE (max), true);
 	  kind = VR_RANGE;
         }
       else if (is_max)

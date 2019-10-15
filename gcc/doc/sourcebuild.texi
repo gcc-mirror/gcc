@@ -2528,9 +2528,6 @@ instructions, if this is supported by the target; see the
 Add the target-specific flags needed to enable functions to bind
 locally when using pic/PIC passes in the testsuite.
 
-@item c99_runtime
-Add the target-specific flags needed to access the C99 runtime.
-
 @item float@var{n}
 Add the target-specific flags needed to use the @code{_Float@var{n}} type.
 

@@ -2066,14 +2066,54 @@ collect_block_tree_leafs (tree root, vec<tree> &leafs)
 void
 lto_prepare_function_for_streaming (struct cgraph_node *node)
 {
-  if (number_of_loops (DECL_STRUCT_FUNCTION (node->decl)))
+  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+  basic_block bb;
+
+  if (number_of_loops (fn))
     {
-      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      push_cfun (fn);
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
       loop_optimizer_finalize ();
       pop_cfun ();
     }
-  renumber_gimple_stmt_uids (DECL_STRUCT_FUNCTION (node->decl));
+  /* We will renumber the statements.  The code that does this uses
+     the same ordering that we use for serializing them so we can use
+     the same code on the other end and not have to write out the
+     statement numbers.  We do not assign UIDs to PHIs here because
+     virtual PHIs get re-computed on-the-fly which would make numbers
+     inconsistent.  */
+  set_gimple_stmt_max_uid (fn, 0);
+  FOR_ALL_BB_FN (bb, fn)
+    {
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *stmt = gsi.phi ();
+
+	  /* Virtual PHIs are not going to be streamed.  */
+	  if (!virtual_operand_p (gimple_phi_result (stmt)))
+	    gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
+	}
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
+	}
+    }
+  /* To avoid keeping duplicate gimple IDs in the statements, renumber
+     virtual phis now.  */
+  FOR_ALL_BB_FN (bb, fn)
+    {
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *stmt = gsi.phi ();
+	  if (virtual_operand_p (gimple_phi_result (stmt)))
+	    gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
+	}
+    }
+
 }
 
 /* Output the body of function NODE->DECL.  */
@@ -2143,45 +2183,6 @@ output_function (struct cgraph_node *node)
 
       /* Output any exception handling regions.  */
       output_eh_regions (ob, fn);
-
-
-      /* We will renumber the statements.  The code that does this uses
-	 the same ordering that we use for serializing them so we can use
-	 the same code on the other end and not have to write out the
-	 statement numbers.  We do not assign UIDs to PHIs here because
-	 virtual PHIs get re-computed on-the-fly which would make numbers
-	 inconsistent.  */
-      set_gimple_stmt_max_uid (fn, 0);
-      FOR_ALL_BB_FN (bb, fn)
-	{
-	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-	       gsi_next (&gsi))
-	    {
-	      gphi *stmt = gsi.phi ();
-
-	      /* Virtual PHIs are not going to be streamed.  */
-	      if (!virtual_operand_p (gimple_phi_result (stmt)))
-	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
-	    }
-	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-	       gsi_next (&gsi))
-	    {
-	      gimple *stmt = gsi_stmt (gsi);
-	      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
-	    }
-	}
-      /* To avoid keeping duplicate gimple IDs in the statements, renumber
-	 virtual phis now.  */
-      FOR_ALL_BB_FN (bb, fn)
-	{
-	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-	       gsi_next (&gsi))
-	    {
-	      gphi *stmt = gsi.phi ();
-	      if (virtual_operand_p (gimple_phi_result (stmt)))
-	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
-	    }
-	}
 
       /* Output the code for the function.  */
       FOR_ALL_BB_FN (bb, fn)

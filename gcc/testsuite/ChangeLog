@@ -1,3 +1,282 @@
+2019-10-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/92093
+	* gcc.target/powerpc/pr91275.c: Fix type and endian issues.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92048
+	* gcc.dg/vect/fast-math-vect-pr29925.c: Avoid unrolling of
+	inner loop.
+
+2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/load-thread-pointer-once.c: New test.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92094
+	* gfortran.dg/pr92094.f90: New testcase.
+
+2019-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/92035
+	* gcc.target/i386/avx512f-vrndscaless-1.c: Add scan-assembler-times
+	directives for newly expected instructions.
+	* gcc.target/i386/avx512f-vrndscalesd-1.c: Likewise.
+	* gcc.target/i386/avx512f-vrndscaless-2.c
+	(avx512f_test): Add tests for new intrinsics.
+	* gcc.target/i386/avx512f-vrndscalesd-2.c: Likewise.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_rndscalefss_round,
+	__builtin_ia32_rndscalefsd_round): Remove.
+	(__builtin_ia32_rndscalefss_mask_round,
+	__builtin_ia32_rndscalefsd_mask_round): Define.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* c-c++-common/cxxbitfields-3.c: Adjust.
+	* c-c++-common/cxxbitfields-6.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-1.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-2.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-3.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-4.c: Likewise.
+	* g++.dg/simulate-thread/bitfields-2.C: Likewise.
+	* g++.dg/simulate-thread/bitfields.C: Likewise.
+	* gcc.dg/lto/pr52097_0.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-2.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-3.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-4.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store.c: Likewise.
+	* gcc.dg/tree-ssa/20050314-1.c: Likewise.
+
+2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92085
+	* gcc.dg/tree-ssa/pr92085-1.c: New test.
+	* gcc.dg/tree-ssa/pr92085-2.c: Likewise.
+
+2019-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89943
+	* gfortran.dg/pr89943_1.f90: New test.
+	* gfortran.dg/pr89943_2.f90: Ditto.
+	* gfortran.dg/pr89943_3.f90: Ditto.
+	* gfortran.dg/pr89943_4.f90: Ditto.
+
+2019-10-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92004
+	* gfortran.dg/argument_checking_24.f90: New test.
+	* gfortran.dg/abstract_type_6.f90: Add error message.
+	* gfortran.dg/argument_checking_11.f90: Correct wording
+	in error message.
+	* gfortran.dg/argumeent_checking_13.f90: Likewise.
+	* gfortran.dg/interface_40.f90: Add error message.
+
+2019-10-14  Maya Rashish  <coypu@sdf.org>
+
+	* gcc.c-torture/compile/pr85401: New test.
+
+2019-10-14  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* gcc.target/mips/constant-spill.c: New test.
+
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92069
+	* gcc.dg/torture/pr92069.c: New testcase.
+
+2019-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-union5.C: Test location(s) too.
+	* g++.dg/diagnostic/bitfld2.C: Likewise.
+	* g++.dg/ext/anon-struct1.C: Likewise.
+	* g++.dg/ext/anon-struct6.C: Likewise.
+	* g++.dg/ext/flexary19.C: Likewise.
+	* g++.dg/ext/flexary9.C: Likewise.
+	* g++.dg/template/error17.C: Likewise.
+
+2019-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92084
+	* g++.dg/gomp/pr92084.C: New test.
+
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/diag-aka-5.h: New test.
+	* gcc.dg/diag-aka-5a.c: Likewise.
+	* gcc.dg/diag-aka-5b.c: Likewise.
+	* gcc.target/aarch64/diag_aka_1.c (f): Expect an aka to be printed
+	for myvec.
+
+2019-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-7.c: Add tests for clauses not
+	separated by commas in simd selector trait properties.
+
+2019-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp4.c: Adjust for unsigned non-zero being
+	[1,MAX].
+
+2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/indirect-thunk-1.c: Allow 'l' or 'L' in
+	indirection label prefix, for Darwin.
+	* gcc.target/i386/indirect-thunk-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-4.c: Likewise.
+	* gcc.target/i386/pr32219-2.c: Likewise.
+	* gcc.target/i386/pr32219-3.c: Likewise.
+	* gcc.target/i386/pr32219-4.c: Likewise.
+	* gcc.target/i386/pr32219-7.c: Likewise.
+	* gcc.target/i386/pr32219-8.c: Likewise.
+	* gcc.target/i386/ret-thunk-14.c: Likewise.
+	* gcc.target/i386/ret-thunk-15.c: Likewise.
+	* gcc.target/i386/ret-thunk-9.c: Likewise.
+
+2019-10-13  Damian Rouson  <damain@sourceryinstitue.org>
+
+	PR fortran/91513
+	* gfortran.dg/impure_assignment_2.f90: Update dg-error regex.
+
+2019-10-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92017
+	* gfortran.dg/minmaxloc_14.f90: New test.
+
+2019-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (add_options_for_c99_runtime): Remove.
+	(check_effective_target_c99_runtime): Remove call to
+	add_options_for_c99_runtime.
+
+	* gcc.dg/builtins-18.c: Remove dg-add-options c99_runtime.
+	* gcc.dg/builtins-20.c: Likewise.
+	* gcc.dg/builtins-53.c: Likewise.
+	* gcc.dg/builtins-55.c: Likewise.
+	* gcc.dg/builtins-67.c: Likewise.
+	* gcc.dg/c99-tgmath-1.c: Likewise.
+	* gcc.dg/c99-tgmath-2.c: Likewise.
+	* gcc.dg/c99-tgmath-3.c: Likewise.
+	* gcc.dg/c99-tgmath-4.c: Likewise.
+	* gcc.dg/ipa/inline-8.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-5.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-7.c: Likewise.
+	* gcc.dg/nextafter-2.c: Likewise.
+	* gcc.dg/pr42427.c: Likewise.
+	* gcc.dg/pr78965.c: Likewise.
+	* gcc.dg/single-precision-constant.c: Likewise.
+	* gcc.dg/torture/builtin-convert-1.c: Likewise.
+	* gcc.dg/torture/builtin-convert-2.c: Likewise.
+	* gcc.dg/torture/builtin-convert-3.c: Likewise.
+	* gcc.dg/torture/builtin-convert-4.c: Likewise.
+	* gcc.dg/torture/builtin-fp-int-inexact.c: Likewise.
+	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: Likewise.
+	* gcc.dg/torture/builtin-integral-1.c: Likewise.
+	* gcc.dg/torture/builtin-power-1.c: Likewise.
+	* gcc.dg/tree-ssa/copy-sign-1.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-2.c: Likewise.
+	* gcc.dg/tree-ssa/mult-abs-2.c: Likewise.
+	* gcc.target/i386/387-builtin-fp-int-inexact.c: Likewise.
+	* gcc.target/i386/387-rint-inline-1.c: Likewise.
+	* gcc.target/i386/387-rint-inline-2.c: Likewise.
+	* gcc.target/i386/conversion.c: Likewise.
+	* gcc.target/i386/pr47312.c: Likewise.
+	* gcc.target/i386/sse2-builtin-fp-int-inexact.c: Likewise.
+	* gcc.target/i386/sse2-rint-inline-1.c: Likewise.
+	* gcc.target/i386/sse2-rint-inline-2.c: Likewise.
+	* gcc.target/i386/sse4_1-builtin-fp-int-inexact.c: Likewise.
+	* gcc.target/i386/sse4_1-rint-inline.c: Likewise.
+
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92063
+	* gcc.c-torture/compile/pr92063.c: New test.
+
+	* c-c++-common/gomp/declare-variant-2.c: Adjust for error recovery
+	improvements.  Add new tests.
+	* c-c++-common/gomp/declare-variant-4.c: New test.
+	* c-c++-common/gomp/declare-variant-5.c: New test.
+	* c-c++-common/gomp/declare-variant-6.c: New test.
+	* c-c++-common/gomp/declare-variant-7.c: New test.
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/dfp/c11-constants-1.c, gcc.dg/dfp/c11-constants-2.c,
+	gcc.dg/dfp/c2x-constants-1.c, gcc.dg/dfp/c2x-constants-2.c: New
+	tests.
+	* gcc.dg/dfp/constants-pedantic.c: Use -std=gnu17 explicitly.
+	Update expected diagnostics.
+
+2019-10-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92070 - bogus error with -fchecking=2.
+	* g++.dg/expr/cond17.C: New test.
+
+2019-10-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92049 - extra error with -fchecking=2.
+	* g++.dg/template/builtin2.C: New test.
+
+2019-10-11  Jim Wilson  <jimw@sifive.com>
+
+	PR rtl-optimization/91860
+	* gcc.dg/pr91860-1.c: New testcase.
+	* gcc.dg/pr91860-2.c: New testcase.
+	* gcc.dg/pr91860-3.c: New testcase.
+	* gcc.dg/pr91860-4.c: New testcase.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91649
+	* gfortran.dg/pr91649.f90: New test.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91715
+	* gfortran.dg/function_kinds_5.f90: Prune run-on error.
+	* gfortran.dg/pr85543.f90: Ditto.
+	* gfortran.dg/pr91715.f90: New test.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92018
+	* gfortran.dg/gnu_logical_2.f90: Update dg-error regex.
+	* gfortran.dg/pr81509_2.f90: Ditto.
+	* gfortran.dg/pr92018.f90: New test.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92019
+	* gfortran.dg/pr92019.f90: New test.
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/dfp/c11-keywords-1.c, gcc.dg/dfp/c11-keywords-2.c,
+	gcc.dg/dfp/c2x-keywords-1.c, gcc.dg/dfp/c2x-keywords-2.c: New
+	tests.
+	* gcc.dg/dfp/keywords-ignored-c99.c: Remove test.
+	* gcc.dg/dfp/constants-c99.c, gcc.dg/dfp/keywords-c89.c,
+	gcc.dg/dfp/keywords-c99.c: Use -pedantic-errors.
+
 2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92050

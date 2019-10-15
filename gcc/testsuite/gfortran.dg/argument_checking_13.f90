@@ -26,9 +26,9 @@ real, pointer :: pointer_dummy(:,:,:)
 real, allocatable :: deferred(:,:,:)
 real, pointer     :: ptr(:,:,:)
 call rlv1(deferred(1,1,1))         ! valid since contiguous
-call rlv1(ptr(1,1,1))              ! { dg-error "Element of assumed-shaped or pointer array" }
-call rlv1(assumed_sh_dummy(1,1,1)) ! { dg-error "Element of assumed-shaped or pointer array" }
-call rlv1(pointer_dummy(1,1,1))    ! { dg-error "Element of assumed-shaped or pointer array" }
+call rlv1(ptr(1,1,1))              ! { dg-error "Element of assumed-shape or pointer array" }
+call rlv1(assumed_sh_dummy(1,1,1)) ! { dg-error "Element of assumed-shape or pointer array" }
+call rlv1(pointer_dummy(1,1,1))    ! { dg-error "Element of assumed-shape or pointer array" }
 end
 
 subroutine test2(assumed_sh_dummy, pointer_dummy)

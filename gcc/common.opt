@@ -993,6 +993,10 @@ Align the start of loops.
 falign-loops=
 Common RejectNegative Joined Var(str_align_loops) Optimization
 
+fallow-store-data-races
+Common Report Var(flag_store_data_races) Optimization
+Allow the compiler to introduce new data races on stores.
+
 fargument-alias
 Common Ignore
 Does nothing. Preserved for backward compatibility.

@@ -36585,13 +36585,14 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 /* Parse all OpenMP clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.
    FINISH_P set if finish_omp_clauses should be called.
-   NESTED_P set if clauses should be terminated by closing paren instead
-   of end of pragma.  */
+   NESTED non-zero if clauses should be terminated by closing paren instead
+   of end of pragma.  If it is 2, additionally commas are required in between
+   the clauses.  */
 
 static tree
 cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 			   const char *where, cp_token *pragma_tok,
-			   bool finish_p = true, bool nested_p = false)
+			   bool finish_p = true, int nested = 0)
 {
   tree clauses = NULL;
   bool first = true;
@@ -36606,11 +36607,18 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
       const char *c_name;
       tree prev = clauses;
 
-      if (nested_p && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+      if (nested && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
 	break;
 
-      if (!first && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-	cp_lexer_consume_token (parser->lexer);
+      if (!first)
+	{
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	    cp_lexer_consume_token (parser->lexer);
+	  else if (nested == 2)
+	    error_at (cp_lexer_peek_token (parser->lexer)->location,
+		      "clauses in %<simd%> trait should be separated "
+                      "by %<,%>");
+	}
 
       token = cp_lexer_peek_token (parser->lexer);
       c_kind = cp_parser_omp_clause_name (parser);
@@ -36928,7 +36936,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	}
     }
  saw_error:
-  if (!nested_p)
+  if (!nested)
     cp_parser_skip_to_pragma_eol (parser, pragma_tok);
   if (finish_p)
     {
@@ -40995,6 +41003,8 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		      else
 			properties = tree_cons (NULL_TREE, t, properties);
 		    }
+		  else
+		    return error_mark_node;
 
 		  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 		    cp_lexer_consume_token (parser->lexer);
@@ -41039,6 +41049,8 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		  else
 		    properties = tree_cons (NULL_TREE, t, properties);
 		}
+	      else
+		return error_mark_node;
 	      break;
 	    case CTX_PROPERTY_SIMD:
 	      if (!has_parms_p)
@@ -41048,11 +41060,10 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 			    "%<metadirective%>");
 		  return error_mark_node;
 		}
-	      tree c;
-	      c = cp_parser_omp_all_clauses (parser,
+	      properties
+		= cp_parser_omp_all_clauses (parser,
 					     OMP_DECLARE_SIMD_CLAUSE_MASK,
-					     "simd", NULL, true, true);
-	      properties = tree_cons (NULL_TREE, c, properties);
+					     "simd", NULL, true, 2);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -41169,7 +41180,7 @@ cp_parser_omp_context_selector_specification (cp_parser *parser,
 }
 
 /* Finalize #pragma omp declare variant after a fndecl has been parsed, and put
-   that into "omp declare variant" attribute.  */
+   that into "omp declare variant base" attribute.  */
 
 static tree
 cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
@@ -41224,7 +41235,7 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
   ctx = c_omp_check_context_selector (match_loc, ctx);
   if (ctx != error_mark_node && variant != error_mark_node)
     {
-      attrs = tree_cons (get_identifier ("omp declare variant"),
+      attrs = tree_cons (get_identifier ("omp declare variant base"),
 			 build_tree_list (variant, ctx), attrs);
       if (processing_template_decl)
 	ATTR_IS_DEPENDENT (attrs) = 1;

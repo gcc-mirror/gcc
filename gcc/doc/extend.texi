@@ -10754,7 +10754,7 @@ a general-purpose header file that should be usable by all programs,
 including ISO C programs.  The keywords @code{asm}, @code{typeof} and
 @code{inline} are not available in programs compiled with
 @option{-ansi} or @option{-std} (although @code{inline} can be used in a
-program compiled with @option{-std=c99} or @option{-std=c11}).  The
+program compiled with @option{-std=c99} or a later standard).  The
 ISO C99 keyword
 @code{restrict} is only available when @option{-std=gnu99} (which will
 eventually be the default) or @option{-std=c99} (or the equivalent

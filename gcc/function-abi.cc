@@ -229,3 +229,32 @@ insn_callee_abi (const rtx_insn *insn)
 
   return default_function_abi;
 }
+
+/* Return the ABI of the function called by CALL_EXPR EXP.  Return the
+   default ABI for erroneous calls.  */
+
+function_abi
+expr_callee_abi (const_tree exp)
+{
+  gcc_assert (TREE_CODE (exp) == CALL_EXPR);
+
+  if (tree fndecl = get_callee_fndecl (exp))
+    return fndecl_abi (fndecl);
+
+  tree callee = CALL_EXPR_FN (exp);
+  if (callee == error_mark_node)
+    return default_function_abi;
+
+  tree type = TREE_TYPE (callee);
+  if (type == error_mark_node)
+    return default_function_abi;
+
+  if (POINTER_TYPE_P (type))
+    {
+      type = TREE_TYPE (type);
+      if (type == error_mark_node)
+	return default_function_abi;
+    }
+
+  return fntype_abi (type);
+}

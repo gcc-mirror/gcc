@@ -4608,18 +4608,15 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 				 need_vtt_parm_p, omit_inherited_parms_p);
       DECL_TEMPLATE_RESULT (clone) = result;
 
-      tree fn_ti = DECL_TEMPLATE_INFO (result);
-      gcc_checking_assert (TI_TEMPLATE (fn_ti) == fn);
-      tree ti = copy_node (fn_ti);
-      TI_TEMPLATE (ti) = clone;
-      DECL_TEMPLATE_INFO (result) = ti;
+      DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
+      DECL_TI_TEMPLATE (result) = clone;
 
       TREE_TYPE (clone) = TREE_TYPE (result);
       return clone;
     }
 
-  /* Clone constraints.  */
   if (flag_concepts)
+    /* Clone constraints.  */
     if (tree ci = get_constraints (fn))
       set_constraints (clone, copy_node (ci));
 
@@ -4708,6 +4705,9 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 
   return clone;
 }
+
+/* Build the clones of FN, return the number of clones built.  These
+   will be inserted onto DECL_CHAIN of FN.  */
 
 unsigned
 build_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)

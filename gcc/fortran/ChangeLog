@@ -1,3 +1,93 @@
+2019-10-15  James Norris  <jnorris@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/65438
+	* openmp.c (check_array_not_assumed): Remove pointer check.
+
+2019-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89943
+	decl.c (gfc_match_function_decl): Ignore duplicate BIND(C) for function
+	declaration in submodule.  Implement at check for F2018 C1550.
+	(gfc_match_entry): Use temporary for locus, which allows removal of
+	one gfc_error_now().
+	(gfc_match_subroutine): Ignore duplicate BIND(C) for subroutine
+	declaration in submodule.  Implement at check for F2018 C1550.
+
+2019-10-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92004
+	* array.c (expand_constructor): Set from_constructor on
+	expression.
+	* gfortran.h (gfc_symbol): Add maybe_array.
+	(gfc_expr): Add from_constructor.
+	* interface.c (maybe_dummy_array_arg): New function.
+	(compare_parameter): If the formal argument is generated from a
+	call, check the conditions where an array element could be
+	passed to an array.  Adjust error message for assumed-shape
+	or pointer array.  Use correct language for assumed shaped arrays.
+	(gfc_get_formal_from_actual_arglist): Set maybe_array on the
+	symbol if the actual argument is an array element fulfilling
+	the conditions of 15.5.2.4.
+
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* error.c: Remove debug pragma added in previous commit.
+
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92072
+	* error.c (error_print, gfc_format_decoder): Fix %C column-
+	offset handling.
+
+2019-10-13  Damian Rouson  <damain@sourceryinstitue.org>
+
+	PR fortran/91513
+	* resolve.c (resolve_ordinary_assign): Improved error message.
+
+2019-10-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90297
+	* resolve.c (resolve_typebound_function): Remove code with no
+	functional effect.
+
+2019-10-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92017
+	* expr.c (simplify_parameter_variable): Set the character length
+	of the result expression from the original expression if
+	necessary.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91649
+	check.c (gfc_check_findloc): Additional checking for valid arguments
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91715
+	* decl.c (gfc_match_prefix): If matching a type-spec returns an error,
+	it's an error so re-act correctly.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92018
+	* check.c (reset_boz): New function.
+	(illegal_boz_arg, boz_args_check, gfc_check_complex, gfc_check_float,
+	gfc_check_transfer): Use it.
+	(gfc_check_dshift): Use reset_boz, and re-arrange the checking to
+	help suppress possible run-on errors.
+	(gfc_check_and): Restore checks for valid argument types.  Use
+	reset_boz, and re-arrange the checking to help suppress possible
+	run-on errors.
+	* resolve.c (resolve_function): Actual arguments cannot be BOZ in
+	a function reference.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92019
+	* array.c (match_subscript): BOZ cannot be an array subscript.
+
 2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92050
@@ -62,7 +152,8 @@
 
 2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
-	* error (error_print, gfc_format_decoder): Fix off-by one issue with %C.
+	* error.c (error_print, gfc_format_decoder): Fix off-by one issue
+	with %C.
 
 2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 

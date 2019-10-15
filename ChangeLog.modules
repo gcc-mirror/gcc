@@ -1,5 +1,7 @@
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r277002.
+
 	Revert TYPE_LAMBDA_P, it's unnecessary churn.
 	gcc/cp/
 	* cp-tree.h (LAMBDA_TYPE_P): Subsume TYPE_LAMBDA_P.

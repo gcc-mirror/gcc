@@ -1,6 +1,6 @@
 /* PR middle-end/50141 */
 /* { dg-do compile } */
-/* { dg-options "-O2 --param allow-store-data-races=0" } */
+/* { dg-options "-O2 -fno-allow-store-data-races" } */
 
 struct S
 {

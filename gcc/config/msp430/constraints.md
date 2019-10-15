@@ -60,6 +60,7 @@
 		 (match_code "reg" "00")
 		 (match_test ("CONST_INT_P (XEXP (XEXP (op, 0), 1))")))
 	    (match_test "CONSTANT_P (XEXP (op, 0))")
+	    (match_code "post_inc" "0")
 	    )))
 
 (define_constraint "Yl"

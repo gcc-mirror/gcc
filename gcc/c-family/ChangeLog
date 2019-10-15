@@ -1,3 +1,32 @@
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.h (user_facing_original_type_p): Declare.
+	* c-common.c: Include c-spellcheck.h.
+	(user_facing_original_type_p): New function.
+
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_mark_declare_variant,
+	c_omp_context_selector_matches): Declare.
+	* c-omp.c: Include attribs.h, gimplify.h, cgraph.h, symbol-summary.h
+	and hsa-common.h.
+	(c_omp_get_context_selector): Support second argument NULL.
+	(c_omp_mark_declare_variant, c_omp_context_selector_matches): New
+	functions.
+	* c-attribs.c (c_common_attribute_table): Remove "omp declare variant"
+	attribute, add "omp declare variant base" and
+	"omp declare variant variant" attributes.
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (Wc11-c2x-compat): Add CPP(cpp_warn_c11_c2x_compat)
+	CppReason(CPP_W_C11_C2X_COMPAT).
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_common_reswords): Do not use D_EXT for _Decimal32,
+	_Decimal64 and _Decimal128.
+
 2019-10-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Do not define macros for DFP

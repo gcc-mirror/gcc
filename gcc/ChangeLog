@@ -1,3 +1,275 @@
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md (zero_extendqipsi2): New.
+	(zero_extendqisi2): Optimize case where src register and base dst
+	register are the same.
+	(zero_extendhipsi2): Don't use 430X insn for rYs->r case.
+	(zero_extendpsisi2): Optimize r->m case.
+	Add unnamed insn patterns to catch insns combine searches for when
+	optimizing pointer manipulation.
+
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md: Group zero_extend* insns together.
+
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/constraints.md: Allow post_inc operand for "Ya"
+	constraint.
+	* config/msp430/msp430.c (msp430_legitimate_address_p): Handle
+	POST_INC.
+	(msp430_subreg): Likewise.
+	(msp430_split_addsi): Likewise.
+	(msp430_print_operand_addr): Likewise.
+	* config/msp430/msp430.h (HAVE_POST_INCREMENT): Define.
+	(USE_STORE_POST_INCREMENT): Define.
+	* config/msp430/msp430.md: Use the msp430_general_dst_operand or
+	msp430_general_dst_nonv_operand predicates for the lvalues of insns.
+	* config/msp430/predicates.md (msp430_nonpostinc_operand): New.
+	(msp430_general_dst_operand): New.
+	(msp430_general_dst_nonv_operand): New.
+	(msp430_nonsubreg_operand): Remove.
+	(msp430_nonsubreg_dst_operand): New.
+	(msp430_nonsubreg_or_imm_operand): Allow reg or mem operands in place
+	of defunct msp430_nonsubreg_operand.
+	(msp430_nonsubregnonpostinc_or_imm_operand): New.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91929
+	* tree-ssa-pre.c (pre_expr_d::loc): New member.
+	(get_or_alloc_expr_for_name): Initialize it.
+	(get_or_alloc_expr_for_constant): Likewise.
+	(phi_translate_1): Copy it.
+	(create_expression_by_pieces): Use the original location
+	of the expression for the inserted stmt.
+	(compute_avail): Record the location of the stmt for the
+	expressions created.
+
+2019-10-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssa-strlen.c (count_nonzero_bytes): Check tree_fits_uhwi_p
+	before using tree_to_uhwi.
+
+2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.md: Run %a0:DI splitters only after reload.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92094
+	* tree-vect-loop.c (vectorizable_reduction): For nested cycles
+	do not adjust the reduction definition def type.
+	* tree-vect-stmts.c (vect_transform_stmt): Verify the scalar stmt
+	defines the latch argument of the PHI.
+
+2019-10-15  Hongyu Wang  <hongtao.wang@intel.com>
+
+	PR target/92035
+	* config/i386/avx512fintrin.h (_mm_mask_roundscale_ss,
+	_mm_maskz_roundscale_ss, _mm_maskz_roundscale_round_ss,
+	_mm_maskz_roundscale_round_ss, _mm_mask_roundscale_sd,
+	_mm_maskz_roundscale_sd, _mm_mask_roundscale_round_sd,
+	_mm_maskz_roundscale_round_sd): New intrinsics.
+	(_mm_roundscale_ss, _mm_roundscale_round_ss): Use
+	__builtin_ia32_rndscales?_mask_round builtins instead of
+	__builtin_ia32_rndscales?_round.
+	* config/i386/i386-builtin.def (__builtin_ia32_rndscaless_round,
+	__builtin_ia32_rndscalesd_round): Remove.
+	(__builtin_ia32_rndscaless_mask_round,
+	__builtin_ia32_rndscalesd_mask_round): New intrinsics.
+	* config/i386/sse.md
+	(avx512f_rndscale<mode><round_saeonly_name>): Renamed to ...
+	(avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	 ... this, adjust and add subst atrributes to make it maskable.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* common.opt (fallow-store-data-races): New.
+	* params.def (PARAM_ALLOW_STORE_DATA_RACES): Remove.
+	* params.h (ALLOW_STORE_DATA_RACES): Likewise.
+	* doc/invoke.texi (fallow-store-data-races): Document.
+	(--param allow-store-data-races): Remove docs.
+	* opts.c (default_options_table): Enable -fallow-store-data-races
+	at -Ofast.
+	(default_options_optimization): Do not enable --param
+	allow-store-data-races at -Ofast.
+	* tree-if-conv.c (ifcvt_memrefs_wont_trap): Use flag_store_data_races
+	instead of PARAM_ALLOW_STORE_DATA_RACES.
+	* tree-ssa-loop-im.c (execute_sm): Likewise.
+
+2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92085
+	* tree-if-conv.c (ifcvt_local_dce): Call gsi_next in else clause,
+	instead of calling it unconditionally after
+	delete_dead_or_redundant_assignment and fix indentation.
+
+2019-10-15  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/arm/vfp.md (fma<SDF:mode>4): Enable DF only when
+	TARGET_VFP_DOUBLE.
+	(*fmsub<SDF:mode>4): Likewise.
+	*fnmsub<SDF:mode>4): Likewise.
+	(*fnmadd<SDF:mode>4): Likewise.
+
+2019-10-14 Joel Hutton  <Joel.Hutton@arm.com>
+
+	* doc/tree-ssa.texi: Update renamed macro name.
+
+2019-10-14  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* config/mips/mips.c (mips_cannot_force_const_mem): Reject
+	vector constants.
+
+2019-10-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c: Use unsigned ints for the picbase label
+	counters, initialise the vars explicitly.
+	(update_pic_label_number_if_needed): Move a variable declaration
+	to where it's needed.
+	(machopic_output_function_base_name): Use a more strict checking
+	assert, and and unsigned int for the picbase label counter.
+	(machopic_get_function_picbase): Likewise.
+
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* dse.c (scan_insn): Use param max_active_local_stores.
+	(dse_step1): Get PARAM_MAX_DSE_ACTIVE_LOCAL_STORES and adjust
+	based on optimization level.
+	* loop-invariant.c (move_loop_invariants): Adjust
+	LOOP_INVARIANT_MAX_BBS_IN_LOOP based on optimization level.
+	* opts.c (default_options_optimization): Do not adjust
+	PARAM_MAX_DSE_ACTIVE_LOCAL_STORES and
+	LOOP_INVARIANT_MAX_BBS_IN_LOOP here.
+
+2019-10-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (arm_legitimize_address): Remove Thumb-2 bailout.
+
+2019-10-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (arm_option_override): Don't override sched
+	pressure algorithm.
+
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92069
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): For nested
+	cycles do not set vect_nested_cycle on the latch definition.
+
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function-abi.h (expr_callee_abi): Declare.
+	* function-abi.cc (expr_callee_abi): New function.
+
+2019-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range_base::set): Normalize unsigned ~[0,0]
+	into [1,MAX].
+	* tree-vrp.h (value_range_base::nonzero_p): Adjust for unsigned
+	non-zero being represented as [1,MAX].
+
+2019-10-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	* tree-sra.c (dump_access): Add missing braces.
+
+2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_indirection_name): Rework the
+	function to emit linker-visible symbols only for indirections
+	in the data section.  Clean up the code and update comments.
+
+2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_indirect_data_reference): Remove
+	redundant code.
+
+2019-10-13  Nathan Sidwell  <nathan@acm.org>
+
+	* gengtype-lex.l (CXX_KEYWORD): Add 'mutable'.
+
+2019-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Test Directives, Add Options): Remove
+	c99_runtime.
+
+2019-10-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (collect_block_tree_leafs): Renumber statements
+	so non-virutal are before virutals.
+	(output_function): Avoid body modifications.
+
+2019-10-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_call): Load descriptor address to register
+	%r22.  Load function address before global pointer.
+	(pa_attr_length_indirect_call): Adjust length of inline versions of
+	$$dyncall.
+	(pa_output_indirect_call): Remove fast inline version of $$dyncall
+	before normal cases.  Update inline $$dyncall sequences to preserve
+	function descriptor address in register %r22.
+	(TRAMPOLINE_CODE_SIZE): Adjust.
+	(pa_asm_trampoline_template): Revise 32-bit trampoline.  Don't assume
+	register %r22 contains trampoline address.
+	(pa_trampoline_init): Adjust offsets.
+	(pa_trampoline_adjust_address): Likewise.
+	* config/pa/pa.h (TRAMPOLINE_SIZE): Adjust 32-bit size.
+
+2019-10-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/67183
+	* config/darwin.c (machopic_indirection): New field to flag
+	non-lazy-symbol-pointers in the data section.
+	(machopic_indirection_name): Compute if an indirection should
+	appear in the data section.
+	(machopic_output_data_section_indirection): New callback split
+	from machopic_output_indirection.
+	(machopic_output_stub_indirection): Likewise.
+	(machopic_output_indirection): Retain the code for non-lazy
+	symbol pointers in their regular section.
+	(machopic_finish): Use the new callbacks to order the indirection
+	output.
+
+2019-10-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-protos.h (machopic_finish): Delete.
+	* config/darwin.c (machopic_finish): Make static.
+
+2019-10-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_file_end): Only emit empty CTOR/DTOR
+	sections when building kernel extension code.
+
+2019-10-12  Palmer Dabbelt  <palmer@sifive.com>
+
+	* doc/extend.texi (Alternate Keywords): Change "-std=c11" to "a
+	later standard."
+
+2019-10-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc/config/pa/pa.c (pa_option_override): Remove trailing comma
+	from warning.
+
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92063
+	* tree-eh.c (operation_could_trap_helper_p) <case COND_EXPR>
+	<case VEC_COND_EXPR>: Return false with *handled = false.
+	(tree_could_trap_p): For {,VEC_}COND_EXPR return false instead of
+	recursing on the first operand.
+	* fold-const.c (simple_operand_p_2): Use generic_expr_could_trap_p
+	instead of tree_could_trap_p.
+	* tree-ssa-sccvn.c (vn_nary_may_trap): Formatting fixes.
+
+2019-10-11  Jim Wilson  <jimw@sifive.com>
+
+	PR rtl-optimization/91860
+	* combine.c (subst): If new_rtx is a constant, also check for
+	SIGN_EXTEND when deciding whether to call simplify_unary_operation.
+
 2019-10-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* expr.c (store_expr): Use rtx_to_poly_int64 rather than
