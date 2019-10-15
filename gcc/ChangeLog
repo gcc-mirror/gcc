@@ -1,5 +1,15 @@
 2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.md (zero_extendqipsi2): New.
+	(zero_extendqisi2): Optimize case where src register and base dst
+	register are the same.
+	(zero_extendhipsi2): Don't use 430X insn for rYs->r case.
+	(zero_extendpsisi2): Optimize r->m case.
+	Add unnamed insn patterns to catch insns combine searches for when
+	optimizing pointer manipulation.
+
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/msp430.md: Group zero_extend* insns together.
 
 2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
