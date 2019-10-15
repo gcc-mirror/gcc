@@ -5742,20 +5742,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
     {
       if (is_a <gphi *> (stmt_info->stmt))
-	{
-	  /* Analysis for double-reduction is done on the outer
-	     loop PHI, nested cycles have no further restrictions.  */
-	  STMT_VINFO_TYPE (stmt_info) = cycle_phi_info_type;
-	  /* For nested cycles we want to let regular vectorizable_*
-	     routines handle code-generation.  */
-	  if (STMT_VINFO_DEF_TYPE (reduc_info) != vect_double_reduction_def)
-	    {
-	      stmt_info = STMT_VINFO_REDUC_DEF (stmt_info);
-	      STMT_VINFO_DEF_TYPE (stmt_info) = vect_internal_def;
-	      STMT_VINFO_DEF_TYPE (vect_stmt_to_vectorize (stmt_info))
-		= vect_internal_def;
-	    }
-	}
+	/* Analysis for double-reduction is done on the outer
+	   loop PHI, nested cycles have no further restrictions.  */
+	STMT_VINFO_TYPE (stmt_info) = cycle_phi_info_type;
       else
 	STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
