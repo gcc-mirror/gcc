@@ -2973,10 +2973,11 @@ ifcvt_local_dce (class loop *loop)
 	  ao_ref write;
 	  ao_ref_init (&write, lhs);
 
-          if (dse_classify_store (&write, stmt, false, NULL, NULL, latch_vdef)
-              == DSE_STORE_DEAD)
-            delete_dead_or_redundant_assignment (&gsi, "dead");
-	  gsi_next (&gsi);
+	  if (dse_classify_store (&write, stmt, false, NULL, NULL, latch_vdef)
+	      == DSE_STORE_DEAD)
+	    delete_dead_or_redundant_assignment (&gsi, "dead");
+	  else
+	    gsi_next (&gsi);
 	  continue;
 	}
 

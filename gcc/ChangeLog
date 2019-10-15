@@ -1,3 +1,10 @@
+2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92085
+	* tree-if-conv.c (ifcvt_local_dce): Call gsi_next in else clause,
+	instead of calling it unconditionally after
+	delete_dead_or_redundant_assignment and fix indentation.
+
 2019-10-15  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* config/arm/vfp.md (fma<SDF:mode>4): Enable DF only when
