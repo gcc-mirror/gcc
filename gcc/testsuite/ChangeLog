@@ -1,3 +1,7 @@
+2019-10-16  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* gcc.target/mips/msa-dpadd-dpsub.c: New test.
+
 2019-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/symbol-range.c: Improve testcase.
