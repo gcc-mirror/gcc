@@ -1,3 +1,10 @@
+2019-10-16  Peter Bergner <bergner@linux.ibm.com>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/70010
+	* config/rs6000/rs6000.c (rs6000_can_inline_p): Prohibit inlining if
+	the callee explicitly disables some isa_flags the caller is using.
+
 2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* function-abi.cc (expr_callee_abi): Assert for POINTER_TYPE_P.

@@ -1,3 +1,13 @@
+2019-10-16  Peter Bergner <bergner@linux.ibm.com>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/70010
+	* gcc.target/powerpc/pr70010.c: New test.
+	* gcc.target/powerpc/pr70010-1.c: New test.
+	* gcc.target/powerpc/pr70010-2.c: New test.
+	* gcc.target/powerpc/pr70010-3.c: New test.
+	* gcc.target/powerpc/pr70010-4.c: New test.
+
 2019-10-16  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/91088
