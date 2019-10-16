@@ -69,6 +69,13 @@ int main ()
 	  /* The GCC nvptx back end enforces vector_length (32).  */
 	  vectors_actual = 32;
 	}
+      else if (acc_on_device (acc_device_gcn))
+	{
+	  /* AMD GCN relies on the autovectorizer for the vector dimension:
+	     the loop below isn't likely to be vectorized, so vectors_actual
+	     is effectively 1.  */
+	  vectors_actual = 1;
+	}
       else if (!acc_on_device (acc_device_host))
 	__builtin_abort ();
 #pragma acc loop gang \
