@@ -1,3 +1,8 @@
+2019-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_symbol):
+	Apply reasonable limit to symbol offsets.
+
 2019-10-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_valid_reduction_input_p): Remove.
