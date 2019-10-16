@@ -1,3 +1,14 @@
+2019-10-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_valid_reduction_input_p): Remove.
+	(vect_is_simple_reduction): Delay checking to
+	vectorizable_reduction and relax the checking.
+	(vectorizable_reduction): Check we have a simple use.  Check
+	for bogus condition reductions.
+	* tree-vect-stmts.c (vect_transform_stmt): Make sure we
+	are looking at the last stmt in a pattern sequence when
+	filling in backedge PHI values.
+
 2019-10-16  Peter Bergner <bergner@linux.ibm.com>
 	    Jiufu Guo  <guojiufu@linux.ibm.com>
 
