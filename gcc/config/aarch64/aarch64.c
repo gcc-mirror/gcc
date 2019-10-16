@@ -5321,8 +5321,9 @@ aarch64_layout_frame (void)
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
   bool simd_function = (crtl->abi->id () == ARM_PCS_SIMD);
+  aarch64_frame &frame = cfun->machine->frame;
 
-  cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
+  frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
   /* Adjust the outgoing arguments size if required.  Keep it in sync with what
      the mid-end is doing.  */
@@ -5331,21 +5332,20 @@ aarch64_layout_frame (void)
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
 
-  cfun->machine->frame.wb_candidate1 = INVALID_REGNUM;
-  cfun->machine->frame.wb_candidate2 = INVALID_REGNUM;
+  frame.wb_candidate1 = INVALID_REGNUM;
+  frame.wb_candidate2 = INVALID_REGNUM;
 
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
-    cfun->machine->frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
+    frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-    cfun->machine->frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
+    frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
 
   /* ... that includes the eh data registers (if needed)...  */
   if (crtl->calls_eh_return)
     for (regno = 0; EH_RETURN_DATA_REGNO (regno) != INVALID_REGNUM; regno++)
-      cfun->machine->frame.reg_offset[EH_RETURN_DATA_REGNO (regno)]
-	= SLOT_REQUIRED;
+      frame.reg_offset[EH_RETURN_DATA_REGNO (regno)] = SLOT_REQUIRED;
 
   /* ... and any callee saved register that dataflow says is live.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -5353,41 +5353,40 @@ aarch64_layout_frame (void)
 	&& !fixed_regs[regno]
 	&& (regno == R30_REGNUM
 	    || !crtl->abi->clobbers_full_reg_p (regno)))
-      cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
+      frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
 	&& !fixed_regs[regno]
 	&& !crtl->abi->clobbers_full_reg_p (regno))
       {
-	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
+	frame.reg_offset[regno] = SLOT_REQUIRED;
 	last_fp_reg = regno;
       }
 
-  if (cfun->machine->frame.emit_frame_chain)
+  if (frame.emit_frame_chain)
     {
       /* FP and LR are placed in the linkage record.  */
-      cfun->machine->frame.reg_offset[R29_REGNUM] = 0;
-      cfun->machine->frame.wb_candidate1 = R29_REGNUM;
-      cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
-      cfun->machine->frame.wb_candidate2 = R30_REGNUM;
+      frame.reg_offset[R29_REGNUM] = 0;
+      frame.wb_candidate1 = R29_REGNUM;
+      frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
+      frame.wb_candidate2 = R30_REGNUM;
       offset = 2 * UNITS_PER_WORD;
     }
 
   /* With stack-clash, LR must be saved in non-leaf functions.  */
   gcc_assert (crtl->is_leaf
-	      || (cfun->machine->frame.reg_offset[R30_REGNUM]
-		  != SLOT_NOT_REQUIRED));
+	      || frame.reg_offset[R30_REGNUM] != SLOT_NOT_REQUIRED);
 
   /* Now assign stack slots for them.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
-    if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
+    if (frame.reg_offset[regno] == SLOT_REQUIRED)
       {
-	cfun->machine->frame.reg_offset[regno] = offset;
-	if (cfun->machine->frame.wb_candidate1 == INVALID_REGNUM)
-	  cfun->machine->frame.wb_candidate1 = regno;
-	else if (cfun->machine->frame.wb_candidate2 == INVALID_REGNUM)
-	  cfun->machine->frame.wb_candidate2 = regno;
+	frame.reg_offset[regno] = offset;
+	if (frame.wb_candidate1 == INVALID_REGNUM)
+	  frame.wb_candidate1 = regno;
+	else if (frame.wb_candidate2 == INVALID_REGNUM)
+	  frame.wb_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
 
@@ -5396,7 +5395,7 @@ aarch64_layout_frame (void)
   bool has_align_gap = offset != max_int_offset;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-    if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
+    if (frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	/* If there is an alignment gap between integer and fp callee-saves,
 	   allocate the last fp register to it if possible.  */
@@ -5405,27 +5404,27 @@ aarch64_layout_frame (void)
 	    && !simd_function
 	    && (offset & 8) == 0)
 	  {
-	    cfun->machine->frame.reg_offset[regno] = max_int_offset;
+	    frame.reg_offset[regno] = max_int_offset;
 	    break;
 	  }
 
-	cfun->machine->frame.reg_offset[regno] = offset;
-	if (cfun->machine->frame.wb_candidate1 == INVALID_REGNUM)
-	  cfun->machine->frame.wb_candidate1 = regno;
-	else if (cfun->machine->frame.wb_candidate2 == INVALID_REGNUM
-		 && cfun->machine->frame.wb_candidate1 >= V0_REGNUM)
-	  cfun->machine->frame.wb_candidate2 = regno;
+	frame.reg_offset[regno] = offset;
+	if (frame.wb_candidate1 == INVALID_REGNUM)
+	  frame.wb_candidate1 = regno;
+	else if (frame.wb_candidate2 == INVALID_REGNUM
+		 && frame.wb_candidate1 >= V0_REGNUM)
+	  frame.wb_candidate2 = regno;
 	offset += simd_function ? UNITS_PER_VREG : UNITS_PER_WORD;
       }
 
   offset = ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
-  cfun->machine->frame.saved_regs_size = offset;
+  frame.saved_regs_size = offset;
 
   HOST_WIDE_INT varargs_and_saved_regs_size
-    = offset + cfun->machine->frame.saved_varargs_size;
+    = offset + frame.saved_varargs_size;
 
-  cfun->machine->frame.hard_fp_offset
+  frame.hard_fp_offset
     = aligned_upper_bound (varargs_and_saved_regs_size
 			   + get_frame_size (),
 			   STACK_BOUNDARY / BITS_PER_UNIT);
@@ -5433,57 +5432,51 @@ aarch64_layout_frame (void)
   /* Both these values are already aligned.  */
   gcc_assert (multiple_p (crtl->outgoing_args_size,
 			  STACK_BOUNDARY / BITS_PER_UNIT));
-  cfun->machine->frame.frame_size
-    = (cfun->machine->frame.hard_fp_offset
-       + crtl->outgoing_args_size);
+  frame.frame_size = frame.hard_fp_offset + crtl->outgoing_args_size;
 
-  cfun->machine->frame.locals_offset = cfun->machine->frame.saved_varargs_size;
+  frame.locals_offset = frame.saved_varargs_size;
 
-  cfun->machine->frame.initial_adjust = 0;
-  cfun->machine->frame.final_adjust = 0;
-  cfun->machine->frame.callee_adjust = 0;
-  cfun->machine->frame.callee_offset = 0;
+  frame.initial_adjust = 0;
+  frame.final_adjust = 0;
+  frame.callee_adjust = 0;
+  frame.callee_offset = 0;
 
   HOST_WIDE_INT max_push_offset = 0;
-  if (cfun->machine->frame.wb_candidate2 != INVALID_REGNUM)
+  if (frame.wb_candidate2 != INVALID_REGNUM)
     max_push_offset = 512;
-  else if (cfun->machine->frame.wb_candidate1 != INVALID_REGNUM)
+  else if (frame.wb_candidate1 != INVALID_REGNUM)
     max_push_offset = 256;
 
   HOST_WIDE_INT const_size, const_fp_offset;
-  if (cfun->machine->frame.frame_size.is_constant (&const_size)
+  if (frame.frame_size.is_constant (&const_size)
       && const_size < max_push_offset
       && known_eq (crtl->outgoing_args_size, 0))
     {
       /* Simple, small frame with no outgoing arguments:
 	 stp reg1, reg2, [sp, -frame_size]!
 	 stp reg3, reg4, [sp, 16]  */
-      cfun->machine->frame.callee_adjust = const_size;
+      frame.callee_adjust = const_size;
     }
-  else if (known_lt (crtl->outgoing_args_size
-		     + cfun->machine->frame.saved_regs_size, 512)
+  else if (known_lt (crtl->outgoing_args_size + frame.saved_regs_size, 512)
 	   && !(cfun->calls_alloca
-		&& known_lt (cfun->machine->frame.hard_fp_offset,
-			     max_push_offset)))
+		&& known_lt (frame.hard_fp_offset, max_push_offset)))
     {
       /* Frame with small outgoing arguments:
 	 sub sp, sp, frame_size
 	 stp reg1, reg2, [sp, outgoing_args_size]
 	 stp reg3, reg4, [sp, outgoing_args_size + 16]  */
-      cfun->machine->frame.initial_adjust = cfun->machine->frame.frame_size;
-      cfun->machine->frame.callee_offset
-	= cfun->machine->frame.frame_size - cfun->machine->frame.hard_fp_offset;
+      frame.initial_adjust = frame.frame_size;
+      frame.callee_offset = frame.frame_size - frame.hard_fp_offset;
     }
-  else if (cfun->machine->frame.hard_fp_offset.is_constant (&const_fp_offset)
+  else if (frame.hard_fp_offset.is_constant (&const_fp_offset)
 	   && const_fp_offset < max_push_offset)
     {
       /* Frame with large outgoing arguments but a small local area:
 	 stp reg1, reg2, [sp, -hard_fp_offset]!
 	 stp reg3, reg4, [sp, 16]
 	 sub sp, sp, outgoing_args_size  */
-      cfun->machine->frame.callee_adjust = const_fp_offset;
-      cfun->machine->frame.final_adjust
-	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
+      frame.callee_adjust = const_fp_offset;
+      frame.final_adjust = frame.frame_size - frame.callee_adjust;
     }
   else
     {
@@ -5493,12 +5486,11 @@ aarch64_layout_frame (void)
 	 add x29, sp, 0
 	 stp reg3, reg4, [sp, 16]
 	 sub sp, sp, outgoing_args_size  */
-      cfun->machine->frame.initial_adjust = cfun->machine->frame.hard_fp_offset;
-      cfun->machine->frame.final_adjust
-	= cfun->machine->frame.frame_size - cfun->machine->frame.initial_adjust;
+      frame.initial_adjust = frame.hard_fp_offset;
+      frame.final_adjust = frame.frame_size - frame.initial_adjust;
     }
 
-  cfun->machine->frame.laid_out = true;
+  frame.laid_out = true;
 }
 
 /* Return true if the register REGNO is saved on entry to

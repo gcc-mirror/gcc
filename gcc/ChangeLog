@@ -1,3 +1,9 @@
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Use a local
+	"frame" reference instead of always referring directly to
+	"cfun->machine->frame".
+
 2019-10-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92119
