@@ -12233,7 +12233,7 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
 
   unsigned int i, elsize = 0, idx = 0, n_elts;
   unsigned int innersize;
-  unsigned char bytes[16];
+  unsigned char bytes[16] = {};
   int immtype = -1, matches;
   unsigned int invmask = inverse ? 0xff : 0;
   bool vector = GET_CODE (op) == CONST_VECTOR;

@@ -1,3 +1,7 @@
+2019-10-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (neon_valid_immediate): Clear bytes before use.
+
 2019-10-16  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
 	* config/mips/mips.c (mips_expand_builtin_insn): Force the
