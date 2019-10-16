@@ -2199,7 +2199,8 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       lhs = gimple_call_lhs (last_stmt);
       oprnd0 = gimple_call_arg (last_stmt, 0);
       type = TREE_TYPE (oprnd0);
-      if (TYPE_PRECISION (TREE_TYPE (lhs)) != 16
+      if (!lhs
+	  || TYPE_PRECISION (TREE_TYPE (lhs)) != 16
 	  || TYPE_PRECISION (type) <= 16
 	  || TREE_CODE (oprnd0) != SSA_NAME
 	  || BITS_PER_UNIT != 8
