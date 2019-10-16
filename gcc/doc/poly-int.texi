@@ -803,6 +803,18 @@ the assertion is known to hold.
 @item constant_lower_bound (@var{a})
 Assert that @var{a} is nonnegative and return the smallest value it can have.
 
+@item constant_lower_bound_with_limit (@var{a}, @var{b})
+Return the least value @var{a} can have, given that the context in
+which @var{a} appears guarantees that the answer is no less than @var{b}.
+In other words, the caller is asserting that @var{a} is greater than or
+equal to @var{b} even if @samp{known_ge (@var{a}, @var{b})} doesn't hold.
+
+@item constant_upper_bound_with_limit (@var{a}, @var{b})
+Return the greatest value @var{a} can have, given that the context in
+which @var{a} appears guarantees that the answer is no greater than @var{b}.
+In other words, the caller is asserting that @var{a} is less than or equal
+to @var{b} even if @samp{known_le (@var{a}, @var{b})} doesn't hold.
+
 @item lower_bound (@var{a}, @var{b})
 Return a value that is always less than or equal to both @var{a} and @var{b}.
 It will be the greatest such value for some indeterminate values

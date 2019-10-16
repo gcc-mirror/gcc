@@ -1,3 +1,12 @@
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/92033
+	* poly-int.h (constant_lower_bound_with_limit): New function.
+	(constant_upper_bound_with_limit): Likewise.
+	* doc/poly-int.texi: Document them.
+	* tree-vrp.c (value_range_base::set): Convert POLY_INT_CST bounds
+	into the worst-case INTEGER_CST bounds.
+
 2019-10-16  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/91088
