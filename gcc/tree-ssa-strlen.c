@@ -1094,11 +1094,16 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata,
 }
 
 /* Invalidate string length information for strings whose length
-   might change due to stores in stmt.  */
+   might change due to stores in stmt, except those marked DON'T
+   INVALIDATE.  For string-modifying statements, ZERO_WRITE is
+   set when the statement wrote only zeros.  */
 
 static bool
-maybe_invalidate (gimple *stmt)
+maybe_invalidate (gimple *stmt, bool zero_write = false)
 {
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  %s()\n", __func__);
+
   strinfo *si;
   unsigned int i;
   bool nonempty = false;
@@ -1109,18 +1114,59 @@ maybe_invalidate (gimple *stmt)
 	if (!si->dont_invalidate)
 	  {
 	    ao_ref r;
-	    /* Do not use si->nonzero_chars.  */
-	    ao_ref_init_from_ptr_and_size (&r, si->ptr, NULL_TREE);
+	    tree size = NULL_TREE;
+	    if (si->nonzero_chars)
+	      {
+		/* Include the terminating nul in the size of the string
+		   to consider when determining possible clobber.  */
+		tree type = TREE_TYPE (si->nonzero_chars);
+		size = fold_build2 (PLUS_EXPR, type, si->nonzero_chars,
+				    build_int_cst (type, 1));
+	      }
+	    ao_ref_init_from_ptr_and_size (&r, si->ptr, size);
 	    if (stmt_may_clobber_ref_p_1 (stmt, &r))
 	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  {
+		    if (size && tree_fits_uhwi_p (size))
+		      fprintf (dump_file,
+			       "  statement may clobber string %zu long\n",
+			       tree_to_uhwi (size));
+		    else
+		      fprintf (dump_file,
+			       "  statement may clobber string\n");
+		  }
+
 		set_strinfo (i, NULL);
 		free_strinfo (si);
 		continue;
+	      }
+
+	    if (size
+		&& !zero_write
+		&& si->stmt
+		&& is_gimple_call (si->stmt)
+		&& (DECL_FUNCTION_CODE (gimple_call_fndecl (si->stmt))
+		    == BUILT_IN_CALLOC))
+	      {
+		/* If the clobber test above considered the length of
+		   the string (including the nul), then for (potentially)
+		   non-zero writes that might modify storage allocated by
+		   calloc consider the whole object and if it might be
+		   clobbered by the statement reset the allocation
+		   statement.  */
+		ao_ref_init_from_ptr_and_size (&r, si->ptr, NULL_TREE);
+		if (stmt_may_clobber_ref_p_1 (stmt, &r))
+		  si->stmt = NULL;
 	      }
 	  }
 	si->dont_invalidate = false;
 	nonempty = true;
       }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  %s() ==> %i\n", __func__, nonempty);
+
   return nonempty;
 }
 
@@ -3213,11 +3259,15 @@ handle_builtin_malloc (enum built_in_function bcode, gimple_stmt_iterator *gsi)
    return true when the call is transfomred, false otherwise.  */
 
 static bool
-handle_builtin_memset (gimple_stmt_iterator *gsi)
+handle_builtin_memset (gimple_stmt_iterator *gsi, bool *zero_write)
 {
   gimple *stmt2 = gsi_stmt (*gsi);
   if (!integer_zerop (gimple_call_arg (stmt2, 1)))
     return false;
+
+  /* Let the caller know the memset call cleared the destination.  */
+  *zero_write = true;
+
   tree ptr = gimple_call_arg (stmt2, 0);
   int idx1 = get_stridx (ptr);
   if (idx1 <= 0)
@@ -4223,7 +4273,7 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
    '*(int*)a = 12345').  Return true when handled.  */
 
 static bool
-handle_store (gimple_stmt_iterator *gsi, const vr_values *rvals)
+handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rvals)
 {
   int idx = -1;
   strinfo *si = NULL;
@@ -4250,7 +4300,10 @@ handle_store (gimple_stmt_iterator *gsi, const vr_values *rvals)
 	  if (offset == 0)
 	    ssaname = TREE_OPERAND (lhs, 0);
 	  else if (si == NULL || compare_nonzero_chars (si, offset, rvals) < 0)
-	    return true;
+	    {
+	      *zero_write = initializer_zerop (rhs);
+	      return true;
+	    }
 	}
     }
   else
@@ -4285,6 +4338,7 @@ handle_store (gimple_stmt_iterator *gsi, const vr_values *rvals)
     {
       rhs_minlen = lenrange[0];
       storing_nonzero_p = lenrange[1] > 0;
+      *zero_write = storing_all_zeros_p;
 
       /* Avoid issuing multiple warnings for the same LHS or statement.
 	 For example, -Warray-bounds may have already been issued for
@@ -4649,6 +4703,7 @@ is_char_type (tree type)
 
 static bool
 strlen_check_and_optimize_call (gimple_stmt_iterator *gsi,
+				bool *zero_write,
 				const vr_values *rvals)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -4708,7 +4763,7 @@ strlen_check_and_optimize_call (gimple_stmt_iterator *gsi,
       handle_builtin_malloc (DECL_FUNCTION_CODE (callee), gsi);
       break;
     case BUILT_IN_MEMSET:
-      if (handle_builtin_memset (gsi))
+      if (handle_builtin_memset (gsi, zero_write))
 	return false;
       break;
     case BUILT_IN_MEMCMP:
@@ -4855,9 +4910,13 @@ check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh,
 {
   gimple *stmt = gsi_stmt (*gsi);
 
+  /* For statements that modify a string, set to true if the write
+     is only zeros.  */
+  bool zero_write = false;
+
   if (is_gimple_call (stmt))
     {
-      if (!strlen_check_and_optimize_call (gsi, rvals))
+      if (!strlen_check_and_optimize_call (gsi, &zero_write, rvals))
 	return false;
     }
   else if (!flag_optimize_strlen || !strlen_optimize)
@@ -4907,7 +4966,7 @@ check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh,
 	  }
 
 	/* Handle a single or multibyte assignment.  */
-	if (is_char_store && !handle_store (gsi, rvals))
+	if (is_char_store && !handle_store (gsi, &zero_write, rvals))
 	  return false;
       }
     }
@@ -4920,7 +4979,7 @@ check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh,
     }
 
   if (gimple_vdef (stmt))
-    maybe_invalidate (stmt);
+    maybe_invalidate (stmt, zero_write);
   return true;
 }
 

@@ -1,5 +1,14 @@
 2019-10-16  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/83821
+	* tree-ssa-strlen.c (maybe_invalidate): Add argument.  Consider
+	the length of a string when available.
+	(handle_builtin_memset) Add argument.
+	(handle_store, strlen_check_and_optimize_call): Same.
+	(check_and_optimize_stmt): Same.  Pass it to callees.
+
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/91996
 	* tree-ssa-strlen.c (maybe_warn_pointless_strcmp): Improve location
 	information.
