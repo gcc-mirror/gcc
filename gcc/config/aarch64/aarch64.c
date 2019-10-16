@@ -1538,6 +1538,9 @@ const unsigned int VEC_SVE_PRED = 4;
 /* Can be used in combination with VEC_ADVSIMD or VEC_SVE_DATA to indicate
    a structure of 2, 3 or 4 vectors.  */
 const unsigned int VEC_STRUCT   = 8;
+/* Can be used in combination with VEC_SVE_DATA to indicate that the
+   vector has fewer significant bytes than a full SVE vector.  */
+const unsigned int VEC_PARTIAL  = 16;
 /* Useful combinations of the above.  */
 const unsigned int VEC_ANY_SVE  = VEC_SVE_DATA | VEC_SVE_PRED;
 const unsigned int VEC_ANY_DATA = VEC_ADVSIMD | VEC_SVE_DATA;
@@ -1558,7 +1561,17 @@ aarch64_classify_vector_mode (machine_mode mode)
      of -msve-vector-bits.  */
   switch (mode)
     {
-    /* Single SVE vectors.  */
+    /* Partial SVE QI vectors.  */
+    case E_VNx2QImode:
+    case E_VNx4QImode:
+    case E_VNx8QImode:
+    /* Partial SVE HI vectors.  */
+    case E_VNx2HImode:
+    case E_VNx4HImode:
+    /* Partial SVE SI vector.  */
+    case E_VNx2SImode:
+      return TARGET_SVE ? VEC_SVE_DATA | VEC_PARTIAL : 0;
+
     case E_VNx16QImode:
     case E_VNx8HImode:
     case E_VNx4SImode:
@@ -1639,6 +1652,24 @@ static bool
 aarch64_sve_data_mode_p (machine_mode mode)
 {
   return aarch64_classify_vector_mode (mode) & VEC_SVE_DATA;
+}
+
+/* Return the number of defined bytes in one constituent vector of
+   SVE mode MODE, which has vector flags VEC_FLAGS.  */
+static poly_int64
+aarch64_vl_bytes (machine_mode mode, unsigned int vec_flags)
+{
+  if (vec_flags & VEC_PARTIAL)
+    /* A single partial vector.  */
+    return GET_MODE_SIZE (mode);
+
+  if (vec_flags & VEC_SVE_DATA)
+    /* A single vector or a tuple.  */
+    return BYTES_PER_SVE_VECTOR;
+
+  /* A single predicate.  */
+  gcc_assert (vec_flags & VEC_SVE_PRED);
+  return BYTES_PER_SVE_PRED;
 }
 
 /* Implement target hook TARGET_ARRAY_MODE.  */
@@ -1769,10 +1800,13 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     case FP_REGS:
     case FP_LO_REGS:
     case FP_LO8_REGS:
-      if (aarch64_sve_data_mode_p (mode))
-	return exact_div (GET_MODE_SIZE (mode),
-			  BYTES_PER_SVE_VECTOR).to_constant ();
-      return CEIL (lowest_size, UNITS_PER_VREG);
+      {
+	unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+	if (vec_flags & VEC_SVE_DATA)
+	  return exact_div (GET_MODE_SIZE (mode),
+			    aarch64_vl_bytes (mode, vec_flags)).to_constant ();
+	return CEIL (lowest_size, UNITS_PER_VREG);
+      }
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
@@ -1796,6 +1830,11 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     return mode == DImode;
 
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  /* At the moment, partial vector modes are only useful for memory
+     references, but that could change in future.  */
+  if (vec_flags & VEC_PARTIAL)
+    return false;
+
   if (vec_flags & VEC_SVE_PRED)
     return PR_REGNUM_P (regno);
 
@@ -7441,9 +7480,15 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
   HOST_WIDE_INT const_size;
 
+  /* Whether a vector mode is partial doesn't affect address legitimacy.
+     Partial vectors like VNx8QImode allow the same indexed addressing
+     mode and MUL VL addressing mode as full vectors like VNx16QImode;
+     in both cases, MUL VL counts multiples of GET_MODE_SIZE.  */
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  vec_flags &= ~VEC_PARTIAL;
+
   /* On BE, we use load/store pair for all large int mode load/stores.
      TI/TFmode may also use a load/store pair.  */
-  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   bool advsimd_struct_p = (vec_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
 			    || type == ADDR_QUERY_LDP_STP_N
@@ -8948,7 +8993,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
 				aarch64_addr_query_type type)
 {
   struct aarch64_address_info addr;
-  unsigned int size;
+  unsigned int size, vec_flags;
 
   /* Check all addresses are Pmode - including ILP32.  */
   if (GET_MODE (x) != Pmode
@@ -8964,26 +9009,24 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
       {
       case ADDRESS_REG_IMM:
 	if (known_eq (addr.const_offset, 0))
-	  asm_fprintf (f, "[%s]", reg_names [REGNO (addr.base)]);
-	else if (aarch64_sve_data_mode_p (mode))
+	  {
+	    asm_fprintf (f, "[%s]", reg_names[REGNO (addr.base)]);
+	    return true;
+	  }
+
+	vec_flags = aarch64_classify_vector_mode (mode);
+	if (vec_flags & VEC_ANY_SVE)
 	  {
 	    HOST_WIDE_INT vnum
 	      = exact_div (addr.const_offset,
-			   BYTES_PER_SVE_VECTOR).to_constant ();
+			   aarch64_vl_bytes (mode, vec_flags)).to_constant ();
 	    asm_fprintf (f, "[%s, #%wd, mul vl]",
 			 reg_names[REGNO (addr.base)], vnum);
+	    return true;
 	  }
-	else if (aarch64_sve_pred_mode_p (mode))
-	  {
-	    HOST_WIDE_INT vnum
-	      = exact_div (addr.const_offset,
-			   BYTES_PER_SVE_PRED).to_constant ();
-	    asm_fprintf (f, "[%s, #%wd, mul vl]",
-			 reg_names[REGNO (addr.base)], vnum);
-	  }
-	else
-	  asm_fprintf (f, "[%s, %wd]", reg_names [REGNO (addr.base)],
-		       INTVAL (addr.offset));
+
+	asm_fprintf (f, "[%s, %wd]", reg_names[REGNO (addr.base)],
+		     INTVAL (addr.offset));
 	return true;
 
       case ADDRESS_REG_REG:
@@ -9395,7 +9438,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
      can hold MODE, but at the moment we need to handle all modes.
      Just ignore any runtime parts for registers that can't store them.  */
   HOST_WIDE_INT lowest_size = constant_lower_bound (GET_MODE_SIZE (mode));
-  unsigned int nregs;
+  unsigned int nregs, vec_flags;
   switch (regclass)
     {
     case TAILCALL_ADDR_REGS:
@@ -9406,11 +9449,12 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case FP_REGS:
     case FP_LO_REGS:
     case FP_LO8_REGS:
-      if (aarch64_sve_data_mode_p (mode)
+      vec_flags = aarch64_classify_vector_mode (mode);
+      if ((vec_flags & VEC_SVE_DATA)
 	  && constant_multiple_p (GET_MODE_SIZE (mode),
-				  BYTES_PER_SVE_VECTOR, &nregs))
+				  aarch64_vl_bytes (mode, vec_flags), &nregs))
 	return nregs;
-      return (aarch64_vector_data_mode_p (mode)
+      return (vec_flags & VEC_ADVSIMD
 	      ? CEIL (lowest_size, UNITS_PER_VREG)
 	      : CEIL (lowest_size, UNITS_PER_WORD));
     case STACK_REG:
@@ -15057,7 +15101,7 @@ static bool
 aarch64_vector_mode_supported_p (machine_mode mode)
 {
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-  return vec_flags != 0 && (vec_flags & VEC_STRUCT) == 0;
+  return vec_flags != 0 && (vec_flags & (VEC_STRUCT | VEC_PARTIAL)) == 0;
 }
 
 /* Return the full-width SVE vector mode for element mode MODE, if one

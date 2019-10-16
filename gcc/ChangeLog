@@ -1,5 +1,30 @@
 2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* genmodes.c (mode_data::order): New field.
+	(blank_mode): Update accordingly.
+	(VECTOR_MODES_WITH_PREFIX): Add an order parameter.
+	(make_vector_modes): Likewise.
+	(VECTOR_MODES): Update use accordingly.
+	(cmp_modes): Sort by the new order field ahead of sorting by size.
+	* config/aarch64/aarch64-modes.def (VNx2QI, VN2xHI, VNx2SI)
+	(VNx4QI, VNx4HI, VNx8QI): New partial vector modes.
+	* config/aarch64/aarch64.c (VEC_PARTIAL): New flag value.
+	(aarch64_classify_vector_mode): Handle the new partial modes.
+	(aarch64_vl_bytes): New function.
+	(aarch64_hard_regno_nregs): Use it instead of BYTES_PER_SVE_VECTOR
+	when counting the number of registers in an SVE mode.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_hard_regno_mode_ok): Don't allow partial vectors
+	in registers yet.
+	(aarch64_classify_address): Treat partial vectors analogously
+	to full vectors.
+	(aarch64_print_address_internal): Consolidate the printing of
+	MUL VL addresses, using aarch64_vl_bytes as the number of
+	bytes represented by "VL".
+	(aarch64_vector_mode_supported_p): Reject partial vector modes.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_layout_frame): Use is_constant
 	rather than known_lt when choosing frame layouts.
 
