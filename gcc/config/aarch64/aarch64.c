@@ -5447,7 +5447,7 @@ aarch64_layout_frame (void)
   else if (frame.wb_candidate1 != INVALID_REGNUM)
     max_push_offset = 256;
 
-  HOST_WIDE_INT const_size, const_fp_offset;
+  HOST_WIDE_INT const_size, const_outgoing_args_size, const_fp_offset;
   if (frame.frame_size.is_constant (&const_size)
       && const_size < max_push_offset
       && known_eq (crtl->outgoing_args_size, 0))
@@ -5457,16 +5457,18 @@ aarch64_layout_frame (void)
 	 stp reg3, reg4, [sp, 16]  */
       frame.callee_adjust = const_size;
     }
-  else if (known_lt (crtl->outgoing_args_size + frame.saved_regs_size, 512)
+  else if (crtl->outgoing_args_size.is_constant (&const_outgoing_args_size)
+	   && const_outgoing_args_size + frame.saved_regs_size < 512
 	   && !(cfun->calls_alloca
-		&& known_lt (frame.hard_fp_offset, max_push_offset)))
+		&& frame.hard_fp_offset.is_constant (&const_fp_offset)
+		&& const_fp_offset < max_push_offset))
     {
       /* Frame with small outgoing arguments:
 	 sub sp, sp, frame_size
 	 stp reg1, reg2, [sp, outgoing_args_size]
 	 stp reg3, reg4, [sp, outgoing_args_size + 16]  */
       frame.initial_adjust = frame.frame_size;
-      frame.callee_offset = frame.frame_size - frame.hard_fp_offset;
+      frame.callee_offset = const_outgoing_args_size;
     }
   else if (frame.hard_fp_offset.is_constant (&const_fp_offset)
 	   && const_fp_offset < max_push_offset)
