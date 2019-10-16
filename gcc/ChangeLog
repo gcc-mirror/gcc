@@ -1,3 +1,7 @@
+2019-10-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* cfgrtl.c (find_partition_fixes): Remove bbs_in_cold_partition.
+
 2019-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_symbol):
