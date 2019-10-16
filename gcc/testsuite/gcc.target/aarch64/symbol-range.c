@@ -1,12 +1,12 @@
-/* { dg-do compile } */
+/* { dg-do link } */
 /* { dg-options "-O3 -save-temps -mcmodel=small" } */
 
-int fixed_regs[0x200000000ULL];
+char fixed_regs[0x80000000];
 
 int
-foo()
+main ()
 {
-  return fixed_regs[0x100000000ULL];
+  return fixed_regs[0xfffff000];
 }
 
 /* { dg-final { scan-assembler-not "adrp\tx\[0-9\]+, fixed_regs\\\+" } } */
