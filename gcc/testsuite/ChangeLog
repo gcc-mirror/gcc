@@ -1,3 +1,9 @@
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91996
+	* gcc.dg/strlenopt-80.c: New test.
+	* gcc.dg/strlenopt-81.c: New test.
+
 2019-10-16  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
 	* gcc.target/mips/msa-dpadd-dpsub.c: New test.

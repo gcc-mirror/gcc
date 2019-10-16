@@ -1,3 +1,14 @@
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91996
+	* tree-ssa-strlen.c (maybe_warn_pointless_strcmp): Improve location
+	information.
+	(compare_nonzero_chars): Add an overload.
+	(count_nonzero_bytes): Add an argument.  Call overload above.
+	Handle non-constant lengths in some range.
+	(handle_store): Add an argument.
+	(check_and_optimize_stmt): Pass an argument to handle_store.
+
 2019-10-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.c (neon_valid_immediate): Clear bytes before use.
