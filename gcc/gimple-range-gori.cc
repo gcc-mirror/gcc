@@ -475,6 +475,12 @@ gori_map::dump(FILE *f)
     }
 }
 
+DEBUG_FUNCTION void
+debug (gori_map &g)
+{
+  g.dump (stderr);
+}
+
 // Return the legacy global known value for NAME in R.
 
 void

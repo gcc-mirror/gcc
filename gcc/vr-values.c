@@ -1952,6 +1952,8 @@ vr_values::dump_all_value_ranges (FILE *file)
     }
 
   fprintf (file, "\n");
+  fprintf (file, "GORI map:\n");
+  m_gori_map.dump (file);
 }
 
 /* Initialize VRP lattice.  */

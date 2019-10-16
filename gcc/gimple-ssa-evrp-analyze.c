@@ -158,7 +158,8 @@ void
 evrp_range_analyzer::assert_value_ranges_are_equal
 				(tree name, edge e,
 				 const value_range_base *vr_old,
-				 const value_range_base *vr_new)
+				 const value_range_base *vr_new,
+				 const vec<assert_info> &asserts)
 {
   // VRP couldn't get anything at all.
   if (!vr_old)
@@ -180,9 +181,18 @@ evrp_range_analyzer::assert_value_ranges_are_equal
       fprintf (stderr, "\n\n");
       dump_bb (stderr, e->src, 0, TDF_NONE);
       fprintf (stderr, "\n");
-      vr_values->dump_all_value_ranges (stderr);
       fprintf (stderr, "==============================================\n");
       debug_function (current_function_decl, TDF_NONE);
+      fprintf (stderr, "Equivalences and known value_ranges:\n");
+      fprintf (stderr, "------------------------------------\n");
+      vr_values->dump_all_value_ranges (stderr);
+      if (asserts.length () > 0)
+	{
+	  fprintf (stderr, "\nASSERT equivalences:\n");
+	  fprintf (stderr, "--------------------------\n");
+	  extern void debug (const vec<assert_info> &);
+	  debug (asserts);
+	}
       gcc_unreachable ();
     }
 }
@@ -240,7 +250,8 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));
 
 	      if (getenv("GORIME"))
-		assert_value_ranges_are_equal (name, pred_e, vr, &vr_new);
+		assert_value_ranges_are_equal (name, pred_e, vr, &vr_new,
+					       asserts);
 	    }
 
 	  /* If pred_e is really a fallthru we can record value ranges

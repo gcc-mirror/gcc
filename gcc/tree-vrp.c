@@ -2028,6 +2028,41 @@ void debug_asserts_for (tree);
 void dump_all_asserts (FILE *);
 void debug_all_asserts (void);
 
+void
+dump_assert_info (FILE *file, const assert_info &assert)
+{
+  fprintf (file, "Assert for: ");
+  print_generic_expr (file, assert.name);
+  fprintf (file, "\n\tPREDICATE: expr=[");
+  print_generic_expr (file, assert.expr);
+  fprintf (file, "] %s ", get_tree_code_name (assert.comp_code));
+  fprintf (file, "val=[");
+  print_generic_expr (file, assert.val);
+  fprintf (file, "]\n\n");
+}
+
+void
+dump_asserts_info (FILE *file, const vec<assert_info> &asserts)
+{
+  for (unsigned i = 0; i < asserts.length (); ++i)
+    {
+      dump_assert_info (file, asserts[i]);
+      fprintf (file, "\n");
+    }
+}
+
+DEBUG_FUNCTION void
+debug (const assert_info &assert)
+{
+  dump_assert_info (stderr, assert);
+}
+
+DEBUG_FUNCTION void
+debug (const vec<assert_info> &asserts)
+{
+  dump_asserts_info (stderr, asserts);
+}
+
 /* Dump all the registered assertions for NAME to FILE.  */
 
 void
