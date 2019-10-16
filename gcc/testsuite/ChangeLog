@@ -1,3 +1,8 @@
+2019-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/symbol-range.c: Improve testcase.
+	* gcc.target/aarch64/symbol-range-tiny.c: Likewise.
+
 2019-10-16  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-cond-reduc-3.c: New testcase.
