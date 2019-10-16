@@ -1,3 +1,15 @@
+2019-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_BUILTIN_IS_SAME_AS): Define to
+	one of __is_same_as or __is_same when available.
+	* include/std/concepts (__detail::__same_as): Use std::is_same_v.
+	* include/std/type_traits (is_same) [_GLIBCXX_BUILTIN_IS_SAME_AS]:
+	Use new macro instead of __is_same_as.
+	(is_same) [!_GLIBCXX_BUILTIN_IS_SAME_AS]: Restore partial
+	specialization.
+	(is_same_v) [_GLIBCXX_BUILTIN_IS_SAME_AS]: Use new macro.
+	(is_same_v) [!_GLIBCXX_BUILTIN_IS_SAME_AS]: Use std::is_same.
+
 2019-10-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	* src/c++11/debug.cc (print_field): Replace constness_names <unknown>
