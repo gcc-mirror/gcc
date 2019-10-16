@@ -5476,7 +5476,7 @@ aarch64_layout_frame (void)
 	 stp reg3, reg4, [sp, 16]
 	 sub sp, sp, outgoing_args_size  */
       frame.callee_adjust = const_fp_offset;
-      frame.final_adjust = frame.frame_size - frame.callee_adjust;
+      frame.final_adjust = crtl->outgoing_args_size;
     }
   else
     {
@@ -5487,8 +5487,13 @@ aarch64_layout_frame (void)
 	 stp reg3, reg4, [sp, 16]
 	 sub sp, sp, outgoing_args_size  */
       frame.initial_adjust = frame.hard_fp_offset;
-      frame.final_adjust = frame.frame_size - frame.initial_adjust;
+      frame.final_adjust = crtl->outgoing_args_size;
     }
+
+  /* Make sure the individual adjustments add up to the full frame size.  */
+  gcc_assert (known_eq (frame.initial_adjust
+			+ frame.callee_adjust
+			+ frame.final_adjust, frame.frame_size));
 
   frame.laid_out = true;
 }
