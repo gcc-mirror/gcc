@@ -1130,7 +1130,8 @@ maybe_invalidate (gimple *stmt, bool zero_write = false)
 		  {
 		    if (size && tree_fits_uhwi_p (size))
 		      fprintf (dump_file,
-			       "  statement may clobber string %zu long\n",
+			       "  statement may clobber string "
+			       HOST_WIDE_INT_PRINT_UNSIGNED " long\n",
 			       tree_to_uhwi (size));
 		    else
 		      fprintf (dump_file,
