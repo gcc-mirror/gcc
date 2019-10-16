@@ -1,6 +1,15 @@
 2019-10-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* decl.c (cp_make_fname_decl): Set context to global namespace,
+	outside functions.
+	(builtin_function_1): Merge into ...
+	(cxx_builtin_function): ... here.  Nadger the decl before maybe
+	copying it.  Set the context.
+	(cxx_builtin_function_ext_scope): Push to top level, then call
+	cxx_builtin_function.
+
+	gcc/cp/
 	* rtti.c (get_tinfo_desc): Set DECL_CONTEXT.
 	gcc/testsuite/
 	* g++.dg/modules/tinfo-1.C: New.
