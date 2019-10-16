@@ -1481,6 +1481,7 @@ get_tinfo_desc (unsigned ix)
   /* Pass the fields chained in reverse.  */
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
+  DECL_CONTEXT (TYPE_NAME (pseudo_type)) = FROB_CONTEXT (global_namespace);
   DECL_TINFO_P (TYPE_NAME (pseudo_type)) = true;
 
   res->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
