@@ -1,5 +1,10 @@
 2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Use is_constant
+	rather than known_lt when choosing frame layouts.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_layout_frame): Assert
 	that all the adjustments add up to the full frame size.
 	Use crtl->outgoing_args_size directly as the final adjustment
