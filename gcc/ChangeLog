@@ -1,3 +1,11 @@
+2019-10-16  Andrew Burgess  <andrew.burgess@embecosm.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.h (REG_CLASS_CONTENTS): Add argument passing
+	regs to SIBCALL_REGS.
+	* config/riscv/riscv.c (riscv_regno_to_class): Change argument
+	passing regs to SIBCALL_REGS.
+
 2019-10-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83821
