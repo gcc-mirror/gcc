@@ -1,3 +1,10 @@
+2019-10-16  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/91088
+	* gcc.dg/ipa/pr91088.c: New test.
+	* gcc.dg/ipa/pr91089.c: Add sub-test for range analysis.
+	* g++.dg/tree-ssa/ivopts-3.C: Force a function to be noinline.
+
 2019-10-15  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.c-torture/compile/20191015-1.c: New test.

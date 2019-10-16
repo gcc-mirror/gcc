@@ -331,6 +331,8 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
     {
       tree val;
       tree res;
+      int j;
+      struct expr_eval_op *op;
 
       /* We allow call stmt to have fewer arguments than the callee function
          (especially for K&R style programs).  So bound check here (we assume
@@ -382,7 +384,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  continue;
 	}
 
-      if (maybe_ne (tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (val))), c->size))
+      if (TYPE_SIZE (c->type) != TYPE_SIZE (TREE_TYPE (val)))
 	{
 	  clause |= 1 << (i + predicate::first_dynamic_condition);
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
@@ -394,7 +396,30 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  continue;
 	}
 
-      val = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (c->val), val);
+      val = fold_unary (VIEW_CONVERT_EXPR, c->type, val);
+      for (j = 0; vec_safe_iterate (c->param_ops, j, &op); j++)
+	{
+	  if (!val)
+	    break;
+	  if (!op->val[0])
+	    val = fold_unary (op->code, op->type, val);
+	  else if (!op->val[1])
+	    val = fold_binary (op->code, op->type,
+			       op->index ? op->val[0] : val,
+			       op->index ? val : op->val[0]);
+	  else if (op->index == 0)
+	    val = fold_ternary (op->code, op->type,
+				val, op->val[0], op->val[1]);
+	  else if (op->index == 1)
+	    val = fold_ternary (op->code, op->type,
+				op->val[0], val, op->val[1]);
+	  else if (op->index == 2)
+	    val = fold_ternary (op->code, op->type,
+				op->val[0], op->val[1], val);
+	  else
+	    val = NULL_TREE;
+	}
+
       res = val
 	? fold_binary_to_constant (c->code, boolean_type_node, val, c->val)
 	: NULL;
@@ -1155,6 +1180,127 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
     }
 }
 
+/* Analyze EXPR if it represents a series of simple operations performed on
+   a function parameter and return true if so.  FBI, STMT, EXPR, INDEX_P and
+   AGGPOS have the same meaning like in unmodified_parm_or_parm_agg_item.
+   Type of the parameter or load from an aggregate via the parameter is
+   stored in *TYPE_P.  Operations on the parameter are recorded to
+   PARAM_OPS_P if it is not NULL.  */
+
+static bool
+decompose_param_expr (struct ipa_func_body_info *fbi,
+		      gimple *stmt, tree expr,
+		      int *index_p, tree *type_p,
+		      struct agg_position_info *aggpos,
+		      expr_eval_ops *param_ops_p = NULL)
+{
+  int op_limit = PARAM_VALUE (PARAM_IPA_MAX_PARAM_EXPR_OPS);
+  int op_count = 0;
+
+  if (param_ops_p)
+    *param_ops_p = NULL;
+
+  while (true)
+    {
+      expr_eval_op eval_op;
+      unsigned rhs_count;
+      unsigned cst_count = 0;
+
+      if (unmodified_parm_or_parm_agg_item (fbi, stmt, expr, index_p, NULL,
+					    aggpos))
+	{
+	  tree type = TREE_TYPE (expr);
+
+	  if (aggpos->agg_contents)
+	    {
+	      /* Stop if containing bit-field.  */
+	      if (TREE_CODE (expr) == BIT_FIELD_REF
+		  || contains_bitfld_component_ref_p (expr))
+		break;
+	    }
+
+	  *type_p = type;
+	  return true;
+	}
+
+      if (TREE_CODE (expr) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (expr))
+	break;
+
+      if (!is_gimple_assign (stmt = SSA_NAME_DEF_STMT (expr)))
+	break;
+
+      switch (gimple_assign_rhs_class (stmt))
+	{
+	case GIMPLE_SINGLE_RHS:
+	  expr = gimple_assign_rhs1 (stmt);
+	  continue;
+
+	case GIMPLE_UNARY_RHS:
+	  rhs_count = 1;
+	  break;
+
+	case GIMPLE_BINARY_RHS:
+	  rhs_count = 2;
+	  break;
+
+	case GIMPLE_TERNARY_RHS:
+	  rhs_count = 3;
+	  break;
+
+	default:
+	  goto fail;
+	}
+
+      /* Stop if expression is too complex.  */
+      if (op_count++ == op_limit)
+	break;
+
+      if (param_ops_p)
+	{
+	  eval_op.code = gimple_assign_rhs_code (stmt);
+	  eval_op.type = TREE_TYPE (gimple_assign_lhs (stmt));
+	  eval_op.val[0] = NULL_TREE;
+	  eval_op.val[1] = NULL_TREE;
+	}
+
+      expr = NULL_TREE;
+      for (unsigned i = 0; i < rhs_count; i++)
+	{
+	  tree op = gimple_op (stmt, i + 1);
+
+	  gcc_assert (op && !TYPE_P (op));
+	  if (is_gimple_ip_invariant (op))
+	    {
+	      if (++cst_count == rhs_count)
+		goto fail;
+
+	      eval_op.val[cst_count - 1] = op;
+	    }
+	  else if (!expr)
+	    {
+	      /* Found a non-constant operand, and record its index in rhs
+		 operands.  */
+	      eval_op.index = i;
+	      expr = op;
+	    }
+	  else
+	    {
+	      /* Found more than one non-constant operands.  */
+	      goto fail;
+	    }
+	}
+
+      if (param_ops_p)
+	vec_safe_insert (*param_ops_p, 0, eval_op);
+    }
+
+  /* Failed to decompose, free resource and return.  */
+fail:
+  if (param_ops_p)
+    vec_free (*param_ops_p);
+
+  return false;
+}
 
 /* If BB ends by a conditional we can turn into predicates, attach corresponding
    predicates to the CFG edges.   */
@@ -1165,15 +1311,15 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				   basic_block bb)
 {
   gimple *last;
-  tree op;
+  tree op, op2;
   int index;
-  poly_int64 size;
   struct agg_position_info aggpos;
   enum tree_code code, inverted_code;
   edge e;
   edge_iterator ei;
   gimple *set_stmt;
-  tree op2;
+  tree param_type;
+  expr_eval_ops param_ops;
 
   last = last_stmt (bb);
   if (!last || gimple_code (last) != GIMPLE_COND)
@@ -1181,10 +1327,9 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   if (!is_gimple_ip_invariant (gimple_cond_rhs (last)))
     return;
   op = gimple_cond_lhs (last);
-  /* TODO: handle conditionals like
-     var = op0 < 4;
-     if (var != 0).  */
-  if (unmodified_parm_or_parm_agg_item (fbi, last, op, &index, &size, &aggpos))
+
+  if (decompose_param_expr (fbi, last, op, &index, &param_type, &aggpos,
+			    &param_ops))
     {
       code = gimple_cond_code (last);
       inverted_code = invert_tree_comparison (code, HONOR_NANS (op));
@@ -1205,13 +1350,13 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	      && !dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
 	    {
 	      predicate p
-		= add_condition (summary, index, size, &aggpos, this_code,
-				 unshare_expr_without_location
-				 (gimple_cond_rhs (last)));
+		= add_condition (summary, index, param_type, &aggpos,
+				 this_code, gimple_cond_rhs (last), param_ops);
 	      e->aux = edge_predicate_pool.allocate ();
 	      *(predicate *) e->aux = p;
 	    }
 	}
+      vec_free (param_ops);
     }
 
   if (TREE_CODE (op) != SSA_NAME)
@@ -1234,12 +1379,11 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       || gimple_call_num_args (set_stmt) != 1)
     return;
   op2 = gimple_call_arg (set_stmt, 0);
-  if (!unmodified_parm_or_parm_agg_item (fbi, set_stmt, op2, &index, &size,
-					 &aggpos))
+  if (!decompose_param_expr (fbi, set_stmt, op2, &index, &param_type, &aggpos))
     return;
   FOR_EACH_EDGE (e, ei, bb->succs) if (e->flags & EDGE_FALSE_VALUE)
     {
-      predicate p = add_condition (summary, index, size, &aggpos,
+      predicate p = add_condition (summary, index, param_type, &aggpos,
 				   predicate::is_not_constant, NULL_TREE);
       e->aux = edge_predicate_pool.allocate ();
       *(predicate *) e->aux = p;
@@ -1258,19 +1402,21 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   gimple *lastg;
   tree op;
   int index;
-  poly_int64 size;
   struct agg_position_info aggpos;
   edge e;
   edge_iterator ei;
   size_t n;
   size_t case_idx;
+  tree param_type;
+  expr_eval_ops param_ops;
 
   lastg = last_stmt (bb);
   if (!lastg || gimple_code (lastg) != GIMPLE_SWITCH)
     return;
   gswitch *last = as_a <gswitch *> (lastg);
   op = gimple_switch_index (last);
-  if (!unmodified_parm_or_parm_agg_item (fbi, last, op, &index, &size, &aggpos))
+  if (!decompose_param_expr (fbi, last, op, &index, &param_type, &aggpos,
+			     &param_ops))
     return;
 
   auto_vec<std::pair<tree, tree> > ranges;
@@ -1302,6 +1448,8 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       tree max = CASE_HIGH (cl);
       predicate p;
 
+      e = gimple_switch_edge (cfun, last, case_idx);
+
       /* The case value might not have same type as switch expression,
 	 extend the value based on the expression type.  */
       if (TREE_TYPE (min) != type)
@@ -1318,18 +1466,17 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       if (dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
 	p = true;
       else if (min == max)
-	p = add_condition (summary, index, size, &aggpos, EQ_EXPR,
-			   unshare_expr_without_location (min));
+	p = add_condition (summary, index, param_type, &aggpos, EQ_EXPR,
+			   min, param_ops);
       else
 	{
 	  predicate p1, p2;
-	  p1 = add_condition (summary, index, size, &aggpos, GE_EXPR,
-			      unshare_expr_without_location (min));
-	  p2 = add_condition (summary, index, size, &aggpos, LE_EXPR,
-			      unshare_expr_without_location (max));
+	  p1 = add_condition (summary, index, param_type, &aggpos, GE_EXPR,
+			      min, param_ops);
+	  p2 = add_condition (summary, index, param_type, &aggpos, LE_EXPR,
+			      max, param_ops);
 	  p = p1 & p2;
 	}
-      e = gimple_switch_edge (cfun, last, case_idx);
       *(class predicate *) e->aux
 	= p.or_with (summary->conds, *(class predicate *) e->aux);
 
@@ -1378,6 +1525,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   if (bound_count > bound_limit)
     {
       *(class predicate *) e->aux = true;
+      vec_free (param_ops);
       return;
     }
 
@@ -1407,16 +1555,16 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       tree max = ranges[i].second;
 
       if (min == max)
-	p_seg &= add_condition (summary, index, size, &aggpos, NE_EXPR,
-				unshare_expr_without_location (min));
+	p_seg &= add_condition (summary, index, param_type, &aggpos, NE_EXPR,
+				min, param_ops);
       else
 	{
 	  /* Do not create sub-predicate for range that is beyond low bound
 	     of switch index.  */
 	  if (wi::lt_p (vr_wmin, wi::to_wide (min), TYPE_SIGN (type)))
 	    {
-	      p_seg &= add_condition (summary, index, size, &aggpos, LT_EXPR,
-				      unshare_expr_without_location (min));
+	      p_seg &= add_condition (summary, index, param_type, &aggpos,
+				      LT_EXPR, min, param_ops);
 	      p_all = p_all.or_with (summary->conds, p_seg);
 	    }
 
@@ -1428,14 +1576,16 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	      break;
 	    }
 
-	  p_seg = add_condition (summary, index, size, &aggpos, GT_EXPR,
-				 unshare_expr_without_location (max));
+	  p_seg = add_condition (summary, index, param_type, &aggpos, GT_EXPR,
+				 max, param_ops);
 	}
     }
 
   p_all = p_all.or_with (summary->conds, p_seg);
   *(class predicate *) e->aux
     = p_all.or_with (summary->conds, *(class predicate *) e->aux);
+
+  vec_free (param_ops);
 }
 
 
@@ -1552,15 +1702,14 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 {
   tree parm;
   int index;
-  poly_int64 size;
 
   while (UNARY_CLASS_P (expr))
     expr = TREE_OPERAND (expr, 0);
 
-  parm = unmodified_parm (fbi, NULL, expr, &size);
+  parm = unmodified_parm (fbi, NULL, expr, NULL);
   if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
-    return add_condition (summary, index, size, NULL, predicate::changed,
-			  NULL_TREE);
+    return add_condition (summary, index, TREE_TYPE (parm), NULL,
+			  predicate::changed, NULL_TREE);
   if (is_gimple_min_invariant (expr))
     return false;
   if (TREE_CODE (expr) == SSA_NAME)
@@ -1624,10 +1773,10 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
   predicate p = true;
   ssa_op_iter iter;
   tree use;
+  tree param_type = NULL_TREE;
   predicate op_non_const;
   bool is_load;
   int base_index;
-  poly_int64 size;
   struct agg_position_info aggpos;
 
   /* What statments might be optimized away
@@ -1648,11 +1797,9 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
   /* Loads can be optimized when the value is known.  */
   if (is_load)
     {
-      tree op;
-      gcc_assert (gimple_assign_single_p (stmt));
-      op = gimple_assign_rhs1 (stmt);
-      if (!unmodified_parm_or_parm_agg_item (fbi, stmt, op, &base_index, &size,
-					     &aggpos))
+      tree op = gimple_assign_rhs1 (stmt);
+      if (!decompose_param_expr (fbi, stmt, op, &base_index, &param_type,
+				 &aggpos))
 	return p;
     }
   else
@@ -1677,21 +1824,20 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 
   if (is_load)
     op_non_const =
-      add_condition (summary, base_index, size, &aggpos, predicate::changed,
-		     NULL);
+      add_condition (summary, base_index, param_type, &aggpos,
+		     predicate::changed, NULL_TREE);
   else
     op_non_const = false;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      poly_int64 size;
-      tree parm = unmodified_parm (fbi, stmt, use, &size);
+      tree parm = unmodified_parm (fbi, stmt, use, NULL);
       int index;
 
       if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
 	{
 	  if (index != base_index)
-	    p = add_condition (summary, index, size, NULL, predicate::changed,
-			       NULL_TREE);
+	    p = add_condition (summary, index, TREE_TYPE (parm), NULL,
+			       predicate::changed, NULL_TREE);
 	  else
 	    continue;
 	}
@@ -1823,7 +1969,7 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
 	return REG_BR_PROB_BASE;
       if (dump_file)
 	{
-	  fprintf (dump_file, "     Analyzing param change probablity of ");
+	  fprintf (dump_file, "     Analyzing param change probability of ");
           print_generic_expr (dump_file, op, TDF_SLIM);
 	  fprintf (dump_file, "\n");
 	}
@@ -3452,15 +3598,49 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       for (j = 0; j < count2; j++)
 	{
 	  struct condition c;
+	  unsigned int k, count3;
 	  c.operand_num = streamer_read_uhwi (&ib);
-	  c.size = streamer_read_poly_uint64 (&ib);
 	  c.code = (enum tree_code) streamer_read_uhwi (&ib);
+	  c.type = stream_read_tree (&ib, data_in);
 	  c.val = stream_read_tree (&ib, data_in);
 	  bp = streamer_read_bitpack (&ib);
 	  c.agg_contents = bp_unpack_value (&bp, 1);
 	  c.by_ref = bp_unpack_value (&bp, 1);
 	  if (c.agg_contents)
 	    c.offset = streamer_read_uhwi (&ib);
+	  c.param_ops = NULL;
+	  count3 = streamer_read_uhwi (&ib);
+	  for (k = 0; k < count3; k++)
+	    {
+	      struct expr_eval_op op;
+	      enum gimple_rhs_class rhs_class;
+	      op.code = (enum tree_code) streamer_read_uhwi (&ib);
+	      op.type = stream_read_tree (&ib, data_in);
+	      switch (rhs_class = get_gimple_rhs_class (op.code))
+		{
+		case GIMPLE_UNARY_RHS:
+		  op.index = 0;
+		  op.val[0] = NULL_TREE;
+		  op.val[1] = NULL_TREE;
+		  break;
+
+		case GIMPLE_BINARY_RHS:
+		case GIMPLE_TERNARY_RHS:
+		  bp = streamer_read_bitpack (&ib);
+		  op.index = bp_unpack_value (&bp, 2);
+		  op.val[0] = stream_read_tree (&ib, data_in);
+		  if (rhs_class == GIMPLE_BINARY_RHS)
+		    op.val[1] = NULL_TREE;
+		  else
+		    op.val[1] = stream_read_tree (&ib, data_in);
+		  break;
+
+		default:
+		  fatal_error (UNKNOWN_LOCATION,
+			       "invalid fnsummary in LTO stream");
+		}
+	      vec_safe_push (c.param_ops, op);
+	    }
 	  if (info)
 	    vec_safe_push (info->conds, c);
 	}
@@ -3606,9 +3786,12 @@ ipa_fn_summary_write (void)
 	  streamer_write_uhwi (ob, vec_safe_length (info->conds));
 	  for (i = 0; vec_safe_iterate (info->conds, i, &c); i++)
 	    {
+	      int j;
+	      struct expr_eval_op *op;
+
 	      streamer_write_uhwi (ob, c->operand_num);
-	      streamer_write_poly_uint64 (ob, c->size);
 	      streamer_write_uhwi (ob, c->code);
+	      stream_write_tree (ob, c->type, true);
 	      stream_write_tree (ob, c->val, true);
 	      bp = bitpack_create (ob->main_stream);
 	      bp_pack_value (&bp, c->agg_contents, 1);
@@ -3616,6 +3799,21 @@ ipa_fn_summary_write (void)
 	      streamer_write_bitpack (&bp);
 	      if (c->agg_contents)
 		streamer_write_uhwi (ob, c->offset);
+	      streamer_write_uhwi (ob, vec_safe_length (c->param_ops));
+	      for (j = 0; vec_safe_iterate (c->param_ops, j, &op); j++)
+		{
+		  streamer_write_uhwi (ob, op->code);
+		  stream_write_tree (ob, op->type, true);
+		  if (op->val[0])
+		    {
+		      bp = bitpack_create (ob->main_stream);
+		      bp_pack_value (&bp, op->index, 2);
+		      streamer_write_bitpack (&bp);
+		      stream_write_tree (ob, op->val[0], true);
+		      if (op->val[1])
+			stream_write_tree (ob, op->val[1], true);
+		    }
+		}
 	    }
 	  streamer_write_uhwi (ob, vec_safe_length (info->size_time_table));
 	  for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
