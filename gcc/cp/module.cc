@@ -2716,6 +2716,7 @@ enum tree_tag {
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_ptrmem_type,	/* Pointer to member type.  */
 
+  tt_parm,		/* Function paramter or result.  */
   tt_enum_int,		/* An enum const.  */
   tt_data_member,	/* Data member or enum value.  */
 
@@ -7426,10 +7427,33 @@ trees_out::decl_node (tree decl, walk_kind ref)
     default:
       break;
 
-    case PARM_DECL:  // FIXME: should only be explicit in the
-		     // fn_parms_init
-    case RESULT_DECL: // Likewise?
+    case RESULT_DECL:
+      // FIXME: Like a parm?
       return true;
+
+    case PARM_DECL:
+      {
+	if (streaming_p ())
+	  i (tt_parm);
+	tree_node (DECL_CONTEXT (decl));
+	if (streaming_p ())
+	  {
+	    /* That must have put this in the map.  */
+	    walk_kind ref = ref_node (decl);
+	    if (ref != WK_none)
+	      // FIXME: We can wander into bits of the template this
+	      // was instantiated from.  For instance deferred
+	      // noexcept and (probably?) default parms.  We need to
+	      // refer to that specific node in some way.  For now
+	      // just clone it
+	      return true;
+	    dump (dumper::TREE)
+	      && dump ("Wrote %s reference %N",
+		       TREE_CODE (decl) == PARM_DECL ? "parameter" : "result",
+		       decl);
+	  }
+      }
+      return false;
 
     case LABEL_DECL:
       return true;
@@ -8654,6 +8678,19 @@ trees_in::tree_node ()
 
 	if (!res)
 	  set_overrun ();
+      }
+      break;
+
+    case tt_parm:
+      {
+	tree fn = tree_node ();
+	if (fn && TREE_CODE (fn) == FUNCTION_DECL)
+	  res = tree_node ();
+	if (res)
+	  dump (dumper::TREE)
+	    && dump ("Read %s reference %N",
+		     TREE_CODE (res) == PARM_DECL ? "parameter" : "result",
+		     res);
       }
       break;
 
@@ -10012,15 +10049,25 @@ trees_out::write_function_def (tree decl)
   tree_node (DECL_SAVED_TREE (decl));
   tree_node (DECL_FRIEND_CONTEXT (decl));
 
-  if (constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl))
+  constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl);
+  if (streaming_p ())
+    u (cexpr != NULL);
+  if (cexpr)
     {
-      tree_node (cexpr->decl);
+      int tag = insert (cexpr->result);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Constexpr:%d result %N", tag, cexpr->result);
+      unsigned ix = 0;
+      for (tree parm = cexpr->parms; parm; parm = DECL_CHAIN (parm), ix++)
+	{
+	  tag = insert (parm);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Constexpr:%d parm:%u %N", tag, ix, parm);
+	}
       tree_node (cexpr->body);
-      chained_decls (cexpr->parms);
-      tree_node (cexpr->result);
     }
-  else
-    tree_node (NULL_TREE);
 }
 
 void
@@ -10038,13 +10085,30 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   tree context = tree_node ();
   constexpr_fundef cexpr;
 
-  cexpr.decl = tree_node ();
-  if (cexpr.decl)
+  if (u ())
     {
+      cexpr.result = copy_decl (result);
+      int tag = insert (cexpr.result);
+      dump (dumper::TREE)
+	  && dump ("Constexpr:%d result %N", tag, cexpr.result);
+      cexpr.parms = NULL_TREE;
+      tree *chain = &cexpr.parms;
+      unsigned ix = 0;
+      for (tree parm = DECL_ARGUMENTS (decl);
+	   parm; parm = DECL_CHAIN (parm), ix++)
+	{
+	  tree p = copy_decl (parm);
+	  tag = insert (p);
+	  dump (dumper::TREE)
+	    && dump ("Constexpr:%d parm:%u %N", tag, ix, p);
+	  *chain = p;
+	  chain = &DECL_CHAIN (p);
+	}
       cexpr.body = tree_node ();
-      cexpr.parms = chained_decls ();
-      cexpr.result = tree_node ();
+      cexpr.decl = decl;
     }
+  else
+    cexpr.decl = NULL_TREE;
 
   if (get_overrun ())
     return NULL_TREE;
@@ -16917,12 +16981,15 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	  {
 	    /* Read the sections in forward order, so that dependencies are read
 	       first.  See note about tarjan_connect.  */
+	    ggc_collect ();
+
 	    unsigned hwm = config.sec_range.second;
 	    for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
 	      {
 		load_section (ix);
 		if (from ()->get_error ())
 		  goto bail;
+		ggc_collect ();
 	      }
 	    if (CHECKING_P)
 	      {

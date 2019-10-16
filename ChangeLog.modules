@@ -1,3 +1,15 @@
+2019-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (enum tree_tag): Add tt_parm.
+	(trees_out::decl_node): Emit tt_parm for parms.
+	(trees_in::tree_node): Add tt_parm.
+	(trees_out::write_function_def): Simply tag constexpr parms &
+	result.
+	(trees_in::read_function_def): Clone the originating fn's parms &
+	result.
+	(module_state::read): Add GC points, when lazy.
+
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
