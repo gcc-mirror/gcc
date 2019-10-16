@@ -10901,6 +10901,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
   stmt_vec_info reduc_info;
   if (STMT_VINFO_REDUC_DEF (orig_stmt_info)
+      && vect_stmt_to_vectorize (orig_stmt_info) == stmt_info
       && (reduc_info = info_for_reduction (orig_stmt_info))
       && STMT_VINFO_REDUC_TYPE (reduc_info) != FOLD_LEFT_REDUCTION
       && STMT_VINFO_REDUC_TYPE (reduc_info) != EXTRACT_LAST_REDUCTION)
