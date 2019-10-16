@@ -1,5 +1,17 @@
 2019-10-16  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/83821
+	* c-c++-common/Warray-bounds-4.c: Remove XFAIL.
+	* gcc.dg/strlenopt-82.c: New test.
+	* gcc.dg/strlenopt-83.c: Same.
+	* gcc.dg/strlenopt-84.c: Same.
+	* gcc.dg/strlenopt-85.c: Same.
+	* gcc.dg/strlenopt-86.c: Same.
+	* gcc.dg/tree-ssa/calloc-4.c: Same.
+	* gcc.dg/tree-ssa/calloc-5.c: Same.
+
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/91996
 	* gcc.dg/strlenopt-80.c: New test.
 	* gcc.dg/strlenopt-81.c: New test.
