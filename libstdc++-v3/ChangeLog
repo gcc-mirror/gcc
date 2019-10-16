@@ -1,3 +1,9 @@
+2019-10-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++11/debug.cc (print_field): Replace constness_names <unknown>
+	entry with <unknown constness>. Replace state_names <unknown> entry with
+	<unknown state>.
+
 2019-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new header.
