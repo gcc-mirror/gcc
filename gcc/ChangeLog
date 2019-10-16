@@ -1,3 +1,30 @@
+2019-10-16  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/91088
+	* doc/invoke.texi (ipa-max-param-expr-ops): Document new option.
+	* params.def (PARAM_IPA_MAX_PARAM_EXPR_OPS): New.
+	* ipa-predicat.h (struct expr_eval_op): New struct.
+	(expr_eval_ops): New typedef.
+	(struct condition): Add type and param_ops fields, remove size field.
+	(add_condition): Replace size parameter with type parameter, add
+	param_ops parameter.
+	* ipa-predicat.c (expr_eval_ops_equal_p): New function.
+	(predicate::add_clause): Add comparisons on type and param_ops.
+	(dump_condition): Add debug dump for param_ops.
+	(remap_after_inlining): Adjust call arguments to add_condition.
+	(add_condition): Replace size parameter with type parameter, add
+	param_ops parameter. Unshare constant value used in conditions.
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Fold
+	parameter expressions using param_ops.
+	(decompose_param_expr):  New function.
+	(set_cond_stmt_execution_predicate): Use call to decompose_param_expr
+	to replace call to unmodified_parm_or_parm_agg_item.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(will_be_nonconstant_expr_predicate): Likewise. Replace usage of size
+	with type.
+	(inline_read_section): Read param_ops from summary stream.
+	(ipa_fn_summary_write): Write param_ops to summary stream.
+
 2019-10-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/92107

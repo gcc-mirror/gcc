@@ -1165,6 +1165,12 @@ DEFPARAM (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS,
 	  "statement used during IPA functoin summary generation.",
 	  5, 0, 0)
 
+DEFPARAM (PARAM_IPA_MAX_PARAM_EXPR_OPS,
+	  "ipa-max-param-expr-ops",
+	  "Maximum number of operations in a parameter expression that can "
+	  "be handled by IPA analysis.",
+	  10, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,

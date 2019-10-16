@@ -12034,6 +12034,13 @@ For switch exceeding this limit, IPA-CP will not construct cloning cost
 predicate, which is used to estimate cloning benefit, for default case
 of the switch statement.
 
+@item ipa-max-param-expr-ops
+IPA-CP will analyze conditional statement that references some function
+parameter to estimate benefit for cloning upon certain constant value.
+But if number of operations in a parameter expression exceeds
+@option{ipa-max-param-expr-ops}, the expression is treated as complicated
+one, and is not handled by IPA analysis.
+
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.

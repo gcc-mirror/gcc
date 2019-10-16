@@ -33,8 +33,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "tree-pretty-print.h"
 #include "gimple.h"
+#include "gimplify.h"
 #include "data-streamer.h"
 
+
+/* Check whether two set of operations have same effects.  */
+static bool
+expr_eval_ops_equal_p (expr_eval_ops ops1, expr_eval_ops ops2)
+{
+  if (ops1)
+    {
+      if (!ops2 || ops1->length () != ops2->length ())
+	return false;
+
+      for (unsigned i = 0; i < ops1->length (); i++)
+	{
+	  expr_eval_op &op1 = (*ops1)[i];
+	  expr_eval_op &op2 = (*ops2)[i];
+
+	  if (op1.code != op2.code
+	      || op1.index != op2.index
+	      || !vrp_operand_equal_p (op1.val[0], op2.val[0])
+	      || !vrp_operand_equal_p (op1.val[1], op2.val[1])
+	      || !types_compatible_p (op1.type, op2.type))
+	    return false;
+	}
+      return true;
+    }
+  return !ops2;
+}
 
 /* Add clause CLAUSE into the predicate P.
    When CONDITIONS is NULL do not perform checking whether NEW_CLAUSE
@@ -110,14 +137,16 @@ predicate::add_clause (conditions conditions, clause_t new_clause)
 	for (c2 = c1 + 1; c2 < num_conditions; c2++)
 	  if (new_clause & (1 << c2))
 	    {
-	      condition *cc1 =
-		&(*conditions)[c1 - predicate::first_dynamic_condition];
 	      condition *cc2 =
 		&(*conditions)[c2 - predicate::first_dynamic_condition];
 	      if (cc1->operand_num == cc2->operand_num
-		  && cc1->val == cc2->val
+		  && vrp_operand_equal_p (cc1->val, cc2->val)
 		  && cc2->code != is_not_constant
-		  && cc2->code != predicate::changed
+		  && cc2->code != changed
+		  && expr_eval_ops_equal_p (cc1->param_ops, cc2->param_ops)
+		  && cc2->agg_contents == cc1->agg_contents
+		  && cc2->by_ref == cc1->by_ref
+		  && types_compatible_p (cc2->type, cc1->type)
 		  && cc1->code == invert_tree_comparison (cc2->code,
 							  HONOR_NANS (cc1->val)))
 		return;
@@ -300,6 +329,83 @@ dump_condition (FILE *f, conditions conditions, int cond)
       if (c->agg_contents)
 	fprintf (f, "[%soffset: " HOST_WIDE_INT_PRINT_DEC "]",
 		 c->by_ref ? "ref " : "", c->offset);
+
+      for (unsigned i = 0; i < vec_safe_length (c->param_ops); i++)
+	{
+	  expr_eval_op &op = (*(c->param_ops))[i];
+	  const char *op_name = op_symbol_code (op.code);
+
+	  if (op_name == op_symbol_code (ERROR_MARK))
+	    op_name = get_tree_code_name (op.code);
+
+	  fprintf (f, ",(");
+
+	  if (!op.val[0])
+	    {
+	      switch (op.code)
+		{
+		case FLOAT_EXPR:
+		case FIX_TRUNC_EXPR:
+		case FIXED_CONVERT_EXPR:
+		case VIEW_CONVERT_EXPR:
+		CASE_CONVERT:
+		  if (op.code == VIEW_CONVERT_EXPR)
+		    fprintf (f, "VCE");
+		  fprintf (f, "(");
+		  print_generic_expr (f, op.type);
+		  fprintf (f, ")" );
+		  break;
+
+		default:
+		  fprintf (f, "%s", op_name);
+		}
+	      fprintf (f, " #");
+	    }
+	  else if (!op.val[1])
+	    {
+	      if (op.index)
+		{
+		  print_generic_expr (f, op.val[0]);
+		  fprintf (f, " %s #", op_name);
+		}
+	      else
+		{
+		  fprintf (f, "# %s ", op_name);
+		  print_generic_expr (f, op.val[0]);
+		}
+	    }
+	  else
+	    {
+	      fprintf (f, "%s ", op_name);
+	      switch (op.index)
+		{
+		case 0:
+		  fprintf (f, "#, ");
+		  print_generic_expr (f, op.val[0]);
+		  fprintf (f, ", ");
+		  print_generic_expr (f, op.val[1]);
+		  break;
+
+		case 1:
+		  print_generic_expr (f, op.val[0]);
+		  fprintf (f, ", #, ");
+		  print_generic_expr (f, op.val[1]);
+		  break;
+
+		case 2:
+		  print_generic_expr (f, op.val[0]);
+		  fprintf (f, ", ");
+		  print_generic_expr (f, op.val[1]);
+		  fprintf (f, ", #");
+		  break;
+
+		default:
+		  fprintf (f, "*, *, *");
+		}
+	    }
+	  fprintf (f, ")");
+	}
+
       if (c->code == predicate::is_not_constant)
 	{
 	  fprintf (f, " not constant");
@@ -462,8 +568,8 @@ predicate::remap_after_inlining (class ipa_fn_summary *info,
 		    ap.by_ref = c->by_ref;
 		    cond_predicate = add_condition (info,
 						    operand_map[c->operand_num],
-						    c->size, &ap, c->code,
-						    c->val);
+						    c->type, &ap, c->code,
+						    c->val, c->param_ops);
 		  }
 	      }
 	    /* Fixed conditions remains same, construct single
@@ -516,21 +622,23 @@ predicate::stream_out (struct output_block *ob)
 }
 
 
-/* Add condition to condition list SUMMARY. OPERAND_NUM, SIZE, CODE and VAL
-   correspond to fields of condition structure.  AGGPOS describes whether the
-   used operand is loaded from an aggregate and where in the aggregate it is.
-   It can be NULL, which means this not a load from an aggregate.  */
+/* Add condition to condition list SUMMARY.  OPERAND_NUM, TYPE, CODE, VAL and
+   PARAM_OPS correspond to fields of condition structure.  AGGPOS describes
+   whether the used operand is loaded from an aggregate and where in the
+   aggregate it is.  It can be NULL, which means this not a load from an
+   aggregate.  */
 
 predicate
 add_condition (class ipa_fn_summary *summary, int operand_num,
-	       poly_int64 size, struct agg_position_info *aggpos,
-	       enum tree_code code, tree val)
+	       tree type, struct agg_position_info *aggpos,
+	       enum tree_code code, tree val, expr_eval_ops param_ops)
 {
-  int i;
+  int i, j;
   struct condition *c;
   struct condition new_cond;
   HOST_WIDE_INT offset;
   bool agg_contents, by_ref;
+  expr_eval_op *op;
 
   if (aggpos)
     {
@@ -549,10 +657,11 @@ add_condition (class ipa_fn_summary *summary, int operand_num,
   for (i = 0; vec_safe_iterate (summary->conds, i, &c); i++)
     {
       if (c->operand_num == operand_num
-	  && known_eq (c->size, size)
 	  && c->code == code
-	  && c->val == val
+	  && types_compatible_p (c->type, type)
+	  && vrp_operand_equal_p (c->val, val)
 	  && c->agg_contents == agg_contents
+	  && expr_eval_ops_equal_p (c->param_ops, param_ops)
 	  && (!agg_contents || (c->offset == offset && c->by_ref == by_ref)))
 	return predicate::predicate_testing_cond (i);
     }
@@ -562,11 +671,21 @@ add_condition (class ipa_fn_summary *summary, int operand_num,
 
   new_cond.operand_num = operand_num;
   new_cond.code = code;
-  new_cond.val = val;
+  new_cond.type = unshare_expr_without_location (type);
+  new_cond.val = val ? unshare_expr_without_location (val) : val;
   new_cond.agg_contents = agg_contents;
   new_cond.by_ref = by_ref;
   new_cond.offset = offset;
-  new_cond.size = size;
+  new_cond.param_ops = vec_safe_copy (param_ops);
+
+  for (j = 0; vec_safe_iterate (new_cond.param_ops, j, &op); j++)
+    {
+      if (op->val[0])
+	op->val[0] = unshare_expr_without_location (op->val[0]);
+      if (op->val[1])
+	op->val[1] = unshare_expr_without_location (op->val[1]);
+    }
+
   vec_safe_push (summary->conds, new_cond);
 
   return predicate::predicate_testing_cond (i);
