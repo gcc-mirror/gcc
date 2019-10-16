@@ -1,5 +1,9 @@
 2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* function-abi.cc (expr_callee_abi): Assert for POINTER_TYPE_P.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* genmodes.c (mode_data::order): New field.
 	(blank_mode): Update accordingly.
 	(VECTOR_MODES_WITH_PREFIX): Add an order parameter.
