@@ -1,3 +1,16 @@
+2019-10-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/91606
+	* g++.dg/torture/pr91606.C: New testcase.
+
+	2019-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91812
+	* gcc.dg/torture/pr91812.c: New testcase.
+
 2019-10-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	Backport from trunk.
