@@ -6833,16 +6833,19 @@ trees_out::decl_value (tree decl, depset *dep)
       u (TREE_CODE (decl));
       start (decl);
 
-      if (mk != MK_unique && !state->is_header ())
+      if (mk != MK_unique)
 	{
-	  /* Tell the importer whether this is a global module entity,
-	     or a module entity.  This bool merges into the next block
-	     of bools.  Sneaky.  */
-	  tree o = get_originating_module_decl (decl);
-	  bool is_mod = DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o);
-	  b (is_mod);
+	  if (!state->is_header ())
+	    {
+	      /* Tell the importer whether this is a global module entity,
+		 or a module entity.  This bool merges into the next block
+		 of bools.  Sneaky.  */
+	      tree o = get_originating_module_decl (decl);
+	      bool is_mod = DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o);
+	      b (is_mod);
+	    }
+	  b (dep->has_defn ());
 	}
-      b (dep->has_defn ());
       tree_node_bools (decl);
     }
 
@@ -6926,14 +6929,12 @@ trees_out::decl_value (tree decl, depset *dep)
     // FIXME: Stream in the type here as that's where the default args are
     fn_parms_fini (inner);
 
-  if (inner_tag != 0)
-    /* Template pieces.  */
-    tree_node_vals (decl);
-
-  tree_node_vals (inner);
+  tree_node_vals (decl);
 
   if (inner_tag != 0)
     {
+      tree_node_vals (inner);
+  
       tpl_parms_fini (decl,
 		      TREE_CODE (container) == TEMPLATE_DECL
 		      ? DECL_TEMPLATE_PARMS (container) : NULL_TREE);
@@ -7000,11 +7001,14 @@ trees_in::decl_value ()
   tree res = start (u ());
   if (res)
     {
-      if (mk != MK_unique && !state->is_header ())
-	/* See note in trees_out about where this bool is sequenced.  */
-	is_mod = b ();
+      if (mk != MK_unique)
+	{
+	  if (!state->is_header ())
+	    /* See note in trees_out about where this bool is sequenced.  */
+	    is_mod = b ();
 
-      has_defn = b ();
+	  has_defn = b ();
+	}
 
       if (!tree_node_bools (res))
 	res = NULL_TREE;
@@ -7225,22 +7229,21 @@ trees_in::decl_value ()
 		 merge_kind_name[mk], kind, TREE_CODE (res), res);
     }
 
-  if (inner_tag != 0)
-    {
-      /* Template pieces.  */
-      gcc_checking_assert (DECL_TEMPLATE_RESULT (res) == inner);
-      if (!tree_node_vals (res))
-	goto bail;
-    }
-
-  if (!tree_node_vals (inner))
+  if (!tree_node_vals (res))
     goto bail;
 
   if (inner_tag != 0)
-    if (!tpl_parms_fini (res,
-			 TREE_CODE (container_1) == TEMPLATE_DECL
-			 ? DECL_TEMPLATE_PARMS (container_1) : NULL_TREE))
-      goto bail;
+    {
+      gcc_checking_assert (DECL_TEMPLATE_RESULT (res) == inner);
+
+      if (!tree_node_vals (inner))
+	goto bail;
+
+      if (!tpl_parms_fini (res,
+			   TREE_CODE (container_1) == TEMPLATE_DECL
+			   ? DECL_TEMPLATE_PARMS (container_1) : NULL_TREE))
+	goto bail;
+    }
 
   if (type)
     {
