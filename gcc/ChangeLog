@@ -1,3 +1,11 @@
+2019-10-17  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.h (get_initialized_tmp_var): Add default argument to
+	post_p.
+	* gimplify.c (gimplify_self_mod_expr, gimplify_omp_atomic): Remove
+	NULL post_p argument.
+	* targhooks (std_gimplify_va_arg_expr): Likewise.
+
 2019-10-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (_stmt_vec_info::cond_reduc_code): Remove.

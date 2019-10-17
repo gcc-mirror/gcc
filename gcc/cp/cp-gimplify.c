@@ -650,7 +650,7 @@ gimplify_to_rvalue (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (t == GS_ERROR)
     return GS_ERROR;
   else if (is_gimple_variable (*expr_p) && TREE_CODE (*expr_p) != SSA_NAME)
-    *expr_p = get_initialized_tmp_var (*expr_p, pre_p, NULL);
+    *expr_p = get_initialized_tmp_var (*expr_p, pre_p);
   return t;
 }
 
@@ -767,7 +767,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		&& (TREE_CODE (op1) == CALL_EXPR
 		    || (SCALAR_TYPE_P (TREE_TYPE (op1))
 			&& !TREE_CONSTANT (op1))))
-	 TREE_OPERAND (*expr_p, 1) = get_formal_tmp_var (op1, pre_p);
+	 TREE_OPERAND (*expr_p, 1) = get_initialized_tmp_var (op1, pre_p);
       }
       ret = GS_OK;
       break;
