@@ -1,5 +1,7 @@
 2019-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/user.cfg.in (INPUT): Add new C++17 and C++20 headers.
+
 	* include/Makefile.am: Add new header.
 	* include/Makefile.in: Regenerate.
 	* include/bits/range_cmp.h: New header for C++20 function objects.
