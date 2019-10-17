@@ -64,6 +64,9 @@
 # include <utility>
 # include <bits/stl_algo.h>
 #endif
+#if __cplusplus > 201703L
+# include <bits/range_cmp.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
