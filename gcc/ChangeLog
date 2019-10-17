@@ -1,3 +1,7 @@
+2019-10-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_indirect_call): Fix typos in last change.
+
 2019-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92056
