@@ -1,5 +1,10 @@
 2019-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* tree-vect-loop.c (vect_analyze_loop_2): Use same condition to decide
+	when to use versioning threshold.
+
+2019-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* tree-vect-loop.c (determine_peel_for_niter): New function contained
 	outlined code from ...
 	(vect_analyze_loop_2): ... here.
