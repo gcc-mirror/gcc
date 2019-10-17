@@ -1,3 +1,11 @@
+2019-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (builtin_function_1): Merge into ...
+	(cxx_builtin_function): ... here.  Nadger the decl before maybe
+	copying it.  Set the context.
+	(cxx_builtin_function_ext_scope): Push to top level, then call
+	cxx_builtin_function.
+
 2019-10-16  Luis Machado  <luis.machado@linaro.org>
 
 	* cp-gimplify.c: Fix reference to non-existing tree-gimple.c file.
