@@ -1336,8 +1336,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	else
 	  // The rvalue's allocator cannot be moved, or is not equal,
 	  // so we need to individually move each element.
-	  this->assign(std::__make_move_if_noexcept_iterator(__list.begin()),
-		       std::__make_move_if_noexcept_iterator(__list.end()));
+	  this->assign(std::make_move_iterator(__list.begin()),
+		       std::make_move_iterator(__list.end()));
       }
 
       // Called by assign(_InputIterator, _InputIterator) if _Tp is
