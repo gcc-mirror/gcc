@@ -9379,9 +9379,31 @@ trees_out::tpl_parms (tree parms, tree outer_parms)
       tree parm = TREE_VEC_ELT (vec, ix);
       tree decl = TREE_VALUE (parm);
 
-      if (TREE_CODE (decl) == TEMPLATE_TYPE_PARM
-	  && TEMPLATE_TYPE_PARAMETER_PACK (decl))
-	gcc_unreachable (); // FIXME: Something
+      gcc_checking_assert (DECL_TEMPLATE_PARM_P (decl));
+      if (CHECKING_P)
+	switch (TREE_CODE (decl))
+	  {
+	  default: gcc_unreachable ();
+
+	  case TEMPLATE_DECL:
+	    gcc_assert ((TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
+			&& (TREE_CODE (DECL_TEMPLATE_RESULT (decl)) == TYPE_DECL)
+			&& (TYPE_NAME (TREE_TYPE (decl)) == decl));
+	    break;
+
+	  case TYPE_DECL:
+	    gcc_assert ((TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TYPE_PARM)
+			&& (TYPE_NAME (TREE_TYPE (decl)) == decl));
+	    break;
+
+	  case PARM_DECL:
+	    gcc_assert ((TREE_CODE (DECL_ARG_TYPE (decl)) == TEMPLATE_PARM_INDEX)
+			&& (TREE_CODE (TEMPLATE_PARM_DECL (DECL_ARG_TYPE (decl)))
+			    == CONST_DECL)
+			&& (DECL_TEMPLATE_PARM_P
+			    (TEMPLATE_PARM_DECL (DECL_ARG_TYPE (decl)))));
+	    break;
+	  }
 
       tree_node (decl);
       tree_node (TEMPLATE_PARM_CONSTRAINTS (parm));
@@ -11619,6 +11641,7 @@ depset::hash::find_dependencies ()
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
 
+#if 1
 		  if (current->get_entity_kind () == EK_SPECIALIZATION)
 		    {
 		      gcc_assert (current->is_special ());
@@ -11631,6 +11654,7 @@ depset::hash::find_dependencies ()
 		      walker.tree_node (entry->tmpl);
 		      walker.tree_node (entry->args);
 		    }
+#endif
 
 		  /* Turn the Sneakoscope on when depending the decl.  */
 		  sneakoscope = true;
@@ -13808,8 +13832,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
 
+#if 1
   /* Sort the cluster according to its mergeable entities.  */
   sort_mergeables (scc, size);
+#endif
 
   if (dump (dumper::CLUSTER))
     {

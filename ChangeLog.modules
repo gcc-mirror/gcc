@@ -1,6 +1,11 @@
 2019-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tpl_parms): Assert a lot.
+	(depset::hash::find_dependencies, module_state::write_cluster):
+	Mark mergeable sort-specific points.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_value): Stream thunks too.
 	(trees_out::decl_node): Forward all potentially mergeable decls to
 	decl_value.
