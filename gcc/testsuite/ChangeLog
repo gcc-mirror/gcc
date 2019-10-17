@@ -1,3 +1,8 @@
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR debug/91887
+	* g++.dg/debug/dwarf2/pr91887.C: New testcase.
+
 2019-10-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83821
