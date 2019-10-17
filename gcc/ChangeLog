@@ -1,6 +1,5 @@
 2019-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
-	PR tree-optimization/92131
 	* tree-vrp.c (value_range_base::dump): Display +INF for both
 	pointers and integers when appropriate.
 
