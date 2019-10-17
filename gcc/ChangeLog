@@ -1,3 +1,10 @@
+2019-10-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h (processor_costs): Add clear_ratio.
+	(CLEAR_RATIO): Remove MIN and use ix86_cost->clear_ratio.
+	* config/i386/x86-tune-costs.h: Set clear_ratio to the minimum
+	of 6 and move_ratio in all cost models.
+
 2019-10-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (check_reduction_path): Compute reduction
