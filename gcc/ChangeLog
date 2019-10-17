@@ -1,3 +1,14 @@
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::cond_reduc_code): Remove.
+	(STMT_VINFO_VEC_COND_REDUC_CODE): Likewise.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Do not
+	initialize STMT_VINFO_VEC_COND_REDUC_CODE.
+	* tree-vect-loop.c (vect_is_simple_reduction): Set
+	STMT_VINFO_REDUC_CODE.
+	(vectorizable_reduction): Remove dead and redundant code, use
+	STMT_VINFO_REDUC_CODE instead of STMT_VINFO_VEC_COND_REDUC_CODE.
+
 2019-10-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	Fix breakage introduced by r276985.
