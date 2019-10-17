@@ -1,3 +1,12 @@
+2019-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix breakage introduced by r276985.
+
+	* config/avr/avr.c (avr_option_override): Remove set of
+	PARAM_ALLOW_STORE_DATA_RACES.
+	* common/config/avr/avr-common.c (avr_option_optimization_table)
+	[OPT_LEVELS_ALL]: Turn on -fallow-store-data-races.
+
 2019-10-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.h (processor_costs): Add clear_ratio.
