@@ -5772,6 +5772,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       break;
 
     case GIMPLE_UNARY_RHS:
+    case GIMPLE_SINGLE_RHS:
       return false;
 
     default:
