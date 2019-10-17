@@ -1,3 +1,7 @@
+2019-10-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (marvel-pj4): Add +fp to the architecture.
+
 2019-10-17  Yuliang Wang  <yuliang.wang@arm.com>
 
 	* config/aarch64/aarch64-sve2.md (aarch64_sve2_eor3<mode>)

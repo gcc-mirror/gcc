@@ -1150,7 +1150,7 @@ end cpu cortex-m3
 
 begin cpu marvell-pj4
  tune flags LDSCHED
- architecture armv7-a+mp+sec
+ architecture armv7-a+mp+sec+fp
  costs marvell_pj4
 end cpu marvell-pj4
 
