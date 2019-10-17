@@ -1,5 +1,15 @@
 2019-10-17  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (needs_fold_left_reduction_p): Export.
+	(vect_is_simple_reduction): Move all validity checks ...
+	(vectorizable_reduction): ... here.  Compute whether we
+	need a fold-left reduction here.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Merge
+	both overloads, check needs_fold_left_reduction_p directly.
+	* tree-vectorizer.h (needs_fold_left_reduction_p): Declare.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Fix
 	TARGET_MEM_REF creation.
 
