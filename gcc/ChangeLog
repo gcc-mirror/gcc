@@ -1,3 +1,10 @@
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (check_reduction_path): Compute reduction
+	operation here.
+	(vect_is_simple_reduction): Remove special-case of single-stmt
+	reduction path detection.
+
 2019-10-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm-cpus.in (marvel-pj4): Add +fp to the architecture.
