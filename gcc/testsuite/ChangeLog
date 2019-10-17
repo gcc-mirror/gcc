@@ -1,3 +1,22 @@
+2019-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/vseleqdf.c: Add missing closing bracket.
+	* gcc.target/arm/vseleqsf.c: Likewise.
+	* gcc.target/arm/vselgedf.c: Likewise.
+	* gcc.target/arm/vselgesf.c: Likewise.
+	* gcc.target/arm/vselgtdf.c: Likewise.
+	* gcc.target/arm/vselgtsf.c: Likewise.
+	* gcc.target/arm/vselledf.c: Likewise.
+	* gcc.target/arm/vsellesf.c: Likewise.
+	* gcc.target/arm/vselltdf.c: Likewise.
+	* gcc.target/arm/vselltsf.c: Likewise.
+	* gcc.target/arm/vselnedf.c: Likewise.
+	* gcc.target/arm/vselnesf.c: Likewise.
+	* gcc.target/arm/vselvcdf.c: Likewise.
+	* gcc.target/arm/vselvcsf.c: Likewise.
+	* gcc.target/arm/vselvsdf.c: Likewise.
+	* gcc.target/arm/vselvssf.c: Likewise.
+
 2019-10-17  Mark Eggleston <mark.eggleston@codethink.com>
 
 	* gfortran.dg/auto_in_equiv_3.f90: New test.
