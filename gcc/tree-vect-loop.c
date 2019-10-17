@@ -8083,18 +8083,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
-      poly_uint64 versioning_threshold
-	= LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
-      if (check_profitability
-	  && ordered_p (poly_uint64 (th), versioning_threshold))
-	{
-	  versioning_threshold = ordered_max (poly_uint64 (th),
-					      versioning_threshold);
-	  check_profitability = false;
-	}
       class loop *sloop
-	= vect_loop_versioning (loop_vinfo, th, check_profitability,
-				versioning_threshold);
+	= vect_loop_versioning (loop_vinfo);
       sloop->force_vectorize = false;
       check_profitability = false;
     }

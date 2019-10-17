@@ -1,3 +1,9 @@
+2019-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Move code from here...
+	* tree-vect-loop-manip.c (vect_loop_versioning): ... to here.
+	* tree-vectorizer.h (vect_loop_versioning): Remove unused parameters.
+
 2019-10-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (needs_fold_left_reduction_p): Export.
