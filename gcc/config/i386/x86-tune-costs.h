@@ -81,6 +81,7 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (3),			/* cost of movzx */
   0,					/* "large" insn */
   2,					/* MOVE_RATIO */
+  2,					/* CLEAR_RATIO */
   {2, 2, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -185,6 +186,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (2),			/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
+  3,					/* CLEAR_RATIO */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -286,6 +288,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (2),			/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
+  3,					/* CLEAR_RATIO */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -389,6 +392,7 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -483,6 +487,7 @@ struct processor_costs lakemont_cost = {
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -592,6 +597,7 @@ struct processor_costs pentiumpro_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -692,6 +698,7 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   4,					/* MOVE_RATIO */
+  4,					/* CLEAR_RATIO */
   {2, 2, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -792,6 +799,7 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   4,					/* MOVE_RATIO */
+  4,					/* CLEAR_RATIO */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -898,6 +906,7 @@ struct processor_costs athlon_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1006,6 +1015,7 @@ struct processor_costs k8_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1127,6 +1137,7 @@ struct processor_costs amdfam10_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1240,6 +1251,7 @@ const struct processor_costs bdver_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {8, 8, 8},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1364,6 +1376,7 @@ struct processor_costs znver1_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx.  */
   8,					/* "large" insn.  */
   9,					/* MOVE_RATIO.  */
+  6,					/* CLEAR_RATIO */
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1503,6 +1516,7 @@ struct processor_costs znver2_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx.  */
   8,					/* "large" insn.  */
   9,					/* MOVE_RATIO.  */
+  6,					/* CLEAR_RATIO */
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1635,6 +1649,7 @@ struct processor_costs skylake_cost = {
   COSTS_N_INSNS (0),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1740,6 +1755,7 @@ const struct processor_costs btver1_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {6, 8, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1843,6 +1859,7 @@ const struct processor_costs btver2_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {8, 8, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1945,6 +1962,7 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   16,					/* "large" insn */
   6,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -2050,6 +2068,7 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   16,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -2153,6 +2172,7 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -2256,6 +2276,7 @@ struct processor_costs slm_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {8, 8, 8},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -2359,6 +2380,7 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -2469,6 +2491,7 @@ struct processor_costs generic_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -2585,6 +2608,7 @@ struct processor_costs core_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+  6,					/* CLEAR_RATIO */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
