@@ -71,7 +71,6 @@ static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
 			 int, int, int, bool, int, tree, location_t);
 static void check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
-static tree builtin_function_1 (tree, tree, bool);
 static int member_function_or_else (tree, tree, enum overload_flags);
 static tree local_variable_p_walkfn (tree *, int *, void *);
 static const char *tag_name (enum tag_types);
@@ -4629,12 +4628,13 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   return decl;
 }
 
-static tree
-builtin_function_1 (tree decl, tree context, bool is_global)
-{
-  tree          id = DECL_NAME (decl);
-  const char *name = IDENTIFIER_POINTER (id);
+/* Install DECL as a builtin function at current (global) scope.
+   Return the new decl (if we found an existing version).  Also
+   installs it into ::std, if it's not '_*'.  */
 
+tree
+cxx_builtin_function (tree decl)
+{
   retrofit_lang_decl (decl);
 
   DECL_ARTIFICIAL (decl) = 1;
@@ -4644,47 +4644,35 @@ builtin_function_1 (tree decl, tree context, bool is_global)
   DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
 
-  DECL_CONTEXT (decl) = context;
-
-  /* A function in the user's namespace should have an explicit
-     declaration before it is used.  Mark the built-in function as
-     anticipated but not actually declared.  */
-  if (name[0] != '_' || name[1] != '_')
-    DECL_ANTICIPATED (decl) = 1;
-  else if (strncmp (name + 2, "builtin_", strlen ("builtin_")) != 0)
-    {
-      size_t len = strlen (name);
-
-      /* Treat __*_chk fortification functions as anticipated as well,
-	 unless they are __builtin_*.  */
-      if (len > strlen ("___chk")
-	  && memcmp (name + len - strlen ("_chk"),
-		     "_chk", strlen ("_chk") + 1) == 0)
-	DECL_ANTICIPATED (decl) = 1;
-    }
-
-  if (is_global)
-    return pushdecl_top_level (decl);
-  else
-    return pushdecl (decl);
-}
-
-tree
-cxx_builtin_function (tree decl)
-{
-  tree          id = DECL_NAME (decl);
+  tree id = DECL_NAME (decl);
   const char *name = IDENTIFIER_POINTER (id);
+  if (name[0] != '_' || name[1] != '_')
+    /* In the user's namespace, it must be declared before use.  */
+    DECL_ANTICIPATED (decl) = 1;
+  else if (IDENTIFIER_LENGTH (id) > strlen ("___chk")
+	   && 0 != strncmp (name + 2, "builtin_", strlen ("builtin_"))
+	   && 0 == memcmp (name + IDENTIFIER_LENGTH (id) - strlen ("_chk"),
+			   "_chk", strlen ("_chk") + 1))
+    /* Treat __*_chk fortification functions as anticipated as well,
+       unless they are __builtin_*_chk.  */
+    DECL_ANTICIPATED (decl) = 1;
+
   /* All builtins that don't begin with an '_' should additionally
      go in the 'std' namespace.  */
   if (name[0] != '_')
     {
-      tree decl2 = copy_node(decl);
+      tree std_decl = copy_decl (decl);
+
       push_namespace (std_identifier);
-      builtin_function_1 (decl2, std_node, false);
+      DECL_CONTEXT (std_decl) = FROB_CONTEXT (std_node);
+      pushdecl (std_decl);
       pop_namespace ();
     }
 
-  return builtin_function_1 (decl, NULL_TREE, false);
+  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+  decl = pushdecl (decl);
+
+  return decl;
 }
 
 /* Like cxx_builtin_function, but guarantee the function is added to the global
@@ -4696,20 +4684,11 @@ cxx_builtin_function (tree decl)
 tree
 cxx_builtin_function_ext_scope (tree decl)
 {
+  push_nested_namespace (global_namespace);
+  decl = cxx_builtin_function (decl);
+  pop_nested_namespace (global_namespace);
 
-  tree          id = DECL_NAME (decl);
-  const char *name = IDENTIFIER_POINTER (id);
-  /* All builtins that don't begin with an '_' should additionally
-     go in the 'std' namespace.  */
-  if (name[0] != '_')
-    {
-      tree decl2 = copy_node(decl);
-      push_namespace (std_identifier);
-      builtin_function_1 (decl2, std_node, true);
-      pop_namespace ();
-    }
-
-  return builtin_function_1 (decl, NULL_TREE, true);
+  return decl;
 }
 
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library
