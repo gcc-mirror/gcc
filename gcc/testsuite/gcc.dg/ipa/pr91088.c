@@ -76,7 +76,7 @@ int callee2 (short *p)
 
 int callee3 (int v)
 {
-  if ((27 % ((1 - (char) v) * 3)) < 6)
+  if ((27 % ((1 - (v & 0xff)) * 3)) < 6)
     {
       large_code;
       return v + 2;
@@ -117,4 +117,4 @@ int caller ()
 /* { dg-final { scan-ipa-dump-times "Creating a specialized node of callee3" 1 "cp" } } */
 /* { dg-final { scan-ipa-dump "op0\\\[offset: 32],\\(\\(short int\\) #\\),\\(\\(int\\) #\\),\\(1300 / #\\) == 19" "cp" } } */
 /* { dg-final { scan-ipa-dump "op0\\\[ref offset: 0],\\(# \\^ 1\\) <" "cp" } } */
-/* { dg-final { scan-ipa-dump "op0,\\(\\(char\\) #\\),\\(\\(int\\) #\\),\\(1 - #\\),\\(# \\* 3\\),\\(27 % #\\) <" "cp" } } */
+/* { dg-final { scan-ipa-dump "op0,\\(# & 255\\),\\(1 - #\\),\\(# \\* 3\\),\\(27 % #\\) <" "cp" } } */
