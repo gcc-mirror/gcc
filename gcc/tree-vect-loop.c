@@ -2586,11 +2586,12 @@ needs_fold_left_reduction_p (tree type, tree_code code)
 }
 
 /* Return true if the reduction PHI in LOOP with latch arg LOOP_ARG and
-   reduction operation CODE has a handled computation expression.  */
+   has a handled computation expression.  Store the main reduction
+   operation in *CODE.  */
 
 static bool
 check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
-		      tree loop_arg, enum tree_code code,
+		      tree loop_arg, enum tree_code *code,
 		      vec<std::pair<ssa_op_iter, use_operand_p> > &path)
 {
   auto_bitmap visited;
@@ -2660,6 +2661,7 @@ pop:
   /* Check whether the reduction path detected is valid.  */
   bool fail = path.length () == 0;
   bool neg = false;
+  *code = ERROR_MARK;
   for (unsigned i = 1; i < path.length (); ++i)
     {
       gimple *use_stmt = USE_STMT (path[i].second);
@@ -2676,23 +2678,23 @@ pop:
 	  fail = true;
 	  break;
 	}
-      if (gimple_assign_rhs_code (use_stmt) != code)
+      enum tree_code use_code = gimple_assign_rhs_code (use_stmt);
+      if (use_code == MINUS_EXPR)
 	{
-	  if (code == PLUS_EXPR
-	      && gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
-	    {
-	      /* Track whether we negate the reduction value each iteration.  */
-	      if (gimple_assign_rhs2 (use_stmt) == op)
-		neg = ! neg;
-	    }
-	  else
-	    {
-	      fail = true;
-	      break;
-	    }
+	  use_code = PLUS_EXPR;
+	  /* Track whether we negate the reduction value each iteration.  */
+	  if (gimple_assign_rhs2 (use_stmt) == op)
+	    neg = ! neg;
+	}
+      if (*code == ERROR_MARK)
+	*code = use_code;
+      else if (use_code != *code)
+	{
+	  fail = true;
+	  break;
 	}
     }
-  return ! fail && ! neg;
+  return ! fail && ! neg && *code != ERROR_MARK;
 }
 
 bool
@@ -2700,7 +2702,9 @@ check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
 		      tree loop_arg, enum tree_code code)
 {
   auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
-  return check_reduction_path (loc, loop, phi, loop_arg, code, path);
+  enum tree_code code_;
+  return (check_reduction_path (loc, loop, phi, loop_arg, &code_, path)
+	  && code_ == code);
 }
 
 
@@ -2883,86 +2887,18 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return NULL;
     }
 
-  gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt);
-  if (!def_stmt)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "reduction: unhandled reduction operation: %G",
-			 def_stmt_info->stmt);
-      return NULL;
-    }
-  enum tree_code code = gimple_assign_rhs_code (def_stmt);
-
-  /* We can handle "res -= x[i]", which is non-associative by
-     simply rewriting this into "res += -x[i]".  Avoid changing
-     gimple instruction for the first simple tests and only do this
-     if we're allowed to change code at all.  */
-  if (code == MINUS_EXPR && gimple_assign_rhs2 (def_stmt) != phi_name)
-    code = PLUS_EXPR;
-
-  tree op1, op2;
-  if (code == COND_EXPR)
-    {
-      if (! nested_in_vect_loop)
-	STMT_VINFO_REDUC_TYPE (phi_info) = COND_REDUCTION;
-      op1 = gimple_assign_rhs2 (def_stmt);
-      op2 = gimple_assign_rhs3 (def_stmt);
-    }
-  else if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
-    {
-      op1 = gimple_assign_rhs1 (def_stmt);
-      op2 = gimple_assign_rhs2 (def_stmt);
-    }
-  else
-    {
-      if (dump_enabled_p ())
-	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			"reduction: not handled operation: ");
-      return NULL;
-    }
-
-  if (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op2) != SSA_NAME)
-    {
-      if (dump_enabled_p ())
-	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			"reduction: both uses not ssa_names: ");
-
-      return NULL;
-    }
-
-  /* Reduction is safe. We're dealing with one of the following:
-     1) integer arithmetic and no trapv
-     2) floating point arithmetic, and special flags permit this optimization
-     3) nested cycle (i.e., outer loop vectorization).  */
-
-  /* Check for the simple case that one def is the reduction def,
-     defined by the PHI node.  */
-  stmt_vec_info def1_info = loop_info->lookup_def (op1);
-  stmt_vec_info def2_info = loop_info->lookup_def (op2);
-  if (def2_info && def2_info->stmt == phi)
-    {
-      STMT_VINFO_REDUC_IDX (def_stmt_info) = 1 + (code == COND_EXPR ? 1 : 0);
-      if (dump_enabled_p ())
-	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
-      return def_stmt_info;
-    }
-  else if (def1_info && def1_info->stmt == phi)
-    {
-      STMT_VINFO_REDUC_IDX (def_stmt_info) = 0 + (code == COND_EXPR ? 1 : 0);
-      if (dump_enabled_p ())
-	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
-      return def_stmt_info;
-    }
-
-  /* Look for the expression computing latch_def from then loop PHI result
-     in a way involving more than one stmt.  */
+  /* Look for the expression computing latch_def from then loop PHI result.  */
   auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
-  if (check_reduction_path (vect_location, loop, phi, latch_def, code,
+  enum tree_code code;
+  if (check_reduction_path (vect_location, loop, phi, latch_def, &code,
 			    path))
     {
-      /* Try building an SLP reduction chain for which the additional
-         restriction is that all operations in the chain are the same.  */
+      if (code == COND_EXPR && !nested_in_vect_loop)
+	STMT_VINFO_REDUC_TYPE (phi_info) = COND_REDUCTION;
+
+      /* Fill in STMT_VINFO_REDUC_IDX and gather stmts for an SLP
+	 reduction chain for which the additional restriction is that
+	 all operations in the chain are the same.  */
       auto_vec<stmt_vec_info, 8> reduc_chain;
       unsigned i;
       bool is_slp_reduc = !nested_in_vect_loop && code != COND_EXPR;
@@ -2976,7 +2912,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	    = path[i].second->use - gimple_assign_rhs1_ptr (stmt);
 	  reduc_chain.safe_push (stmt_info);
 	}
-      if (is_slp_reduc)
+      if (is_slp_reduc && reduc_chain.length () > 1)
 	{
 	  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
 	    {
@@ -2991,18 +2927,19 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  REDUC_GROUP_SIZE (reduc_chain[0]) = reduc_chain.length ();
 
 	  if (dump_enabled_p ())
-	    report_vect_op (MSG_NOTE, def_stmt,
-			    "reduction: detected reduction chain: ");
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			    "reduction: detected reduction chain\n");
 	}
+      else if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "reduction: detected reduction\n");
 
       return def_stmt_info;
     }
 
   if (dump_enabled_p ())
-    {
-      report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-		      "reduction: unknown pattern: ");
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "reduction: unknown pattern\n");
 
   return NULL;
 }
