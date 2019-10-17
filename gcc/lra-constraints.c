@@ -5657,6 +5657,9 @@ invariant_p (const_rtx x)
   enum rtx_code code;
   int i, j;
 
+  if (side_effects_p (x))
+    return false;
+
   code = GET_CODE (x);
   mode = GET_MODE (x);
   if (code == SUBREG)
