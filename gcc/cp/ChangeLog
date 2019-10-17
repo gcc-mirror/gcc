@@ -1,3 +1,7 @@
+2019-10-16  Luis Machado  <luis.machado@linaro.org>
+
+	* cp-gimplify.c: Fix reference to non-existing tree-gimple.c file.
+
 2019-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (cxx_maybe_build_cleanup): When clearing location of cleanup,
