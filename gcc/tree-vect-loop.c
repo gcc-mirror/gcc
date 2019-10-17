@@ -2154,6 +2154,7 @@ start_over:
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
       poly_uint64 niters_th = 0;
+      unsigned int th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
 
       if (!vect_use_loop_mask_for_alignment_p (loop_vinfo))
 	{
@@ -2174,6 +2175,14 @@ start_over:
       /* One additional iteration because of peeling for gap.  */
       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
 	niters_th += 1;
+
+      /*  Use the same condition as vect_transform_loop to decide when to use
+	  the cost to determine a versioning threshold.  */
+      if (th >= vect_vf_for_cost (loop_vinfo)
+	  && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  && ordered_p (th, niters_th))
+	niters_th = ordered_max (poly_uint64 (th), niters_th);
+
       LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo) = niters_th;
     }
 
