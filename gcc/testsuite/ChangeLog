@@ -1,3 +1,7 @@
+2019-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp4.c: Check for +INF instead of -1.
+
 2019-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/vseleqdf.c: Add missing closing bracket.

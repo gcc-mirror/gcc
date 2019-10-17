@@ -428,8 +428,8 @@ value_range_base::dump (FILE *file) const
 
       fprintf (file, ", ");
 
-      if (INTEGRAL_TYPE_P (ttype)
-	  && vrp_val_is_max (max ())
+      if (supports_type_p (ttype)
+	  && vrp_val_is_max (max (), true)
 	  && TYPE_PRECISION (ttype) != 1)
 	fprintf (file, "+INF");
       else
