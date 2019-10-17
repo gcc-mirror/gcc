@@ -1514,8 +1514,7 @@ extern void vect_set_loop_condition (class loop *, loop_vec_info,
 extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge);
 class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *,
 						     class loop *, edge);
-class loop *vect_loop_versioning (loop_vec_info, unsigned int, bool,
-				   poly_uint64);
+class loop *vect_loop_versioning (loop_vec_info);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				     tree *, tree *, tree *, int, bool, bool);
 extern void vect_prepare_for_masked_peels (loop_vec_info);
