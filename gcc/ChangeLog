@@ -1,3 +1,9 @@
+2019-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/92131
+	* tree-vrp.c (value_range_base::dump): Display +INF for both
+	pointers and integers when appropriate.
+
 2019-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* tree-vect-loop.c (vect_analyze_loop_2): Use same condition to decide
