@@ -1611,6 +1611,8 @@
 
 (define_int_iterator SHRNT [UNSPEC_SHRNT UNSPEC_RSHRNT])
 
+(define_int_iterator BSL_DUP [1 2])
+
 (define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
 
 (define_int_iterator ADDSUBHN [UNSPEC_ADDHN UNSPEC_RADDHN
@@ -1975,6 +1977,18 @@
 			 (UNSPEC_SUBHN2 "sub")
 			 (UNSPEC_RADDHN2 "add")
 			 (UNSPEC_RSUBHN2 "sub")])
+
+;; BSL variants: first commutative operand.
+(define_int_attr bsl_1st [(1 "w") (2 "0")])
+
+;; BSL variants: second commutative operand.
+(define_int_attr bsl_2nd [(1 "0") (2 "w")])
+
+;; BSL variants: duplicated input operand.
+(define_int_attr bsl_dup [(1 "1") (2 "2")])
+
+;; BSL variants: operand which requires preserving via movprfx.
+(define_int_attr bsl_mov [(1 "2") (2 "1")])
 
 (define_int_attr offsetlr [(UNSPEC_SSLI "") (UNSPEC_USLI "")
 			   (UNSPEC_SSRI "offset_")

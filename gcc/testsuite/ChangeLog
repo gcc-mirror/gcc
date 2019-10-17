@@ -1,3 +1,13 @@
+2019-10-17  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* gcc.target/aarch64/sve2/eor3_1.c: New test.
+	* gcc.target/aarch64/sve2/nlogic_1.c: As above.
+	* gcc.target/aarch64/sve2/nlogic_2.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_1.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_2.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_3.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_4.c: As above.
+
 2019-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/tree-ssa/evrp4.c: Check for +INF instead of -1.

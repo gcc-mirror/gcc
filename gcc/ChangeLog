@@ -1,3 +1,14 @@
+2019-10-17  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (aarch64_sve2_eor3<mode>)
+	(aarch64_sve2_nor<mode>, aarch64_sve2_nand<mode>)
+	(aarch64_sve2_bsl<mode>, aarch64_sve2_nbsl<mode>)
+	(aarch64_sve2_bsl1n<mode>, aarch64_sve2_bsl2n<mode>):
+	New combine patterns.
+	* config/aarch64/iterators.md (BSL_DUP): New int iterator for the
+	above.
+	(bsl_1st, bsl_2nd, bsl_dup, bsl_mov): Attributes for the above.
+
 2019-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (value_range_base::dump): Display +INF for both
