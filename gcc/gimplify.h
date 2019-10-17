@@ -57,7 +57,7 @@ extern gbind *gimple_current_bind_expr (void);
 extern vec<gbind *> gimple_bind_expr_stack (void);
 extern void gimplify_and_add (tree, gimple_seq *);
 extern tree get_formal_tmp_var (tree, gimple_seq *);
-extern tree get_initialized_tmp_var (tree, gimple_seq *, gimple_seq *,
+extern tree get_initialized_tmp_var (tree, gimple_seq *, gimple_seq * = NULL,
 				     bool = true);
 extern void declare_vars (tree, gimple *, bool);
 extern void gimple_add_tmp_var (tree);
