@@ -1,5 +1,8 @@
 2019-10-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/92056
+	* gcc.c-torture/compile/pr92056.c: New test.
+
 	PR tree-optimization/92115
 	* gcc.dg/pr92115.c: New test.
 

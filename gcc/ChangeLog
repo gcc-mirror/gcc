@@ -1,5 +1,9 @@
 2019-10-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/92056
+	* tree-object-size.c (cond_expr_object_size): Return early if then_
+	processing resulted in unknown size.
+
 	PR tree-optimization/92115
 	* tree-ssa-ifcombine.c (ifcombine_ifandif): Force condition into
 	temporary if it could trap.
