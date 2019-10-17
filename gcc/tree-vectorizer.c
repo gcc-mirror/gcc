@@ -638,7 +638,6 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_RELEVANT (res) = vect_unused_in_scope;
   STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_REDUC_TYPE (res) = TREE_CODE_REDUCTION;
-  STMT_VINFO_VEC_COND_REDUC_CODE (res) = ERROR_MARK;
   STMT_VINFO_REDUC_CODE (res) = ERROR_MARK;
   STMT_VINFO_REDUC_FN (res) = IFN_LAST;
   STMT_VINFO_REDUC_IDX (res) = -1;

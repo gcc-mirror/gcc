@@ -2893,6 +2893,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   if (check_reduction_path (vect_location, loop, phi, latch_def, &code,
 			    path))
     {
+      STMT_VINFO_REDUC_CODE (phi_info) = code;
       if (code == COND_EXPR && !nested_in_vect_loop)
 	STMT_VINFO_REDUC_TYPE (phi_info) = COND_REDUCTION;
 
@@ -5571,17 +5572,13 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   tree vectype_in = NULL_TREE;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  enum tree_code code;
-  int op_type;
-  enum vect_def_type dt, cond_reduc_dt = vect_unknown_def_type;
+  enum vect_def_type cond_reduc_dt = vect_unknown_def_type;
   stmt_vec_info cond_stmt_vinfo = NULL;
   tree scalar_type;
   int i;
   int ncopies;
   bool single_defuse_cycle = false;
-  tree ops[3];
-  enum vect_def_type dts[3];
-  bool nested_cycle = false, found_nested_cycle_def = false;
+  bool nested_cycle = false;
   bool double_reduc = false;
   int vec_num;
   tree tem;
@@ -5688,25 +5685,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
         which is defined by the loop-header-phi.  */
 
   gassign *stmt = as_a <gassign *> (stmt_info->stmt);
-
-  /* Flatten RHS.  */
   switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
     {
     case GIMPLE_BINARY_RHS:
-      code = gimple_assign_rhs_code (stmt);
-      op_type = TREE_CODE_LENGTH (code);
-      gcc_assert (op_type == binary_op);
-      ops[0] = gimple_assign_rhs1 (stmt);
-      ops[1] = gimple_assign_rhs2 (stmt);
-      break;
-
     case GIMPLE_TERNARY_RHS:
-      code = gimple_assign_rhs_code (stmt);
-      op_type = TREE_CODE_LENGTH (code);
-      gcc_assert (op_type == ternary_op);
-      ops[0] = gimple_assign_rhs1 (stmt);
-      ops[1] = gimple_assign_rhs2 (stmt);
-      ops[2] = gimple_assign_rhs3 (stmt);
       break;
 
     case GIMPLE_UNARY_RHS:
@@ -5716,9 +5698,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
     default:
       gcc_unreachable ();
     }
-
-  if (code == COND_EXPR && slp_node)
-    return false;
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  int op_type = TREE_CODE_LENGTH (code);
 
   scalar_dest = gimple_assign_lhs (stmt);
   scalar_type = TREE_TYPE (scalar_dest);
@@ -5742,12 +5723,14 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   int reduc_index = -1;
   for (i = 0; i < op_type; i++)
     {
+      tree op = gimple_op (stmt, i + 1);
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
       if (i == 0 && code == COND_EXPR)
         continue;
 
       stmt_vec_info def_stmt_info;
-      if (!vect_is_simple_use (ops[i], loop_vinfo, &dts[i], &tem,
+      enum vect_def_type dt;
+      if (!vect_is_simple_use (op, loop_vinfo, &dt, &tem,
 			       &def_stmt_info))
 	{
 	  if (dump_enabled_p ())
@@ -5755,36 +5738,25 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 			     "use not simple.\n");
 	  return false;
 	}
-      dt = dts[i];
-      if (dt == vect_reduction_def
-	  && ops[i] == reduc_def)
+      if ((dt == vect_reduction_def || dt == vect_nested_cycle)
+	  && op == reduc_def)
 	{
 	  reduc_index = i;
 	  continue;
 	}
-      else if (tem)
-	{
-	  /* To properly compute ncopies we are interested in the widest
-	     input type in case we're looking at a widening accumulation.  */
-	  if (!vectype_in
-	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
-		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (tem)))))
-	    vectype_in = tem;
-	}
 
-      if (dt != vect_internal_def
-	  && dt != vect_external_def
-	  && dt != vect_constant_def
-	  && dt != vect_induction_def
-          && !(dt == vect_nested_cycle && nested_cycle))
+      /* There should be only one cycle def in the stmt, the one
+         leading to reduc_def.  */
+      if (VECTORIZABLE_CYCLE_DEF (dt))
 	return false;
 
-      if (dt == vect_nested_cycle
-	  && ops[i] == reduc_def)
-	{
-	  found_nested_cycle_def = true;
-	  reduc_index = i;
-	}
+      /* To properly compute ncopies we are interested in the widest
+	 input type in case we're looking at a widening accumulation.  */
+      if (tem
+	  && (!vectype_in
+	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
+		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (tem))))))
+	vectype_in = tem;
 
       if (code == COND_EXPR)
 	{
@@ -5792,7 +5764,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	  if (dt == vect_constant_def)
 	    {
 	      cond_reduc_dt = dt;
-	      cond_reduc_val = ops[i];
+	      cond_reduc_val = op;
 	    }
 	  if (dt == vect_induction_def
 	      && def_stmt_info
@@ -5811,27 +5783,14 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
      operation in the reduction meta.  */
   STMT_VINFO_REDUC_IDX (reduc_info) = reduc_index;
 
-  if (!(reduc_index == -1
-	|| dts[reduc_index] == vect_reduction_def
-	|| dts[reduc_index] == vect_nested_cycle
-	|| ((dts[reduc_index] == vect_internal_def
-	     || dts[reduc_index] == vect_external_def
-	     || dts[reduc_index] == vect_constant_def
-	     || dts[reduc_index] == vect_induction_def)
-	    && nested_cycle && found_nested_cycle_def)))
-    {
-      /* For pattern recognized stmts, orig_stmt might be a reduction,
-	 but some helper statements for the pattern might not, or
-	 might be COND_EXPRs with reduction uses in the condition.  */
-      gcc_assert (orig_stmt_info);
-      return false;
-    }
-
   enum vect_reduction_type v_reduc_type = STMT_VINFO_REDUC_TYPE (phi_info);
   STMT_VINFO_REDUC_TYPE (reduc_info) = v_reduc_type;
   /* If we have a condition reduction, see if we can simplify it further.  */
   if (v_reduc_type == COND_REDUCTION)
     {
+      if (slp_node)
+	return false;
+
       /* TODO: We can't yet handle reduction chains, since we need to treat
 	 each COND_EXPR in the chain specially, not just the last one.
 	 E.g. for:
@@ -5912,7 +5871,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "condition expression based on "
 				 "integer induction.\n");
-	      STMT_VINFO_VEC_COND_REDUC_CODE (reduc_info) = cond_reduc_op_code;
+	      STMT_VINFO_REDUC_CODE (reduc_info) = cond_reduc_op_code;
 	      STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info)
 		= cond_reduc_val;
 	      STMT_VINFO_REDUC_TYPE (reduc_info) = INTEGER_INDUC_COND_REDUCTION;
@@ -5921,9 +5880,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       else if (cond_reduc_dt == vect_constant_def)
 	{
 	  enum vect_def_type cond_initial_dt;
-	  gimple *def_stmt = SSA_NAME_DEF_STMT (ops[reduc_index]);
 	  tree cond_initial_val
-	    = PHI_ARG_DEF_FROM_EDGE (def_stmt, loop_preheader_edge (loop));
+	    = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi, loop_preheader_edge (loop));
 
 	  gcc_assert (cond_reduc_val != NULL_TREE);
 	  vect_is_simple_use (cond_initial_val, loop_vinfo, &cond_initial_dt);
@@ -5940,7 +5898,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 				     "condition expression based on "
 				     "compile time constant.\n");
 		  /* Record reduction code at analysis stage.  */
-		  STMT_VINFO_VEC_COND_REDUC_CODE (reduc_info)
+		  STMT_VINFO_REDUC_CODE (reduc_info)
 		    = integer_onep (e) ? MAX_EXPR : MIN_EXPR;
 		  STMT_VINFO_REDUC_TYPE (reduc_info) = CONST_COND_REDUCTION;
 		}
@@ -6008,31 +5966,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
           (and also the same tree-code) when generating the epilog code and
           when generating the code inside the loop.  */
 
-  vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
-  enum tree_code orig_code = ERROR_MARK;
-  if (reduction_type == CONST_COND_REDUCTION
-      || reduction_type == INTEGER_INDUC_COND_REDUCTION)
-    {
-      /* For simple condition reductions, replace with the actual expression
-	 we want to base our reduction around.  */
-      orig_code = STMT_VINFO_VEC_COND_REDUC_CODE (reduc_info);
-      gcc_assert (orig_code == MAX_EXPR || orig_code == MIN_EXPR);
-    }
-  else if (reduction_type == COND_REDUCTION)
-    orig_code = COND_EXPR;
-  else if (reduction_type == TREE_CODE_REDUCTION
-	   || reduction_type == FOLD_LEFT_REDUCTION)
-    {
-      if (orig_stmt_info)
-	orig_code = gimple_assign_rhs_code (orig_stmt_info->stmt);
-      else
-	orig_code = code;
-      gcc_assert (vectype_out);
-      if (orig_code == MINUS_EXPR)
-	orig_code = PLUS_EXPR;
-    }
+  enum tree_code orig_code = STMT_VINFO_REDUC_CODE (phi_info);
   STMT_VINFO_REDUC_CODE (reduc_info) = orig_code;
 
+  vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
   if (reduction_type == TREE_CODE_REDUCTION)
     {
       /* Check whether it's ok to change the order of the computation.
@@ -6139,7 +6076,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   tree neutral_op = NULL_TREE;
   if (slp_node)
     neutral_op = neutral_op_for_slp_reduction
-      (slp_node_instance->reduc_phis, code,
+      (slp_node_instance->reduc_phis, orig_code,
        REDUC_GROUP_FIRST_ELEMENT (stmt_info) != NULL);
 
   if (double_reduc && reduction_type == FOLD_LEFT_REDUCTION)
@@ -6229,14 +6166,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	  return false;
 	}
     }
-
-  /* In case of widenning multiplication by a constant, we update the type
-     of the constant to be the type of the other operand.  We check that the
-     constant fits the type in the pattern recognition pass.  */
-  if (code == DOT_PROD_EXPR
-      && !types_compatible_p (TREE_TYPE (ops[0]), TREE_TYPE (ops[1])))
-    /* No testcase for this.  PR49478.  */
-    gcc_unreachable ();
 
   if (reduction_type == COND_REDUCTION)
     {
@@ -6761,9 +6690,9 @@ vect_transform_cycle_phi (stmt_vec_info stmt_info, stmt_vec_info *vec_stmt,
 	  tree induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
 	  if (TREE_CODE (initial_def) == INTEGER_CST
 	      && !integer_zerop (induc_val)
-	      && (((STMT_VINFO_VEC_COND_REDUC_CODE (reduc_info) == MAX_EXPR)
+	      && ((STMT_VINFO_REDUC_CODE (reduc_info) == MAX_EXPR
 		   && tree_int_cst_lt (initial_def, induc_val))
-		  || ((STMT_VINFO_VEC_COND_REDUC_CODE (reduc_info) == MIN_EXPR)
+		  || (STMT_VINFO_REDUC_CODE (reduc_info) == MIN_EXPR
 		      && tree_int_cst_lt (induc_val, initial_def))))
 	    {
 	      induc_val = initial_def;
