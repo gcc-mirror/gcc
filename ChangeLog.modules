@@ -1,4 +1,9 @@
-2019-10-16  Nathan Sidwell  <nathan@acm.org>
+2019-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parms): Cope with non-shared
+	parms.
+	(trees_{in,out}::tpl_parms_fini): Likewise, stream vec type.
 
 	gcc/cp/
 	* cp-objcp-common.c (cp_pushdecl): Set DECL_CONTEXT.
@@ -7,6 +12,8 @@
 
 	gcc/cp/
 	* module.cc (trees_{in,out}::decl_value): Refactor some ifs.
+
+2019-10-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
 	* decl.c (cp_make_fname_decl): Set context to global namespace,

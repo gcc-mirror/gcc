@@ -9342,12 +9342,21 @@ trees_out::tpl_parms (tree parms, tree outer_parms)
   if (parms == outer_parms)
     return;
 
+  if (!parms)
+    {
+      /* Some nested templates do not inherit their container's
+	 parms.  Tell the reader this happened.  */
+      if (streaming_p ())
+	i (-1);
+      return;
+    }
+
   tpl_parms (TREE_CHAIN (parms), outer_parms);
 
   tree vec = TREE_VALUE (parms);
   unsigned len = TREE_VEC_LENGTH (vec);
   if (streaming_p ())
-    u (len);
+    i (len);
 
   for (unsigned ix = 0; ix != len; ix++)
     {
@@ -9371,10 +9380,16 @@ trees_in::tpl_parms (tree outer_parms)
 {
   tree parms = outer_parms;
 
-  while (unsigned len = u ())
+  while (int len = i ())
     {
+      if (len < 0)
+	{
+	  parms = NULL_TREE;
+	  continue;
+	}
+
       tree vec = make_tree_vec (len);
-      for (unsigned ix = 0; ix != len; ix++)
+      for (int ix = 0; ix != len; ix++)
 	{
 	  tree decl = tree_node ();
 	  if (!decl)
@@ -9396,17 +9411,26 @@ trees_in::tpl_parms (tree outer_parms)
 void
 trees_out::tpl_parms_fini (tree tmpl, tree outer_parms)
 {
-  for (tree parms = DECL_TEMPLATE_PARMS (tmpl); parms != outer_parms;
+  for (tree parms = DECL_TEMPLATE_PARMS (tmpl);
+       parms && parms != outer_parms;
        parms = TREE_CHAIN (parms))
     {
       tree vec = TREE_VALUE (parms);
+
+      tree_node (TREE_TYPE (vec));
+      tree dflt = error_mark_node;
       for (unsigned ix = TREE_VEC_LENGTH (vec); ix--;)
 	{
 	  tree parm = TREE_VEC_ELT (vec, ix);
-	  tree dflt = TREE_PURPOSE (parm);
-	  tree_node (dflt);
-	  if (!dflt)
-	    break;
+	  if (dflt)
+	    {
+	      dflt = TREE_PURPOSE (parm);
+	      tree_node (dflt);
+	    }
+
+	  tree decl = TREE_VALUE (parm);
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    gcc_checking_assert (DECL_CONTEXT (decl) == tmpl);
 	}
     }
 }
@@ -9414,13 +9438,14 @@ trees_out::tpl_parms_fini (tree tmpl, tree outer_parms)
 bool
 trees_in::tpl_parms_fini (tree tmpl, tree outer_parms)
 {
-  for (tree parms = DECL_TEMPLATE_PARMS (tmpl); parms != outer_parms;
+  for (tree parms = DECL_TEMPLATE_PARMS (tmpl);
+       parms && parms != outer_parms;
        parms = TREE_CHAIN (parms))
     {
       tree vec = TREE_VALUE (parms);
       tree dflt = error_mark_node;
 
-      TREE_TYPE (vec) = tmpl;
+      TREE_TYPE (vec) = tree_node ();
       for (unsigned ix = TREE_VEC_LENGTH (vec); ix--;)
 	{
 	  tree parm = TREE_VEC_ELT (vec, ix);
@@ -9431,6 +9456,7 @@ trees_in::tpl_parms_fini (tree tmpl, tree outer_parms)
 		return false;
 	      TREE_PURPOSE (parm) = dflt;
 	    }
+
 	  tree decl = TREE_VALUE (parm);
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
 	    DECL_CONTEXT (decl) = tmpl;
