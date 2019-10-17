@@ -1,3 +1,17 @@
+2019-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92124
+	* include/bits/forward_list.h
+	(_M_move_assign(forward_list&&, false_type)): Do not use
+	__make_move_if_noexcept, instead move unconditionally.
+	* include/bits/stl_deque.h (_M_move_assign2(deque&&, false_type)):
+	Likewise.
+	* include/bits/stl_list.h (_M_move_assign(list&&, false_type)):
+	Likewise.
+	* include/bits/stl_vector.h (_M_move_assign(vector&&, false_type)):
+	Likewise.
+	* testsuite/23_containers/vector/92124.cc: New test.
+
 2019-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_BUILTIN_IS_SAME_AS): Define to
