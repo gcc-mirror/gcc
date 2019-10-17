@@ -1,6 +1,17 @@
 2019-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_value): Stream thunks too.
+	(trees_out::decl_node): Forward all potentially mergeable decls to
+	decl_value.
+	(trees_out::tree_value): Make sure we don't get any potentially
+	mergeable decls.
+	(trees_{in,out}::tree_value): Stream template parms
+	via tpl_parms.
+	(trees_{in,out}::tpl_parms): The vector can be 0 length.
+	(trees_out::mark_declaration): Don't mark the template parms.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::tpl_parms): Cope with non-shared
 	parms.
 	(trees_{in,out}::tpl_parms_fini): Likewise, stream vec type.
