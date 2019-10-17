@@ -1,5 +1,19 @@
 2019-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/range_cmp.h: New header for C++20 function objects.
+	* include/std/functional: Include new header.
+	* testsuite/20_util/function_objects/identity/1.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/equal_to.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/greater.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/greater_equal.cc: New
+	test.
+	* testsuite/20_util/function_objects/range.cmp/less.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/less_equal.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/not_equal_to.cc: New
+	test.
+
 	PR libstdc++/92124
 	* include/bits/forward_list.h
 	(_M_move_assign(forward_list&&, false_type)): Do not use
