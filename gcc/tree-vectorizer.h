@@ -1632,6 +1632,7 @@ extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
 /* Used in gimple-loop-interchange.c and tree-parloops.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
+extern bool needs_fold_left_reduction_p (tree, tree_code);
 /* Drive for loop analysis stage.  */
 extern opt_loop_vec_info vect_analyze_loop (class loop *,
 					    loop_vec_info,

@@ -833,19 +833,8 @@ vect_convert_output (stmt_vec_info stmt_info, tree type, gimple *pattern_stmt,
 /* Return true if STMT_VINFO describes a reduction for which reassociation
    is allowed.  If STMT_INFO is part of a group, assume that it's part of
    a reduction chain and optimistically assume that all statements
-   except the last allow reassociation.  */
-
-static bool
-vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
-{
-  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
-    return (STMT_VINFO_REDUC_TYPE (STMT_VINFO_REDUC_DEF (stmt_vinfo))
-	    != FOLD_LEFT_REDUCTION);
-  else
-    return REDUC_GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL;
-}
-
-/* As above, but also require it to have code CODE and to be a reduction
+   except the last allow reassociation.
+   Also require it to have code CODE and to be a reduction
    in the outermost loop.  When returning true, store the operands in
    *OP0_OUT and *OP1_OUT.  */
 
@@ -867,7 +856,13 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_info, tree_code code,
   if (loop && nested_in_vect_loop_p (loop, stmt_info))
     return false;
 
-  if (!vect_reassociating_reduction_p (stmt_info))
+  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
+    {
+      if (needs_fold_left_reduction_p (TREE_TYPE (gimple_assign_lhs (assign)),
+				       code))
+	return false;
+    }
+  else if (REDUC_GROUP_FIRST_ELEMENT (stmt_info) == NULL)
     return false;
 
   *op0_out = gimple_assign_rhs1 (assign);

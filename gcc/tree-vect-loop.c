@@ -2536,7 +2536,7 @@ report_vect_op (dump_flags_t msg_type, gimple *stmt, const char *msg)
    on type TYPE.  NEED_WRAPPING_INTEGRAL_OVERFLOW is true if integer
    overflow must wrap.  */
 
-static bool
+bool
 needs_fold_left_reduction_p (tree type, tree_code code)
 {
   /* CHECKME: check for !flag_finite_math_only too?  */
@@ -2888,13 +2888,6 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       op1 = gimple_assign_rhs2 (def_stmt);
       op2 = gimple_assign_rhs3 (def_stmt);
     }
-  else if (!commutative_tree_code (code) || !associative_tree_code (code))
-    {
-      if (dump_enabled_p ())
-	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			"reduction: not commutative/associative: ");
-      return NULL;
-    }
   else if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
     {
       op1 = gimple_assign_rhs1 (def_stmt);
@@ -2916,18 +2909,6 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 
       return NULL;
     }
-
-  /* Check whether it's ok to change the order of the computation.
-     Generally, when vectorizing a reduction we change the order of the
-     computation.  This may change the behavior of the program in some
-     cases, so we need to check that this is ok.  One exception is when
-     vectorizing an outer-loop: the inner-loop is executed sequentially,
-     and therefore vectorizing reductions in the inner-loop during
-     outer-loop vectorization is safe.  */
-  tree type = TREE_TYPE (gimple_assign_lhs (def_stmt));
-  if (STMT_VINFO_REDUC_TYPE (phi_info) == TREE_CODE_REDUCTION
-      && needs_fold_left_reduction_p (type, code))
-    STMT_VINFO_REDUC_TYPE (phi_info) = FOLD_LEFT_REDUCTION;
 
   /* Reduction is safe. We're dealing with one of the following:
      1) integer arithmetic and no trapv
@@ -5633,7 +5614,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code;
-  internal_fn reduc_fn;
   int op_type;
   enum vect_def_type dt, cond_reduc_dt = vect_unknown_def_type;
   stmt_vec_info cond_stmt_vinfo = NULL;
@@ -5873,19 +5853,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
      operation in the reduction meta.  */
   STMT_VINFO_REDUC_IDX (reduc_info) = reduc_index;
 
-  /* When vectorizing a reduction chain w/o SLP the reduction PHI is not
-     directy used in stmt.  */
-  if (reduc_index == -1)
-    {
-      if (STMT_VINFO_REDUC_TYPE (phi_info) == FOLD_LEFT_REDUCTION)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "in-order reduction chain without SLP.\n");
-	  return false;
-	}
-    }
-
   if (!(reduc_index == -1
 	|| dts[reduc_index] == vect_reduction_def
 	|| dts[reduc_index] == vect_nested_cycle
@@ -6048,17 +6015,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       double_reduc = true;
     }
 
-  vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
-  if ((double_reduc || reduction_type != TREE_CODE_REDUCTION)
-      && ncopies > 1)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "multiple types in double reduction or condition "
-			 "reduction.\n");
-      return false;
-    }
-
   /* 4.2. Check support for the epilog operation.
 
           If STMT represents a reduction pattern, then the type of the
@@ -6094,38 +6050,75 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
           (and also the same tree-code) when generating the epilog code and
           when generating the code inside the loop.  */
 
-  enum tree_code orig_code;
-  if (orig_stmt_info
-      && (reduction_type == TREE_CODE_REDUCTION
-	  || reduction_type == FOLD_LEFT_REDUCTION))
+  vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
+  enum tree_code orig_code = ERROR_MARK;
+  if (reduction_type == CONST_COND_REDUCTION
+      || reduction_type == INTEGER_INDUC_COND_REDUCTION)
     {
-      /* This is a reduction pattern: get the vectype from the type of the
-         reduction variable, and get the tree-code from orig_stmt.  */
-      orig_code = gimple_assign_rhs_code (orig_stmt_info->stmt);
-      gcc_assert (vectype_out);
-    }
-  else
-    {
-      /* Regular reduction: use the same vectype and tree-code as used for
-         the vector code inside the loop can be used for the epilog code. */
-      orig_code = code;
-
-      if (code == MINUS_EXPR)
-	orig_code = PLUS_EXPR;
-
       /* For simple condition reductions, replace with the actual expression
 	 we want to base our reduction around.  */
-      if (reduction_type == CONST_COND_REDUCTION
-	  || reduction_type == INTEGER_INDUC_COND_REDUCTION)
-	{
-	  orig_code = STMT_VINFO_VEC_COND_REDUC_CODE (reduc_info);
-	  gcc_assert (orig_code == MAX_EXPR || orig_code == MIN_EXPR);
-	}
+      orig_code = STMT_VINFO_VEC_COND_REDUC_CODE (reduc_info);
+      gcc_assert (orig_code == MAX_EXPR || orig_code == MIN_EXPR);
+    }
+  else if (reduction_type == COND_REDUCTION)
+    orig_code = COND_EXPR;
+  else if (reduction_type == TREE_CODE_REDUCTION
+	   || reduction_type == FOLD_LEFT_REDUCTION)
+    {
+      if (orig_stmt_info)
+	orig_code = gimple_assign_rhs_code (orig_stmt_info->stmt);
+      else
+	orig_code = code;
+      gcc_assert (vectype_out);
+      if (orig_code == MINUS_EXPR)
+	orig_code = PLUS_EXPR;
     }
   STMT_VINFO_REDUC_CODE (reduc_info) = orig_code;
 
-  reduc_fn = IFN_LAST;
+  if (reduction_type == TREE_CODE_REDUCTION)
+    {
+      /* Check whether it's ok to change the order of the computation.
+	 Generally, when vectorizing a reduction we change the order of the
+	 computation.  This may change the behavior of the program in some
+	 cases, so we need to check that this is ok.  One exception is when
+	 vectorizing an outer-loop: the inner-loop is executed sequentially,
+	 and therefore vectorizing reductions in the inner-loop during
+	 outer-loop vectorization is safe.  */
+      if (needs_fold_left_reduction_p (scalar_type, orig_code))
+	{
+	  STMT_VINFO_REDUC_TYPE (reduc_info)
+	    = reduction_type = FOLD_LEFT_REDUCTION;
+	  /* When vectorizing a reduction chain w/o SLP the reduction PHI is not
+	     directy used in stmt.  */
+	  if (reduc_index == -1)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "in-order reduction chain without SLP.\n");
+	      return false;
+	    }
+	}
+      else if (!commutative_tree_code (orig_code)
+	       || !associative_tree_code (orig_code))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			    "reduction: not commutative/associative");
+	  return false;
+	}
+    }
 
+  if ((double_reduc || reduction_type != TREE_CODE_REDUCTION)
+      && ncopies > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "multiple types in double reduction or condition "
+			 "reduction or fold-left reduction.\n");
+      return false;
+    }
+
+  internal_fn reduc_fn = IFN_LAST;
   if (reduction_type == TREE_CODE_REDUCTION
       || reduction_type == FOLD_LEFT_REDUCTION
       || reduction_type == INTEGER_INDUC_COND_REDUCTION
