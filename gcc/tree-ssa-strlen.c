@@ -3462,6 +3462,8 @@ determine_min_objsize (tree dest)
 {
   unsigned HOST_WIDE_INT size = 0;
 
+  init_object_sizes ();
+
   if (compute_builtin_object_size (dest, 2, &size))
     return size;
 
