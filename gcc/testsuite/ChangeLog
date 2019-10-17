@@ -1,3 +1,11 @@
+2019-10-17  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	Backport from mainline
+	2019-10-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/92093
+	* gcc.target/powerpc/pr91275.c: Fix type and endian issues.
+
 2019-10-07  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	Backport from mainline
