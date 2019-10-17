@@ -1,3 +1,9 @@
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR debug/91887
+	* dwarf2out.c (gen_formal_parameter_die): Also try to match
+	context_die against a DW_TAG_GNU_formal_parameter_pack parent.
+
 2019-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-strlen.c (maybe_invalidate): Use

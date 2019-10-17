@@ -22304,19 +22304,18 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
       /* If the contexts differ, we may not be talking about the same
 	 thing.
 	 ???  When in LTO the DIE parent is the "abstract" copy and the
-	 context_die is the specification "copy".  But this whole block
-	 should eventually be no longer needed.  */
-      if (parm_die && parm_die->die_parent != context_die && !in_lto_p)
+	 context_die is the specification "copy".  */
+      if (parm_die
+	  && parm_die->die_parent != context_die
+	  && (parm_die->die_parent->die_tag != DW_TAG_GNU_formal_parameter_pack
+	      || parm_die->die_parent->die_parent != context_die)
+	  && !in_lto_p)
 	{
-	  if (!DECL_ABSTRACT_P (node))
-	    {
-	      /* This can happen when creating an inlined instance, in
-		 which case we need to create a new DIE that will get
-		 annotated with DW_AT_abstract_origin.  */
-	      parm_die = NULL;
-	    }
-	  else
-	    gcc_unreachable ();
+	  gcc_assert (!DECL_ABSTRACT_P (node));
+	  /* This can happen when creating a concrete instance, in
+	     which case we need to create a new DIE that will get
+	     annotated with DW_AT_abstract_origin.  */
+	  parm_die = NULL;
 	}
 
       if (parm_die && parm_die->die_parent == NULL)
