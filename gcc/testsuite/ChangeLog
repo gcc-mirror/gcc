@@ -1,3 +1,8 @@
+2019-10-17  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR testsuite/92125
+	* gcc.dg/ipa/pr91088.c: Change char conversion to bitand.
+
 2019-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92056
