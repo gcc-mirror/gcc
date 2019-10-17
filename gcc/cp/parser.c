@@ -5364,8 +5364,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  {
 	    expr = cp_parser_fold_expression (parser, expr);
 	    if (expr != error_mark_node
-		&& cxx_dialect < cxx17
-		&& !in_system_header_at (input_location))
+		&& cxx_dialect < cxx17)
 	      pedwarn (input_location, 0, "fold-expressions only available "
 		       "with %<-std=c++17%> or %<-std=gnu++17%>");
 	  }
@@ -11817,7 +11816,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	  {
 	    cx = true;
 	    cp_token *tok = cp_lexer_consume_token (parser->lexer);
-	    if (cxx_dialect < cxx17 && !in_system_header_at (tok->location))
+	    if (cxx_dialect < cxx17)
 	      pedwarn (tok->location, 0, "%<if constexpr%> only available "
 		       "with %<-std=c++17%> or %<-std=gnu++17%>");
 	  }
@@ -13314,8 +13313,7 @@ cp_parser_toplevel_declaration (cp_parser* parser)
       /* A declaration consisting of a single semicolon is
 	 invalid.  Allow it unless we're being pedantic.  */
       cp_lexer_consume_token (parser->lexer);
-      if (!in_system_header_at (input_location))
-	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+      pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
     }
   else
     /* Parse the declaration itself.  */
@@ -19193,7 +19191,7 @@ cp_parser_enumerator_list (cp_parser* parser, tree type)
       /* If the next token is a `}', there is a trailing comma.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
 	{
-	  if (cxx_dialect < cxx11 && !in_system_header_at (input_location))
+	  if (cxx_dialect < cxx11)
 	    pedwarn (input_location, OPT_Wpedantic,
                      "comma at end of enumerator list");
 	  break;
@@ -19655,8 +19653,7 @@ cp_parser_using_declaration (cp_parser* parser,
   else if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
     {
       cp_token *ell = cp_lexer_consume_token (parser->lexer);
-      if (cxx_dialect < cxx17
-	  && !in_system_header_at (ell->location))
+      if (cxx_dialect < cxx17)
 	pedwarn (ell->location, 0,
 		 "pack expansion in using-declaration only available "
 		 "with %<-std=c++17%> or %<-std=gnu++17%>");
@@ -24835,7 +24832,6 @@ cp_parser_member_declaration (cp_parser* parser)
 		  location_t loc
 		    = cp_lexer_peek_token (parser->lexer)->location;
 		  if (cxx_dialect < cxx2a
-		      && !in_system_header_at (loc)
 		      && identifier != NULL_TREE)
 		    pedwarn (loc, 0,
 			     "default member initializers for bit-fields "
@@ -25692,7 +25688,7 @@ cp_parser_exception_specification_opt (cp_parser* parser, cp_parser_flags flags)
 			 "specifications");
 	  type_id_list = NULL_TREE;
 	}
-      else if (cxx_dialect >= cxx11 && !in_system_header_at (loc))
+      else if (cxx_dialect >= cxx11)
 	warning_at (loc, OPT_Wdeprecated,
 		    "dynamic exception specifications are deprecated in "
 		    "C++11");
@@ -26680,8 +26676,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	  if (attr_ns
 	      && cp_lexer_nth_token_is (parser->lexer, 3, CPP_COLON))
 	    {
-	      if (cxx_dialect < cxx17
-		  && !in_system_header_at (input_location))
+	      if (cxx_dialect < cxx17)
 		pedwarn (input_location, 0,
 			 "attribute using prefix only available "
 			 "with %<-std=c++17%> or %<-std=gnu++17%>");

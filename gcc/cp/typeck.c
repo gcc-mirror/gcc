@@ -6533,7 +6533,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 		    return error_mark_node;
 		  }
 		/* Otherwise, [depr.incr.bool] says this is deprecated.  */
-		else if (!in_system_header_at (input_location))
+		else
 		  warning (OPT_Wdeprecated, "use of an operand of type %qT "
 			   "in %<operator++%> is deprecated",
 			   boolean_type_node);
