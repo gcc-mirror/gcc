@@ -6330,7 +6330,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	}
       else
 	vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
-			       vectype_in);
+			       vectype_in, NULL);
     }
   if (dump_enabled_p ()
       && reduction_type == FOLD_LEFT_REDUCTION)
@@ -7561,7 +7561,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 	      gcc_assert (ncopies == 1 && !slp_node);
 	      vect_record_loop_mask (loop_vinfo,
 				     &LOOP_VINFO_MASKS (loop_vinfo),
-				     1, vectype);
+				     1, vectype, NULL);
 	    }
 	}
       return true;
@@ -7760,11 +7760,12 @@ vect_double_mask_nunits (tree type)
 
 /* Record that a fully-masked version of LOOP_VINFO would need MASKS to
    contain a sequence of NVECTORS masks that each control a vector of type
-   VECTYPE.  */
+   VECTYPE.  If SCALAR_MASK is nonnull, the fully-masked loop would AND
+   these vector masks with the vector version of SCALAR_MASK.  */
 
 void
 vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
-		       unsigned int nvectors, tree vectype)
+		       unsigned int nvectors, tree vectype, tree scalar_mask)
 {
   gcc_assert (nvectors != 0);
   if (masks->length () < nvectors)
@@ -7775,6 +7776,13 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
   unsigned int nscalars_per_iter
     = exact_div (nvectors * TYPE_VECTOR_SUBPARTS (vectype),
 		 LOOP_VINFO_VECT_FACTOR (loop_vinfo)).to_constant ();
+
+  if (scalar_mask)
+    {
+      scalar_cond_masked_key cond (scalar_mask, nvectors);
+      loop_vinfo->scalar_cond_masked_set.add (cond);
+    }
+
   if (rgm->max_nscalars_per_iter < nscalars_per_iter)
     {
       rgm->max_nscalars_per_iter = nscalars_per_iter;

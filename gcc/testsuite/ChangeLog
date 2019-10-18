@@ -1,3 +1,16 @@
+2019-10-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86753
+	* gcc.target/aarch64/sve/cond_cnot_2.c: Remove XFAIL
+	from { scan-assembler-not {\tsel\t}.
+	* gcc.target/aarch64/sve/cond_convert_1.c: Adjust to make
+	only one load conditional.
+	* gcc.target/aarch64/sve/cond_convert_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_2.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_4.c: Remove XFAIL's.
+	* gcc.target/aarch64/sve/vcond_5.c: Likewise.
+
 2019-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92056

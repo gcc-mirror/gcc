@@ -1879,7 +1879,8 @@ static tree permute_vec_elements (tree, tree, tree, stmt_vec_info,
    says how the load or store is going to be implemented and GROUP_SIZE
    is the number of load or store statements in the containing group.
    If the access is a gather load or scatter store, GS_INFO describes
-   its arguments.
+   its arguments.  If the load or store is conditional, SCALAR_MASK is the
+   condition under which it occurs.
 
    Clear LOOP_VINFO_CAN_FULLY_MASK_P if a fully-masked loop is not
    supported, otherwise record the required mask types.  */
@@ -1888,7 +1889,7 @@ static void
 check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 			  vec_load_store_type vls_type, int group_size,
 			  vect_memory_access_type memory_access_type,
-			  gather_scatter_info *gs_info)
+			  gather_scatter_info *gs_info, tree scalar_mask)
 {
   /* Invariant loads need no special support.  */
   if (memory_access_type == VMAT_INVARIANT)
@@ -1912,7 +1913,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 	  return;
 	}
       unsigned int ncopies = vect_get_num_copies (loop_vinfo, vectype);
-      vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype);
+      vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype, scalar_mask);
       return;
     }
 
@@ -1936,7 +1937,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 	  return;
 	}
       unsigned int ncopies = vect_get_num_copies (loop_vinfo, vectype);
-      vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype);
+      vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype, scalar_mask);
       return;
     }
 
@@ -1974,7 +1975,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   unsigned int nvectors;
   if (can_div_away_from_zero_p (group_size * vf, nunits, &nvectors))
-    vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype);
+    vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
   else
     gcc_unreachable ();
 }
@@ -3436,7 +3437,9 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  unsigned int nvectors = (slp_node
 				   ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node)
 				   : ncopies);
-	  vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype_out);
+	  tree scalar_mask = gimple_call_arg (stmt_info->stmt, mask_opno);
+	  vect_record_loop_mask (loop_vinfo, masks, nvectors,
+				 vectype_out, scalar_mask);
 	}
       return true;
     }
@@ -7390,7 +7393,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	check_load_store_masking (loop_vinfo, vectype, vls_type, group_size,
-				  memory_access_type, &gs_info);
+				  memory_access_type, &gs_info, mask);
 
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       vect_model_store_cost (stmt_info, ncopies, rhs_dt, memory_access_type,
@@ -8637,7 +8640,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	check_load_store_masking (loop_vinfo, vectype, VLS_LOAD, group_size,
-				  memory_access_type, &gs_info);
+				  memory_access_type, &gs_info, mask);
 
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       vect_model_load_cost (stmt_info, ncopies, memory_access_type,
@@ -10007,6 +10010,35 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* Handle cond expr.  */
   for (j = 0; j < ncopies; j++)
     {
+      tree loop_mask = NULL_TREE;
+      bool swap_cond_operands = false;
+
+      /* See whether another part of the vectorized code applies a loop
+	 mask to the condition, or to its inverse.  */
+
+      if (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+	{
+	  scalar_cond_masked_key cond (cond_expr, ncopies);
+	  if (loop_vinfo->scalar_cond_masked_set.contains (cond))
+	    {
+	      vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+	      loop_mask = vect_get_loop_mask (gsi, masks, ncopies, vectype, j);
+	    }
+	  else
+	    {
+	      bool honor_nans = HONOR_NANS (TREE_TYPE (cond.op0));
+	      cond.code = invert_tree_comparison (cond.code, honor_nans);
+	      if (loop_vinfo->scalar_cond_masked_set.contains (cond))
+		{
+		  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+		  loop_mask = vect_get_loop_mask (gsi, masks, ncopies,
+						  vectype, j);
+		  cond_code = cond.code;
+		  swap_cond_operands = true;
+		}
+	    }
+	}
+
       stmt_vec_info new_stmt_info = NULL;
       if (j == 0)
 	{
@@ -10084,6 +10116,9 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
           vec_then_clause = vec_oprnds2[i];
           vec_else_clause = vec_oprnds3[i];
 
+	  if (swap_cond_operands)
+	    std::swap (vec_then_clause, vec_else_clause);
+
 	  if (masked)
 	    vec_compare = vec_cond_lhs;
 	  else
@@ -10122,6 +10157,50 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    }
 		}
 	    }
+
+	  /* If we decided to apply a loop mask to the result of the vector
+             comparison, AND the comparison with the mask now.  Later passes
+             should then be able to reuse the AND results between mulitple
+             vector statements.
+
+	     For example:
+	     for (int i = 0; i < 100; ++i)
+	       x[i] = y[i] ? z[i] : 10;
+
+	     results in following optimized GIMPLE:
+
+	     mask__35.8_43 = vect__4.7_41 != { 0, ... };
+	     vec_mask_and_46 = loop_mask_40 & mask__35.8_43;
+	     _19 = &MEM[base: z_12(D), index: ivtmp_56, step: 4, offset: 0B];
+	     vect_iftmp.11_47 = .MASK_LOAD (_19, 4B, vec_mask_and_46);
+	     vect_iftmp.12_52 = VEC_COND_EXPR <vec_mask_and_46,
+					       vect_iftmp.11_47, { 10, ... }>;
+
+	     instead of using a masked and unmasked forms of
+	     vec != { 0, ... } (masked in the MASK_LOAD,
+	     unmasked in the VEC_COND_EXPR).  */
+
+	  if (loop_mask)
+	    {
+	      if (COMPARISON_CLASS_P (vec_compare))
+		{
+		  tree tmp = make_ssa_name (vec_cmp_type);
+		  tree op0 = TREE_OPERAND (vec_compare, 0);
+		  tree op1 = TREE_OPERAND (vec_compare, 1);
+		  gassign *g = gimple_build_assign (tmp,
+						    TREE_CODE (vec_compare),
+						    op0, op1);
+		  vect_finish_stmt_generation (stmt_info, g, gsi);
+		  vec_compare = tmp;
+		}
+
+	      tree tmp2 = make_ssa_name (vec_cmp_type);
+	      gassign *g = gimple_build_assign (tmp2, BIT_AND_EXPR,
+						vec_compare, loop_mask);
+	      vect_finish_stmt_generation (stmt_info, g, gsi);
+	      vec_compare = tmp2;
+	    }
+
 	  if (reduction_type == EXTRACT_LAST_REDUCTION)
 	    {
 	      if (!is_gimple_val (vec_compare))
