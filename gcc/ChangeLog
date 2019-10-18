@@ -1,5 +1,10 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (zero_extend<mode>di2): Convert to define_expand.
+	(extend<mode>di2): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-protos.h (arm_decompose_di_binop): New prototype.
 	* config/arm/arm.c (arm_decompose_di_binop): New function.
 	* config/arm/arm.md (adddi3): Also accept any const_int for op2.
