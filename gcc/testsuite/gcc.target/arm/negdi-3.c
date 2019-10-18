@@ -11,7 +11,7 @@ Expected output:
         rsbs    r0, r0, #0
         sbc     r1, r1, r1
 */
-/* { dg-final { scan-assembler-times "rsb" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "sbc" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "mov" 0 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "rsc" 0 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "rsb" 1 } } */
+/* { dg-final { scan-assembler-times "sbc" 1 } } */
+/* { dg-final { scan-assembler-times "mov" 0 } } */
+/* { dg-final { scan-assembler-times "rsc" 0 } } */

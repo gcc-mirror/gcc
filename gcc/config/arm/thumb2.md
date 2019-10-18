@@ -368,7 +368,9 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(neg:SI (match_operator:SI 1 "arm_comparison_operator_mode"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
-  "TARGET_THUMB2 && !arm_restrict_it"
+  "TARGET_THUMB2
+   && !arm_restrict_it
+   && !arm_borrow_operation (operands[1], SImode)"
   "#"   ; "ite\\t%D1\;mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
   "&& true"
   [(set (match_dup 0)
@@ -387,7 +389,9 @@
   [(set (match_operand:SI 0 "low_register_operand" "=l")
 	(neg:SI (match_operator:SI 1 "arm_comparison_operator_mode"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
-  "TARGET_THUMB2 && arm_restrict_it"
+  "TARGET_THUMB2
+   && arm_restrict_it
+   && !arm_borrow_operation (operands[1], SImode)"
   "#"   ; ";mvn\\t%0, #0 ;it\\t%D1\;mov%D1\\t%0, #0\"
   "&& reload_completed"
   [(set (match_dup 0)
