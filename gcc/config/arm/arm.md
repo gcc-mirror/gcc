@@ -4581,47 +4581,16 @@
 
 ;; Unary arithmetic insns
 
-(define_expand "negvsi3"
-  [(match_operand:SI 0 "register_operand")
-   (match_operand:SI 1 "register_operand")
+(define_expand "negv<SIDI:mode>3"
+  [(match_operand:SIDI 0 "s_register_operand")
+   (match_operand:SIDI 1 "s_register_operand")
    (match_operand 2 "")]
   "TARGET_32BIT"
 {
-  emit_insn (gen_subsi3_compare (operands[0], const0_rtx, operands[1]));
-  arm_gen_unlikely_cbranch (NE, CC_Vmode, operands[2]);
-
+  emit_insn (gen_subv<mode>4 (operands[0], const0_rtx, operands[1],
+			      operands[2]));
   DONE;
 })
-
-(define_expand "negvdi3"
-  [(match_operand:DI 0 "s_register_operand")
-   (match_operand:DI 1 "s_register_operand")
-   (match_operand 2 "")]
-  "TARGET_ARM"
-{
-  emit_insn (gen_negdi2_compare (operands[0], operands[1]));
-  arm_gen_unlikely_cbranch (NE, CC_Vmode, operands[2]);
-
-  DONE;
-})
-
-
-(define_insn "negdi2_compare"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
-	  (const_int 0)
-	  (match_operand:DI 1 "register_operand" "r,r")))
-   (set (match_operand:DI 0 "register_operand" "=&r,&r")
-	(minus:DI (const_int 0) (match_dup 1)))]
-  "TARGET_ARM"
-  "@
-   rsbs\\t%Q0, %Q1, #0;rscs\\t%R0, %R1, #0
-   rsbs\\t%Q0, %Q1, #0;sbcs\\t%R0, %R1, %R1, lsl #1"
-  [(set_attr "conds" "set")
-   (set_attr "arch" "a,t2")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
 
 (define_expand "negsi2"
   [(set (match_operand:SI         0 "s_register_operand")

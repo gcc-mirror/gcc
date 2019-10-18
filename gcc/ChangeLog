@@ -1,5 +1,11 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (negv<SIDI:mode>3): New expansion rule.
+	(negvsi3, negvdi3): Delete.
+	(negdi2_compare): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (subvdi4): Decompose calculation into 32-bit
 	operations.
 	(subdi3_compare1): Delete pattern.
