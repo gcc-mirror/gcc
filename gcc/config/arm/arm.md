@@ -437,25 +437,53 @@
  [(parallel
    [(set (match_operand:DI           0 "s_register_operand")
 	  (plus:DI (match_operand:DI 1 "s_register_operand")
-	           (match_operand:DI 2 "s_register_operand")))
+		   (match_operand:DI 2 "reg_or_int_operand")))
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
-  if (TARGET_THUMB1 && !REG_P (operands[2]))
-    operands[2] = force_reg (DImode, operands[2]);
-  "
-)
+  if (TARGET_THUMB1)
+    {
+      if (!REG_P (operands[2]))
+	operands[2] = force_reg (DImode, operands[2]);
+    }
+  else
+    {
+      rtx lo_result, hi_result, lo_dest, hi_dest;
+      rtx lo_op1, hi_op1, lo_op2, hi_op2;
+      arm_decompose_di_binop (operands[1], operands[2], &lo_op1, &hi_op1,
+			      &lo_op2, &hi_op2);
+      lo_result = lo_dest = gen_lowpart (SImode, operands[0]);
+      hi_result = hi_dest = gen_highpart (SImode, operands[0]);
 
-(define_insn "*arm_adddi3"
-  [(set (match_operand:DI 0 "s_register_operand"  "=&r,&r,&r")
-	(plus:DI (match_operand:DI 1 "s_register_operand" " %0,0,r")
-		 (match_operand:DI 2 "s_register_operand" " r,0,r")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
-  "adds\\t%Q0, %Q1, %Q2;adc\\t%R0, %R1, %R2"
-  [(set_attr "conds" "clob")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
+      if (lo_op2 == const0_rtx)
+	{
+	  lo_dest = lo_op1;
+	  if (!arm_add_operand (hi_op2, SImode))
+	    hi_op2 = force_reg (SImode, hi_op2);
+	  /* Assume hi_op2 won't also be zero.  */
+	  emit_insn (gen_addsi3 (hi_dest, hi_op1, hi_op2));
+	}
+      else
+	{
+	  if (!arm_add_operand (lo_op2, SImode))
+	    lo_op2 = force_reg (SImode, lo_op2);
+	  if (!arm_not_operand (hi_op2, SImode))
+	    hi_op2 = force_reg (SImode, hi_op2);
+
+	  emit_insn (gen_addsi3_compareC (lo_dest, lo_op1, lo_op2));
+	  if (hi_op2 == const0_rtx)
+	    emit_insn (gen_add0si3_carryin_ltu (hi_dest, hi_op1));
+	  else
+	    emit_insn (gen_addsi3_carryin_ltu (hi_dest, hi_op1, hi_op2));
+	}
+
+      if (lo_result != lo_dest)
+	emit_move_insn (lo_result, lo_dest);
+      if (hi_result != hi_dest)
+	emit_move_insn (gen_highpart (SImode, operands[0]), hi_dest);
+      DONE;
+    }
+  "
 )
 
 (define_expand "addv<mode>4"
@@ -830,7 +858,7 @@
    (set_attr "type" "alus_imm,alus_sreg,alus_imm,alus_imm,alus_sreg")]
  )
 
-(define_insn "*addsi3_carryin_<optab>"
+(define_insn "addsi3_carryin_<optab>"
   [(set (match_operand:SI 0 "s_register_operand" "=l,r,r")
         (plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "%l,r,r")
                           (match_operand:SI 2 "arm_not_operand" "0,rI,K"))
@@ -846,6 +874,19 @@
    (set_attr "length" "4")
    (set_attr "predicable_short_it" "yes,no,no")
    (set_attr "type" "adc_reg,adc_reg,adc_imm")]
+)
+
+;; Canonicalization of the above when the immediate is zero.
+(define_insn "add0si3_carryin_<optab>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))
+		 (match_operand:SI 1 "arm_not_operand" "r")))]
+  "TARGET_32BIT"
+  "adc%?\\t%0, %1, #0"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set_attr "length" "4")
+   (set_attr "type" "adc_imm")]
 )
 
 (define_insn "*addsi3_carryin_alt2_<optab>"

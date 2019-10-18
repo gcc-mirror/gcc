@@ -1,5 +1,11 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* gcc.target/arm/pr53447-1.c: Remove XFAIL.
+	* gcc.target/arm/pr53447-3.c: Remove XFAIL.
+	* gcc.target/arm/pr53447-4.c: Remove XFAIL.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* gcc.target/arm/negdi-3.c: Add XFAILS.
 	* gcc.target/arm/pr3447-1.c: Likewise.
 	* gcc.target/arm/pr3447-3.c: Likewise.

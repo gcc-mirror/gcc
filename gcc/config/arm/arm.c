@@ -14933,6 +14933,21 @@ gen_cpymem_ldrd_strd (rtx *operands)
   return true;
 }
 
+/* Decompose operands for a 64-bit binary operation in OP1 and OP2
+   into its component 32-bit subregs.  OP2 may be an immediate
+   constant and we want to simplify it in that case.  */
+void
+arm_decompose_di_binop (rtx op1, rtx op2, rtx *lo_op1, rtx *hi_op1,
+			rtx *lo_op2, rtx *hi_op2)
+{
+  *lo_op1 = gen_lowpart (SImode, op1);
+  *hi_op1 = gen_highpart (SImode, op1);
+  *lo_op2 = simplify_gen_subreg (SImode, op2, DImode,
+				 subreg_lowpart_offset (SImode, DImode));
+  *hi_op2 = simplify_gen_subreg (SImode, op2, DImode,
+				 subreg_highpart_offset (SImode, DImode));
+}
+
 /* Select a dominance comparison mode if possible for a test of the general
    form (OP (COND_OR (X) (Y)) (const_int 0)).  We support three forms.
    COND_OR == DOM_CC_X_AND_Y => (X && Y)
