@@ -181,6 +181,7 @@ static bool arm_have_conditional_execution (void);
 static bool arm_cannot_force_const_mem (machine_mode, rtx);
 static bool arm_legitimate_constant_p (machine_mode, rtx);
 static bool arm_rtx_costs (rtx, machine_mode, int, int, int *, bool);
+static int arm_insn_cost (rtx_insn *, bool);
 static int arm_address_cost (rtx, machine_mode, addr_space_t, bool);
 static int arm_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int arm_memory_move_cost (machine_mode, reg_class_t, bool);
@@ -510,6 +511,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_RTX_COSTS arm_rtx_costs
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST arm_address_cost
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST arm_insn_cost
 
 #undef TARGET_SHIFT_TRUNCATION_MASK
 #define TARGET_SHIFT_TRUNCATION_MASK arm_shift_truncation_mask
@@ -11484,6 +11487,24 @@ arm_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	       *total, result ? "final" : "partial");
     }
   return result;
+}
+
+static int
+arm_insn_cost (rtx_insn *insn, bool speed)
+{
+  int cost;
+
+  /* Don't cost a simple reg-reg move at a full insn cost: such moves
+     will likely disappear during register allocation.  */
+  if (!reload_completed
+      && GET_CODE (PATTERN (insn)) == SET
+      && REG_P (SET_DEST (PATTERN (insn)))
+      && REG_P (SET_SRC (PATTERN (insn))))
+    return 2;
+  cost = pattern_cost (PATTERN (insn), speed);
+  /* If the cost is zero, then it's likely a complex insn.  We don't want the
+     cost of these to be less than something we know about.  */
+  return cost ? cost : COSTS_N_INSNS (2);
 }
 
 /* All address computations that can be done are free, but rtx cost returns
