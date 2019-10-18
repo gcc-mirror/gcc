@@ -15350,8 +15350,14 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	case EQ:
 	case NE:
 	  /* A DImode comparison against zero can be implemented by
-	     or'ing the two halves together.  */
-	  if (y == const0_rtx)
+	     or'ing the two halves together.  We can also handle
+	     immediates where one word of that value is zero by
+	     subtracting the non-zero word from the corresponding word
+	     in the other register and then ORRing it with the other
+	     word.  */
+	  if (CONST_INT_P (y)
+	      && ((UINTVAL (y) & 0xffffffff) == 0
+		  || (UINTVAL (y) >> 32) == 0))
 	    return CC_Zmode;
 
 	  /* We can do an equality test in three Thumb instructions.  */
@@ -15393,37 +15399,64 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
   return CCmode;
 }
 
-/* X and Y are two things to compare using CODE.  Emit the compare insn and
-   return the rtx for register 0 in the proper mode.  FP means this is a
-   floating point compare: I don't think that it is needed on the arm.  */
-rtx
-arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y, rtx scratch)
+/* X and Y are two (DImode) things to compare for the condition CODE.  Emit
+   the sequence of instructions needed to generate a suitable condition
+   code register.  Return the CC register result.  */
+static rtx
+arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 {
-  machine_mode mode;
-  rtx cc_reg;
-  int dimode_comparison = GET_MODE (x) == DImode || GET_MODE (y) == DImode;
+  /* We don't currently handle DImode in thumb1, but rely on libgcc.  */
+  gcc_assert (TARGET_32BIT);
 
   /* We might have X as a constant, Y as a register because of the predicates
      used for cmpdi.  If so, force X to a register here.  */
-  if (dimode_comparison && !REG_P (x))
+  if (!REG_P (x))
     x = force_reg (DImode, x);
 
-  mode = SELECT_CC_MODE (code, x, y);
-  cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+  machine_mode mode = SELECT_CC_MODE (code, x, y);
+  rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
 
-  if (dimode_comparison
-      && mode != CC_CZmode)
+  if (mode != CC_CZmode)
     {
       rtx clobber, set;
 
       /* To compare two non-zero values for equality, XOR them and
 	 then compare against zero.  Not used for ARM mode; there
 	 CC_CZmode is cheaper.  */
-      if (mode == CC_Zmode && y != const0_rtx)
+      if (mode == CC_Zmode)
 	{
-	  gcc_assert (!reload_completed);
-	  x = expand_binop (DImode, xor_optab, x, y, NULL_RTX, 0, OPTAB_WIDEN);
-	  y = const0_rtx;
+	  mode = CC_NOOVmode;
+	  PUT_MODE (cc_reg, mode);
+	  if (y != const0_rtx)
+	    {
+	      gcc_assert (CONST_INT_P (y));
+	      rtx xlo, xhi, ylo, yhi;
+	      arm_decompose_di_binop (x, y, &xlo, &xhi, &ylo, &yhi);
+	      if (!scratch)
+		scratch = gen_reg_rtx (SImode);
+	      if (ylo == const0_rtx)
+		{
+		  yhi = GEN_INT (-INTVAL(yhi));
+		  if (!arm_add_operand (yhi, SImode))
+		    yhi = force_reg (SImode, yhi);
+		  emit_insn (gen_addsi3 (scratch, xhi, yhi));
+		  y = xlo;
+		}
+	      else
+		{
+		  gcc_assert (yhi == const0_rtx);
+		  ylo = GEN_INT (-INTVAL(ylo));
+		  if (!arm_add_operand (ylo, SImode))
+		    ylo = force_reg (SImode, ylo);
+		  emit_insn (gen_addsi3 (scratch, xlo, ylo));
+		  y = xhi;
+		}
+	      x = gen_rtx_IOR (SImode, scratch, y);
+	      y = const0_rtx;
+	    }
+	  else
+	    x = gen_rtx_IOR (SImode, gen_lowpart (SImode, x),
+			     gen_highpart (SImode, x));
 	}
 
       /* A scratch register is required.  */
@@ -15438,6 +15471,22 @@ arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y, rtx scratch)
     }
   else
     emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
+
+  return cc_reg;
+}
+
+/* X and Y are two things to compare using CODE.  Emit the compare insn and
+   return the rtx for register 0 in the proper mode.  */
+rtx
+arm_gen_compare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
+{
+  if (GET_MODE (x) == DImode || GET_MODE (y) == DImode)
+    return arm_gen_dicompare_reg (code, x, y, scratch);
+
+  machine_mode mode = SELECT_CC_MODE (code, x, y);
+  rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+
+  emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
 
   return cc_reg;
 }
