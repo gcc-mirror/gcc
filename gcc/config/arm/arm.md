@@ -1048,6 +1048,23 @@
 				    (const_string "alu_shift_reg")))]
 )
 
+(define_insn "*subsi3_carryin_shift_alt"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI (minus:SI
+		   (match_operand:SI 1 "s_register_operand" "r")
+		   (match_operand:SI 5 "arm_borrow_operation" ""))
+		  (match_operator:SI 2 "shift_operator"
+		   [(match_operand:SI 3 "s_register_operand" "r")
+		    (match_operand:SI 4 "reg_or_int_operand" "rM")])))]
+  "TARGET_32BIT"
+  "sbc%?\\t%0, %1, %3%S2"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
+				    (const_string "alu_shift_imm")
+				    (const_string "alu_shift_reg")))]
+)
+
 (define_insn "*rsbsi3_carryin_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (minus:SI
@@ -1056,6 +1073,23 @@
 		     (match_operand:SI 4 "reg_or_int_operand" "rM")])
 		   (match_operand:SI 1 "s_register_operand" "r"))
 		  (match_operand:SI 5 "arm_borrow_operation" "")))]
+  "TARGET_ARM"
+  "rsc%?\\t%0, %1, %3%S2"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
+		      (const_string "alu_shift_imm")
+		      (const_string "alu_shift_reg")))]
+)
+
+(define_insn "*rsbsi3_carryin_shift_alt"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI (minus:SI
+		   (match_operator:SI 2 "shift_operator"
+		    [(match_operand:SI 3 "s_register_operand" "r")
+		     (match_operand:SI 4 "reg_or_int_operand" "rM")])
+		    (match_operand:SI 5 "arm_borrow_operation" ""))
+		  (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_ARM"
   "rsc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")

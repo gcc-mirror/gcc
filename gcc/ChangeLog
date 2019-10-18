@@ -1,5 +1,10 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (subsi3_carryin_shift_alt): New pattern.
+	(rsbsi3_carryin_shift_alt): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (negscc_borrow): New pattern.
 	(mov_negscc): Don't split if the insn would match negscc_borrow.
 	* config/arm/thumb2.md (thumb2_mov_negscc): Likewise.
