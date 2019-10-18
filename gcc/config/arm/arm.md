@@ -488,14 +488,30 @@
   "
 )
 
-(define_expand "addv<mode>4"
-  [(match_operand:SIDI 0 "register_operand")
-   (match_operand:SIDI 1 "register_operand")
-   (match_operand:SIDI 2 "register_operand")
+(define_expand "addvsi4"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "s_register_operand")
+   (match_operand:SI 2 "arm_add_operand")
    (match_operand 3 "")]
   "TARGET_32BIT"
 {
-  emit_insn (gen_add<mode>3_compareV (operands[0], operands[1], operands[2]));
+  if (CONST_INT_P (operands[2]))
+    emit_insn (gen_addsi3_compareV_imm (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_addsi3_compareV_reg (operands[0], operands[1], operands[2]));
+  arm_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+
+  DONE;
+})
+
+(define_expand "addvdi4"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:DI 2 "register_operand")
+   (match_operand 3 "")]
+  "TARGET_32BIT"
+{
+  emit_insn (gen_adddi3_compareV (operands[0], operands[1], operands[2]));
   arm_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
 
   DONE;
@@ -770,19 +786,46 @@
    (set_attr "type" "multiple")]
 )
 
-(define_insn "addsi3_compareV"
+(define_insn "addsi3_compareV_reg"
   [(set (reg:CC_V CC_REGNUM)
-	(ne:CC_V
+	(compare:CC_V
 	  (plus:DI
-	    (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-	    (sign_extend:DI (match_operand:SI 2 "register_operand" "r")))
+	    (sign_extend:DI (match_operand:SI 1 "register_operand" "%l,0,r"))
+	    (sign_extend:DI (match_operand:SI 2 "register_operand" "l,r,r")))
 	  (sign_extend:DI (plus:SI (match_dup 1) (match_dup 2)))))
-   (set (match_operand:SI 0 "register_operand" "=r")
+   (set (match_operand:SI 0 "register_operand" "=l,r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_32BIT"
   "adds%?\\t%0, %1, %2"
   [(set_attr "conds" "set")
+   (set_attr "arch" "t2,t2,*")
+   (set_attr "length" "2,2,4")
    (set_attr "type" "alus_sreg")]
+)
+
+(define_insn "addsi3_compareV_imm"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:DI
+	    (sign_extend:DI
+	     (match_operand:SI 1 "register_operand" "l,0,l,0,r,r"))
+	    (match_operand 2 "arm_addimm_operand" "Pd,Py,Px,Pw,I,L"))
+	  (sign_extend:DI (plus:SI (match_dup 1) (match_dup 2)))))
+   (set (match_operand:SI 0 "register_operand" "=l,l,l,l,r,r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  "TARGET_32BIT
+   && INTVAL (operands[2]) == ARM_SIGN_EXTEND (INTVAL (operands[2]))"
+  "@
+   adds%?\\t%0, %1, %2
+   adds%?\\t%0, %0, %2
+   subs%?\\t%0, %1, #%n2
+   subs%?\\t%0, %0, #%n2
+   adds%?\\t%0, %1, %2
+   subs%?\\t%0, %1, #%n2"
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,t2,t2,t2,*,*")
+   (set_attr "length" "2,2,2,2,4,4")
+   (set_attr "type" "alus_imm")]
 )
 
 (define_insn "addsi3_compare0"

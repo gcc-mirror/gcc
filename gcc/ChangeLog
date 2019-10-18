@@ -1,5 +1,18 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (addv<mode>4): Delete.
+	(addvsi4): New pattern.  Handle immediate values that the architecture
+	supports.
+	(addvdi4): New pattern.
+	(addsi3_compareV): Rename to ...
+	(addsi3_compareV_reg): ... this.  Add constraints for thumb2 variants
+	and use COMPARE rather than NE.
+	(addsi3_compareV_imm): New pattern.
+	* config/arm/arm.c (arm_select_cc_mode): Return CC_Vmode for
+	a signed-overflow check.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-modes.def (CC_ADC): New CC mode.
 	* config/arm/arm.c (arm_select_cc_mode): Detect selection of
 	CC_ADCmode.

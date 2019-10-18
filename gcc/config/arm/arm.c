@@ -15411,6 +15411,14 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || arm_borrow_operation (y, DImode)))
     return CC_Bmode;
 
+  if (GET_MODE (x) == DImode
+      && (op == EQ || op == NE)
+      && GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+      && GET_CODE (y) == SIGN_EXTEND
+      && GET_CODE (XEXP (y, 0)) == PLUS)
+    return CC_Vmode;
+
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
     return GET_MODE (x);
 
