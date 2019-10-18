@@ -42,6 +42,9 @@ ADJUST_FLOAT_FORMAT (HF, ((arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
    CC_Bmode should be used if only the C flag is correct after a subtract
      (eg after an unsigned borrow with carry-in propagation).
    (used for DImode signed comparisons).
+   CC_ADCmode is used when the carry is formed from the output of ADC for an
+     addtion.  In this case we cannot use the trick of comparing the sum
+     against one of the other operands.
    CCmode should be used otherwise.  */
 
 CC_MODE (CC_NOOV);
@@ -65,6 +68,7 @@ CC_MODE (CC_C);
 CC_MODE (CC_B);
 CC_MODE (CC_N);
 CC_MODE (CC_V);
+CC_MODE (CC_ADC);
 
 /* Vector modes.  */
 VECTOR_MODES (INT, 4);        /*            V4QI V2HI */

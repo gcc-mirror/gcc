@@ -15388,6 +15388,14 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
     return CC_Cmode;
 
   if (GET_MODE (x) == DImode
+      && GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND
+      && CONST_INT_P (y)
+      && UINTVAL (y) == 0x800000000
+      && (op == GEU || op == LTU))
+    return CC_ADCmode;
+
+  if (GET_MODE (x) == DImode
       && (op == GE || op == LT)
       && GET_CODE (x) == SIGN_EXTEND
       && ((GET_CODE (y) == PLUS
@@ -23949,6 +23957,14 @@ maybe_get_arm_condition_code (rtx comparison)
 	{
 	case NE: return ARM_VS;
 	case EQ: return ARM_VC;
+	default: return ARM_NV;
+	}
+
+    case E_CC_ADCmode:
+      switch (comp_code)
+	{
+	case GEU: return ARM_CS;
+	case LTU: return ARM_CC;
 	default: return ARM_NV;
 	}
 
