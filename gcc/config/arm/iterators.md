@@ -219,11 +219,6 @@
 ;; Code iterators
 ;;----------------------------------------------------------------------------
 
-;; A list of condition codes used in compare instructions where
-;; the carry flag from the addition is used instead of doing the
-;; compare a second time.
-(define_code_iterator LTUGEU [ltu geu])
-
 ;; The signed gt, ge comparisons
 (define_code_iterator GTGE [gt ge])
 
@@ -809,13 +804,9 @@
 (define_code_attr VQH_sign [(plus "i") (smin "s") (smax "s") (umin "u")
                 (umax "u")])
 
-(define_code_attr cnb [(ltu "CC_C") (geu "CC")])
-
 ;; Map rtl operator codes to optab names
 (define_code_attr optab
- [(ltu "ltu")
-  (geu "geu")
-  (and "and")
+ [(and "and")
   (ior "ior")
   (xor "xor")])
 

@@ -471,10 +471,12 @@
 	    hi_op2 = force_reg (SImode, hi_op2);
 
 	  emit_insn (gen_addsi3_compareC (lo_dest, lo_op1, lo_op2));
+	  rtx carry = gen_rtx_LTU (SImode, gen_rtx_REG (CC_Cmode, CC_REGNUM),
+				   const0_rtx);
 	  if (hi_op2 == const0_rtx)
-	    emit_insn (gen_add0si3_carryin_ltu (hi_dest, hi_op1));
+	    emit_insn (gen_add0si3_carryin (hi_dest, hi_op1, carry));
 	  else
-	    emit_insn (gen_addsi3_carryin_ltu (hi_dest, hi_op1, hi_op2));
+	    emit_insn (gen_addsi3_carryin (hi_dest, hi_op1, hi_op2, carry));
 	}
 
       if (lo_result != lo_dest)
@@ -858,11 +860,11 @@
    (set_attr "type" "alus_imm,alus_sreg,alus_imm,alus_imm,alus_sreg")]
  )
 
-(define_insn "addsi3_carryin_<optab>"
+(define_insn "addsi3_carryin"
   [(set (match_operand:SI 0 "s_register_operand" "=l,r,r")
         (plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "%l,r,r")
                           (match_operand:SI 2 "arm_not_operand" "0,rI,K"))
-                 (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))))]
+                 (match_operand:SI 3 "arm_carry_operation" "")))]
   "TARGET_32BIT"
   "@
    adc%?\\t%0, %1, %2
@@ -877,9 +879,9 @@
 )
 
 ;; Canonicalization of the above when the immediate is zero.
-(define_insn "add0si3_carryin_<optab>"
+(define_insn "add0si3_carryin"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))
+	(plus:SI (match_operand:SI 2 "arm_carry_operation" "")
 		 (match_operand:SI 1 "arm_not_operand" "r")))]
   "TARGET_32BIT"
   "adc%?\\t%0, %1, #0"
@@ -889,9 +891,9 @@
    (set_attr "type" "adc_imm")]
 )
 
-(define_insn "*addsi3_carryin_alt2_<optab>"
+(define_insn "*addsi3_carryin_alt2"
   [(set (match_operand:SI 0 "s_register_operand" "=l,r,r")
-        (plus:SI (plus:SI (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))
+        (plus:SI (plus:SI (match_operand:SI 3 "arm_carry_operation" "")
                           (match_operand:SI 1 "s_register_operand" "%l,r,r"))
                  (match_operand:SI 2 "arm_not_operand" "l,rI,K")))]
   "TARGET_32BIT"
@@ -907,28 +909,30 @@
    (set_attr "type" "adc_reg,adc_reg,adc_imm")]
 )
 
-(define_insn "*addsi3_carryin_shift_<optab>"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+(define_insn "*addsi3_carryin_shift"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (plus:SI
 		  (match_operator:SI 2 "shift_operator"
-		    [(match_operand:SI 3 "s_register_operand" "r")
-		     (match_operand:SI 4 "reg_or_int_operand" "rM")])
-		  (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0)))
-		 (match_operand:SI 1 "s_register_operand" "r")))]
+		    [(match_operand:SI 3 "s_register_operand" "r,r")
+		     (match_operand:SI 4 "shift_amount_operand" "M,r")])
+		  (match_operand:SI 5 "arm_carry_operation" ""))
+		 (match_operand:SI 1 "s_register_operand" "r,r")))]
   "TARGET_32BIT"
   "adc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
+   (set_attr "arch" "32,a")
+   (set_attr "shift" "3")
    (set_attr "predicable" "yes")
    (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
 		      (const_string "alu_shift_imm")
 		      (const_string "alu_shift_reg")))]
 )
 
-(define_insn "*addsi3_carryin_clobercc_<optab>"
+(define_insn "*addsi3_carryin_clobercc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "%r")
 			  (match_operand:SI 2 "arm_rhs_operand" "rI"))
-		 (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))))
+		 (match_operand:SI 3 "arm_carry_operation" "")))
    (clobber (reg:CC CC_REGNUM))]
    "TARGET_32BIT"
    "adcs%?\\t%0, %1, %2"

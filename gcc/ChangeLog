@@ -1,5 +1,20 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/predicates.md (arm_carry_operation): New special
+	predicate.
+	* config/arm/iterators.md (LTUGEU): Delete iterator.
+	(cnb): Delete code attribute.
+	(optab): Delete ltu and geu elements.
+	* config/arm/arm.md (addsi3_carryin): Renamed from
+	addsi3_carryin_<optab>.  Remove iterator and use arm_carry_operand.
+	(add0si3_carryin): Similarly, but from add0si3_carryin_<optab>.
+	(addsi3_carryin_alt2): Similarly, but from addsi3_carryin_alt2_<optab>.
+	(addsi3_carryin_clobercc): Similarly.
+	(addsi3_carryin_shift): Similarly.  Do not allow register shifts in
+	Thumb2 state.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (arm_subdi3): Delete insn.
 	(zextendsidi_negsi, negdi_extendsidi): Delete insn_and_split.
 
