@@ -1,5 +1,12 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (addsi3_compareV_reg_nosum): New insn.
+	(addsi3_compareV_imm_nosum): New insn.  Also add peephole2 patterns
+	to transform this back into the summation version when that leads
+	to smaller code.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (addv<mode>4): Delete.
 	(addvsi4): New pattern.  Handle immediate values that the architecture
 	supports.
