@@ -1,3 +1,10 @@
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/negdi-3.c: Add XFAILS.
+	* gcc.target/arm/pr3447-1.c: Likewise.
+	* gcc.target/arm/pr3447-3.c: Likewise.
+	* gcc.target/arm/pr3447-4.c: Likewise.
+
 2019-10-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/69455

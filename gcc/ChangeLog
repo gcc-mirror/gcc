@@ -1,3 +1,37 @@
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (adddi3): Only accept register operands.
+	(arm_adddi3): Convert to simple insn with no split.  Do not accept
+	constants.
+	(adddi_sesidi_di): Delete patern.
+	(adddi_zesidi_di): Likewise.
+	(uaddv<mode>4): Use LTU as condition for branch.
+	(adddi3_compareV): Convert to simple insn with no split.
+	(addsi3_compareV_upper): Delete pattern.
+	(adddi3_compareC): Convert to simple insn with no split.  Correct
+	flags setting expression.
+	(addsi3_compareC_upper): Delete pattern.
+	(addsi3_compareC): Correct flags setting expression.
+	(subdi3_compare1): Convert to simple insn with no split.
+	(subsi3_carryin_compare): Delete pattern.
+	(arm_subdi3): Convert to simple insn with no split.
+	(subdi_zesidi): Delete pattern.
+	(subdi_di_sesidi): Delete pattern.
+	(subdi_zesidi_di): Delete pattern.
+	(subdi_sesidi_di): Delete pattern.
+	(subdi_zesidi_zesidi): Delete pattern.
+	(negvdi3): Use s_register_operand.
+	(negdi2_compare): Convert to simple insn with no split.
+	(negdi2_insn): Likewise.
+	(negsi2_carryin_compare): Delete pattern.
+	(negdi_zero_extendsidi): Delete pattern.
+	(arm_cmpdi_insn): Convert to simple insn with no split.
+	(negdi2): Don't call gen_negdi2_neon.
+	* config/arm/neon.md (adddi3_neon): Delete pattern.
+	(subdi3_neon): Delete pattern.
+	(negdi2_neon): Delete pattern.
+	(splits for negdi2_neon): Delete splits.
+
 2019-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/92153
