@@ -1,5 +1,16 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (subv<mode>4): Delete.
+	(subvdi4): New expander pattern.
+	(subvsi4): Likewise.  Handle some immediate values.
+	(subvsi3_intmin): New insn pattern.
+	(subvsi3): Likewise.
+	(subvsi3_imm1): Likewise.
+	* config/arm/arm.c (select_cc_mode): Also allow minus for CC_V
+	idioms.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (usubvdi4): Allow registers or integers for
 	incoming operands.  Early split the calculation into SImode
 	operations.
