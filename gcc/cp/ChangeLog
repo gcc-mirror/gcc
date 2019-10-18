@@ -1,3 +1,10 @@
+2019-10-18  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_type): Remove was_anonymous.
+	(TYPE_WAS_UNNAMED): Implement by checking TYPE_DECL &
+	TYPE_STUB_DECL.
+	* decl.c (name_unnamed_type): Don't set TYPE_WAS_UNNAMED.
+
 2019-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokfndecl): Remove redundant use of in_system_header_at.

@@ -10441,9 +10441,6 @@ name_unnamed_type (tree type, tree decl)
       /*debug_hooks->set_name (t, decl);*/
       TYPE_NAME (t) = decl;
 
-  if (TYPE_LANG_SPECIFIC (type))
-    TYPE_WAS_UNNAMED (type) = 1;
-
   /* If this is a typedef within a template class, the nested
      type is a (non-primary) template.  The name for the
      template needs updating as well.  */
