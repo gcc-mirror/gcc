@@ -1363,6 +1363,33 @@
    (set_attr "type" "alus_imm")]
 )
 
+;; Similarly, but the result is unused.
+(define_insn "rsb_imm_compare_scratch"
+  [(set (reg:CC_RSB CC_REGNUM)
+	(compare:CC_RSB (not:SI (match_operand:SI 2 "s_register_operand" "r"))
+			(match_operand 1 "arm_not_immediate_operand" "K")))
+   (clobber (match_scratch:SI 0 "=r"))]
+  "TARGET_32BIT"
+  "rsbs\\t%0, %2, #%B1"
+  [(set_attr "conds" "set")
+   (set_attr "type" "alus_imm")]
+)
+
+;; Compare the sum of a value plus a carry against a constant.  Uses
+;; RSC, so the result is swapped.  Only available on Arm
+(define_insn "rscsi3_<CC_EXTEND>out_scratch"
+  [(set (reg:CC_SWP CC_REGNUM)
+	(compare:CC_SWP
+	 (plus:DI (SE:DI (match_operand:SI 2 "s_register_operand" "r"))
+		  (match_operand:DI 3 "arm_borrow_operation" ""))
+	 (match_operand 1 "arm_immediate_operand" "I")))
+   (clobber (match_scratch:SI 0 "=r"))]
+  "TARGET_ARM"
+  "rscs\\t%0, %2, %1"
+  [(set_attr "conds" "set")
+   (set_attr "type" "alus_imm")]
+)
+
 (define_expand "subsf3"
   [(set (match_operand:SF           0 "s_register_operand")
 	(minus:SF (match_operand:SF 1 "s_register_operand")

@@ -1,5 +1,22 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.c (arm_const_double_prefer_rsbs_rsc): New function.
+	(arm_canonicalize_comparison): For GT/LE/GTU/GEU, use the constant
+	unchanged only if that will be cheaper.
+	(arm_select_cc_mode): Recognize a swapped comparison that will
+	be regenerated using RSBS or RSCS.  Relax restriction on selecting
+	CC_RSBmode.
+	(arm_gen_dicompare_reg): Handle LE/GT/LEU/GEU comparisons against
+	a constant.
+	(arm_gen_compare_reg): Handle compare (CONST, X) when the mode
+	is CC_RSBmode.
+	(maybe_get_arm_condition_code): CC_RSBmode now returns the same codes
+	as CCmode.
+	* config/arm/arm.md (rsb_imm_compare_scratch): New pattern.
+	(rscsi3_<CC_EXTEND>out_scratch): New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-modes.def (CC_NV, CC_B): New CC modes.
 	* config/arm/arm.c (arm_select_cc_mode): Recognize constructs that
 	need these modes.
