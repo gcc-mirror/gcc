@@ -1,5 +1,9 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* gcc.dg/builtin-arith-overflow-3.c: New test.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* gcc.target/arm/negdi-3.c: Remove XFAIL markers.
 
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
