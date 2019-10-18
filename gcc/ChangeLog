@@ -1,3 +1,28 @@
+2019-10-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86753
+	* tree-vectorizer.h (scalar_cond_masked_key): New struct,
+	and define hashmap traits for it.
+	(loop_vec_info::scalar_cond_masked_set): New member.
+	(vect_record_loop_mask): Adjust prototype.
+	* tree-vectorizer.c (scalar_cond_masked_key::get_cond_ops_from_tree):
+	Implement method.
+	* tree-vect-loop.c (vectorizable_reduction): Pass NULL as last arg to
+	vect_record_loop_mask.
+	(vectorizable_live_operation): Likewise.
+	(vect_record_loop_mask): New param scalar_mask. Add entry
+	cond, loop_mask	to scalar_cond_masked_set if scalar_mask is non NULL.
+	* tree-vect-stmts.c (check_load_store_masking): New param scalar_mask.
+	Pass it as last arg to vect_record_loop_mask.
+	(vectorizable_call): Pass scalar_mask as last arg to
+	vect_record_loop_mask.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Check if another part of vectorized code
+	applies loop_mask to condition or to it's inverse, and if yes,
+	apply loop_mask to result of vector comparison.
+
 2019-10-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_indirect_call): Fix typos in last change.

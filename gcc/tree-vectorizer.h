@@ -177,7 +177,75 @@ public:
 #define SLP_TREE_TWO_OPERATORS(S)		 (S)->two_operators
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 
+/* Key for map that records association between
+   scalar conditions and corresponding loop mask, and
+   is populated by vect_record_loop_mask.  */
 
+struct scalar_cond_masked_key
+{
+  scalar_cond_masked_key (tree t, unsigned ncopies_)
+    : ncopies (ncopies_)
+  {
+    get_cond_ops_from_tree (t);
+  }
+
+  void get_cond_ops_from_tree (tree);
+
+  unsigned ncopies;
+  tree_code code;
+  tree op0;
+  tree op1;
+};
+
+template<>
+struct default_hash_traits<scalar_cond_masked_key>
+{
+  typedef scalar_cond_masked_key compare_type;
+  typedef scalar_cond_masked_key value_type;
+
+  static inline hashval_t
+  hash (value_type v)
+  {
+    inchash::hash h;
+    h.add_int (v.code);
+    inchash::add_expr (v.op0, h, 0);
+    inchash::add_expr (v.op1, h, 0);
+    h.add_int (v.ncopies);
+    return h.end ();
+  }
+
+  static inline bool
+  equal (value_type existing, value_type candidate)
+  {
+    return (existing.ncopies == candidate.ncopies
+           && existing.code == candidate.code
+           && operand_equal_p (existing.op0, candidate.op0, 0)
+           && operand_equal_p (existing.op1, candidate.op1, 0));
+  }
+
+  static inline void
+  mark_empty (value_type &v)
+  {
+    v.ncopies = 0;
+  }
+
+  static inline bool
+  is_empty (value_type v)
+  {
+    return v.ncopies == 0;
+  }
+
+  static inline void mark_deleted (value_type &) {}
+
+  static inline bool is_deleted (const value_type &)
+  {
+    return false;
+  }
+
+  static inline void remove (value_type &) {}
+};
+
+typedef hash_set<scalar_cond_masked_key> scalar_cond_masked_set_type;
 
 /* Describes two objects whose addresses must be unequal for the vectorized
    loop to be valid.  */
@@ -425,6 +493,9 @@ public:
   /* The masks that a fully-masked loop should use to avoid operating
      on inactive scalars.  */
   vec_loop_masks masks;
+
+  /* Set of scalar conditions that have loop mask applied.  */
+  scalar_cond_masked_set_type scalar_cond_masked_set;
 
   /* If we are using a loop mask to align memory addresses, this variable
      contains the number of vector elements that we should skip in the
@@ -1637,7 +1708,7 @@ extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 extern tree vect_halve_mask_nunits (tree);
 extern tree vect_double_mask_nunits (tree);
 extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
-				   unsigned int, tree);
+				   unsigned int, tree, tree);
 extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
 				unsigned int, tree, unsigned int);
 extern stmt_vec_info info_for_reduction (stmt_vec_info);
