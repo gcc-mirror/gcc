@@ -6518,17 +6518,6 @@
    (set_attr "type" "multiple")]
 )
 
-(define_insn "*arm_cmpdi_zero"
-  [(set (reg:CC_Z CC_REGNUM)
-	(compare:CC_Z (match_operand:DI 0 "s_register_operand" "r")
-		      (const_int 0)))
-   (clobber (match_scratch:SI 1 "=r"))]
-  "TARGET_32BIT"
-  "orrs%?\\t%1, %Q0, %R0"
-  [(set_attr "conds" "set")
-   (set_attr "type" "logics_reg")]
-)
-
 ; This insn allows redundant compares to be removed by cse, nothing should
 ; ever appear in the output file since (set (reg x) (reg x)) is a no-op that
 ; is deleted later on. The match_dup will match the mode here, so that

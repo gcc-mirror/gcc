@@ -1,5 +1,15 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.c (arm_select_cc_mode): For DImode equality tests
+	return CC_Zmode if comparing against a constant where one word is
+	zero.
+	(arm_gen_compare_reg): Split DImode handling to ...
+	(arm_gen_dicompare_reg): ... here.  Handle equality comparisons
+	against simple constants.
+	* config/arm/arm.md (arm_cmpdi_zero): Delete pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (subsi3_carryin_shift_alt): New pattern.
 	(rsbsi3_carryin_shift_alt): Likewise.
 
