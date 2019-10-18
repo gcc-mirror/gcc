@@ -1,6 +1,18 @@
 2019-10-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (dumper::impl::nested_name): Check template_parm_p
+	directly.
+	(trees_out::core_vals): Check DECL_TEMPLATE_PARM_P.
+	(trees_out::decl_value): Never get a DECL_TEMPLATE_PARM_P.
+	(trees_in::decl_value): Likewise.
+	(trees_out::decl_node): Send DECL_TEMPLATE_PARM_P to tree_value.
+	(trees_out::type_node): Simplify name detection.
+	(trees_out::tree_value): Allow DECL_TEMPLATE_PARM_P, but no other
+	tmpls/type/var/fns.
+	* tree.c (bind_template_template_parm): Set DECL_TEMPLATE_PARM_P.
+
+	gcc/cp/
 	* module.cc (dumper::impl::nested_name): Detect template parms.
 	(trees_{in,out}::core_vals): Don't write context of template
 	parms.  Don't clobber template's type.

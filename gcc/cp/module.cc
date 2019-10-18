@@ -4074,21 +4074,16 @@ dumper::impl::nested_name (tree t)
 {
   tree ti = NULL_TREE;
   int origin = -1;
-  bool ttp = false;
 
   if (t && TREE_CODE (t) == TREE_BINFO)
     t = BINFO_TYPE (t);
 
   if (t && TYPE_P (t))
-    {
-      if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
-	ttp = true;
-      t = TYPE_NAME (t);
-    }
+    t = TYPE_NAME (t);
 
   if (t && DECL_P (t))
     {
-      if (t == global_namespace || ttp)
+      if (t == global_namespace || DECL_TEMPLATE_PARM_P (t))
 	;
       else if (tree ctx = DECL_CONTEXT (t))
 	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
@@ -5542,8 +5537,7 @@ trees_out::core_vals (tree t)
       WT (t->type_common.main_variant);
 
       tree canonical = t->type_common.canonical;
-      if (code == TEMPLATE_TYPE_PARM
-	  || code == TEMPLATE_TEMPLATE_PARM)
+      if (TEMPLATE_PARM_P (TYPE_NAME (t)))
 	/* We do not want to wander into different templates.
 	   Reconstructed on stream in.  */
 	canonical = t;
@@ -6815,7 +6809,8 @@ trees_out::ref_node (tree t)
 void
 trees_out::decl_value (tree decl, depset *dep)
 {
-  gcc_checking_assert (DECL_P (decl) && !DECL_CLONED_FUNCTION_P (decl));
+  gcc_checking_assert (DECL_P (decl) && !DECL_CLONED_FUNCTION_P (decl)
+		       && !DECL_TEMPLATE_PARM_P (decl));
 
   merge_kind mk = get_merge_kind (dep);
 
@@ -7248,24 +7243,8 @@ trees_in::decl_value ()
 	goto bail;
     }
 
-  if (type)
-    {
-      if (!tree_node_vals (type))
-	goto bail;
-
-      if (back_refs[~type_tag] == type)
-	{
-	  /* This is a new type.  */
-	  gcc_checking_assert (type == TYPE_MAIN_VARIANT (type));
-
-	  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-	      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
-	    {
-	      tree canon = canonical_type_parameter (type);
-	      TYPE_CANONICAL (type) = canon;
-	    }
-	}
-    }
+  if (type && !tree_node_vals (type))
+    goto bail;
 
   tree constraints = NULL_TREE;
   if (flag_concepts && DECL_P (res))
@@ -7426,7 +7405,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
     }
 
   if (!DECL_CONTEXT (decl))
-    // FIXME: When parms etc are streamed separately, is this reachable?
+    return true;
+
+  if (DECL_TEMPLATE_PARM_P (decl))
     return true;
 
   switch (TREE_CODE (decl))
@@ -7466,9 +7447,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return true;
 
     case TEMPLATE_DECL:
-      if (TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
-	return true; 	// FIXME: Likewise in tpl_header
-
       if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	{
 	  /* A (local template) friend of a template.  */
@@ -7966,34 +7944,24 @@ trees_out::type_node (tree type)
   else
     {
       name = TYPE_STUB_DECL (type);
-      if (name && DECL_IMPLICIT_TYPEDEF_P (name))
+      if (!name)
+	;
+      else if (type != TYPE_MAIN_VARIANT (type))
+	name = NULL_TREE;
+      else if (DECL_IMPLICIT_TYPEDEF_P (name))
 	/* Implicit typedef.  */;
-      else if (name && TREE_CODE (type) == TYPENAME_TYPE)
+      else if (TREE_CODE (type) == TYPENAME_TYPE)
 	/* A typename type.  */;
-      else if (name && TREE_CODE (name) == TYPE_DECL && DECL_TINFO_P (name))
-	/* A tinfo type.  */;
-      else if (type == TYPE_MAIN_VARIANT (type)
-	       && (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
-		   || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM))
+      else if (DECL_TEMPLATE_PARM_P (name))
 	/* A template parameter.  */;
+      else if (TREE_CODE (name) == TYPE_DECL && DECL_TINFO_P (name))
+	/* A tinfo type.  */;
       else
-	{
-	  gcc_checking_assert (TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM
-			       || (type != TYPE_MAIN_VARIANT (type)
-				   && TREE_VISITED (TYPE_MAIN_VARIANT (type))
-				   && TREE_VISITED (name)));
-	  name = NULL_TREE;
-	}
+	name = NULL_TREE;
     }
 
   if (name)
     {
-      /* Make sure this is not a named builtin. We should find
-	 those some other way to be canonically correct.  */
-      gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION
-		  || DECL_TINFO_P (name));
-
       if (streaming_p ())
 	{
 	  i (tt_typedef_type);
@@ -8219,33 +8187,23 @@ trees_out::tree_value (tree t)
   /* We should never be writing a type by value.  tree_type should
      have streamed it, or we're going via its TYPE_DECL.  */
   gcc_checking_assert (!TYPE_P (t));
-  /* Neither should we write clones by value.  They're recreated upon
-     stream in.  */
-  gcc_checking_assert (!(DECL_P (t) && DECL_CLONED_FUNCTION_P (t)));
 
-  /* All these should be via decl_value.  */
-  // FIXME: TTPs should probably be handled specially in decl_node?
-  gcc_checking_assert ((TREE_CODE (t) != TEMPLATE_DECL
-			|| TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TEMPLATE_PARM)
-		       && (TREE_CODE (t) != TYPE_DECL
-			   || TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM
-			   || TREE_CODE (TREE_TYPE (t)) == BOUND_TEMPLATE_TEMPLATE_PARM)
-		       && (TREE_CODE (t) != VAR_DECL
-			   || (!DECL_NAME (t) && !DECL_CONTEXT (t)))
-		       && TREE_CODE (t) != FUNCTION_DECL);
+  if (DECL_P (t))
+    {
+      /* Clones are recreated upon stream in.  */
+      gcc_checking_assert (!DECL_CLONED_FUNCTION_P (t));
+      /* No template, type, var or function, except template_parms and
+	 anonymous non-context vars.  */
+      gcc_checking_assert (DECL_TEMPLATE_PARM_P (t)
+			   || (TREE_CODE (t) != TEMPLATE_DECL
+			       && TREE_CODE (t) != TYPE_DECL
+			       && (TREE_CODE (t) != VAR_DECL
+				   || (!DECL_NAME (t) && !DECL_CONTEXT (t)))
+			       && TREE_CODE (t) != FUNCTION_DECL));
+    }
 
   if (streaming_p ())
     {
-      if (CHECKING_P && DECL_P (t))
-	{
-	  /* Never start in the middle of a template.  */
-	  int use_tpl = -1;
-	  if (tree ti = node_template_info (t, use_tpl))
-	    gcc_checking_assert (TREE_CODE (TI_TEMPLATE (ti)) == OVERLOAD
-				 || (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
-				     != t));
-	}
-
       /* A new node -> tt_node.  */
       unique++;
       i (tt_node);
@@ -8486,10 +8444,7 @@ trees_in::tree_value ()
 
 	  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
 	      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
-	    {
-	      tree canon = canonical_type_parameter (type);
-	      TYPE_CANONICAL (type) = canon;
-	    }
+	    TYPE_CANONICAL (type) = canonical_type_parameter (type);
 	}
     }
 

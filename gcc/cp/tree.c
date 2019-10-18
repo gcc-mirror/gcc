@@ -2668,6 +2668,7 @@ bind_template_template_parm (tree t, tree newargs)
   t2 = cxx_make_type (BOUND_TEMPLATE_TEMPLATE_PARM);
   decl = build_decl (input_location,
 		     TYPE_DECL, DECL_NAME (decl), NULL_TREE);
+  SET_DECL_TEMPLATE_PARM_P (decl);
 
   /* These nodes have to be created to reflect new TYPE_DECL and template
      arguments.  */
