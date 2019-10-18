@@ -1,3 +1,9 @@
+2019-10-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92157
+	* gcc.dg/strlenopt-69.c: Disable test failing due to PR 92155.
+	* gcc.dg/strlenopt-87.c: New test.
+
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/negdi-3.c: Update expected output to allow NEGS.

@@ -3842,7 +3842,7 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
   HOST_WIDE_INT arysiz1 = -1, arysiz2 = -1;
 
   if (idx1)
-    cstlen1 = compute_string_length (idx1) + 1;
+    cstlen1 = compute_string_length (idx1);
   else
     arysiz1 = determine_min_objsize (arg1);
 
@@ -3853,12 +3853,20 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
 
   /* Repeat for the second argument.  */
   if (idx2)
-    cstlen2 = compute_string_length (idx2) + 1;
+    cstlen2 = compute_string_length (idx2);
   else
     arysiz2 = determine_min_objsize (arg2);
 
   if (cstlen2 < 0 && arysiz2 < 0)
     return false;
+
+  if (cstlen1 < 0 && cstlen2 < 0)
+    return false;
+
+  if (cstlen1 >= 0)
+    ++cstlen1;
+  if (cstlen2 >= 0)
+    ++cstlen2;
 
   /* The exact number of characters to compare.  */
   HOST_WIDE_INT cmpsiz = bound < 0 ? cstlen1 < 0 ? cstlen2 : cstlen1 : bound;
