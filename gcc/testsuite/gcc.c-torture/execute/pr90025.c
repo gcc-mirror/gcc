@@ -13,10 +13,10 @@ bar (char *p)
 }
 
 __attribute__((noipa)) void
-foo (unsigned int x)
+foo (__UINT32_TYPE__ x)
 {
   char s[32] = { 'f', 'o', 'o', 'b', 'a', 'r', 0 };
-  ((unsigned int *) s)[2] = __builtin_bswap32 (x);
+  ((__UINT32_TYPE__ *) s)[2] = __builtin_bswap32 (x);
   bar (s);
 }
 

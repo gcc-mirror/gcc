@@ -1,3 +1,29 @@
+2019-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix some fallout for small targets.
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/20190820-1.c:
+	Add dg-require-effective-target int32plus.
+	* gcc.c-torture/execute/pr85331.c
+	Add dg-require-effective-target double64plus.
+	* gcc.dg/pow-sqrt-1.c: Same.
+	* gcc.dg/pow-sqrt-2.c: Same.
+	* gcc.dg/pow-sqrt-3.c: Same.
+	* gcc.c-torture/execute/20190901-1.c: Same.
+	* gcc.c-torture/execute/user-printf.c [avr]: Skip.
+	* gcc.c-torture/execute/fprintf-2.c [avr]: Skip.
+	* gcc.c-torture/execute/printf-2.c [avr]: Skip.
+	* gcc.dg/Wlarger-than3.c [avr]: Skip.
+	* gcc.c-torture/execute/ieee/20041213-1.c (sqrt)
+	[avr,double=float]: Provide custom prototype.
+	* gcc.dg/pr36017.c: Same.
+	* gcc.c-torture/execute/pr90025.c: Use 32-bit int.
+	* gcc.dg/complex-7.c: Add dg-require-effective-target double64.
+	* gcc.dg/loop-versioning-1.c:
+	Add dg-require-effective-target size32plus.
+	* gcc.dg/loop-versioning-2.c: Same.
+
 2019-10-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 
