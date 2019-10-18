@@ -1,3 +1,9 @@
+2019-10-18  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::start): Stream code if permitted.
+	Adjust callers.
+
 2019-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

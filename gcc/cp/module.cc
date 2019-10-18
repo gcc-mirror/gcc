@@ -2816,7 +2816,7 @@ public:
   int insert (tree);
 
 private:
-  tree start (unsigned);
+  tree start (unsigned = 0);
 
 public:
   /* Needed for binfo writing  */
@@ -2970,7 +2970,7 @@ public:
   int insert (tree, walk_kind = WK_normal);
 
 private:
-  void start (tree);
+  void start (tree, bool = false);
 
 private:
   walk_kind ref_node (tree);
@@ -4776,7 +4776,7 @@ trees_in::tree_pair_vec ()
    node.  */
 
 void
-trees_out::start (tree t)
+trees_out::start (tree t, bool code_streamed)
 {
   if (TYPE_P (t))
     {
@@ -4790,6 +4790,9 @@ trees_out::start (tree t)
 			   || code == TEMPLATE_TEMPLATE_PARM
 			   || code == BOUND_TEMPLATE_TEMPLATE_PARM);
     }
+
+  if (!code_streamed)
+    u (TREE_CODE (t));
 
   switch (TREE_CODE (t))
     {
@@ -4848,6 +4851,9 @@ tree
 trees_in::start (unsigned code)
 {
   tree t = NULL_TREE;
+
+  if (!code)
+    code = u ();
 
   switch (code)
     {
@@ -6829,7 +6835,6 @@ trees_out::decl_value (tree decl, depset *dep)
       unique++;
       i (tt_decl);
       u (mk);
-      u (TREE_CODE (decl));
       start (decl);
 
       if (mk != MK_unique)
@@ -6865,7 +6870,6 @@ trees_out::decl_value (tree decl, depset *dep)
 
       if (streaming_p ())
 	{
-	  u (TREE_CODE (inner));
 	  start (inner);
 	  tree_node_bools (inner);
 	}
@@ -6893,7 +6897,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	{
 	  if (streaming_p ())
 	    {
-	      start (type);
+	      start (type, true);
 	      tree_node_bools (type);
 	    }
 
@@ -6997,7 +7001,7 @@ trees_in::decl_value ()
     }
   merge_kind mk = merge_kind (mk_u);
 
-  tree res = start (u ());
+  tree res = start ();
   if (res)
     {
       if (mk != MK_unique)
@@ -7023,7 +7027,7 @@ trees_in::decl_value ()
   int inner_tag = 0;
   if (res && TREE_CODE (res) == TEMPLATE_DECL)
     {
-      inner = start (u ());
+      inner = start ();
       if (inner)
 	{
 	  DECL_TEMPLATE_RESULT (res) = inner;
@@ -8245,7 +8249,6 @@ trees_out::tree_value (tree t)
       /* A new node -> tt_node.  */
       unique++;
       i (tt_node);
-      u (TREE_CODE (t));
       start (t);
 
       tree_node_bools (t);
@@ -8265,7 +8268,6 @@ trees_out::tree_value (tree t)
 
       if (streaming_p ())
 	{
-	  u (TREE_CODE (inner));
 	  start (inner);
 	  tree_node_bools (inner);
 	}
@@ -8293,7 +8295,7 @@ trees_out::tree_value (tree t)
 	{
 	  if (streaming_p ())
 	    {
-	      start (type);
+	      start (type, true);
 	      tree_node_bools (type);
 	    }
 
@@ -8382,7 +8384,7 @@ trees_in::tree_value ()
 {
   int tag = 0;
 
-  tree res = start (u ());
+  tree res = start ();
   if (res && !tree_node_bools (res))
     res = NULL_TREE;
 
@@ -8396,7 +8398,7 @@ trees_in::tree_value ()
   int inner_tag = 0;
   if (res && TREE_CODE (res) == TEMPLATE_DECL)
     {
-      inner = start (u ());
+      inner = start ();
       if (inner)
 	{
 	  DECL_TEMPLATE_RESULT (res) = inner;
@@ -9590,7 +9592,6 @@ trees_out::fn_parms_init (tree fn)
     {
       if (streaming_p ())
 	{
-	  u (TREE_CODE (parm));
 	  start (parm);
 	  tree_node_bools (parm);
 	}
