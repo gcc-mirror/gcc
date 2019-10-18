@@ -1,5 +1,13 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (usubvdi4): Allow registers or integers for
+	incoming operands.  Early split the calculation into SImode
+	operations.
+	(usubvsi3_borrow): New insn pattern.
+	(usubvsi3_borrow_imm): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (usubv<mode>4): Delete expansion.
 	(usubvsi4): New pattern.  Allow some immediate values for inputs.
 	(usubvdi4): New pattern.
