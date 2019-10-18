@@ -893,7 +893,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=l,r,r")
         (plus:SI (plus:SI (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))
                           (match_operand:SI 1 "s_register_operand" "%l,r,r"))
-                 (match_operand:SI 2 "arm_rhs_operand" "l,rI,K")))]
+                 (match_operand:SI 2 "arm_not_operand" "l,rI,K")))]
   "TARGET_32BIT"
   "@
    adc%?\\t%0, %1, %2
