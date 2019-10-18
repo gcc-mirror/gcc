@@ -957,6 +957,22 @@
    (set_attr "type" "alus_sreg")]
 )
 
+(define_insn "subvsi3_intmin"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:DI
+	    (sign_extend:DI
+	     (match_operand:SI 1 "register_operand" "r"))
+	    (const_int 2147483648))
+	  (sign_extend:DI (plus:SI (match_dup 1) (const_int -2147483648)))))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (const_int -2147483648)))]
+  "TARGET_32BIT"
+  "subs%?\\t%0, %1, #-2147483648"
+  [(set_attr "conds" "set")
+   (set_attr "type" "alus_imm")]
+)
+
 (define_insn "addsi3_compareV_imm"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
@@ -1339,14 +1355,52 @@
     (set_attr "type" "adcs_reg")]
 )
 
-(define_expand "subv<mode>4"
-  [(match_operand:SIDI 0 "register_operand")
-   (match_operand:SIDI 1 "register_operand")
-   (match_operand:SIDI 2 "register_operand")
+(define_expand "subvsi4"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "arm_rhs_operand")
+   (match_operand:SI 2 "arm_add_operand")
    (match_operand 3 "")]
   "TARGET_32BIT"
 {
-  emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1], operands[2]));
+  if (CONST_INT_P (operands[1]) && CONST_INT_P (operands[2]))
+    {
+      /* If both operands are constants we can decide the result statically.  */
+      wi::overflow_type overflow;
+      wide_int val = wi::sub (rtx_mode_t (operands[1], SImode),
+			      rtx_mode_t (operands[2], SImode),
+			      SIGNED, &overflow);
+      emit_move_insn (operands[0], GEN_INT (val.to_shwi ()));
+      if (overflow != wi::OVF_NONE)
+	emit_jump_insn (gen_jump (operands[3]));
+      DONE;
+    }
+  else if (CONST_INT_P (operands[2]))
+    {
+      operands[2] = GEN_INT (-INTVAL (operands[2]));
+      /* Special case for INT_MIN.  */
+      if (INTVAL (operands[2]) == 0x80000000)
+	emit_insn (gen_subvsi3_intmin (operands[0], operands[1]));
+      else
+	emit_insn (gen_addsi3_compareV_imm (operands[0], operands[1],
+					  operands[2]));
+    }
+  else if (CONST_INT_P (operands[1]))
+    emit_insn (gen_subvsi3_imm1 (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_subvsi3 (operands[0], operands[1], operands[2]));
+
+  arm_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+  DONE;
+})
+
+(define_expand "subvdi4"
+  [(match_operand:DI 0 "s_register_operand")
+   (match_operand:DI 1 "s_register_operand")
+   (match_operand:DI 2 "s_register_operand")
+   (match_operand 3 "")]
+  "TARGET_32BIT"
+{
+  emit_insn (gen_subdi3_compare1 (operands[0], operands[1], operands[2]));
   arm_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
 
   DONE;
@@ -1494,6 +1548,38 @@
   "subs%?\\t%0, %1, %2"
   [(set_attr "conds" "set")
    (set_attr "type" "alus_sreg")]
+)
+
+(define_insn "subvsi3"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	 (minus:DI
+	  (sign_extend:DI (match_operand:SI 1 "s_register_operand" "l,r"))
+	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "l,r")))
+	 (sign_extend:DI (minus:SI (match_dup 1) (match_dup 2)))))
+   (set (match_operand:SI 0 "s_register_operand" "=l,r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
+  "TARGET_32BIT"
+  "subs%?\\t%0, %1, %2"
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,*")
+   (set_attr "length" "2,4")
+   (set_attr "type" "alus_sreg")]
+)
+
+(define_insn "subvsi3_imm1"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	 (minus:DI
+	  (match_operand 1 "arm_immediate_operand" "I")
+	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r")))
+	 (sign_extend:DI (minus:SI (match_dup 1) (match_dup 2)))))
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
+  "TARGET_32BIT"
+  "rsbs%?\\t%0, %2, %1"
+  [(set_attr "conds" "set")
+   (set_attr "type" "alus_imm")]
 )
 
 (define_insn "subsi3_carryin"
