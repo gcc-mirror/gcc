@@ -1,5 +1,10 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.c (arm_rtx_costs_internal, case MINUS): Handle
+	borrow operations.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.c (strip_carry_operation): New function.
 	(arm_rtx_costs_internal, case PLUS): Handle addtion with carry-in
 	for SImode.

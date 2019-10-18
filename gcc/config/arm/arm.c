@@ -10049,15 +10049,46 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  rtx shift_by_reg = NULL;
 	  rtx shift_op;
 	  rtx non_shift_op;
+	  rtx op0 = XEXP (x, 0);
+	  rtx op1 = XEXP (x, 1);
 
-	  shift_op = shifter_op_p (XEXP (x, 0), &shift_by_reg);
+	  /* Factor out any borrow operation.  There's more than one way
+	     of expressing this; try to recognize them all.  */
+	  if (GET_CODE (op0) == MINUS)
+	    {
+	      if (arm_borrow_operation (op1, SImode))
+		{
+		  op1 = XEXP (op0, 1);
+		  op0 = XEXP (op0, 0);
+		}
+	      else if (arm_borrow_operation (XEXP (op0, 1), SImode))
+		op0 = XEXP (op0, 0);
+	    }
+	  else if (GET_CODE (op1) == PLUS
+		   && arm_borrow_operation (XEXP (op1, 0), SImode))
+	    op1 = XEXP (op1, 0);
+	  else if (GET_CODE (op0) == NEG
+		   && arm_borrow_operation (op1, SImode))
+	    {
+	      /* Negate with carry-in.  For Thumb2 this is done with
+		 SBC R, X, X lsl #1 (ie X - 2X - C) as Thumb lacks the
+		 RSC instruction that exists in Arm mode.  */
+	      if (speed_p)
+		*cost += (TARGET_THUMB2
+			  ? extra_cost->alu.arith_shift
+			  : extra_cost->alu.arith);
+	      *cost += rtx_cost (XEXP (op0, 0), mode, MINUS, 0, speed_p);
+	      return true;
+	    }
+
+	  shift_op = shifter_op_p (op0, &shift_by_reg);
 	  if (shift_op == NULL)
 	    {
-	      shift_op = shifter_op_p (XEXP (x, 1), &shift_by_reg);
-	      non_shift_op = XEXP (x, 0);
+	      shift_op = shifter_op_p (op1, &shift_by_reg);
+	      non_shift_op = op0;
 	    }
 	  else
-	    non_shift_op = XEXP (x, 1);
+	    non_shift_op = op1;
 
 	  if (shift_op != NULL)
 	    {
@@ -10087,10 +10118,10 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      return true;
 	    }
 
-	  if (CONST_INT_P (XEXP (x, 0)))
+	  if (CONST_INT_P (op0))
 	    {
 	      int insns = arm_gen_constant (MINUS, SImode, NULL_RTX,
-					    INTVAL (XEXP (x, 0)), NULL_RTX,
+					    INTVAL (op0), NULL_RTX,
 					    NULL_RTX, 1, 0);
 	      *cost = COSTS_N_INSNS (insns);
 	      if (speed_p)
@@ -10101,7 +10132,11 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  else if (speed_p)
 	    *cost += extra_cost->alu.arith;
 
-	  return false;
+	  /* Don't recurse as we don't want to cost any borrow that
+	     we've stripped.  */
+	  *cost += rtx_cost (op0, mode, MINUS, 0, speed_p);
+	  *cost += rtx_cost (op1, mode, MINUS, 1, speed_p);
+	  return true;
 	}
 
       if (GET_MODE_CLASS (mode) == MODE_INT
