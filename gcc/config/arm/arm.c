@@ -9504,6 +9504,20 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     }
 }
 
+/* Helper function for arm_rtx_costs.  If one operand of the OP, a
+   PLUS, adds the carry flag, then return the other operand.  If
+   neither is a carry, return OP unchanged.  */
+static rtx
+strip_carry_operation (rtx op)
+{
+  gcc_assert (GET_CODE (op) == PLUS);
+  if (arm_carry_operation (XEXP (op, 0), GET_MODE (op)))
+    return XEXP (op, 1);
+  else if (arm_carry_operation (XEXP (op, 1), GET_MODE (op)))
+    return XEXP (op, 0);
+  return op;
+}
+
 /* Helper function for arm_rtx_costs.  If the operand is a valid shift
    operand, then return the operand that is being shifted.  If the shift
    is not by a constant, then set SHIFT_REG to point to the operand.
@@ -10253,8 +10267,41 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      return true;
 	    }
 
+	  rtx op0 = XEXP (x, 0);
+	  rtx op1 = XEXP (x, 1);
+
+	  /* Handle a side effect of adding in the carry to an addition.  */
+	  if (GET_CODE (op0) == PLUS
+	      && arm_carry_operation (op1, mode))
+	    {
+	      op1 = XEXP (op0, 1);
+	      op0 = XEXP (op0, 0);
+	    }
+	  else if (GET_CODE (op1) == PLUS
+		   && arm_carry_operation (op0, mode))
+	    {
+	      op0 = XEXP (op1, 0);
+	      op1 = XEXP (op1, 1);
+	    }
+	  else if (GET_CODE (op0) == PLUS)
+	    {
+	      op0 = strip_carry_operation (op0);
+	      if (swap_commutative_operands_p (op0, op1))
+		std::swap (op0, op1);
+	    }
+
+	  if (arm_carry_operation (op0, mode))
+	    {
+	      /* Adding the carry to a register is a canonicalization of
+		 adding 0 to the register plus the carry.  */
+	      if (speed_p)
+		*cost += extra_cost->alu.arith;
+	      *cost += rtx_cost (op1, mode, PLUS, 1, speed_p);
+	      return true;
+	    }
+
 	  shift_reg = NULL;
-	  shift_op = shifter_op_p (XEXP (x, 0), &shift_reg);
+	  shift_op = shifter_op_p (op0, &shift_reg);
 	  if (shift_op != NULL)
 	    {
 	      if (shift_reg)
@@ -10267,12 +10314,13 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		*cost += extra_cost->alu.arith_shift;
 
 	      *cost += (rtx_cost (shift_op, mode, ASHIFT, 0, speed_p)
-			+ rtx_cost (XEXP (x, 1), mode, PLUS, 1, speed_p));
+			+ rtx_cost (op1, mode, PLUS, 1, speed_p));
 	      return true;
 	    }
-	  if (GET_CODE (XEXP (x, 0)) == MULT)
+
+	  if (GET_CODE (op0) == MULT)
 	    {
-	      rtx mul_op = XEXP (x, 0);
+	      rtx mul_op = op0;
 
 	      if (TARGET_DSP_MULTIPLY
 		  && ((GET_CODE (XEXP (mul_op, 0)) == SIGN_EXTEND
@@ -10296,7 +10344,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 				      SIGN_EXTEND, 0, speed_p)
 			    + rtx_cost (XEXP (XEXP (mul_op, 1), 0), mode,
 					SIGN_EXTEND, 0, speed_p)
-			    + rtx_cost (XEXP (x, 1), mode, PLUS, 1, speed_p));
+			    + rtx_cost (op1, mode, PLUS, 1, speed_p));
 		  return true;
 		}
 
@@ -10304,24 +10352,30 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		*cost += extra_cost->mult[0].add;
 	      *cost += (rtx_cost (XEXP (mul_op, 0), mode, MULT, 0, speed_p)
 			+ rtx_cost (XEXP (mul_op, 1), mode, MULT, 1, speed_p)
-			+ rtx_cost (XEXP (x, 1), mode, PLUS, 1, speed_p));
+			+ rtx_cost (op1, mode, PLUS, 1, speed_p));
 	      return true;
 	    }
-	  if (CONST_INT_P (XEXP (x, 1)))
+
+	  if (CONST_INT_P (op1))
 	    {
 	      int insns = arm_gen_constant (PLUS, SImode, NULL_RTX,
-					    INTVAL (XEXP (x, 1)), NULL_RTX,
+					    INTVAL (op1), NULL_RTX,
 					    NULL_RTX, 1, 0);
 	      *cost = COSTS_N_INSNS (insns);
 	      if (speed_p)
 		*cost += insns * extra_cost->alu.arith;
-	      *cost += rtx_cost (XEXP (x, 0), mode, PLUS, 0, speed_p);
+	      *cost += rtx_cost (op0, mode, PLUS, 0, speed_p);
 	      return true;
 	    }
-	  else if (speed_p)
+
+	  if (speed_p)
 	    *cost += extra_cost->alu.arith;
 
-	  return false;
+	  /* Don't recurse here because we want to test the operands
+	     without any carry operation.  */
+	  *cost += rtx_cost (op0, mode, PLUS, 0, speed_p);
+	  *cost += rtx_cost (op1, mode, PLUS, 1, speed_p);
+	  return true;
 	}
 
       if (mode == DImode)
