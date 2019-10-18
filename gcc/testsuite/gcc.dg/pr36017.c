@@ -2,7 +2,11 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
+#if defined (__AVR__) && (__SIZEOF_DOUBLE__ == __SIZEOF_FLOAT__)
+extern double sqrt (double) __asm ("sqrtf");
+#else
 extern double sqrt (double);
+#endif
 extern void abort (void);
 
 __attribute__((noinline)) double
