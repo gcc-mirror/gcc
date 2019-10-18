@@ -1,5 +1,10 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (arm_subdi3): Delete insn.
+	(zextendsidi_negsi, negdi_extendsidi): Delete insn_and_split.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-modes.def (CC_RSB): New CC mode.
 	* config/arm/predicates.md (arm_borrow_operation): Handle CC_RSBmode.
 	* config/arm/arm.c (arm_select_cc_mode): Detect when we should

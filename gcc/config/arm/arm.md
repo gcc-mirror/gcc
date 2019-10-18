@@ -1161,18 +1161,6 @@
   "
 )
 
-(define_insn "*arm_subdi3"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "=&r,&r,&r")
-	(minus:DI (match_operand:DI 1 "arm_general_register_operand" "0,r,0")
-		  (match_operand:DI 2 "arm_general_register_operand" "r,0,0")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
-  "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
-  [(set_attr "conds" "clob")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
-
 (define_expand "subsi3"
   [(set (match_operand:SI           0 "s_register_operand")
 	(minus:SI (match_operand:SI 1 "reg_or_int_operand")
@@ -3865,96 +3853,6 @@
 	(neg:DF (match_operand:DF 1 "s_register_operand")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
-
-(define_insn_and_split "*zextendsidi_negsi"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
-        (zero_extend:DI (neg:SI (match_operand:SI 1 "s_register_operand" "r"))))]
-   "TARGET_32BIT"
-   "#"
-   ""
-   [(set (match_dup 2)
-         (neg:SI (match_dup 1)))
-    (set (match_dup 3)
-         (const_int 0))]
-   {
-      operands[2] = gen_lowpart (SImode, operands[0]);
-      operands[3] = gen_highpart (SImode, operands[0]);
-   }
- [(set_attr "length" "8")
-  (set_attr "type" "multiple")]
-)
-
-;; Negate an extended 32-bit value.
-(define_insn_and_split "*negdi_extendsidi"
-  [(set (match_operand:DI 0 "s_register_operand" "=l,r")
-	(neg:DI (sign_extend:DI
-		 (match_operand:SI 1 "s_register_operand" "l,r"))))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-  {
-    rtx low = gen_lowpart (SImode, operands[0]);
-    rtx high = gen_highpart (SImode, operands[0]);
-
-    if (reg_overlap_mentioned_p (low, operands[1]))
-      {
-	/* Input overlaps the low word of the output.  Use:
-		asr	Rhi, Rin, #31
-		rsbs	Rlo, Rin, #0
-		rsc	Rhi, Rhi, #0 (thumb2: sbc Rhi, Rhi, Rhi, lsl #1).  */
-	rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
-
-	emit_insn (gen_rtx_SET (high,
-				gen_rtx_ASHIFTRT (SImode, operands[1],
-						  GEN_INT (31))));
-
-	emit_insn (gen_subsi3_compare (low, const0_rtx, operands[1]));
-	if (TARGET_ARM)
-	  emit_insn (gen_rtx_SET (high,
-				  gen_rtx_MINUS (SImode,
-						 gen_rtx_MINUS (SImode,
-								const0_rtx,
-								high),
-						 gen_rtx_LTU (SImode,
-							      cc_reg,
-							      const0_rtx))));
-	else
-	  {
-	    rtx two_x = gen_rtx_ASHIFT (SImode, high, GEN_INT (1));
-	    emit_insn (gen_rtx_SET (high,
-				    gen_rtx_MINUS (SImode,
-						   gen_rtx_MINUS (SImode,
-								  high,
-								  two_x),
-						   gen_rtx_LTU (SImode,
-								cc_reg,
-								const0_rtx))));
-	  }
-      }
-    else
-      {
-	/* No overlap, or overlap on high word.  Use:
-		rsb	Rlo, Rin, #0
-		bic	Rhi, Rlo, Rin
-		asr	Rhi, Rhi, #31
-	   Flags not needed for this sequence.  */
-	emit_insn (gen_rtx_SET (low, gen_rtx_NEG (SImode, operands[1])));
-	emit_insn (gen_rtx_SET (high,
-				gen_rtx_AND (SImode,
-					     gen_rtx_NOT (SImode, operands[1]),
-					     low)));
-	emit_insn (gen_rtx_SET (high,
-				gen_rtx_ASHIFTRT (SImode, high,
-						  GEN_INT (31))));
-      }
-    DONE;
-  }
-  [(set_attr "length" "12")
-   (set_attr "arch" "t2,*")
-   (set_attr "type" "multiple")]
-)
 
 ;; abssi2 doesn't really clobber the condition codes if a different register
 ;; is being set.  To keep things simple, assume during rtl manipulations that
