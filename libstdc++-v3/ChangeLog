@@ -1,3 +1,8 @@
+2019-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_cmp.h (ranges::less::operator()): Inline the
+	logic from std::less::operator() to remove the dependency on it.
+
 2019-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/doxygen/user.cfg.in (INPUT): Add new C++17 and C++20 headers.

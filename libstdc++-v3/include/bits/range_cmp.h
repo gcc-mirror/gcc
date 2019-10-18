@@ -121,10 +121,19 @@ namespace ranges
       noexcept(noexcept(std::declval<_Tp>() < std::declval<_Up>()))
       {
 	if constexpr (__detail::__less_builtin_ptr_cmp<_Tp, _Up>)
-	  return std::less<const volatile void*>{}(
-	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
+	  {
+#ifdef __cpp_lib_is_constant_evaluated
+	    if (std::is_constant_evaluated())
+	      return __t < __u;
+#endif
+	    auto __x = reinterpret_cast<__UINTPTR_TYPE__>(
+	      static_cast<const volatile void*>(std::forward<_Tp>(__t)));
+	    auto __y = reinterpret_cast<__UINTPTR_TYPE__>(
 	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
-	return std::forward<_Tp>(__t) < std::forward<_Up>(__u);
+	    return __x < __y;
+	  }
+	else
+	  return std::forward<_Tp>(__t) < std::forward<_Up>(__u);
       }
 
     using is_transparent = __is_transparent;
