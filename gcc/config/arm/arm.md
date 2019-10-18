@@ -803,6 +803,21 @@
    (set_attr "type" "alus_sreg")]
 )
 
+(define_insn "*addsi3_compareV_reg_nosum"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:DI
+	    (sign_extend:DI (match_operand:SI 0 "register_operand" "%l,r"))
+	    (sign_extend:DI (match_operand:SI 1 "register_operand" "l,r")))
+	  (sign_extend:DI (plus:SI (match_dup 0) (match_dup 1)))))]
+  "TARGET_32BIT"
+  "cmn%?\\t%0, %1"
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,*")
+   (set_attr "length" "2,4")
+   (set_attr "type" "alus_sreg")]
+)
+
 (define_insn "addsi3_compareV_imm"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
@@ -826,6 +841,69 @@
    (set_attr "arch" "t2,t2,t2,t2,*,*")
    (set_attr "length" "2,2,2,2,4,4")
    (set_attr "type" "alus_imm")]
+)
+
+(define_insn "addsi3_compareV_imm_nosum"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:DI
+	    (sign_extend:DI
+	     (match_operand:SI 0 "register_operand" "l,r,r"))
+	    (match_operand 1 "arm_addimm_operand" "Pw,I,L"))
+	  (sign_extend:DI (plus:SI (match_dup 0) (match_dup 1)))))]
+  "TARGET_32BIT
+   && INTVAL (operands[1]) == ARM_SIGN_EXTEND (INTVAL (operands[1]))"
+  "@
+   cmp%?\\t%0, #%n1
+   cmn%?\\t%0, %1
+   cmp%?\\t%0, #%n1"
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,*,*")
+   (set_attr "length" "2,4,4")
+   (set_attr "type" "alus_imm")]
+)
+
+;; We can handle more constants efficently if we can clobber either a scratch
+;; or the other source operand.  We deliberately leave this late as in
+;; high register pressure situations it's not worth forcing any reloads.
+(define_peephole2
+  [(match_scratch:SI 2 "l")
+   (set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:DI
+	    (sign_extend:DI
+	     (match_operand:SI 0 "low_register_operand"))
+	    (match_operand 1 "const_int_operand"))
+	  (sign_extend:DI (plus:SI (match_dup 0) (match_dup 1)))))]
+  "TARGET_THUMB2
+   && satisfies_constraint_Pd (operands[1])"
+  [(parallel[
+    (set (reg:CC_V CC_REGNUM)
+	 (compare:CC_V
+	  (plus:DI (sign_extend:DI (match_dup 0))
+		   (sign_extend:DI (match_dup 1)))
+	  (sign_extend:DI (plus:SI (match_dup 0) (match_dup 1)))))
+    (set (match_dup 2) (plus:SI (match_dup 0) (match_dup 1)))])]
+)
+
+(define_peephole2
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:DI
+	    (sign_extend:DI
+	     (match_operand:SI 0 "low_register_operand"))
+	    (match_operand 1 "const_int_operand"))
+	  (sign_extend:DI (plus:SI (match_dup 0) (match_dup 1)))))]
+  "TARGET_THUMB2
+   && dead_or_set_p (peep2_next_insn (0), operands[0])
+   && satisfies_constraint_Py (operands[1])"
+  [(parallel[
+    (set (reg:CC_V CC_REGNUM)
+	 (compare:CC_V
+	  (plus:DI (sign_extend:DI (match_dup 0))
+		   (sign_extend:DI (match_dup 1)))
+	  (sign_extend:DI (plus:SI (match_dup 0) (match_dup 1)))))
+    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))])]
 )
 
 (define_insn "addsi3_compare0"
