@@ -1,3 +1,9 @@
+2019-10-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/t-multilib: Add rule to regenerate mutlilib header file
+	with any change to t-multilib, t-aprofile and t-rmprofile.  Also add
+	new multilib variants and new mappings.
+
 2019-10-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/86040
