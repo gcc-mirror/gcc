@@ -371,7 +371,7 @@
     machine_mode ccmode = GET_MODE (op0);
     if (ccmode == CC_Cmode)
       return GET_CODE (op) == GEU;
-    else if (ccmode == CCmode)
+    else if (ccmode == CCmode || ccmode == CC_RSBmode)
       return GET_CODE (op) == LTU;
     return false;
   }
