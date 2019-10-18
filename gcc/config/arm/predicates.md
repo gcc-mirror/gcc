@@ -229,6 +229,12 @@
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_not_immediate_operand")))
 
+;; A constant that can be used with ADC(SBC) or SBC(ADC) when bit-wise
+;; inverted.  Similar to arm_not_operand, but excludes registers.
+(define_predicate "arm_adcimm_operand"
+  (ior (match_operand 0 "arm_immediate_operand")
+       (match_operand 0 "arm_not_immediate_operand")))
+
 (define_predicate "arm_di_operand"
   (ior (match_operand 0 "s_register_operand")
        (match_operand 0 "arm_immediate_di_operand")))
