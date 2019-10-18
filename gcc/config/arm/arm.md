@@ -6545,51 +6545,6 @@
    (set_attr "predicable" "yes")]
 )
 
-;; DImode comparisons.  The generic code generates branches that
-;; if-conversion cannot reduce to a conditional compare, so we do
-;; that directly.
-
-(define_insn "*arm_cmpdi_insn"
-  [(set (reg:CC_NCV CC_REGNUM)
-	(compare:CC_NCV (match_operand:DI 0 "s_register_operand" "r")
-			(match_operand:DI 1 "arm_di_operand"	   "rDi")))
-   (clobber (match_scratch:SI 2 "=r"))]
-  "TARGET_32BIT"
-  "cmp\\t%Q0, %Q1\;sbcs\\t%2, %R0, %R1"
-  [(set_attr "conds" "set")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
-
-(define_insn_and_split "*arm_cmpdi_unsigned"
-  [(set (reg:CC_CZ CC_REGNUM)
-        (compare:CC_CZ (match_operand:DI 0 "s_register_operand" "l,r,r,r")
-                       (match_operand:DI 1 "arm_di_operand"     "Py,r,Di,rDi")))]
-
-  "TARGET_32BIT"
-  "#"   ; "cmp\\t%R0, %R1\;it eq\;cmpeq\\t%Q0, %Q1"
-  "&& reload_completed"
-  [(set (reg:CC CC_REGNUM)
-        (compare:CC (match_dup 2) (match_dup 3)))
-   (cond_exec (eq:SI (reg:CC CC_REGNUM) (const_int 0))
-              (set (reg:CC CC_REGNUM)
-                   (compare:CC (match_dup 0) (match_dup 1))))]
-  {
-    operands[2] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    if (CONST_INT_P (operands[1]))
-      operands[3] = gen_highpart_mode (SImode, DImode, operands[1]);
-    else
-      operands[3] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }
-  [(set_attr "conds" "set")
-   (set_attr "enabled_for_short_it" "yes,yes,no,*")
-   (set_attr "arch" "t2,t2,t2,a")
-   (set_attr "length" "6,6,10,8")
-   (set_attr "type" "multiple")]
-)
-
 ; This insn allows redundant compares to be removed by cse, nothing should
 ; ever appear in the output file since (set (reg x) (reg x)) is a no-op that
 ; is deleted later on. The match_dup will match the mode here, so that
