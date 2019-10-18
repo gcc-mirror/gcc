@@ -6397,7 +6397,7 @@
   [(set (pc) (if_then_else
 	      (match_operator 0 "expandable_comparison_operator"
 	       [(match_operand:DI 1 "s_register_operand")
-	        (match_operand:DI 2 "cmpdi_operand")])
+	        (match_operand:DI 2 "reg_or_int_operand")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "TARGET_32BIT"
@@ -6862,7 +6862,7 @@
   [(set (match_operand:SI 0 "s_register_operand")
 	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:DI 2 "s_register_operand")
-	  (match_operand:DI 3 "cmpdi_operand")]))]
+	  (match_operand:DI 3 "reg_or_int_operand")]))]
   "TARGET_32BIT"
   "{
      if (!arm_validize_comparison (&operands[1],

@@ -5372,15 +5372,16 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 
   maxval = (HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
-  /* For DImode, we have GE/LT/GEU/LTU comparisons.  In ARM mode
-     we can also use cmp/cmpeq for GTU/LEU.  GT/LE must be either
-     reversed or (for constant OP1) adjusted to GE/LT.  Similarly
-     for GTU/LEU in Thumb mode.  */
+  /* For DImode, we have GE/LT/GEU/LTU comparisons (with cmp/sbc).  In
+     ARM mode we can also use cmp/cmpeq for GTU/LEU.  GT/LE must be
+     either reversed or (for constant OP1) adjusted to GE/LT.
+     Similarly for GTU/LEU in Thumb mode.  */
   if (mode == DImode)
     {
 
       if (*code == GT || *code == LE
-	  || (!TARGET_ARM && (*code == GTU || *code == LEU)))
+	  || ((!TARGET_ARM || CONST_INT_P (*op1))
+	      && (*code == GTU || *code == LEU)))
 	{
 	  /* Missing comparison.  First try to use an available
 	     comparison.  */
@@ -5392,23 +5393,27 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 		case GT:
 		case LE:
 		  if (i != maxval
-		      && arm_const_double_by_immediates (GEN_INT (i + 1)))
+		      && (!arm_const_double_by_immediates (*op1)
+			  || arm_const_double_by_immediates (GEN_INT (i + 1))))
 		    {
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GT ? GE : LT;
 		      return;
 		    }
 		  break;
+
 		case GTU:
 		case LEU:
 		  if (i != ~((unsigned HOST_WIDE_INT) 0)
-		      && arm_const_double_by_immediates (GEN_INT (i + 1)))
+		      && (!arm_const_double_by_immediates (*op1)
+			  || arm_const_double_by_immediates (GEN_INT (i + 1))))
 		    {
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GTU ? GEU : LTU;
 		      return;
 		    }
 		  break;
+
 		default:
 		  gcc_unreachable ();
 		}
@@ -15436,7 +15441,7 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 		scratch = gen_reg_rtx (SImode);
 	      if (ylo == const0_rtx)
 		{
-		  yhi = GEN_INT (-INTVAL(yhi));
+		  yhi = gen_int_mode (-INTVAL (yhi), SImode);
 		  if (!arm_add_operand (yhi, SImode))
 		    yhi = force_reg (SImode, yhi);
 		  emit_insn (gen_addsi3 (scratch, xhi, yhi));
@@ -15445,7 +15450,7 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	      else
 		{
 		  gcc_assert (yhi == const0_rtx);
-		  ylo = GEN_INT (-INTVAL(ylo));
+		  ylo = gen_int_mode (-INTVAL (ylo), SImode);
 		  if (!arm_add_operand (ylo, SImode))
 		    ylo = force_reg (SImode, ylo);
 		  emit_insn (gen_addsi3 (scratch, xlo, ylo));
@@ -15458,6 +15463,8 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	    x = gen_rtx_IOR (SImode, gen_lowpart (SImode, x),
 			     gen_highpart (SImode, x));
 	}
+      else if (!cmpdi_operand (y, mode))
+	y = force_reg (DImode, y);
 
       /* A scratch register is required.  */
       if (reload_completed)
@@ -15470,7 +15477,12 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
     }
   else
-    emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
+    {
+      if (!cmpdi_operand (y, mode))
+	y = force_reg (DImode, y);
+
+      emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
+    }
 
   return cc_reg;
 }
@@ -30479,10 +30491,7 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
       return true;
 
     case E_DImode:
-      if (!cmpdi_operand (*op1, mode))
-	*op1 = force_reg (mode, *op1);
-      if (!cmpdi_operand (*op2, mode))
-	*op2 = force_reg (mode, *op2);
+      /* gen_compare_reg() will sort out any invalid operands.  */
       return true;
 
     case E_HFmode:
