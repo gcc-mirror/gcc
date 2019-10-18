@@ -1,6 +1,6 @@
 /* { dg-options "-O2" }  */
 /* { dg-require-effective-target arm32 } */
-/* { dg-final { scan-assembler-not "mov" } } */
+/* { dg-final { scan-assembler-not "mov" { xfail *-*-* } } } */
 
 
 void t0p(long long * p)

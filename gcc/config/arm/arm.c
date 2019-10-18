@@ -23581,8 +23581,6 @@ maybe_get_arm_condition_code (rtx comparison)
 	{
 	case LTU: return ARM_CS;
 	case GEU: return ARM_CC;
-	case NE: return ARM_CS;
-	case EQ: return ARM_CC;
 	default: return ARM_NV;
 	}
 
