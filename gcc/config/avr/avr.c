@@ -3579,13 +3579,14 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
           gcc_unreachable();
 
         case 1:
-          return avr_asm_len ("%4lpm %0,%a2", xop, plen, 1);
+          avr_asm_len ("%4lpm %0,%a2", xop, plen, 1);
+          break;
 
         case 2:
           if (REGNO (dest) == REG_Z)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %B0,%a2" CR_TAB
-                                "mov %A0,%5", xop, plen, 3);
+            avr_asm_len ("%4lpm %5,%a2+" CR_TAB
+                         "%4lpm %B0,%a2" CR_TAB
+                         "mov %A0,%5", xop, plen, 3);
           else
             {
               avr_asm_len ("%4lpm %A0,%a2+" CR_TAB
@@ -3614,9 +3615,9 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
                        "%4lpm %B0,%a2+", xop, plen, 2);
 
           if (REGNO (dest) == REG_Z - 2)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %C0,%a2" CR_TAB
-                                "mov %D0,%5", xop, plen, 3);
+            avr_asm_len ("%4lpm %5,%a2+" CR_TAB
+                         "%4lpm %C0,%a2" CR_TAB
+                         "mov %D0,%5", xop, plen, 3);
           else
             {
               avr_asm_len ("%4lpm %C0,%a2+" CR_TAB
