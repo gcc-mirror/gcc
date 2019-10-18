@@ -1,5 +1,11 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.c (strip_carry_operation): New function.
+	(arm_rtx_costs_internal, case PLUS): Handle addtion with carry-in
+	for SImode.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/predicates.md (arm_carry_operation): New special
 	predicate.
 	* config/arm/iterators.md (LTUGEU): Delete iterator.
