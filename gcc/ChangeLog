@@ -1,5 +1,11 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (usubv<mode>4): Delete expansion.
+	(usubvsi4): New pattern.  Allow some immediate values for inputs.
+	(usubvdi4): New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.c (arm_select_cc_mode): Allow either the first
 	or second operand of the PLUS inside a DImode equality test to be
 	sign-extend when selecting CC_Vmode.

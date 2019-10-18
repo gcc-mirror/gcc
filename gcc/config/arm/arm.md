@@ -1352,14 +1352,50 @@
   DONE;
 })
 
-(define_expand "usubv<mode>4"
-  [(match_operand:SIDI 0 "register_operand")
-   (match_operand:SIDI 1 "register_operand")
-   (match_operand:SIDI 2 "register_operand")
+(define_expand "usubvsi4"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "arm_rhs_operand")
+   (match_operand:SI 2 "arm_add_operand")
    (match_operand 3 "")]
   "TARGET_32BIT"
 {
-  emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1], operands[2]));
+  machine_mode mode = CCmode;
+  if (CONST_INT_P (operands[1]) && CONST_INT_P (operands[2]))
+    {
+      /* If both operands are constants we can decide the result statically.  */
+      wi::overflow_type overflow;
+      wide_int val = wi::sub (rtx_mode_t (operands[1], SImode),
+			      rtx_mode_t (operands[2], SImode),
+			      UNSIGNED, &overflow);
+      emit_move_insn (operands[0], GEN_INT (val.to_shwi ()));
+      if (overflow != wi::OVF_NONE)
+	emit_jump_insn (gen_jump (operands[3]));
+      DONE;
+    }
+  else if (CONST_INT_P (operands[2]))
+    emit_insn (gen_cmpsi2_addneg (operands[0], operands[1], operands[2],
+				  GEN_INT (-INTVAL (operands[2]))));
+  else if (CONST_INT_P (operands[1]))
+    {
+      mode = CC_RSBmode;
+      emit_insn (gen_rsb_imm_compare (operands[0], operands[1], operands[2],
+				      GEN_INT (~UINTVAL (operands[1]))));
+    }
+  else
+    emit_insn (gen_subsi3_compare1 (operands[0], operands[1], operands[2]));
+  arm_gen_unlikely_cbranch (LTU, mode, operands[3]);
+
+  DONE;
+})
+
+(define_expand "usubvdi4"
+  [(match_operand:DI 0 "s_register_operand")
+   (match_operand:DI 1 "s_register_operand")
+   (match_operand:DI 2 "s_register_operand")
+   (match_operand 3 "")]
+  "TARGET_32BIT"
+{
+  emit_insn (gen_subdi3_compare1 (operands[0], operands[1], operands[2]));
   arm_gen_unlikely_cbranch (LTU, CCmode, operands[3]);
 
   DONE;
