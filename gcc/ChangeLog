@@ -1,5 +1,12 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (negscc_borrow): New pattern.
+	(mov_negscc): Don't split if the insn would match negscc_borrow.
+	* config/arm/thumb2.md (thumb2_mov_negscc): Likewise.
+	(thumb2_mov_negscc_strict_it): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.c (arm_insn_cost): New function.
 	(TARGET_INSN_COST): Override default definition.
 

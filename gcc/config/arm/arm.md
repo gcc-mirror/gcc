@@ -6612,13 +6612,23 @@
    (set_attr "type" "multiple")]
 )
 
+(define_insn "*negscc_borrow"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(neg:SI (match_operand:SI 1 "arm_borrow_operation" "")))]
+  "TARGET_32BIT"
+  "sbc\\t%0, %0, %0"
+  [(set_attr "conds" "use")
+   (set_attr "length" "4")
+   (set_attr "type" "adc_reg")]
+)
+
 (define_insn_and_split "*mov_negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(neg:SI (match_operator:SI 1 "arm_comparison_operator_mode"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
-  "TARGET_ARM"
+  "TARGET_ARM && !arm_borrow_operation (operands[1], SImode)"
   "#"   ; "mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
-  "TARGET_ARM"
+  "&& true"
   [(set (match_dup 0)
         (if_then_else:SI (match_dup 1)
                          (match_dup 3)
