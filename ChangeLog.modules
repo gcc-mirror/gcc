@@ -1,6 +1,11 @@
 2019-10-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (dumper::impl::nested_name): Detect template parms.
+	(trees_{in,out}::core_vals): Don't write context of template
+	parms.  Don't clobber template's type.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::start): Stream code if permitted.
 	Adjust callers.
 

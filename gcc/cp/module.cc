@@ -4095,10 +4095,11 @@ dumper::impl::nested_name (tree t)
 	    || nested_name (ctx))
 	  fputs ("::", stream);
 
-      if (TREE_CODE (t) == FUNCTION_DECL
-	  || TREE_CODE (t) == VAR_DECL
-	  || TREE_CODE (t) == TYPE_DECL
-	  || (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t)))
+      if (!DECL_TEMPLATE_PARM_P (t)
+	  && (TREE_CODE (t) == FUNCTION_DECL
+	      || TREE_CODE (t) == VAR_DECL
+	      || TREE_CODE (t) == TYPE_DECL
+	      || (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t))))
 	{
 	  tree o = get_instantiating_module_decl (t);
 	  if (DECL_LANG_SPECIFIC (o))
@@ -5518,10 +5519,7 @@ trees_out::core_vals (tree t)
     {
       /* Write this early, for better log information.  */
       WT (t->decl_minimal.name);
-      if (TREE_TYPE (t)
-	  && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TEMPLATE_PARM)
-	WT (NULL_TREE);
-      else
+      if (!DECL_TEMPLATE_PARM_P (t))
 	WT (t->decl_minimal.context);
 
       state->write_location (*this, t->decl_minimal.locus);
@@ -5577,7 +5575,7 @@ trees_out::core_vals (tree t)
       tree type = t->typed.type;
       unsigned prec = 0;
 
-      switch (TREE_CODE (t))
+      switch (code)
 	{
 	default:
 	  break;
@@ -5986,7 +5984,8 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
       RT (t->decl_minimal.name);
-      RT (t->decl_minimal.context);
+      if (!DECL_TEMPLATE_PARM_P (t))
+	RT (t->decl_minimal.context);
 
       /* Don't zap the locus just yet, we don't record it correctly
 	 and thus lose all location information.  */
@@ -6033,7 +6032,8 @@ trees_in::core_vals (tree t)
 						    TYPE_SIGN (type));
 	}
 
-      t->typed.type = type;
+      if (code != TEMPLATE_DECL)
+	t->typed.type = type;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))

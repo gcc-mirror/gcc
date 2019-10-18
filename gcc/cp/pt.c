@@ -4438,7 +4438,7 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
       TEMPLATE_PARM_PARAMETER_PACK (t)
 	= TEMPLATE_PARM_PARAMETER_PACK (index);
 
-	/* Template template parameters need this.  */
+      /* Template template parameters need this.  */
       if (TREE_CODE (decl) == TEMPLATE_DECL)
 	{
 	  DECL_TEMPLATE_RESULT (decl)
