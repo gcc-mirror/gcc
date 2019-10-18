@@ -4196,31 +4196,64 @@
 
 ;; Zero and sign extension instructions.
 
-(define_insn "zero_extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r,?r")
-        (zero_extend:DI (match_operand:QHSI 1 "<qhs_zextenddi_op>"
-					    "<qhs_zextenddi_cstr>")))]
+(define_expand "zero_extend<mode>di2"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(zero_extend:DI (match_operand:QHSI 1 "<qhs_zextenddi_op>" "")))]
   "TARGET_32BIT <qhs_zextenddi_cond>"
-  "#"
-  [(set_attr "length" "4,8")
-   (set_attr "arch" "*,*")
-   (set_attr "ce_count" "2")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "mov_reg,multiple")]
+  {
+    rtx res_lo, res_hi, op0_lo, op0_hi;
+    res_lo = gen_lowpart (SImode, operands[0]);
+    res_hi = gen_highpart (SImode, operands[0]);
+    if (can_create_pseudo_p ())
+      {
+	op0_lo = <MODE>mode == SImode ? operands[1] : gen_reg_rtx (SImode);
+	op0_hi = gen_reg_rtx (SImode);
+      }
+    else
+      {
+	op0_lo = <MODE>mode == SImode ? operands[1] : res_lo;
+	op0_hi = res_hi;
+      }
+    if (<MODE>mode != SImode)
+      emit_insn (gen_rtx_SET (op0_lo,
+			      gen_rtx_ZERO_EXTEND (SImode, operands[1])));
+    emit_insn (gen_movsi (op0_hi, const0_rtx));
+    if (res_lo != op0_lo)
+      emit_move_insn (res_lo, op0_lo);
+    if (res_hi != op0_hi)
+      emit_move_insn (res_hi, op0_hi);
+    DONE;
+  }
 )
 
-(define_insn "extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r,?r,?r")
-        (sign_extend:DI (match_operand:QHSI 1 "<qhs_extenddi_op>"
-					    "<qhs_extenddi_cstr>")))]
+(define_expand "extend<mode>di2"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(sign_extend:DI (match_operand:QHSI 1 "<qhs_extenddi_op>" "")))]
   "TARGET_32BIT <qhs_sextenddi_cond>"
-  "#"
-  [(set_attr "length" "4,8,8")
-   (set_attr "ce_count" "2")
-   (set_attr "shift" "1")
-   (set_attr "predicable" "yes")
-   (set_attr "arch" "*,a,t")
-   (set_attr "type" "mov_reg,multiple,multiple")]
+  {
+    rtx res_lo, res_hi, op0_lo, op0_hi;
+    res_lo = gen_lowpart (SImode, operands[0]);
+    res_hi = gen_highpart (SImode, operands[0]);
+    if (can_create_pseudo_p ())
+      {
+	op0_lo = <MODE>mode == SImode ? operands[1] : gen_reg_rtx (SImode);
+	op0_hi = gen_reg_rtx (SImode);
+      }
+    else
+      {
+	op0_lo = <MODE>mode == SImode ? operands[1] : res_lo;
+	op0_hi = res_hi;
+      }
+    if (<MODE>mode != SImode)
+      emit_insn (gen_rtx_SET (op0_lo,
+			      gen_rtx_SIGN_EXTEND (SImode, operands[1])));
+    emit_insn (gen_ashrsi3 (op0_hi, op0_lo, GEN_INT (31)));
+    if (res_lo != op0_lo)
+      emit_move_insn (res_lo, op0_lo);
+    if (res_hi != op0_hi)
+      emit_move_insn (res_hi, op0_hi);
+    DONE;
+  }
 )
 
 ;; Splits for all extensions to DImode
