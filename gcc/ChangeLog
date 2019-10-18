@@ -1,5 +1,13 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (subvdi4): Decompose calculation into 32-bit
+	operations.
+	(subdi3_compare1): Delete pattern.
+	(subvsi3_borrow): New insn pattern.
+	(subvsi3_borrow_imm): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (subv<mode>4): Delete.
 	(subvdi4): New expander pattern.
 	(subvsi4): Likewise.  Handle some immediate values.

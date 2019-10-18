@@ -1395,12 +1395,79 @@
 
 (define_expand "subvdi4"
   [(match_operand:DI 0 "s_register_operand")
-   (match_operand:DI 1 "s_register_operand")
-   (match_operand:DI 2 "s_register_operand")
+   (match_operand:DI 1 "reg_or_int_operand")
+   (match_operand:DI 2 "reg_or_int_operand")
    (match_operand 3 "")]
   "TARGET_32BIT"
 {
-  emit_insn (gen_subdi3_compare1 (operands[0], operands[1], operands[2]));
+  rtx lo_result, hi_result;
+  rtx lo_op1, hi_op1, lo_op2, hi_op2;
+  lo_result = gen_lowpart (SImode, operands[0]);
+  hi_result = gen_highpart (SImode, operands[0]);
+  machine_mode mode = CCmode;
+
+  if (CONST_INT_P (operands[1]) && CONST_INT_P (operands[2]))
+    {
+      /* If both operands are constants we can decide the result statically.  */
+      wi::overflow_type overflow;
+      wide_int val = wi::sub (rtx_mode_t (operands[1], DImode),
+			      rtx_mode_t (operands[2], DImode),
+			      SIGNED, &overflow);
+      emit_move_insn (operands[0], GEN_INT (val.to_shwi ()));
+      if (overflow != wi::OVF_NONE)
+	emit_jump_insn (gen_jump (operands[3]));
+      DONE;
+    }
+  else if (CONST_INT_P (operands[1]))
+    {
+      arm_decompose_di_binop (operands[2], operands[1], &lo_op2, &hi_op2,
+			      &lo_op1, &hi_op1);
+      if (const_ok_for_arm (INTVAL (lo_op1)))
+	{
+	  emit_insn (gen_rsb_imm_compare (lo_result, lo_op1, lo_op2,
+					  GEN_INT (~UINTVAL (lo_op1))));
+	  /* We could potentially use RSC here in Arm state, but not
+	     in Thumb, so it's probably not worth the effort of handling
+	     this.  */
+	  hi_op1 = force_reg (SImode, hi_op1);
+	  mode = CC_RSBmode;
+	  goto highpart;
+	}
+      operands[1] = force_reg (DImode, operands[1]);
+    }
+
+  arm_decompose_di_binop (operands[1], operands[2], &lo_op1, &hi_op1,
+			  &lo_op2, &hi_op2);
+  if (lo_op2 == const0_rtx)
+    {
+      emit_move_insn (lo_result, lo_op1);
+      if (!arm_add_operand (hi_op2, SImode))
+        hi_op2 = force_reg (SImode, hi_op2);
+      emit_insn (gen_subvsi4 (hi_result, hi_op1, hi_op2, operands[3]));
+      DONE;
+    }
+
+  if (CONST_INT_P (lo_op2) && !arm_addimm_operand (lo_op2, SImode))
+    lo_op2 = force_reg (SImode, lo_op2);
+  if (CONST_INT_P (lo_op2))
+    emit_insn (gen_cmpsi2_addneg (lo_result, lo_op1, lo_op2,
+				  GEN_INT (-INTVAL (lo_op2))));
+  else
+    emit_insn (gen_subsi3_compare1 (lo_result, lo_op1, lo_op2));
+
+ highpart:
+  if (!arm_not_operand (hi_op2, SImode))
+    hi_op2 = force_reg (SImode, hi_op2);
+  rtx ccreg = gen_rtx_REG (mode, CC_REGNUM);
+  if (CONST_INT_P (hi_op2))
+    emit_insn (gen_subvsi3_borrow_imm (hi_result, hi_op1, hi_op2,
+				       gen_rtx_LTU (SImode, ccreg, const0_rtx),
+				       gen_rtx_LTU (DImode, ccreg,
+						    const0_rtx)));
+  else
+    emit_insn (gen_subvsi3_borrow (hi_result, hi_op1, hi_op2,
+				   gen_rtx_LTU (SImode, ccreg, const0_rtx),
+				   gen_rtx_LTU (DImode, ccreg, const0_rtx)));
   arm_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
 
   DONE;
@@ -1522,20 +1589,6 @@
 
   DONE;
 })
-
-(define_insn "subdi3_compare1"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
-	  (match_operand:DI 1 "s_register_operand" "r")
-	  (match_operand:DI 2 "s_register_operand" "r")))
-   (set (match_operand:DI 0 "s_register_operand" "=&r")
-	(minus:DI (match_dup 1) (match_dup 2)))]
-  "TARGET_32BIT"
-  "subs\\t%Q0, %Q1, %Q2;sbcs\\t%R0, %R1, %R2"
-  [(set_attr "conds" "set")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
 
 (define_insn "subsi3_compare1"
   [(set (reg:CC CC_REGNUM)
@@ -2009,6 +2062,50 @@
 			   (match_operand:SI 2 "arm_adcimm_operand" "I,K"))))]
   "TARGET_32BIT
    && (UINTVAL (operands[2]) & 0xffffffff) == UINTVAL (operands[3])"
+  "@
+  sbcs%?\\t%0, %1, %2
+  adcs%?\\t%0, %1, #%B2"
+  [(set_attr "conds" "set")
+   (set_attr "type" "alus_imm")]
+)
+
+(define_insn "subvsi3_borrow"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	 (minus:DI
+	  (minus:DI
+	   (sign_extend:DI (match_operand:SI 1 "s_register_operand" "0,r"))
+	   (sign_extend:DI (match_operand:SI 2 "s_register_operand" "l,r")))
+	  (match_operand:DI 4 "arm_borrow_operation" ""))
+	 (sign_extend:DI
+	  (minus:SI (minus:SI (match_dup 1) (match_dup 2))
+		    (match_operand:SI 3 "arm_borrow_operation" "")))))
+   (set (match_operand:SI 0 "s_register_operand" "=l,r")
+	(minus:SI (minus:SI (match_dup 1) (match_dup 2))
+		  (match_dup 3)))]
+  "TARGET_32BIT"
+  "sbcs%?\\t%0, %1, %2"
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,*")
+   (set_attr "length" "2,4")]
+)
+
+(define_insn "subvsi3_borrow_imm"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	 (minus:DI
+	  (minus:DI
+	   (sign_extend:DI (match_operand:SI 1 "s_register_operand" "r,r"))
+	   (match_operand 2 "arm_adcimm_operand" "I,K"))
+	  (match_operand:DI 4 "arm_borrow_operation" ""))
+	 (sign_extend:DI
+	  (minus:SI (minus:SI (match_dup 1) (match_dup 2))
+		    (match_operand:SI 3 "arm_borrow_operation" "")))))
+   (set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(minus:SI (minus:SI (match_dup 1) (match_dup 2))
+		  (match_dup 3)))]
+  "TARGET_32BIT
+   && INTVAL (operands[2]) == ARM_SIGN_EXTEND (INTVAL (operands[2]))"
   "@
   sbcs%?\\t%0, %1, %2
   adcs%?\\t%0, %1, #%B2"
