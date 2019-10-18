@@ -5355,6 +5355,21 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
   return insns;
 }
 
+/* Return TRUE if op is a constant where both the low and top words are
+   suitable for RSB/RSC instructions.  This is never true for Thumb, since
+   we do not have RSC in that case.  */
+static bool
+arm_const_double_prefer_rsbs_rsc (rtx op)
+{
+  /* Thumb lacks RSC, so we never prefer that sequence.  */
+  if (TARGET_THUMB || !CONST_INT_P (op))
+    return false;
+  HOST_WIDE_INT hi, lo;
+  lo = UINTVAL (op) & 0xffffffffULL;
+  hi = UINTVAL (op) >> 32;
+  return const_ok_for_arm (lo) && const_ok_for_arm (hi);
+}
+
 /* Canonicalize a comparison so that we are more likely to recognize it.
    This can be done for a few constant compares, where we can make the
    immediate value easier to load.  */
@@ -5380,8 +5395,7 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
     {
 
       if (*code == GT || *code == LE
-	  || ((!TARGET_ARM || CONST_INT_P (*op1))
-	      && (*code == GTU || *code == LEU)))
+	  || *code == GTU || *code == LEU)
 	{
 	  /* Missing comparison.  First try to use an available
 	     comparison.  */
@@ -5392,10 +5406,13 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 		{
 		case GT:
 		case LE:
-		  if (i != maxval
-		      && (!arm_const_double_by_immediates (*op1)
-			  || arm_const_double_by_immediates (GEN_INT (i + 1))))
+		  if (i != maxval)
 		    {
+		      /* Try to convert to GE/LT, unless that would be more
+			 expensive.  */
+		      if (!arm_const_double_by_immediates (GEN_INT (i + 1))
+			  && arm_const_double_prefer_rsbs_rsc (*op1))
+			return;
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GT ? GE : LT;
 		      return;
@@ -5404,10 +5421,13 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 
 		case GTU:
 		case LEU:
-		  if (i != ~((unsigned HOST_WIDE_INT) 0)
-		      && (!arm_const_double_by_immediates (*op1)
-			  || arm_const_double_by_immediates (GEN_INT (i + 1))))
+		  if (i != ~((unsigned HOST_WIDE_INT) 0))
 		    {
+		      /* Try to convert to GEU/LTU, unless that would
+			 be more expensive.  */
+		      if (!arm_const_double_by_immediates (GEN_INT (i + 1))
+			  && arm_const_double_prefer_rsbs_rsc (*op1))
+			return;
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GTU ? GEU : LTU;
 		      return;
@@ -5419,7 +5439,6 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 		}
 	    }
 
-	  /* If that did not work, reverse the condition.  */
 	  if (!op0_preserve_value)
 	    {
 	      std::swap (*op0, *op1);
@@ -15251,6 +15270,28 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || GET_CODE (x) == ROTATERT))
     return CC_SWPmode;
 
+  /* A widened compare of the sum of a value plus a carry against a
+     constant.  This is a representation of RSC.  We want to swap the
+     result of the comparison at output.  Not valid if the Z bit is
+     needed.  */
+  if (GET_MODE (x) == DImode
+      && GET_CODE (x) == PLUS
+      && arm_borrow_operation (XEXP (x, 1), DImode)
+      && CONST_INT_P (y)
+      && ((GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+	   && (op == LE || op == GT))
+	  || (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	      && (op == LEU || op == GTU))))
+    return CC_SWPmode;
+
+  /* If X is a constant we want to use CC_RSBmode.  This is
+     non-canonical, but arm_gen_compare_reg uses this to generate the
+     correct canonical form.  */
+  if (GET_MODE (y) == SImode
+      && (REG_P (y) || GET_CODE (y) == SUBREG)
+      && CONST_INT_P (x))
+    return CC_RSBmode;
+
   /* This operation is performed swapped, but since we only rely on the Z
      flag we don't need an additional mode.  */
   if (GET_MODE (y) == SImode
@@ -15329,15 +15370,13 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || (TARGET_32BIT && GET_CODE (x) == ZERO_EXTRACT)))
     return CC_NOOVmode;
 
-  /* An unsigned comparison of ~reg with a const is really a special
+  /* A comparison of ~reg with a const is really a special
      canoncialization of compare (~const, reg), which is a reverse
      subtract operation.  We may not get here if CONST is 0, but that
      doesn't matter because ~0 isn't a valid immediate for RSB.  */
   if (GET_MODE (x) == SImode
       && GET_CODE (x) == NOT
-      && CONST_INT_P (y)
-      && (op == EQ || op == NE
-	  || op == LTU || op == LEU || op == GEU || op == GTU))
+      && CONST_INT_P (y))
     return CC_RSBmode;
 
   if (GET_MODE (x) == QImode && (op == EQ || op == NE))
@@ -15431,6 +15470,7 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 
     /* We don't currently handle DImode in thumb1, but rely on libgcc.  */
   gcc_assert (TARGET_32BIT);
+  gcc_assert (!CONST_INT_P (x));
 
   rtx x_lo = simplify_gen_subreg (SImode, x, DImode,
 				  subreg_lowpart_offset (SImode, DImode));
@@ -15445,9 +15485,6 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
     case EQ:
     case NE:
       {
-	/* We should never have X as a const_int in this case.  */
-	gcc_assert (!CONST_INT_P (x));
-
 	if (y_lo == const0_rtx || y_hi == const0_rtx)
 	  {
 	    if (y_lo != const0_rtx)
@@ -15525,10 +15562,6 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	if (!arm_add_operand (y_lo, SImode))
 	  y_lo = force_reg (SImode, y_lo);
 
-	/* Just for now.  */
-	if (!register_operand (x_lo, SImode))
-	  x_lo = force_reg (SImode, x_lo);
-
 	rtx cmp1
 	  = gen_rtx_LTU (DImode,
 			 arm_gen_compare_reg (LTU, x_lo, y_lo, NULL_RTX),
@@ -15536,12 +15569,9 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 
 	if (!scratch)
 	  scratch = gen_rtx_SCRATCH (SImode);
+
 	if (!arm_not_operand (y_hi, SImode))
 	  y_hi = force_reg (SImode, y_hi);
-
-	/* Just for now.  */
-	if (!register_operand (x_hi, SImode))
-	  x_hi = force_reg (SImode, x_hi);
 
 	rtx_insn *insn;
 	if (y_hi == const0_rtx)
@@ -15553,6 +15583,27 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	else
 	  insn = emit_insn (gen_cmpsi3_carryin_CC_NVout (scratch, x_hi, y_hi,
 							 cmp1));
+	return SET_DEST (single_set (insn));
+      }
+
+    case LE:
+    case GT:
+      {
+	/* During expansion, we only expect to get here if y is a
+	   constant that we want to handle, otherwise we should have
+	   swapped the operands already.  */
+	gcc_assert (arm_const_double_prefer_rsbs_rsc (y));
+
+	if (!const_ok_for_arm (INTVAL (y_lo)))
+	  y_lo = force_reg (SImode, y_lo);
+
+	/* Perform a reverse subtract and compare.  */
+	rtx cmp1
+	  = gen_rtx_LTU (DImode,
+			 arm_gen_compare_reg (LTU, y_lo, x_lo, scratch),
+			 const0_rtx);
+	rtx_insn *insn = emit_insn (gen_rscsi3_CC_NVout_scratch (scratch, y_hi,
+								 x_hi, cmp1));
 	return SET_DEST (single_set (insn));
       }
 
@@ -15572,10 +15623,6 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	if (!arm_add_operand (y_lo, SImode))
 	  y_lo = force_reg (SImode, y_lo);
 
-	/* Just for now.  */
-	if (!register_operand (x_lo, SImode))
-	  x_lo = force_reg (SImode, x_lo);
-
 	rtx cmp1
 	  = gen_rtx_LTU (DImode,
 			 arm_gen_compare_reg (LTU, x_lo, y_lo, NULL_RTX),
@@ -15585,10 +15632,6 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	  scratch = gen_rtx_SCRATCH (SImode);
 	if (!arm_not_operand (y_hi, SImode))
 	  y_hi = force_reg (SImode, y_hi);
-
-	/* Just for now.  */
-	if (!register_operand (x_hi, SImode))
-	  x_hi = force_reg (SImode, x_hi);
 
 	rtx_insn *insn;
 	if (y_hi == const0_rtx)
@@ -15604,6 +15647,28 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	else
 	  insn = emit_insn (gen_cmpsi3_carryin_CC_Bout (scratch, x_hi, y_hi,
 							cmp1));
+	return SET_DEST (single_set (insn));
+      }
+
+    case LEU:
+    case GTU:
+      {
+	/* During expansion, we only expect to get here if y is a
+	   constant that we want to handle, otherwise we should have
+	   swapped the operands already.  */
+	gcc_assert (arm_const_double_prefer_rsbs_rsc (y));
+
+	if (!const_ok_for_arm (INTVAL (y_lo)))
+	  y_lo = force_reg (SImode, y_lo);
+
+	/* Perform a reverse subtract and compare.  */
+	rtx cmp1
+	  = gen_rtx_LTU (DImode,
+			 arm_gen_compare_reg (LTU, y_lo, x_lo, scratch),
+			 const0_rtx);
+	y_hi = GEN_INT (0xffffffff & UINTVAL (y_hi));
+	rtx_insn *insn = emit_insn (gen_rscsi3_CC_Bout_scratch (scratch, y_hi,
+								x_hi, cmp1));
 	return SET_DEST (single_set (insn));
       }
 
@@ -15695,8 +15760,15 @@ arm_gen_compare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 
   machine_mode mode = SELECT_CC_MODE (code, x, y);
   rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
-
-  emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
+  if (mode == CC_RSBmode)
+    {
+      if (!scratch)
+	scratch = gen_rtx_SCRATCH (SImode);
+      emit_insn (gen_rsb_imm_compare_scratch (scratch,
+					      GEN_INT (~UINTVAL (x)), y));
+    }
+  else
+    emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
 
   return cc_reg;
 }
@@ -24025,19 +24097,8 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case E_CC_RSBmode:
-      switch (comp_code)
-	{
-	case NE: return ARM_NE;
-	case EQ: return ARM_EQ;
-	case GEU: return ARM_CS;
-	case GTU: return ARM_HI;
-	case LEU: return ARM_LS;
-	case LTU: return ARM_CC;
-	default: return ARM_NV;
-	}
-
     case E_CCmode:
+    case E_CC_RSBmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
