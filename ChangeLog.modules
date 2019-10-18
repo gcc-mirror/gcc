@@ -1,6 +1,12 @@
 2019-10-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_value): Excise template_parm
+	handling.
+	(trees_{in,out}::tree_value): Excise non-template-parm
+	tmpl/type/fn/var handling here.
+
+	gcc/cp/
 	* module.cc (dumper::impl::nested_name): Check template_parm_p
 	directly.
 	(trees_out::core_vals): Check DECL_TEMPLATE_PARM_P.
@@ -10,7 +16,7 @@
 	(trees_out::type_node): Simplify name detection.
 	(trees_out::tree_value): Allow DECL_TEMPLATE_PARM_P, but no other
 	tmpls/type/var/fns.
-	* tree.c (bind_template_template_parm): Set DECL_TEMPLATE_PARM_P.
+	* tree.c (bind_template_template_parm): Set DECL_TEMPLATE_PARM_P.1
 
 	gcc/cp/
 	* module.cc (dumper::impl::nested_name): Detect template parms.

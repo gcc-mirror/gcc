@@ -6880,10 +6880,8 @@ trees_out::decl_value (tree decl, depset *dep)
   int type_tag = 0;
   if (TREE_CODE (inner) == TYPE_DECL)
     {
-      // FIXME: anon-structured type with typedef name?
       type = TREE_TYPE (inner);
-      bool is_stub = ((TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM ? decl : inner)
-		      == TYPE_STUB_DECL (type));
+      bool is_stub = inner == TYPE_STUB_DECL (type);
 
       if (streaming_p ())
 	u (is_stub ? TREE_CODE (type) : 0);
@@ -8241,32 +8239,21 @@ trees_out::tree_value (tree t)
   int type_tag = 0;
   if (TREE_CODE (inner) == TYPE_DECL)
     {
-      // FIXME: anon-structured type with typedef name?
       type = TREE_TYPE (inner);
-      bool is_stub = ((TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM ? t : inner)
-		      == TYPE_STUB_DECL (type));
+      gcc_checking_assert (t == TYPE_STUB_DECL (type));
 
       if (streaming_p ())
-	u (is_stub ? TREE_CODE (type) : 0);
-
-      if (is_stub)
 	{
-	  if (streaming_p ())
-	    {
-	      start (type, true);
-	      tree_node_bools (type);
-	    }
-
-	  type_tag = insert (type, WK_value);
-	  if (streaming_p ())
-	    dump (dumper::TREE)
-	      && dump ("Writing type:%d %C:%N%S", type_tag,
-		       TREE_CODE (type), type, type);
+	  start (type);
+	  tree_node_bools (type);
 	}
-      else
-	/* Regular typedef.  */
-	type = NULL_TREE;
-      gcc_assert (!type || !DECL_ORIGINAL_TYPE (inner));
+
+      type_tag = insert (type, WK_value);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Writing type:%d %C:%N%S", type_tag,
+		   TREE_CODE (type), type, type);
+      gcc_assert (!DECL_ORIGINAL_TYPE (inner));
     }
 
   if (inner_tag != 0)
@@ -8291,34 +8278,14 @@ trees_out::tree_value (tree t)
       tree_node_vals (t);
     }
 
-  if (TREE_CODE (inner) == FUNCTION_DECL)
-    fn_parms_init (inner);
   tree_node_vals (inner);
 
   if (type)
     tree_node_vals (type);
 
-  // FIXME: It'd be nice if there was a flag to tell us to go look for
-  // constraints.  Not a modules-specific problem though.
-  if (flag_concepts && DECL_P (t))
-    {
-      tree constraints = get_constraints (t);
-      tree_node (constraints);
-    }
-
-  if (TREE_CODE (inner) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (inner))
-    {
-      /* A typedef type.  */
-      int type_tag = insert (TREE_TYPE (inner));
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Cloned:%d typedef %C:%N", type_tag,
-		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
-    }
-
   if (streaming_p () && DECL_P (inner) && DECL_MAYBE_IN_CHARGE_CDTOR_P (inner))
     {
+      gcc_unreachable ();
       bool cloned_p
 	= (DECL_CHAIN (inner) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (inner)));
       bool needs_vtt_parm_p
@@ -8377,25 +8344,19 @@ trees_in::tree_value ()
   int type_tag = 0;
   if (res && TREE_CODE (inner) == TYPE_DECL)
     {
-      if (unsigned type_code = u ())
+      type = start ();
+      if (type)
 	{
-	  type = start (type_code);
-	  if (type)
-	    {
-	      TREE_TYPE (inner) = type;
-	      TYPE_NAME (type) = inner;
+	  TREE_TYPE (inner) = type;
+	  TYPE_NAME (type) = inner;
 
-	      if (!tree_node_bools (type))
-		res = NULL_TREE;
-	    }
-	  else
+	  if (!tree_node_bools (type))
 	    res = NULL_TREE;
-
-	  type_tag = insert (type);
-	  if (res)
-	    dump (dumper::TREE)
-	      && dump ("Reading type:%d %C", type_tag, TREE_CODE (type));
 	}
+      type_tag = insert (type);
+      if (res)
+	dump (dumper::TREE)
+	  && dump ("Reading type:%d %C", type_tag, TREE_CODE (type));
     }
 
   if (!res)
@@ -8425,10 +8386,6 @@ trees_in::tree_value ()
 	goto bail;
     }
 
-  int parm_tag = 0;
-  if (TREE_CODE (inner) == FUNCTION_DECL)
-    parm_tag = fn_parms_init (inner);
-
   if (!tree_node_vals (inner))
     goto bail;
 
@@ -8448,31 +8405,7 @@ trees_in::tree_value ()
 	}
     }
 
-  tree constraints = NULL_TREE;
-  if (flag_concepts && DECL_P (res))
-    constraints  = tree_node ();
-
-  if (TREE_CODE (inner) == FUNCTION_DECL)
-    fn_parms_fini (parm_tag, inner, NULL, false);
-
   dump (dumper::TREE) && dump ("Read tree:%d %C:%N", tag, TREE_CODE (res), res);
-
-  /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
-  bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !TREE_TYPE (inner);
-  if (is_typedef)
-    {
-      /* Frob it to be ready for cloning.  */
-      TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
-      DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
-    }
-
-  if (TREE_CODE (res) == FUNCTION_DECL && DECL_VIRTUAL_P (res))
-    /* Mark this identifier as naming a virtual function --
-       lookup_overrides relies on this optimization.  */
-    IDENTIFIER_VIRTUAL_P (DECL_NAME (res)) = true;
-
-  if (constraints)
-    set_constraints (res, constraints);
 
   if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
     {
@@ -8480,33 +8413,9 @@ trees_in::tree_value ()
       back_refs[~tag] = res;
     }
 
-  if (is_typedef)
-    set_underlying_type (inner);
-
   if (inner_tag)
     /* Set the TEMPLATE_DECL's type.  */
     TREE_TYPE (res) = TREE_TYPE (inner);
-
-  if (is_typedef)
-    {
-      /* Insert the type into the array now.  */
-      tag = insert (TREE_TYPE (res));
-      dump (dumper::TREE)
-	&& dump ("Cloned:%d typedef %C:%N",
-		 tag, TREE_CODE (TREE_TYPE (res)), TREE_TYPE (res));
-    }
-
-  if (DECL_P (res) && DECL_MAYBE_IN_CHARGE_CDTOR_P (res))
-    {
-      unsigned flags = u ();
-
-      gcc_checking_assert (!DECL_CHAIN (res));
-      bool cloned_p = flags & 1;
-      dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
-				   res, cloned_p ? "" : "not ");
-      if (cloned_p)
-	build_clones (res, flags & 2, flags & 4);
-    }
 
   return res;
 }
@@ -9354,11 +9263,11 @@ trees_out::tpl_parms (tree parms, tree outer_parms)
 	    break;
 
 	  case PARM_DECL:
-	    gcc_assert ((TREE_CODE (DECL_ARG_TYPE (decl)) == TEMPLATE_PARM_INDEX)
-			&& (TREE_CODE (TEMPLATE_PARM_DECL (DECL_ARG_TYPE (decl)))
+	    gcc_assert ((TREE_CODE (DECL_INITIAL (decl)) == TEMPLATE_PARM_INDEX)
+			&& (TREE_CODE (TEMPLATE_PARM_DECL (DECL_INITIAL (decl)))
 			    == CONST_DECL)
 			&& (DECL_TEMPLATE_PARM_P
-			    (TEMPLATE_PARM_DECL (DECL_ARG_TYPE (decl)))));
+			    (TEMPLATE_PARM_DECL (DECL_INITIAL (decl)))));
 	    break;
 	  }
 
