@@ -2152,7 +2152,6 @@ struct GTY(()) lang_type {
   unsigned fields_readonly : 1;
   unsigned ptrmemfunc_flag : 1;
 
-  unsigned was_anonymous : 1;
   unsigned lazy_default_ctor : 1;
   unsigned lazy_copy_ctor : 1;
   unsigned lazy_copy_assign : 1;
@@ -2160,8 +2159,8 @@ struct GTY(()) lang_type {
   unsigned has_const_copy_ctor : 1;
   unsigned has_complex_copy_ctor : 1;
   unsigned has_complex_copy_assign : 1;
-
   unsigned non_aggregate : 1;
+
   unsigned has_complex_dflt : 1;
   unsigned has_list_ctor : 1;
   unsigned non_std_layout : 1;
@@ -2169,8 +2168,8 @@ struct GTY(()) lang_type {
   unsigned lazy_move_ctor : 1;
   unsigned lazy_move_assign : 1;
   unsigned has_complex_move_ctor : 1;
-
   unsigned has_complex_move_assign : 1;
+
   unsigned has_constexpr_ctor : 1;
   unsigned unique_obj_representations : 1;
   unsigned unique_obj_representations_set : 1;
@@ -2182,7 +2181,7 @@ struct GTY(()) lang_type {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 4;
+  unsigned dummy : 5;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -4585,8 +4584,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Define fields and accessors for nodes representing declared names.  */
 
-/* Nonzero if TYPE is an unnamed class with a typedef for linkage purposes.  */
-#define TYPE_WAS_UNNAMED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->was_anonymous)
+/* True if TYPE is an unnamed structured type with a typedef for
+   linkage purposes.  In that case TYPE_NAME and TYPE_STUB_DECL of the
+   MAIN-VARIANT are different. */
+#define TYPE_WAS_UNNAMED(NODE)				\
+  (TYPE_NAME (TYPE_MAIN_VARIANT (NODE))			\
+   != TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
 
 /* C++: all of these are overloaded!  These apply only to TYPE_DECLs.  */
 
