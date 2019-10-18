@@ -36,12 +36,9 @@ ADJUST_FLOAT_FORMAT (HF, ((arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
    CC_Nmode should be used if only the N (sign) flag is set correctly
    CC_NVmode should be used if only the N and V bits are set correctly,
      (used for signed comparisons when the carry is propagated in).
-   CC_CZmode should be used if only the C and Z flags are correct
-   (used for DImode unsigned comparisons).
    CC_RSBmode should be used where the comparison is set by an RSB immediate,
      or NEG instruction.  The form of the comparison for (const - reg) will
      be (COMPARE (not (reg)) (~const)).
-   CC_NCVmode should be used if only the N, C, and V flags are correct
    CC_Bmode should be used if only the C flag is correct after a subtract
      (eg after an unsigned borrow with carry-in propagation).
    (used for DImode signed comparisons).
@@ -49,8 +46,6 @@ ADJUST_FLOAT_FORMAT (HF, ((arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
 
 CC_MODE (CC_NOOV);
 CC_MODE (CC_Z);
-CC_MODE (CC_CZ);
-CC_MODE (CC_NCV);
 CC_MODE (CC_NV);
 CC_MODE (CC_SWP);
 CC_MODE (CC_RSB);

@@ -1,5 +1,16 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-modes.def (CC_NCV, CC_CZ): Delete CC modes.
+	* config/arm/arm.c (arm_select_cc_mode): Remove old selection code
+	for DImode operands.
+	(arm_gen_dicompare_reg): Remove unreachable expansion code.
+	(maybe_get_arm_condition_code): Remove support for CC_CZmode and
+	CC_NCVmode.
+	* config/arm/arm.md (arm_cmpdi_insn): Delete.
+	(arm_cmpdi_unsigned): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.c (arm_const_double_prefer_rsbs_rsc): New function.
 	(arm_canonicalize_comparison): For GT/LE/GTU/GEU, use the constant
 	unchanged only if that will be cheaper.

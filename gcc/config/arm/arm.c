@@ -15403,56 +15403,6 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || arm_borrow_operation (y, DImode)))
     return CC_Bmode;
 
-  if (GET_MODE (x) == DImode || GET_MODE (y) == DImode)
-    {
-      switch (op)
-	{
-	case EQ:
-	case NE:
-	  /* A DImode comparison against zero can be implemented by
-	     or'ing the two halves together.  We can also handle
-	     immediates where one word of that value is zero by
-	     subtracting the non-zero word from the corresponding word
-	     in the other register and then ORRing it with the other
-	     word.  */
-	  if (CONST_INT_P (y)
-	      && ((UINTVAL (y) & 0xffffffff) == 0
-		  || (UINTVAL (y) >> 32) == 0))
-	    return CC_Zmode;
-
-	  /* We can do an equality test in three Thumb instructions.  */
-	  if (!TARGET_32BIT)
-	    return CC_Zmode;
-
-	  /* FALLTHROUGH */
-
-	case LTU:
-	case LEU:
-	case GTU:
-	case GEU:
-	  /* DImode unsigned comparisons can be implemented by cmp +
-	     cmpeq without a scratch register.  Not worth doing in
-	     Thumb-2.  */
-	  if (TARGET_32BIT)
-	    return CC_CZmode;
-
-	  /* FALLTHROUGH */
-
-	case LT:
-	case LE:
-	case GT:
-	case GE:
-	  /* DImode signed and unsigned comparisons can be implemented
-	     by cmp + sbcs with a scratch register, but that does not
-	     set the Z flag - we must reverse GT/LE/GTU/LEU.  */
-	  gcc_assert (op != EQ && op != NE);
-	  return CC_NCVmode;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
     return GET_MODE (x);
 
@@ -15673,81 +15623,8 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
       }
 
     default:
-      break;
+      gcc_unreachable ();
     }
-
-  /* We might have X as a constant, Y as a register because of the predicates
-     used for cmpdi.  If so, force X to a register here.  */
-  if (!REG_P (x))
-    x = force_reg (DImode, x);
-
-  mode = SELECT_CC_MODE (code, x, y);
-  cc_reg = gen_rtx_REG (mode, CC_REGNUM);
-
-  if (mode != CC_CZmode)
-    {
-      rtx clobber, set;
-
-      /* To compare two non-zero values for equality, XOR them and
-	 then compare against zero.  Not used for ARM mode; there
-	 CC_CZmode is cheaper.  */
-      if (mode == CC_Zmode)
-	{
-	  mode = CC_NOOVmode;
-	  PUT_MODE (cc_reg, mode);
-	  if (y != const0_rtx)
-	    {
-	      gcc_assert (CONST_INT_P (y));
-	      rtx xlo, xhi, ylo, yhi;
-	      arm_decompose_di_binop (x, y, &xlo, &xhi, &ylo, &yhi);
-	      if (!scratch)
-		scratch = gen_reg_rtx (SImode);
-	      if (ylo == const0_rtx)
-		{
-		  yhi = gen_int_mode (-INTVAL (yhi), SImode);
-		  if (!arm_add_operand (yhi, SImode))
-		    yhi = force_reg (SImode, yhi);
-		  emit_insn (gen_addsi3 (scratch, xhi, yhi));
-		  y = xlo;
-		}
-	      else
-		{
-		  gcc_assert (yhi == const0_rtx);
-		  ylo = gen_int_mode (-INTVAL (ylo), SImode);
-		  if (!arm_add_operand (ylo, SImode))
-		    ylo = force_reg (SImode, ylo);
-		  emit_insn (gen_addsi3 (scratch, xlo, ylo));
-		  y = xhi;
-		}
-	      x = gen_rtx_IOR (SImode, scratch, y);
-	      y = const0_rtx;
-	    }
-	  else
-	    x = gen_rtx_IOR (SImode, gen_lowpart (SImode, x),
-			     gen_highpart (SImode, x));
-	}
-      else if (!cmpdi_operand (y, mode))
-	y = force_reg (DImode, y);
-
-      /* A scratch register is required.  */
-      if (reload_completed)
-	gcc_assert (scratch != NULL && GET_MODE (scratch) == SImode);
-      else
-	scratch = gen_rtx_SCRATCH (SImode);
-
-      clobber = gen_rtx_CLOBBER (VOIDmode, scratch);
-      set = gen_rtx_SET (cc_reg, gen_rtx_COMPARE (mode, x, y));
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
-    }
-  else
-    {
-      if (!cmpdi_operand (y, mode))
-	y = force_reg (DImode, y);
-
-      emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
-    }
-
-  return cc_reg;
 }
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
@@ -24048,28 +23925,6 @@ maybe_get_arm_condition_code (rtx comparison)
 	{
 	case LTU: return ARM_CS;
 	case GEU: return ARM_CC;
-	default: return ARM_NV;
-	}
-
-    case E_CC_CZmode:
-      switch (comp_code)
-	{
-	case NE: return ARM_NE;
-	case EQ: return ARM_EQ;
-	case GEU: return ARM_CS;
-	case GTU: return ARM_HI;
-	case LEU: return ARM_LS;
-	case LTU: return ARM_CC;
-	default: return ARM_NV;
-	}
-
-    case E_CC_NCVmode:
-      switch (comp_code)
-	{
-	case GE: return ARM_GE;
-	case LT: return ARM_LT;
-	case GEU: return ARM_CS;
-	case LTU: return ARM_CC;
 	default: return ARM_NV;
 	}
 
