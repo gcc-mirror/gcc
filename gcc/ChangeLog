@@ -1,5 +1,20 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (adddi3): Call gen_addsi3_compare_op1.
+	* (uaddv<mode>4): Delete expansion pattern.
+	(uaddvsi4): New pattern.
+	(uaddvdi4): Likewise.
+	(addsi3_compareC): Delete pattern, change callers to use
+	addsi3_compare_op1.
+	(addsi3_compare_op1): No-longer anonymous.  Clean up constraints to
+	reduce the number of alternatives and re-work type attribute handling.
+	(addsi3_compare_op2): Clean up constraints to reduce the number of
+	alternatives and re-work type attribute handling.
+	(compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-modes.def (CC_NCV, CC_CZ): Delete CC modes.
 	* config/arm/arm.c (arm_select_cc_mode): Remove old selection code
 	for DImode operands.

@@ -470,7 +470,7 @@
 	  if (!arm_not_operand (hi_op2, SImode))
 	    hi_op2 = force_reg (SImode, hi_op2);
 
-	  emit_insn (gen_addsi3_compareC (lo_dest, lo_op1, lo_op2));
+	  emit_insn (gen_addsi3_compare_op1 (lo_dest, lo_op1, lo_op2));
 	  rtx carry = gen_rtx_LTU (SImode, gen_rtx_REG (CC_Cmode, CC_REGNUM),
 				   const0_rtx);
 	  if (hi_op2 == const0_rtx)
@@ -501,14 +501,27 @@
   DONE;
 })
 
-(define_expand "uaddv<mode>4"
-  [(match_operand:SIDI 0 "register_operand")
-   (match_operand:SIDI 1 "register_operand")
-   (match_operand:SIDI 2 "register_operand")
+(define_expand "uaddvsi4"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "s_register_operand")
+   (match_operand:SI 2 "arm_add_operand")
    (match_operand 3 "")]
   "TARGET_32BIT"
 {
-  emit_insn (gen_add<mode>3_compareC (operands[0], operands[1], operands[2]));
+  emit_insn (gen_addsi3_compare_op1 (operands[0], operands[1], operands[2]));
+  arm_gen_unlikely_cbranch (LTU, CC_Cmode, operands[3]);
+
+  DONE;
+})
+
+(define_expand "uaddvdi4"
+  [(match_operand:DI 0 "s_register_operand")
+   (match_operand:DI 1 "s_register_operand")
+   (match_operand:DI 2 "s_register_operand")
+   (match_operand 3 "")]
+  "TARGET_32BIT"
+{
+  emit_insn (gen_adddi3_compareC (operands[0], operands[1], operands[2]));
   arm_gen_unlikely_cbranch (LTU, CC_Cmode, operands[3]);
 
   DONE;
@@ -639,19 +652,6 @@
    (set_attr "type" "multiple")]
 )
 
-(define_insn "addsi3_compareC"
-   [(set (reg:CC_C CC_REGNUM)
-	 (compare:CC_C (plus:SI (match_operand:SI 1 "register_operand" "r")
-				(match_operand:SI 2 "register_operand" "r"))
-		       (match_dup 1)))
-    (set (match_operand:SI 0 "register_operand" "=r")
-	 (plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_32BIT"
-  "adds%?\\t%0, %1, %2"
-  [(set_attr "conds" "set")
-   (set_attr "type" "alus_sreg")]
-)
-
 (define_insn "addsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
@@ -770,13 +770,13 @@
 ;; the operands, and we know that the use of the condition code is
 ;; either GEU or LTU, so we can use the carry flag from the addition
 ;; instead of doing the compare a second time.
-(define_insn "*addsi3_compare_op1"
+(define_insn "addsi3_compare_op1"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
-	 (plus:SI (match_operand:SI 1 "s_register_operand" "l,0,l,0,r,r,r")
-		  (match_operand:SI 2 "arm_add_operand" "lPd,Py,lPx,Pw,I,L,r"))
+	 (plus:SI (match_operand:SI 1 "s_register_operand" "l,0,l,0,rk,rk")
+		  (match_operand:SI 2 "arm_add_operand" "lPd,Py,lPx,Pw,rkI,L"))
 	 (match_dup 1)))
-   (set (match_operand:SI 0 "s_register_operand" "=l,l,l,l,r,r,r")
+   (set (match_operand:SI 0 "s_register_operand" "=l,l,l,l,rk,rk")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_32BIT"
   "@
@@ -785,22 +785,23 @@
    subs%?\\t%0, %1, #%n2
    subs%?\\t%0, %0, #%n2
    adds%?\\t%0, %1, %2
-   subs%?\\t%0, %1, #%n2
-   adds%?\\t%0, %1, %2"
+   subs%?\\t%0, %1, #%n2"
   [(set_attr "conds" "set")
-   (set_attr "arch" "t2,t2,t2,t2,*,*,*")
-   (set_attr "length" "2,2,2,2,4,4,4")
-   (set_attr "type"
-    "alus_sreg,alus_imm,alus_sreg,alus_imm,alus_imm,alus_imm,alus_sreg")]
+   (set_attr "arch" "t2,t2,t2,t2,*,*")
+   (set_attr "length" "2,2,2,2,4,4")
+   (set (attr "type")
+	(if_then_else (match_operand 2 "const_int_operand")
+		      (const_string "alu_imm")
+		      (const_string "alu_sreg")))]
 )
 
 (define_insn "*addsi3_compare_op2"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
-	 (plus:SI (match_operand:SI 1 "s_register_operand" "l,0,l,0,r,r,r")
-		  (match_operand:SI 2 "arm_add_operand" "lPd,Py,lPx,Pw,I,L,r"))
+	 (plus:SI (match_operand:SI 1 "s_register_operand" "l,0,l,0,r,r")
+		  (match_operand:SI 2 "arm_add_operand" "lPd,Py,lPx,Pw,rI,L"))
 	 (match_dup 2)))
-   (set (match_operand:SI 0 "s_register_operand" "=l,l,l,l,r,r,r")
+   (set (match_operand:SI 0 "s_register_operand" "=l,l,l,l,r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_32BIT"
   "@
@@ -809,55 +810,60 @@
    subs%?\\t%0, %1, #%n2
    subs%?\\t%0, %0, #%n2
    adds%?\\t%0, %1, %2
-   subs%?\\t%0, %1, #%n2
-   adds%?\\t%0, %1, %2"
+   subs%?\\t%0, %1, #%n2"
   [(set_attr "conds" "set")
-   (set_attr "arch" "t2,t2,t2,t2,*,*,*")
-   (set_attr "length" "2,2,2,2,4,4,4")
-   (set_attr "type"
-    "alus_sreg,alus_imm,alus_sreg,alus_imm,alus_imm,alus_imm,alus_sreg")]
+   (set_attr "arch" "t2,t2,t2,t2,*,*")
+   (set_attr "length" "2,2,2,2,4,4")
+   (set (attr "type")
+	(if_then_else (match_operand 2 "const_int_operand")
+		      (const_string "alu_imm")
+		      (const_string "alu_sreg")))]
 )
 
 (define_insn "*compare_addsi2_op0"
   [(set (reg:CC_C CC_REGNUM)
         (compare:CC_C
-          (plus:SI (match_operand:SI 0 "s_register_operand" "l,l,r,r,r")
-                   (match_operand:SI 1 "arm_add_operand" "Pv,l,I,L,r"))
+          (plus:SI (match_operand:SI 0 "s_register_operand" "l,l,r,r")
+                   (match_operand:SI 1 "arm_add_operand"    "l,Pw,rI,L"))
           (match_dup 0)))]
   "TARGET_32BIT"
   "@
-   cmp%?\\t%0, #%n1
-   cmn%?\\t%0, %1
    cmn%?\\t%0, %1
    cmp%?\\t%0, #%n1
-   cmn%?\\t%0, %1"
+   cmn%?\\t%0, %1
+   cmp%?\\t%0, #%n1"
   [(set_attr "conds" "set")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "t2,t2,*,*,*")
-   (set_attr "predicable_short_it" "yes,yes,no,no,no")
-   (set_attr "length" "2,2,4,4,4")
-   (set_attr "type" "alus_imm,alus_sreg,alus_imm,alus_imm,alus_sreg")]
+   (set_attr "arch" "t2,t2,*,*")
+   (set_attr "predicable_short_it" "yes,yes,no,no")
+   (set_attr "length" "2,2,4,4")
+   (set (attr "type")
+	(if_then_else (match_operand 1 "const_int_operand")
+		      (const_string "alu_imm")
+		      (const_string "alu_sreg")))]
 )
 
 (define_insn "*compare_addsi2_op1"
   [(set (reg:CC_C CC_REGNUM)
         (compare:CC_C
-          (plus:SI (match_operand:SI 0 "s_register_operand" "l,l,r,r,r")
-                   (match_operand:SI 1 "arm_add_operand" "Pv,l,I,L,r"))
+          (plus:SI (match_operand:SI 0 "s_register_operand" "l,l,r,r")
+                   (match_operand:SI 1 "arm_add_operand" "l,Pw,rI,L"))
           (match_dup 1)))]
   "TARGET_32BIT"
   "@
-   cmp%?\\t%0, #%n1
-   cmn%?\\t%0, %1
    cmn%?\\t%0, %1
    cmp%?\\t%0, #%n1
-   cmn%?\\t%0, %1"
+   cmn%?\\t%0, %1
+   cmp%?\\t%0, #%n1"
   [(set_attr "conds" "set")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "t2,t2,*,*,*")
-   (set_attr "predicable_short_it" "yes,yes,no,no,no")
-   (set_attr "length" "2,2,4,4,4")
-   (set_attr "type" "alus_imm,alus_sreg,alus_imm,alus_imm,alus_sreg")]
+   (set_attr "arch" "t2,t2,*,*")
+   (set_attr "predicable_short_it" "yes,yes,no,no")
+   (set_attr "length" "2,2,4,4")
+   (set (attr "type")
+	(if_then_else (match_operand 1 "const_int_operand")
+		      (const_string "alu_imm")
+		      (const_string "alu_sreg")))]
  )
 
 (define_insn "addsi3_carryin"
