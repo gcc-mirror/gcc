@@ -1,3 +1,9 @@
+2019-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91586
+	* class.c (gfc_find_derived_vtab): Return NULL
+	instead of deref'ing NULL pointer.
+
 2019-10-15  James Norris  <jnorris@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
