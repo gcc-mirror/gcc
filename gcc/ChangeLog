@@ -1,5 +1,20 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-modes.def (CC_ADC): New CC mode.
+	* config/arm/arm.c (arm_select_cc_mode): Detect selection of
+	CC_ADCmode.
+	(maybe_get_arm_condition_code): Handle CC_ADCmode.
+	* config/arm/arm.md (uaddvdi4): Early expansion of unsigned addition
+	with overflow.
+	(addsi3_cin_cout_reg, addsi3_cin_cout_imm, addsi3_cin_cout_0): New
+	expand patterns.
+	(addsi3_cin_cout_reg_insn, addsi3_cin_cout_0_insn): New insn patterns
+	(addsi3_cin_cout_imm_insn): Likewise.
+	(adddi3_compareC): Delete insn.
+	* config/arm/predicates.md (arm_carry_operation): Handle CC_ADCmode.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (adddi3): Call gen_addsi3_compare_op1.
 	* (uaddv<mode>4): Delete expansion pattern.
 	(uaddvsi4): New pattern.
