@@ -1,5 +1,9 @@
 2019-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/92143
+	* libsupc++/new_opa.cc (operator new) [__APPLE__]: Increase alignment
+	to at least sizeof(void*).
+
 	* include/bits/range_cmp.h (ranges::less::operator()): Inline the
 	logic from std::less::operator() to remove the dependency on it.
 
