@@ -638,7 +638,6 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_RELEVANT (res) = vect_unused_in_scope;
   STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_REDUC_TYPE (res) = TREE_CODE_REDUCTION;
-  STMT_VINFO_VEC_COND_REDUC_CODE (res) = ERROR_MARK;
   STMT_VINFO_REDUC_CODE (res) = ERROR_MARK;
   STMT_VINFO_REDUC_FN (res) = IFN_LAST;
   STMT_VINFO_REDUC_IDX (res) = -1;
@@ -1515,4 +1514,37 @@ simple_ipa_opt_pass *
 make_pass_ipa_increase_alignment (gcc::context *ctxt)
 {
   return new pass_ipa_increase_alignment (ctxt);
+}
+
+/* If the condition represented by T is a comparison or the SSA name
+   result of a comparison, extract the comparison's operands.  Represent
+   T as NE_EXPR <T, 0> otherwise.  */
+
+void
+scalar_cond_masked_key::get_cond_ops_from_tree (tree t)
+{
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_comparison)
+    {
+      this->code = TREE_CODE (t);
+      this->op0 = TREE_OPERAND (t, 0);
+      this->op1 = TREE_OPERAND (t, 1);
+      return;
+    }
+
+  if (TREE_CODE (t) == SSA_NAME)
+    if (gassign *stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (t)))
+      {
+	tree_code code = gimple_assign_rhs_code (stmt);
+	if (TREE_CODE_CLASS (code) == tcc_comparison)
+	  {
+	    this->code = code;
+	    this->op0 = gimple_assign_rhs1 (stmt);
+	    this->op1 = gimple_assign_rhs2 (stmt);
+	    return;
+	  }
+      }
+
+  this->code = NE_EXPR;
+  this->op0 = t;
+  this->op1 = build_zero_cst (TREE_TYPE (t));
 }

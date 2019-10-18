@@ -1,3 +1,57 @@
+2019-10-18  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_type): Remove was_anonymous.
+	(TYPE_WAS_UNNAMED): Implement by checking TYPE_DECL &
+	TYPE_STUB_DECL.
+	* decl.c (name_unnamed_type): Don't set TYPE_WAS_UNNAMED.
+
+2019-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Remove redundant use of in_system_header_at.
+	(compute_array_index_type_loc): Likewise.
+	(grokdeclarator): Likewise.
+	* error.c (cp_printer): Likewise.
+	* lambda.c (add_default_capture): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	(cp_parser_selection_statement): Likewise.
+	(cp_parser_toplevel_declaration): Likewise.
+	(cp_parser_enumerator_list): Likewise.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_exception_specification_opt): Likewise.
+	(cp_parser_std_attribute_spec): Likewise.
+	* pt.c (do_decl_instantiation): Likewise.
+	(do_type_instantiation): Likewise.
+	* typeck.c (cp_build_unary_op): Likewise.
+
+	* decl.c (check_tag_decl): Pass to in_system_header_at the same
+	location used for the permerror.
+	(grokdeclarator): Likewise.
+
+	* decl.c (check_tag_decl): Use locations[ds_typedef] in error_at.
+
+2019-10-17  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (cp_gimplify_expr): Use get_initialized_tmp_var.
+	(gimplify_to_rvalue): Remove default NULL argument.
+
+2019-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (builtin_function_1): Merge into ...
+	(cxx_builtin_function): ... here.  Nadger the decl before maybe
+	copying it.  Set the context.
+	(cxx_builtin_function_ext_scope): Push to top level, then call
+	cxx_builtin_function.
+
+2019-10-16  Luis Machado  <luis.machado@linaro.org>
+
+	* cp-gimplify.c: Fix reference to non-existing tree-gimple.c file.
+
+2019-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (cxx_maybe_build_cleanup): When clearing location of cleanup,
+	if cleanup is a nop, clear location of its operand too.
+
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (build_clones): Break out of clone_function_decl.  Just

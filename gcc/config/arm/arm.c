@@ -12233,7 +12233,7 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
 
   unsigned int i, elsize = 0, idx = 0, n_elts;
   unsigned int innersize;
-  unsigned char bytes[16];
+  unsigned char bytes[16] = {};
   int immtype = -1, matches;
   unsigned int invmask = inverse ? 0xff : 0;
   bool vector = GET_CODE (op) == CONST_VECTOR;
@@ -14931,6 +14931,21 @@ gen_cpymem_ldrd_strd (rtx *operands)
   emit_move_insn (reg0, src);
   emit_move_insn (dst, reg0);
   return true;
+}
+
+/* Decompose operands for a 64-bit binary operation in OP1 and OP2
+   into its component 32-bit subregs.  OP2 may be an immediate
+   constant and we want to simplify it in that case.  */
+void
+arm_decompose_di_binop (rtx op1, rtx op2, rtx *lo_op1, rtx *hi_op1,
+			rtx *lo_op2, rtx *hi_op2)
+{
+  *lo_op1 = gen_lowpart (SImode, op1);
+  *hi_op1 = gen_highpart (SImode, op1);
+  *lo_op2 = simplify_gen_subreg (SImode, op2, DImode,
+				 subreg_lowpart_offset (SImode, DImode));
+  *hi_op2 = simplify_gen_subreg (SImode, op2, DImode,
+				 subreg_highpart_offset (SImode, DImode));
 }
 
 /* Select a dominance comparison mode if possible for a test of the general
@@ -23581,8 +23596,6 @@ maybe_get_arm_condition_code (rtx comparison)
 	{
 	case LTU: return ARM_CS;
 	case GEU: return ARM_CC;
-	case NE: return ARM_CS;
-	case EQ: return ARM_CC;
 	default: return ARM_NV;
 	}
 

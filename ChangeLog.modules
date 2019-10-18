@@ -1,5 +1,7 @@
 2019-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r277167.
+
 	gcc/cp/
 	* module.cc (trees_out::decl_value): Excise template_parm
 	handling.

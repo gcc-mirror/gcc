@@ -2492,7 +2492,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
     case TARGET_MEM_REF:
       {
 	tree genop0 = NULL_TREE, genop1 = NULL_TREE;
-	vn_reference_op_t nextop = &ref->operands[++*operand];
+	vn_reference_op_t nextop = &ref->operands[(*operand)++];
 	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts);
 	if (!baseop)

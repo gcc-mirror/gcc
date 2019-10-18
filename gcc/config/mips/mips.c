@@ -16960,6 +16960,26 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       std::swap (ops[1], ops[3]);
       break;
 
+    case CODE_FOR_msa_dpadd_s_w:
+    case CODE_FOR_msa_dpadd_s_h:
+    case CODE_FOR_msa_dpadd_s_d:
+    case CODE_FOR_msa_dpadd_u_w:
+    case CODE_FOR_msa_dpadd_u_h:
+    case CODE_FOR_msa_dpadd_u_d:
+    case CODE_FOR_msa_dpsub_s_w:
+    case CODE_FOR_msa_dpsub_s_h:
+    case CODE_FOR_msa_dpsub_s_d:
+    case CODE_FOR_msa_dpsub_u_w:
+    case CODE_FOR_msa_dpsub_u_h:
+    case CODE_FOR_msa_dpsub_u_d:
+      /* Force the operands which correspond to the same in-out register
+	  to have the same pseudo assigned to them.  If the input operand
+	  is not REG, create one for it.  */
+      if (!REG_P (ops[1].value))
+	ops[1].value = copy_to_mode_reg (ops[1].mode, ops[1].value);
+      create_output_operand (&ops[0], ops[1].value, ops[1].mode);
+      break;
+
     default:
       break;
   }

@@ -1,3 +1,60 @@
+2019-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92143
+	* libsupc++/new_opa.cc (operator new) [__APPLE__]: Increase alignment
+	to at least sizeof(void*).
+
+	* include/bits/range_cmp.h (ranges::less::operator()): Inline the
+	logic from std::less::operator() to remove the dependency on it.
+
+2019-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add new C++17 and C++20 headers.
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/range_cmp.h: New header for C++20 function objects.
+	* include/std/functional: Include new header.
+	* testsuite/20_util/function_objects/identity/1.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/equal_to.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/greater.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/greater_equal.cc: New
+	test.
+	* testsuite/20_util/function_objects/range.cmp/less.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/less_equal.cc: New test.
+	* testsuite/20_util/function_objects/range.cmp/not_equal_to.cc: New
+	test.
+
+	PR libstdc++/92124
+	* include/bits/forward_list.h
+	(_M_move_assign(forward_list&&, false_type)): Do not use
+	__make_move_if_noexcept, instead move unconditionally.
+	* include/bits/stl_deque.h (_M_move_assign2(deque&&, false_type)):
+	Likewise.
+	* include/bits/stl_list.h (_M_move_assign(list&&, false_type)):
+	Likewise.
+	* include/bits/stl_vector.h (_M_move_assign(vector&&, false_type)):
+	Likewise.
+	* testsuite/23_containers/vector/92124.cc: New test.
+
+2019-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_BUILTIN_IS_SAME_AS): Define to
+	one of __is_same_as or __is_same when available.
+	* include/std/concepts (__detail::__same_as): Use std::is_same_v.
+	* include/std/type_traits (is_same) [_GLIBCXX_BUILTIN_IS_SAME_AS]:
+	Use new macro instead of __is_same_as.
+	(is_same) [!_GLIBCXX_BUILTIN_IS_SAME_AS]: Restore partial
+	specialization.
+	(is_same_v) [_GLIBCXX_BUILTIN_IS_SAME_AS]: Use new macro.
+	(is_same_v) [!_GLIBCXX_BUILTIN_IS_SAME_AS]: Use std::is_same.
+
+2019-10-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++11/debug.cc (print_field): Replace constness_names <unknown>
+	entry with <unknown constness>. Replace state_names <unknown> entry with
+	<unknown state>.
+
 2019-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new header.

@@ -4425,11 +4425,11 @@ write_attr_value (FILE *outf, class attr_desc *attr, rtx value)
       goto do_operator;
 
     do_operator:
+      fprintf (outf, "(");
       write_attr_value (outf, attr, XEXP (value, 0));
-      fputc (' ', outf);
-      fputc (op,  outf);
-      fputc (' ', outf);
+      fprintf (outf, " %c ", op);
       write_attr_value (outf, attr, XEXP (value, 1));
+      fprintf (outf, ")");
       break;
 
     case IF_THEN_ELSE:

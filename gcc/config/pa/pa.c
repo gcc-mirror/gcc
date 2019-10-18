@@ -8228,22 +8228,22 @@ pa_output_indirect_call (rtx_insn *insn, rtx call_dest)
       if (TARGET_NO_SPACE_REGS)
 	{
 	  pa_output_arg_descriptor (insn);
-	  output_asm_insn ("bl .+8,%rp\b\t"
-			   "ldo 20(%r2),%r2\n\t"
-			   "extru,<> %r22,30,1,%r0\n\t"
-			   "bv,n %%r0(%r22)\n\t"
+	  output_asm_insn ("bl .+8,%%r2\n\t"
+			   "ldo 20(%%r2),%%r2\n\t"
+			   "extru,<> %%r22,30,1,%%r0\n\t"
+			   "bv,n %%r0(%%r22)\n\t"
 			   "ldw -2(%%r22),%%r21\n\t"
-			   "bv %%r0(%r21)\n\t"
+			   "bv %%r0(%%r21)\n\t"
 			   "ldw 2(%%r22),%%r19", xoperands);
 	  return "";
 	}
       if (TARGET_PA_20)
 	{
 	  pa_output_arg_descriptor (insn);
-	  output_asm_insn ("bl .+8,%%r2\b\t"
+	  output_asm_insn ("bl .+8,%%r2\n\t"
 			   "ldo 24(%%r2),%%r2\n\t"
 			   "stw %%r2,-24(%%sp)\n\t"
-			   "extru,<> %r22,30,1,%r0\n\t"
+			   "extru,<> %r22,30,1,%%r0\n\t"
 			   "bve,n (%%r22)\n\t"
 			   "ldw -2(%%r22),%%r21\n\t"
 			   "bve (%%r21)\n\t"

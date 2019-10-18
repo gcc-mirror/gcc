@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file include/concepts
- *  This is __a Standard C++ Library header.
+ *  This is a Standard C++ Library header.
  *  @ingroup concepts
  */
 
@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
     template<typename _Tp, typename _Up>
-      concept __same_as = __is_same_as(_Tp, _Up);
+      concept __same_as = std::is_same_v<_Tp, _Up>;
   } // namespace __detail
 
   /// [concept.same], concept same_as

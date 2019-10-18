@@ -428,8 +428,8 @@ value_range_base::dump (FILE *file) const
 
       fprintf (file, ", ");
 
-      if (INTEGRAL_TYPE_P (ttype)
-	  && vrp_val_is_max (max ())
+      if (supports_type_p (ttype)
+	  && vrp_val_is_max (max (), true)
 	  && TYPE_PRECISION (ttype) != 1)
 	fprintf (file, "+INF");
       else
@@ -725,6 +725,24 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
 	}
       set_varying (typ);
       return;
+    }
+
+  /* Convert POLY_INT_CST bounds into worst-case INTEGER_CST bounds.  */
+  if (POLY_INT_CST_P (min))
+    {
+      tree type_min = vrp_val_min (TREE_TYPE (min), true);
+      widest_int lb
+	= constant_lower_bound_with_limit (wi::to_poly_widest (min),
+					   wi::to_widest (type_min));
+      min = wide_int_to_tree (TREE_TYPE (min), lb);
+    }
+  if (POLY_INT_CST_P (max))
+    {
+      tree type_max = vrp_val_max (TREE_TYPE (max), true);
+      widest_int ub
+	= constant_upper_bound_with_limit (wi::to_poly_widest (max),
+					   wi::to_widest (type_max));
+      max = wide_int_to_tree (TREE_TYPE (max), ub);
     }
 
   /* Nothing to canonicalize for symbolic ranges.  */

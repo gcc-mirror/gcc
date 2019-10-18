@@ -741,15 +741,6 @@ avr_option_override (void)
   if (avr_strict_X)
     flag_caller_saves = 0;
 
-  /* Allow optimizer to introduce store data races. This used to be the
-     default - it was changed because bigger targets did not see any
-     performance decrease. For the AVR though, disallowing data races
-     introduces additional code in LIM and increases reg pressure.  */
-
-  maybe_set_param_value (PARAM_ALLOW_STORE_DATA_RACES, 1,
-                         global_options.x_param_values,
-                         global_options_set.x_param_values);
-
   /* Unwind tables currently require a frame pointer for correctness,
      see toplev.c:process_options().  */
 
@@ -3780,13 +3771,14 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
           gcc_unreachable();
 
         case 1:
-          return avr_asm_len ("%4lpm %0,%a2", xop, plen, 1);
+          avr_asm_len ("%4lpm %0,%a2", xop, plen, 1);
+          break;
 
         case 2:
           if (REGNO (dest) == REG_Z)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %B0,%a2" CR_TAB
-                                "mov %A0,%5", xop, plen, 3);
+            avr_asm_len ("%4lpm %5,%a2+" CR_TAB
+                         "%4lpm %B0,%a2" CR_TAB
+                         "mov %A0,%5", xop, plen, 3);
           else
             {
               avr_asm_len ("%4lpm %A0,%a2+" CR_TAB
@@ -3815,9 +3807,9 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
                        "%4lpm %B0,%a2+", xop, plen, 2);
 
           if (REGNO (dest) == REG_Z - 2)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %C0,%a2" CR_TAB
-                                "mov %D0,%5", xop, plen, 3);
+            avr_asm_len ("%4lpm %5,%a2+" CR_TAB
+                         "%4lpm %C0,%a2" CR_TAB
+                         "mov %D0,%5", xop, plen, 3);
           else
             {
               avr_asm_len ("%4lpm %C0,%a2+" CR_TAB

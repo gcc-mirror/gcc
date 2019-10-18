@@ -53,6 +53,7 @@ struct mode_data
 
   const char *name;		/* printable mode name -- SI, not SImode */
   enum mode_class cl;		/* this mode class */
+  unsigned int order;		/* top-level sorting order */
   unsigned int precision;	/* size in bits, equiv to TYPE_PRECISION */
   unsigned int bytesize;	/* storage size in addressable units */
   unsigned int ncomponents;	/* number of subunits */
@@ -85,7 +86,7 @@ static struct mode_data *void_mode;
 
 static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
-  -1U, -1U, -1U, -1U,
+  0, -1U, -1U, -1U, -1U,
   0, 0, 0, 0, 0, 0,
   "<unknown>", 0, 0, 0, 0, false, false, 0
 };
@@ -484,14 +485,15 @@ make_complex_modes (enum mode_class cl,
     }
 }
 
-/* For all modes in class CL, construct vector modes of width
-   WIDTH, having as many components as necessary.  */
-#define VECTOR_MODES_WITH_PREFIX(PREFIX, C, W) \
-  make_vector_modes (MODE_##C, #PREFIX, W, __FILE__, __LINE__)
-#define VECTOR_MODES(C, W) VECTOR_MODES_WITH_PREFIX (V, C, W)
+/* For all modes in class CL, construct vector modes of width WIDTH,
+   having as many components as necessary.  ORDER is the sorting order
+   of the mode, with smaller numbers indicating a higher priority.  */
+#define VECTOR_MODES_WITH_PREFIX(PREFIX, C, W, ORDER) \
+  make_vector_modes (MODE_##C, #PREFIX, W, ORDER, __FILE__, __LINE__)
+#define VECTOR_MODES(C, W) VECTOR_MODES_WITH_PREFIX (V, C, W, 0)
 static void ATTRIBUTE_UNUSED
 make_vector_modes (enum mode_class cl, const char *prefix, unsigned int width,
-		   const char *file, unsigned int line)
+		   unsigned int order, const char *file, unsigned int line)
 {
   struct mode_data *m;
   struct mode_data *v;
@@ -530,6 +532,7 @@ make_vector_modes (enum mode_class cl, const char *prefix, unsigned int width,
 	}
 
       v = new_mode (vclass, xstrdup (buf), file, line);
+      v->order = order;
       v->component = m;
       v->ncomponents = ncomponents;
     }
@@ -831,6 +834,11 @@ cmp_modes (const void *a, const void *b)
 {
   const struct mode_data *const m = *(const struct mode_data *const*)a;
   const struct mode_data *const n = *(const struct mode_data *const*)b;
+
+  if (m->order > n->order)
+    return 1;
+  else if (m->order < n->order)
+    return -1;
 
   if (m->bytesize > n->bytesize)
     return 1;

@@ -5409,7 +5409,6 @@ trees_out::lang_type_bools (tree t)
   // lang->debug_requested
   WB (lang->fields_readonly);
   WB (lang->ptrmemfunc_flag);
-  WB (lang->was_anonymous);
   WB (lang->lazy_default_ctor);
   WB (lang->lazy_copy_ctor);
   WB (lang->lazy_copy_assign);
@@ -5475,7 +5474,6 @@ trees_in::lang_type_bools (tree t)
   gcc_assert (!lang->debug_requested);
   RB (lang->fields_readonly);
   RB (lang->ptrmemfunc_flag);
-  RB (lang->was_anonymous);
   RB (lang->lazy_default_ctor);
   RB (lang->lazy_copy_ctor);
   RB (lang->lazy_copy_assign);
