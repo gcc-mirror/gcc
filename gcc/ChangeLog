@@ -1,5 +1,10 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.c (arm_insn_cost): New function.
+	(TARGET_INSN_COST): Override default definition.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.c (arm_rtx_costs_internal, case MINUS): Handle
 	borrow operations.
 
