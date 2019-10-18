@@ -1,5 +1,19 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (cbranchdi4): Accept reg_or_int_operand for
+	operand 2.
+	(cstoredi4): Similarly, but for operand 3.
+	* config/arm/arm.c (arm_canoncialize_comparison): Allow
+	canonicalization of unsigned compares with a constant on Arm.
+	Prefer using const+1 and adjusting the comparison over swapping the
+	operands whenever the original constant was not valid.
+	(arm_gen_dicompare_reg): If Y is not a valid operand, force it to a
+	register here.
+	(arm_validize_comparison): Do not force invalid DImode operands to
+	registers here.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.c (arm_select_cc_mode): For DImode equality tests
 	return CC_Zmode if comparing against a constant where one word is
 	zero.
