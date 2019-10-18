@@ -1,5 +1,14 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-protos.h (arm_decompose_di_binop): New prototype.
+	* config/arm/arm.c (arm_decompose_di_binop): New function.
+	* config/arm/arm.md (adddi3): Also accept any const_int for op2.
+	If not generating Thumb-1 code, decompose the operation into 32-bit
+	pieces.
+	* add0si_carryin_<optab>: New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.md (adddi3): Only accept register operands.
 	(arm_adddi3): Convert to simple insn with no split.  Do not accept
 	constants.
