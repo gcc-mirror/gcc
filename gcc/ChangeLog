@@ -1,5 +1,10 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (addsi3_carryin_shift_<optab>): Reorder operands
+	to match canonical form.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (zero_extend<mode>di2): Convert to define_expand.
 	(extend<mode>di2): Likewise.
 
