@@ -1,5 +1,22 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-modes.def (CC_RSB): New CC mode.
+	* config/arm/predicates.md (arm_borrow_operation): Handle CC_RSBmode.
+	* config/arm/arm.c (arm_select_cc_mode): Detect when we should
+	return CC_RSBmode.
+	(maybe_get_arm_condition_code): Handle CC_RSBmode.
+	* config/arm/arm.md (subsi3_carryin): Make this pattern available to
+	expand.
+	(subdi3): Rewrite to early-expand the sub-operations.
+	(rsb_im_compare): New pattern.
+	(negdi2): Delete.
+	(negdi2_insn): Delete.
+	(arm_negsi2): Correct type attribute to alu_imm.
+	(negsi2_0compare): New insn pattern.
+	(negsi2_carryin): New insn pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (addsi3_carryin_alt2): Use arm_not_operand for
 	operand 2.
 

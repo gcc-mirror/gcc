@@ -15214,6 +15214,17 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || (TARGET_32BIT && GET_CODE (x) == ZERO_EXTRACT)))
     return CC_NOOVmode;
 
+  /* An unsigned comparison of ~reg with a const is really a special
+     canoncialization of compare (~const, reg), which is a reverse
+     subtract operation.  We may not get here if CONST is 0, but that
+     doesn't matter because ~0 isn't a valid immediate for RSB.  */
+  if (GET_MODE (x) == SImode
+      && GET_CODE (x) == NOT
+      && CONST_INT_P (y)
+      && (op == EQ || op == NE
+	  || op == LTU || op == LEU || op == GEU || op == GTU))
+    return CC_RSBmode;
+
   if (GET_MODE (x) == QImode && (op == EQ || op == NE))
     return CC_Zmode;
 
@@ -23626,6 +23637,18 @@ maybe_get_arm_condition_code (rtx comparison)
 	{
 	case NE: return ARM_VS;
 	case EQ: return ARM_VC;
+	default: return ARM_NV;
+	}
+
+    case E_CC_RSBmode:
+      switch (comp_code)
+	{
+	case NE: return ARM_NE;
+	case EQ: return ARM_EQ;
+	case GEU: return ARM_CS;
+	case GTU: return ARM_HI;
+	case LEU: return ARM_LS;
+	case LTU: return ARM_CC;
 	default: return ARM_NV;
 	}
 

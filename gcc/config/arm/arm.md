@@ -989,7 +989,7 @@
    (set_attr "type" "alus_sreg")]
 )
 
-(define_insn "*subsi3_carryin"
+(define_insn "subsi3_carryin"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(minus:SI (minus:SI (match_operand:SI 1 "reg_or_int_operand" "r,I,Pz")
 			    (match_operand:SI 2 "s_register_operand" "r,r,r"))
@@ -1094,12 +1094,72 @@
 (define_expand "subdi3"
  [(parallel
    [(set (match_operand:DI            0 "s_register_operand")
-	  (minus:DI (match_operand:DI 1 "s_register_operand")
+	  (minus:DI (match_operand:DI 1 "reg_or_int_operand")
 		    (match_operand:DI 2 "s_register_operand")))
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
-")
+  if (TARGET_THUMB1)
+    {
+      if (!REG_P (operands[1]))
+	operands[1] = force_reg (DImode, operands[1]);
+    }
+  else
+    {
+      rtx lo_result, hi_result, lo_dest, hi_dest;
+      rtx lo_op1, hi_op1, lo_op2, hi_op2;
+      rtx condition;
+
+      /* Since operands[1] may be an integer, pass it second, so that
+	 any necessary simplifications will be done on the decomposed
+	 constant.  */
+      arm_decompose_di_binop (operands[2], operands[1], &lo_op2, &hi_op2,
+			      &lo_op1, &hi_op1);
+      lo_result = lo_dest = gen_lowpart (SImode, operands[0]);
+      hi_result = hi_dest = gen_highpart (SImode, operands[0]);
+
+      if (!arm_rhs_operand (lo_op1, SImode))
+	lo_op1 = force_reg (SImode, lo_op1);
+
+      if ((TARGET_THUMB2 && ! s_register_operand (hi_op1, SImode))
+	  || !arm_rhs_operand (hi_op1, SImode))
+	hi_op1 = force_reg (SImode, hi_op1);
+
+      rtx cc_reg;
+      if (lo_op1 == const0_rtx)
+	{
+	  cc_reg = gen_rtx_REG (CC_RSBmode, CC_REGNUM);
+	  emit_insn (gen_negsi2_0compare (lo_dest, lo_op2));
+	}
+      else if (CONST_INT_P (lo_op1))
+	{
+	  cc_reg = gen_rtx_REG (CC_RSBmode, CC_REGNUM);
+	  emit_insn (gen_rsb_imm_compare (lo_dest, lo_op1, lo_op2, 
+					  GEN_INT (~UINTVAL (lo_op1))));
+	}
+      else
+	{
+	  cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
+	  emit_insn (gen_subsi3_compare (lo_dest, lo_op1, lo_op2));
+	}
+
+      condition = gen_rtx_LTU (SImode, cc_reg, const0_rtx);
+
+      if (hi_op1 == const0_rtx)
+        emit_insn (gen_negsi2_carryin (hi_dest, hi_op2, condition));
+      else
+	emit_insn (gen_subsi3_carryin (hi_dest, hi_op1, hi_op2, condition));
+
+      if (lo_result != lo_dest)
+	emit_move_insn (lo_result, lo_dest);
+
+      if (hi_result != hi_dest)
+	emit_move_insn (hi_result, hi_dest);
+
+      DONE;
+    }
+  "
+)
 
 (define_insn "*arm_subdi3"
   [(set (match_operand:DI 0 "arm_general_register_operand" "=&r,&r,&r")
@@ -1213,7 +1273,23 @@
    subs%?\\t%0, %1, %2
    rsbs%?\\t%0, %2, %1"
   [(set_attr "conds" "set")
-   (set_attr "type" "alus_imm,alus_sreg,alus_sreg")]
+   (set_attr "type" "alus_imm,alus_sreg,alus_imm")]
+)
+
+;; To keep the comparison in canonical form we express it as (~reg cmp ~0)
+;; rather than (0 cmp reg).  This gives the same results for unsigned
+;; and equality compares which is what we mostly need here.
+(define_insn "rsb_imm_compare"
+  [(set (reg:CC_RSB CC_REGNUM)
+	(compare:CC_RSB (not:SI (match_operand:SI 2 "s_register_operand" "r"))
+			(match_operand 3 "const_int_operand" "")))
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI (match_operand 1 "arm_immediate_operand" "I")
+		  (match_dup 2)))]
+  "TARGET_32BIT && ~UINTVAL (operands[1]) == UINTVAL (operands[3])"
+  "rsbs\\t%0, %2, %1"
+  [(set_attr "conds" "set")
+   (set_attr "type" "alus_imm")]
 )
 
 (define_expand "subsf3"
@@ -3726,29 +3802,6 @@
    (set_attr "type" "multiple")]
 )
 
-(define_expand "negdi2"
- [(parallel
-   [(set (match_operand:DI 0 "s_register_operand")
-	 (neg:DI (match_operand:DI 1 "s_register_operand")))
-    (clobber (reg:CC CC_REGNUM))])]
-  "TARGET_EITHER"
-)
-
-;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
-(define_insn "*negdi2_insn"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(neg:DI (match_operand:DI 1 "s_register_operand"  "r,r")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
-  "@
-   rsbs\\t%Q0, %Q1, #0; rsc\\t%R0, %R1, #0
-   negs\\t%Q0, %Q1; sbc\\t%R0, %R1, %R1, lsl #1"
-  [(set_attr "conds" "clob")
-   (set_attr "arch" "a,t2")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
-
 (define_expand "negsi2"
   [(set (match_operand:SI         0 "s_register_operand")
 	(neg:SI (match_operand:SI 1 "s_register_operand")))]
@@ -3765,7 +3818,39 @@
    (set_attr "predicable_short_it" "yes,no")
    (set_attr "arch" "t2,*")
    (set_attr "length" "4")
-   (set_attr "type" "alu_sreg")]
+   (set_attr "type" "alu_imm")]
+)
+
+;; To keep the comparison in canonical form we express it as (~reg cmp ~0)
+;; rather than (0 cmp reg).  This gives the same results for unsigned
+;; and equality compares which is what we mostly need here.
+(define_insn "negsi2_0compare"
+  [(set (reg:CC_RSB CC_REGNUM)
+	(compare:CC_RSB (not:SI (match_operand:SI 1 "s_register_operand" "l,r"))
+			(const_int -1)))
+   (set (match_operand:SI 0 "s_register_operand" "=l,r")
+	(neg:SI (match_dup 1)))]
+  "TARGET_32BIT"
+  "@
+   negs\\t%0, %1
+   rsbs\\t%0, %1, #0"
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,*")
+   (set_attr "length" "2,*")
+   (set_attr "type" "alus_imm")]
+)
+
+(define_insn "negsi2_carryin"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(minus:SI (neg:SI (match_operand:SI 1 "s_register_operand" "r,r"))
+		  (match_operand:SI 2 "arm_borrow_operation" "")))]
+  "TARGET_32BIT"
+  "@
+   rsc\\t%0, %1, #0
+   sbc\\t%0, %1, %1, lsl #1"
+  [(set_attr "conds" "use")
+   (set_attr "arch" "a,t2")
+   (set_attr "type" "adc_imm,adc_reg")]
 )
 
 (define_expand "negsf2"
