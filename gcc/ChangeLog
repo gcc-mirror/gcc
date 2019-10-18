@@ -1,3 +1,9 @@
+2019-10-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92157
+	* tree-ssa-strlen.c (handle_builtin_string_cmp): Be prepared for
+	compute_string_length to return a negative result.
+
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.md (negv<SIDI:mode>3): New expansion rule.
