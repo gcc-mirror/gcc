@@ -913,8 +913,8 @@
 		  (match_operator:SI 2 "shift_operator"
 		    [(match_operand:SI 3 "s_register_operand" "r")
 		     (match_operand:SI 4 "reg_or_int_operand" "rM")])
-		  (match_operand:SI 1 "s_register_operand" "r"))
-		 (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))))]
+		  (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0)))
+		 (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_32BIT"
   "adc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
