@@ -15348,6 +15348,22 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
       && (rtx_equal_p (XEXP (x, 0), y) || rtx_equal_p (XEXP (x, 1), y)))
     return CC_Cmode;
 
+  if (GET_MODE (x) == DImode
+      && (op == GE || op == LT)
+      && GET_CODE (x) == SIGN_EXTEND
+      && ((GET_CODE (y) == PLUS
+	   && arm_borrow_operation (XEXP (y, 0), DImode))
+	  || arm_borrow_operation (y, DImode)))
+    return CC_NVmode;
+
+  if (GET_MODE (x) == DImode
+      && (op == GEU || op == LTU)
+      && GET_CODE (x) == ZERO_EXTEND
+      && ((GET_CODE (y) == PLUS
+	   && arm_borrow_operation (XEXP (y, 0), DImode))
+	  || arm_borrow_operation (y, DImode)))
+    return CC_Bmode;
+
   if (GET_MODE (x) == DImode || GET_MODE (y) == DImode)
     {
       switch (op)
@@ -15410,16 +15426,198 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 static rtx
 arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 {
-  /* We don't currently handle DImode in thumb1, but rely on libgcc.  */
+  machine_mode mode;
+  rtx cc_reg;
+
+    /* We don't currently handle DImode in thumb1, but rely on libgcc.  */
   gcc_assert (TARGET_32BIT);
+
+  rtx x_lo = simplify_gen_subreg (SImode, x, DImode,
+				  subreg_lowpart_offset (SImode, DImode));
+  rtx x_hi = simplify_gen_subreg (SImode, x, DImode,
+				  subreg_highpart_offset (SImode, DImode));
+  rtx y_lo = simplify_gen_subreg (SImode, y, DImode,
+				  subreg_lowpart_offset (SImode, DImode));
+  rtx y_hi = simplify_gen_subreg (SImode, y, DImode,
+				  subreg_highpart_offset (SImode, DImode));
+  switch (code)
+    {
+    case EQ:
+    case NE:
+      {
+	/* We should never have X as a const_int in this case.  */
+	gcc_assert (!CONST_INT_P (x));
+
+	if (y_lo == const0_rtx || y_hi == const0_rtx)
+	  {
+	    if (y_lo != const0_rtx)
+	      {
+		rtx scratch2 = scratch ? scratch : gen_reg_rtx (SImode);
+
+		gcc_assert (y_hi == const0_rtx);
+		y_lo = gen_int_mode (-INTVAL (y_lo), SImode);
+		if (!arm_add_operand (y_lo, SImode))
+		  y_lo = force_reg (SImode, y_lo);
+		emit_insn (gen_addsi3 (scratch2, x_lo, y_lo));
+		x_lo = scratch2;
+	      }
+	    else if (y_hi != const0_rtx)
+	      {
+		rtx scratch2 = scratch ? scratch : gen_reg_rtx (SImode);
+
+		y_hi = gen_int_mode (-INTVAL (y_hi), SImode);
+		if (!arm_add_operand (y_hi, SImode))
+		  y_hi = force_reg (SImode, y_hi);
+		emit_insn (gen_addsi3 (scratch2, x_hi, y_hi));
+		x_hi = scratch2;
+	      }
+
+	    if (!scratch)
+	      {
+		gcc_assert (!reload_completed);
+		scratch = gen_rtx_SCRATCH (SImode);
+	      }
+
+	    rtx clobber = gen_rtx_CLOBBER (VOIDmode, scratch);
+	    cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+
+	    rtx set
+	      = gen_rtx_SET (cc_reg,
+			     gen_rtx_COMPARE (CC_NOOVmode,
+					      gen_rtx_IOR (SImode, x_lo, x_hi),
+					      const0_rtx));
+	    emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set,
+							      clobber)));
+	    return cc_reg;
+	  }
+
+	if (!arm_add_operand (y_lo, SImode))
+	  y_lo = force_reg (SImode, y_lo);
+
+	if (!arm_add_operand (y_hi, SImode))
+	  y_hi = force_reg (SImode, y_hi);
+
+	rtx cmp1 = gen_rtx_NE (SImode, x_lo, y_lo);
+	rtx cmp2 = gen_rtx_NE (SImode, x_hi, y_hi);
+	rtx conjunction = gen_rtx_IOR (SImode, cmp1, cmp2);
+	mode = SELECT_CC_MODE (code, conjunction, const0_rtx);
+	cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+
+	emit_insn (gen_rtx_SET (cc_reg,
+				gen_rtx_COMPARE (VOIDmode, conjunction,
+						 const0_rtx)));
+	return cc_reg;
+      }
+
+    case LT:
+    case GE:
+      {
+	if (y_lo == const0_rtx)
+	  {
+	    /* If the low word of y is 0, then this is simply a normal
+	       compare of the upper words.  */
+	    if (!arm_add_operand (y_hi, SImode))
+	      y_hi = force_reg (SImode, y_hi);
+
+	    return arm_gen_compare_reg (code, x_hi, y_hi, NULL_RTX);
+	  }
+
+	if (!arm_add_operand (y_lo, SImode))
+	  y_lo = force_reg (SImode, y_lo);
+
+	/* Just for now.  */
+	if (!register_operand (x_lo, SImode))
+	  x_lo = force_reg (SImode, x_lo);
+
+	rtx cmp1
+	  = gen_rtx_LTU (DImode,
+			 arm_gen_compare_reg (LTU, x_lo, y_lo, NULL_RTX),
+			 const0_rtx);
+
+	if (!scratch)
+	  scratch = gen_rtx_SCRATCH (SImode);
+	if (!arm_not_operand (y_hi, SImode))
+	  y_hi = force_reg (SImode, y_hi);
+
+	/* Just for now.  */
+	if (!register_operand (x_hi, SImode))
+	  x_hi = force_reg (SImode, x_hi);
+
+	rtx_insn *insn;
+	if (y_hi == const0_rtx)
+	  insn = emit_insn (gen_cmpsi3_0_carryin_CC_NVout (scratch, x_hi,
+							   cmp1));
+	else if (CONST_INT_P (y_hi))
+	  insn = emit_insn (gen_cmpsi3_imm_carryin_CC_NVout (scratch, x_hi,
+							     y_hi, cmp1));
+	else
+	  insn = emit_insn (gen_cmpsi3_carryin_CC_NVout (scratch, x_hi, y_hi,
+							 cmp1));
+	return SET_DEST (single_set (insn));
+      }
+
+    case LTU:
+    case GEU:
+      {
+	if (y_lo == const0_rtx)
+	  {
+	    /* If the low word of y is 0, then this is simply a normal
+	       compare of the upper words.  */
+	    if (!arm_add_operand (y_hi, SImode))
+	      y_hi = force_reg (SImode, y_hi);
+
+	    return arm_gen_compare_reg (code, x_hi, y_hi, NULL_RTX);
+	  }
+
+	if (!arm_add_operand (y_lo, SImode))
+	  y_lo = force_reg (SImode, y_lo);
+
+	/* Just for now.  */
+	if (!register_operand (x_lo, SImode))
+	  x_lo = force_reg (SImode, x_lo);
+
+	rtx cmp1
+	  = gen_rtx_LTU (DImode,
+			 arm_gen_compare_reg (LTU, x_lo, y_lo, NULL_RTX),
+			 const0_rtx);
+
+	if (!scratch)
+	  scratch = gen_rtx_SCRATCH (SImode);
+	if (!arm_not_operand (y_hi, SImode))
+	  y_hi = force_reg (SImode, y_hi);
+
+	/* Just for now.  */
+	if (!register_operand (x_hi, SImode))
+	  x_hi = force_reg (SImode, x_hi);
+
+	rtx_insn *insn;
+	if (y_hi == const0_rtx)
+	  insn = emit_insn (gen_cmpsi3_0_carryin_CC_Bout (scratch, x_hi,
+							  cmp1));
+	else if (CONST_INT_P (y_hi))
+	  {
+	    /* Constant is viewed as unsigned when zero-extended.  */
+	    y_hi = GEN_INT (UINTVAL (y_hi) & 0xffffffffULL);
+	    insn = emit_insn (gen_cmpsi3_imm_carryin_CC_Bout (scratch, x_hi,
+							      y_hi, cmp1));
+	  }
+	else
+	  insn = emit_insn (gen_cmpsi3_carryin_CC_Bout (scratch, x_hi, y_hi,
+							cmp1));
+	return SET_DEST (single_set (insn));
+      }
+
+    default:
+      break;
+    }
 
   /* We might have X as a constant, Y as a register because of the predicates
      used for cmpdi.  If so, force X to a register here.  */
   if (!REG_P (x))
     x = force_reg (DImode, x);
 
-  machine_mode mode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+  mode = SELECT_CC_MODE (code, x, y);
+  cc_reg = gen_rtx_REG (mode, CC_REGNUM);
 
   if (mode != CC_CZmode)
     {
@@ -23798,6 +23996,22 @@ maybe_get_arm_condition_code (rtx comparison)
 	{
 	case GE: return ARM_GE;
 	case LT: return ARM_LT;
+	case GEU: return ARM_CS;
+	case LTU: return ARM_CC;
+	default: return ARM_NV;
+	}
+
+    case E_CC_NVmode:
+      switch (comp_code)
+	{
+	case GE: return ARM_GE;
+	case LT: return ARM_LT;
+	default: return ARM_NV;
+	}
+
+    case E_CC_Bmode:
+      switch (comp_code)
+	{
 	case GEU: return ARM_CS;
 	case LTU: return ARM_CC;
 	default: return ARM_NV;

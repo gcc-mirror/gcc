@@ -1,5 +1,18 @@
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-modes.def (CC_NV, CC_B): New CC modes.
+	* config/arm/arm.c (arm_select_cc_mode): Recognize constructs that
+	need these modes.
+	(arm_gen_dicompare_reg): New code to early expand the sub-operations
+	of EQ, NE, LT, GE, LTU and GEU.
+	* config/arm/iterators.md (CC_EXTEND): New code attribute.
+	* config/arm/predicates.md (arm_adcimm_operand): New predicate..
+	* config/arm/arm.md (cmpsi3_carryin_<CC_EXTEND>out): New pattern.
+	(cmpsi3_imm_carryin_<CC_EXTEND>out): Likewise.
+	(cmpsi3_0_carryin_<CC_EXTEND>out): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (cbranchdi4): Accept reg_or_int_operand for
 	operand 2.
 	(cstoredi4): Similarly, but for operand 3.

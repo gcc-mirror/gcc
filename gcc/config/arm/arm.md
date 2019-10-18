@@ -1009,6 +1009,51 @@
    (set_attr "type" "adc_reg,adc_imm,alu_shift_imm")]
 )
 
+(define_insn "cmpsi3_carryin_<CC_EXTEND>out"
+  [(set (reg:<CC_EXTEND> CC_REGNUM)
+	(compare:<CC_EXTEND>
+	 (SE:DI (match_operand:SI 1 "s_register_operand" "0,r"))
+	 (plus:DI (match_operand:DI 3 "arm_borrow_operation" "")
+		  (SE:DI (match_operand:SI 2 "s_register_operand" "l,r")))))
+   (clobber (match_scratch:SI 0 "=l,r"))]
+  "TARGET_32BIT"
+  "sbcs\\t%0, %1, %2"
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,*")
+   (set_attr "length" "2,4")
+   (set_attr "type" "adc_reg")]
+)
+
+;; Similar to the above, but handling a constant which has a different
+;; canonicalization.
+(define_insn "cmpsi3_imm_carryin_<CC_EXTEND>out"
+  [(set (reg:<CC_EXTEND> CC_REGNUM)
+	(compare:<CC_EXTEND>
+	 (SE:DI (match_operand:SI 1 "s_register_operand" "r,r"))
+	 (plus:DI (match_operand:DI 3 "arm_borrow_operation" "")
+		  (match_operand:DI 2 "arm_adcimm_operand" "I,K"))))
+   (clobber (match_scratch:SI 0 "=l,r"))]
+  "TARGET_32BIT"
+  "@
+   sbcs\\t%0, %1, %2
+   adcs\\t%0, %1, #%B2"
+  [(set_attr "conds" "set")
+   (set_attr "type" "adc_imm")]
+)
+
+;; Further canonicalization when the constant is zero.
+(define_insn "cmpsi3_0_carryin_<CC_EXTEND>out"
+  [(set (reg:<CC_EXTEND> CC_REGNUM)
+	(compare:<CC_EXTEND>
+	 (SE:DI (match_operand:SI 1 "s_register_operand" "r,r"))
+	 (match_operand:DI 2 "arm_borrow_operation" "")))
+   (clobber (match_scratch:SI 0 "=l,r"))]
+  "TARGET_32BIT"
+  "sbcs\\t%0, %1, #0"
+  [(set_attr "conds" "set")
+   (set_attr "type" "adc_imm")]
+)
+
 (define_insn "*subsi3_carryin_const"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (plus:SI
