@@ -26551,6 +26551,11 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       arguments = error_mark_node;
     else
       {
+	if (vec->is_empty())
+	  /* e.g. [[attr()]].  */
+	  error_at (token->location, "parentheses must be omitted if "
+		    "%qE attribute argument list is empty",
+		    attr_id);
 	arguments = build_tree_list_vec (vec);
 	release_tree_vector (vec);
       }
@@ -26565,9 +26570,9 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 }
 
 /* Check that the attribute ATTRIBUTE appears at most once in the
-   attribute-list ATTRIBUTES.  This is enforced for noreturn (7.6.3)
-   and deprecated (7.6.5).  Note that carries_dependency (7.6.4)
-   isn't implemented yet in GCC.  */
+   attribute-list ATTRIBUTES.  This is enforced for noreturn (7.6.3),
+   nodiscard, and deprecated (7.6.5).  Note that
+   carries_dependency (7.6.4) isn't implemented yet in GCC.  */
 
 static void
 cp_parser_check_std_attribute (tree attributes, tree attribute)
@@ -26582,6 +26587,10 @@ cp_parser_check_std_attribute (tree attributes, tree attribute)
       else if (is_attribute_p ("deprecated", name)
 	       && lookup_attribute ("deprecated", attributes))
 	error ("attribute %<deprecated%> can appear at most once "
+	       "in an attribute-list");
+      else if (is_attribute_p ("nodiscard", name)
+	       && lookup_attribute ("nodiscard", attributes))
+	error ("attribute %<nodiscard%> can appear at most once "
 	       "in an attribute-list");
     }
 }
