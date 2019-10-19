@@ -1,4 +1,9 @@
-2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.md: Delete out--of-date comment about
+	special-casing integer loads.
+
+2019-10-19  JeanHeyd Meneide  <phdofthehouse@gmail.com>
 
 	* escaped_string.h (escaped_string): New header.
 	* tree.c (escaped_string): Remove escaped_string class.
