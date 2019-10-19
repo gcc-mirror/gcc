@@ -13,8 +13,8 @@ typedef struct { char big[1024]; fnt fn; } C;
 struct [[nodiscard("exact_D_message")]] D { int i; D(); ~D(); };
 
 NODIS E check1 (void);
-NODIS void check2 (void); /* { dg-warning "(?n)10:.nodiscard.*exact_message" } */
-NODIS int foo;         /* { dg-warning "(?n)9:.nodiscard.*exact_message" } */
+NODIS void check2 (void); /* { dg-warning "10:.nodiscard\[^\n\r]*exact_message" } */
+NODIS int foo;         /* { dg-warning "9:.nodiscard\[^\n\r]*exact_message" } */
 int bar (void);
 NODISAI E check3 (void) { return (E)bar (); }
 NODIS A check4 (void);
@@ -52,9 +52,9 @@ test (void)
     return;
   i += check1 ();
   i += ({ check1 (); });
-  check1 ();           /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check1 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   (void) check1 ();
-  check1 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check1 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   check2 ();
   (void) check2 ();
   check2 (), bar ();
@@ -62,9 +62,9 @@ test (void)
     return;
   i += check3 ();
   i += ({ check3 (); });
-  check3 ();           /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check3 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   (void) check3 ();
-  check3 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check3 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   a = check4 ();
   if (a.i)
     return;
@@ -72,9 +72,9 @@ test (void)
     return;
   if (({ check4 (); }).i)
     return;
-  check4 ();           /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check4 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   (void) check4 ();
-  check4 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check4 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   b = check5 ();
   if (b.i + b.j)
     return;
@@ -82,9 +82,9 @@ test (void)
     return;
   if (({ check5 (); }).j)
     return;
-  check5 ();           /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check5 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   (void) check5 ();
-  check5 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check5 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   c = check6 ();
   if (c.big[12] + c.big[29])
     return;
@@ -92,9 +92,9 @@ test (void)
     return;
   if (({ check6 (); }).big[0])
     return;
-  check6 ();           /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check6 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   (void) check6 ();
-  check6 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_message" } */
+  check6 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_message" } */
   a = check7 ();
   if (a.i)
     return;
@@ -102,9 +102,9 @@ test (void)
     return;
   if (({ check7 (); }).i)
     return;
-  check7 ();           /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check7 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   (void) check7 ();
-  check7 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check7 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   b = check8 ();
   if (b.i + b.j)
     return;
@@ -112,9 +112,9 @@ test (void)
     return;
   if (({ check8 (); }).j)
     return;
-  check8 ();           /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check8 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   (void) check8 ();
-  check8 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check8 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   c = check9 ();
   if (c.big[12] + c.big[29])
     return;
@@ -122,74 +122,74 @@ test (void)
     return;
   if (({ check9 (); }).big[0])
     return;
-  check9 ();           /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check9 ();           /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   (void) check9 ();
-  check9 (), bar ();   /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check9 (), bar ();   /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   if (check_int_result (GU (j)))
     return;
   i += check_int_result (GU (j));
   i += ({ check_int_result (GU (j)); });
-  check_int_result (GU (j)); /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check_int_result (GU (j)); /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   (void) check_int_result (GU (j));
-  check_int_result (GU (j)), bar (); /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  check_int_result (GU (j)), bar (); /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   if (fnptr ())
     return;
   i += fnptr ();
   i += ({ fnptr (); });
-  fnptr ();            /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  fnptr ();            /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) fnptr ();
-  fnptr (), bar ();    /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  fnptr (), bar ();    /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   fnptr = check1;
   if (fnptr ())
     return;
   i += fnptr ();
   i += ({ fnptr (); });
-  fnptr ();            /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  fnptr ();            /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) fnptr ();
-  fnptr (), bar ();    /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  fnptr (), bar ();    /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   fnptr = check3;
   if (fnptr ())
     return;
   i += fnptr ();
   i += ({ fnptr (); });
-  fnptr ();            /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  fnptr ();            /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) fnptr ();
-  fnptr (), bar ();    /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  fnptr (), bar ();    /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   if (bar9 ().fn ())
     return;
   i += bar9 ().fn ();
   i += ({ bar9 ().fn (); });
-  bar9 ().fn ();       /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  bar9 ().fn ();       /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) bar9 ().fn ();
-  bar9 ().fn (), bar (); /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  bar9 ().fn (), bar (); /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   if ((k ? check1 : check10) ())
     return;
   i += (k ? check1 : check10) ();
   i += ({ (k ? check1 : check10) (); });
-  (k ? check1 : check10) (); /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  (k ? check1 : check10) (); /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) (k ? check1 : check10) ();
-  (k ? check1 : check10) (), bar (); /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  (k ? check1 : check10) (), bar (); /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   if ((k ? check3 : check11) ())
     return;
   i += (k ? check3 : check11) ();
   i += ({ (k ? check3 : check11) (); });
-  (k ? check3 : check11) (); /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  (k ? check3 : check11) (); /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   (void) (k ? check3 : check11) ();
-  (k ? check3 : check11) (), bar (); /* { dg-warning "(?n)nodiscard.*exact_inline_message" } */
+  (k ? check3 : check11) (), bar (); /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
   if (pcheck1 ())
     return;
   i += pcheck1 ();
   i += ({ pcheck1 (); });
-  pcheck1 ();          /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  pcheck1 ();          /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) pcheck1 ();
-  pcheck1 (), bar ();  /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  pcheck1 (), bar ();  /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   if (pcheck3 ())
     return;
   i += pcheck3 ();
   i += ({ pcheck3 (); });
-  pcheck3 ();          /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  pcheck3 ();          /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) pcheck3 ();
-  pcheck3 (), bar ();  /* { dg-warning "(?n)nodiscard.*exact_E_message" } */
+  pcheck3 (), bar ();  /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   d = check12 ();
   if (d.i)
     return;
@@ -197,7 +197,7 @@ test (void)
     return;
   if (({ check12 (); }).i)
     return;
-  check12 ();          /* { dg-warning "(?n)nodiscard.*exact_D_message" } */
+  check12 ();          /* { dg-warning "nodiscard\[^\n\r]*exact_D_message" } */
   (void) check12 ();
-  check12 (), bar ();  /* { dg-warning "(?n)nodiscard.*exact_D_message" } */
+  check12 (), bar ();  /* { dg-warning "nodiscard\[^\n\r]*exact_D_message" } */
 }

@@ -1,3 +1,11 @@
+2019-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/nodiscard-reason-only-one.C: In dg-error or dg-warning
+	remove (?n) uses and replace .* with \[^\n\r]*.
+	* g++.dg/cpp2a/nodiscard-reason.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-once.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-reason-nonstring.C: Likewise.
+
 2019-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92140
