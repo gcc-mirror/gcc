@@ -1,3 +1,14 @@
+2019-10-19  Jakub Jelinek  <jakub@redhat.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92140
+	* config/i386/predicates.md (int_nonimmediate_operand): New special
+	predicate.
+	* config/i386/i386.md (*add<mode>3_eq, *add<mode>3_ne,
+	*add<mode>3_eq_0, *add<mode>3_ne_0, *sub<mode>3_eq, *sub<mode>3_ne,
+	*sub<mode>3_eq_1, *sub<mode>3_eq_0, *sub<mode>3_ne_0): New
+	define_insn_and_split patterns.
+
 2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000.md: Delete out--of-date comment about
