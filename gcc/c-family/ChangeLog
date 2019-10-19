@@ -1,3 +1,7 @@
+2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* c-lex.c (c_common_has_attribute): Update nodiscard value.
+
 2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.h (user_facing_original_type_p): Declare.

@@ -1,3 +1,19 @@
+2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	Implement p1301 [[nodiscard("should have a reason")]] + p1771 DR
+	* tree.c (handle_nodiscard_attribute): Handle C++2a nodiscard
+	string message.
+	(std_attribute_table) Increase nodiscard argument handling
+	max_length from 0 to 1.
+	* parser.c (cp_parser_check_std_attribute): Add requirement
+	that nodiscard only be seen once in attribute-list.
+	(cp_parser_std_attribute): Check that empty parenthesis lists are
+	not specified for attributes that have max_length > 0 (e.g.
+	[[attr()]]).
+	* cvt.c (maybe_warn_nodiscard): Add nodiscard message to
+	output, if applicable.
+	(convert_to_void): Allow constructors to be nodiscard-able (P1771).
+
 2019-10-18  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (struct lang_type): Remove was_anonymous.

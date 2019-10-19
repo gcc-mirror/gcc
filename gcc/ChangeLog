@@ -1,3 +1,8 @@
+2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* escaped_string.h (escaped_string): New header.
+	* tree.c (escaped_string): Remove escaped_string class.
+
 2019-10-18  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92157
