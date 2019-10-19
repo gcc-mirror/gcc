@@ -1,3 +1,8 @@
+2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/Wnonnull.c: Add attributed function declarations for
+	memcpy and strlen for Darwin.
+
 2019-10-18  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92157
