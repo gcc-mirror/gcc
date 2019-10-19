@@ -1,3 +1,9 @@
+2019-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92140
+	* gcc.target/i386/pr92140.c: New test.
+	* gcc.c-torture/execute/pr92140.c: New test.
+
 2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/Wnonnull.c: Add attributed function declarations for
