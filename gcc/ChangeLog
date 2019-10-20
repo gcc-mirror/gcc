@@ -1,3 +1,31 @@
+2019-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-protos.h (ix86_pre_reload_split): Declare.
+	* config/i386/i386.c (ix86_pre_reload_split): New function.
+	* config/i386/i386.md (*fix_trunc<mode>_i387_1, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_1, *add<mode>3_eq_0, *add<mode>3_ne_0,
+	*anddi3_doubleword, *andndi3_doubleword, *<code>di3_doubleword,
+	*one_cmpldi2_doubleword, *ashl<dwi>3_doubleword_mask,
+	*ashl<dwi>3_doubleword_mask_1, *ashl<mode>3_mask, *ashl<mode>3_mask_1,
+	*<shift_insn><mode>3_mask, *<shift_insn><mode>3_mask_1,
+	*<shift_insn><dwi>3_doubleword_mask,
+	*<shift_insn><dwi>3_doubleword_mask_1, *<rotate_insn><mode>3_mask,
+	*<rotate_insn><mode>3_mask_1, *<btsc><mode>_mask, *<btsc><mode>_mask_1,
+	*btr<mode>_mask, *btr<mode>_mask_1, *jcc_bt<mode>, *jcc_bt<mode>_1,
+	*jcc_bt<mode>_mask, *popcounthi2_1, frndintxf2_<rounding>,
+	*fist<mode>2_<rounding>_1, *<code><mode>3_1, *<code>di3_doubleword):
+	Use ix86_pre_reload_split instead of can_create_pseudo_p in condition.
+	* config/i386/sse.md (*sse4_1_<code>v8qiv8hi2<mask_name>_2,
+	*avx2_<code>v8qiv8si2<mask_name>_2,
+	*sse4_1_<code>v4qiv4si2<mask_name>_2,
+	*sse4_1_<code>v4hiv4si2<mask_name>_2,
+	*avx512f_<code>v8qiv8di2<mask_name>_2,
+	*avx2_<code>v4qiv4di2<mask_name>_2, *avx2_<code>v4hiv4di2<mask_name>_2,
+	*sse4_1_<code>v2hiv2di2<mask_name>_2,
+	*sse4_1_<code>v2siv2di2<mask_name>_2, sse4_2_pcmpestr,
+	sse4_2_pcmpistr): Likewise.
+
 2019-10-20  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Configuration, --enable-objc-gc): hboehm.info

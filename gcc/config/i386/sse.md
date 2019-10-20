@@ -17363,7 +17363,7 @@
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_SSE4_1 && <mask_avx512bw_condition> && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17420,7 +17420,7 @@
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17469,7 +17469,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17535,7 +17535,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17579,7 +17579,7 @@
 		       (const_int 2) (const_int 3)
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
-  "TARGET_AVX512F && can_create_pseudo_p ()"
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17626,7 +17626,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17693,7 +17693,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17740,7 +17740,7 @@
 		(const_int 1)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17804,7 +17804,7 @@
 		(const_int 0)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -18087,7 +18087,7 @@
 	   (match_dup 6)]
 	  UNSPEC_PCMPESTR))]
   "TARGET_SSE4_2
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -18223,7 +18223,7 @@
 	   (match_dup 4)]
 	  UNSPEC_PCMPISTR))]
   "TARGET_SSE4_2
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(const_int 0)]
