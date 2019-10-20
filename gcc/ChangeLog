@@ -1,3 +1,8 @@
+2019-10-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration, --enable-objc-gc): hboehm.info
+	now defaults to https.
+
 2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (nonoverlapping_refs_since_match_p): Do not
