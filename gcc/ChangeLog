@@ -1,5 +1,14 @@
 2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Take a bb_vec_info
+	and return a boolean success value.  Move the allocation and
+	initialization of the bb_vec_info to...
+	(vect_slp_bb_region): ...here.  Update call accordingly.
+	(vect_slp_bb): Apply PARAM_SLP_MAX_INSNS_IN_BB here rather
+	than in vect_slp_analyze_bb_1.
+
+2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-slp.c (vect_slp_analyze_bb_1): Call save_datarefs
 	when processing the given datarefs for the first time and
 	check_datarefs subsequently.

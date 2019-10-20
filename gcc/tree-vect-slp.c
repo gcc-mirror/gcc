@@ -2836,46 +2836,23 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   return true;
 }
 
-/* Check if the basic block can be vectorized.  Returns a bb_vec_info
-   if so and sets fatal to true if failure is independent of
-   current_vector_size.  */
+/* Check if the region described by BB_VINFO can be vectorized, returning
+   true if so.  When returning false, set FATAL to true if the same failure
+   would prevent vectorization at other vector sizes, false if it is still
+   worth trying other sizes.  N_STMTS is the number of statements in the
+   region.  */
 
-static bb_vec_info
-vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
-		       gimple_stmt_iterator region_end,
-		       vec<data_reference_p> datarefs, int n_stmts,
-		       bool &fatal, vec_info_shared *shared)
+static bool
+vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
 {
   DUMP_VECT_SCOPE ("vect_slp_analyze_bb");
 
-  bb_vec_info bb_vinfo;
   slp_instance instance;
   int i;
   poly_uint64 min_vf = 2;
-  bool first_time_p = shared->datarefs.is_empty ();
 
   /* The first group of checks is independent of the vector size.  */
   fatal = true;
-
-  if (n_stmts > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: too many instructions in "
-			 "basic block.\n");
-      free_data_refs (datarefs);
-      return NULL;
-    }
-
-  bb_vinfo = new _bb_vec_info (region_begin, region_end, shared);
-  if (!bb_vinfo)
-    return NULL;
-
-  BB_VINFO_DATAREFS (bb_vinfo) = datarefs;
-  if (first_time_p)
-    bb_vinfo->shared->save_datarefs ();
-  else
-    bb_vinfo->shared->check_datarefs ();
 
   /* Analyze the data references.  */
 
@@ -2885,9 +2862,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: unhandled data-ref in basic "
 			 "block.\n");
-
-      delete bb_vinfo;
-      return NULL;
+      return false;
     }
 
   if (BB_VINFO_DATAREFS (bb_vinfo).length () < 2)
@@ -2896,9 +2871,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: not enough data-refs in "
 			 "basic block.\n");
-
-      delete bb_vinfo;
-      return NULL;
+      return false;
     }
 
   if (!vect_analyze_data_ref_accesses (bb_vinfo))
@@ -2907,9 +2880,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			"not vectorized: unhandled data access in "
 			"basic block.\n");
-
-      delete bb_vinfo;
-      return NULL;
+      return false;
     }
 
   /* If there are no grouped stores in the region there is no need
@@ -2921,9 +2892,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: no grouped stores in "
 			 "basic block.\n");
-
-      delete bb_vinfo;
-      return NULL;
+      return false;
     }
 
   /* While the rest of the analysis below depends on it in some way.  */
@@ -2943,9 +2912,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 			   "not vectorized: failed to find SLP opportunities "
 			   "in basic block.\n");
 	}
-
-      delete bb_vinfo;
-      return NULL;
+      return false;
     }
 
   vect_record_base_alignments (bb_vinfo);
@@ -2976,19 +2943,14 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       i++;
     }
   if (! BB_VINFO_SLP_INSTANCES (bb_vinfo).length ())
-    {
-      delete bb_vinfo;
-      return NULL;
-    }
+    return false;
 
   if (!vect_slp_analyze_operations (bb_vinfo))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: bad operation in basic block.\n");
-
-      delete bb_vinfo;
-      return NULL;
+      return false;
     }
 
   /* Cost model: check if the vectorization is worthwhile.  */
@@ -2999,16 +2961,13 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: vectorization is not "
 			 "profitable.\n");
-
-      delete bb_vinfo;
-      return NULL;
+      return false;
     }
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Basic block will be vectorized using SLP\n");
-
-  return bb_vinfo;
+  return true;
 }
 
 /* Subroutine of vect_slp_bb.  Try to vectorize the statements between
@@ -3037,9 +2996,16 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
     {
       bool vectorized = false;
       bool fatal = false;
-      bb_vinfo = vect_slp_analyze_bb_1 (region_begin, region_end,
-					datarefs, n_stmts, fatal, &shared);
-      if (bb_vinfo
+      bb_vinfo = new _bb_vec_info (region_begin, region_end, &shared);
+
+      bool first_time_p = shared.datarefs.is_empty ();
+      BB_VINFO_DATAREFS (bb_vinfo) = datarefs;
+      if (first_time_p)
+	bb_vinfo->shared->save_datarefs ();
+      else
+	bb_vinfo->shared->check_datarefs ();
+
+      if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal)
 	  && dbg_cnt (vect_slp))
 	{
 	  if (dump_enabled_p ())
@@ -3132,7 +3098,14 @@ vect_slp_bb (basic_block bb)
 
       gimple_stmt_iterator region_end = gsi;
 
-      if (vect_slp_bb_region (region_begin, region_end, datarefs, insns))
+      if (insns > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: too many instructions in "
+			     "basic block.\n");
+	}
+      else if (vect_slp_bb_region (region_begin, region_end, datarefs, insns))
 	any_vectorized = true;
 
       if (gsi_end_p (region_end))
