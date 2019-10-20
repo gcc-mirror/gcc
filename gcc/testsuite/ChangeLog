@@ -1,3 +1,8 @@
+2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/alias-access-path-2.c: New testcase.
+	* gcc.dg/tree-ssa/alias-access-path-11.c: xfail.
+
 2019-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/nodiscard-reason-only-one.C: In dg-error or dg-warning
