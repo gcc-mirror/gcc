@@ -1,3 +1,7 @@
+2019-10-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* common.opt (-fcommon): Fix description.
+
 2019-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386-protos.h (ix86_pre_reload_split): Declare.
