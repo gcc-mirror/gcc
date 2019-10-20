@@ -1132,7 +1132,7 @@ Looks for opportunities to reduce stack adjustments and stack references.
 
 fcommon
 Common Report Var(flag_no_common,0)
-Do not put uninitialized globals in the common section.
+Put uninitialized globals in the common section.
 
 fcompare-debug
 Driver
