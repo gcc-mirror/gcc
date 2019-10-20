@@ -1,3 +1,12 @@
+2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Call save_datarefs
+	when processing the given datarefs for the first time and
+	check_datarefs subsequently.
+	(vect_slp_bb_region): New function, split out of...
+	(vect_slp_bb): ...here.  Don't recompute the region bounds and
+	dataref sets when retrying with a different vector size.
+
 2019-10-19  Jakub Jelinek  <jakub@redhat.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

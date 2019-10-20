@@ -2852,6 +2852,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
   slp_instance instance;
   int i;
   poly_uint64 min_vf = 2;
+  bool first_time_p = shared->datarefs.is_empty ();
 
   /* The first group of checks is independent of the vector size.  */
   fatal = true;
@@ -2871,7 +2872,10 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
     return NULL;
 
   BB_VINFO_DATAREFS (bb_vinfo) = datarefs;
-  bb_vinfo->shared->save_datarefs ();
+  if (first_time_p)
+    bb_vinfo->shared->save_datarefs ();
+  else
+    bb_vinfo->shared->check_datarefs ();
 
   /* Analyze the data references.  */
 
@@ -3007,16 +3011,18 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
   return bb_vinfo;
 }
 
+/* Subroutine of vect_slp_bb.  Try to vectorize the statements between
+   REGION_BEGIN (inclusive) and REGION_END (exclusive), returning true
+   on success.  The region has N_STMTS statements and has the datarefs
+   given by DATAREFS.  */
 
-/* Main entry for the BB vectorizer.  Analyze and transform BB, returns
-   true if anything in the basic-block was vectorized.  */
-
-bool
-vect_slp_bb (basic_block bb)
+static bool
+vect_slp_bb_region (gimple_stmt_iterator region_begin,
+		    gimple_stmt_iterator region_end,
+		    vec<data_reference_p> datarefs,
+		    unsigned int n_stmts)
 {
   bb_vec_info bb_vinfo;
-  gimple_stmt_iterator gsi;
-  bool any_vectorized = false;
   auto_vector_sizes vector_sizes;
 
   /* Autodetect first vector size we try.  */
@@ -3024,14 +3030,81 @@ vect_slp_bb (basic_block bb)
   targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
   unsigned int next_size = 0;
 
-  gsi = gsi_start_bb (bb);
+  vec_info_shared shared;
 
   poly_uint64 autodetected_vector_size = 0;
   while (1)
     {
-      if (gsi_end_p (gsi))
-	break;
+      bool vectorized = false;
+      bool fatal = false;
+      bb_vinfo = vect_slp_analyze_bb_1 (region_begin, region_end,
+					datarefs, n_stmts, fatal, &shared);
+      if (bb_vinfo
+	  && dbg_cnt (vect_slp))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
 
+	  bb_vinfo->shared->check_datarefs ();
+	  vect_schedule_slp (bb_vinfo);
+
+	  unsigned HOST_WIDE_INT bytes;
+	  if (dump_enabled_p ())
+	    {
+	      if (current_vector_size.is_constant (&bytes))
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+				 "basic block part vectorized using %wu byte "
+				 "vectors\n", bytes);
+	      else
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+				 "basic block part vectorized using variable "
+				 "length vectors\n");
+	    }
+
+	  vectorized = true;
+	}
+      delete bb_vinfo;
+
+      if (next_size == 0)
+	autodetected_vector_size = current_vector_size;
+
+      if (next_size < vector_sizes.length ()
+	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
+	next_size += 1;
+
+      if (vectorized
+	  || next_size == vector_sizes.length ()
+	  || known_eq (current_vector_size, 0U)
+	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
+	     vector sizes will fail do not bother iterating.  */
+	  || fatal)
+	return vectorized;
+
+      /* Try the next biggest vector size.  */
+      current_vector_size = vector_sizes[next_size++];
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "***** Re-trying analysis with "
+			   "vector size ");
+	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+    }
+}
+
+/* Main entry for the BB vectorizer.  Analyze and transform BB, returns
+   true if anything in the basic-block was vectorized.  */
+
+bool
+vect_slp_bb (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+  bool any_vectorized = false;
+
+  gsi = gsi_start_bb (bb);
+  while (!gsi_end_p (gsi))
+    {
       gimple_stmt_iterator region_begin = gsi;
       vec<data_reference_p> datarefs = vNULL;
       int insns = 0;
@@ -3059,79 +3132,14 @@ vect_slp_bb (basic_block bb)
 
       gimple_stmt_iterator region_end = gsi;
 
-      bool vectorized = false;
-      bool fatal = false;
-      vec_info_shared shared;
-      bb_vinfo = vect_slp_analyze_bb_1 (region_begin, region_end,
-					datarefs, insns, fatal, &shared);
-      if (bb_vinfo
-	  && dbg_cnt (vect_slp))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
+      if (vect_slp_bb_region (region_begin, region_end, datarefs, insns))
+	any_vectorized = true;
 
-	  bb_vinfo->shared->check_datarefs ();
-	  vect_schedule_slp (bb_vinfo);
+      if (gsi_end_p (region_end))
+	break;
 
-	  unsigned HOST_WIDE_INT bytes;
-	  if (dump_enabled_p ())
-	    {
-	      if (current_vector_size.is_constant (&bytes))
-		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-				 "basic block part vectorized using %wu byte "
-				 "vectors\n", bytes);
-	      else
-		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-				 "basic block part vectorized using variable "
-				 "length vectors\n");
-	    }
-
-	  vectorized = true;
-	}
-      delete bb_vinfo;
-
-      any_vectorized |= vectorized;
-
-      if (next_size == 0)
-	autodetected_vector_size = current_vector_size;
-
-      if (next_size < vector_sizes.length ()
-	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
-	next_size += 1;
-
-      if (vectorized
-	  || next_size == vector_sizes.length ()
-	  || known_eq (current_vector_size, 0U)
-	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
-	     vector sizes will fail do not bother iterating.  */
-	  || fatal)
-	{
-	  if (gsi_end_p (region_end))
-	    break;
-
-	  /* Skip the unhandled stmt.  */
-	  gsi_next (&gsi);
-
-	  /* And reset vector sizes.  */
-	  current_vector_size = 0;
-	  next_size = 0;
-	}
-      else
-	{
-	  /* Try the next biggest vector size.  */
-	  current_vector_size = vector_sizes[next_size++];
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "***** Re-trying analysis with "
-			       "vector size ");
-	      dump_dec (MSG_NOTE, current_vector_size);
-	      dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  /* Start over.  */
-	  gsi = region_begin;
-	}
+      /* Skip the unhandled stmt.  */
+      gsi_next (&gsi);
     }
 
   return any_vectorized;
