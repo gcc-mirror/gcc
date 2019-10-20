@@ -1,3 +1,8 @@
+2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_refs_since_match_p): Do not
+	skip non-zero array accesses.
+
 2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-slp.c (vect_slp_analyze_bb_1): Take a bb_vec_info
