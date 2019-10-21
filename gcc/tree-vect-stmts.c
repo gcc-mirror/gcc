@@ -796,6 +796,7 @@ vect_prologue_cost_for_slp_op (slp_tree node, stmt_vec_info stmt_info,
 			       unsigned opno, enum vect_def_type dt,
 			       stmt_vector_for_cost *cost_vec)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0]->stmt;
   tree op = gimple_op (stmt, opno);
   unsigned prologue_cost = 0;
@@ -803,7 +804,7 @@ vect_prologue_cost_for_slp_op (slp_tree node, stmt_vec_info stmt_info,
   /* Without looking at the actual initializer a vector of
      constants can be implemented as load from the constant pool.
      When all elements are the same we can use a splat.  */
-  tree vectype = get_vectype_for_scalar_type (TREE_TYPE (op));
+  tree vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op));
   unsigned group_size = SLP_TREE_SCALAR_STMTS (node).length ();
   unsigned num_vects_to_check;
   unsigned HOST_WIDE_INT const_nunits;
@@ -1610,7 +1611,7 @@ vect_get_vec_def_for_operand (tree op, stmt_vec_info stmt_vinfo, tree vectype)
 	       && VECTOR_BOOLEAN_TYPE_P (stmt_vectype))
 	vector_type = build_same_sized_truth_vector_type (stmt_vectype);
       else
-	vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+	vector_type = get_vectype_for_scalar_type (loop_vinfo, TREE_TYPE (op));
 
       gcc_assert (vector_type);
       return vect_init_vector (stmt_vinfo, op, vector_type, NULL);
@@ -2975,6 +2976,7 @@ vect_get_gather_scatter_ops (class loop *loop, stmt_vec_info stmt_info,
 			     gather_scatter_info *gs_info,
 			     tree *dataref_ptr, tree *vec_offset)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   gimple_seq stmts = NULL;
   *dataref_ptr = force_gimple_operand (gs_info->base, &stmts, true, NULL_TREE);
   if (stmts != NULL)
@@ -2985,7 +2987,7 @@ vect_get_gather_scatter_ops (class loop *loop, stmt_vec_info stmt_info,
       gcc_assert (!new_bb);
     }
   tree offset_type = TREE_TYPE (gs_info->offset);
-  tree offset_vectype = get_vectype_for_scalar_type (offset_type);
+  tree offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
   *vec_offset = vect_get_vec_def_for_operand (gs_info->offset, stmt_info,
 					      offset_vectype);
 }
@@ -3020,7 +3022,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   /* The offset given in GS_INFO can have pointer type, so use the element
      type of the vector instead.  */
   tree offset_type = TREE_TYPE (gs_info->offset);
-  tree offset_vectype = get_vectype_for_scalar_type (offset_type);
+  tree offset_vectype = get_vectype_for_scalar_type (loop_vinfo, offset_type);
   offset_type = TREE_TYPE (offset_vectype);
 
   /* Calculate X = DR_STEP / SCALE and convert it to the appropriate type.  */
@@ -4101,9 +4103,8 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 	 || arginfo[i].dt == vect_external_def)
 	&& bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
       {
-	arginfo[i].vectype
-	  = get_vectype_for_scalar_type (TREE_TYPE (gimple_call_arg (stmt,
-								     i)));
+	tree arg_type = TREE_TYPE (gimple_call_arg (stmt, i));
+	arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type);
 	if (arginfo[i].vectype == NULL
 	    || (simd_clone_subparts (arginfo[i].vectype)
 		> bestn->simdclone->simdlen))
@@ -5466,7 +5467,7 @@ vectorizable_assignment (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
    either as shift by a scalar or by a vector.  */
 
 bool
-vect_supportable_shift (vec_info *, enum tree_code code, tree scalar_type)
+vect_supportable_shift (vec_info *vinfo, enum tree_code code, tree scalar_type)
 {
 
   machine_mode vec_mode;
@@ -5474,7 +5475,7 @@ vect_supportable_shift (vec_info *, enum tree_code code, tree scalar_type)
   int icode;
   tree vectype;
 
-  vectype = get_vectype_for_scalar_type (scalar_type);
+  vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
   if (!vectype)
     return false;
 
@@ -9763,7 +9764,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 	scalar_type = build_nonstandard_integer_type
 	  (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype))),
 	   TYPE_UNSIGNED (scalar_type));
-      *comp_vectype = get_vectype_for_scalar_type (scalar_type);
+      *comp_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
     }
 
   return true;
@@ -10359,7 +10360,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* Invariant comparison.  */
   if (!vectype)
     {
-      vectype = get_vectype_for_scalar_type (TREE_TYPE (rhs1));
+      vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1));
       if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype), nunits))
 	return false;
     }
@@ -11140,7 +11141,7 @@ poly_uint64 current_vector_size;
    by the target.  */
 
 tree
-get_vectype_for_scalar_type (tree scalar_type)
+get_vectype_for_scalar_type (vec_info *, tree scalar_type)
 {
   tree vectype;
   vectype = get_vectype_for_scalar_type_and_size (scalar_type,
@@ -11157,9 +11158,9 @@ get_vectype_for_scalar_type (tree scalar_type)
    of vectors of specified SCALAR_TYPE as supported by target.  */
 
 tree
-get_mask_type_for_scalar_type (vec_info *, tree scalar_type)
+get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type)
 {
-  tree vectype = get_vectype_for_scalar_type (scalar_type);
+  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
 
   if (!vectype)
     return NULL;
@@ -11853,6 +11854,7 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 				tree *stmt_vectype_out,
 				tree *nunits_vectype_out)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   gimple *stmt = stmt_info->stmt;
 
   *stmt_vectype_out = NULL_TREE;
@@ -11919,7 +11921,7 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "get vectype for scalar type:  %T\n", scalar_type);
-      vectype = get_vectype_for_scalar_type (scalar_type);
+      vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
       if (!vectype)
 	return opt_result::failure_at (stmt,
 				       "not vectorized:"
@@ -11952,7 +11954,7 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "get vectype for scalar type:  %T\n", scalar_type);
-      nunits_vectype = get_vectype_for_scalar_type (scalar_type);
+      nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
     }
   if (!nunits_vectype)
     return opt_result::failure_at (stmt,
