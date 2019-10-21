@@ -1,6 +1,12 @@
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91925
+	* c-warn.c (check_alignment_of_packed_member): Ignore FIELD_DECLs
+	with NULL DECL_FIELD_OFFSET.
+
 	2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88203
