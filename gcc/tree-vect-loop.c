@@ -6445,10 +6445,13 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  gcc_assert (TREE_CODE (base) == INTEGER_CST
 		      && TREE_CODE (step) == INTEGER_CST);
 	  cond_reduc_val = NULL_TREE;
+	  tree res = PHI_RESULT (STMT_VINFO_STMT (cond_stmt_vinfo));
+	  if (!types_compatible_p (TREE_TYPE (res), TREE_TYPE (base)))
+	    ;
 	  /* Find a suitable value, for MAX_EXPR below base, for MIN_EXPR
 	     above base; punt if base is the minimum value of the type for
 	     MAX_EXPR or maximum value of the type for MIN_EXPR for now.  */
-	  if (tree_int_cst_sgn (step) == -1)
+	  else if (tree_int_cst_sgn (step) == -1)
 	    {
 	      cond_reduc_op_code = MIN_EXPR;
 	      if (tree_int_cst_sgn (base) == -1)
