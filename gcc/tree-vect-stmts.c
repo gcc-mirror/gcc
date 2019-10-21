@@ -5465,7 +5465,7 @@ vectorizable_assignment (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
    either as shift by a scalar or by a vector.  */
 
 bool
-vect_supportable_shift (enum tree_code code, tree scalar_type)
+vect_supportable_shift (vec_info *, enum tree_code code, tree scalar_type)
 {
 
   machine_mode vec_mode;

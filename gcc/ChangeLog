@@ -1,5 +1,12 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_supportable_shift): Take a vec_info.
+	* tree-vect-stmts.c (vect_supportable_shift): Likewise.
+	* tree-vect-patterns.c (vect_synth_mult_by_constant): Update call
+	accordingly.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.c (get_vec_alignment_for_array_type): Use
 	get_vectype_for_scalar_type_and_size instead of
 	get_vectype_for_scalar_type.

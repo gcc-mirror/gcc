@@ -2720,6 +2720,7 @@ static gimple *
 vect_synth_mult_by_constant (tree op, tree val,
 			     stmt_vec_info stmt_vinfo)
 {
+  vec_info *vinfo = stmt_vinfo->vinfo;
   tree itype = TREE_TYPE (op);
   machine_mode mode = TYPE_MODE (itype);
   struct algorithm alg;
@@ -2738,7 +2739,7 @@ vect_synth_mult_by_constant (tree op, tree val,
 
   /* Targets that don't support vector shifts but support vector additions
      can synthesize shifts that way.  */
-  bool synth_shift_p = !vect_supportable_shift (LSHIFT_EXPR, multtype);
+  bool synth_shift_p = !vect_supportable_shift (vinfo, LSHIFT_EXPR, multtype);
 
   HOST_WIDE_INT hwval = tree_to_shwi (val);
   /* Use MAX_COST here as we don't want to limit the sequence on rtx costs.
