@@ -1,6 +1,11 @@
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91632
+	* gcc.c-torture/execute/pr91632.c: New test.
+
 	2019-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91623
