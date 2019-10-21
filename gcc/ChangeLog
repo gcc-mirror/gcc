@@ -1,3 +1,9 @@
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92161
+	* tree-vect-loop.c (vect_analyze_loop_2): Reset stmts def-type
+	for reductions.
+
 2019-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (UNSPEC_RNDR, UNSPEC_RNDRRS): Define.
