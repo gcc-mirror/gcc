@@ -201,6 +201,8 @@
     UNSPECV_SET_FPSR		; Represent assign of FPSR content.
     UNSPECV_BLOCKAGE		; Represent a blockage
     UNSPECV_PROBE_STACK_RANGE	; Represent stack range probing.
+    UNSPEC_RNDR			; Represent RNDR
+    UNSPEC_RNDRRS		; Represent RNDRRS
   ]
 )
 
@@ -6097,6 +6099,26 @@
   [(parallel [(set (match_operand 0)
 		   (match_operand 1))
 	      (clobber (reg:CC CC_REGNUM))])])
+
+(define_insn "aarch64_rndr"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_RNDR))
+   (set (reg:CC_Z CC_REGNUM)
+	(unspec_volatile:CC_Z [(const_int 0)] UNSPEC_RNDR))]
+  "TARGET_RNG"
+  "mrs\t%0, RNDR"
+  [(set_attr "type" "mrs")]
+)
+
+(define_insn "aarch64_rndrrs"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_RNDRRS))
+   (set (reg:CC_Z CC_REGNUM)
+	(unspec_volatile:CC_Z [(const_int 0)] UNSPEC_RNDRRS))]
+  "TARGET_RNG"
+  "mrs\t%0, RNDRRS"
+  [(set_attr "type" "mrs")]
+)
 
 ;; AdvSIMD Stuff
 (include "aarch64-simd.md")

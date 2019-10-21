@@ -157,6 +157,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_SM4	      (1 << 17)  /* Has ARMv8.4-A SM3 and SM4.  */
 #define AARCH64_FL_SHA3	      (1 << 18)  /* Has ARMv8.4-a SHA3 and SHA512.  */
 #define AARCH64_FL_F16FML     (1 << 19)  /* Has ARMv8.4-a FP16 extensions.  */
+#define AARCH64_FL_RNG        (1 << 23)  /* ARMv8.5-A Random Number Insns.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -196,6 +197,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
+#define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -236,6 +238,9 @@ extern unsigned aarch64_architecture_version;
 
 /* Javascript conversion instruction from Armv8.3-a.  */
 #define TARGET_JSCVT	(TARGET_FLOAT && AARCH64_ISA_V8_3)
+
+/* Random number instructions from Armv8.5-a.  */
+#define TARGET_RNG (AARCH64_ISA_RNG)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
