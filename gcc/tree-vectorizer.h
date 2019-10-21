@@ -1634,7 +1634,7 @@ extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				stmt_vector_for_cost *, bool);
 extern void vect_get_store_cost (stmt_vec_info, int,
 				 unsigned int *, stmt_vector_for_cost *);
-extern bool vect_supportable_shift (enum tree_code, tree);
+extern bool vect_supportable_shift (vec_info *, enum tree_code, tree);
 extern tree vect_gen_perm_mask_any (tree, const vec_perm_indices &);
 extern tree vect_gen_perm_mask_checked (tree, const vec_perm_indices &);
 extern void optimize_mask_stores (class loop*);
