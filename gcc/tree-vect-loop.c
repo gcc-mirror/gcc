@@ -7754,7 +7754,7 @@ vect_halve_mask_nunits (vec_info *, tree type)
 /* Return a mask type with twice as many elements as TYPE.  */
 
 tree
-vect_double_mask_nunits (tree type)
+vect_double_mask_nunits (vec_info *, tree type)
 {
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type) * 2;
   return build_truth_vector_type (nunits, current_vector_size);
