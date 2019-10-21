@@ -1,3 +1,8 @@
+2019-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/parse/qualified2.C: Tighten dg-error directive.
+	* g++.old-deja/g++.other/decl5.C: Don't expect redundant error.
+
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92015
