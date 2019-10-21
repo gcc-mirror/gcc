@@ -1,5 +1,11 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop-manip.c (vect_maybe_permute_loop_masks): Take
+	a loop_vec_info.
+	(vect_set_loop_condition_masked): Update call accordingly.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (supportable_narrowing_operation): Take a vec_info.
 	* tree-vect-stmts.c (supportable_narrowing_operation): Likewise.
 	(simple_integer_narrowing): Update call accordingly.

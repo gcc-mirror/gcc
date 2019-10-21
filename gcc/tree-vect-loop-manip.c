@@ -317,7 +317,8 @@ interleave_supported_p (vec_perm_indices *indices, tree vectype,
    latter.  Return true on success, adding any new statements to SEQ.  */
 
 static bool
-vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
+vect_maybe_permute_loop_masks (loop_vec_info, gimple_seq *seq,
+			       rgroup_masks *dest_rgm,
 			       rgroup_masks *src_rgm)
 {
   tree src_masktype = src_rgm->mask_type;
@@ -689,7 +690,8 @@ vect_set_loop_condition_masked (class loop *loop, loop_vec_info loop_vinfo,
 	  {
 	    rgroup_masks *half_rgm = &(*masks)[nmasks / 2 - 1];
 	    if (!half_rgm->masks.is_empty ()
-		&& vect_maybe_permute_loop_masks (&header_seq, rgm, half_rgm))
+		&& vect_maybe_permute_loop_masks (loop_vinfo, &header_seq,
+						  rgm, half_rgm))
 	      continue;
 	  }
 
