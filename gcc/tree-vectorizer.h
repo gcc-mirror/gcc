@@ -1754,8 +1754,8 @@ extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);
 extern bool can_duplicate_and_interleave_p (unsigned int, machine_mode,
 					    unsigned int * = NULL,
 					    tree * = NULL, tree * = NULL);
-extern void duplicate_and_interleave (gimple_seq *, tree, vec<tree>,
-				      unsigned int, vec<tree> &);
+extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
+				      vec<tree>, unsigned int, vec<tree> &);
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 
 /* In tree-vect-patterns.c.  */

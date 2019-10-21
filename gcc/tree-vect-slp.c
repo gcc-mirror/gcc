@@ -3183,8 +3183,9 @@ vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo)
    to cut down on the number of interleaves.  */
 
 void
-duplicate_and_interleave (gimple_seq *seq, tree vector_type, vec<tree> elts,
-			  unsigned int nresults, vec<tree> &results)
+duplicate_and_interleave (vec_info *, gimple_seq *seq, tree vector_type,
+			  vec<tree> elts, unsigned int nresults,
+			  vec<tree> &results)
 {
   unsigned int nelts = elts.length ();
   tree element_type = TREE_TYPE (vector_type);
@@ -3473,8 +3474,8 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	      else
 		{
 		  if (vec_oprnds->is_empty ())
-		    duplicate_and_interleave (&ctor_seq, vector_type, elts,
-					      number_of_vectors,
+		    duplicate_and_interleave (vinfo, &ctor_seq, vector_type,
+					      elts, number_of_vectors,
 					      permute_results);
 		  vec_cst = permute_results[number_of_vectors - j - 1];
 		}

@@ -3878,6 +3878,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 {
   vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   stmt_vec_info stmt_vinfo = stmts[0];
+  vec_info *vinfo = stmt_vinfo->vinfo;
   unsigned HOST_WIDE_INT nunits;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type;
@@ -3970,7 +3971,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 	    {
 	      /* First time round, duplicate ELTS to fill the
 		 required number of vectors.  */
-	      duplicate_and_interleave (&ctor_seq, vector_type, elts,
+	      duplicate_and_interleave (vinfo, &ctor_seq, vector_type, elts,
 					number_of_vectors, *vec_oprnds);
 	      break;
 	    }
