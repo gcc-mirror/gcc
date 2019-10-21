@@ -890,6 +890,9 @@ cond_expr_object_size (struct object_size_info *osi, tree var, gimple *stmt)
   else
     expr_object_size (osi, var, then_);
 
+  if (object_sizes[object_size_type][varno] == unknown[object_size_type])
+    return reexamine;
+
   if (TREE_CODE (else_) == SSA_NAME)
     reexamine |= merge_object_sizes (osi, var, else_, 0);
   else
