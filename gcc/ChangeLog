@@ -1,5 +1,12 @@
 2019-10-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92162
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Lookup
+	STMT_VINFO_REDUC_IDX in reduc_info.
+	* tree-vect-stmts.c (vectorizable_condition): Likewise.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (_slp_tree::ops): New member.
 	(SLP_TREE_SCALAR_OPS): New.
 	(vect_get_slp_defs): Adjust prototype.

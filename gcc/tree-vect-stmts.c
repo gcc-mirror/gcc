@@ -9818,7 +9818,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	return false;
       reduc_info = info_for_reduction (stmt_info);
       reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
-      reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
+      reduc_index = STMT_VINFO_REDUC_IDX (reduc_info);
       gcc_assert (reduction_type != EXTRACT_LAST_REDUCTION
 		  || reduc_index != -1);
     }

@@ -4259,9 +4259,9 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 (CCOMPARE).  The then and else values mirror the main VEC_COND_EXPR:
 	 the reduction phi corresponds to NEW_PHI_TREE and the new values
 	 correspond to INDEX_BEFORE_INCR.  */
-      gcc_assert (STMT_VINFO_REDUC_IDX (stmt_info) >= 1);
+      gcc_assert (STMT_VINFO_REDUC_IDX (reduc_info) >= 1);
       tree index_cond_expr;
-      if (STMT_VINFO_REDUC_IDX (stmt_info) == 2)
+      if (STMT_VINFO_REDUC_IDX (reduc_info) == 2)
 	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
 				  ccompare, indx_before_incr, new_phi_tree);
       else
