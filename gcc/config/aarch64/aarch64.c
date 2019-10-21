@@ -11737,7 +11737,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
 /* Implement TARGET_EXPAND_BUILTIN.  */
 static rtx
-aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int)
+aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
@@ -11745,7 +11745,7 @@ aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int)
   switch (code & AARCH64_BUILTIN_CLASS)
     {
     case AARCH64_BUILTIN_GENERAL:
-      return aarch64_general_expand_builtin (subcode, exp, target);
+      return aarch64_general_expand_builtin (subcode, exp, target, ignore);
     }
   gcc_unreachable ();
 }
