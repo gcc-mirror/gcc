@@ -1,5 +1,13 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (vect_supportable_direct_optab_p): Take
+	a vec_info.
+	(vect_recog_dot_prod_pattern): Update call accordingly.
+	(vect_recog_sad_pattern, vect_recog_pow_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_supportable_shift): Take a vec_info.
 	* tree-vect-stmts.c (vect_supportable_shift): Likewise.
 	* tree-vect-patterns.c (vect_synth_mult_by_constant): Update call

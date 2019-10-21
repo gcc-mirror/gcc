@@ -187,7 +187,7 @@ vect_get_external_def_edge (vec_info *vinfo, tree var)
    is nonnull.  */
 
 static bool
-vect_supportable_direct_optab_p (tree otype, tree_code code,
+vect_supportable_direct_optab_p (vec_info *, tree otype, tree_code code,
 				 tree itype, tree *vecotype_out,
 				 tree *vecitype_out = NULL)
 {
@@ -985,7 +985,7 @@ vect_recog_dot_prod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   vect_pattern_detected ("vect_recog_dot_prod_pattern", last_stmt);
 
   tree half_vectype;
-  if (!vect_supportable_direct_optab_p (type, DOT_PROD_EXPR, half_type,
+  if (!vect_supportable_direct_optab_p (vinfo, type, DOT_PROD_EXPR, half_type,
 					type_out, &half_vectype))
     return NULL;
 
@@ -1143,7 +1143,7 @@ vect_recog_sad_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   vect_pattern_detected ("vect_recog_sad_pattern", last_stmt);
 
   tree half_vectype;
-  if (!vect_supportable_direct_optab_p (sum_type, SAD_EXPR, half_type,
+  if (!vect_supportable_direct_optab_p (vinfo, sum_type, SAD_EXPR, half_type,
 					type_out, &half_vectype))
     return NULL;
 
@@ -1273,6 +1273,7 @@ vect_recog_widen_mult_pattern (stmt_vec_info last_stmt_info, tree *type_out)
 static gimple *
 vect_recog_pow_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 {
+  vec_info *vinfo = stmt_vinfo->vinfo;
   gimple *last_stmt = stmt_vinfo->stmt;
   tree base, exp;
   gimple *stmt;
@@ -1366,7 +1367,7 @@ vect_recog_pow_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       || (TREE_CODE (exp) == REAL_CST
           && real_equal (&TREE_REAL_CST (exp), &dconst2)))
     {
-      if (!vect_supportable_direct_optab_p (TREE_TYPE (base), MULT_EXPR,
+      if (!vect_supportable_direct_optab_p (vinfo, TREE_TYPE (base), MULT_EXPR,
 					    TREE_TYPE (base), type_out))
 	return NULL;
 
@@ -1472,8 +1473,8 @@ vect_recog_widen_sum_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
   vect_pattern_detected ("vect_recog_widen_sum_pattern", last_stmt);
 
-  if (!vect_supportable_direct_optab_p (type, WIDEN_SUM_EXPR, unprom0.type,
-					type_out))
+  if (!vect_supportable_direct_optab_p (vinfo, type, WIDEN_SUM_EXPR,
+					unprom0.type, type_out))
     return NULL;
 
   var = vect_recog_temp_ssa_var (type, NULL);
