@@ -1,3 +1,9 @@
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.c (get_vec_alignment_for_array_type): Use
+	get_vectype_for_scalar_type_and_size instead of
+	get_vectype_for_scalar_type.
+
 2019-10-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* common.opt (-fcommon): Fix description.

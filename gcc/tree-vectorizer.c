@@ -1347,7 +1347,8 @@ get_vec_alignment_for_array_type (tree type)
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
   poly_uint64 array_size, vector_size;
 
-  tree vectype = get_vectype_for_scalar_type (strip_array_types (type));
+  tree scalar_type = strip_array_types (type);
+  tree vectype = get_vectype_for_scalar_type_and_size (scalar_type, 0);
   if (!vectype
       || !poly_int_tree_p (TYPE_SIZE (type), &array_size)
       || !poly_int_tree_p (TYPE_SIZE (vectype), &vector_size)
