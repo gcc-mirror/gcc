@@ -6,7 +6,7 @@
 struct A
 {
   int b;
-  int c:24;
+  __INT32_TYPE__ c:24;
   int d:10;
   int e;
 } f;

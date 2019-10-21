@@ -1,3 +1,18 @@
+2019-10-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix some fallout for small targets.
+
+	PR testsuite/52641
+	* gcc.dg/torture/pr86034.c: Use 32-bit base type for a bitfield of
+	width > 16 bits.
+	* gcc.dg/torture/pr90972.c [avr]: Add option "-w".
+	* gcc.dg/torture/pr87693.c: Same.
+	* gcc.dg/torture/pr91178.c: Add dg-require-effective-target size32plus.
+	* gcc.dg/torture/pr91178-2.c: Same.
+	* gcc.dg/torture/20181024-1.c
+	* gcc.dg/torture/pr86554-1.c: Use 32-bit integers.
+	* gcc.dg/tree-ssa/pr91091-1.c: Same.
+
 2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.c-torture/execute/alias-access-path-2.c: New testcase.
