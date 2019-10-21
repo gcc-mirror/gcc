@@ -1,3 +1,9 @@
+2019-10-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/91532
+	* gcc.target/aarch64/sve/fmla_2.c: Add dg-scan check for two st1d
+	insns.
+
 2019-10-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	Fix some fallout for small targets.
