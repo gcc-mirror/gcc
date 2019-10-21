@@ -120,6 +120,8 @@ struct _slp_tree {
   vec<slp_tree> children;
   /* A group of scalar stmts to be vectorized together.  */
   vec<stmt_vec_info> stmts;
+  /* A group of scalar operands to be vectorized together.  */
+  vec<tree> ops;
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
   vec<unsigned> load_permutation;
@@ -171,6 +173,7 @@ public:
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
+#define SLP_TREE_SCALAR_OPS(S)                   (S)->ops
 #define SLP_TREE_VEC_STMTS(S)                    (S)->vec_stmts
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
@@ -1750,7 +1753,7 @@ extern void vect_schedule_slp (vec_info *);
 extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
-extern void vect_get_slp_defs (vec<tree> , slp_tree, vec<vec<tree> > *);
+extern void vect_get_slp_defs (slp_tree, vec<vec<tree> > *, unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);
 extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);

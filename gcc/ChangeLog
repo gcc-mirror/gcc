@@ -1,5 +1,43 @@
 2019-10-21  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (_slp_tree::ops): New member.
+	(SLP_TREE_SCALAR_OPS): New.
+	(vect_get_slp_defs): Adjust prototype.
+	* tree-vect-slp.c (vect_free_slp_tree): Release
+	SLP_TREE_SCALAR_OPS.
+	(vect_create_new_slp_node): Initialize it.  New overload for
+	initializing by an operands array.
+	(_slp_oprnd_info::ops): New member.
+	(vect_create_oprnd_info): Initialize it.
+	(vect_free_oprnd_info): Release it.
+	(vect_get_and_check_slp_defs): Populate the operands array.
+	Do not swap operands in the IL when not necessary.
+	(vect_build_slp_tree_2): Build SLP nodes for invariant operands.
+	Record SLP_TREE_SCALAR_OPS for all invariant nodes.  Also
+	swap operands in the operands array.  Do not swap operands in
+	the IL.
+	(vect_slp_rearrange_stmts): Re-arrange SLP_TREE_SCALAR_OPS as well.
+	(vect_gather_slp_loads): Fix.
+	(vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_slp_analyze_node_operations_1): Search for a internal
+	def child for computing reduction SLP_TREE_NUMBER_OF_VEC_STMTS.
+	(vect_slp_analyze_node_operations): Skip ops-only stmts for
+	the def-type push/pop dance.
+	(vect_get_constant_vectors): Compute number_of_vectors here.
+	Use SLP_TREE_SCALAR_OPS and simplify greatly.
+	(vect_get_slp_vect_defs): Use gimple_get_lhs also for PHIs.
+	(vect_get_slp_defs): Simplify greatly.
+	* tree-vect-loop.c (vectorize_fold_left_reduction): Simplify.
+	(vect_transform_reduction): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_defs): Simplify.
+	(vectorizable_call): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92161
 	* tree-vect-loop.c (vect_analyze_loop_2): Reset stmts def-type
 	for reductions.
