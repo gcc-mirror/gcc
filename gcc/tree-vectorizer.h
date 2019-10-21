@@ -1705,7 +1705,7 @@ extern opt_loop_vec_info vect_analyze_loop (class loop *,
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
-extern tree vect_halve_mask_nunits (tree);
+extern tree vect_halve_mask_nunits (vec_info *, tree);
 extern tree vect_double_mask_nunits (tree);
 extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
 				   unsigned int, tree, tree);

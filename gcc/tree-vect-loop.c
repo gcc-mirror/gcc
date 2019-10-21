@@ -7745,7 +7745,7 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
 /* Return a mask type with half the number of elements as TYPE.  */
 
 tree
-vect_halve_mask_nunits (tree type)
+vect_halve_mask_nunits (vec_info *, tree type)
 {
   poly_uint64 nunits = exact_div (TYPE_VECTOR_SUBPARTS (type), 2);
   return build_truth_vector_type (nunits, current_vector_size);

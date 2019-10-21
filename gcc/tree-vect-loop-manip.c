@@ -317,7 +317,7 @@ interleave_supported_p (vec_perm_indices *indices, tree vectype,
    latter.  Return true on success, adding any new statements to SEQ.  */
 
 static bool
-vect_maybe_permute_loop_masks (loop_vec_info, gimple_seq *seq,
+vect_maybe_permute_loop_masks (loop_vec_info loop_vinfo, gimple_seq *seq,
 			       rgroup_masks *dest_rgm,
 			       rgroup_masks *src_rgm)
 {
@@ -330,7 +330,7 @@ vect_maybe_permute_loop_masks (loop_vec_info, gimple_seq *seq,
     {
       /* Unpacking the source masks gives at least as many mask bits as
 	 we need.  We can then VIEW_CONVERT any excess bits away.  */
-      tree unpack_masktype = vect_halve_mask_nunits (src_masktype);
+      tree unpack_masktype = vect_halve_mask_nunits (loop_vinfo, src_masktype);
       for (unsigned int i = 0; i < dest_rgm->masks.length (); ++i)
 	{
 	  tree src = src_rgm->masks[i / 2];

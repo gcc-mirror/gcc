@@ -1,5 +1,13 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_halve_mask_nunits): Take a vec_info.
+	* tree-vect-loop.c (vect_halve_mask_nunits): Likewise.
+	* tree-vect-loop-manip.c (vect_maybe_permute_loop_masks): Update
+	call accordingly.
+	* tree-vect-stmts.c (supportable_widening_operation): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop-manip.c (vect_maybe_permute_loop_masks): Take
 	a loop_vec_info.
 	(vect_set_loop_condition_masked): Update call accordingly.
