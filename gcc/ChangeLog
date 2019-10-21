@@ -1,3 +1,8 @@
+2019-10-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-stmts (ensure_base_align): Only change alignment if new
+	alignment is more restrictive.
+
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vectorizer.h (vec_info::vector_size): New member variable.
