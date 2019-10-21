@@ -1338,9 +1338,7 @@
    (set_attr "arch" "32,a")
    (set_attr "shift" "3")
    (set_attr "predicable" "yes")
-   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-		      (const_string "alu_shift_imm")
-		      (const_string "alu_shift_reg")))]
+   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
 )
 
 (define_insn "*addsi3_carryin_clobercc"
@@ -1719,71 +1717,68 @@
 )
 
 (define_insn "*subsi3_carryin_shift"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(minus:SI (minus:SI
-		   (match_operand:SI 1 "s_register_operand" "r")
+		   (match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operator:SI 2 "shift_operator"
-		    [(match_operand:SI 3 "s_register_operand" "r")
-		     (match_operand:SI 4 "reg_or_int_operand" "rM")]))
+		    [(match_operand:SI 3 "s_register_operand" "r,r")
+		     (match_operand:SI 4 "shift_amount_operand" "M,r")]))
 		  (match_operand:SI 5 "arm_borrow_operation" "")))]
   "TARGET_32BIT"
   "sbc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
+   (set_attr "arch" "32,a")
+   (set_attr "shift" "3")
    (set_attr "predicable" "yes")
-   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-				    (const_string "alu_shift_imm")
-				    (const_string "alu_shift_reg")))]
+   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
 )
 
 (define_insn "*subsi3_carryin_shift_alt"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(minus:SI (minus:SI
-		   (match_operand:SI 1 "s_register_operand" "r")
+		   (match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operand:SI 5 "arm_borrow_operation" ""))
 		  (match_operator:SI 2 "shift_operator"
-		   [(match_operand:SI 3 "s_register_operand" "r")
-		    (match_operand:SI 4 "reg_or_int_operand" "rM")])))]
+		   [(match_operand:SI 3 "s_register_operand" "r,r")
+		    (match_operand:SI 4 "shift_amount_operand" "M,r")])))]
   "TARGET_32BIT"
   "sbc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
+   (set_attr "arch" "32,a")
+   (set_attr "shift" "3")
    (set_attr "predicable" "yes")
-   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-				    (const_string "alu_shift_imm")
-				    (const_string "alu_shift_reg")))]
+   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
 )
 
+;; No RSC in Thumb2
 (define_insn "*rsbsi3_carryin_shift"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(minus:SI (minus:SI
 		   (match_operator:SI 2 "shift_operator"
-		    [(match_operand:SI 3 "s_register_operand" "r")
-		     (match_operand:SI 4 "reg_or_int_operand" "rM")])
-		   (match_operand:SI 1 "s_register_operand" "r"))
+		    [(match_operand:SI 3 "s_register_operand" "r,r")
+		     (match_operand:SI 4 "shift_amount_operand" "M,r")])
+		   (match_operand:SI 1 "s_register_operand" "r,r"))
 		  (match_operand:SI 5 "arm_borrow_operation" "")))]
   "TARGET_ARM"
   "rsc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
-   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-		      (const_string "alu_shift_imm")
-		      (const_string "alu_shift_reg")))]
+   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
 )
 
 (define_insn "*rsbsi3_carryin_shift_alt"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(minus:SI (minus:SI
 		   (match_operator:SI 2 "shift_operator"
-		    [(match_operand:SI 3 "s_register_operand" "r")
-		     (match_operand:SI 4 "reg_or_int_operand" "rM")])
+		    [(match_operand:SI 3 "s_register_operand" "r,r")
+		     (match_operand:SI 4 "shift_amount_operand" "M,r")])
 		    (match_operand:SI 5 "arm_borrow_operation" ""))
-		  (match_operand:SI 1 "s_register_operand" "r")))]
+		  (match_operand:SI 1 "s_register_operand" "r,r")))]
   "TARGET_ARM"
   "rsc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
-   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-		      (const_string "alu_shift_imm")
-		      (const_string "alu_shift_reg")))]
+   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
 )
 
 ; transform ((x << y) - 1) to ~(~(x-1) << y)  Where X is a constant.
@@ -3268,18 +3263,17 @@
 )
 
 (define_insn "andsi_not_shiftsi_si"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(and:SI (not:SI (match_operator:SI 4 "shift_operator"
-			 [(match_operand:SI 2 "s_register_operand" "r")
-			  (match_operand:SI 3 "arm_rhs_operand" "rM")]))
-		(match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_ARM"
+			 [(match_operand:SI 2 "s_register_operand" "r,r")
+			  (match_operand:SI 3 "shift_amount_operand" "M,r")]))
+		(match_operand:SI 1 "s_register_operand" "r,r")))]
+  "TARGET_32BIT"
   "bic%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
-   (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-		      (const_string "logic_shift_imm")
-		      (const_string "logic_shift_reg")))]
+   (set_attr "arch" "32,a")
+   (set_attr "type" "logic_shift_imm,logic_shift_reg")]
 )
 
 ;; Shifted bics pattern used to set up CC status register and not reusing
@@ -3289,19 +3283,18 @@
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 		(and:SI (not:SI (match_operator:SI 0 "shift_operator"
-			[(match_operand:SI 1 "s_register_operand" "r")
-			 (match_operand:SI 2 "arm_rhs_operand" "rM")]))
-			(match_operand:SI 3 "s_register_operand" "r"))
+			[(match_operand:SI 1 "s_register_operand" "r,r")
+			 (match_operand:SI 2 "shift_amount_operand" "M,r")]))
+			(match_operand:SI 3 "s_register_operand" "r,r"))
 		(const_int 0)))
-   (clobber (match_scratch:SI 4 "=r"))]
-  "TARGET_ARM || (TARGET_THUMB2 && CONST_INT_P (operands[2]))"
+   (clobber (match_scratch:SI 4 "=r,r"))]
+  "TARGET_32BIT"
   "bics%?\\t%4, %3, %1%S0"
   [(set_attr "predicable" "yes")
+   (set_attr "arch" "32,a")
    (set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "logic_shift_imm")
-		      (const_string "logic_shift_reg")))]
+   (set_attr "type" "logic_shift_imm,logic_shift_reg")]
 )
 
 ;; Same as andsi_not_shiftsi_si_scc_no_reuse, but the bics result is also
@@ -3310,23 +3303,22 @@
   [(parallel [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 		(and:SI (not:SI (match_operator:SI 0 "shift_operator"
-			[(match_operand:SI 1 "s_register_operand" "r")
-			 (match_operand:SI 2 "arm_rhs_operand" "rM")]))
-			(match_operand:SI 3 "s_register_operand" "r"))
+			[(match_operand:SI 1 "s_register_operand" "r,r")
+			 (match_operand:SI 2 "shift_amount_operand" "M,r")]))
+			(match_operand:SI 3 "s_register_operand" "r,r"))
 		(const_int 0)))
-	(set (match_operand:SI 4 "s_register_operand" "=r")
+	(set (match_operand:SI 4 "s_register_operand" "=r,r")
 	     (and:SI (not:SI (match_op_dup 0
 		     [(match_dup 1)
 		      (match_dup 2)]))
 		     (match_dup 3)))])]
-  "TARGET_ARM || (TARGET_THUMB2 && CONST_INT_P (operands[2]))"
+  "TARGET_32BIT"
   "bics%?\\t%4, %3, %1%S0"
   [(set_attr "predicable" "yes")
+   (set_attr "arch" "32,a")
    (set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "logic_shift_imm")
-		      (const_string "logic_shift_reg")))]
+   (set_attr "type" "logic_shift_imm,logic_shift_reg")]
 )
 
 (define_insn "*andsi_notsi_si_compare0"
@@ -4219,7 +4211,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(not:SI (match_operator:SI 3 "shift_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r,r")
-		  (match_operand:SI 2 "shift_amount_operand" "M,rM")])))]
+		  (match_operand:SI 2 "shift_amount_operand" "M,r")])))]
   "TARGET_32BIT"
   "mvn%?\\t%0, %1%S3"
   [(set_attr "predicable" "yes")
@@ -4232,7 +4224,7 @@
 	(compare:CC_NOOV
 	 (not:SI (match_operator:SI 3 "shift_operator"
 		  [(match_operand:SI 1 "s_register_operand" "r,r")
-		   (match_operand:SI 2 "shift_amount_operand" "M,rM")]))
+		   (match_operand:SI 2 "shift_amount_operand" "M,r")]))
 	 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(not:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])))]
@@ -4248,7 +4240,7 @@
 	(compare:CC_NOOV
 	 (not:SI (match_operator:SI 3 "shift_operator"
 		  [(match_operand:SI 1 "s_register_operand" "r,r")
-		   (match_operand:SI 2 "shift_amount_operand" "M,rM")]))
+		   (match_operand:SI 2 "shift_amount_operand" "M,r")]))
 	 (const_int 0)))
    (clobber (match_scratch:SI 0 "=r,r"))]
   "TARGET_32BIT"
@@ -7197,43 +7189,43 @@
 
 (define_insn "*cmpsi_shiftsi"
   [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:SI   0 "s_register_operand" "r,r,r")
+	(compare:CC (match_operand:SI   0 "s_register_operand" "r,r")
 		    (match_operator:SI  3 "shift_operator"
-		     [(match_operand:SI 1 "s_register_operand" "r,r,r")
-		      (match_operand:SI 2 "shift_amount_operand" "M,r,M")])))]
+		     [(match_operand:SI 1 "s_register_operand" "r,r")
+		      (match_operand:SI 2 "shift_amount_operand" "M,r")])))]
   "TARGET_32BIT"
   "cmp\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set_attr "arch" "32,a,a")
-   (set_attr "type" "alus_shift_imm,alus_shift_reg,alus_shift_imm")])
+   (set_attr "arch" "32,a")
+   (set_attr "type" "alus_shift_imm,alus_shift_reg")])
 
 (define_insn "*cmpsi_shiftsi_swp"
   [(set (reg:CC_SWP CC_REGNUM)
 	(compare:CC_SWP (match_operator:SI 3 "shift_operator"
-			 [(match_operand:SI 1 "s_register_operand" "r,r,r")
-			  (match_operand:SI 2 "shift_amount_operand" "M,r,M")])
-			(match_operand:SI 0 "s_register_operand" "r,r,r")))]
+			 [(match_operand:SI 1 "s_register_operand" "r,r")
+			  (match_operand:SI 2 "shift_amount_operand" "M,r")])
+			(match_operand:SI 0 "s_register_operand" "r,r")))]
   "TARGET_32BIT"
   "cmp%?\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set_attr "arch" "32,a,a")
-   (set_attr "type" "alus_shift_imm,alus_shift_reg,alus_shift_imm")])
+   (set_attr "arch" "32,a")
+   (set_attr "type" "alus_shift_imm,alus_shift_reg")])
 
 (define_insn "*arm_cmpsi_negshiftsi_si"
   [(set (reg:CC_Z CC_REGNUM)
 	(compare:CC_Z
 	 (neg:SI (match_operator:SI 1 "shift_operator"
-		    [(match_operand:SI 2 "s_register_operand" "r")
-		     (match_operand:SI 3 "reg_or_int_operand" "rM")]))
-	 (match_operand:SI 0 "s_register_operand" "r")))]
-  "TARGET_ARM"
+		    [(match_operand:SI 2 "s_register_operand" "r,r")
+		     (match_operand:SI 3 "shift_amount_operand" "M,r")]))
+	 (match_operand:SI 0 "s_register_operand" "r,r")))]
+  "TARGET_32BIT"
   "cmn%?\\t%0, %2%S1"
   [(set_attr "conds" "set")
-   (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-				    (const_string "alus_shift_imm")
-				    (const_string "alus_shift_reg")))
+   (set_attr "arch" "32,a")
+   (set_attr "shift" "2")
+   (set_attr "type" "alus_shift_imm,alus_shift_reg")
    (set_attr "predicable" "yes")]
 )
 
@@ -8945,36 +8937,36 @@
 (define_insn "*sub_shiftsi_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
-	 (minus:SI (match_operand:SI 1 "s_register_operand" "r,r,r")
+	 (minus:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operator:SI 2 "shift_operator"
-		    [(match_operand:SI 3 "s_register_operand" "r,r,r")
-		     (match_operand:SI 4 "shift_amount_operand" "M,r,M")]))
+		    [(match_operand:SI 3 "s_register_operand" "r,r")
+		     (match_operand:SI 4 "shift_amount_operand" "M,r")]))
 	 (const_int 0)))
-   (set (match_operand:SI 0 "s_register_operand" "=r,r,r")
+   (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(minus:SI (match_dup 1)
 		  (match_op_dup 2 [(match_dup 3) (match_dup 4)])))]
   "TARGET_32BIT"
   "subs%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "set")
    (set_attr "shift" "3")
-   (set_attr "arch" "32,a,a")
-   (set_attr "type" "alus_shift_imm,alus_shift_reg,alus_shift_imm")])
+   (set_attr "arch" "32,a")
+   (set_attr "type" "alus_shift_imm,alus_shift_reg")])
 
 (define_insn "*sub_shiftsi_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
-	 (minus:SI (match_operand:SI 1 "s_register_operand" "r,r,r")
+	 (minus:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operator:SI 2 "shift_operator"
-		    [(match_operand:SI 3 "s_register_operand" "r,r,r")
-		     (match_operand:SI 4 "shift_amount_operand" "M,r,M")]))
+		    [(match_operand:SI 3 "s_register_operand" "r,r")
+		     (match_operand:SI 4 "shift_amount_operand" "M,r")]))
 	 (const_int 0)))
-   (clobber (match_scratch:SI 0 "=r,r,r"))]
+   (clobber (match_scratch:SI 0 "=r,r"))]
   "TARGET_32BIT"
   "subs%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "set")
    (set_attr "shift" "3")
-   (set_attr "arch" "32,a,a")
-   (set_attr "type" "alus_shift_imm,alus_shift_reg,alus_shift_imm")])
+   (set_attr "arch" "32,a")
+   (set_attr "type" "alus_shift_imm,alus_shift_reg")])
 
 
 (define_insn_and_split "*and_scc"
