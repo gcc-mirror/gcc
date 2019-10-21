@@ -1,6 +1,11 @@
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/90543
+	* optc-save-gen.awk: Fix up printing string option differences.
+
 	2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91920
