@@ -1,5 +1,21 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::vector_size): New member variable.
+	(vect_update_max_nunits): Update comment.
+	(current_vector_size): Delete.
+	* tree-vect-stmts.c (current_vector_size): Likewise.
+	(get_vectype_for_scalar_type): Use vec_info::vector_size instead
+	of current_vector_size.
+	(get_mask_type_for_scalar_type): Likewise.
+	* tree-vectorizer.c (try_vectorize_loop_1): Likewise.
+	* tree-vect-loop.c (vect_update_vf_for_slp): Likewise.
+	(vect_analyze_loop, vect_halve_mask_nunits): Likewise.
+	(vect_double_mask_nunits, vect_transform_loop): Likewise.
+	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.
+	(vect_make_slp_decision, vect_slp_bb_region): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_double_mask_nunits): Take a vec_info.
 	* tree-vect-loop.c (vect_double_mask_nunits): Likewise.
 	* tree-vect-stmts.c (supportable_narrowing_operation):  Update call

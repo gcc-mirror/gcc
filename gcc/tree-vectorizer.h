@@ -326,6 +326,10 @@ public:
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
 
+  /* The vector size for this loop in bytes, or 0 if we haven't picked
+     a size yet.  */
+  poly_uint64 vector_size;
+
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
   void set_vinfo_for_stmt (gimple *, stmt_vec_info);
@@ -1472,7 +1476,7 @@ vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
 static inline void
 vect_update_max_nunits (poly_uint64 *max_nunits, poly_uint64 nunits)
 {
-  /* All unit counts have the form current_vector_size * X for some
+  /* All unit counts have the form vec_info::vector_size * X for some
      rational X, so two unit sizes must have a common multiple.
      Everything is a multiple of the initial value of 1.  */
   *max_nunits = force_common_multiple (*max_nunits, nunits);
@@ -1588,7 +1592,6 @@ extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
-extern poly_uint64 current_vector_size;
 extern tree get_vectype_for_scalar_type (vec_info *, tree);
 extern tree get_vectype_for_scalar_type_and_size (tree, poly_uint64);
 extern tree get_mask_type_for_scalar_type (vec_info *, tree);

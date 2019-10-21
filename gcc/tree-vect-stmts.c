@@ -11133,22 +11133,20 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
   return vectype;
 }
 
-poly_uint64 current_vector_size;
-
 /* Function get_vectype_for_scalar_type.
 
    Returns the vector type corresponding to SCALAR_TYPE as supported
    by the target.  */
 
 tree
-get_vectype_for_scalar_type (vec_info *, tree scalar_type)
+get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type)
 {
   tree vectype;
   vectype = get_vectype_for_scalar_type_and_size (scalar_type,
-						  current_vector_size);
+						  vinfo->vector_size);
   if (vectype
-      && known_eq (current_vector_size, 0U))
-    current_vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
+      && known_eq (vinfo->vector_size, 0U))
+    vinfo->vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
   return vectype;
 }
 
@@ -11166,7 +11164,7 @@ get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type)
     return NULL;
 
   return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (vectype),
-				  current_vector_size);
+				  vinfo->vector_size);
 }
 
 /* Function get_same_sized_vectype

@@ -1414,7 +1414,7 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Loop contains SLP and non-SLP stmts\n");
       /* Both the vectorization factor and unroll factor have the form
-	 current_vector_size * X for some rational X, so they must have
+	 loop_vinfo->vector_size * X for some rational X, so they must have
 	 a common multiple.  */
       vectorization_factor
 	= force_common_multiple (vectorization_factor,
@@ -2311,7 +2311,6 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
   auto_vector_sizes vector_sizes;
 
   /* Autodetect first vector size we try.  */
-  current_vector_size = 0;
   targetm.vectorize.autovectorize_vector_sizes (&vector_sizes,
 						loop->simdlen != 0);
   unsigned int next_size = 0;
@@ -2333,7 +2332,7 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
   unsigned n_stmts = 0;
   poly_uint64 autodetected_vector_size = 0;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
-  poly_uint64 first_vector_size = 0;
+  poly_uint64 next_vector_size = 0;
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
@@ -2347,6 +2346,7 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return loop_vinfo;
 	}
+      loop_vinfo->vector_size = next_vector_size;
 
       bool fatal = false;
 
@@ -2365,7 +2365,6 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	      if (first_loop_vinfo == NULL)
 		{
 		  first_loop_vinfo = loop_vinfo;
-		  first_vector_size = current_vector_size;
 		  loop->aux = NULL;
 		}
 	      else
@@ -2381,7 +2380,7 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	delete loop_vinfo;
 
       if (next_size == 0)
-	autodetected_vector_size = current_vector_size;
+	autodetected_vector_size = loop_vinfo->vector_size;
 
       if (next_size < vector_sizes.length ()
 	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
@@ -2394,17 +2393,16 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	}
 
       if (next_size == vector_sizes.length ()
-	  || known_eq (current_vector_size, 0U))
+	  || known_eq (loop_vinfo->vector_size, 0U))
 	{
 	  if (first_loop_vinfo)
 	    {
-	      current_vector_size = first_vector_size;
 	      loop->aux = (loop_vec_info) first_loop_vinfo;
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_NOTE, vect_location,
 				   "***** Choosing vector size ");
-		  dump_dec (MSG_NOTE, current_vector_size);
+		  dump_dec (MSG_NOTE, first_loop_vinfo->vector_size);
 		  dump_printf (MSG_NOTE, "\n");
 		}
 	      return first_loop_vinfo;
@@ -2414,13 +2412,13 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	}
 
       /* Try the next biggest vector size.  */
-      current_vector_size = vector_sizes[next_size++];
+      next_vector_size = vector_sizes[next_size++];
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "***** Re-trying analysis with "
 			   "vector size ");
-	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_dec (MSG_NOTE, next_vector_size);
 	  dump_printf (MSG_NOTE, "\n");
 	}
     }
@@ -7745,19 +7743,19 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
 /* Return a mask type with half the number of elements as TYPE.  */
 
 tree
-vect_halve_mask_nunits (vec_info *, tree type)
+vect_halve_mask_nunits (vec_info *vinfo, tree type)
 {
   poly_uint64 nunits = exact_div (TYPE_VECTOR_SUBPARTS (type), 2);
-  return build_truth_vector_type (nunits, current_vector_size);
+  return build_truth_vector_type (nunits, vinfo->vector_size);
 }
 
 /* Return a mask type with twice as many elements as TYPE.  */
 
 tree
-vect_double_mask_nunits (vec_info *, tree type)
+vect_double_mask_nunits (vec_info *vinfo, tree type)
 {
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type) * 2;
-  return build_truth_vector_type (nunits, current_vector_size);
+  return build_truth_vector_type (nunits, vinfo->vector_size);
 }
 
 /* Record that a fully-masked version of LOOP_VINFO would need MASKS to
@@ -8243,7 +8241,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "LOOP EPILOGUE VECTORIZED (VS=");
-	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_dec (MSG_NOTE, loop_vinfo->vector_size);
 	  dump_printf (MSG_NOTE, ")\n");
 	}
     }
@@ -8295,14 +8293,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
 	  unsigned int ratio;
 	  while (next_size < vector_sizes.length ()
-		 && !(constant_multiple_p (current_vector_size,
+		 && !(constant_multiple_p (loop_vinfo->vector_size,
 					   vector_sizes[next_size], &ratio)
 		      && eiters >= lowest_vf / ratio))
 	    next_size += 1;
 	}
       else
 	while (next_size < vector_sizes.length ()
-	       && maybe_lt (current_vector_size, vector_sizes[next_size]))
+	       && maybe_lt (loop_vinfo->vector_size, vector_sizes[next_size]))
 	  next_size += 1;
 
       if (next_size == vector_sizes.length ())
