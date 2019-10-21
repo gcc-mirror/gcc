@@ -1971,8 +1971,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       /* If TYPE is a transparent union or record, pass things the way
 	 we would pass the first field of the union or record.  We have
 	 already verified that the modes are the same.  */
-      if ((TREE_CODE (type) == UNION_TYPE || TREE_CODE (type) == RECORD_TYPE)
-	   && TYPE_TRANSPARENT_AGGR (type))
+      if (RECORD_OR_UNION_TYPE_P (type) && TYPE_TRANSPARENT_AGGR (type))
 	type = TREE_TYPE (first_field (type));
 
       /* Decide where to pass this arg.
@@ -2750,6 +2749,9 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  poly_int64 size = 0;
 	  HOST_WIDE_INT const_size = 0;
 	  rtx_insn *before_arg = get_last_insn ();
+	  tree type = TREE_TYPE (args[i].tree_value);
+	  if (RECORD_OR_UNION_TYPE_P (type) && TYPE_TRANSPARENT_AGGR (type))
+	    type = TREE_TYPE (first_field (type));
 	  /* Set non-negative if we must move a word at a time, even if
 	     just one word (e.g, partial == 4 && mode == DFmode).  Set
 	     to -1 if we just use a normal move insn.  This value can be
@@ -2762,11 +2764,11 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      gcc_assert (partial % UNITS_PER_WORD == 0);
 	      nregs = partial / UNITS_PER_WORD;
 	    }
-	  else if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode)
+	  else if (TYPE_MODE (type) == BLKmode)
 	    {
 	      /* Variable-sized parameters should be described by a
 		 PARALLEL instead.  */
-	      const_size = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	      const_size = int_size_in_bytes (type);
 	      gcc_assert (const_size >= 0);
 	      nregs = (const_size + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
 	      size = const_size;
@@ -2893,8 +2895,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  if (GET_CODE (reg) == PARALLEL)
 	    use_group_regs (call_fusage, reg);
 	  else if (nregs == -1)
-	    use_reg_mode (call_fusage, reg,
-			  TYPE_MODE (TREE_TYPE (args[i].tree_value)));
+	    use_reg_mode (call_fusage, reg, TYPE_MODE (type));
 	  else if (nregs > 0)
 	    use_regs (call_fusage, REGNO (reg), nregs);
 	}
