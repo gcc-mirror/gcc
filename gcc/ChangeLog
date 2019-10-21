@@ -1,3 +1,28 @@
+2019-10-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/iterators.md (t2_binop0): Fix typo in comment.
+	* config/arm/arm.md (addsi3_carryin_shift): Simplify selection of the
+	type attribute.
+	(subsi3_carryin_shift): Separate into register and constant controlled
+	alternatives.  Use shift_amount_operand for operand 4.  Set shift
+	attribute and simplify type attribute.
+	(subsi3_carryin_shift_alt): Likewise.
+	(rsbsi3_carryin_shift): Likewise.
+	(rsbsi3_carryin_shift_alt): Likewise.
+	(andsi_not_shiftsi_si): Enable for TARGET_32BIT.  Separate constant
+	and register controlled shifts into distinct alternatives.
+	(andsi_not_shiftsi_si_scc_no_reuse): Likewise.
+	(andsi_not_shiftsi_si_scc): Likewise.
+	(arm_cmpsi_negshiftsi_si): Likewise.
+	(not_shiftsi): Remove redundant M constraint from alternative 1.
+	(not_shiftsi_compare0): Likewise.
+	(arm_cmpsi_insn): Remove redundant alternative 2.
+	(cmpsi_shift_swp): Likewise.
+	(sub_shiftsi): Likewise.
+	(sub_shiftsi_compare0_scratch): Likewise.
+	* config/arm/thumb2.md (thumb_andsi_not_shiftsi_si): Delete pattern.
+	(thumb2_cmpsi_neg_shiftsi): Likewise.
+
 2019-10-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92162
