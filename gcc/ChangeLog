@@ -1,5 +1,12 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (duplicate_and_interleave): Take a vec_info.
+	* tree-vect-slp.c (duplicate_and_interleave): Likewise.
+	(vect_get_constant_vectors): Update call accordingly.
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (get_vectype_for_scalar_type): Take a vec_info.
 	* tree-vect-stmts.c (get_vectype_for_scalar_type): Likewise.
 	(vect_prologue_cost_for_slp_op): Update call accordingly.
