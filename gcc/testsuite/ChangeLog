@@ -1,6 +1,11 @@
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91351
+	* g++.dg/opt/pr91351.C: New test.
+
 	2019-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/91401
