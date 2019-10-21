@@ -1,6 +1,10 @@
 2019-10-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::back_ref): New, broken out of ...
+	(trees_in::tree_node): ... here.  Call it multiple times.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::add_indirects): New, broken out of ...
 	(trees_out::decl_node, trees_in::tree_node): ... here.  Call them.
 	(module_state::{read,write}_cluster): Call them instead of

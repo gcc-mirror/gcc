@@ -2814,6 +2814,7 @@ public:
 
 public:
   int insert (tree);
+  tree back_ref (int);
 
 private:
   tree start (unsigned = 0);
@@ -6806,6 +6807,22 @@ trees_out::ref_node (tree t)
   return WK_none;
 }
 
+tree
+trees_in::back_ref (int tag)
+{
+  tree res = NULL_TREE;
+
+  if (tag < 0 && unsigned (~tag) < back_refs.length ())
+    res = back_refs[~tag];
+
+  if (!res)
+    set_overrun ();
+  else
+    dump (dumper::TREE) && dump ("Read backref:%d found %C:%N%S", tag,
+				 TREE_CODE (res), res, res);
+  return res;
+}
+
 /* We've just found DECL by name.  Insert nodes that come with it, but
    cannot be found by name, so we'll not accidentally walk into them.  */
 
@@ -8601,13 +8618,7 @@ trees_in::tree_node ()
     {
     default:
       /* backref, pull it out of the map.  */
-      if (tag < 0 && unsigned (~tag) < back_refs.length ())
-	res = back_refs[~tag];
-      if (!res)
-	set_overrun ();
-      if (res)
-	dump (dumper::TREE) && dump ("Read backref:%d found %C:%N%S", tag,
-				     TREE_CODE (res), res, res);
+      res = back_ref (tag);
       break;
 
     case tt_null:
@@ -8877,18 +8888,8 @@ trees_in::tree_node ()
 	      dump (dumper::TREE)
 		&& dump ("Created:%d derived type %C", tag, code);
 	  }
-	else if (unsigned (~tag) < back_refs.length ())
-	  {
-	    res = back_refs[~tag];
-	    if (res)
-	      dump (dumper::TREE)
-		&& dump ("Found:%d already derived type %C", tag, code);
-	  }
 	else
-	  {
-	    set_overrun ();
-	    res = NULL_TREE;
-	  }
+	  res = back_ref (tag);
       }
       break;
 
@@ -8939,19 +8940,8 @@ trees_in::tree_node ()
 	      dump (dumper::TREE)
 		&& dump ("Created:%d variant type %C", tag, TREE_CODE (res));
 	  }
-	else if (unsigned (~tag) < back_refs.length ())
-	  {
-	    res = back_refs[~tag];
-	    if (res)
-	      dump (dumper::TREE)
-		&& dump ("Found:%d already variant type %C",
-			 tag, TREE_CODE (res));
-	  }
 	else
-	  {
-	    set_overrun ();
-	    res = NULL_TREE;
-	  }
+	  res = back_ref (tag);
       }
       break;
 
