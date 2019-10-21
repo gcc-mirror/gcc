@@ -11650,7 +11650,7 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
    narrowing operation (short in the above example).   */
 
 bool
-supportable_narrowing_operation (vec_info *, enum tree_code code,
+supportable_narrowing_operation (vec_info *vinfo, enum tree_code code,
 				 tree vectype_out, tree vectype_in,
 				 enum tree_code *code1, int *multi_step_cvt,
                                  vec<tree> *interm_types)
@@ -11759,7 +11759,7 @@ supportable_narrowing_operation (vec_info *, enum tree_code code,
       intermediate_mode = insn_data[icode1].operand[0].mode;
       if (VECTOR_BOOLEAN_TYPE_P (prev_type))
 	{
-	  intermediate_type = vect_double_mask_nunits (prev_type);
+	  intermediate_type = vect_double_mask_nunits (vinfo, prev_type);
 	  if (intermediate_mode != TYPE_MODE (intermediate_type))
 	    return false;
 	}
