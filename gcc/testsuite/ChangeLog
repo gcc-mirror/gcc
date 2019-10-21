@@ -3,6 +3,13 @@
 	Backported from mainline
 	2019-09-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89435
+	PR rtl-optimization/89795
+	PR rtl-optimization/91720
+	* gcc.dg/pr89435.c: New test.
+	* gcc.dg/pr89795.c: New test.
+	* gcc.dg/pr91720.c: New test.
+
 	PR tree-optimization/91723
 	* gcc.dg/vect/vect-fma-3.c: New test.
 
