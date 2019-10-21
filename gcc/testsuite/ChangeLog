@@ -1,6 +1,11 @@
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91925
+	* g++.dg/conversion/packed2.C: New test.
+
 	2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88203
