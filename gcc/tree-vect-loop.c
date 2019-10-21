@@ -327,7 +327,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 				 "get vectype for scalar type:  %T\n",
 				 scalar_type);
 
-	      vectype = get_vectype_for_scalar_type (scalar_type);
+	      vectype = get_vectype_for_scalar_type (loop_vinfo, scalar_type);
 	      if (!vectype)
 		return opt_result::failure_at (phi,
 					       "not vectorized: unsupported "
@@ -3774,7 +3774,7 @@ get_initial_def_for_reduction (stmt_vec_info stmt_vinfo,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (init_val);
-  tree vectype = get_vectype_for_scalar_type (scalar_type);
+  tree vectype = get_vectype_for_scalar_type (loop_vinfo, scalar_type);
   tree def_for_init;
   tree init_def;
   REAL_VALUE_TYPE real_init_val = dconst0;
@@ -5555,11 +5555,11 @@ build_vect_cond_expr (enum tree_code code, tree vop[3], tree mask,
    corresponds to the type of arguments to the reduction stmt, and should *NOT*
    be used to create the vectorized stmt.  The right vectype for the vectorized
    stmt is obtained from the type of the result X:
-        get_vectype_for_scalar_type (TREE_TYPE (X))
+      get_vectype_for_scalar_type (vinfo, TREE_TYPE (X))
 
    This means that, contrary to "regular" reductions (or "regular" stmts in
    general), the following equation:
-      STMT_VINFO_VECTYPE == get_vectype_for_scalar_type (TREE_TYPE (X))
+      STMT_VINFO_VECTYPE == get_vectype_for_scalar_type (vinfo, TREE_TYPE (X))
    does *NOT* necessarily hold for reduction patterns.  */
 
 bool

@@ -1589,7 +1589,7 @@ extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
 extern poly_uint64 current_vector_size;
-extern tree get_vectype_for_scalar_type (tree);
+extern tree get_vectype_for_scalar_type (vec_info *, tree);
 extern tree get_vectype_for_scalar_type_and_size (tree, poly_uint64);
 extern tree get_mask_type_for_scalar_type (vec_info *, tree);
 extern tree get_same_sized_vectype (tree, tree);

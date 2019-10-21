@@ -1,5 +1,34 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (get_vectype_for_scalar_type): Take a vec_info.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Likewise.
+	(vect_prologue_cost_for_slp_op): Update call accordingly.
+	(vect_get_vec_def_for_operand, vect_get_gather_scatter_ops)
+	(vect_get_strided_load_store_ops, vectorizable_simd_clone_call)
+	(vect_supportable_shift, vect_is_simple_cond, vectorizable_comparison)
+	(get_mask_type_for_scalar_type): Likewise.
+	(vect_get_vector_types_for_stmt): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(get_initial_def_for_reduction, build_vect_cond_expr): Likewise.
+	* tree-vect-patterns.c (vect_supportable_direct_optab_p): Likewise.
+	(vect_split_statement, vect_convert_input): Likewise.
+	(vect_recog_widen_op_pattern, vect_recog_pow_pattern): Likewise.
+	(vect_recog_over_widening_pattern, vect_recog_mulhs_pattern): Likewise.
+	(vect_recog_average_pattern, vect_recog_cast_forwprop_pattern)
+	(vect_recog_rotate_pattern, vect_recog_vector_vector_shift_pattern)
+	(vect_synth_mult_by_constant, vect_recog_mult_pattern): Likewise.
+	(vect_recog_divmod_pattern, vect_recog_mixed_size_cond_pattern)
+	(check_bool_pattern, adjust_bool_pattern_cast, adjust_bool_pattern)
+	(search_type_for_mask_1, vect_recog_bool_pattern): Likewise.
+	(vect_recog_mask_conversion_pattern): Likewise.
+	(vect_add_conversion_to_pattern): Likewise.
+	(vect_recog_gather_scatter_pattern): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree_2): Likewise.
+	(vect_analyze_slp_instance, vect_get_constant_vectors): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (get_mask_type_for_scalar_type): Take a vec_info.
 	* tree-vect-stmts.c (get_mask_type_for_scalar_type): Likewise.
 	(vect_check_load_store_mask): Update call accordingly.

@@ -1127,7 +1127,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
   if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
     {
       tree scalar_type = TREE_TYPE (PHI_RESULT (stmt));
-      tree vectype = get_vectype_for_scalar_type (scalar_type);
+      tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
       if (!vect_record_max_nunits (stmt_info, group_size, vectype, max_nunits))
 	return NULL;
 
@@ -1926,7 +1926,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       scalar_type = TREE_TYPE (DR_REF (dr));
-      vectype = get_vectype_for_scalar_type (scalar_type);
+      vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
       group_size = DR_GROUP_SIZE (stmt_info);
     }
   else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
@@ -3287,6 +3287,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 {
   vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   stmt_vec_info stmt_vinfo = stmts[0];
+  vec_info *vinfo = stmt_vinfo->vinfo;
   gimple *stmt = stmt_vinfo->stmt;
   unsigned HOST_WIDE_INT nunits;
   tree vec_cst;
@@ -3310,7 +3311,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
     vector_type
       = build_same_sized_truth_vector_type (STMT_VINFO_VECTYPE (stmt_vinfo));
   else
-    vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+    vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op));
 
   if (STMT_VINFO_DATA_REF (stmt_vinfo))
     {
