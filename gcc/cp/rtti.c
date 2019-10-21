@@ -272,11 +272,11 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
 
   exp = resolve_nondeduced_context (exp, complain);
 
-  /* peel back references, so they match.  */
+  /* Peel back references, so they match.  */
   type = non_reference (unlowered_expr_type (exp));
 
   /* Peel off cv qualifiers.  */
-  type = TYPE_MAIN_VARIANT (type);
+  type = cv_unqualified (type);
 
   /* For UNKNOWN_TYPEs call complete_type_or_else to get diagnostics.  */
   if (CLASS_TYPE_P (type) || type == unknown_type_node
@@ -300,7 +300,7 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
     }
   else
     /* Otherwise return the type_info for the static type of the expr.  */
-    t = get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
+    t = get_tinfo_ptr (type);
 
   return cp_build_fold_indirect_ref (t);
 }
@@ -518,7 +518,7 @@ get_typeid (tree type, tsubst_flags_t complain)
 
   /* The top-level cv-qualifiers of the lvalue expression or the type-id
      that is the operand of typeid are always ignored.  */
-  type = TYPE_MAIN_VARIANT (type);
+  type = cv_unqualified (type);
 
   /* For UNKNOWN_TYPEs call complete_type_or_else to get diagnostics.  */
   if (CLASS_TYPE_P (type) || type == unknown_type_node
