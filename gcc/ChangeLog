@@ -12,6 +12,12 @@
 	* match.pd (X / C1 op C2): Don't call unsigned_type_for on
 	range_check_type result.
 
+	2019-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/91572
+	* tree.c (find_decls_types_in_node): Also walk TREE_PURPOSE of
+	GIMPLE_ASM TREE_LIST operands.
+
 	2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91351
