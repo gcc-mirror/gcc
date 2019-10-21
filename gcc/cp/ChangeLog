@@ -1,3 +1,11 @@
+2019-10-21  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/83434 - typeinfo of noexcept function
+	* rtti.c (get_tinfo_decl_dynamic): Do not call
+	TYPE_MAIN_VARIANT for function.
+	(get_typeid): Likewise.
+
 2019-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_class_head): Improve error recovery upon
