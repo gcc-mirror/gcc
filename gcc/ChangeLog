@@ -1,5 +1,10 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (simple_integer_narrowing): Take a vec_info.
+	(vectorizable_call): Update call accordingly.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (can_duplicate_and_interleave_p): Take a vec_info.
 	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.
 	(duplicate_and_interleave): Update call accordingly.

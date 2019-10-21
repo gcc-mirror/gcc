@@ -3175,7 +3175,7 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
    *CONVERT_CODE.  */
 
 static bool
-simple_integer_narrowing (tree vectype_out, tree vectype_in,
+simple_integer_narrowing (vec_info *, tree vectype_out, tree vectype_in,
 			  tree_code *convert_code)
 {
   if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype_out))
@@ -3369,7 +3369,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (cfn != CFN_LAST
       && (modifier == NONE
 	  || (modifier == NARROW
-	      && simple_integer_narrowing (vectype_out, vectype_in,
+	      && simple_integer_narrowing (vinfo, vectype_out, vectype_in,
 					   &convert_code))))
     ifn = vectorizable_internal_function (cfn, callee, vectype_out,
 					  vectype_in);
