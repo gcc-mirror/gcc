@@ -1,5 +1,10 @@
 2019-10-21  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92062 - ODR-use ignored for static member of class template.
+	* pt.c (has_value_dependent_address): Strip location wrappers.
+
+2019-10-21  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92106 - ICE with structured bindings and -Wreturn-local-addr.
 	* typeck.c (maybe_warn_about_returning_address_of_local): Avoid
 	recursing on null initializer and return false instead.
