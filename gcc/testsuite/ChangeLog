@@ -1,5 +1,10 @@
 2019-10-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92162
+	* gcc.dg/pr92162.c: New testcase.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92161
 	* gfortran.dg/pr92161.f: New testcase.
 
