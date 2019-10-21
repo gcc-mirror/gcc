@@ -233,7 +233,7 @@ vect_get_place_in_interleaving_chain (stmt_vec_info stmt_info,
    (if nonnull).  */
 
 bool
-can_duplicate_and_interleave_p (vec_info *, unsigned int count,
+can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
 				machine_mode elt_mode,
 				unsigned int *nvectors_out,
 				tree *vector_type_out,
@@ -246,7 +246,7 @@ can_duplicate_and_interleave_p (vec_info *, unsigned int count,
     {
       scalar_int_mode int_mode;
       poly_int64 elt_bits = elt_bytes * BITS_PER_UNIT;
-      if (multiple_p (current_vector_size, elt_bytes, &nelts)
+      if (multiple_p (vinfo->vector_size, elt_bytes, &nelts)
 	  && int_mode_for_size (elt_bits, 0).exists (&int_mode))
 	{
 	  tree int_type = build_nonstandard_integer_type
@@ -431,7 +431,7 @@ again:
 	    }
 	  if ((dt == vect_constant_def
 	       || dt == vect_external_def)
-	      && !current_vector_size.is_constant ()
+	      && !vinfo->vector_size.is_constant ()
 	      && (TREE_CODE (type) == BOOLEAN_TYPE
 		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
 						      TYPE_MODE (type))))
@@ -2250,7 +2250,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* FORNOW: SLP if you can.  */
-      /* All unroll factors have the form current_vector_size * X for some
+      /* All unroll factors have the form vinfo->vector_size * X for some
 	 rational X, so they must have a common multiple.  */
       unrolling_factor
 	= force_common_multiple (unrolling_factor,
@@ -2986,7 +2986,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
   auto_vector_sizes vector_sizes;
 
   /* Autodetect first vector size we try.  */
-  current_vector_size = 0;
+  poly_uint64 next_vector_size = 0;
   targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
   unsigned int next_size = 0;
 
@@ -3005,6 +3005,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	bb_vinfo->shared->save_datarefs ();
       else
 	bb_vinfo->shared->check_datarefs ();
+      bb_vinfo->vector_size = next_vector_size;
 
       if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal)
 	  && dbg_cnt (vect_slp))
@@ -3018,7 +3019,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	  unsigned HOST_WIDE_INT bytes;
 	  if (dump_enabled_p ())
 	    {
-	      if (current_vector_size.is_constant (&bytes))
+	      if (bb_vinfo->vector_size.is_constant (&bytes))
 		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 				 "basic block part vectorized using %wu byte "
 				 "vectors\n", bytes);
@@ -3030,10 +3031,11 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 
 	  vectorized = true;
 	}
-      delete bb_vinfo;
 
       if (next_size == 0)
-	autodetected_vector_size = current_vector_size;
+	autodetected_vector_size = bb_vinfo->vector_size;
+
+      delete bb_vinfo;
 
       if (next_size < vector_sizes.length ()
 	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
@@ -3041,20 +3043,20 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 
       if (vectorized
 	  || next_size == vector_sizes.length ()
-	  || known_eq (current_vector_size, 0U)
+	  || known_eq (bb_vinfo->vector_size, 0U)
 	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
 	     vector sizes will fail do not bother iterating.  */
 	  || fatal)
 	return vectorized;
 
       /* Try the next biggest vector size.  */
-      current_vector_size = vector_sizes[next_size++];
+      next_vector_size = vector_sizes[next_size++];
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "***** Re-trying analysis with "
 			   "vector size ");
-	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_dec (MSG_NOTE, next_vector_size);
 	  dump_printf (MSG_NOTE, "\n");
 	}
     }
