@@ -1726,16 +1726,8 @@ vect_get_vec_defs (tree op0, tree op1, stmt_vec_info stmt_info,
 {
   if (slp_node)
     {
-      int nops = (op1 == NULL_TREE) ? 1 : 2;
-      auto_vec<tree> ops (nops);
-      auto_vec<vec<tree> > vec_defs (nops);
-
-      ops.quick_push (op0);
-      if (op1)
-        ops.quick_push (op1);
-
-      vect_get_slp_defs (ops, slp_node, &vec_defs);
-
+      auto_vec<vec<tree> > vec_defs (SLP_TREE_CHILDREN (slp_node).length ());
+      vect_get_slp_defs (slp_node, &vec_defs, op1 ? 2 : 1);
       *vec_oprnds0 = vec_defs[0];
       if (op1)
 	*vec_oprnds1 = vec_defs[1];
@@ -3473,9 +3465,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      auto_vec<vec<tree> > vec_defs (nargs);
 	      vec<tree> vec_oprnds0;
 
-	      for (i = 0; i < nargs; i++)
-		vargs[i] = gimple_call_arg (stmt, i);
-	      vect_get_slp_defs (vargs, slp_node, &vec_defs);
+	      vect_get_slp_defs (slp_node, &vec_defs);
 	      vec_oprnds0 = vec_defs[0];
 
 	      /* Arguments are ready.  Create the new vector stmt.  */
@@ -3647,9 +3637,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      auto_vec<vec<tree> > vec_defs (nargs);
 	      vec<tree> vec_oprnds0;
 
-	      for (i = 0; i < nargs; i++)
-		vargs.quick_push (gimple_call_arg (stmt, i));
-	      vect_get_slp_defs (vargs, slp_node, &vec_defs);
+	      vect_get_slp_defs (slp_node, &vec_defs);
 	      vec_oprnds0 = vec_defs[0];
 
 	      /* Arguments are ready.  Create the new vector stmt.  */
@@ -6195,12 +6183,8 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    {
 	      if (slp_node)
 		{
-		  auto_vec<tree> ops(3);
-		  ops.quick_push (op0);
-		  ops.quick_push (op1);
-		  ops.quick_push (op2);
 		  auto_vec<vec<tree> > vec_defs(3);
-		  vect_get_slp_defs (ops, slp_node, &vec_defs);
+		  vect_get_slp_defs (slp_node, &vec_defs);
 		  vec_oprnds0 = vec_defs[0];
 		  vec_oprnds1 = vec_defs[1];
 		  vec_oprnds2 = vec_defs[2];
@@ -9271,10 +9255,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    {
 	      if (slp_node)
 		{
-		  auto_vec<tree> ops (1);
 		  auto_vec<vec<tree> > vec_defs (1);
-		  ops.quick_push (mask);
-		  vect_get_slp_defs (ops, slp_node, &vec_defs);
+		  vect_get_slp_defs (slp_node, &vec_defs);
 		  vec_mask = vec_defs[0][0];
 		}
 	      else
@@ -10046,19 +10028,8 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
           if (slp_node)
             {
-              auto_vec<tree, 4> ops;
 	      auto_vec<vec<tree>, 4> vec_defs;
-
-	      if (masked)
-		ops.safe_push (cond_expr);
-	      else
-		{
-		  ops.safe_push (cond_expr0);
-		  ops.safe_push (cond_expr1);
-		}
-              ops.safe_push (then_clause);
-              ops.safe_push (else_clause);
-              vect_get_slp_defs (ops, slp_node, &vec_defs);
+              vect_get_slp_defs (slp_node, &vec_defs);
 	      vec_oprnds3 = vec_defs.pop ();
 	      vec_oprnds2 = vec_defs.pop ();
 	      if (!masked)
@@ -10461,12 +10432,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  if (slp_node)
 	    {
-	      auto_vec<tree, 2> ops;
 	      auto_vec<vec<tree>, 2> vec_defs;
-
-	      ops.safe_push (rhs1);
-	      ops.safe_push (rhs2);
-	      vect_get_slp_defs (ops, slp_node, &vec_defs);
+	      vect_get_slp_defs (slp_node, &vec_defs);
 	      vec_oprnds1 = vec_defs.pop ();
 	      vec_oprnds0 = vec_defs.pop ();
 	      if (swap_p)

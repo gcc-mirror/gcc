@@ -5312,10 +5312,7 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
   if (slp_node)
     {
       auto_vec<vec<tree> > vec_defs (2);
-      auto_vec<tree> sops(2);
-      sops.quick_push (ops[0]);
-      sops.quick_push (ops[1]);
-      vect_get_slp_defs (sops, slp_node, &vec_defs);
+      vect_get_slp_defs (slp_node, &vec_defs);
       vec_oprnds0.safe_splice (vec_defs[1 - reduc_index]);
       vec_defs[0].release ();
       vec_defs[1].release ();
@@ -6484,16 +6481,8 @@ vect_transform_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    {
 	      /* Get vec defs for all the operands except the reduction index,
 		 ensuring the ordering of the ops in the vector is kept.  */
-	      auto_vec<tree, 3> slp_ops;
 	      auto_vec<vec<tree>, 3> vec_defs;
-
-	      slp_ops.quick_push (ops[0]);
-	      slp_ops.quick_push (ops[1]);
-	      if (op_type == ternary_op)
-		slp_ops.quick_push (ops[2]);
-
-	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs);
-
+	      vect_get_slp_defs (slp_node, &vec_defs);
 	      vec_oprnds0.safe_splice (vec_defs[0]);
 	      vec_defs[0].release ();
 	      vec_oprnds1.safe_splice (vec_defs[1]);
