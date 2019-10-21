@@ -1,3 +1,8 @@
+2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92015
+	* g++.dg/cpp0x/constexpr-92015.C: New test.
+
 2019-10-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92062 - ODR-use ignored for static member of class template.
