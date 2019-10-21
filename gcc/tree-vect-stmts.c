@@ -2558,6 +2558,7 @@ vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
 			    vect_def_type *mask_dt_out,
 			    tree *mask_vectype_out)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
     {
       if (dump_enabled_p ())
@@ -2586,7 +2587,7 @@ vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   if (!mask_vectype)
-    mask_vectype = get_mask_type_for_scalar_type (TREE_TYPE (vectype));
+    mask_vectype = get_mask_type_for_scalar_type (vinfo, TREE_TYPE (vectype));
 
   if (!mask_vectype || !VECTOR_BOOLEAN_TYPE_P (mask_vectype))
     {
@@ -11156,7 +11157,7 @@ get_vectype_for_scalar_type (tree scalar_type)
    of vectors of specified SCALAR_TYPE as supported by target.  */
 
 tree
-get_mask_type_for_scalar_type (tree scalar_type)
+get_mask_type_for_scalar_type (vec_info *, tree scalar_type)
 {
   tree vectype = get_vectype_for_scalar_type (scalar_type);
 
@@ -11986,6 +11987,7 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 opt_tree
 vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   gimple *stmt = stmt_info->stmt;
   tree mask_type = NULL;
   tree vectype, scalar_type;
@@ -11995,7 +11997,7 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
       && !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
     {
       scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-      mask_type = get_mask_type_for_scalar_type (scalar_type);
+      mask_type = get_mask_type_for_scalar_type (vinfo, scalar_type);
 
       if (!mask_type)
 	return opt_tree::failure_at (stmt,

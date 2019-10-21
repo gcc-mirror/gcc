@@ -1,5 +1,15 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (get_mask_type_for_scalar_type): Take a vec_info.
+	* tree-vect-stmts.c (get_mask_type_for_scalar_type): Likewise.
+	(vect_check_load_store_mask): Update call accordingly.
+	(vect_get_mask_type_for_stmt): Likewise.
+	* tree-vect-patterns.c (check_bool_pattern): Likewise.
+	(search_type_for_mask_1, vect_recog_mask_conversion_pattern): Likewise.
+	(vect_convert_mask_for_vectype): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (vect_supportable_direct_optab_p): Take
 	a vec_info.
 	(vect_recog_dot_prod_pattern): Update call accordingly.

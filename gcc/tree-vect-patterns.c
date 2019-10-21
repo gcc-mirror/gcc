@@ -3616,7 +3616,8 @@ check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
 	  if (comp_vectype == NULL_TREE)
 	    return false;
 
-	  tree mask_type = get_mask_type_for_scalar_type (TREE_TYPE (rhs1));
+	  tree mask_type = get_mask_type_for_scalar_type (vinfo,
+							  TREE_TYPE (rhs1));
 	  if (mask_type
 	      && expand_vec_cmp_expr_p (comp_vectype, mask_type, rhs_code))
 	    return false;
@@ -3943,7 +3944,7 @@ search_type_for_mask_1 (tree var, vec_info *vinfo,
 	      break;
 	    }
 
-	  mask_type = get_mask_type_for_scalar_type (TREE_TYPE (rhs1));
+	  mask_type = get_mask_type_for_scalar_type (vinfo, TREE_TYPE (rhs1));
 	  if (!mask_type
 	      || !expand_vec_cmp_expr_p (comp_vectype, mask_type, rhs_code))
 	    {
@@ -4275,7 +4276,7 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       tree mask_arg_type = search_type_for_mask (mask_arg, vinfo);
       if (!mask_arg_type)
 	return NULL;
-      vectype2 = get_mask_type_for_scalar_type (mask_arg_type);
+      vectype2 = get_mask_type_for_scalar_type (vinfo, mask_arg_type);
 
       if (!vectype1 || !vectype2
 	  || known_eq (TYPE_VECTOR_SUBPARTS (vectype1),
@@ -4352,7 +4353,7 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       else
 	return NULL;
 
-      vectype2 = get_mask_type_for_scalar_type (rhs1_type);
+      vectype2 = get_mask_type_for_scalar_type (vinfo, rhs1_type);
 
       if (!vectype1 || !vectype2)
 	return NULL;
@@ -4442,14 +4443,14 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
   if (TYPE_PRECISION (rhs1_type) < TYPE_PRECISION (rhs2_type))
     {
-      vectype1 = get_mask_type_for_scalar_type (rhs1_type);
+      vectype1 = get_mask_type_for_scalar_type (vinfo, rhs1_type);
       if (!vectype1)
 	return NULL;
       rhs2 = build_mask_conversion (rhs2, vectype1, stmt_vinfo);
     }
   else
     {
-      vectype1 = get_mask_type_for_scalar_type (rhs2_type);
+      vectype1 = get_mask_type_for_scalar_type (vinfo, rhs2_type);
       if (!vectype1)
 	return NULL;
       rhs1 = build_mask_conversion (rhs1, vectype1, stmt_vinfo);
@@ -4520,7 +4521,7 @@ vect_convert_mask_for_vectype (tree mask, tree vectype,
   tree mask_type = search_type_for_mask (mask, vinfo);
   if (mask_type)
     {
-      tree mask_vectype = get_mask_type_for_scalar_type (mask_type);
+      tree mask_vectype = get_mask_type_for_scalar_type (vinfo, mask_type);
       if (mask_vectype
 	  && maybe_ne (TYPE_VECTOR_SUBPARTS (vectype),
 		       TYPE_VECTOR_SUBPARTS (mask_vectype)))
