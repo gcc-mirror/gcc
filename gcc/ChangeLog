@@ -1,6 +1,13 @@
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91723
+	* tree-vect-stmts.c (vectorizable_call): Use types_compatible_p check
+	instead of pointer equality when checking if argument vectypes are
+	the same.
+
 	2019-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91665
