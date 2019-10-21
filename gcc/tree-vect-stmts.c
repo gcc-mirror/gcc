@@ -3175,7 +3175,7 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
    *CONVERT_CODE.  */
 
 static bool
-simple_integer_narrowing (vec_info *, tree vectype_out, tree vectype_in,
+simple_integer_narrowing (vec_info *vinfo, tree vectype_out, tree vectype_in,
 			  tree_code *convert_code)
 {
   if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype_out))
@@ -3185,8 +3185,8 @@ simple_integer_narrowing (vec_info *, tree vectype_out, tree vectype_in,
   tree_code code;
   int multi_step_cvt = 0;
   auto_vec <tree, 8> interm_types;
-  if (!supportable_narrowing_operation (NOP_EXPR, vectype_out, vectype_in,
-					&code, &multi_step_cvt,
+  if (!supportable_narrowing_operation (vinfo, NOP_EXPR, vectype_out,
+					vectype_in, &code, &multi_step_cvt,
 					&interm_types)
       || multi_step_cvt)
     return false;
@@ -4957,8 +4957,8 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
     case NARROW:
       gcc_assert (op_type == unary_op);
-      if (supportable_narrowing_operation (code, vectype_out, vectype_in,
-					   &code1, &multi_step_cvt,
+      if (supportable_narrowing_operation (vinfo, code, vectype_out,
+					   vectype_in, &code1, &multi_step_cvt,
 					   &interm_types))
 	break;
 
@@ -4974,8 +4974,8 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (!supportable_convert_operation (code, cvt_type, vectype_in,
 					  &decl1, &codecvt1))
 	goto unsupported;
-      if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
-					   &code1, &multi_step_cvt,
+      if (supportable_narrowing_operation (vinfo, NOP_EXPR, vectype_out,
+					   cvt_type, &code1, &multi_step_cvt,
 					   &interm_types))
 	break;
       goto unsupported;
@@ -11649,7 +11649,7 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
    narrowing operation (short in the above example).   */
 
 bool
-supportable_narrowing_operation (enum tree_code code,
+supportable_narrowing_operation (vec_info *, enum tree_code code,
 				 tree vectype_out, tree vectype_in,
 				 enum tree_code *code1, int *multi_step_cvt,
                                  vec<tree> *interm_types)

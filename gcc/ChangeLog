@@ -1,5 +1,12 @@
 2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (supportable_narrowing_operation): Take a vec_info.
+	* tree-vect-stmts.c (supportable_narrowing_operation): Likewise.
+	(simple_integer_narrowing): Update call accordingly.
+	(vectorizable_conversion): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (simple_integer_narrowing): Take a vec_info.
 	(vectorizable_call): Update call accordingly.
 

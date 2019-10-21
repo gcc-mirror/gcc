@@ -1603,8 +1603,8 @@ extern bool supportable_widening_operation (enum tree_code, stmt_vec_info,
 					    tree, tree, enum tree_code *,
 					    enum tree_code *, int *,
 					    vec<tree> *);
-extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
-					     enum tree_code *,
+extern bool supportable_narrowing_operation (vec_info *, enum tree_code, tree,
+					     tree, enum tree_code *,
 					     int *, vec<tree> *);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
