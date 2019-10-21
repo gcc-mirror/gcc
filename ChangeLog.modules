@@ -1,6 +1,17 @@
 2019-10-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parms{,_fini}): Drop outer parms,
+	add tpl_levels.
+	(trees_{in,out}::tpl_header): Likewise.
+	(trees_{in,out}::add_indirect_tpl_parms): New.
+	(trees_{in,out}::add_indirects): Call them.
+	(trees_{in,out}:decl_value): Adjust tpl_header streaming.
+	(trees_{in,out}:tree_value): Adjust tpl_header streaming.
+	(depset::hadh::find_dependencies): Likewise.
+	(module_name): Don't look for current TU's parent.
+
+	gcc/cp/
 	* module.cc (trees_in::back_ref): New, broken out of ...
 	(trees_in::tree_node): ... here.  Call it multiple times.
 

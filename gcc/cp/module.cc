@@ -2848,12 +2848,13 @@ public:
   tree tree_node ();
 
 private:
-  tree tpl_parms (tree outer_parms);
-  bool tpl_parms_fini (tree decl, tree outer_parms);
-  bool tpl_header (tree decl, tree container);
+  tree tpl_parms (unsigned &tpl_levels);
+  bool tpl_parms_fini (tree decl, unsigned tpl_levels);
+  bool tpl_header (tree decl, unsigned *tpl_levels);
   tree fn_arg_types ();
   int fn_parms_init (tree);
   void fn_parms_fini (int tag, tree fn, tree existing, bool has_defn);
+  unsigned add_indirect_tpl_parms (tree);
 public:
   bool add_indirects (tree);
 
@@ -3003,15 +3004,16 @@ public:
   void tree_node (tree);
 
 private:
-  void tpl_parms (tree parms, tree outer_parms);
-  void tpl_parms_fini (tree decl, tree outer_parms);
+  void tpl_parms (tree parms, unsigned &tpl_levels);
+  void tpl_parms_fini (tree decl, unsigned tpl_levels);
   void fn_arg_types (tree);
   void fn_parms_fini (tree) {}
+  unsigned add_indirect_tpl_parms (tree);
 public:
   void add_indirects (tree);
 public: // FIXME: while merge sortable is a thing
   void fn_parms_init (tree);
-  void tpl_header (tree decl, tree container);
+  void tpl_header (tree decl, unsigned *tpl_levels);
 
 public:
   merge_kind get_merge_kind (depset *);
@@ -6823,6 +6825,42 @@ trees_in::back_ref (int tag)
   return res;
 }
 
+unsigned
+trees_out::add_indirect_tpl_parms (tree parms)
+{
+  unsigned len = 0;
+  for (tree probe = parms; probe; probe = TREE_CHAIN (probe), len++)
+    if (TREE_VISITED (probe))
+      break;
+  if (streaming_p ())
+    u (len);
+
+  for (unsigned ix = 0; ix != len; parms = TREE_CHAIN (parms), ix++)
+    {
+      int tag = insert (parms);
+      dump (dumper::TREE)
+	&& dump ("Indirect:%d template's parameter %u %C:%N",
+		 tag, ix, TREE_CODE (parms), parms);
+    }
+
+  return len;
+}
+
+unsigned
+trees_in::add_indirect_tpl_parms (tree parms)
+{
+  unsigned len = u ();
+  for (unsigned ix = 0; ix != len; parms = TREE_CHAIN (parms), ix++)
+    {
+      int tag = insert (parms);
+      dump (dumper::TREE)
+	&& dump ("Indirect:%d template's parameter %u %C:%N",
+		 tag, ix, TREE_CODE (parms), parms);
+    }
+
+  return len;
+}
+
 /* We've just found DECL by name.  Insert nodes that come with it, but
    cannot be found by name, so we'll not accidentally walk into them.  */
 
@@ -6830,12 +6868,16 @@ void
 trees_out::add_indirects (tree decl)
 {
   unsigned count = 0;
-
+  // FIXME: We'll eventually want default fn parms of templates and
+  // perhaps default template parms too.  I think the former can be
+  // referenced from instantiations (as they are lazily instantiated).
+  // Also (deferred?) exception specifications of templates.
   tree proxy = decl;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      proxy = DECL_TEMPLATE_RESULT (decl);
+      count += add_indirect_tpl_parms (DECL_TEMPLATE_PARMS (decl));
 
+      proxy = DECL_TEMPLATE_RESULT (decl);
       int tag = insert (proxy);
       if (streaming_p ())
 	dump (dumper::TREE)
@@ -6874,6 +6916,8 @@ trees_in::add_indirects (tree decl)
   tree proxy = decl;
   if (TREE_CODE (proxy) == TEMPLATE_DECL)
     {
+      count += add_indirect_tpl_parms (DECL_TEMPLATE_PARMS (decl));
+
       proxy = DECL_TEMPLATE_RESULT (decl);
       int tag = insert (proxy);
       dump (dumper::TREE)
@@ -7007,8 +7051,9 @@ trees_out::decl_value (tree decl, depset *dep)
      we start emitting keys for this decl.  */
   tree_node (container);
 
+  unsigned tpl_levels = 0;
   if (decl != inner)
-    tpl_header (decl, container);
+    tpl_header (decl, &tpl_levels);
   if (TREE_CODE (inner) == FUNCTION_DECL)
     fn_parms_init (inner);
 
@@ -7031,10 +7076,7 @@ trees_out::decl_value (tree decl, depset *dep)
     {
       tree_node_vals (inner);
   
-      tpl_parms_fini (decl,
-		      TREE_CODE (container) == TEMPLATE_DECL
-		      ? DECL_TEMPLATE_PARMS (container) : NULL_TREE);
-      gcc_checking_assert (!TREE_VISITED (DECL_TEMPLATE_PARMS (decl)));
+      tpl_parms_fini (decl, tpl_levels);
     }
 
   if (type)
@@ -7178,6 +7220,7 @@ trees_in::decl_value ()
   
   // FIXME: this needs a cleanup
   tree container_1 = tree_node ();
+  unsigned tpl_levels = 0;
   if (true)
     {
       /* Figure out if this decl is already known about.  */
@@ -7189,7 +7232,7 @@ trees_in::decl_value ()
       tree container = container_1;
 
       if (decl != inner)
-	if (!tpl_header (decl, container))
+	if (!tpl_header (decl, &tpl_levels))
 	  goto bail;
       if (TREE_CODE (inner) == FUNCTION_DECL)
 	parm_tag = fn_parms_init (inner);
@@ -7340,9 +7383,7 @@ trees_in::decl_value ()
       if (!tree_node_vals (inner))
 	goto bail;
 
-      if (!tpl_parms_fini (decl,
-			   TREE_CODE (container_1) == TEMPLATE_DECL
-			   ? DECL_TEMPLATE_PARMS (container_1) : NULL_TREE))
+      if (!tpl_parms_fini (decl, tpl_levels))
 	goto bail;
     }
 
@@ -8339,22 +8380,10 @@ trees_out::tree_value (tree t)
 
   if (inner_tag != 0)
     {
-      /* This is a template-template parameter, it could share a parm
-	 list with its context's container.  (Not the context itself,
-	 for this ttp is created before that even exists.)  */
-      // FIXME: Perhaps we should catch this directly in tpl_parms
-      // streaming?
-      tree ctx = DECL_CONTEXT (t);
-      gcc_assert (ctx && TREE_CODE (ctx) == TEMPLATE_DECL);
-      tree container = get_container (ctx);
+      unsigned tpl_levels = 0;
+      tpl_header (t, &tpl_levels);
 
-      tree_node (container);
-      tpl_header (t, container);
-
-      tpl_parms_fini (t, TREE_CODE (container) == TEMPLATE_DECL
-		      ? DECL_TEMPLATE_PARMS (container) : NULL_TREE);
-
-      gcc_checking_assert (!TREE_VISITED (DECL_TEMPLATE_PARMS (t)));
+      tpl_parms_fini (t, tpl_levels);
 
       tree_node_vals (t);
     }
@@ -8457,10 +8486,9 @@ trees_in::tree_value ()
   if (inner_tag != 0)
     {
       /* A template template parameter.  */
-      tree container = tree_node ();
-      tpl_header (res, container);
-      tpl_parms_fini (res, TREE_CODE (container) == TEMPLATE_DECL
-		      ? DECL_TEMPLATE_PARMS (container) : NULL_TREE);
+      unsigned tpl_levels = 0;
+      tpl_header (res, &tpl_levels);
+      tpl_parms_fini (res, tpl_levels);
 
       gcc_checking_assert (DECL_TEMPLATE_RESULT (res) == inner);
       if (!tree_node_vals (res))
@@ -9258,26 +9286,31 @@ trees_in::tree_node ()
 }
 
 void
-trees_out::tpl_parms (tree parms, tree outer_parms)
+trees_out::tpl_parms (tree parms, unsigned &tpl_levels)
 {
-  if (parms == outer_parms)
+  if (!parms)
     return;
 
-  if (!parms)
+  if (TREE_VISITED (parms))
     {
-      /* Some nested templates do not inherit their container's
-	 parms.  Tell the reader this happened.  */
-      if (streaming_p ())
-	u (1);
+      ref_node (parms);
       return;
     }
 
-  tpl_parms (TREE_CHAIN (parms), outer_parms);
+  tpl_parms (TREE_CHAIN (parms), tpl_levels);
 
   tree vec = TREE_VALUE (parms);
   unsigned len = TREE_VEC_LENGTH (vec);
+  /* Depth.  */
+  int tag = insert (parms);
   if (streaming_p ())
-    u (len + 2);
+    {
+      i (len + 1);
+      dump (dumper::TREE)
+	&& dump ("Writing template parms:%d level:%N length:%d",
+		 tag, TREE_PURPOSE (parms), len);
+    }
+  tree_node (TREE_PURPOSE (parms));
 
   for (unsigned ix = 0; ix != len; ix++)
     {
@@ -9314,23 +9347,30 @@ trees_out::tpl_parms (tree parms, tree outer_parms)
       tree_node (TEMPLATE_PARM_CONSTRAINTS (parm));
     }
 
-  /* Depth.  */
-  tree_node (TREE_PURPOSE (parms));
+  tpl_levels++;
 }
 
 tree
-trees_in::tpl_parms (tree outer_parms)
+trees_in::tpl_parms (unsigned &tpl_levels)
 {
-  tree parms = outer_parms;
+  tree parms = NULL_TREE;
 
-  while (int len = u ())
+  while (int len = i ())
     {
-      len -= 2;
       if (len < 0)
 	{
-	  parms = NULL_TREE;
+	  parms = back_ref (len);
 	  continue;
 	}
+
+      len -= 1;
+      parms = tree_cons (NULL_TREE, NULL_TREE, parms);
+      int tag = insert (parms);
+      TREE_PURPOSE (parms) = tree_node ();
+
+      dump (dumper::TREE)
+	&& dump ("Reading template parms:%d level:%N length:%d",
+		 tag, TREE_PURPOSE (parms), len);
 
       tree vec = make_tree_vec (len);
       for (int ix = 0; ix != len; ix++)
@@ -9345,19 +9385,18 @@ trees_in::tpl_parms (tree outer_parms)
 	  TREE_VEC_ELT (vec, ix) = parm;
 	}
 
-      tree depth = tree_node ();
-      parms = tree_cons (depth, vec, parms);
+      TREE_VALUE (parms) = vec;
+      tpl_levels++;
     }
 
   return parms;
 }
 
 void
-trees_out::tpl_parms_fini (tree tmpl, tree outer_parms)
+trees_out::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 {
   for (tree parms = DECL_TEMPLATE_PARMS (tmpl);
-       parms && parms != outer_parms;
-       parms = TREE_CHAIN (parms))
+       tpl_levels--; parms = TREE_CHAIN (parms))
     {
       tree vec = TREE_VALUE (parms);
 
@@ -9380,11 +9419,10 @@ trees_out::tpl_parms_fini (tree tmpl, tree outer_parms)
 }
 
 bool
-trees_in::tpl_parms_fini (tree tmpl, tree outer_parms)
+trees_in::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
 {
   for (tree parms = DECL_TEMPLATE_PARMS (tmpl);
-       parms && parms != outer_parms;
-       parms = TREE_CHAIN (parms))
+       tpl_levels--; parms = TREE_CHAIN (parms))
     {
       tree vec = TREE_VALUE (parms);
       tree dflt = error_mark_node;
@@ -9416,41 +9454,29 @@ trees_in::tpl_parms_fini (tree tmpl, tree outer_parms)
    TREE_PURPOSE is the default value.  */
 
 void
-trees_out::tpl_header (tree tpl, tree container)
+trees_out::tpl_header (tree tpl, unsigned *tpl_levels)
 {
-  /* If the container is a template definition, we stop at its parms.
-     Usually this means we stream just the innermost parms.  Except
-     for (a) implicit member templates, where we'll stream nothing and
-     (b) friend templates, where we'll stream some number of parms.   */
-  tree outer_parms = NULL_TREE;
-  if (TREE_CODE (container) == TEMPLATE_DECL)
-    outer_parms = DECL_TEMPLATE_PARMS (container);
-
   tree parms = DECL_TEMPLATE_PARMS (tpl);
-  tpl_parms (parms, outer_parms);
+  tpl_parms (parms, *tpl_levels);
 
   /* Mark end.  */
   if (streaming_p ())
     u (0);
 
-  if (parms != outer_parms)
+  if (*tpl_levels)
     tree_node (TEMPLATE_PARM_CONSTRAINTS (parms));
 }
 
 bool
-trees_in::tpl_header (tree tpl, tree container)
+trees_in::tpl_header (tree tpl, unsigned *tpl_levels)
 {
-  tree outer_parms = NULL_TREE;
-  if (TREE_CODE (container) == TEMPLATE_DECL)
-    outer_parms = DECL_TEMPLATE_PARMS (container);
-
-  tree parms = tpl_parms (outer_parms);
+  tree parms = tpl_parms (*tpl_levels);
   if (!parms)
     return false;
 
   DECL_TEMPLATE_PARMS (tpl) = parms;
 
-  if (parms != outer_parms)
+  if (*tpl_levels)
     TEMPLATE_PARM_CONSTRAINTS (parms) = tree_node ();
 
   return true;
@@ -11514,8 +11540,9 @@ depset::hash::find_dependencies ()
 		  merge_kind mk = walker.get_merge_kind (current);
 		  tree container = walker.get_container (decl);
 		  walker.tree_node (container);
+		  unsigned tpl_parms = 0;
 		  if (TREE_CODE (decl) == TEMPLATE_DECL)
-		    walker.tpl_header (decl, container);
+		    walker.tpl_header (decl, &tpl_parms);
 		  if (TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL)
 		    walker.fn_parms_init (STRIP_TEMPLATE (decl));
 		  walker.key_mergeable (mk, current, decl);
@@ -17043,7 +17070,7 @@ module_name (unsigned ix, bool header_ok)
     {
       module_state *imp = (*modules)[ix];
 
-      if (!imp->name)
+      if (ix && !imp->name)
 	imp = imp->parent;
 
       if (header_ok || !imp->is_header ())
