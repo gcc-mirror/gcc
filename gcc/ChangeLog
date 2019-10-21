@@ -1,3 +1,25 @@
+2019-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (UNSPEC_RNDR, UNSPEC_RNDRRS): Define.
+	(aarch64_rndr): New define_insn.
+	(aarch64_rndrrs): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_ISA_RNG): Define.
+	(TARGET_RNG): Likewise.
+	* config/aarch64/aarch64.c (aarch64_expand_builtin): Use IGNORE
+	argument.
+	* config/aarch64/aarch64-protos.h (aarch64_general_expand_builtin):
+	Add fourth argument in prototype.
+	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins):
+	Add AARCH64_BUILTIN_RNG_RNDR, AARCH64_BUILTIN_RNG_RNDRRS.
+	(aarch64_init_rng_builtins): Define.
+	(aarch64_general_init_builtins): Call aarch64_init_rng_builtins.
+	(aarch64_expand_rng_builtin): Define.
+	(aarch64_general_expand_builtin): Use IGNORE argument, handle
+	RNG builtins.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_RNG when TARGET_RNG.
+	* config/aarch64/arm_acle.h (__rndr, __rndrrs): Define.
+
 2019-10-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* tree-vect-stmts (ensure_base_align): Only change alignment if new
