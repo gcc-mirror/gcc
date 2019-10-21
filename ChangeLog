@@ -1,3 +1,8 @@
+2019-10-21  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* contrib/dg-extract-results.sh: Add support for KPASS.
+	* contrib/dg-extract-results.py: Likewise.
+
 2019-10-17  Jason Merrill  <jason@redhat.com>
 
 	* .gitattributes: Avoid {} in filename pattern.
