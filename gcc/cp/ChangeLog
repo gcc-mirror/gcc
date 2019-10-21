@@ -1,3 +1,9 @@
+2019-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92106 - ICE with structured bindings and -Wreturn-local-addr.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Avoid
+	recursing on null initializer and return false instead.
+
 2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
 
 	Implement p1301 [[nodiscard("should have a reason")]] + p1771 DR
