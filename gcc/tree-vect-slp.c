@@ -233,7 +233,8 @@ vect_get_place_in_interleaving_chain (stmt_vec_info stmt_info,
    (if nonnull).  */
 
 bool
-can_duplicate_and_interleave_p (unsigned int count, machine_mode elt_mode,
+can_duplicate_and_interleave_p (vec_info *, unsigned int count,
+				machine_mode elt_mode,
 				unsigned int *nvectors_out,
 				tree *vector_type_out,
 				tree *permutes)
@@ -432,7 +433,7 @@ again:
 	       || dt == vect_external_def)
 	      && !current_vector_size.is_constant ()
 	      && (TREE_CODE (type) == BOOLEAN_TYPE
-		  || !can_duplicate_and_interleave_p (stmts.length (),
+		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
 						      TYPE_MODE (type))))
 	    {
 	      if (dump_enabled_p ())
@@ -3183,7 +3184,7 @@ vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo)
    to cut down on the number of interleaves.  */
 
 void
-duplicate_and_interleave (vec_info *, gimple_seq *seq, tree vector_type,
+duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
 			  vec<tree> elts, unsigned int nresults,
 			  vec<tree> &results)
 {
@@ -3194,7 +3195,7 @@ duplicate_and_interleave (vec_info *, gimple_seq *seq, tree vector_type,
   unsigned int nvectors = 1;
   tree new_vector_type;
   tree permutes[2];
-  if (!can_duplicate_and_interleave_p (nelts, TYPE_MODE (element_type),
+  if (!can_duplicate_and_interleave_p (vinfo, nelts, TYPE_MODE (element_type),
 				       &nvectors, &new_vector_type,
 				       permutes))
     gcc_unreachable ();
