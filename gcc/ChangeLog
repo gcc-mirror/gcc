@@ -1,3 +1,8 @@
+2019-10-21  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* expr.c (expand_expr_real_2): Don't widen constant op1 when expanding
+	widening multiplication.
+
 2019-10-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/iterators.md (t2_binop0): Fix typo in comment.
