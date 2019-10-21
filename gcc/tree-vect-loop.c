@@ -6145,7 +6145,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
       scalar_mode elt_mode = SCALAR_TYPE_MODE (TREE_TYPE (vectype_out));
       if (!neutral_op
-	  && !can_duplicate_and_interleave_p (group_size, elt_mode))
+	  && !can_duplicate_and_interleave_p (loop_vinfo, group_size,
+					      elt_mode))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

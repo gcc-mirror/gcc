@@ -1751,7 +1751,8 @@ extern void vect_get_slp_defs (vec<tree> , slp_tree, vec<vec<tree> > *);
 extern bool vect_slp_bb (basic_block);
 extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);
-extern bool can_duplicate_and_interleave_p (unsigned int, machine_mode,
+extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int,
+					    machine_mode,
 					    unsigned int * = NULL,
 					    tree * = NULL, tree * = NULL);
 extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
