@@ -6293,7 +6293,7 @@ ensure_base_align (dr_vec_info *dr_info)
 
       if (decl_in_symtab_p (base_decl))
 	symtab_node::get (base_decl)->increase_alignment (align_base_to);
-      else
+      else if (DECL_ALIGN (base_decl) < align_base_to)
 	{
 	  SET_DECL_ALIGN (base_decl, align_base_to);
           DECL_USER_ALIGN (base_decl) = 1;
