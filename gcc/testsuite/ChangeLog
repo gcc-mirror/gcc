@@ -1,5 +1,11 @@
 2019-10-21  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92062 - ODR-use ignored for static member of class template.
+	* g++.dg/cpp0x/constexpr-odr1.C: New test.
+	* g++.dg/cpp0x/constexpr-odr2.C: New test.
+
+2019-10-21  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92106 - ICE with structured bindings and -Wreturn-local-addr.
 	* g++.dg/cpp1z/decomp50.C: New test.
 
