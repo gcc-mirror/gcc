@@ -19,4 +19,4 @@ int main ()
 
 // { dg-final { scan-lang-dump {Lazily binding '#null##null#'@'voldy' section:1} module } }
 // { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@. type_decl:'::frobber@voldy:.::._anon_3@voldy:.'} module } }
-// { dg-final { scan-lang-dump {Inserted:-2 type record_type:'::frobber@voldy:.::._anon_3@voldy:.'} module } }
+// { dg-final { scan-lang-dump {Indirect:-2 decl's type record_type:'::frobber@voldy:.::._anon_3@voldy:.'} module } }

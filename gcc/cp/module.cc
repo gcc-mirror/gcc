@@ -2853,6 +2853,8 @@ private:
   tree fn_arg_types ();
   int fn_parms_init (tree);
   void fn_parms_fini (int tag, tree fn, tree existing, bool has_defn);
+public:
+  bool add_indirects (tree);
 
 public:
   /* Serialize various definitions. */
@@ -3004,6 +3006,8 @@ private:
   void tpl_parms_fini (tree decl, tree outer_parms);
   void fn_arg_types (tree);
   void fn_parms_fini (tree) {}
+public:
+  void add_indirects (tree);
 public: // FIXME: while merge sortable is a thing
   void fn_parms_init (tree);
   void tpl_header (tree decl, tree container);
@@ -6802,6 +6806,81 @@ trees_out::ref_node (tree t)
   return WK_none;
 }
 
+/* We've just found DECL by name.  Insert nodes that come with it, but
+   cannot be found by name, so we'll not accidentally walk into them.  */
+
+void
+trees_out::add_indirects (tree decl)
+{
+  unsigned count = 0;
+
+  tree proxy = decl;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      proxy = DECL_TEMPLATE_RESULT (decl);
+
+      int tag = insert (proxy);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Indirect:%d template's result %C:%N",
+		   tag, TREE_CODE (proxy), proxy);
+      count++;
+    }
+
+  if (TREE_CODE (proxy) == TYPE_DECL
+      && (DECL_ORIGINAL_TYPE (proxy)
+	  || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
+    {
+      /* Make sure the type is in the map too.  Otherwise we get
+	 different RECORD_TYPEs for the same type, and things go
+	 south.  */
+      tree proxy_type = TREE_TYPE (proxy);
+      int tag = insert (proxy_type);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Indirect:%d decl's type %C:%N", tag,
+				     TREE_CODE (proxy_type), proxy_type);
+      count++;
+    }
+
+  if (streaming_p ())
+    {
+      u (count);
+      dump (dumper::TREE) && dump ("Inserted %u indirects", count);
+    }
+}
+
+bool
+trees_in::add_indirects (tree decl)
+{
+  unsigned count = 0;
+	    
+  tree proxy = decl;
+  if (TREE_CODE (proxy) == TEMPLATE_DECL)
+    {
+      proxy = DECL_TEMPLATE_RESULT (decl);
+      int tag = insert (proxy);
+      dump (dumper::TREE)
+	&& dump ("Indirect:%d templates's result %C:%N", tag,
+		 TREE_CODE (proxy), proxy);
+      count++;
+    }
+
+  if (TREE_CODE (proxy) == TYPE_DECL
+      && (DECL_ORIGINAL_TYPE (proxy)
+	  || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
+    {
+      tree proxy_type = TREE_TYPE (proxy);
+      int tag = insert (proxy_type);
+      dump (dumper::TREE)
+	&& dump ("Indirect:%d decl's type %C:%N", tag,
+		 TREE_CODE (proxy_type), proxy_type);
+      count++;
+    }
+
+  dump (dumper::TREE) && dump ("Inserted %u indirects", count);
+  return count == u ();
+}
+
 /* DECL is a decl node that must be written by value.  DEP is the
    decl's depset.  */
 
@@ -6998,8 +7077,8 @@ trees_in::decl_value ()
     }
   merge_kind mk = merge_kind (mk_u);
 
-  tree res = start ();
-  if (res)
+  tree decl = start ();
+  if (decl)
     {
       if (mk != MK_unique)
 	{
@@ -7010,40 +7089,40 @@ trees_in::decl_value ()
 	  has_defn = b ();
 	}
 
-      if (!tree_node_bools (res))
-	res = NULL_TREE;
+      if (!tree_node_bools (decl))
+	decl = NULL_TREE;
     }
   
   /* Insert into map.  */
-  tag = insert (res);
-  if (res)
+  tag = insert (decl);
+  if (decl)
     dump (dumper::TREE)
-      && dump ("Reading:%d %C", tag, TREE_CODE (res));
+      && dump ("Reading:%d %C", tag, TREE_CODE (decl));
 
-  tree inner = res;
+  tree inner = decl;
   int inner_tag = 0;
-  if (res && TREE_CODE (res) == TEMPLATE_DECL)
+  if (decl && TREE_CODE (decl) == TEMPLATE_DECL)
     {
       inner = start ();
       if (inner)
 	{
-	  DECL_TEMPLATE_RESULT (res) = inner;
+	  DECL_TEMPLATE_RESULT (decl) = inner;
 
 	  if (!tree_node_bools (inner))
-	    res = NULL_TREE;
+	    decl = NULL_TREE;
 	}
       else
-	res = NULL_TREE;
+	decl = NULL_TREE;
 
       inner_tag = insert (inner);
-      if (res)
+      if (decl)
 	dump (dumper::TREE)
 	  && dump ("Reading%d %C", inner_tag, TREE_CODE (inner));
     }
 
   tree type = NULL_TREE;
   int type_tag = 0;
-  if (res && TREE_CODE (inner) == TYPE_DECL)
+  if (decl && TREE_CODE (inner) == TYPE_DECL)
     {
       if (unsigned type_code = u ())
 	{
@@ -7054,19 +7133,19 @@ trees_in::decl_value ()
 	      TYPE_NAME (type) = inner;
 
 	      if (!tree_node_bools (type))
-		res = NULL_TREE;
+		decl = NULL_TREE;
 	    }
 	  else
-	    res = NULL_TREE;
+	    decl = NULL_TREE;
 
 	  type_tag = insert (type);
-	  if (res)
+	  if (decl)
 	    dump (dumper::TREE)
 	      && dump ("Reading %d %C", type_tag, TREE_CODE (type));
 	}
     }
 
-  if (!res)
+  if (!decl)
     {
     bail:
       if (inner_tag != 0)
@@ -7092,33 +7171,33 @@ trees_in::decl_value ()
 
       tree container = container_1;
 
-      if (res != inner)
-	if (!tpl_header (res, container))
+      if (decl != inner)
+	if (!tpl_header (decl, container))
 	  goto bail;
       if (TREE_CODE (inner) == FUNCTION_DECL)
 	parm_tag = fn_parms_init (inner);
 
-      if (!key_mergeable (mk, res, inner, type,
+      if (!key_mergeable (mk, decl, inner, type,
 			  &container, &key, &fn_args, &r_type))
 	goto bail;
 
       if (mk & MK_template_mask)
 	{
 	  /* A specialization of some kind.  */
-	  DECL_NAME (res) = DECL_NAME (container);
-	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
+	  DECL_NAME (decl) = DECL_NAME (container);
+	  DECL_CONTEXT (decl) = DECL_CONTEXT (container);
 	}
       else
 	{
 	  if (!(mk & MK_indirect_mask))
-	    DECL_NAME (res) = key;
-	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
+	    DECL_NAME (decl) = key;
+	  DECL_CONTEXT (decl) = FROB_CONTEXT (container);
 	}
 
       if (inner_tag != 0)
 	{
-	  DECL_NAME (inner) = DECL_NAME (res);
-	  DECL_CONTEXT (inner) = DECL_CONTEXT (res);
+	  DECL_NAME (inner) = DECL_NAME (decl);
+	  DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
 	}
 
       const char *kind = "new";
@@ -7126,7 +7205,7 @@ trees_in::decl_value ()
 
       if (mk & MK_template_mask)
 	{
-	  tree insert = res;
+	  tree insert = decl;
 	  if (mk & MK_tmpl_tmpl_mask)
 	    {
 	      if (!inner_tag)
@@ -7204,14 +7283,14 @@ trees_in::decl_value ()
 	       of the current module, so it must be unique.  */
 	    kind = "unique";
 	  else
-	    existing = match_mergeable_decl (res, container, key, is_mod,
+	    existing = match_mergeable_decl (decl, container, key, is_mod,
 					     r_type, fn_args);
 	}
 
       if (existing)
 	{
 	  /* Install the existing decl into the back ref array.  */
-	  register_duplicate (res, existing);
+	  register_duplicate (decl, existing);
 	  back_refs[~tag] = existing;
 	  if (inner_tag != 0)
 	    {
@@ -7231,20 +7310,20 @@ trees_in::decl_value ()
 
       dump (dumper::MERGE)
 	&& dump ("Read:%d's %s merge key (%s) %C:%N", tag,
-		 merge_kind_name[mk], kind, TREE_CODE (res), res);
+		 merge_kind_name[mk], kind, TREE_CODE (decl), decl);
     }
 
-  if (!tree_node_vals (res))
+  if (!tree_node_vals (decl))
     goto bail;
 
   if (inner_tag != 0)
     {
-      gcc_checking_assert (DECL_TEMPLATE_RESULT (res) == inner);
+      gcc_checking_assert (DECL_TEMPLATE_RESULT (decl) == inner);
 
       if (!tree_node_vals (inner))
 	goto bail;
 
-      if (!tpl_parms_fini (res,
+      if (!tpl_parms_fini (decl,
 			   TREE_CODE (container_1) == TEMPLATE_DECL
 			   ? DECL_TEMPLATE_PARMS (container_1) : NULL_TREE))
 	goto bail;
@@ -7254,10 +7333,10 @@ trees_in::decl_value ()
     goto bail;
 
   tree constraints = NULL_TREE;
-  if (flag_concepts && DECL_P (res))
+  if (flag_concepts && DECL_P (decl))
     constraints  = tree_node ();
 
-  dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
+  dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (decl), decl);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
   bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !TREE_TYPE (inner);
@@ -7269,22 +7348,22 @@ trees_in::decl_value ()
     }
 
   tree existing = back_refs[~tag];
-  bool is_new = existing == res;
+  bool is_new = existing == decl;
   if (is_new)
     {
       /* A newly discovered node.  */
-      if (TREE_CODE (res) == FUNCTION_DECL && DECL_VIRTUAL_P (res))
+      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
 	/* Mark this identifier as naming a virtual function --
 	   lookup_overrides relies on this optimization.  */
-	IDENTIFIER_VIRTUAL_P (DECL_NAME (res)) = true;
+	IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = true;
 
       if (constraints)
-	set_constraints (res, constraints);
+	set_constraints (decl, constraints);
 
-      if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
+      if (TREE_CODE (decl) == INTEGER_CST && !TREE_OVERFLOW (decl))
 	{
-	  res = cache_integer_cst (res, true);
-	  back_refs[~tag] = res;
+	  decl = cache_integer_cst (decl, true);
+	  back_refs[~tag] = decl;
 	}
 
       if (is_typedef)
@@ -7292,18 +7371,18 @@ trees_in::decl_value ()
 
       if (inner_tag)
 	/* Set the TEMPLATE_DECL's type.  */
-	TREE_TYPE (res) = TREE_TYPE (inner);
+	TREE_TYPE (decl) = TREE_TYPE (inner);
     }
   else
     {
-      /* RES is the to-be-discarded decl.  Its internal pointers will
+      /* DECL is the to-be-discarded decl.  Its internal pointers will
 	 be to the EXISTING's structure.  Frob it to point to its
 	 own other structures, so loading its definition will alter
 	 it, and not the existing decl.  */
       dump (dumper::MERGE) && dump ("Deduping %N", existing);
 
       if (inner_tag != 0)
-	DECL_TEMPLATE_RESULT (res) = inner;
+	DECL_TEMPLATE_RESULT (decl) = inner;
 
       if (type)
 	{
@@ -7314,41 +7393,41 @@ trees_in::decl_value ()
 
       if (inner_tag)
 	/* Set the TEMPLATE_DECL's type.  */
-	TREE_TYPE (res) = TREE_TYPE (inner);
+	TREE_TYPE (decl) = TREE_TYPE (inner);
 
-      if (!is_matching_decl (existing, res))
+      if (!is_matching_decl (existing, decl))
 	unmatched_duplicate (existing);
 
       // FIXME: Check default tmpl and fn parms here
       /* And our result is the existing node.  */
-      res = existing;
+      decl = existing;
     }
 
   if (is_typedef)
     {
       /* Insert the type into the array now.  */
-      tag = insert (TREE_TYPE (res));
+      tag = insert (TREE_TYPE (decl));
       dump (dumper::TREE)
 	&& dump ("Cloned:%d typedef %C:%N",
-		 tag, TREE_CODE (TREE_TYPE (res)), TREE_TYPE (res));
+		 tag, TREE_CODE (TREE_TYPE (decl)), TREE_TYPE (decl));
     }
 
-  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (res))
+  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       unsigned flags = u ();
 
       if (is_new)
 	{
-	  gcc_checking_assert (!DECL_CHAIN (res));
+	  gcc_checking_assert (!DECL_CHAIN (decl));
 	  bool cloned_p = flags & 1;
 	  dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
-				       res, cloned_p ? "" : "not ");
+				       decl, cloned_p ? "" : "not ");
 	  if (cloned_p)
-	    build_clones (res, flags & 2, flags & 4);
+	    build_clones (decl, flags & 2, flags & 4);
 	}
     }
 
-  return res;
+  return decl;
 }
 
 /* Reference DECL.  REF indicates the walk kind we are performing.
@@ -7906,31 +7985,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
 	       origin < 0 ? NULL : (*modules)[origin]);
 
-  tree proxy = decl;
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    {
-      proxy = DECL_TEMPLATE_RESULT (decl);
-
-      tag = insert (proxy);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote template's result:%d %C:%N",
-		   tag, TREE_CODE (proxy), proxy);
-    }
-
-  if (TREE_CODE (proxy) == TYPE_DECL
-      && (DECL_ORIGINAL_TYPE (proxy)
-	  || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
-    {
-      /* Make sure the type is in the map too.  Otherwise we get
-	 different RECORD_TYPEs for the same type, and things go
-	 south.  */
-      tree proxy_type = TREE_TYPE (proxy);
-      tag = insert (proxy_type);
-      if (streaming_p ())
-	dump (dumper::TREE) && dump ("Wrote decl's type:%d %C:%N", tag,
-				     TREE_CODE (proxy_type), proxy_type);
-    }
+  add_indirects (decl);
 
   return false;
 }
@@ -9163,25 +9218,10 @@ trees_in::tree_node ()
 	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
 		       res, (*modules)[origin]);
 
-	    tree proxy = res;
-	    if (TREE_CODE (proxy) == TEMPLATE_DECL)
+	    if (!add_indirects (res))
 	      {
-		proxy = DECL_TEMPLATE_RESULT (res);
-		tag = insert (proxy);
-		dump (dumper::TREE)
-		  && dump ("Read templates's result:%d %C:%N", tag,
-			   TREE_CODE (proxy), proxy);
-	      }
-
-	    if (TREE_CODE (proxy) == TYPE_DECL
-		&& (DECL_ORIGINAL_TYPE (proxy)
-		    || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
-	      {
-		tree proxy_type = TREE_TYPE (proxy);
-		tag = insert (proxy_type);
-		dump (dumper::TREE)
-		  && dump ("Read decl's type:%d %C:%N", tag,
-			   TREE_CODE (proxy_type), proxy_type);
+		set_overrun ();
+		res = NULL_TREE;
 	      }
 	  }
       }
@@ -13793,24 +13833,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      dump () && dump ("Inserted:%d horcrux:%u@%u for %N",
 				       tag, index, origin, u_decl);
 
-		      tree proxy = u_decl;
-		      if (TREE_CODE (proxy) == TEMPLATE_DECL)
-			{
-			  proxy = DECL_TEMPLATE_RESULT (proxy);
-			  tag = sec.insert (proxy);
-			  dump ()
-			    && dump ("Inserted:%d template result %C:%N",
-				     tag, TREE_CODE (proxy), proxy);
-			}
-		      if (TREE_CODE (proxy) == TYPE_DECL
-			  && (DECL_ORIGINAL_TYPE (proxy)
-			      || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
-			{
-			  proxy = TREE_TYPE (proxy);
-			  tag = sec.insert (proxy);
-			  dump () && dump ("Inserted:%d type %C:%N",
-					   tag, TREE_CODE (proxy), proxy);
-			}
+		      sec.add_indirects (u_decl);
 		    }
 		}
 	      else
@@ -14176,24 +14199,8 @@ module_state::read_cluster (unsigned snum)
 		    int tag = sec.insert (decl);
 		    dump () && dump ("Inserted:%d horcrux:%u@%u %C:%N", tag,
 				     index, owner, TREE_CODE (decl), decl);
-		    tree proxy = decl;
-		    if (TREE_CODE (proxy) == TEMPLATE_DECL)
-		      {
-			proxy = DECL_TEMPLATE_RESULT (proxy);
-			tag = sec.insert (proxy);
-			dump ()
-			  && dump ("Inserted:%d template result %C:%N",
-				   tag, TREE_CODE (proxy), proxy);
-		      }
-		    if (TREE_CODE (proxy) == TYPE_DECL
-			&& (DECL_ORIGINAL_TYPE (proxy)
-			    || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
-		      {
-			proxy = TREE_TYPE (proxy);
-			tag = sec.insert (proxy);
-			dump () && dump ("Inserted:%d type %C:%N",
-					 tag, TREE_CODE (proxy), proxy);
-		      }
+		    if (!sec.add_indirects (decl))
+		      goto bad_tom_riddle;
 		  }
 	      }
 	    else
