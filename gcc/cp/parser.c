@@ -24178,12 +24178,8 @@ cp_parser_class_head (cp_parser* parser,
 	 ... [or] the definition or explicit instantiation of a
 	 class member of a namespace outside of its namespace.  */
       if (scope == nested_name_specifier)
-	{
-	  permerror (nested_name_specifier_token_start->location,
-		     "extra qualification not allowed");
-	  nested_name_specifier = NULL_TREE;
-	  num_templates = 0;
-	}
+	permerror (nested_name_specifier_token_start->location,
+		   "extra qualification not allowed");
     }
   /* An explicit-specialization must be preceded by "template <>".  If
      it is not, try to recover gracefully.  */
