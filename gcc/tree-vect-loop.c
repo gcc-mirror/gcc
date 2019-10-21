@@ -2260,6 +2260,17 @@ again:
 	{
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
+	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+	      || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
+	    {
+	      /* vectorizable_reduction adjusts reduction stmt def-types,
+		 restore them to that of the PHI.  */
+	      STMT_VINFO_DEF_TYPE (STMT_VINFO_REDUC_DEF (stmt_info))
+		= STMT_VINFO_DEF_TYPE (stmt_info);
+	      STMT_VINFO_DEF_TYPE (vect_stmt_to_vectorize
+					(STMT_VINFO_REDUC_DEF (stmt_info)))
+		= STMT_VINFO_DEF_TYPE (stmt_info);
+	    }
 	}
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
 	   !gsi_end_p (si); gsi_next (&si))
