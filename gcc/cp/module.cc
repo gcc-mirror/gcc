@@ -2867,7 +2867,7 @@ private:
 
 public:
   bool key_mergeable (merge_kind, tree, tree, tree,
-		      tree *, tree *, tree *, tree *, int *);
+		      tree *, tree *, tree *, tree *);
 
 private:
   uintptr_t *find_duplicate (tree existing);
@@ -3002,15 +3002,16 @@ public:
 private:
   void tpl_parms (tree parms, tree outer_parms);
   void tpl_parms_fini (tree decl, tree outer_parms);
-  void tpl_header (tree decl, tree container);
   void fn_arg_types (tree);
-  void fn_parms_init (tree);
   void fn_parms_fini (tree) {}
+public: // FIXME: while merge sortable is a thing
+  void fn_parms_init (tree);
+  void tpl_header (tree decl, tree container);
 
 public:
   merge_kind get_merge_kind (depset *);
   tree get_container (tree decl);
-  void key_mergeable (merge_kind, depset *, tree decl, tree container);
+  void key_mergeable (merge_kind, depset *, tree decl);
 
 public:
   bool is_for_mergeable () const
@@ -6910,9 +6911,14 @@ trees_out::decl_value (tree decl, depset *dep)
      we start emitting keys for this decl.  */
   tree_node (container);
 
+  if (decl != inner)
+    tpl_header (decl, container);
+  if (TREE_CODE (inner) == FUNCTION_DECL)
+    fn_parms_init (inner);
+
   /* Now write out the merging information, and then really
      install the tag values.  */
-  key_mergeable (mk, dep, decl, container);
+  key_mergeable (mk, dep, decl);
 
   if (streaming_p ())
     dump (dumper::MERGE)
@@ -7086,9 +7092,14 @@ trees_in::decl_value ()
 
       tree container = container_1;
 
+      if (res != inner)
+	if (!tpl_header (res, container))
+	  goto bail;
+      if (TREE_CODE (inner) == FUNCTION_DECL)
+	parm_tag = fn_parms_init (inner);
+
       if (!key_mergeable (mk, res, inner, type,
-			  &container, &key, &fn_args, &r_type,
-			  &parm_tag))
+			  &container, &key, &fn_args, &r_type))
 	goto bail;
 
       if (mk & MK_template_mask)
@@ -9648,7 +9659,7 @@ trees_out::get_container (tree decl)
 // FIXME: constraints probably need streaming too?
 
 void
-trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl, tree container)
+trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
 {
   if (dep && dep_hash->for_mergeable && !streaming_p ())
     {
@@ -9665,14 +9676,8 @@ trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl, tree container)
 
   tree inner = decl;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    {
-      /* A template needs its template parms for identification.  */
-      inner = DECL_TEMPLATE_RESULT (decl);
-      tpl_header (decl, container);
-    }
-
-  if (TREE_CODE (inner) == FUNCTION_DECL)
-    fn_parms_init (inner);
+    /* A template needs its template parms for identification.  */
+    inner = DECL_TEMPLATE_RESULT (decl);
 
   /* Now write the locating information. */
   if (mk & MK_template_mask)
@@ -9771,19 +9776,10 @@ trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl, tree container)
 
 bool
 trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
-			 tree *container, tree *key, tree *fn_args, tree *r_type,
-			 int *parm_tag)
+			 tree *container, tree *key, tree *fn_args, tree *r_type)
 {
   *key = NULL_TREE;
   *fn_args = *r_type = NULL_TREE;
-
-  if (decl != inner)
-    /* A template needs its template parms for identification.  */
-    if (!tpl_header (decl, *container))
-      return false;
-
-  if (TREE_CODE (inner) == FUNCTION_DECL)
-    *parm_tag = fn_parms_init (inner);
 
   /* Now read the locating information. */
   if (mk & MK_template_mask)
@@ -11488,7 +11484,11 @@ depset::hash::find_dependencies ()
 		  merge_kind mk = walker.get_merge_kind (current);
 		  tree container = walker.get_container (decl);
 		  walker.tree_node (container);
-		  walker.key_mergeable (mk, current, decl, container);
+		  if (TREE_CODE (decl) == TEMPLATE_DECL)
+		    walker.tpl_header (decl, container);
+		  if (TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL)
+		    walker.fn_parms_init (STRIP_TEMPLATE (decl));
+		  walker.key_mergeable (mk, current, decl);
 
 		  if (mk & MK_template_mask)
 		    /* We also want to make specializations of members

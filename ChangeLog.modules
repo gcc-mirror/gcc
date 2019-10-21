@@ -1,3 +1,11 @@
+2019-10-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::key_mergeable): Do not stream tpl
+	header of fn parms here.
+	(tree_{in,out}::decl_value): Stream them here ...
+	(depset:hash::find_dependencies): ... and here.
+
 2019-10-18  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r277167.
