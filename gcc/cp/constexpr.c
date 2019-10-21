@@ -2887,7 +2887,10 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
 	  : field == part)
 	{
 	  if (value)
-	    return value;
+	    {
+	      STRIP_ANY_LOCATION_WRAPPER (value);
+	      return value;
+	    }
 	  else
 	    /* We're in the middle of initializing it.  */
 	    break;
@@ -2977,6 +2980,7 @@ cxx_eval_bit_field_ref (const constexpr_ctx *ctx, tree t,
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (whole), i, field, value)
     {
       tree bitpos = bit_position (field);
+      STRIP_ANY_LOCATION_WRAPPER (value);
       if (bitpos == start && DECL_SIZE (field) == TREE_OPERAND (t, 1))
 	return value;
       if (TREE_CODE (TREE_TYPE (field)) == INTEGER_TYPE

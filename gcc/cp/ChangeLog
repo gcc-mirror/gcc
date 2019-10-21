@@ -1,3 +1,9 @@
+2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92015
+	* constexpr.c (cxx_eval_component_reference, cxx_eval_bit_field_ref):
+	Use STRIP_ANY_LOCATION_WRAPPER on CONSTRUCTOR elts.
+
 2019-10-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92062 - ODR-use ignored for static member of class template.
