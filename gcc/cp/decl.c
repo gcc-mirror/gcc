@@ -71,7 +71,6 @@ static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
 			 int, int, int, bool, int, tree, location_t);
 static void check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
-static tree builtin_function_1 (tree, tree, bool);
 static int member_function_or_else (tree, tree, enum overload_flags);
 static tree local_variable_p_walkfn (tree *, int *, void *);
 static const char *tag_name (enum tag_types);
@@ -4629,12 +4628,13 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   return decl;
 }
 
-static tree
-builtin_function_1 (tree decl, tree context, bool is_global)
-{
-  tree          id = DECL_NAME (decl);
-  const char *name = IDENTIFIER_POINTER (id);
+/* Install DECL as a builtin function at current (global) scope.
+   Return the new decl (if we found an existing version).  Also
+   installs it into ::std, if it's not '_*'.  */
 
+tree
+cxx_builtin_function (tree decl)
+{
   retrofit_lang_decl (decl);
 
   DECL_ARTIFICIAL (decl) = 1;
@@ -4644,47 +4644,35 @@ builtin_function_1 (tree decl, tree context, bool is_global)
   DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
 
-  DECL_CONTEXT (decl) = context;
-
-  /* A function in the user's namespace should have an explicit
-     declaration before it is used.  Mark the built-in function as
-     anticipated but not actually declared.  */
-  if (name[0] != '_' || name[1] != '_')
-    DECL_ANTICIPATED (decl) = 1;
-  else if (strncmp (name + 2, "builtin_", strlen ("builtin_")) != 0)
-    {
-      size_t len = strlen (name);
-
-      /* Treat __*_chk fortification functions as anticipated as well,
-	 unless they are __builtin_*.  */
-      if (len > strlen ("___chk")
-	  && memcmp (name + len - strlen ("_chk"),
-		     "_chk", strlen ("_chk") + 1) == 0)
-	DECL_ANTICIPATED (decl) = 1;
-    }
-
-  if (is_global)
-    return pushdecl_top_level (decl);
-  else
-    return pushdecl (decl);
-}
-
-tree
-cxx_builtin_function (tree decl)
-{
-  tree          id = DECL_NAME (decl);
+  tree id = DECL_NAME (decl);
   const char *name = IDENTIFIER_POINTER (id);
+  if (name[0] != '_' || name[1] != '_')
+    /* In the user's namespace, it must be declared before use.  */
+    DECL_ANTICIPATED (decl) = 1;
+  else if (IDENTIFIER_LENGTH (id) > strlen ("___chk")
+	   && 0 != strncmp (name + 2, "builtin_", strlen ("builtin_"))
+	   && 0 == memcmp (name + IDENTIFIER_LENGTH (id) - strlen ("_chk"),
+			   "_chk", strlen ("_chk") + 1))
+    /* Treat __*_chk fortification functions as anticipated as well,
+       unless they are __builtin_*_chk.  */
+    DECL_ANTICIPATED (decl) = 1;
+
   /* All builtins that don't begin with an '_' should additionally
      go in the 'std' namespace.  */
   if (name[0] != '_')
     {
-      tree decl2 = copy_node(decl);
+      tree std_decl = copy_decl (decl);
+
       push_namespace (std_identifier);
-      builtin_function_1 (decl2, std_node, false);
+      DECL_CONTEXT (std_decl) = FROB_CONTEXT (std_node);
+      pushdecl (std_decl);
       pop_namespace ();
     }
 
-  return builtin_function_1 (decl, NULL_TREE, false);
+  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+  decl = pushdecl (decl);
+
+  return decl;
 }
 
 /* Like cxx_builtin_function, but guarantee the function is added to the global
@@ -4696,20 +4684,11 @@ cxx_builtin_function (tree decl)
 tree
 cxx_builtin_function_ext_scope (tree decl)
 {
+  push_nested_namespace (global_namespace);
+  decl = cxx_builtin_function (decl);
+  pop_nested_namespace (global_namespace);
 
-  tree          id = DECL_NAME (decl);
-  const char *name = IDENTIFIER_POINTER (id);
-  /* All builtins that don't begin with an '_' should additionally
-     go in the 'std' namespace.  */
-  if (name[0] != '_')
-    {
-      tree decl2 = copy_node(decl);
-      push_namespace (std_identifier);
-      builtin_function_1 (decl2, std_node, true);
-      pop_namespace ();
-    }
-
-  return builtin_function_1 (decl, NULL_TREE, true);
+  return decl;
 }
 
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library
@@ -4933,9 +4912,9 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
 	      "multiple types in one declaration");
   else if (declspecs->redefined_builtin_type)
     {
-      if (!in_system_header_at (input_location))
-	permerror (declspecs->locations[ds_redefined_builtin_type_spec],
-		   "redeclaration of C++ built-in type %qT",
+      location_t loc = declspecs->locations[ds_redefined_builtin_type_spec];
+      if (!in_system_header_at (loc))
+	permerror (loc, "redeclaration of C++ built-in type %qT",
 		   declspecs->redefined_builtin_type);
       return NULL_TREE;
     }
@@ -4984,15 +4963,16 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
 	 --end example]  */
       if (saw_typedef)
 	{
-	  error ("missing type-name in typedef-declaration");
+	  error_at (declspecs->locations[ds_typedef],
+		    "missing type-name in typedef-declaration");
 	  return NULL_TREE;
 	}
       /* Anonymous unions are objects, so they can have specifiers.  */;
       SET_ANON_AGGR_TYPE_P (declared_type);
 
-      if (TREE_CODE (declared_type) != UNION_TYPE
-	  && !in_system_header_at (input_location))
-	pedwarn (input_location, OPT_Wpedantic, "ISO C++ prohibits anonymous structs");
+      if (TREE_CODE (declared_type) != UNION_TYPE)
+	pedwarn (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (declared_type)),
+		 OPT_Wpedantic, "ISO C++ prohibits anonymous structs");
     }
 
   else
@@ -9328,7 +9308,6 @@ grokfndecl (tree ctype,
 	    }
 	  /* 17.6.3.3.5  */
 	  if (suffix[0] != '_'
-	      && !in_system_header_at (location)
 	      && !current_function_decl && !(friendp && !funcdef_flag))
 	    warning_at (location, OPT_Wliteral_suffix,
 			"literal operator suffixes not preceded by %<_%>"
@@ -10036,8 +10015,6 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 	       indicated by the state of complain), so that
 	       another substitution can be found.  */
 	    return error_mark_node;
-	  else if (in_system_header_at (input_location))
-	    /* Allow them in system headers because glibc uses them.  */;
 	  else if (name)
 	    pedwarn (loc, OPT_Wpedantic,
 		     "ISO C++ forbids zero-size array %qD", name);
@@ -10463,9 +10440,6 @@ name_unnamed_type (tree type, tree decl)
 	 the naming applies only for linkage purposes.  */
       /*debug_hooks->set_name (t, decl);*/
       TYPE_NAME (t) = decl;
-
-  if (TYPE_LANG_SPECIFIC (type))
-    TYPE_WAS_UNNAMED (type) = 1;
 
   /* If this is a typedef within a template class, the nested
      type is a (non-primary) template.  The name for the
@@ -11004,7 +10978,7 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (type_was_error_mark_node)
 	/* We've already issued an error, don't complain more.  */;
-      else if (in_system_header_at (input_location) || flag_ms_extensions)
+      else if (in_system_header_at (id_loc) || flag_ms_extensions)
 	/* Allow it, sigh.  */;
       else if (! is_main)
 	permerror (id_loc, "ISO C++ forbids declaration of %qs with no type",
@@ -11037,7 +11011,7 @@ grokdeclarator (const cp_declarator *declarator,
 	}
       /* Don't pedwarn if the alternate "__intN__" form has been used instead
 	 of "__intN".  */
-      else if (!int_n_alt && pedantic && ! in_system_header_at (input_location))
+      else if (!int_n_alt && pedantic)
 	pedwarn (declspecs->locations[ds_type_spec], OPT_Wpedantic,
 		 "ISO C++ does not support %<__int%d%> for %qs",
 		 int_n_data[declspecs->int_n_idx].bitsize, name);
@@ -12695,10 +12669,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    else
 	      {
 		/* Array is a flexible member.  */
-		if (in_system_header_at (input_location))
-		  /* Do not warn on flexible array members in system
-		     headers because glibc uses them.  */;
-		else if (name)
+		if (name)
 		  pedwarn (id_loc, OPT_Wpedantic,
 			   "ISO C++ forbids flexible array member %qs", name);
 		else
@@ -16913,6 +16884,8 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
      the end of the block.  So let's unset the location of the
      destructor call instead.  */
   protected_set_expr_location (cleanup, UNKNOWN_LOCATION);
+  if (cleanup && CONVERT_EXPR_P (cleanup))
+    protected_set_expr_location (TREE_OPERAND (cleanup, 0), UNKNOWN_LOCATION);
 
   if (cleanup
       && DECL_P (decl)

@@ -661,8 +661,9 @@ get_formal_tmp_var (tree val, gimple_seq *pre_p)
    are as in gimplify_expr.  */
 
 tree
-get_initialized_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
-			 bool allow_ssa)
+get_initialized_tmp_var (tree val, gimple_seq *pre_p,
+			 gimple_seq *post_p /* = NULL */,
+			 bool allow_ssa /* = true */)
 {
   return internal_get_tmp_var (val, pre_p, post_p, false, allow_ssa);
 }
@@ -3149,7 +3150,7 @@ gimplify_self_mod_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       if (ret == GS_ERROR)
 	return ret;
 
-      lhs = get_initialized_tmp_var (lhs, pre_p, NULL);
+      lhs = get_initialized_tmp_var (lhs, pre_p);
     }
 
   /* For POINTERs increment, use POINTER_PLUS_EXPR.  */
@@ -12688,7 +12689,7 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
 	  tree bitsize;
 	  tree tmp_store = tmp_load;
 	  if (TREE_CODE (*expr_p) == OMP_ATOMIC_CAPTURE_OLD)
-	    tmp_store = get_initialized_tmp_var (tmp_load, pre_p, NULL);
+	    tmp_store = get_initialized_tmp_var (tmp_load, pre_p);
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (op1)))
 	    bitsize = bitsize_int (TYPE_PRECISION (TREE_TYPE (op1)));
 	  else

@@ -12,7 +12,7 @@ struct B2 {
 
 int get();
 
-struct D1 : B1 {		// { dg-message "B1::B1" }
+struct D1 : B1 {
   using B1::B1;  // inherits B1(int, ...)
   int x;
   int y = get();
@@ -22,7 +22,7 @@ void test() {
   D1 d(2, 3, 4); // OK: B1 is initialized by calling B1(2, 3, 4),
   // then d.x is default-initialized (no initialization is performed),
   // then d.y is initialized by calling get()
-  D1 e;          // { dg-error "" } D1 has a deleted default constructor
+  D1 e;          // { dg-error "" } D1 has no default constructor
 }
 
 struct D2 : B2 {

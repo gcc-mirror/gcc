@@ -4581,16 +4581,15 @@ check_methods (tree t)
 static tree
 build_clone (tree fn, tree name)
 {
-  tree parms;
-  tree clone;
-
   /* Copy the function.  */
-  clone = copy_decl (fn);
+  tree clone = copy_decl (fn);
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
   /* Remember where this function came from.  */
   DECL_ABSTRACT_ORIGIN (clone) = fn;
-  /* Make it easy to find the CLONE given the FN.  */
+
+  /* Make it easy to find the CLONE given the FN.  Note the
+     template_result of a template will be chained this way too.  */
   DECL_CHAIN (clone) = DECL_CHAIN (fn);
   DECL_CHAIN (fn) = clone;
 
@@ -4599,19 +4598,18 @@ build_clone (tree fn, tree name)
     {
       tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name);
       DECL_TEMPLATE_RESULT (clone) = result;
+
       DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
       DECL_TI_TEMPLATE (result) = clone;
+
       TREE_TYPE (clone) = TREE_TYPE (result);
       return clone;
     }
-  else
-    {
-      /* Clone constraints.  */
-      if (flag_concepts)
-        if (tree ci = get_constraints (fn))
-          set_constraints (clone, copy_node (ci));
-    }
 
+  if (flag_concepts)
+    /* Clone constraints.  */
+    if (tree ci = get_constraints (fn))
+      set_constraints (clone, copy_node (ci));
 
   SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   DECL_CLONED_FUNCTION (clone) = fn;
@@ -4623,8 +4621,7 @@ build_clone (tree fn, tree name)
   if (name == base_dtor_identifier)
     {
       DECL_VIRTUAL_P (clone) = 0;
-      if (TREE_CODE (clone) != TEMPLATE_DECL)
-	DECL_VINDEX (clone) = NULL_TREE;
+      DECL_VINDEX (clone) = NULL_TREE;
     }
 
   bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
@@ -4689,7 +4686,7 @@ build_clone (tree fn, tree name)
   if (ctor_omit_inherited_parms_p)
     DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
 
-  for (parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
+  for (tree parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
     {
       DECL_CONTEXT (parms) = clone;
       cxx_dup_lang_specific_decl (parms);
@@ -4702,30 +4699,21 @@ build_clone (tree fn, tree name)
   return clone;
 }
 
-/* Produce declarations for all appropriate clones of FN.  If
-   UPDATE_METHODS is true, the clones are added to the
-   CLASSTYPE_MEMBER_VEC.  */
+/* Build the clones of FN, return the number of clones built.  These
+   will be inserted onto DECL_CHAIN of FN.  */
 
-void
-clone_function_decl (tree fn, bool update_methods)
+unsigned
+build_clones (tree fn)
 {
-  tree clone;
-
-  /* Avoid inappropriate cloning.  */
-  if (DECL_CHAIN (fn)
-      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
-    return;
+  unsigned count = 0;
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
     {
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
-      clone = build_clone (fn, complete_ctor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
-      clone = build_clone (fn, base_ctor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
+      build_clone (fn, complete_ctor_identifier);
+      build_clone (fn, base_ctor_identifier);
+      count += 2;
     }
   else
     {
@@ -4742,20 +4730,40 @@ clone_function_decl (tree fn, bool update_methods)
 	 destructor.  */
       if (DECL_VIRTUAL_P (fn))
 	{
-	  clone = build_clone (fn, deleting_dtor_identifier);
-	  if (update_methods)
-	    add_method (DECL_CONTEXT (clone), clone, false);
+	  build_clone (fn, deleting_dtor_identifier);
+	  count++;
 	}
-      clone = build_clone (fn, complete_dtor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
-      clone = build_clone (fn, base_dtor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, false);
+      build_clone (fn, complete_dtor_identifier);
+      build_clone (fn, base_dtor_identifier);
+      count += 2;
     }
+
+  return count;
+}
+
+/* Produce declarations for all appropriate clones of FN.  If
+   UPDATE_METHODS is true, the clones are added to the
+   CLASSTYPE_MEMBER_VEC.  */
+
+void
+clone_function_decl (tree fn, bool update_methods)
+{
+  /* Avoid inappropriate cloning.  */
+  if (DECL_CHAIN (fn)
+      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
+    return;
+
+  unsigned count = build_clones (fn);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;
+
+  if (update_methods)
+    for (tree clone = fn; count--;)
+      {
+	clone = DECL_CHAIN (clone);
+	add_method (DECL_CONTEXT (clone), clone, false);
+      }
 }
 
 /* DECL is an in charge constructor, which is being defined. This will

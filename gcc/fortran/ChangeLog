@@ -1,3 +1,57 @@
+2019-10-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69455
+	* trans-decl.c (generate_local_decl): Avoid misconstructed
+	intrinsic modules in a BLOCK construct.
+
+2019-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91586
+	* class.c (gfc_find_derived_vtab): Return NULL
+	instead of deref'ing NULL pointer.
+
+2019-10-15  James Norris  <jnorris@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/65438
+	* openmp.c (check_array_not_assumed): Remove pointer check.
+
+2019-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89943
+	decl.c (gfc_match_function_decl): Ignore duplicate BIND(C) for function
+	declaration in submodule.  Implement at check for F2018 C1550.
+	(gfc_match_entry): Use temporary for locus, which allows removal of
+	one gfc_error_now().
+	(gfc_match_subroutine): Ignore duplicate BIND(C) for subroutine
+	declaration in submodule.  Implement at check for F2018 C1550.
+
+2019-10-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92004
+	* array.c (expand_constructor): Set from_constructor on
+	expression.
+	* gfortran.h (gfc_symbol): Add maybe_array.
+	(gfc_expr): Add from_constructor.
+	* interface.c (maybe_dummy_array_arg): New function.
+	(compare_parameter): If the formal argument is generated from a
+	call, check the conditions where an array element could be
+	passed to an array.  Adjust error message for assumed-shape
+	or pointer array.  Use correct language for assumed shaped arrays.
+	(gfc_get_formal_from_actual_arglist): Set maybe_array on the
+	symbol if the actual argument is an array element fulfilling
+	the conditions of 15.5.2.4.
+
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* error.c: Remove debug pragma added in previous commit.
+
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92072
+	* error.c (error_print, gfc_format_decoder): Fix %C column-
+	offset handling.
+
 2019-10-13  Damian Rouson  <damain@sourceryinstitue.org>
 
 	PR fortran/91513
@@ -110,7 +164,8 @@
 
 2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
-	* error (error_print, gfc_format_decoder): Fix off-by one issue with %C.
+	* error.c (error_print, gfc_format_decoder): Fix off-by one issue
+	with %C.
 
 2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 

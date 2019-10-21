@@ -1,12 +1,11 @@
 /* Test to verify that -Wstringop-overflow mentions the referenced object
-   i.
    { dg-do compile }
    { dg-options "-O2 -Wall" } */
 
 static void copy_n (char *d, const char *s, int n)
 {
   while (n--)
-    *d++ = *s++;
+    *d++ = *s++;    // { dg-warning "writing 1 byte into a region of size 0" }
   *d = 0;           // { dg-warning "writing 1 byte into a region of size 0" }
 }
 

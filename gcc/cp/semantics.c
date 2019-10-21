@@ -5068,7 +5068,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
      saying how many times the side-effects are evaluated is unspecified,
      makes int *a, *b; ... reduction(+:a[a = b, 3:10]) really unspecified.  */
   warning_sentinel s (flag_strong_eval_order,
-		      OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION);
+		      OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION);
   ret = grok_array_decl (OMP_CLAUSE_LOCATION (c), ret, low_bound, false);
   return ret;
 }

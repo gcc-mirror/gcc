@@ -1538,6 +1538,9 @@ const unsigned int VEC_SVE_PRED = 4;
 /* Can be used in combination with VEC_ADVSIMD or VEC_SVE_DATA to indicate
    a structure of 2, 3 or 4 vectors.  */
 const unsigned int VEC_STRUCT   = 8;
+/* Can be used in combination with VEC_SVE_DATA to indicate that the
+   vector has fewer significant bytes than a full SVE vector.  */
+const unsigned int VEC_PARTIAL  = 16;
 /* Useful combinations of the above.  */
 const unsigned int VEC_ANY_SVE  = VEC_SVE_DATA | VEC_SVE_PRED;
 const unsigned int VEC_ANY_DATA = VEC_ADVSIMD | VEC_SVE_DATA;
@@ -1558,7 +1561,17 @@ aarch64_classify_vector_mode (machine_mode mode)
      of -msve-vector-bits.  */
   switch (mode)
     {
-    /* Single SVE vectors.  */
+    /* Partial SVE QI vectors.  */
+    case E_VNx2QImode:
+    case E_VNx4QImode:
+    case E_VNx8QImode:
+    /* Partial SVE HI vectors.  */
+    case E_VNx2HImode:
+    case E_VNx4HImode:
+    /* Partial SVE SI vector.  */
+    case E_VNx2SImode:
+      return TARGET_SVE ? VEC_SVE_DATA | VEC_PARTIAL : 0;
+
     case E_VNx16QImode:
     case E_VNx8HImode:
     case E_VNx4SImode:
@@ -1639,6 +1652,24 @@ static bool
 aarch64_sve_data_mode_p (machine_mode mode)
 {
   return aarch64_classify_vector_mode (mode) & VEC_SVE_DATA;
+}
+
+/* Return the number of defined bytes in one constituent vector of
+   SVE mode MODE, which has vector flags VEC_FLAGS.  */
+static poly_int64
+aarch64_vl_bytes (machine_mode mode, unsigned int vec_flags)
+{
+  if (vec_flags & VEC_PARTIAL)
+    /* A single partial vector.  */
+    return GET_MODE_SIZE (mode);
+
+  if (vec_flags & VEC_SVE_DATA)
+    /* A single vector or a tuple.  */
+    return BYTES_PER_SVE_VECTOR;
+
+  /* A single predicate.  */
+  gcc_assert (vec_flags & VEC_SVE_PRED);
+  return BYTES_PER_SVE_PRED;
 }
 
 /* Implement target hook TARGET_ARRAY_MODE.  */
@@ -1769,10 +1800,13 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     case FP_REGS:
     case FP_LO_REGS:
     case FP_LO8_REGS:
-      if (aarch64_sve_data_mode_p (mode))
-	return exact_div (GET_MODE_SIZE (mode),
-			  BYTES_PER_SVE_VECTOR).to_constant ();
-      return CEIL (lowest_size, UNITS_PER_VREG);
+      {
+	unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+	if (vec_flags & VEC_SVE_DATA)
+	  return exact_div (GET_MODE_SIZE (mode),
+			    aarch64_vl_bytes (mode, vec_flags)).to_constant ();
+	return CEIL (lowest_size, UNITS_PER_VREG);
+      }
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
@@ -1796,6 +1830,11 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     return mode == DImode;
 
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  /* At the moment, partial vector modes are only useful for memory
+     references, but that could change in future.  */
+  if (vec_flags & VEC_PARTIAL)
+    return false;
+
   if (vec_flags & VEC_SVE_PRED)
     return PR_REGNUM_P (regno);
 
@@ -5321,8 +5360,9 @@ aarch64_layout_frame (void)
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
   bool simd_function = (crtl->abi->id () == ARM_PCS_SIMD);
+  aarch64_frame &frame = cfun->machine->frame;
 
-  cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
+  frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
   /* Adjust the outgoing arguments size if required.  Keep it in sync with what
      the mid-end is doing.  */
@@ -5331,21 +5371,20 @@ aarch64_layout_frame (void)
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
 
-  cfun->machine->frame.wb_candidate1 = INVALID_REGNUM;
-  cfun->machine->frame.wb_candidate2 = INVALID_REGNUM;
+  frame.wb_candidate1 = INVALID_REGNUM;
+  frame.wb_candidate2 = INVALID_REGNUM;
 
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
-    cfun->machine->frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
+    frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-    cfun->machine->frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
+    frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
 
   /* ... that includes the eh data registers (if needed)...  */
   if (crtl->calls_eh_return)
     for (regno = 0; EH_RETURN_DATA_REGNO (regno) != INVALID_REGNUM; regno++)
-      cfun->machine->frame.reg_offset[EH_RETURN_DATA_REGNO (regno)]
-	= SLOT_REQUIRED;
+      frame.reg_offset[EH_RETURN_DATA_REGNO (regno)] = SLOT_REQUIRED;
 
   /* ... and any callee saved register that dataflow says is live.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -5353,41 +5392,40 @@ aarch64_layout_frame (void)
 	&& !fixed_regs[regno]
 	&& (regno == R30_REGNUM
 	    || !crtl->abi->clobbers_full_reg_p (regno)))
-      cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
+      frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
 	&& !fixed_regs[regno]
 	&& !crtl->abi->clobbers_full_reg_p (regno))
       {
-	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
+	frame.reg_offset[regno] = SLOT_REQUIRED;
 	last_fp_reg = regno;
       }
 
-  if (cfun->machine->frame.emit_frame_chain)
+  if (frame.emit_frame_chain)
     {
       /* FP and LR are placed in the linkage record.  */
-      cfun->machine->frame.reg_offset[R29_REGNUM] = 0;
-      cfun->machine->frame.wb_candidate1 = R29_REGNUM;
-      cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
-      cfun->machine->frame.wb_candidate2 = R30_REGNUM;
+      frame.reg_offset[R29_REGNUM] = 0;
+      frame.wb_candidate1 = R29_REGNUM;
+      frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
+      frame.wb_candidate2 = R30_REGNUM;
       offset = 2 * UNITS_PER_WORD;
     }
 
   /* With stack-clash, LR must be saved in non-leaf functions.  */
   gcc_assert (crtl->is_leaf
-	      || (cfun->machine->frame.reg_offset[R30_REGNUM]
-		  != SLOT_NOT_REQUIRED));
+	      || frame.reg_offset[R30_REGNUM] != SLOT_NOT_REQUIRED);
 
   /* Now assign stack slots for them.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
-    if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
+    if (frame.reg_offset[regno] == SLOT_REQUIRED)
       {
-	cfun->machine->frame.reg_offset[regno] = offset;
-	if (cfun->machine->frame.wb_candidate1 == INVALID_REGNUM)
-	  cfun->machine->frame.wb_candidate1 = regno;
-	else if (cfun->machine->frame.wb_candidate2 == INVALID_REGNUM)
-	  cfun->machine->frame.wb_candidate2 = regno;
+	frame.reg_offset[regno] = offset;
+	if (frame.wb_candidate1 == INVALID_REGNUM)
+	  frame.wb_candidate1 = regno;
+	else if (frame.wb_candidate2 == INVALID_REGNUM)
+	  frame.wb_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
 
@@ -5396,7 +5434,7 @@ aarch64_layout_frame (void)
   bool has_align_gap = offset != max_int_offset;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-    if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
+    if (frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	/* If there is an alignment gap between integer and fp callee-saves,
 	   allocate the last fp register to it if possible.  */
@@ -5405,27 +5443,27 @@ aarch64_layout_frame (void)
 	    && !simd_function
 	    && (offset & 8) == 0)
 	  {
-	    cfun->machine->frame.reg_offset[regno] = max_int_offset;
+	    frame.reg_offset[regno] = max_int_offset;
 	    break;
 	  }
 
-	cfun->machine->frame.reg_offset[regno] = offset;
-	if (cfun->machine->frame.wb_candidate1 == INVALID_REGNUM)
-	  cfun->machine->frame.wb_candidate1 = regno;
-	else if (cfun->machine->frame.wb_candidate2 == INVALID_REGNUM
-		 && cfun->machine->frame.wb_candidate1 >= V0_REGNUM)
-	  cfun->machine->frame.wb_candidate2 = regno;
+	frame.reg_offset[regno] = offset;
+	if (frame.wb_candidate1 == INVALID_REGNUM)
+	  frame.wb_candidate1 = regno;
+	else if (frame.wb_candidate2 == INVALID_REGNUM
+		 && frame.wb_candidate1 >= V0_REGNUM)
+	  frame.wb_candidate2 = regno;
 	offset += simd_function ? UNITS_PER_VREG : UNITS_PER_WORD;
       }
 
   offset = ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
-  cfun->machine->frame.saved_regs_size = offset;
+  frame.saved_regs_size = offset;
 
   HOST_WIDE_INT varargs_and_saved_regs_size
-    = offset + cfun->machine->frame.saved_varargs_size;
+    = offset + frame.saved_varargs_size;
 
-  cfun->machine->frame.hard_fp_offset
+  frame.hard_fp_offset
     = aligned_upper_bound (varargs_and_saved_regs_size
 			   + get_frame_size (),
 			   STACK_BOUNDARY / BITS_PER_UNIT);
@@ -5433,57 +5471,53 @@ aarch64_layout_frame (void)
   /* Both these values are already aligned.  */
   gcc_assert (multiple_p (crtl->outgoing_args_size,
 			  STACK_BOUNDARY / BITS_PER_UNIT));
-  cfun->machine->frame.frame_size
-    = (cfun->machine->frame.hard_fp_offset
-       + crtl->outgoing_args_size);
+  frame.frame_size = frame.hard_fp_offset + crtl->outgoing_args_size;
 
-  cfun->machine->frame.locals_offset = cfun->machine->frame.saved_varargs_size;
+  frame.locals_offset = frame.saved_varargs_size;
 
-  cfun->machine->frame.initial_adjust = 0;
-  cfun->machine->frame.final_adjust = 0;
-  cfun->machine->frame.callee_adjust = 0;
-  cfun->machine->frame.callee_offset = 0;
+  frame.initial_adjust = 0;
+  frame.final_adjust = 0;
+  frame.callee_adjust = 0;
+  frame.callee_offset = 0;
 
   HOST_WIDE_INT max_push_offset = 0;
-  if (cfun->machine->frame.wb_candidate2 != INVALID_REGNUM)
+  if (frame.wb_candidate2 != INVALID_REGNUM)
     max_push_offset = 512;
-  else if (cfun->machine->frame.wb_candidate1 != INVALID_REGNUM)
+  else if (frame.wb_candidate1 != INVALID_REGNUM)
     max_push_offset = 256;
 
-  HOST_WIDE_INT const_size, const_fp_offset;
-  if (cfun->machine->frame.frame_size.is_constant (&const_size)
+  HOST_WIDE_INT const_size, const_outgoing_args_size, const_fp_offset;
+  if (frame.frame_size.is_constant (&const_size)
       && const_size < max_push_offset
       && known_eq (crtl->outgoing_args_size, 0))
     {
       /* Simple, small frame with no outgoing arguments:
 	 stp reg1, reg2, [sp, -frame_size]!
 	 stp reg3, reg4, [sp, 16]  */
-      cfun->machine->frame.callee_adjust = const_size;
+      frame.callee_adjust = const_size;
     }
-  else if (known_lt (crtl->outgoing_args_size
-		     + cfun->machine->frame.saved_regs_size, 512)
+  else if (crtl->outgoing_args_size.is_constant (&const_outgoing_args_size)
+	   && const_outgoing_args_size + frame.saved_regs_size < 512
 	   && !(cfun->calls_alloca
-		&& known_lt (cfun->machine->frame.hard_fp_offset,
-			     max_push_offset)))
+		&& frame.hard_fp_offset.is_constant (&const_fp_offset)
+		&& const_fp_offset < max_push_offset))
     {
       /* Frame with small outgoing arguments:
 	 sub sp, sp, frame_size
 	 stp reg1, reg2, [sp, outgoing_args_size]
 	 stp reg3, reg4, [sp, outgoing_args_size + 16]  */
-      cfun->machine->frame.initial_adjust = cfun->machine->frame.frame_size;
-      cfun->machine->frame.callee_offset
-	= cfun->machine->frame.frame_size - cfun->machine->frame.hard_fp_offset;
+      frame.initial_adjust = frame.frame_size;
+      frame.callee_offset = const_outgoing_args_size;
     }
-  else if (cfun->machine->frame.hard_fp_offset.is_constant (&const_fp_offset)
+  else if (frame.hard_fp_offset.is_constant (&const_fp_offset)
 	   && const_fp_offset < max_push_offset)
     {
       /* Frame with large outgoing arguments but a small local area:
 	 stp reg1, reg2, [sp, -hard_fp_offset]!
 	 stp reg3, reg4, [sp, 16]
 	 sub sp, sp, outgoing_args_size  */
-      cfun->machine->frame.callee_adjust = const_fp_offset;
-      cfun->machine->frame.final_adjust
-	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
+      frame.callee_adjust = const_fp_offset;
+      frame.final_adjust = crtl->outgoing_args_size;
     }
   else
     {
@@ -5493,12 +5527,16 @@ aarch64_layout_frame (void)
 	 add x29, sp, 0
 	 stp reg3, reg4, [sp, 16]
 	 sub sp, sp, outgoing_args_size  */
-      cfun->machine->frame.initial_adjust = cfun->machine->frame.hard_fp_offset;
-      cfun->machine->frame.final_adjust
-	= cfun->machine->frame.frame_size - cfun->machine->frame.initial_adjust;
+      frame.initial_adjust = frame.hard_fp_offset;
+      frame.final_adjust = crtl->outgoing_args_size;
     }
 
-  cfun->machine->frame.laid_out = true;
+  /* Make sure the individual adjustments add up to the full frame size.  */
+  gcc_assert (known_eq (frame.initial_adjust
+			+ frame.callee_adjust
+			+ frame.final_adjust, frame.frame_size));
+
+  frame.laid_out = true;
 }
 
 /* Return true if the register REGNO is saved on entry to
@@ -7442,9 +7480,15 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
   HOST_WIDE_INT const_size;
 
+  /* Whether a vector mode is partial doesn't affect address legitimacy.
+     Partial vectors like VNx8QImode allow the same indexed addressing
+     mode and MUL VL addressing mode as full vectors like VNx16QImode;
+     in both cases, MUL VL counts multiples of GET_MODE_SIZE.  */
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  vec_flags &= ~VEC_PARTIAL;
+
   /* On BE, we use load/store pair for all large int mode load/stores.
      TI/TFmode may also use a load/store pair.  */
-  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   bool advsimd_struct_p = (vec_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
 			    || type == ADDR_QUERY_LDP_STP_N
@@ -8949,7 +8993,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
 				aarch64_addr_query_type type)
 {
   struct aarch64_address_info addr;
-  unsigned int size;
+  unsigned int size, vec_flags;
 
   /* Check all addresses are Pmode - including ILP32.  */
   if (GET_MODE (x) != Pmode
@@ -8965,26 +9009,24 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
       {
       case ADDRESS_REG_IMM:
 	if (known_eq (addr.const_offset, 0))
-	  asm_fprintf (f, "[%s]", reg_names [REGNO (addr.base)]);
-	else if (aarch64_sve_data_mode_p (mode))
+	  {
+	    asm_fprintf (f, "[%s]", reg_names[REGNO (addr.base)]);
+	    return true;
+	  }
+
+	vec_flags = aarch64_classify_vector_mode (mode);
+	if (vec_flags & VEC_ANY_SVE)
 	  {
 	    HOST_WIDE_INT vnum
 	      = exact_div (addr.const_offset,
-			   BYTES_PER_SVE_VECTOR).to_constant ();
+			   aarch64_vl_bytes (mode, vec_flags)).to_constant ();
 	    asm_fprintf (f, "[%s, #%wd, mul vl]",
 			 reg_names[REGNO (addr.base)], vnum);
+	    return true;
 	  }
-	else if (aarch64_sve_pred_mode_p (mode))
-	  {
-	    HOST_WIDE_INT vnum
-	      = exact_div (addr.const_offset,
-			   BYTES_PER_SVE_PRED).to_constant ();
-	    asm_fprintf (f, "[%s, #%wd, mul vl]",
-			 reg_names[REGNO (addr.base)], vnum);
-	  }
-	else
-	  asm_fprintf (f, "[%s, %wd]", reg_names [REGNO (addr.base)],
-		       INTVAL (addr.offset));
+
+	asm_fprintf (f, "[%s, %wd]", reg_names[REGNO (addr.base)],
+		     INTVAL (addr.offset));
 	return true;
 
       case ADDRESS_REG_REG:
@@ -9396,7 +9438,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
      can hold MODE, but at the moment we need to handle all modes.
      Just ignore any runtime parts for registers that can't store them.  */
   HOST_WIDE_INT lowest_size = constant_lower_bound (GET_MODE_SIZE (mode));
-  unsigned int nregs;
+  unsigned int nregs, vec_flags;
   switch (regclass)
     {
     case TAILCALL_ADDR_REGS:
@@ -9407,11 +9449,12 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case FP_REGS:
     case FP_LO_REGS:
     case FP_LO8_REGS:
-      if (aarch64_sve_data_mode_p (mode)
+      vec_flags = aarch64_classify_vector_mode (mode);
+      if ((vec_flags & VEC_SVE_DATA)
 	  && constant_multiple_p (GET_MODE_SIZE (mode),
-				  BYTES_PER_SVE_VECTOR, &nregs))
+				  aarch64_vl_bytes (mode, vec_flags), &nregs))
 	return nregs;
-      return (aarch64_vector_data_mode_p (mode)
+      return (vec_flags & VEC_ADVSIMD
 	      ? CEIL (lowest_size, UNITS_PER_VREG)
 	      : CEIL (lowest_size, UNITS_PER_WORD));
     case STACK_REG:
@@ -14079,26 +14122,31 @@ aarch64_classify_symbol (rtx x, HOST_WIDE_INT offset)
 	     the offset does not cause overflow of the final address.  But
 	     we have no way of knowing the address of symbol at compile time
 	     so we can't accurately say if the distance between the PC and
-	     symbol + offset is outside the addressible range of +/-1M in the
-	     TINY code model.  So we rely on images not being greater than
-	     1M and cap the offset at 1M and anything beyond 1M will have to
-	     be loaded using an alternative mechanism.  Furthermore if the
-	     symbol is a weak reference to something that isn't known to
-	     resolve to a symbol in this module, then force to memory.  */
-	  if ((SYMBOL_REF_WEAK (x)
-	       && !aarch64_symbol_binds_local_p (x))
-	      || !IN_RANGE (offset, -1048575, 1048575))
+	     symbol + offset is outside the addressible range of +/-1MB in the
+	     TINY code model.  So we limit the maximum offset to +/-64KB and
+	     assume the offset to the symbol is not larger than +/-(1MB - 64KB).
+	     If offset_within_block_p is true we allow larger offsets.
+	     Furthermore force to memory if the symbol is a weak reference to
+	     something that doesn't resolve to a symbol in this module.  */
+
+	  if (SYMBOL_REF_WEAK (x) && !aarch64_symbol_binds_local_p (x))
 	    return SYMBOL_FORCE_TO_MEM;
+	  if (!(IN_RANGE (offset, -0x10000, 0x10000)
+		|| offset_within_block_p (x, offset)))
+	    return SYMBOL_FORCE_TO_MEM;
+
 	  return SYMBOL_TINY_ABSOLUTE;
 
 	case AARCH64_CMODEL_SMALL:
 	  /* Same reasoning as the tiny code model, but the offset cap here is
-	     4G.  */
-	  if ((SYMBOL_REF_WEAK (x)
-	       && !aarch64_symbol_binds_local_p (x))
-	      || !IN_RANGE (offset, HOST_WIDE_INT_C (-4294967263),
-			    HOST_WIDE_INT_C (4294967264)))
+	     1MB, allowing +/-3.9GB for the offset to the symbol.  */
+
+	  if (SYMBOL_REF_WEAK (x) && !aarch64_symbol_binds_local_p (x))
 	    return SYMBOL_FORCE_TO_MEM;
+	  if (!(IN_RANGE (offset, -0x100000, 0x100000)
+		|| offset_within_block_p (x, offset)))
+	    return SYMBOL_FORCE_TO_MEM;
+
 	  return SYMBOL_SMALL_ABSOLUTE;
 
 	case AARCH64_CMODEL_TINY_PIC:
@@ -15058,7 +15106,7 @@ static bool
 aarch64_vector_mode_supported_p (machine_mode mode)
 {
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-  return vec_flags != 0 && (vec_flags & VEC_STRUCT) == 0;
+  return vec_flags != 0 && (vec_flags & (VEC_STRUCT | VEC_PARTIAL)) == 0;
 }
 
 /* Return the full-width SVE vector mode for element mode MODE, if one

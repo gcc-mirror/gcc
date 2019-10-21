@@ -12,4 +12,4 @@ test(int i,int j)
   (*innerptr)[3][j]=11;
   return (*barptr)[i][2][j];
 }
-/* { dg-final { scan-tree-dump-times "return 10" 1 "fre3"} } */
+/* { dg-final { scan-tree-dump-times "return 10" 1 "fre3" { xfail *-*-* } } } */

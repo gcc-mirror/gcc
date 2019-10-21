@@ -793,14 +793,19 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          @srcdir@/libsupc++/new \
                          @srcdir@/libsupc++/typeinfo \
                          include/algorithm \
+                         include/any \
                          include/array \
                          include/atomic \
+                         include/bit \
                          include/bitset \
+                         include/charconv \
                          include/chrono \
-                         include/complex \
                          include/codecvt \
+                         include/complex \
+                         include/concepts \
                          include/condition_variable \
                          include/deque \
+                         include/filesystem \
                          include/forward_list \
                          include/fstream \
                          include/functional \
@@ -816,8 +821,11 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/locale \
                          include/map \
                          include/memory \
+                         include/memory_resource \
                          include/mutex \
                          include/numeric \
+                         include/numbers \
+                         include/optional \
                          include/ostream \
                          include/queue \
                          include/random \
@@ -826,11 +834,13 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/scoped_allocator \
                          include/set \
                          include/shared_mutex \
+                         include/span \
                          include/sstream \
                          include/stack \
                          include/stdexcept \
                          include/streambuf \
                          include/string \
+                         include/string_view \
                          include/system_error \
                          include/thread \
                          include/tuple \
@@ -840,6 +850,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/unordered_set \
                          include/utility \
                          include/valarray \
+                         include/variant \
                          include/vector \
                          include/cassert \
                          include/ccomplex \

@@ -1155,8 +1155,8 @@ release_pages (void)
       {
 	*gp = g->next;
 	G.bytes_mapped -= g->alloc_size;
-	free (g->allocation);
 	n1 += g->alloc_size;
+	free (g->allocation);
       }
     else
       gp = &g->next;

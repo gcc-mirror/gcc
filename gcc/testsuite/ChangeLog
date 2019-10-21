@@ -1,3 +1,353 @@
+2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/alias-access-path-2.c: New testcase.
+	* gcc.dg/tree-ssa/alias-access-path-11.c: xfail.
+
+2019-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/nodiscard-reason-only-one.C: In dg-error or dg-warning
+	remove (?n) uses and replace .* with \[^\n\r]*.
+	* g++.dg/cpp2a/nodiscard-reason.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-once.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-reason-nonstring.C: Likewise.
+
+2019-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92140
+	* gcc.target/i386/pr92140.c: New test.
+	* gcc.c-torture/execute/pr92140.c: New test.
+
+2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/Wnonnull.c: Add attributed function declarations for
+	memcpy and strlen for Darwin.
+
+2019-10-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92157
+	* gcc.dg/strlenopt-69.c: Disable test failing due to PR 92155.
+	* gcc.dg/strlenopt-87.c: New test.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/negdi-3.c: Update expected output to allow NEGS.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/builtin-arith-overflow-3.c: New test.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/negdi-3.c: Remove XFAIL markers.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr53447-1.c: Remove XFAIL.
+	* gcc.target/arm/pr53447-3.c: Remove XFAIL.
+	* gcc.target/arm/pr53447-4.c: Remove XFAIL.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/negdi-3.c: Add XFAILS.
+	* gcc.target/arm/pr3447-1.c: Likewise.
+	* gcc.target/arm/pr3447-3.c: Likewise.
+	* gcc.target/arm/pr3447-4.c: Likewise.
+
+2019-10-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69455
+	* gfortran.dg/pr69455_1.f90: New test.
+	* gfortran.dg/pr69455_2.f90: Ditto.
+
+2019-10-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add extra tests.
+
+2019-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91586
+	* gfortran.dg/class_71.f90: New.
+
+2019-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix some fallout for small targets.
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/20190820-1.c:
+	Add dg-require-effective-target int32plus.
+	* gcc.c-torture/execute/pr85331.c
+	Add dg-require-effective-target double64plus.
+	* gcc.dg/pow-sqrt-1.c: Same.
+	* gcc.dg/pow-sqrt-2.c: Same.
+	* gcc.dg/pow-sqrt-3.c: Same.
+	* gcc.c-torture/execute/20190901-1.c: Same.
+	* gcc.c-torture/execute/user-printf.c [avr]: Skip.
+	* gcc.c-torture/execute/fprintf-2.c [avr]: Skip.
+	* gcc.c-torture/execute/printf-2.c [avr]: Skip.
+	* gcc.dg/Wlarger-than3.c [avr]: Skip.
+	* gcc.c-torture/execute/ieee/20041213-1.c (sqrt)
+	[avr,double=float]: Provide custom prototype.
+	* gcc.dg/pr36017.c: Same.
+	* gcc.c-torture/execute/pr90025.c: Use 32-bit int.
+	* gcc.dg/complex-7.c: Add dg-require-effective-target double64.
+	* gcc.dg/loop-versioning-1.c:
+	Add dg-require-effective-target size32plus.
+	* gcc.dg/loop-versioning-2.c: Same.
+
+2019-10-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86753
+	* gcc.target/aarch64/sve/cond_cnot_2.c: Remove XFAIL
+	from { scan-assembler-not {\tsel\t}.
+	* gcc.target/aarch64/sve/cond_convert_1.c: Adjust to make
+	only one load conditional.
+	* gcc.target/aarch64/sve/cond_convert_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_2.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_4.c: Remove XFAIL's.
+	* gcc.target/aarch64/sve/vcond_5.c: Likewise.
+
+2019-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92056
+	* gcc.dg/tree-ssa/pr92056.c: New test.
+
+2019-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.other/decl9.C: Check locations too.
+
+2019-10-17  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* gcc.target/aarch64/sve2/eor3_1.c: New test.
+	* gcc.target/aarch64/sve2/nlogic_1.c: As above.
+	* gcc.target/aarch64/sve2/nlogic_2.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_1.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_2.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_3.c: As above.
+	* gcc.target/aarch64/sve2/bitsel_4.c: As above.
+
+2019-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp4.c: Check for +INF instead of -1.
+
+2019-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/vseleqdf.c: Add missing closing bracket.
+	* gcc.target/arm/vseleqsf.c: Likewise.
+	* gcc.target/arm/vselgedf.c: Likewise.
+	* gcc.target/arm/vselgesf.c: Likewise.
+	* gcc.target/arm/vselgtdf.c: Likewise.
+	* gcc.target/arm/vselgtsf.c: Likewise.
+	* gcc.target/arm/vselledf.c: Likewise.
+	* gcc.target/arm/vsellesf.c: Likewise.
+	* gcc.target/arm/vselltdf.c: Likewise.
+	* gcc.target/arm/vselltsf.c: Likewise.
+	* gcc.target/arm/vselnedf.c: Likewise.
+	* gcc.target/arm/vselnesf.c: Likewise.
+	* gcc.target/arm/vselvcdf.c: Likewise.
+	* gcc.target/arm/vselvcsf.c: Likewise.
+	* gcc.target/arm/vselvsdf.c: Likewise.
+	* gcc.target/arm/vselvssf.c: Likewise.
+
+2019-10-17  Mark Eggleston <mark.eggleston@codethink.com>
+
+	* gfortran.dg/auto_in_equiv_3.f90: New test.
+	* gfortran.dg/auto_in_equiv_4.f90: New test.
+	* gfortran.dg/auto_in_equiv_5.f90: New test.
+	* gfortran.dg/auto_in_equiv_6.f90: New test.
+	* gfortran.dg/auto_in_equiv_7.f90: New test.
+
+2019-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/progmem-error-1.cpp: Fix location of the
+	expected diagnostic.
+
+2019-10-17  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR testsuite/92125
+	* gcc.dg/ipa/pr91088.c: Change char conversion to bitand.
+
+2019-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92056
+	* gcc.c-torture/compile/pr92056.c: New test.
+
+	PR tree-optimization/92115
+	* gcc.dg/pr92115.c: New test.
+
+	PR fortran/87752
+	* gfortran.dg/gomp/pr87752.f90: New test.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR debug/91887
+	* g++.dg/debug/dwarf2/pr91887.C: New testcase.
+
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83821
+	* c-c++-common/Warray-bounds-4.c: Remove XFAIL.
+	* gcc.dg/strlenopt-82.c: New test.
+	* gcc.dg/strlenopt-83.c: Same.
+	* gcc.dg/strlenopt-84.c: Same.
+	* gcc.dg/strlenopt-85.c: Same.
+	* gcc.dg/strlenopt-86.c: Same.
+	* gcc.dg/tree-ssa/calloc-4.c: Same.
+	* gcc.dg/tree-ssa/calloc-5.c: Same.
+
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91996
+	* gcc.dg/strlenopt-80.c: New test.
+	* gcc.dg/strlenopt-81.c: New test.
+
+2019-10-16  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* gcc.target/mips/msa-dpadd-dpsub.c: New test.
+
+2019-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/symbol-range.c: Improve testcase.
+	* gcc.target/aarch64/symbol-range-tiny.c: Likewise.
+
+2019-10-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-cond-reduc-3.c: New testcase.
+	* gcc.dg/vect/vect-cond-reduc-4.c: Likewise.
+
+2019-10-16  Peter Bergner <bergner@linux.ibm.com>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/70010
+	* gcc.target/powerpc/pr70010.c: New test.
+	* gcc.target/powerpc/pr70010-1.c: New test.
+	* gcc.target/powerpc/pr70010-2.c: New test.
+	* gcc.target/powerpc/pr70010-3.c: New test.
+	* gcc.target/powerpc/pr70010-4.c: New test.
+
+2019-10-16  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/91088
+	* gcc.dg/ipa/pr91088.c: New test.
+	* gcc.dg/ipa/pr91089.c: Add sub-test for range analysis.
+	* g++.dg/tree-ssa/ivopts-3.C: Force a function to be noinline.
+
+2019-10-15  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/20191015-1.c: New test.
+	* gcc.c-torture/compile/20191015-2.c: New test.
+
+2019-10-15  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/92016
+	* gcc.dg/Wstringop-overflow-17.c: Expect an additional warning.
+
+2019-10-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/92093
+	* gcc.target/powerpc/pr91275.c: Fix type and endian issues.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92048
+	* gcc.dg/vect/fast-math-vect-pr29925.c: Avoid unrolling of
+	inner loop.
+
+2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/load-thread-pointer-once.c: New test.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92094
+	* gfortran.dg/pr92094.f90: New testcase.
+
+2019-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/92035
+	* gcc.target/i386/avx512f-vrndscaless-1.c: Add scan-assembler-times
+	directives for newly expected instructions.
+	* gcc.target/i386/avx512f-vrndscalesd-1.c: Likewise.
+	* gcc.target/i386/avx512f-vrndscaless-2.c
+	(avx512f_test): Add tests for new intrinsics.
+	* gcc.target/i386/avx512f-vrndscalesd-2.c: Likewise.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_rndscalefss_round,
+	__builtin_ia32_rndscalefsd_round): Remove.
+	(__builtin_ia32_rndscalefss_mask_round,
+	__builtin_ia32_rndscalefsd_mask_round): Define.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* c-c++-common/cxxbitfields-3.c: Adjust.
+	* c-c++-common/cxxbitfields-6.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-1.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-2.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-3.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-4.c: Likewise.
+	* g++.dg/simulate-thread/bitfields-2.C: Likewise.
+	* g++.dg/simulate-thread/bitfields.C: Likewise.
+	* gcc.dg/lto/pr52097_0.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-2.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-3.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store-4.c: Likewise.
+	* gcc.dg/simulate-thread/speculative-store.c: Likewise.
+	* gcc.dg/tree-ssa/20050314-1.c: Likewise.
+
+2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92085
+	* gcc.dg/tree-ssa/pr92085-1.c: New test.
+	* gcc.dg/tree-ssa/pr92085-2.c: Likewise.
+
+2019-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89943
+	* gfortran.dg/pr89943_1.f90: New test.
+	* gfortran.dg/pr89943_2.f90: Ditto.
+	* gfortran.dg/pr89943_3.f90: Ditto.
+	* gfortran.dg/pr89943_4.f90: Ditto.
+
+2019-10-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92004
+	* gfortran.dg/argument_checking_24.f90: New test.
+	* gfortran.dg/abstract_type_6.f90: Add error message.
+	* gfortran.dg/argument_checking_11.f90: Correct wording
+	in error message.
+	* gfortran.dg/argumeent_checking_13.f90: Likewise.
+	* gfortran.dg/interface_40.f90: Add error message.
+
+2019-10-14  Maya Rashish  <coypu@sdf.org>
+
+	* gcc.c-torture/compile/pr85401: New test.
+
+2019-10-14  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* gcc.target/mips/constant-spill.c: New test.
+
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92069
+	* gcc.dg/torture/pr92069.c: New testcase.
+
+2019-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-union5.C: Test location(s) too.
+	* g++.dg/diagnostic/bitfld2.C: Likewise.
+	* g++.dg/ext/anon-struct1.C: Likewise.
+	* g++.dg/ext/anon-struct6.C: Likewise.
+	* g++.dg/ext/flexary19.C: Likewise.
+	* g++.dg/ext/flexary9.C: Likewise.
+	* g++.dg/template/error17.C: Likewise.
+
+2019-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92084
+	* g++.dg/gomp/pr92084.C: New test.
+
 2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/diag-aka-5.h: New test.

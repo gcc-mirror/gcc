@@ -697,8 +697,7 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
       /* Warn about deprecated implicit capture of this via [=].  */
       if (cxx_dialect >= cxx2a
 	  && this_capture_p
-	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY
-	  && !in_system_header_at (LAMBDA_EXPR_LOCATION (lambda)))
+	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY)
 	{
 	  if (warning_at (LAMBDA_EXPR_LOCATION (lambda), OPT_Wdeprecated,
 			  "implicit capture of %qE via %<[=]%> is deprecated "

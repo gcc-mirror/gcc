@@ -7263,13 +7263,16 @@ gfc_match_function_decl (void)
   if (sym->attr.is_bind_c == 1)
     {
       sym->attr.is_bind_c = 0;
-      if (sym->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(sym->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
+
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state != COMP_SUBMODULE)
+	{
+	  locus loc;
+	  loc = sym->old_symbol != NULL
+	    ? sym->old_symbol->declared_at : gfc_current_locus;
+	  gfc_error_now ("BIND(C) attribute at %L can only be used for "
+			 "variables or common blocks", &loc);
+	}
     }
 
   if (found_match != MATCH_YES)
@@ -7282,6 +7285,24 @@ gfc_match_function_decl (void)
       else
 	found_match = suffix_match;
     }
+
+  /* F2018 C1550 (R1526) If MODULE appears in the prefix of a module
+     subprogram and a binding label is specified, it shall be the
+     same as the binding label specified in the corresponding module
+     procedure interface body.  */
+    if (sym->attr.is_bind_c && sym->attr.module_procedure && sym->old_symbol
+  	&& strcmp (sym->name, sym->old_symbol->name) == 0
+	&& strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
+      {
+	  const char *null = "NULL", *s1, *s2;
+	  s1 = sym->binding_label;
+	  if (!s1) s1 = null;
+	  s2 = sym->old_symbol->binding_label;
+	  if (!s2) s2 = null;
+          gfc_error ("Mismatch in BIND(C) names (%qs/%qs) at %C", s1, s2);
+	  sym->refs++;	/* Needed to avoid an ICE in gfc_release_symbol */
+	  return MATCH_ERROR;
+      }
 
   if(found_match != MATCH_YES)
     m = MATCH_ERROR;
@@ -7521,15 +7542,15 @@ gfc_match_entry (void)
      not allowed for procedures.  */
   if (entry->attr.is_bind_c == 1)
     {
+      locus loc;
+
       entry->attr.is_bind_c = 0;
-      if (entry->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(entry->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
-    }
+
+      loc = entry->old_symbol != NULL
+	? entry->old_symbol->declared_at : gfc_current_locus; 
+      gfc_error_now ("BIND(C) attribute at %L can only be used for "
+		     "variables or common blocks", &loc);
+     }
 
   /* Check what next non-whitespace character is so we can tell if there
      is the required parens if we have a BIND(C).  */
@@ -7729,13 +7750,16 @@ gfc_match_subroutine (void)
   if (sym->attr.is_bind_c == 1)
     {
       sym->attr.is_bind_c = 0;
-      if (sym->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(sym->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
+
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state != COMP_SUBMODULE)
+	{
+	  locus loc;
+	  loc = sym->old_symbol != NULL
+	    ? sym->old_symbol->declared_at : gfc_current_locus;
+	  gfc_error_now ("BIND(C) attribute at %L can only be used for "
+			 "variables or common blocks", &loc);
+	}
     }
 
   /* C binding names are not allowed for internal procedures.  */
@@ -7776,6 +7800,24 @@ gfc_match_subroutine (void)
           gfc_error ("Missing required parentheses before BIND(C) at %C");
           return MATCH_ERROR;
         }
+
+      /* F2018 C1550 (R1526) If MODULE appears in the prefix of a module
+	 subprogram and a binding label is specified, it shall be the
+	 same as the binding label specified in the corresponding module
+	 procedure interface body.  */
+      if (sym->attr.module_procedure && sym->old_symbol
+  	  && strcmp (sym->name, sym->old_symbol->name) == 0
+	  && strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
+	{
+	  const char *null = "NULL", *s1, *s2;
+	  s1 = sym->binding_label;
+	  if (!s1) s1 = null;
+	  s2 = sym->old_symbol->binding_label;
+	  if (!s2) s2 = null;
+          gfc_error ("Mismatch in BIND(C) names (%qs/%qs) at %C", s1, s2);
+	  sym->refs++;	/* Needed to avoid an ICE in gfc_release_symbol */
+	  return MATCH_ERROR;
+	}
 
       /* Scan the dummy arguments for an alternate return.  */
       for (arg = sym->formal; arg; arg = arg->next)

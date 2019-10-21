@@ -1,3 +1,19 @@
+2019-10-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_attribute_any_word): Rename to
+	c_parser_gnu_attribute_any_word.  All callers changed.
+	(c_parser_attribute): Rename to c_parser_gnu_attribute.  All
+	callers changed.
+	(c_parser_attributes): Rename to c_parser_gnu_attributes.  All
+	callers changed.
+	(c_parser_declaration_or_fndef, c_parser_declspecs)
+	(c_parser_enum_specifier, c_parser_struct_or_union_specifier)
+	(c_parser_struct_declaration, c_parser_declarator)
+	(c_parser_gnu_attribute, c_parser_compound_statement)
+	(c_parser_label, c_parser_statement, c_parser_objc_method_decl)
+	(c_parser_transaction_attributes): Add "gnu-" prefix to names of
+	attribute-related syntax productions.
+
 2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-objc-common.c (useful_aka_type_p): Replace with...

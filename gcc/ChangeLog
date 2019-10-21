@@ -1,3 +1,902 @@
+2019-10-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* common.opt (-fcommon): Fix description.
+
+2019-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-protos.h (ix86_pre_reload_split): Declare.
+	* config/i386/i386.c (ix86_pre_reload_split): New function.
+	* config/i386/i386.md (*fix_trunc<mode>_i387_1, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_1, *add<mode>3_eq_0, *add<mode>3_ne_0,
+	*anddi3_doubleword, *andndi3_doubleword, *<code>di3_doubleword,
+	*one_cmpldi2_doubleword, *ashl<dwi>3_doubleword_mask,
+	*ashl<dwi>3_doubleword_mask_1, *ashl<mode>3_mask, *ashl<mode>3_mask_1,
+	*<shift_insn><mode>3_mask, *<shift_insn><mode>3_mask_1,
+	*<shift_insn><dwi>3_doubleword_mask,
+	*<shift_insn><dwi>3_doubleword_mask_1, *<rotate_insn><mode>3_mask,
+	*<rotate_insn><mode>3_mask_1, *<btsc><mode>_mask, *<btsc><mode>_mask_1,
+	*btr<mode>_mask, *btr<mode>_mask_1, *jcc_bt<mode>, *jcc_bt<mode>_1,
+	*jcc_bt<mode>_mask, *popcounthi2_1, frndintxf2_<rounding>,
+	*fist<mode>2_<rounding>_1, *<code><mode>3_1, *<code>di3_doubleword):
+	Use ix86_pre_reload_split instead of can_create_pseudo_p in condition.
+	* config/i386/sse.md (*sse4_1_<code>v8qiv8hi2<mask_name>_2,
+	*avx2_<code>v8qiv8si2<mask_name>_2,
+	*sse4_1_<code>v4qiv4si2<mask_name>_2,
+	*sse4_1_<code>v4hiv4si2<mask_name>_2,
+	*avx512f_<code>v8qiv8di2<mask_name>_2,
+	*avx2_<code>v4qiv4di2<mask_name>_2, *avx2_<code>v4hiv4di2<mask_name>_2,
+	*sse4_1_<code>v2hiv2di2<mask_name>_2,
+	*sse4_1_<code>v2siv2di2<mask_name>_2, sse4_2_pcmpestr,
+	sse4_2_pcmpistr): Likewise.
+
+2019-10-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration, --enable-objc-gc): hboehm.info
+	now defaults to https.
+
+2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_refs_since_match_p): Do not
+	skip non-zero array accesses.
+
+2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Take a bb_vec_info
+	and return a boolean success value.  Move the allocation and
+	initialization of the bb_vec_info to...
+	(vect_slp_bb_region): ...here.  Update call accordingly.
+	(vect_slp_bb): Apply PARAM_SLP_MAX_INSNS_IN_BB here rather
+	than in vect_slp_analyze_bb_1.
+
+2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Call save_datarefs
+	when processing the given datarefs for the first time and
+	check_datarefs subsequently.
+	(vect_slp_bb_region): New function, split out of...
+	(vect_slp_bb): ...here.  Don't recompute the region bounds and
+	dataref sets when retrying with a different vector size.
+
+2019-10-19  Jakub Jelinek  <jakub@redhat.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92140
+	* config/i386/predicates.md (int_nonimmediate_operand): New special
+	predicate.
+	* config/i386/i386.md (*add<mode>3_eq, *add<mode>3_ne,
+	*add<mode>3_eq_0, *add<mode>3_ne_0, *sub<mode>3_eq, *sub<mode>3_ne,
+	*sub<mode>3_eq_1, *sub<mode>3_eq_0, *sub<mode>3_ne_0): New
+	define_insn_and_split patterns.
+
+2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.md: Delete out--of-date comment about
+	special-casing integer loads.
+
+2019-10-19  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* escaped_string.h (escaped_string): New header.
+	* tree.c (escaped_string): Remove escaped_string class.
+
+2019-10-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92157
+	* tree-ssa-strlen.c (handle_builtin_string_cmp): Be prepared for
+	compute_string_length to return a negative result.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (negv<SIDI:mode>3): New expansion rule.
+	(negvsi3, negvdi3): Delete.
+	(negdi2_compare): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (subvdi4): Decompose calculation into 32-bit
+	operations.
+	(subdi3_compare1): Delete pattern.
+	(subvsi3_borrow): New insn pattern.
+	(subvsi3_borrow_imm): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (subv<mode>4): Delete.
+	(subvdi4): New expander pattern.
+	(subvsi4): Likewise.  Handle some immediate values.
+	(subvsi3_intmin): New insn pattern.
+	(subvsi3): Likewise.
+	(subvsi3_imm1): Likewise.
+	* config/arm/arm.c (select_cc_mode): Also allow minus for CC_V
+	idioms.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (usubvdi4): Allow registers or integers for
+	incoming operands.  Early split the calculation into SImode
+	operations.
+	(usubvsi3_borrow): New insn pattern.
+	(usubvsi3_borrow_imm): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (usubv<mode>4): Delete expansion.
+	(usubvsi4): New pattern.  Allow some immediate values for inputs.
+	(usubvdi4): New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_select_cc_mode): Allow either the first
+	or second operand of the PLUS inside a DImode equality test to be
+	sign-extend when selecting CC_Vmode.
+	* config/arm/arm.md (addvdi4): Early-split the operation into SImode
+	instructions.
+	(addsi3_cin_vout_reg, addsi3_cin_vout_imm, addsi3_cin_vout_0): New
+	expand patterns.
+	(addsi3_cin_vout_reg_insn, addsi3_cin_vout_imm_insn): New patterns.
+	(addsi3_cin_vout_0): Likewise.
+	(adddi3_compareV): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (addsi3_compareV_reg_nosum): New insn.
+	(addsi3_compareV_imm_nosum): New insn.  Also add peephole2 patterns
+	to transform this back into the summation version when that leads
+	to smaller code.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (addv<mode>4): Delete.
+	(addvsi4): New pattern.  Handle immediate values that the architecture
+	supports.
+	(addvdi4): New pattern.
+	(addsi3_compareV): Rename to ...
+	(addsi3_compareV_reg): ... this.  Add constraints for thumb2 variants
+	and use COMPARE rather than NE.
+	(addsi3_compareV_imm): New pattern.
+	* config/arm/arm.c (arm_select_cc_mode): Return CC_Vmode for
+	a signed-overflow check.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_ADC): New CC mode.
+	* config/arm/arm.c (arm_select_cc_mode): Detect selection of
+	CC_ADCmode.
+	(maybe_get_arm_condition_code): Handle CC_ADCmode.
+	* config/arm/arm.md (uaddvdi4): Early expansion of unsigned addition
+	with overflow.
+	(addsi3_cin_cout_reg, addsi3_cin_cout_imm, addsi3_cin_cout_0): New
+	expand patterns.
+	(addsi3_cin_cout_reg_insn, addsi3_cin_cout_0_insn): New insn patterns
+	(addsi3_cin_cout_imm_insn): Likewise.
+	(adddi3_compareC): Delete insn.
+	* config/arm/predicates.md (arm_carry_operation): Handle CC_ADCmode.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (adddi3): Call gen_addsi3_compare_op1.
+	* (uaddv<mode>4): Delete expansion pattern.
+	(uaddvsi4): New pattern.
+	(uaddvdi4): Likewise.
+	(addsi3_compareC): Delete pattern, change callers to use
+	addsi3_compare_op1.
+	(addsi3_compare_op1): No-longer anonymous.  Clean up constraints to
+	reduce the number of alternatives and re-work type attribute handling.
+	(addsi3_compare_op2): Clean up constraints to reduce the number of
+	alternatives and re-work type attribute handling.
+	(compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_NCV, CC_CZ): Delete CC modes.
+	* config/arm/arm.c (arm_select_cc_mode): Remove old selection code
+	for DImode operands.
+	(arm_gen_dicompare_reg): Remove unreachable expansion code.
+	(maybe_get_arm_condition_code): Remove support for CC_CZmode and
+	CC_NCVmode.
+	* config/arm/arm.md (arm_cmpdi_insn): Delete.
+	(arm_cmpdi_unsigned): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_const_double_prefer_rsbs_rsc): New function.
+	(arm_canonicalize_comparison): For GT/LE/GTU/GEU, use the constant
+	unchanged only if that will be cheaper.
+	(arm_select_cc_mode): Recognize a swapped comparison that will
+	be regenerated using RSBS or RSCS.  Relax restriction on selecting
+	CC_RSBmode.
+	(arm_gen_dicompare_reg): Handle LE/GT/LEU/GEU comparisons against
+	a constant.
+	(arm_gen_compare_reg): Handle compare (CONST, X) when the mode
+	is CC_RSBmode.
+	(maybe_get_arm_condition_code): CC_RSBmode now returns the same codes
+	as CCmode.
+	* config/arm/arm.md (rsb_imm_compare_scratch): New pattern.
+	(rscsi3_<CC_EXTEND>out_scratch): New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_NV, CC_B): New CC modes.
+	* config/arm/arm.c (arm_select_cc_mode): Recognize constructs that
+	need these modes.
+	(arm_gen_dicompare_reg): New code to early expand the sub-operations
+	of EQ, NE, LT, GE, LTU and GEU.
+	* config/arm/iterators.md (CC_EXTEND): New code attribute.
+	* config/arm/predicates.md (arm_adcimm_operand): New predicate..
+	* config/arm/arm.md (cmpsi3_carryin_<CC_EXTEND>out): New pattern.
+	(cmpsi3_imm_carryin_<CC_EXTEND>out): Likewise.
+	(cmpsi3_0_carryin_<CC_EXTEND>out): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (cbranchdi4): Accept reg_or_int_operand for
+	operand 2.
+	(cstoredi4): Similarly, but for operand 3.
+	* config/arm/arm.c (arm_canoncialize_comparison): Allow
+	canonicalization of unsigned compares with a constant on Arm.
+	Prefer using const+1 and adjusting the comparison over swapping the
+	operands whenever the original constant was not valid.
+	(arm_gen_dicompare_reg): If Y is not a valid operand, force it to a
+	register here.
+	(arm_validize_comparison): Do not force invalid DImode operands to
+	registers here.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_select_cc_mode): For DImode equality tests
+	return CC_Zmode if comparing against a constant where one word is
+	zero.
+	(arm_gen_compare_reg): Split DImode handling to ...
+	(arm_gen_dicompare_reg): ... here.  Handle equality comparisons
+	against simple constants.
+	* config/arm/arm.md (arm_cmpdi_zero): Delete pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (subsi3_carryin_shift_alt): New pattern.
+	(rsbsi3_carryin_shift_alt): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (negscc_borrow): New pattern.
+	(mov_negscc): Don't split if the insn would match negscc_borrow.
+	* config/arm/thumb2.md (thumb2_mov_negscc): Likewise.
+	(thumb2_mov_negscc_strict_it): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_insn_cost): New function.
+	(TARGET_INSN_COST): Override default definition.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_rtx_costs_internal, case MINUS): Handle
+	borrow operations.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (strip_carry_operation): New function.
+	(arm_rtx_costs_internal, case PLUS): Handle addtion with carry-in
+	for SImode.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/predicates.md (arm_carry_operation): New special
+	predicate.
+	* config/arm/iterators.md (LTUGEU): Delete iterator.
+	(cnb): Delete code attribute.
+	(optab): Delete ltu and geu elements.
+	* config/arm/arm.md (addsi3_carryin): Renamed from
+	addsi3_carryin_<optab>.  Remove iterator and use arm_carry_operand.
+	(add0si3_carryin): Similarly, but from add0si3_carryin_<optab>.
+	(addsi3_carryin_alt2): Similarly, but from addsi3_carryin_alt2_<optab>.
+	(addsi3_carryin_clobercc): Similarly.
+	(addsi3_carryin_shift): Similarly.  Do not allow register shifts in
+	Thumb2 state.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (arm_subdi3): Delete insn.
+	(zextendsidi_negsi, negdi_extendsidi): Delete insn_and_split.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_RSB): New CC mode.
+	* config/arm/predicates.md (arm_borrow_operation): Handle CC_RSBmode.
+	* config/arm/arm.c (arm_select_cc_mode): Detect when we should
+	return CC_RSBmode.
+	(maybe_get_arm_condition_code): Handle CC_RSBmode.
+	* config/arm/arm.md (subsi3_carryin): Make this pattern available to
+	expand.
+	(subdi3): Rewrite to early-expand the sub-operations.
+	(rsb_im_compare): New pattern.
+	(negdi2): Delete.
+	(negdi2_insn): Delete.
+	(arm_negsi2): Correct type attribute to alu_imm.
+	(negsi2_0compare): New insn pattern.
+	(negsi2_carryin): New insn pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (addsi3_carryin_alt2): Use arm_not_operand for
+	operand 2.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (addsi3_carryin_shift_<optab>): Reorder operands
+	to match canonical form.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (zero_extend<mode>di2): Convert to define_expand.
+	(extend<mode>di2): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-protos.h (arm_decompose_di_binop): New prototype.
+	* config/arm/arm.c (arm_decompose_di_binop): New function.
+	* config/arm/arm.md (adddi3): Also accept any const_int for op2.
+	If not generating Thumb-1 code, decompose the operation into 32-bit
+	pieces.
+	* add0si_carryin_<optab>: New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (adddi3): Only accept register operands.
+	(arm_adddi3): Convert to simple insn with no split.  Do not accept
+	constants.
+	(adddi_sesidi_di): Delete patern.
+	(adddi_zesidi_di): Likewise.
+	(uaddv<mode>4): Use LTU as condition for branch.
+	(adddi3_compareV): Convert to simple insn with no split.
+	(addsi3_compareV_upper): Delete pattern.
+	(adddi3_compareC): Convert to simple insn with no split.  Correct
+	flags setting expression.
+	(addsi3_compareC_upper): Delete pattern.
+	(addsi3_compareC): Correct flags setting expression.
+	(subdi3_compare1): Convert to simple insn with no split.
+	(subsi3_carryin_compare): Delete pattern.
+	(arm_subdi3): Convert to simple insn with no split.
+	(subdi_zesidi): Delete pattern.
+	(subdi_di_sesidi): Delete pattern.
+	(subdi_zesidi_di): Delete pattern.
+	(subdi_sesidi_di): Delete pattern.
+	(subdi_zesidi_zesidi): Delete pattern.
+	(negvdi3): Use s_register_operand.
+	(negdi2_compare): Convert to simple insn with no split.
+	(negdi2_insn): Likewise.
+	(negsi2_carryin_compare): Delete pattern.
+	(negdi_zero_extendsidi): Delete pattern.
+	(arm_cmpdi_insn): Convert to simple insn with no split.
+	(negdi2): Don't call gen_negdi2_neon.
+	* config/arm/neon.md (adddi3_neon): Delete pattern.
+	(subdi3_neon): Delete pattern.
+	(negdi2_neon): Delete pattern.
+	(splits for negdi2_neon): Delete splits.
+
+2019-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92153
+	* ggc-page.c (release_pages): Read g->alloc_size before free rather
+	than after it.
+
+2019-10-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/t-multilib: Add rule to regenerate mutlilib header file
+	with any change to t-multilib, t-aprofile and t-rmprofile.  Also add
+	new multilib variants and new mappings.
+
+2019-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/86040
+	* config/avr/avr.c (avr_out_lpm): Do not shortcut-return.
+
+2019-10-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86753
+	* tree-vectorizer.h (scalar_cond_masked_key): New struct,
+	and define hashmap traits for it.
+	(loop_vec_info::scalar_cond_masked_set): New member.
+	(vect_record_loop_mask): Adjust prototype.
+	* tree-vectorizer.c (scalar_cond_masked_key::get_cond_ops_from_tree):
+	Implement method.
+	* tree-vect-loop.c (vectorizable_reduction): Pass NULL as last arg to
+	vect_record_loop_mask.
+	(vectorizable_live_operation): Likewise.
+	(vect_record_loop_mask): New param scalar_mask. Add entry
+	cond, loop_mask	to scalar_cond_masked_set if scalar_mask is non NULL.
+	* tree-vect-stmts.c (check_load_store_masking): New param scalar_mask.
+	Pass it as last arg to vect_record_loop_mask.
+	(vectorizable_call): Pass scalar_mask as last arg to
+	vect_record_loop_mask.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Check if another part of vectorized code
+	applies loop_mask to condition or to it's inverse, and if yes,
+	apply loop_mask to result of vector comparison.
+
+2019-10-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_indirect_call): Fix typos in last change.
+
+2019-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92056
+	* tree-ssa-strlen.c (determine_min_objsize): Call init_object_sizes
+	before calling compute_builtin_object_size.
+
+2019-10-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/65342
+	* config/rs6000/darwin.md (movdi_low, movsi_low_st): Delete.
+	(movdi_low_st): Delete.
+	* config/rs6000/rs6000.c
+	(darwin_rs6000_legitimate_lo_sum_const_p): New.
+	(mem_operand_gpr): Validate Mach-O LO_SUM cases separately.
+	* config/rs6000/rs6000.md (movsi_low): Delete.
+
+2019-10-17  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.h (get_initialized_tmp_var): Add default argument to
+	post_p.
+	* gimplify.c (gimplify_self_mod_expr, gimplify_omp_atomic): Remove
+	NULL post_p argument.
+	* targhooks (std_gimplify_va_arg_expr): Likewise.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::cond_reduc_code): Remove.
+	(STMT_VINFO_VEC_COND_REDUC_CODE): Likewise.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Do not
+	initialize STMT_VINFO_VEC_COND_REDUC_CODE.
+	* tree-vect-loop.c (vect_is_simple_reduction): Set
+	STMT_VINFO_REDUC_CODE.
+	(vectorizable_reduction): Remove dead and redundant code, use
+	STMT_VINFO_REDUC_CODE instead of STMT_VINFO_VEC_COND_REDUC_CODE.
+
+2019-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix breakage introduced by r276985.
+
+	* config/avr/avr.c (avr_option_override): Remove set of
+	PARAM_ALLOW_STORE_DATA_RACES.
+	* common/config/avr/avr-common.c (avr_option_optimization_table)
+	[OPT_LEVELS_ALL]: Turn on -fallow-store-data-races.
+
+2019-10-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h (processor_costs): Add clear_ratio.
+	(CLEAR_RATIO): Remove MIN and use ix86_cost->clear_ratio.
+	* config/i386/x86-tune-costs.h: Set clear_ratio to the minimum
+	of 6 and move_ratio in all cost models.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (check_reduction_path): Compute reduction
+	operation here.
+	(vect_is_simple_reduction): Remove special-case of single-stmt
+	reduction path detection.
+
+2019-10-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (marvel-pj4): Add +fp to the architecture.
+
+2019-10-17  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (aarch64_sve2_eor3<mode>)
+	(aarch64_sve2_nor<mode>, aarch64_sve2_nand<mode>)
+	(aarch64_sve2_bsl<mode>, aarch64_sve2_nbsl<mode>)
+	(aarch64_sve2_bsl1n<mode>, aarch64_sve2_bsl2n<mode>):
+	New combine patterns.
+	* config/aarch64/iterators.md (BSL_DUP): New int iterator for the
+	above.
+	(bsl_1st, bsl_2nd, bsl_dup, bsl_mov): Attributes for the above.
+
+2019-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range_base::dump): Display +INF for both
+	pointers and integers when appropriate.
+
+2019-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Use same condition to decide
+	when to use versioning threshold.
+
+2019-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (determine_peel_for_niter): New function contained
+	outlined code from ...
+	(vect_analyze_loop_2): ... here.
+
+2019-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Move code from here...
+	* tree-vect-loop-manip.c (vect_loop_versioning): ... to here.
+	* tree-vectorizer.h (vect_loop_versioning): Remove unused parameters.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (needs_fold_left_reduction_p): Export.
+	(vect_is_simple_reduction): Move all validity checks ...
+	(vectorizable_reduction): ... here.  Compute whether we
+	need a fold-left reduction here.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Merge
+	both overloads, check needs_fold_left_reduction_p directly.
+	* tree-vectorizer.h (needs_fold_left_reduction_p): Declare.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Fix
+	TARGET_MEM_REF creation.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92129
+	* tree-vect-loop.c (vectorizable_reduction): Also fail
+	on GIMPLE_SINGLE_RHS.
+
+2019-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92056
+	* tree-object-size.c (cond_expr_object_size): Return early if then_
+	processing resulted in unknown size.
+
+	PR tree-optimization/92115
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Force condition into
+	temporary if it could trap.
+
+2019-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR debug/91887
+	* dwarf2out.c (gen_formal_parameter_die): Also try to match
+	context_die against a DW_TAG_GNU_formal_parameter_pack parent.
+
+2019-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-strlen.c (maybe_invalidate): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED instead of "%zu".
+
+2019-10-16  Andrew Burgess  <andrew.burgess@embecosm.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.h (REG_CLASS_CONTENTS): Add argument passing
+	regs to SIBCALL_REGS.
+	* config/riscv/riscv.c (riscv_regno_to_class): Change argument
+	passing regs to SIBCALL_REGS.
+
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83821
+	* tree-ssa-strlen.c (maybe_invalidate): Add argument.  Consider
+	the length of a string when available.
+	(handle_builtin_memset) Add argument.
+	(handle_store, strlen_check_and_optimize_call): Same.
+	(check_and_optimize_stmt): Same.  Pass it to callees.
+
+2019-10-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91996
+	* tree-ssa-strlen.c (maybe_warn_pointless_strcmp): Improve location
+	information.
+	(compare_nonzero_chars): Add an overload.
+	(count_nonzero_bytes): Add an argument.  Call overload above.
+	Handle non-constant lengths in some range.
+	(handle_store): Add an argument.
+	(check_and_optimize_stmt): Pass an argument to handle_store.
+
+2019-10-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (neon_valid_immediate): Clear bytes before use.
+
+2019-10-16  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* config/mips/mips.c (mips_expand_builtin_insn): Force the
+	operands which correspond to the same input-output register to
+	have the same pseudo assigned to them.
+
+2019-10-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* cfgrtl.c (find_partition_fixes): Remove bbs_in_cold_partition.
+
+2019-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_symbol):
+	Apply reasonable limit to symbol offsets.
+
+2019-10-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_valid_reduction_input_p): Remove.
+	(vect_is_simple_reduction): Delay checking to
+	vectorizable_reduction and relax the checking.
+	(vectorizable_reduction): Check we have a simple use.  Check
+	for bogus condition reductions.
+	* tree-vect-stmts.c (vect_transform_stmt): Make sure we
+	are looking at the last stmt in a pattern sequence when
+	filling in backedge PHI values.
+
+2019-10-16  Peter Bergner <bergner@linux.ibm.com>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/70010
+	* config/rs6000/rs6000.c (rs6000_can_inline_p): Prohibit inlining if
+	the callee explicitly disables some isa_flags the caller is using.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function-abi.cc (expr_callee_abi): Assert for POINTER_TYPE_P.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genmodes.c (mode_data::order): New field.
+	(blank_mode): Update accordingly.
+	(VECTOR_MODES_WITH_PREFIX): Add an order parameter.
+	(make_vector_modes): Likewise.
+	(VECTOR_MODES): Update use accordingly.
+	(cmp_modes): Sort by the new order field ahead of sorting by size.
+	* config/aarch64/aarch64-modes.def (VNx2QI, VN2xHI, VNx2SI)
+	(VNx4QI, VNx4HI, VNx8QI): New partial vector modes.
+	* config/aarch64/aarch64.c (VEC_PARTIAL): New flag value.
+	(aarch64_classify_vector_mode): Handle the new partial modes.
+	(aarch64_vl_bytes): New function.
+	(aarch64_hard_regno_nregs): Use it instead of BYTES_PER_SVE_VECTOR
+	when counting the number of registers in an SVE mode.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_hard_regno_mode_ok): Don't allow partial vectors
+	in registers yet.
+	(aarch64_classify_address): Treat partial vectors analogously
+	to full vectors.
+	(aarch64_print_address_internal): Consolidate the printing of
+	MUL VL addresses, using aarch64_vl_bytes as the number of
+	bytes represented by "VL".
+	(aarch64_vector_mode_supported_p): Reject partial vector modes.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Use is_constant
+	rather than known_lt when choosing frame layouts.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Assert
+	that all the adjustments add up to the full frame size.
+	Use crtl->outgoing_args_size directly as the final adjustment
+	where appropriate.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Use a local
+	"frame" reference instead of always referring directly to
+	"cfun->machine->frame".
+
+2019-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92119
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Guard
+	against missing bswap lhs.
+
+2019-10-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/92033
+	* poly-int.h (constant_lower_bound_with_limit): New function.
+	(constant_upper_bound_with_limit): Likewise.
+	* doc/poly-int.texi: Document them.
+	* tree-vrp.c (value_range_base::set): Convert POLY_INT_CST bounds
+	into the worst-case INTEGER_CST bounds.
+
+2019-10-16  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/91088
+	* doc/invoke.texi (ipa-max-param-expr-ops): Document new option.
+	* params.def (PARAM_IPA_MAX_PARAM_EXPR_OPS): New.
+	* ipa-predicat.h (struct expr_eval_op): New struct.
+	(expr_eval_ops): New typedef.
+	(struct condition): Add type and param_ops fields, remove size field.
+	(add_condition): Replace size parameter with type parameter, add
+	param_ops parameter.
+	* ipa-predicat.c (expr_eval_ops_equal_p): New function.
+	(predicate::add_clause): Add comparisons on type and param_ops.
+	(dump_condition): Add debug dump for param_ops.
+	(remap_after_inlining): Adjust call arguments to add_condition.
+	(add_condition): Replace size parameter with type parameter, add
+	param_ops parameter. Unshare constant value used in conditions.
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Fold
+	parameter expressions using param_ops.
+	(decompose_param_expr):  New function.
+	(set_cond_stmt_execution_predicate): Use call to decompose_param_expr
+	to replace call to unmodified_parm_or_parm_agg_item.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(will_be_nonconstant_expr_predicate): Likewise. Replace usage of size
+	with type.
+	(inline_read_section): Read param_ops from summary stream.
+	(ipa_fn_summary_write): Write param_ops to summary stream.
+
+2019-10-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/92107
+	* genattrtab.c (write_attr_value) <do_operator>: Parenthesize the
+	expression written.
+
+2019-10-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c: Update description of fix and continue.
+
+2019-10-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_binds_local_p): Update to call
+	default_binds_local_p_3 () directly. amend comments.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-out.c (lto_variably_modified_type_p): New.
+	(tree_is_indexable): Use it.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields):
+	Stream variably_modified_type_p as TYPE_LANG_FLAG_0.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Likewise.
+
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md (zero_extendqipsi2): New.
+	(zero_extendqisi2): Optimize case where src register and base dst
+	register are the same.
+	(zero_extendhipsi2): Don't use 430X insn for rYs->r case.
+	(zero_extendpsisi2): Optimize r->m case.
+	Add unnamed insn patterns to catch insns combine searches for when
+	optimizing pointer manipulation.
+
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md: Group zero_extend* insns together.
+
+2019-10-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/constraints.md: Allow post_inc operand for "Ya"
+	constraint.
+	* config/msp430/msp430.c (msp430_legitimate_address_p): Handle
+	POST_INC.
+	(msp430_subreg): Likewise.
+	(msp430_split_addsi): Likewise.
+	(msp430_print_operand_addr): Likewise.
+	* config/msp430/msp430.h (HAVE_POST_INCREMENT): Define.
+	(USE_STORE_POST_INCREMENT): Define.
+	* config/msp430/msp430.md: Use the msp430_general_dst_operand or
+	msp430_general_dst_nonv_operand predicates for the lvalues of insns.
+	* config/msp430/predicates.md (msp430_nonpostinc_operand): New.
+	(msp430_general_dst_operand): New.
+	(msp430_general_dst_nonv_operand): New.
+	(msp430_nonsubreg_operand): Remove.
+	(msp430_nonsubreg_dst_operand): New.
+	(msp430_nonsubreg_or_imm_operand): Allow reg or mem operands in place
+	of defunct msp430_nonsubreg_operand.
+	(msp430_nonsubregnonpostinc_or_imm_operand): New.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91929
+	* tree-ssa-pre.c (pre_expr_d::loc): New member.
+	(get_or_alloc_expr_for_name): Initialize it.
+	(get_or_alloc_expr_for_constant): Likewise.
+	(phi_translate_1): Copy it.
+	(create_expression_by_pieces): Use the original location
+	of the expression for the inserted stmt.
+	(compute_avail): Record the location of the stmt for the
+	expressions created.
+
+2019-10-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssa-strlen.c (count_nonzero_bytes): Check tree_fits_uhwi_p
+	before using tree_to_uhwi.
+
+2019-10-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.md: Run %a0:DI splitters only after reload.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92094
+	* tree-vect-loop.c (vectorizable_reduction): For nested cycles
+	do not adjust the reduction definition def type.
+	* tree-vect-stmts.c (vect_transform_stmt): Verify the scalar stmt
+	defines the latch argument of the PHI.
+
+2019-10-15  Hongyu Wang  <hongtao.wang@intel.com>
+
+	PR target/92035
+	* config/i386/avx512fintrin.h (_mm_mask_roundscale_ss,
+	_mm_maskz_roundscale_ss, _mm_maskz_roundscale_round_ss,
+	_mm_maskz_roundscale_round_ss, _mm_mask_roundscale_sd,
+	_mm_maskz_roundscale_sd, _mm_mask_roundscale_round_sd,
+	_mm_maskz_roundscale_round_sd): New intrinsics.
+	(_mm_roundscale_ss, _mm_roundscale_round_ss): Use
+	__builtin_ia32_rndscales?_mask_round builtins instead of
+	__builtin_ia32_rndscales?_round.
+	* config/i386/i386-builtin.def (__builtin_ia32_rndscaless_round,
+	__builtin_ia32_rndscalesd_round): Remove.
+	(__builtin_ia32_rndscaless_mask_round,
+	__builtin_ia32_rndscalesd_mask_round): New intrinsics.
+	* config/i386/sse.md
+	(avx512f_rndscale<mode><round_saeonly_name>): Renamed to ...
+	(avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	 ... this, adjust and add subst atrributes to make it maskable.
+
+2019-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* common.opt (fallow-store-data-races): New.
+	* params.def (PARAM_ALLOW_STORE_DATA_RACES): Remove.
+	* params.h (ALLOW_STORE_DATA_RACES): Likewise.
+	* doc/invoke.texi (fallow-store-data-races): Document.
+	(--param allow-store-data-races): Remove docs.
+	* opts.c (default_options_table): Enable -fallow-store-data-races
+	at -Ofast.
+	(default_options_optimization): Do not enable --param
+	allow-store-data-races at -Ofast.
+	* tree-if-conv.c (ifcvt_memrefs_wont_trap): Use flag_store_data_races
+	instead of PARAM_ALLOW_STORE_DATA_RACES.
+	* tree-ssa-loop-im.c (execute_sm): Likewise.
+
+2019-10-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92085
+	* tree-if-conv.c (ifcvt_local_dce): Call gsi_next in else clause,
+	instead of calling it unconditionally after
+	delete_dead_or_redundant_assignment and fix indentation.
+
+2019-10-15  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/arm/vfp.md (fma<SDF:mode>4): Enable DF only when
+	TARGET_VFP_DOUBLE.
+	(*fmsub<SDF:mode>4): Likewise.
+	*fnmsub<SDF:mode>4): Likewise.
+	(*fnmadd<SDF:mode>4): Likewise.
+
+2019-10-14 Joel Hutton  <Joel.Hutton@arm.com>
+
+	* doc/tree-ssa.texi: Update renamed macro name.
+
+2019-10-14  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* config/mips/mips.c (mips_cannot_force_const_mem): Reject
+	vector constants.
+
+2019-10-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c: Use unsigned ints for the picbase label
+	counters, initialise the vars explicitly.
+	(update_pic_label_number_if_needed): Move a variable declaration
+	to where it's needed.
+	(machopic_output_function_base_name): Use a more strict checking
+	assert, and and unsigned int for the picbase label counter.
+	(machopic_get_function_picbase): Likewise.
+
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* dse.c (scan_insn): Use param max_active_local_stores.
+	(dse_step1): Get PARAM_MAX_DSE_ACTIVE_LOCAL_STORES and adjust
+	based on optimization level.
+	* loop-invariant.c (move_loop_invariants): Adjust
+	LOOP_INVARIANT_MAX_BBS_IN_LOOP based on optimization level.
+	* opts.c (default_options_optimization): Do not adjust
+	PARAM_MAX_DSE_ACTIVE_LOCAL_STORES and
+	LOOP_INVARIANT_MAX_BBS_IN_LOOP here.
+
+2019-10-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (arm_legitimize_address): Remove Thumb-2 bailout.
+
+2019-10-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (arm_option_override): Don't override sched
+	pressure algorithm.
+
+2019-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92069
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): For nested
+	cycles do not set vect_nested_cycle on the latch definition.
+
 2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* function-abi.h (expr_callee_abi): Declare.

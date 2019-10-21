@@ -2,7 +2,16 @@
    { dg-do compile }
    { dg-options "-O2 -Wall" } */
 
+#ifndef __APPLE__
 #include <string.h>
+#else
+/* OSX headers do not mark up the nonnull elements yet.  */
+# include <stddef.h>
+extern size_t strlen (const char *__s)
+		      __attribute ((pure)) __attribute ((nonnull (1)));
+extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+		     size_t __n) __attribute ((nonnull (1, 2)));
+#endif
 
 char buf[100];
 

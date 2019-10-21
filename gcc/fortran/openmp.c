@@ -3861,10 +3861,6 @@ check_array_not_assumed (gfc_symbol *sym, locus loc, const char *name)
   if (sym->as && sym->as->type == AS_ASSUMED_RANK)
     gfc_error ("Assumed rank array %qs in %s clause at %L",
 	       sym->name, name, &loc);
-  if (sym->as && sym->as->type == AS_DEFERRED && sym->attr.pointer
-      && !sym->attr.contiguous)
-    gfc_error ("Noncontiguous deferred shape array %qs in %s clause at %L",
-	       sym->name, name, &loc);
 }
 
 static void

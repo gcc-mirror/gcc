@@ -1321,7 +1321,7 @@
         (fma:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
 		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
 		 (match_operand:SDF 3 "register_operand" "0")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA <vfp_double_cond>"
   "vfma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "ffma<vfp_type>")]
@@ -1357,7 +1357,7 @@
 					     "<F_constraint>"))
 		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
 		 (match_operand:SDF 3 "register_operand" "0")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA <vfp_double_cond>"
   "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "ffma<vfp_type>")]
@@ -1379,7 +1379,7 @@
 	(fma:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
 		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
 		 (neg:SDF (match_operand:SDF 3 "register_operand" "0"))))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA <vfp_double_cond>"
   "vfnms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "ffma<vfp_type>")]
@@ -1402,7 +1402,7 @@
 					       "<F_constraint>"))
 		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
 		 (neg:SDF (match_operand:SDF 3 "register_operand" "0"))))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA <vfp_double_cond>"
   "vfnma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "ffma<vfp_type>")]

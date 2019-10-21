@@ -4369,9 +4369,14 @@ zero_init_p (const_tree t)
    warn_unused_result attribute.  */
 
 static tree
-handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
+handle_nodiscard_attribute (tree *node, tree name, tree args,
 			    int /*flags*/, bool *no_add_attrs)
 {
+  if (args && TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("%qE attribute argument must be a string constant", name);
+      *no_add_attrs = true;
+    }
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
       if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node)))
@@ -4461,7 +4466,7 @@ const struct attribute_spec std_attribute_table[] =
        affects_type_identity, handler, exclude } */
   { "maybe_unused", 0, 0, false, false, false, false,
     handle_unused_attribute, NULL },
-  { "nodiscard", 0, 0, false, false, false, false,
+  { "nodiscard", 0, 1, false, false, false, false,
     handle_nodiscard_attribute, NULL },
   { "no_unique_address", 0, 0, true, false, false, false,
     handle_no_unique_addr_attribute, NULL },

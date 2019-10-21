@@ -406,6 +406,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-fallow-store-data-races @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
 -fcaller-saves @gol
@@ -8467,9 +8468,9 @@ designed to reduce code size.
 Disregard strict standards compliance.  @option{-Ofast} enables all
 @option{-O3} optimizations.  It also enables optimizations that are not
 valid for all standard-compliant programs.
-It turns on @option{-ffast-math} and the Fortran-specific
-@option{-fstack-arrays}, unless @option{-fmax-stack-var-size} is
-specified, and @option{-fno-protect-parens}.
+It turns on @option{-ffast-math}, @option{-fallow-store-data-races}
+and the Fortran-specific @option{-fstack-arrays}, unless
+@option{-fmax-stack-var-size} is specified, and @option{-fno-protect-parens}.
 
 @item -Og
 @opindex Og
@@ -10230,6 +10231,12 @@ If @var{n} is not specified or is zero, use a machine-dependent default.
 The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@item -fallow-store-data-races
+@opindex fallow-store-data-races
+Allow the compiler to introduce new data races on stores.
+
+Enabled at level @option{-Ofast}.
 
 @item -funit-at-a-time
 @opindex funit-at-a-time
@@ -12031,6 +12038,13 @@ For switch exceeding this limit, IPA-CP will not construct cloning cost
 predicate, which is used to estimate cloning benefit, for default case
 of the switch statement.
 
+@item ipa-max-param-expr-ops
+IPA-CP will analyze conditional statement that references some function
+parameter to estimate benefit for cloning upon certain constant value.
+But if number of operations in a parameter expression exceeds
+@option{ipa-max-param-expr-ops}, the expression is treated as complicated
+one, and is not handled by IPA analysis.
+
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.
@@ -12063,10 +12077,6 @@ statements with memory operands as those are even more profitable so sink.
 The maximum number of conditional store pairs that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.
-
-@item allow-store-data-races
-Allow optimizers to introduce new data races on stores.
-Set to 1 to allow, otherwise to 0.
 
 @item case-values-threshold
 The smallest number of different values for which it is best to use a

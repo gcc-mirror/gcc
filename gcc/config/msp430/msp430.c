@@ -942,12 +942,17 @@ msp430_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
       return false;
 
     case PLUS:
+    case POST_INC:
       if (REG_P (XEXP (x, 0)))
 	{
 	  if (GET_MODE (x) != GET_MODE (XEXP (x, 0)))
 	    return false;
 	  if (!reg_ok_for_addr (XEXP (x, 0), strict))
 	    return false;
+	  if (GET_CODE (x) == POST_INC)
+	    /* At this point, if the original rtx was a post_inc, we don't have
+	       anything further to check.  */
+	    return true;
 	  switch (GET_CODE (XEXP (x, 1)))
 	    {
 	    case CONST:
@@ -2810,6 +2815,7 @@ rtx
 msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
 {
   rtx rv;
+  gcc_assert (mode == HImode);
 
   if (GET_CODE (r) == SUBREG
       && SUBREG_BYTE (r) == 0)
@@ -2826,7 +2832,15 @@ msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
 	rv = simplify_gen_subreg (mode, ireg, imode, byte);
     }
   else if (GET_CODE (r) == MEM)
-    rv = adjust_address (r, mode, byte);
+    {
+      /* When byte == 2, we can be certain that we were already called with an
+	 identical rtx with byte == 0.  So we don't need to do anything to
+	 get a 2 byte offset of a (mem (post_inc)) rtx, since the address has
+	 already been offset by the post_inc itself.  */
+      if (GET_CODE (XEXP (r, 0)) == POST_INC && byte == 2)
+	byte = 0;
+      rv = adjust_address (r, mode, byte);
+    }
   else if (GET_CODE (r) == SYMBOL_REF
 	   && (byte == 0 || byte == 2)
 	   && mode == HImode)
@@ -2861,6 +2875,18 @@ msp430_split_addsi (rtx *operands)
 
   if (GET_CODE (operands[5]) == CONST_INT)
     operands[9] = GEN_INT (INTVAL (operands[5]) & 0xffff);
+  /* Handle post_inc, for example:
+     (set (reg:SI)
+	  (plus:SI (reg:SI)
+		   (mem:SI (post_inc:PSI (reg:PSI))))).  */
+  else if (MEM_P (operands[5]) && GET_CODE (XEXP (operands[5], 0)) == POST_INC)
+    {
+      /* Strip out the post_inc from (mem (post_inc (reg))).  */
+      operands[9] = XEXP (XEXP (operands[5], 0), 0);
+      operands[9] = gen_rtx_MEM (HImode, operands[9]);
+      /* Then zero extend as normal.  */
+      operands[9] = gen_rtx_ZERO_EXTEND (SImode, operands[9]);
+    }
   else
     operands[9] = gen_rtx_ZERO_EXTEND (SImode, operands[5]);
   return 0;
@@ -3204,6 +3230,10 @@ msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
     case REG:
       fprintf (file, "@");
       break;
+
+    case POST_INC:
+      fprintf (file, "@%s+", reg_names[REGNO (XEXP (addr, 0))]);
+      return;
 
     case CONST:
     case CONST_INT:

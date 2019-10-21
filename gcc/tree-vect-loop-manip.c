@@ -2966,9 +2966,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
    *COND_EXPR_STMT_LIST.  */
 
 class loop *
-vect_loop_versioning (loop_vec_info loop_vinfo,
-		      unsigned int th, bool check_profitability,
-		      poly_uint64 versioning_threshold)
+vect_loop_versioning (loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *nloop;
   class loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
@@ -2988,10 +2986,15 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   bool version_align = LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo);
   bool version_alias = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
   bool version_niter = LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo);
+  poly_uint64 versioning_threshold
+    = LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
   tree version_simd_if_cond
     = LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (loop_vinfo);
+  unsigned th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
 
-  if (check_profitability)
+  if (th >= vect_vf_for_cost (loop_vinfo)
+      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && !ordered_p (th, versioning_threshold))
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),
 					    th - 1));

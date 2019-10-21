@@ -1,3 +1,8 @@
+2019-10-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl (a-except.o): Put -O1 earlier so that it can be
+	overriden if needed by other variables.
+
 2019-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/91995

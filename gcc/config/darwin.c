@@ -49,18 +49,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "optabs.h"
 
-/* Darwin supports a feature called fix-and-continue, which is used
-   for rapid turn around debugging.  When code is compiled with the
-   -mfix-and-continue flag, two changes are made to the generated code
-   that allow the system to do things that it would normally not be
-   able to do easily.  These changes allow gdb to load in
-   recompilation of a translation unit that has been changed into a
-   running program and replace existing functions and methods of that
-   translation unit with versions of those functions and methods
-   from the newly compiled translation unit.  The new functions access
-   the existing static symbols from the old translation unit, if the
-   symbol existed in the unit to be replaced, and from the new
-   translation unit, otherwise.
+/* Fix and Continue.
+
+   NOTES:
+   1) this facility requires suitable support from a modified version
+   of GDB, which is not provided on any system after MacOS 10.7/Darwin11.
+   2) There is no support for this in any X86 version of the FSF compiler.
+
+   Fix and continue was used on some earlier MacOS systems for rapid turn
+   around debugging.  When code is compiled with the -mfix-and-continue
+   flag, two changes are made to the generated code that allow the system
+   to do things that it would normally not be able to do easily.  These
+   changes allow gdb to load in recompilation of a translation unit that
+   has been changed into a running program and replace existing functions
+   and methods of that translation unit with versions of those functions
+   and methods from the newly compiled translation unit.  The new functions
+   access the existing static symbols from the old translation unit, if the
+   symbol existed in the unit to be replaced, and from the new translation
+   unit, otherwise.
 
    The changes are to insert 5 nops at the beginning of all functions
    and to use indirection to get at static symbols.  The 5 nops
@@ -375,20 +381,22 @@ machopic_gen_offset (rtx orig)
     }
 }
 
-static GTY(()) const char * function_base_func_name;
-static GTY(()) int current_pic_label_num;
-static GTY(()) int emitted_pic_label_num;
+static GTY(()) const char * function_base_func_name = NULL;
+static GTY(()) unsigned current_pic_label_num = 0;
+static GTY(()) unsigned emitted_pic_label_num = 0;
 
+/* We need to keep one picbase label per function, but (when we emit code
+   to reload the picbase for setjump receiver) we might need to check for
+   a second use.  So, only update the picbase label counter when we see a
+   new function.  When there's no function decl, we assume that the call is
+   from the x86 stub generation code.  */
 static void
 update_pic_label_number_if_needed (void)
 {
-  const char *current_name;
-
-  /* When we are generating _get_pc thunks within stubs, there is no current
-     function.  */
   if (current_function_decl)
     {
-      current_name =
+
+      const char *current_name =
 	IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
       if (function_base_func_name != current_name)
 	{
@@ -406,11 +414,11 @@ update_pic_label_number_if_needed (void)
 void
 machopic_output_function_base_name (FILE *file)
 {
-  /* If dynamic-no-pic is on, we should not get here.  */
-  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
+  /* We should only get here for -fPIC.  */
+  gcc_checking_assert (MACHOPIC_PURE);
 
   update_pic_label_number_if_needed ();
-  fprintf (file, "L%d$pb", current_pic_label_num);
+  fprintf (file, "L%u$pb", current_pic_label_num);
 }
 
 char curr_picbasename[32];
@@ -418,11 +426,11 @@ char curr_picbasename[32];
 const char *
 machopic_get_function_picbase (void)
 {
-  /* If dynamic-no-pic is on, we should not get here.  */
-  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
+  /* We should only get here for -fPIC.  */
+  gcc_checking_assert (MACHOPIC_PURE);
 
   update_pic_label_number_if_needed ();
-  snprintf (curr_picbasename, 32, "L%d$pb", current_pic_label_num);
+  snprintf (curr_picbasename, 32, "L%u$pb", current_pic_label_num);
   return (const char *) curr_picbasename;
 }
 
@@ -3047,8 +3055,14 @@ darwin_file_end (void)
 bool
 darwin_binds_local_p (const_tree decl)
 {
-  return default_binds_local_p_1 (decl,
-				  TARGET_KEXTABI && DARWIN_VTABLE_P (decl));
+  /* We use the "shlib" input to indicate that a symbol should be
+     considered overridable; only relevant for vtables in kernel modules
+     on earlier system versions, and with a TODO to complete.  */
+  bool force_overridable = TARGET_KEXTABI && DARWIN_VTABLE_P (decl);
+  return default_binds_local_p_3 (decl, force_overridable /* shlib */,
+				  false /* weak dominate */,
+				  false /* extern_protected_data */,
+				  false /* common_local_p */);
 }
 
 /* The Darwin's implementation of TARGET_ASM_OUTPUT_ANCHOR.  Define the

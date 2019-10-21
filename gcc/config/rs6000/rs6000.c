@@ -7329,6 +7329,103 @@ address_offset (rtx op)
   return NULL_RTX;
 }
 
+/* This tests that a lo_sum {constant, symbol, symbol+offset} is valid for
+   the mode.  If we can't find (or don't know) the alignment of the symbol
+   we assume (optimistically) that it's sufficiently aligned [??? maybe we
+   should be pessimistic].  Offsets are validated in the same way as for
+   reg + offset.  */
+static bool
+darwin_rs6000_legitimate_lo_sum_const_p (rtx x, machine_mode mode)
+{
+  /* We should not get here with this.  */
+  gcc_checking_assert (! mode_supports_dq_form (mode));
+
+  if (GET_CODE (x) == CONST)
+    x = XEXP (x, 0);
+
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_MACHOPIC_OFFSET)
+    x =  XVECEXP (x, 0, 0);
+
+  rtx sym = NULL_RTX;
+  unsigned HOST_WIDE_INT offset = 0;
+
+  if (GET_CODE (x) == PLUS)
+    {
+      sym = XEXP (x, 0);
+      if (! SYMBOL_REF_P (sym))
+	return false;
+      if (!CONST_INT_P (XEXP (x, 1)))
+	return false;
+      offset = INTVAL (XEXP (x, 1));
+    }
+  else if (SYMBOL_REF_P (x))
+    sym = x;
+  else if (CONST_INT_P (x))
+    offset = INTVAL (x);
+  else if (GET_CODE (x) == LABEL_REF)
+    offset = 0; // We assume code labels are Pmode aligned
+  else
+    return false; // not sure what we have here.
+
+  /* If we don't know the alignment of the thing to which the symbol refers,
+     we assume optimistically it is "enough".
+     ??? maybe we should be pessimistic instead.  */
+  unsigned align = 0;
+
+  if (sym)
+    {
+      tree decl = SYMBOL_REF_DECL (sym);
+#if TARGET_MACHO
+      if (MACHO_SYMBOL_INDIRECTION_P (sym))
+      /* The decl in an indirection symbol is the original one, which might
+	 be less aligned than the indirection.  Our indirections are always
+	 pointer-aligned.  */
+	;
+      else
+#endif
+      if (decl && DECL_ALIGN (decl))
+	align = DECL_ALIGN_UNIT (decl);
+   }
+
+  unsigned int extra = 0;
+  switch (mode)
+    {
+    case E_DFmode:
+    case E_DDmode:
+    case E_DImode:
+      /* If we are using VSX scalar loads, restrict ourselves to reg+reg
+	 addressing.  */
+      if (VECTOR_MEM_VSX_P (mode))
+	return false;
+
+      if (!TARGET_POWERPC64)
+	extra = 4;
+      else if ((offset & 3) || (align & 3))
+	return false;
+      break;
+
+    case E_TFmode:
+    case E_IFmode:
+    case E_KFmode:
+    case E_TDmode:
+    case E_TImode:
+    case E_PTImode:
+      extra = 8;
+      if (!TARGET_POWERPC64)
+	extra = 12;
+      else if ((offset & 3) || (align & 3))
+	return false;
+      break;
+
+    default:
+      break;
+    }
+
+  /* We only care if the access(es) would cause a change to the high part.  */
+  offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
+}
+
 /* Return true if the MEM operand is a memory operand suitable for use
    with a (full width, possibly multiple) gpr load/store.  On
    powerpc64 this means the offset must be divisible by 4.
@@ -7366,7 +7463,13 @@ mem_operand_gpr (rtx op, machine_mode mode)
   if (address_is_prefixed (addr, mode, NON_PREFIXED_DS))
     return true;
 
-  /* Don't allow non-offsettable addresses.  See PRs 83969 and 84279.  */
+  /* We need to look through Mach-O PIC unspecs to determine if a lo_sum is
+     really OK.  Doing this early avoids teaching all the other machinery
+     about them.  */
+  if (TARGET_MACHO && GET_CODE (addr) == LO_SUM)
+    return darwin_rs6000_legitimate_lo_sum_const_p (XEXP (addr, 1), mode);
+
+  /* Only allow offsettable addresses.  See PRs 83969 and 84279.  */
   if (!rs6000_offsettable_memref_p (op, mode, false))
     return false;
 
@@ -23964,25 +24067,31 @@ rs6000_can_inline_p (tree caller, tree callee)
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
 
-  /* If callee has no option attributes, then it is ok to inline.  */
+  /* If the callee has no option attributes, then it is ok to inline.  */
   if (!callee_tree)
     ret = true;
 
-  /* If caller has no option attributes, but callee does then it is not ok to
-     inline.  */
-  else if (!caller_tree)
-    ret = false;
-
   else
     {
-      struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+      HOST_WIDE_INT caller_isa;
       struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+      HOST_WIDE_INT callee_isa = callee_opts->x_rs6000_isa_flags;
+      HOST_WIDE_INT explicit_isa = callee_opts->x_rs6000_isa_flags_explicit;
 
-      /* Callee's options should a subset of the caller's, i.e. a vsx function
-	 can inline an altivec function but a non-vsx function can't inline a
-	 vsx function.  */
-      if ((caller_opts->x_rs6000_isa_flags & callee_opts->x_rs6000_isa_flags)
-	  == callee_opts->x_rs6000_isa_flags)
+      /* If the caller has option attributes, then use them.
+	 Otherwise, use the command line options.  */
+      if (caller_tree)
+	caller_isa = TREE_TARGET_OPTION (caller_tree)->x_rs6000_isa_flags;
+      else
+	caller_isa = rs6000_isa_flags;
+
+      /* The callee's options must be a subset of the caller's options, i.e.
+	 a vsx function may inline an altivec function, but a no-vsx function
+	 must not inline a vsx function.  However, for those options that the
+	 callee has explicitly enabled or disabled, then we must enforce that
+	 the callee's and caller's options match exactly; see PR70010.  */
+      if (((caller_isa & callee_isa) == callee_isa)
+	  && (caller_isa & explicit_isa) == (callee_isa & explicit_isa))
 	ret = true;
     }
 

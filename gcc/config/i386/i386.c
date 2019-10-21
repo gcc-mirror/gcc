@@ -4894,6 +4894,18 @@ ix86_standard_x87sse_constant_load_p (const rtx_insn *insn, rtx dst)
   return true;
 }
 
+/* Predicate for pre-reload splitters with associated instructions,
+   which can match any time before the split1 pass (usually combine),
+   then are unconditionally split in that pass and should not be
+   matched again afterwards.  */
+
+bool
+ix86_pre_reload_split (void)
+{
+  return (can_create_pseudo_p ()
+	  && !(cfun->curr_properties & PROP_rtl_split_insns));
+}
+
 /* Returns true if OP contains a symbol reference */
 
 bool

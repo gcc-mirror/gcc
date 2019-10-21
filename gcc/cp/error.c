@@ -4317,10 +4317,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 void
 maybe_warn_cpp0x (cpp0x_warn_str str)
 {
-  if ((cxx_dialect == cxx98) && !in_system_header_at (input_location))
-    /* We really want to suppress this warning in system headers,
-       because libstdc++ uses variadic templates even when we aren't
-       in C++0x mode. */
+  if (cxx_dialect == cxx98)
     switch (str)
       {
       case CPP0X_INITIALIZER_LISTS:
