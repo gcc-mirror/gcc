@@ -11385,6 +11385,7 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
                                 int *multi_step_cvt,
                                 vec<tree> *interm_types)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
   class loop *vect_loop = NULL;
   machine_mode vec_mode;
@@ -11570,7 +11571,7 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
       intermediate_mode = insn_data[icode1].operand[0].mode;
       if (VECTOR_BOOLEAN_TYPE_P (prev_type))
 	{
-	  intermediate_type = vect_halve_mask_nunits (prev_type);
+	  intermediate_type = vect_halve_mask_nunits (vinfo, prev_type);
 	  if (intermediate_mode != TYPE_MODE (intermediate_type))
 	    return false;
 	}
