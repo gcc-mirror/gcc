@@ -1,3 +1,8 @@
+2019-10-22  Michael Matz  <matz@suse.de>
+
+	PR middle-end/90796
+	* gcc.dg/unroll-and-jam.c: Add three invalid and one valid case.
+
 2019-10-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92173
