@@ -12,8 +12,9 @@ count=0
 
 err () {
     if test -f $lockdir/lock-$1.$$; then
-	echo "$self: *** (PID $$) removing stale $lockdir" >&2
 	rm -rf $lockdir
+	echo "$self: *** (PID $$) removed stale $lockdir" >&2
+
 	# Possible variant for uses where races are more problematic:
 	#echo "$self: *** (PID $$) giving up, maybe rm -r $lockdir" >&2
 	#exit 42
