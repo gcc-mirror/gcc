@@ -475,8 +475,11 @@ again:
       /* Check the types of the definitions.  */
       switch (dt)
 	{
-	case vect_constant_def:
 	case vect_external_def:
+	  /* Make sure to demote the overall operand to external.  */
+	  oprnd_info->first_dt = vect_external_def;
+	  /* Fallthru.  */
+	case vect_constant_def:
 	  oprnd_info->def_stmts.quick_push (NULL);
 	  oprnd_info->ops.quick_push (oprnd);
 	  break;
@@ -1504,9 +1507,10 @@ static void
 vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		     slp_tree node, hash_set<slp_tree> &visited)
 {
-  int i;
+  unsigned i;
   stmt_vec_info stmt_info;
   slp_tree child;
+  tree op;
 
   if (visited.add (node))
     return;
@@ -1514,11 +1518,23 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
   dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u)\n",
-		   SLP_TREE_DEF_TYPE (node) != vect_internal_def
-		   ? " (external)" : "", node,
+		   SLP_TREE_DEF_TYPE (node) == vect_external_def
+		   ? " (external)"
+		   : (SLP_TREE_DEF_TYPE (node) == vect_constant_def
+		      ? " (constant)"
+		      : ""), node,
 		   estimated_poly_value (node->max_nunits));
-  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-    dump_printf_loc (metadata, user_loc, "\tstmt %d %G", i, stmt_info->stmt);
+  if (SLP_TREE_SCALAR_STMTS (node).exists ())
+    FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
+      dump_printf_loc (metadata, user_loc, "\tstmt %u %G", i, stmt_info->stmt);
+  else
+    {
+      dump_printf_loc (metadata, user_loc, "\t{ ");
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	dump_printf (metadata, "%T%s ", op,
+		     i < SLP_TREE_SCALAR_OPS (node).length () - 1 ? "," : "");
+      dump_printf (metadata, "}\n");
+    }
   if (SLP_TREE_CHILDREN (node).is_empty ())
     return;
   dump_printf_loc (metadata, user_loc, "\tchildren");
