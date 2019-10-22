@@ -9109,8 +9109,10 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  tree base = DECL_DECOMP_BASE (whats_returned);
 	  if (TREE_CODE (TREE_TYPE (base)) == REFERENCE_TYPE)
 	    {
-	      tree init = DECL_INITIAL (base);
-	      return maybe_warn_about_returning_address_of_local (init);
+	      if (tree init = DECL_INITIAL (base))
+		return maybe_warn_about_returning_address_of_local (init);
+	      else
+		return false;
 	    }
 	}
       if (TREE_CODE (valtype) == REFERENCE_TYPE)
