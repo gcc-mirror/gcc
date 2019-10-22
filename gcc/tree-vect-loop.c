@@ -6240,61 +6240,67 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       && (!STMT_VINFO_IN_PATTERN_P (use_stmt_info)
 	  || !STMT_VINFO_PATTERN_DEF_SEQ (use_stmt_info))
       && vect_stmt_to_vectorize (use_stmt_info) == stmt_info)
-    STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info) = single_defuse_cycle = true;
+    single_defuse_cycle = true;
 
-  if (single_defuse_cycle
-      || code == DOT_PROD_EXPR
-      || code == WIDEN_SUM_EXPR
-      || code == SAD_EXPR)
+  bool lane_reduc_code_p
+    = (code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR);
+  if (single_defuse_cycle || lane_reduc_code_p)
     {
       gcc_assert (code != COND_EXPR);
 
       /* 4. Supportable by target?  */
+      bool ok = true;
 
       /* 4.1. check support for the operation in the loop  */
-      optab optab = optab_for_tree_code (code, vectype_in, optab_default);
+      optab optab = optab_for_tree_code (code, vectype_in, optab_vector);
       if (!optab)
-        {
-          if (dump_enabled_p ())
+	{
+	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "no optab.\n");
-
-          return false;
+	  ok = false;
         }
 
       machine_mode vec_mode = TYPE_MODE (vectype_in);
-      if (optab_handler (optab, vec_mode) == CODE_FOR_nothing)
+      if (ok && optab_handler (optab, vec_mode) == CODE_FOR_nothing)
         {
           if (dump_enabled_p ())
             dump_printf (MSG_NOTE, "op not supported by target.\n");
-
 	  if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
 	      || !vect_worthwhile_without_simd_p (loop_vinfo, code))
-            return false;
-
-          if (dump_enabled_p ())
-	    dump_printf (MSG_NOTE, "proceeding using word mode.\n");
+	    ok = false;
+	  else
+	    if (dump_enabled_p ())
+	      dump_printf (MSG_NOTE, "proceeding using word mode.\n");
         }
 
       /* Worthwhile without SIMD support?  */
-      if (!VECTOR_MODE_P (TYPE_MODE (vectype_in))
+      if (ok
+	  && !VECTOR_MODE_P (TYPE_MODE (vectype_in))
 	  && !vect_worthwhile_without_simd_p (loop_vinfo, code))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not worthwhile without SIMD support.\n");
-
-          return false;
+	  ok = false;
         }
+
+      /* lane-reducing operations have to go through vect_transform_reduction.
+         For the other cases try without the single cycle optimization.  */
+      if (!ok)
+	{
+	  if (lane_reduc_code_p)
+	    return false;
+	  else
+	    single_defuse_cycle = false;
+	}
     }
+  STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info) = single_defuse_cycle;
 
   /* If the reduction stmt is one of the patterns that have lane
      reduction embedded we cannot handle the case of ! single_defuse_cycle.  */
-  if ((ncopies > 1
-       && ! single_defuse_cycle)
-      && (code == DOT_PROD_EXPR
-	  || code == WIDEN_SUM_EXPR
-	  || code == SAD_EXPR))
+  if ((ncopies > 1 && ! single_defuse_cycle)
+      && lane_reduc_code_p)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
