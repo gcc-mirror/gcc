@@ -2365,6 +2365,9 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = orig_loop_vinfo;
 
       opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
+      if (next_size == 0)
+	autodetected_vector_size = loop_vinfo->vector_size;
+
       if (res)
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
@@ -2390,21 +2393,18 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
       else
 	delete loop_vinfo;
 
-      if (next_size == 0)
-	autodetected_vector_size = loop_vinfo->vector_size;
-
-      if (next_size < vector_sizes.length ()
-	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
-	next_size += 1;
-
       if (fatal)
 	{
 	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return opt_loop_vec_info::propagate_failure (res);
 	}
 
+      if (next_size < vector_sizes.length ()
+	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
+	next_size += 1;
+
       if (next_size == vector_sizes.length ()
-	  || known_eq (loop_vinfo->vector_size, 0U))
+	  || known_eq (autodetected_vector_size, 0U))
 	{
 	  if (first_loop_vinfo)
 	    {

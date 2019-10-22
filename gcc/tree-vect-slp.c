@@ -3102,7 +3102,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 
       if (vectorized
 	  || next_size == vector_sizes.length ()
-	  || known_eq (bb_vinfo->vector_size, 0U)
+	  || known_eq (autodetected_vector_size, 0U)
 	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
 	     vector sizes will fail do not bother iterating.  */
 	  || fatal)

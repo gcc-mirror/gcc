@@ -1,3 +1,12 @@
+2019-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_slp_bb_region): Check whether
+	autodetected_vector_size rather than vector_size is zero.
+	* tree-vect-loop.c (vect_analyze_loop): Likewise.
+	Set autodetected_vector_size immediately after calling
+	vect_analyze_loop_2.  Check for a fatal error before advancing
+	next_size.
+
 2019-10-21  Jason Merrill  <jason@redhat.com>
 
 	* lock-and-run.sh: Check for process existence rather than timeout.
