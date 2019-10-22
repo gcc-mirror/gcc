@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,22 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 21.3.3 basic_string capacity [lib.string.capacity]
+// { dg-options "-std=gnu++2a" }
+// { dg-do compile { target c++2a } }
 
-#include <ext/vstring.h>
-#include <testsuite_hooks.h>
-#include <testsuite_allocator.h>
+#include <memory>
 
-// libstdc++/29134
-void test01()
-{
-  __gnu_cxx::__vstring vs;
+template<typename T> struct Alloc : std::allocator<T> { };
 
-  VERIFY( vs.max_size() <= __gnu_test::max_size(vs.get_allocator()) );
-}
+using T = std::allocator_traits<Alloc<int>>;
 
-int main()
-{
-  test01();
-  return 0;
-}
+// Prior to C++20 this finds std::allocator<int>::rebind and so fails:
+static_assert( std::is_same_v<T::rebind_alloc<long>, Alloc<long>> );

@@ -217,10 +217,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <class _Tp, class _Alloc>
     struct _Slist_base
-    : public _Alloc::template rebind<_Slist_node<_Tp> >::other
+    : public __alloc_traits<_Alloc>::template rebind<_Slist_node<_Tp> >::other
     {
-      typedef typename _Alloc::template rebind<_Slist_node<_Tp> >::other
-        _Node_alloc;
+      typedef typename __alloc_traits<_Alloc>::template
+	rebind<_Slist_node<_Tp> >::other _Node_alloc;
       typedef _Alloc allocator_type;
 
       allocator_type

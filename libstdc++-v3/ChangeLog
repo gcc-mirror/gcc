@@ -1,3 +1,76 @@
+2019-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h
+	(allocator_traits<allocator<T>>::allocate): Ignore hint for C++20.
+	(allocator_traits<allocator<T>>::construct): Perform placement new
+	directly for C++20, instead of calling allocator<T>::construct.
+	(allocator_traits<allocator<T>>::destroy): Call destructor directly
+	for C++20, instead of calling allocator<T>::destroy.
+	(allocator_traits<allocator<T>>::max_size): Return value directly
+	for C++20, instead of calling std::allocator<T>::max_size().
+	(__do_alloc_on_copy, __do_alloc_on_move, __do_alloc_on_swap): Do not
+	define for C++17 and up.
+	(__alloc_on_copy, __alloc_on_move, __alloc_on_swap): Use if-constexpr
+	for C++17 and up, instead of tag dispatching.
+	* include/bits/allocator.h (allocator<void>): Remove for C++20.
+	(allocator::pointer, allocator::const_pointer, allocator::reference)
+	(allocator::const_reference, allocator::rebind): Remove for C++20.
+	* include/bits/basic_string.h (basic_string): Use __alloc_traits to
+	rebind allocator.
+	* include/bits/memoryfwd.h (allocator<void>): Remove for C++20.
+	* include/ext/debug_allocator.h: Use __alloc_traits for rebinding.
+	* include/ext/malloc_allocator.h (malloc_allocator::~malloc_allocator)
+	(malloc_allocator::pointer, malloc_allocator::const_pointer)
+	(malloc_allocator::reference, malloc_allocator::const_reference)
+	(malloc_allocator::rebind, malloc_allocator::max_size)
+	(malloc_allocator::construct, malloc_allocator::destroy): Do not
+	define for C++20.
+	(malloc_allocator::_M_max_size): Define new function.
+	* include/ext/new_allocator.h (new_allocator::~new_allocator)
+	(new_allocator::pointer, new_allocator::const_pointer)
+	(new_allocator::reference, new_allocator::const_reference)
+	(new_allocator::rebind, new_allocator::max_size)
+	(new_allocator::construct, new_allocator::destroy): Do not
+	define for C++20.
+	(new_allocator::_M_max_size): Define new function.
+	* include/ext/rc_string_base.h (__rc_string_base::_Rep): Use
+	__alloc_traits to rebind allocator.
+	* include/ext/rope (_Rope_rep_base, _Rope_base): Likewise.
+	(rope::rope(CharT, const allocator_type&)): Use __alloc_traits
+	to construct character.
+	* include/ext/slist (_Slist_base): Use __alloc_traits to rebind
+	allocator.
+	* include/ext/sso_string_base.h (__sso_string_base::_M_max_size):
+	Use __alloc_traits.
+	* include/ext/throw_allocator.h (throw_allocator): Do not use optional
+	members of std::allocator, use __alloc_traits members instead.
+	* include/ext/vstring.h (__versa_string): Use __alloc_traits.
+	* include/ext/vstring_util.h (__vstring_utility): Likewise.
+	* include/std/memory: Include <bits/alloc_traits.h>.
+	* testsuite/20_util/allocator/8230.cc: Use __gnu_test::max_size.
+	* testsuite/20_util/allocator/rebind_c++20.cc: New test.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Do not check
+	for pointer, const_pointer, reference, const_reference or rebind in
+	C++20.
+	* testsuite/20_util/allocator/requirements/typedefs_c++20.cc: New test.
+	* testsuite/23_containers/deque/capacity/29134.cc: Use
+	__gnu_test::max_size.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Likewise.
+	* testsuite/23_containers/list/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/map/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/multimap/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/multiset/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/set/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/29134.cc: Likewise.
+	* testsuite/ext/malloc_allocator/variadic_construct.cc: Do not run
+	test for C++20.
+	* testsuite/ext/new_allocator/variadic_construct.cc: Likewise.
+	* testsuite/ext/vstring/capacity/29134.cc: Use __gnu_test::max_size.
+	* testsuite/util/replacement_memory_operators.h: Do not assume
+	Alloc::pointer exists.
+	* testsuite/util/testsuite_allocator.h (__gnu_test::max_size): Define
+	helper to call max_size for any allocator.
+
 2019-10-22  Andreas Schwab  <schwab@suse.de>
 
 	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.

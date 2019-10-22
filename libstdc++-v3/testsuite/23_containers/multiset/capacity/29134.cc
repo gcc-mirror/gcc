@@ -19,14 +19,15 @@
 
 #include <set>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   std::multiset<int> ms;
 
-  VERIFY( ms.max_size()
-	  == std::allocator<std::_Rb_tree_node<int> >().max_size() );
+  std::allocator<std::_Rb_tree_node<int> > a;
+  VERIFY( ms.max_size() == __gnu_test::max_size(a) );
 }
 
 int main()
