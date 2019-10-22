@@ -1,5 +1,8 @@
 2019-10-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/memoryfwd.h (uses_allocator): Do not declare for C++98.
+	* testsuite/17_intro/names.cc: Check uses_allocator in C++98.
+
 	* include/bits/alloc_traits.h
 	(allocator_traits<allocator<T>>::allocate): Ignore hint for C++20.
 	(allocator_traits<allocator<T>>::construct): Perform placement new
