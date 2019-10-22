@@ -1,3 +1,13 @@
+2019-10-21  Julian Brown  <julian@codesourcery.com>
+
+	* omp-oacc-kernels.c (decompose_kernels_region_body): Add
+	inhibit_async parameter.  Force asynchronous kernel launches to
+	run synchronously if they have problematic variable mappings.
+	Don't add explicit wait for decomposed kernels regions we forced
+	synchronous.
+	(transform_kernels_region): Detect problematic variable mappings,
+	and inhibit asynchronous execution if we find any.
+
 2020-02-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-low.c (convert_from_firstprivate_int):

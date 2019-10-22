@@ -1141,7 +1141,8 @@ control_flow_regions::compute_regions (gimple_seq seq)
    with the KERNELS_CLAUSES, into a series of regions.  */
 
 static gimple *
-decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
+decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses,
+			       bool inhibit_async)
 {
   location_t loc = gimple_location (kernels_region);
 
@@ -1266,6 +1267,48 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
      separated from the loop.  */
   bool only_simple_assignments = true;
 
+  /* If we have variable mappings that are problematic to use with
+     asynchronous compute regions (see transform_kernels_region), force
+     decomposed asynchronous kernels launches to run in synchronous mode.
+     FIXME: This is potentially a performance loss.  */
+  if (inhibit_async && async_clause)
+    {
+      int num_waits = 0;
+
+      tree prev_clause = NULL_TREE;
+      for (tree clause = kernels_clauses;
+	   clause;
+	   clause = OMP_CLAUSE_CHAIN (clause))
+	{
+	  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_ASYNC)
+	    {
+	     /* Wait for the async queue given on the original kernels
+		construct.  We're running the decomposed sequence of parallels
+		synchronously now.  */
+	      tree wait_fn = builtin_decl_explicit (BUILT_IN_GOACC_WAIT);
+	      tree sync_arg
+		= build_int_cst (integer_type_node, GOMP_ASYNC_SYNC);
+	      tree wait = unshare_expr (OMP_CLAUSE_OPERAND (clause, 0));
+	      gimple *wait_call
+		= gimple_build_call (wait_fn, 3, sync_arg, integer_one_node,
+				     wait);
+	      gimple_set_location (wait_call, loc);
+	      gimple_seq_add_stmt (&region_body, wait_call);
+
+	      num_waits++;
+
+	      /* Remove async clause.  */
+	      if (prev_clause)
+		OMP_CLAUSE_CHAIN (prev_clause) = OMP_CLAUSE_CHAIN (clause);
+	      else
+		kernels_clauses = OMP_CLAUSE_CHAIN (clause);
+	    }
+	  prev_clause = clause;
+	}
+
+      gcc_assert (num_waits == 1);
+    }
+
   /* Precompute the control flow region information to determine whether an
      OpenACC loop is executed conditionally or unconditionally.  */
   control_flow_regions cf_regions (body_sequence);
@@ -1377,21 +1420,24 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
       gimple_seq_add_stmt (&region_body, single_region);
     }
 
-  /* We want to launch these kernels asynchronously.  If the original
-     kernels region had an async clause, this is done automatically because
-     that async clause was copied to the individual regions we created.
-     Otherwise, add an async clause to each newly created region, as well as
-     a wait directive at the end.  */
-  if (async_clause == NULL)
-    add_async_clauses_and_wait (loc, &region_body);
-  else
-    /* !!! If we have asynchronous parallel blocks inside a (synchronous) data
-       region, then target memory will get unmapped at the point the data
-       region ends, even if the inner asynchronous parallels have not yet
-       completed.  For kernels marked "async", we might want to use "enter data
-       async(...)" and "exit data async(...)" instead.
-       For now, insert a (synchronous) wait at the end of the block.  */
-    add_wait (loc, &region_body);
+  if (!inhibit_async)
+    {
+      /* We want to launch these kernels asynchronously.  If the original
+	 kernels region had an async clause, this is done automatically because
+	 that async clause was copied to the individual regions we created.
+	 Otherwise, add an async clause to each newly created region, as well
+	 as a wait directive at the end.  */
+      if (async_clause == NULL)
+	add_async_clauses_and_wait (loc, &region_body);
+      else
+	/* !!! If we have asynchronous parallel blocks inside a (synchronous)
+	   data region, then target memory will get unmapped at the point the
+	   data region ends, even if the inner asynchronous parallels have not
+	   yet completed.  For kernels marked "async", we might want to use
+	   "enter data async(...)" and "exit data async(...)" instead.
+	   For now, insert a (synchronous) wait at the end of the block.  */
+	add_wait (loc, &region_body);
+    }
 
   tree kernels_locals = gimple_bind_vars (as_a <gbind *> (kernels_body));
   gimple *body = gimple_build_bind (kernels_locals, region_body,
@@ -1412,6 +1458,8 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
 static gimple *
 transform_kernels_region (gimple *kernels_region)
 {
+  bool inhibit_async = false;
+
   gcc_checking_assert (gimple_omp_target_kind (kernels_region)
 			== GF_OMP_TARGET_KIND_OACC_KERNELS);
   location_t loc = gimple_location (kernels_region);
@@ -1461,9 +1509,22 @@ transform_kernels_region (gimple *kernels_region)
 		}
 	      break;
 
+	    case GOMP_MAP_FORCE_TOFROM:
+	      /* If we have a FORCE_TOFROM mapping, it might be to a
+		 non-addressable scalar.  The value is copied directly from the
+		 offload kernel without waiting for an async to complete (a
+		 race condition).  We have to be careful since the scalar might
+		 be used as a loop index variable, and those are handled
+		 specially.  We can't just force such variables to be
+		 addressable.  Hence, run parts of kernels with such mappings
+		 synchronously.
+		 FIXME: Ideally we want to remove this hack and be able to
+		 move this mapping to the enclosing data region.  */
+	      inhibit_async = true;
+	      break;
+
 	    case GOMP_MAP_POINTER:
 	    case GOMP_MAP_TO_PSET:
-	    case GOMP_MAP_FORCE_TOFROM:
 	    case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	    case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	      /* ??? Copying these map kinds leads to internal compiler
@@ -1495,7 +1556,8 @@ transform_kernels_region (gimple *kernels_region)
   /* Transform the body of the kernels region into a sequence of parallel
      regions.  */
   gimple *body = decompose_kernels_region_body (kernels_region,
-						kernels_clauses);
+						kernels_clauses,
+						inhibit_async);
 
   /* Put the transformed pieces together.  The entire body of the region is
      wrapped in a try-finally statement that calls __builtin_GOACC_data_end
