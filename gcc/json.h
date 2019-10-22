@@ -39,7 +39,8 @@ namespace json
 class value;
   class object;
   class array;
-  class number;
+  class float_number;
+  class integer_number;
   class string;
   class literal;
 
@@ -53,8 +54,11 @@ enum kind
   /* class json::array.  */
   JSON_ARRAY,
 
-  /* class json::number.  */
-  JSON_NUMBER,
+  /* class json::integer_number.  */
+  JSON_INTEGER,
+
+  /* class json::float_number.  */
+  JSON_FLOAT,
 
   /* class json::string.  */
   JSON_STRING,
@@ -114,14 +118,14 @@ class array : public value
   auto_vec<value *> m_elements;
 };
 
-/* Subclass of value for numbers.  */
+/* Subclass of value for floating-point numbers.  */
 
-class number : public value
+class float_number : public value
 {
  public:
-  number (double value) : m_value (value) {}
+  float_number (double value) : m_value (value) {}
 
-  enum kind get_kind () const FINAL OVERRIDE { return JSON_NUMBER; }
+  enum kind get_kind () const FINAL OVERRIDE { return JSON_FLOAT; }
   void print (pretty_printer *pp) const FINAL OVERRIDE;
 
   double get () const { return m_value; }
@@ -129,6 +133,23 @@ class number : public value
  private:
   double m_value;
 };
+
+/* Subclass of value for integer-valued numbers.  */
+
+class integer_number : public value
+{
+ public:
+  integer_number (long value) : m_value (value) {}
+
+  enum kind get_kind () const FINAL OVERRIDE { return JSON_INTEGER; }
+  void print (pretty_printer *pp) const FINAL OVERRIDE;
+
+  long get () const { return m_value; }
+
+ private:
+  long m_value;
+};
+
 
 /* Subclass of value for strings.  */
 
