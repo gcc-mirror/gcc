@@ -1,3 +1,10 @@
+2019-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/diagnostic/aka5.h: New test.
+	* g++.dg/diagnostic/aka5a.C: Likewise.
+	* g++.dg/diagnostic/aka5b.C: Likewise.
+	* g++.target/aarch64/diag_aka_1.C: Likewise.
+
 2019-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/Wnonnull.c: Provide prototypes for strlen and memcpy.

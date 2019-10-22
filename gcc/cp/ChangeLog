@@ -1,3 +1,14 @@
+2019-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (STF_USER_VISIBLE): New constant.
+	(strip_typedefs, strip_typedefs_expr): Take a flags argument.
+	* tree.c (strip_typedefs, strip_typedefs_expr): Likewise,
+	updating mutual calls accordingly.  When STF_USER_VISIBLE is true,
+	only look through typedefs if user_facing_original_type_p.
+	* error.c (dump_template_bindings, type_to_string): Pass
+	STF_USER_VISIBLE to strip_typedefs.
+	(dump_type): Likewise, unless pp_c_flag_gnu_v3 is set.
+
 2019-10-21  Kamlesh Kumar  <kamleshbhalui@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 
