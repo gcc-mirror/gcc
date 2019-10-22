@@ -19,13 +19,22 @@
 
 #include <vector>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   std::vector<int> v;
 
-  VERIFY( v.max_size() == v.get_allocator().max_size() );
+  std::allocator<int> a = v.get_allocator();
+#if __cplusplus > 201703L
+  // std::allocator_traits::max_size() is unrealistically large,
+  // so std::vector::max_size() returns a smaller value.
+  VERIFY( v.max_size() <= __gnu_test::max_size(a) );
+#else
+  VERIFY( v.max_size() == __gnu_test::max_size(a) );
+#endif
+
 }
 
 int main()

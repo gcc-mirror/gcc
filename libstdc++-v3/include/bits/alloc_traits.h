@@ -393,6 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       /// The allocator type
       using allocator_type = allocator<_Tp>;
+
       /// The allocated type
       using value_type = _Tp;
 
@@ -455,7 +456,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       _GLIBCXX_NODISCARD static pointer
       allocate(allocator_type& __a, size_type __n, const_void_pointer __hint)
-      { return __a.allocate(__n, __hint); }
+      {
+#if __cplusplus <= 201703L
+	return __a.allocate(__n, __hint);
+#else
+	return __a.allocate(__n);
+#endif
+      }
 
       /**
        *  @brief  Deallocate memory.
@@ -480,8 +487,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	static void
 	construct(allocator_type& __a, _Up* __p, _Args&&... __args)
-	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
-	{ __a.construct(__p, std::forward<_Args>(__args)...); }
+	noexcept(noexcept(::new((void*)__p) _Up(std::forward<_Args>(__args)...)))
+	{
+#if __cplusplus <= 201703L
+	  __a.construct(__p, std::forward<_Args>(__args)...);
+#else
+	  ::new((void*)__p) _Up(std::forward<_Args>(__args)...);
+#endif
+	}
 
       /**
        *  @brief  Destroy an object of type @a _Up
@@ -493,8 +506,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up>
 	static void
 	destroy(allocator_type& __a, _Up* __p)
-	noexcept(noexcept(__a.destroy(__p)))
-	{ __a.destroy(__p); }
+	noexcept(is_nothrow_destructible<_Up>::value)
+	{
+#if __cplusplus <= 201703L
+	  __a.destroy(__p);
+#else
+	  __p->~_Up();
+#endif
+	}
 
       /**
        *  @brief  The maximum supported allocation size
@@ -503,7 +522,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       static size_type
       max_size(const allocator_type& __a) noexcept
-      { return __a.max_size(); }
+      {
+#if __cplusplus <= 201703L
+	return __a.max_size();
+#else
+	return size_t(-1) / sizeof(value_type);
+#endif
+      }
 
       /**
        *  @brief  Obtain an allocator to use when copying a container.
@@ -515,7 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __rhs; }
     };
 
-
+#if __cplusplus < 201703L
   template<typename _Alloc>
     inline void
     __do_alloc_on_copy(_Alloc& __one, const _Alloc& __two, true_type)
@@ -525,13 +550,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     __do_alloc_on_copy(_Alloc&, const _Alloc&, false_type)
     { }
+#endif
 
   template<typename _Alloc>
     inline void __alloc_on_copy(_Alloc& __one, const _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
       typedef typename __traits::propagate_on_container_copy_assignment __pocca;
+#if __cplusplus >= 201703L
+      if constexpr (__pocca::value)
+	__one = __two;
+#else
       __do_alloc_on_copy(__one, __two, __pocca());
+#endif
     }
 
   template<typename _Alloc>
@@ -541,6 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __traits::select_on_container_copy_construction(__a);
     }
 
+#if __cplusplus < 201703L
   template<typename _Alloc>
     inline void __do_alloc_on_move(_Alloc& __one, _Alloc& __two, true_type)
     { __one = std::move(__two); }
@@ -548,15 +580,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc>
     inline void __do_alloc_on_move(_Alloc&, _Alloc&, false_type)
     { }
+#endif
 
   template<typename _Alloc>
     inline void __alloc_on_move(_Alloc& __one, _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
       typedef typename __traits::propagate_on_container_move_assignment __pocma;
+#if __cplusplus >= 201703L
+      if constexpr (__pocma::value)
+	__one = std::move(__two);
+#else
       __do_alloc_on_move(__one, __two, __pocma());
+#endif
     }
 
+#if __cplusplus < 201703L
   template<typename _Alloc>
     inline void __do_alloc_on_swap(_Alloc& __one, _Alloc& __two, true_type)
     {
@@ -567,13 +606,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc>
     inline void __do_alloc_on_swap(_Alloc&, _Alloc&, false_type)
     { }
+#endif
 
   template<typename _Alloc>
     inline void __alloc_on_swap(_Alloc& __one, _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
       typedef typename __traits::propagate_on_container_swap __pocs;
+#if __cplusplus >= 201703L
+      if constexpr (__pocs::value)
+	{
+	  using std::swap;
+	  swap(__one, __two);
+	}
+#else
       __do_alloc_on_swap(__one, __two, __pocs());
+#endif
     }
 
   template<typename _Alloc, typename _Tp,

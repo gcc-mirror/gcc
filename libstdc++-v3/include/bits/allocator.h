@@ -63,6 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
+#if __cplusplus <= 201703L
   /// allocator<void> specialization.
   template<>
     class allocator<void>
@@ -97,8 +98,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	destroy(_Up* __p)
 	noexcept(noexcept(__p->~_Up()))
 	{ __p->~_Up(); }
-#endif
+#endif // C++11
     };
+#endif // ! C++20
 
   /**
    * @brief  The @a standard allocator, as per [20.4].
@@ -111,18 +113,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class allocator : public __allocator_base<_Tp>
     {
-   public:
+    public:
+      typedef _Tp        value_type;
       typedef size_t     size_type;
       typedef ptrdiff_t  difference_type;
+#if __cplusplus <= 201703L
       typedef _Tp*       pointer;
       typedef const _Tp* const_pointer;
       typedef _Tp&       reference;
       typedef const _Tp& const_reference;
-      typedef _Tp        value_type;
 
       template<typename _Tp1>
 	struct rebind
 	{ typedef allocator<_Tp1> other; };
+#endif
 
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
