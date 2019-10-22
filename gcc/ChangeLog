@@ -1,3 +1,29 @@
+2019-10-22  Martin Liska  <mliska@suse.cz>
+
+	* diagnostic-format-json.cc (json_from_expanded_location):
+	Use json::integer_number.
+	* gcov.c (output_intermediate_json_line): Use new
+	json::integer_number.
+	(output_json_intermediate_file): Likewise.
+	* json.cc (number::print): Move to ...
+	(float_number::print): ... this.
+	(integer_number::print): New.
+	(test_writing_numbers): Move to ...
+	(test_writing_float_numbers): ... this.
+	(test_writing_integer_numbers): New.
+	(json_cc_tests): Register test_writing_integer_numbers.
+	* json.h (class value): Add forward declaration
+	for float_number and integer_number.
+	(enum kind): Add JSON_INTEGER and JSON_FLOAT.
+	(class number): Move to ...
+	(class float_number): ... this.
+	(class integer_number): New.
+	* optinfo-emit-json.cc (optrecord_json_writer::impl_location_to_json):
+	Use json::integer_number.
+	(optrecord_json_writer::location_to_json): Likewise.
+	(optrecord_json_writer::profile_count_to_json): Likewise.
+	(optrecord_json_writer::pass_to_json): Likewise.
+
 2019-10-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-slp.c (vect_slp_bb_region): Check whether

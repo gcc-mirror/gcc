@@ -48,8 +48,8 @@ json_from_expanded_location (location_t loc)
   json::object *result = new json::object ();
   if (exploc.file)
     result->set ("file", new json::string (exploc.file));
-  result->set ("line", new json::number (exploc.line));
-  result->set ("column", new json::number (exploc.column));
+  result->set ("line", new json::integer_number (exploc.line));
+  result->set ("column", new json::integer_number (exploc.column));
   return result;
 }
 
