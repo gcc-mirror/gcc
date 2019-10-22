@@ -1,3 +1,10 @@
+2019-10-22  Michael Matz  <matz@suse.de>
+
+	PR middle-end/90796
+	* gimple-loop-jam.c (any_access_function_variant_p): New function.
+	(adjust_unroll_factor): Use it to constrain safety, new parameter.
+	(tree_loop_unroll_and_jam): Adjust call and profitable unroll factor.
+
 2019-10-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92173
