@@ -12,7 +12,7 @@
 2019-10-21  Kamlesh Kumar  <kamleshbhalui@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 
-	PR c++/83434 - typeinfo of noexcept function
+	PR c++/83534 - typeinfo of noexcept function
 	* rtti.c (get_tinfo_decl_dynamic): Do not call
 	TYPE_MAIN_VARIANT for function.
 	(get_typeid): Likewise.
