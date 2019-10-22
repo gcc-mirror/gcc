@@ -1,3 +1,7 @@
+2019-10-21  Jason Merrill  <jason@redhat.com>
+
+	* .gitattributes: Also check ChangeLog whitespace.
+
 2019-10-21  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* contrib/dg-extract-results.sh: Add support for KPASS.
