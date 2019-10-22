@@ -8589,14 +8589,14 @@ expand_static_init (tree decl, tree init)
 	      (acquire_name, build_function_type_list (integer_type_node,
 						       TREE_TYPE (guard_addr),
 						       NULL_TREE),
-	       NULL_TREE, ECF_NOTHROW | ECF_LEAF);
+	       NULL_TREE, ECF_NOTHROW);
 	  if (!release_fn || !abort_fn)
 	    vfntype = build_function_type_list (void_type_node,
 						TREE_TYPE (guard_addr),
 						NULL_TREE);
 	  if (!release_fn)
 	    release_fn = push_library_fn (release_name, vfntype, NULL_TREE,
-					   ECF_NOTHROW | ECF_LEAF);
+					  ECF_NOTHROW);
 	  if (!abort_fn)
 	    abort_fn = push_library_fn (abort_name, vfntype, NULL_TREE,
 					ECF_NOTHROW | ECF_LEAF);
