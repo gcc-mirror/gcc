@@ -22,7 +22,13 @@
 #include <stdexcept>
 #include <vector>
 #include <locale>
-#include <unordered_map>
+#if __cplusplus >= 201103L
+# include <unordered_map>
+namespace unord = std;
+#else
+# include <tr1/unordered_map>
+namespace unord = std::tr1;
+#endif
 #include <cxxabi.h>
 
 // Encapsulates symbol characteristics.
@@ -65,7 +71,7 @@ struct symbol
 };
 
 // Map type between symbol names and full symbol info.
-typedef std::unordered_map<std::string, symbol> 	symbols;
+typedef unord::unordered_map<std::string, symbol> 	symbols;
 
 
 // Check.
