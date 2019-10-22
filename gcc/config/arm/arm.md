@@ -1649,6 +1649,19 @@
    (set_attr "type" "adc_reg,adc_imm,alu_shift_imm")]
 )
 
+;; Special canonicalization of the above when operand1 == (const_int 1):
+;; in this case the 'borrow' needs to treated like subtracting from the carry.
+(define_insn "rsbsi_carryin_reg"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI (match_operand:SI 1 "arm_carry_operation" "")
+		  (match_operand:SI 2 "s_register_operand" "r")))]
+  "TARGET_ARM"
+  "rsc%?\\t%0, %2, #1"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set_attr "type" "adc_imm")]
+)
+
 (define_insn "cmpsi3_carryin_<CC_EXTEND>out"
   [(set (reg:<CC_EXTEND> CC_REGNUM)
 	(compare:<CC_EXTEND>

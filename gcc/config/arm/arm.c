@@ -10107,6 +10107,13 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      *cost += rtx_cost (XEXP (op0, 0), mode, MINUS, 0, speed_p);
 	      return true;
 	    }
+	  /* (Carry_op - reg) can be done as RSC Rd, Rn, #1 on Arm.
+	     Note we do mean ~borrow here.  */
+	  else if (TARGET_ARM && arm_carry_operation (op0, SImode))
+	    {
+	      *cost += rtx_cost (op1, mode, code, 1, speed_p);
+	      return true;
+	    }
 
 	  shift_op = shifter_op_p (op0, &shift_by_reg);
 	  if (shift_op == NULL)
