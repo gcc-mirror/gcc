@@ -1,5 +1,11 @@
 2019-10-22  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.md (rsbsi_carryin_reg): New pattern.
+	* config/arm/arm.c (arm_rtx_costs_internal, case MINUS): Handle
+	subtraction from a carry operation.
+
+2019-10-22  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/predicates.md (arm_borrow_operation): Handle CC_ADCmode.
 
 2019-10-22  Richard Biener  <rguenther@suse.de>
