@@ -1,3 +1,12 @@
+2019-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92173
+	* tree-vect-loop.c (vectorizable_reduction): If
+	vect_transform_reduction cannot handle code-generation try without
+	the single-def-use-cycle optimization.  Pass optab_vector to
+	optab_for_tree_code to get vector shifts as that's what we'd
+	generate.
+
 2019-10-22  Martin Liska  <mliska@suse.cz>
 
 	* diagnostic-format-json.cc (json_from_expanded_location):
