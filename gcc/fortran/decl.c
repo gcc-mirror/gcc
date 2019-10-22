@@ -8490,14 +8490,6 @@ attr_decl1 (void)
       goto cleanup;
     }
 
-  /* Check F2018:C822.  */
-  if (sym->attr.dimension && sym->attr.codimension
-      && sym->as && sym->as->rank + sym->as->corank > 15)
-    {
-      gfc_error ("rank + corank of %qs exceeds 15 at %C", sym->name);
-      return MATCH_ERROR;
-    }
-
   if (sym->attr.cray_pointee && sym->as != NULL)
     {
       /* Fix the array spec.  */
