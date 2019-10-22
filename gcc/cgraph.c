@@ -2155,7 +2155,7 @@ cgraph_node::dump_graphviz (FILE *f)
     {
       cgraph_node *callee = edge->callee;
 
-      fprintf (f, "\t\"%s\" -> \"%s\"\n", name (), callee->name ());
+      fprintf (f, "\t\"%s\" -> \"%s\"\n", dump_name (), callee->dump_name ());
     }
 }
 

@@ -1,3 +1,7 @@
+2019-10-22  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraph.c (dump_graphviz): Change name to dump_name
+
 2019-10-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.md (rsbsi_carryin_reg): New pattern.
