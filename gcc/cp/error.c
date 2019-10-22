@@ -410,7 +410,7 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
       pop_deferring_access_checks ();
       /* Strip typedefs.  We can't just use TFF_CHASE_TYPEDEF because
 	 pp_simple_type_specifier doesn't know about it.  */
-      t = strip_typedefs (t);
+      t = strip_typedefs (t, NULL, STF_USER_VISIBLE);
       dump_type (pp, t, TFF_PLAIN_IDENTIFIER);
     }
 }
@@ -449,7 +449,11 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 	       || DECL_SELF_REFERENCE_P (decl)
 	       || (!flag_pretty_templates
 		   && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)))
-	t = strip_typedefs (t);
+	{
+	  unsigned int stf_flags = (!(pp->flags & pp_c_flag_gnu_v3)
+				    ? STF_USER_VISIBLE : 0);
+	  t = strip_typedefs (t, NULL, stf_flags);
+	}
       else if (alias_template_specialization_p (t))
 	{
 	  dump_alias_template_specialization (pp, t, flags);
@@ -3205,7 +3209,7 @@ type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
       && !uses_template_parms (typ))
     {
       int aka_start, aka_len; char *p;
-      tree aka = strip_typedefs (typ);
+      tree aka = strip_typedefs (typ, NULL, STF_USER_VISIBLE);
       if (quote && *quote)
 	pp_end_quote (cxx_pp, show_color);
       pp_string (cxx_pp, " {aka");

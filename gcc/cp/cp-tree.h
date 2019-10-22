@@ -5722,6 +5722,13 @@ enum auto_deduction_context
 #define TFF_NO_TEMPLATE_BINDINGS		(1 << 13)
 #define TFF_POINTER		                (1 << 14)
 
+/* These constants can be used as bit flags to control strip_typedefs.
+
+   STF_USER_VISIBLE: use heuristics to try to avoid stripping user-facing
+       aliases of internal details.  This is intended for diagnostics,
+       where it should (for example) give more useful "aka" types.  */
+const unsigned int STF_USER_VISIBLE = 1U;
+
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL(NODE)	\
@@ -7259,8 +7266,10 @@ extern int zero_init_p				(const_tree);
 extern bool check_abi_tag_redeclaration		(const_tree, const_tree,
 						 const_tree);
 extern bool check_abi_tag_args			(tree, tree);
-extern tree strip_typedefs			(tree, bool * = NULL);
-extern tree strip_typedefs_expr			(tree, bool * = NULL);
+extern tree strip_typedefs			(tree, bool * = NULL,
+						 unsigned int = 0);
+extern tree strip_typedefs_expr			(tree, bool * = NULL,
+						 unsigned int = 0);
 extern tree copy_binfo				(tree, tree, tree,
 						 tree *, int);
 extern int member_p				(const_tree);
