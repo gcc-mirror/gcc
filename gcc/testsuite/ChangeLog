@@ -1,3 +1,8 @@
+2019-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/Wnonnull.c: Provide prototypes for strlen and memcpy.
+	Use __SIZE_TYPE__ instead of size_t.
+
 2019-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/parse/qualified2.C: Tighten dg-error directive.

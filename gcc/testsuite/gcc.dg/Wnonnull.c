@@ -2,16 +2,10 @@
    { dg-do compile }
    { dg-options "-O2 -Wall" } */
 
-#ifndef __APPLE__
-#include <string.h>
-#else
-/* OSX headers do not mark up the nonnull elements yet.  */
-# include <stddef.h>
-extern size_t strlen (const char *__s)
-		      __attribute ((pure)) __attribute ((nonnull (1)));
+extern __SIZE_TYPE__ strlen (const char *__s)
+			     __attribute ((pure)) __attribute ((nonnull (1)));
 extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
-		     size_t __n) __attribute ((nonnull (1, 2)));
-#endif
+		     __SIZE_TYPE__ __n) __attribute ((nonnull (1, 2)));
 
 char buf[100];
 
@@ -23,9 +17,9 @@ struct Test
 
 __attribute ((nonnull (1, 2)))
 inline char*
-my_strcpy (char *restrict dst, const char *restrict src, size_t size)
+my_strcpy (char *restrict dst, const char *restrict src, __SIZE_TYPE__ size)
 {
-  size_t len = strlen (src);        /* { dg-warning "argument 1 null where non-null expected" } */
+  __SIZE_TYPE__ len = strlen (src); /* { dg-warning "argument 1 null where non-null expected" } */
   if (len < size)
     memcpy (dst, src, len + 1);     /* { dg-warning "argument 2 null where non-null expected" } */
   else
