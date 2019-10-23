@@ -1566,6 +1566,8 @@ operator_rshift::op1_range (value_range_base &r,
 					    build_one_cst (op2.type ()),
 					    shift_amount),
 			       build_one_cst (type));
+      if (TREE_OVERFLOW (mask))
+	return false;
       value_range_base mask_range (build_zero_cst (type), mask);
       ub = range_op_handler (PLUS_EXPR, type)->fold_range (type, lb,
 							   mask_range);

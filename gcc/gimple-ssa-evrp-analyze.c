@@ -155,46 +155,78 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
 }
 
 void
-evrp_range_analyzer::assert_value_ranges_are_equal
+evrp_range_analyzer::assert_gori_is_just_as_good
+					(tree name, edge e,
+					 const value_range_base *range_evrp,
+					 const value_range_base *range_gori,
+					 const vec<assert_info> &asserts)
+{
+  if (!range_evrp)
+    return;
+
+  if (range_evrp->symbolic_p () && !range_gori->symbolic_p ())
+    return;
+
+  // Return if we're just as good as evrp.
+  if (*range_evrp == *range_gori
+      || range_intersect (*range_evrp, *range_gori) == *range_gori)
+    return;
+
+  fprintf (stderr, "Different ranges on edge (%d -> %d) for SSA: ",
+	   e->src->index, e->dest->index);
+  print_generic_stmt (stderr, name, TDF_VOPS|TDF_MEMSYMS);
+  fprintf (stderr, "\tevrp: ");
+  range_evrp->dump (stderr);
+  fprintf (stderr, "\n\tgori: ");
+  range_gori->dump (stderr);
+  fprintf (stderr, "\n\n");
+  dump_bb (stderr, e->src, 0, TDF_NONE);
+  fprintf (stderr, "\n");
+  fprintf (stderr, "==============================================\n");
+  debug_function (current_function_decl, TDF_NONE);
+  fprintf (stderr, "Known value_ranges and equivalences:\n");
+  fprintf (stderr, "------------------------------------\n");
+  vr_values->dump_all_value_ranges (stderr);
+  if (asserts.length () > 0)
+    {
+      fprintf (stderr, "\nASSERT equivalences:\n");
+      fprintf (stderr, "--------------------------\n");
+      extern void debug (const vec<assert_info> &);
+      debug (asserts);
+    }
+  gcc_unreachable ();
+}
+
+value_range_base
+evrp_range_analyzer::try_find_new_range_with_gori
 				(tree name, edge e,
-				 const value_range_base *vr_old,
-				 const value_range_base *vr_new,
 				 const vec<assert_info> &asserts)
 {
-  // VRP couldn't get anything at all.
-  if (!vr_old)
-    return;
+  const value_range *known_range = get_value_range (name);
+  equivalence_iterator iter (name, known_range, asserts);
+  vr_values->save_equivalences (&iter);
 
-  // VRP returned a symbolic but GORI could do better.
-  if (vr_old->symbolic_p () && !vr_new->symbolic_p ())
-    return;
+  value_range_base vr;
+  if (!vr_values->outgoing_edge_range_p (vr, e, name, known_range))
+    vr.set_varying (TREE_TYPE (name));
+  return vr;
+}
 
-  if (*vr_old != *vr_new)
+value_range *
+evrp_range_analyzer::merge_gori_and_evrp_results
+					(value_range *vr,
+					 const value_range_base *vr_gori)
+{
+  if (vr)
+    static_cast <value_range_base *> (vr)->intersect (vr_gori);
+  else
     {
-      fprintf (stderr, "Different ranges on edge (%d -> %d) for SSA: ",
-	       e->src->index, e->dest->index);
-      print_generic_stmt (stderr, name, TDF_VOPS|TDF_MEMSYMS);
-      fprintf (stderr, "\tevrp: ");
-      vr_old->dump (stderr);
-      fprintf (stderr, "\n\tgori: ");
-      vr_new->dump (stderr);
-      fprintf (stderr, "\n\n");
-      dump_bb (stderr, e->src, 0, TDF_NONE);
-      fprintf (stderr, "\n");
-      fprintf (stderr, "==============================================\n");
-      debug_function (current_function_decl, TDF_NONE);
-      fprintf (stderr, "Equivalences and known value_ranges:\n");
-      fprintf (stderr, "------------------------------------\n");
-      vr_values->dump_all_value_ranges (stderr);
-      if (asserts.length () > 0)
-	{
-	  fprintf (stderr, "\nASSERT equivalences:\n");
-	  fprintf (stderr, "--------------------------\n");
-	  extern void debug (const vec<assert_info> &);
-	  debug (asserts);
-	}
-      gcc_unreachable ();
+      if (vr_gori->varying_p () || vr_gori->undefined_p ())
+	return NULL;
+      vr = vr_values->allocate_value_range ();
+      vr->set (vr_gori->kind (), vr_gori->min (), vr_gori->max ());
     }
+  return vr;
 }
 
 void
@@ -233,30 +265,19 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	  auto_vec<std::pair<tree, value_range *>, 8> vrs;
 	  for (unsigned i = 0; i < asserts.length (); ++i)
 	    {
-	      tree name;
-	      value_range_base vr_new;
-	      const value_range *name_range;
-	      name = asserts[i].name;
-	      name_range = get_value_range (name);
-
-	      equivalence_iterator iter (name, name_range, asserts);
-	      vr_values->save_equivalences (&iter);
-
-	      // Calculate the same range with GORI.
-	      if (!vr_values->outgoing_edge_range_p (vr_new, pred_e, name,
-						     name_range))
-		vr_new.set_undefined ();
-
+	      value_range_base vr_gori
+		= try_find_new_range_with_gori (asserts[i].name, pred_e,
+						asserts);
 	      value_range *vr = try_find_new_range (asserts[i].name,
 						    asserts[i].expr,
 						    asserts[i].comp_code,
 						    asserts[i].val);
+	      if (getenv("GORIME"))
+		assert_gori_is_just_as_good (asserts[i].name, pred_e,
+					     vr, &vr_gori, asserts);
+	      vr = merge_gori_and_evrp_results (vr, &vr_gori);
 	      if (vr)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));
-
-	      if (getenv("GORIME"))
-		assert_value_ranges_are_equal (name, pred_e, vr, &vr_new,
-					       asserts);
 	    }
 
 	  /* If pred_e is really a fallthru we can record value ranges
