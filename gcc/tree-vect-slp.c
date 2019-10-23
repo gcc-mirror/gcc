@@ -1291,7 +1291,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	      slp_tree grandchild;
 
 	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
-		if (SLP_TREE_DEF_TYPE (grandchild) == vect_internal_def)
+		if (SLP_TREE_DEF_TYPE (grandchild) != vect_external_def)
 		  break;
 	      if (!grandchild)
 		{
@@ -1450,7 +1450,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		  slp_tree grandchild;
 
 		  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
-		    if (SLP_TREE_DEF_TYPE (grandchild) == vect_internal_def)
+		    if (SLP_TREE_DEF_TYPE (grandchild) != vect_external_def)
 		      break;
 		  if (!grandchild)
 		    {
