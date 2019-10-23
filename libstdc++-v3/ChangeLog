@@ -1,5 +1,59 @@
 2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp:
+	Use detail::rebind_traits.
+	* include/ext/pb_ds/detail/bin_search_tree_/node_iterators.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/traits.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/entry_cmp.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/entry_pred.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/point_const_iterator.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/binomial_heap_base_.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/branch_policy/branch_policy.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/cond_dealtor.hpp: Likewise.
+	* include/ext/pb_ds/detail/eq_fn/hash_eq_fn.hpp (has_eq_fn): Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/ranged_hash_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/ranged_probe_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	left_child_next_sibling_heap_.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/node.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	point_const_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/ov_tree_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/pairing_heap_.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/node.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/rc.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/node.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/thin_heap_.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy/sample_trie_access_traits.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/type_utils.hpp: Fix typo in comment.
+	* include/ext/pb_ds/detail/types_traits.hpp (stored_value): Add
+	bool parameter to control whether the hash value is stored.
+	(select_base_type): New class template and partial specialization.
+	(maybe_null_type): Likewise.
+	(rebind_traits): New class template.
+	(type_base): Remove four nearly identical specializations.
+	(type_dispatch): Remove.
+	(type_traits): Use select_base_type and maybe_null_type instead of
+	type_base to control differences between specializations.
+	* include/ext/pb_ds/list_update_policy.hpp: Use detail::rebind_traits.
+	* include/ext/pb_ds/priority_queue.hpp: Likewise.
+	* include/ext/pb_ds/tree_policy.hpp: Likewise.
+	* include/ext/pb_ds/trie_policy.hpp: Likewise.
+
 	* include/backward/hash_set (hash_set): Use __alloc_traits.
 	* include/backward/hashtable.h (_Hashtable): Likewise.
 	* include/ext/alloc_traits.h (__alloc_traits::allocate): Add overload

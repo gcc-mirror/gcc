@@ -45,7 +45,7 @@
 #include <utility>
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
-#include <utility>
+#include <memory>
 
 namespace __gnu_pbds
 {
@@ -91,189 +91,99 @@ namespace __gnu_pbds
 
     /// Primary template for representation of stored data.
     /// Two types of data can be stored: value and hash.
-    template<typename _Tv, typename _Th>
+    template<typename _Tv, typename _Th, bool Store_Hash>
       struct stored_data
       : public stored_value<_Tv>, public stored_hash<_Th>
       { };
 
     /// Specialization for representation of stored data of just value type.
-    template<typename _Tv>
-      struct stored_data<_Tv, null_type>
+    template<typename _Tv, typename _Th>
+      struct stored_data<_Tv, _Th, false>
       : public stored_value<_Tv>
       { };
 
-    /// Primary template.
+    /// Choose value_type to be a key/value pair or just a key.
+    template<typename Key, typename Mapped>
+      struct select_value_type
+      {
+	typedef std::pair<const Key, Mapped> type;
+      };
+
+    /// Specialization for sets where the key is the value_type.
+    template<typename Key>
+      struct select_value_type<Key, null_type>
+      {
+	typedef Key type;
+      };
+
+    /// Base class for conditionally defining a static data member.
     template<typename Key, typename Mapped, typename _Alloc, bool Store_Hash>
-      struct type_base;
+      struct maybe_null_type
+      { };
 
-    /**
-     * Specialization of type_base for the case where the hash value
-     * is not stored alongside each value.
-     */
-    template<typename Key, typename Mapped, typename _Alloc>
-      struct type_base<Key, Mapped, _Alloc, false>
+    /// Specialization that defines a static data member of type null_type.
+    template<typename Key,typename _Alloc, bool Store_Hash>
+      struct maybe_null_type<Key, null_type, _Alloc, Store_Hash>
       {
-      public:
-	typedef typename _Alloc::size_type 		size_type;
-
-      private:
-	typedef typename _Alloc::template rebind<Mapped>	__rebind_m;
-	typedef typename __rebind_m::other			__rebind_ma;
-	typedef std::pair<const Key, Mapped>			__value_type;
-	typedef typename _Alloc::template rebind<__value_type>	__rebind_v;
-       	typedef typename __rebind_v::other			__rebind_va;
-
-      public:
-	typedef typename __rebind_ma::value_type       	mapped_type;
-	typedef typename __rebind_ma::pointer 		mapped_pointer;
-	typedef typename __rebind_ma::const_pointer 	mapped_const_pointer;
-	typedef typename __rebind_ma::reference	       	mapped_reference;
-	typedef typename __rebind_ma::const_reference 	mapped_const_reference;
-
-	typedef typename __rebind_va::value_type 	value_type;
-	typedef typename __rebind_va::pointer 		pointer;
-	typedef typename __rebind_va::const_pointer 	const_pointer;
-	typedef typename __rebind_va::reference 	reference;
-	typedef typename __rebind_va::const_reference 	const_reference;
-
-	typedef stored_data<value_type, null_type>	stored_data_type;
+	static null_type s_null_type;
       };
 
-    /**
-     * Specialization of type_base for the case where the hash value
-     * is stored alongside each value.
-     */
-    template<typename Key, typename Mapped, typename _Alloc>
-      struct type_base<Key, Mapped, _Alloc, true>
-      {
-      public:
-	typedef typename _Alloc::size_type 		size_type;
-
-      private:
-	typedef typename _Alloc::template rebind<Mapped>	__rebind_m;
-	typedef typename __rebind_m::other			__rebind_ma;
-	typedef std::pair<const Key, Mapped>			__value_type;
-	typedef typename _Alloc::template rebind<__value_type>	__rebind_v;
-       	typedef typename __rebind_v::other			__rebind_va;
-
-      public:
-	typedef typename __rebind_ma::value_type       	mapped_type;
-	typedef typename __rebind_ma::pointer 		mapped_pointer;
-	typedef typename __rebind_ma::const_pointer 	mapped_const_pointer;
-	typedef typename __rebind_ma::reference	       	mapped_reference;
-	typedef typename __rebind_ma::const_reference 	mapped_const_reference;
-
-	typedef typename __rebind_va::value_type 	value_type;
-	typedef typename __rebind_va::pointer 		pointer;
-	typedef typename __rebind_va::const_pointer 	const_pointer;
-	typedef typename __rebind_va::reference 	reference;
-	typedef typename __rebind_va::const_reference 	const_reference;
-
-	typedef stored_data<value_type, size_type>	stored_data_type;
-      };
-
-
-    /**
-     * Specialization of type_base for the case where the hash value
-     * is not stored alongside each value.
-     */
-    template<typename Key, typename _Alloc>
-      struct type_base<Key, null_type, _Alloc, false>
-      {
-      public:
-	typedef typename _Alloc::size_type 		size_type;
-	typedef Key 					value_type;
-
-      private:
-	typedef typename _Alloc::template rebind<null_type>  	__rebind_m;
-	typedef typename __rebind_m::other			__rebind_ma;
-	typedef typename _Alloc::template rebind<value_type>	__rebind_v;
-       	typedef typename __rebind_v::other			__rebind_va;
-
-      public:
-	typedef typename __rebind_ma::value_type       	mapped_type;
-	typedef typename __rebind_ma::pointer 		mapped_pointer;
-	typedef typename __rebind_ma::const_pointer 	mapped_const_pointer;
-	typedef typename __rebind_ma::reference	       	mapped_reference;
-	typedef typename __rebind_ma::const_reference 	mapped_const_reference;
-
-	typedef typename __rebind_va::pointer 		pointer;
-	typedef typename __rebind_va::const_pointer 	const_pointer;
-	typedef typename __rebind_va::reference 	reference;
-	typedef typename __rebind_va::const_reference 	const_reference;
-
-	typedef stored_data<value_type, null_type>	stored_data_type;
-
-	static null_type 			s_null_type;
-      };
-
-    template<typename Key, typename _Alloc>
+    template<typename Key,typename _Alloc, bool Store_Hash>
       null_type
-      type_base<Key, null_type, _Alloc, false>::s_null_type;
+      maybe_null_type<Key, null_type, _Alloc, Store_Hash>::s_null_type;
 
-
-    /**
-     * Specialization of type_base for the case where the hash value
-     * is stored alongside each value.
-     */
-    template<typename Key, typename _Alloc>
-      struct type_base<Key, null_type, _Alloc, true>
+    /// Consistent API for accessing allocator-related types.
+    template<typename _Alloc, typename T>
+      struct rebind_traits
+#if __cplusplus >= 201103L
+      : std::allocator_traits<_Alloc>::template rebind_traits<T>
       {
-      public:
-	typedef typename _Alloc::size_type 		size_type;
-	typedef Key 					value_type;
-
-      private:
-	typedef typename _Alloc::template rebind<null_type>  	__rebind_m;
-	typedef typename __rebind_m::other			__rebind_ma;
-	typedef typename _Alloc::template rebind<value_type>	__rebind_v;
-       	typedef typename __rebind_v::other			__rebind_va;
-
-      public:
-	typedef typename __rebind_ma::value_type       	mapped_type;
-	typedef typename __rebind_ma::pointer 		mapped_pointer;
-	typedef typename __rebind_ma::const_pointer 	mapped_const_pointer;
-	typedef typename __rebind_ma::reference	       	mapped_reference;
-	typedef typename __rebind_ma::const_reference 	mapped_const_reference;
-
-	typedef typename __rebind_va::pointer 		pointer;
-	typedef typename __rebind_va::const_pointer 	const_pointer;
-	typedef typename __rebind_va::reference 	reference;
-	typedef typename __rebind_va::const_reference 	const_reference;
-
-	typedef stored_data<value_type, size_type>	stored_data_type;
-
-	static null_type 		      	s_null_type;
+	using reference = T&;
+	using const_reference = const T&;
       };
-
-    template<typename Key, typename _Alloc>
-      null_type
-      type_base<Key, null_type, _Alloc, true>::s_null_type;
-
-
-    /// Type base dispatch.
-    template<typename Key, typename Mapped, typename _Alloc, bool Store_Hash>
-      struct type_dispatch
+#else
+      : _Alloc::template rebind<T>::other
       {
-	typedef type_base<Key, Mapped, _Alloc, Store_Hash> type;
+	typedef typename _Alloc::template rebind<T>::other allocator_type;
       };
+#endif
+
 
     /// Traits for abstract types.
     template<typename Key, typename Mapped, typename _Alloc, bool Store_Hash>
       struct types_traits
-      : public type_dispatch<Key, Mapped, _Alloc, Store_Hash>::type
+      : public maybe_null_type<Key, Mapped, _Alloc, Store_Hash>
       {
+      public:
+	typedef typename _Alloc::size_type			size_type;
+	typedef typename select_value_type<Key, Mapped>::type	value_type;
+	typedef Key						key_type;
+	typedef Mapped						mapped_type;
+
       private:
+	typedef rebind_traits<_Alloc, value_type>	__rebind_va;
+	typedef rebind_traits<_Alloc, key_type>		__rebind_ka;
+	typedef rebind_traits<_Alloc, mapped_type>	__rebind_ma;
+
 	typedef no_throw_copies<Key, Mapped>		__nothrowcopy;
-	typedef typename _Alloc::template rebind<Key>::other __rebind_a;
 
       public:
-	typedef typename _Alloc::size_type 		size_type;
-	typedef typename __rebind_a::value_type 	key_type;
-	typedef typename __rebind_a::pointer 		key_pointer;
-	typedef typename __rebind_a::const_pointer 	key_const_pointer;
-	typedef typename __rebind_a::reference 		key_reference;
-	typedef typename __rebind_a::const_reference 	key_const_reference;
+	typedef typename __rebind_ma::pointer 		mapped_pointer;
+	typedef typename __rebind_ma::const_pointer 	mapped_const_pointer;
+	typedef typename __rebind_ma::reference	       	mapped_reference;
+	typedef typename __rebind_ma::const_reference 	mapped_const_reference;
+
+	typedef typename __rebind_va::pointer 		pointer;
+	typedef typename __rebind_va::const_pointer 	const_pointer;
+	typedef typename __rebind_va::reference 	reference;
+	typedef typename __rebind_va::const_reference 	const_reference;
+
+	typedef stored_data<value_type, size_type, Store_Hash> stored_data_type;
+
+	typedef typename __rebind_ka::pointer 		key_pointer;
+	typedef typename __rebind_ka::const_pointer 	key_const_pointer;
+	typedef typename __rebind_ka::reference 	key_reference;
+	typedef typename __rebind_ka::const_reference 	key_const_reference;
 	typedef std::pair<size_type, size_type> 	comp_hash;
 	typedef integral_constant<int, Store_Hash> 	store_extra;
 	typedef typename __nothrowcopy::indicator 	no_throw_indicator;

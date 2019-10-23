@@ -61,7 +61,7 @@ namespace __gnu_pbds
     class left_child_next_sibling_heap_node_point_const_iterator_
     {
     protected:
-      typedef typename _Alloc::template rebind<Node>::other::pointer node_pointer;
+      typedef typename rebind_traits<_Alloc, Node>::pointer node_pointer;
 
     public:
       /// Category.
@@ -74,28 +74,18 @@ namespace __gnu_pbds
       typedef typename Node::value_type value_type;
 
       /// Iterator's pointer type.
-      typedef
-      typename _Alloc::template rebind<
-	value_type>::other::pointer
-      pointer;
+      typedef typename rebind_traits<_Alloc, value_type>::pointer pointer;
 
       /// Iterator's const pointer type.
-      typedef
-      typename _Alloc::template rebind<
-	value_type>::other::const_pointer
-      const_pointer;
+      typedef typename rebind_traits<_Alloc, value_type>::const_pointer
+	const_pointer;
 
       /// Iterator's reference type.
-      typedef
-      typename _Alloc::template rebind<
-	value_type>::other::reference
-      reference;
+      typedef typename rebind_traits<_Alloc, value_type>::reference reference;
 
       /// Iterator's const reference type.
-      typedef
-      typename _Alloc::template rebind<
-	value_type>::other::const_reference
-      const_reference;
+      typedef typename rebind_traits<_Alloc, value_type>::const_reference
+	const_reference;
 
       inline
       left_child_next_sibling_heap_node_point_const_iterator_(node_pointer p_nd) : m_p_nd(p_nd)

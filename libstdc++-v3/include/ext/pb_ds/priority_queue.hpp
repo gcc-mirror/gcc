@@ -95,8 +95,7 @@ namespace __gnu_pbds
     typedef typename detail::container_base_dispatch<_Tv, Cmp_Fn, _Alloc,
 						     Tag>::type
  							base_type;
-    typedef typename _Alloc::template rebind<_Tv>   	__rebind_v;
-    typedef typename __rebind_v::other			__rebind_va;
+    typedef detail::rebind_traits<_Alloc, _Tv>		__rebind_va;
 
  public:
     typedef typename __rebind_va::reference 		reference;

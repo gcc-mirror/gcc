@@ -77,7 +77,7 @@ namespace __gnu_pbds
 #ifdef _GLIBCXX_DEBUG
 #define PB_DS_DEBUG_MAP_BASE_C_DEC  \
     debug_map_base<Key,	eq_by_less<Key, Cmp_Fn>, \
-	      typename _Alloc::template rebind<Key>::other::const_reference>
+	      typename rebind_traits<_Alloc, Key>::const_reference>
 #endif
 
 #ifdef PB_DS_TREE_TRACE
@@ -108,16 +108,17 @@ namespace __gnu_pbds
       public Node_And_It_Traits::node_update
     {
       typedef Node_And_It_Traits 			traits_type;
+      typedef rebind_traits<_Alloc, typename traits_type::node>
+	node_alloc_traits;
 
     protected:
       typedef PB_DS_BIN_TREE_TRAITS_BASE 	       	traits_base;
 
       typedef
-      typename _Alloc::template rebind<typename traits_type::node>::other
-      node_allocator;
+      typename node_alloc_traits::allocator_type	node_allocator;
 
-      typedef typename node_allocator::value_type 	node;
-      typedef typename node_allocator::pointer 		node_pointer;
+      typedef typename node_alloc_traits::value_type 	node;
+      typedef typename node_alloc_traits::pointer 	node_pointer;
 
       typedef typename traits_type::null_node_update_pointer
       null_node_update_pointer;
