@@ -1,3 +1,19 @@
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.h (ipa_reference_var_uid): Move offline.
+	* ipa-reference.c (reference_vars_map_t): new type.
+	(ipa_reference_vars_map, ipa_reference_vars_uids): New static vars.
+	(ipa_reference_var_uid): Implement.
+	(varpool_node_hooks): New static var.
+	(varpool_removal_hook): New function.
+	(is_improper): Do not check bitmap for id==-1
+	(get_static_name): Update.
+	(ipa_init): Initialize new datastructures.
+	(analyze_function): Do not recompute ids.
+	(propagate): Free reference_vars_to_consider.
+	(stream_out_bitmap): Update.
+	(ipa_reference_read_optimization_summary): Update.
+
 2019-10-23  qing zhao  <qing.zhao@oracle.com>
 
 	PR gcov-profile/91971
