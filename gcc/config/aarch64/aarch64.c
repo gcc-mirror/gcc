@@ -11828,7 +11828,9 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     /* Caller assumes we cannot fail.  */
     gcc_assert (use_rsqrt_p (mode));
 
-  machine_mode mmsk = mode_for_int_vector (mode).require ();
+  machine_mode mmsk = (VECTOR_MODE_P (mode)
+		       ? mode_for_int_vector (mode).require ()
+		       : int_mode_for_mode (mode).require ());
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
     /* When calculating the approximate square root, compare the

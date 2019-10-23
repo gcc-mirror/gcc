@@ -1,3 +1,8 @@
+2019-10-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Use
+	int_mode_for_mode rather than mode_for_int_vector for scalars.
+
 2019-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92179
