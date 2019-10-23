@@ -2021,10 +2021,9 @@ operator_bitwise_and::wi_fold (tree type,
 }
 
 static bool
-unsigned_mask (tree type, const value_range_base &op)
+unsigned_mask_p (tree type, const value_range_base &op)
 {
-  return (TYPE_UNSIGNED (type)
-	  && op.singleton_p ());
+  return (TYPE_UNSIGNED (type) && op.singleton_p ());
 }
 
 bool
@@ -2036,7 +2035,7 @@ operator_bitwise_and::op1_range (value_range_base &r, tree type,
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
 
-  if (unsigned_mask (type, op2))
+  if (unsigned_mask_p (type, op2))
     {
       tree mask;
       op2.singleton_p (&mask);
