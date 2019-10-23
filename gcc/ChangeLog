@@ -1,3 +1,12 @@
+2019-10-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backport from mainline
+	2019-10-08  Tulio Magno Quites Machado Filho  <tuliom@linux.ibm.com>
+
+	* config.gcc: Move -L usage from LINK_OS_EXTRA_SPEC32 and
+	LINK_OS_EXTRA_SPEC64 to MD_STARTFILE_PREFIX and
+	MD_STARTFILE_PREFIX_1 when using --with-advance-toolchain.
+
 2019-10-23  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
