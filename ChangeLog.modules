@@ -1,4 +1,12 @@
-2019-10-21  Nathan Sidwell  <nathan@acm.org>
+2019-10-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* pt.c (reduce_template_parm_level): Attach TPI to the type or
+	decl.
+	(convert_generic_types_to_packs): Pass new type to
+	reduce_template_parm_level.
+
+2019-10-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
 	* module.cc (trees_{in,out}::tpl_parms{,_fini}): Drop outer parms,
@@ -10,6 +18,8 @@
 	(trees_{in,out}:tree_value): Adjust tpl_header streaming.
 	(depset::hadh::find_dependencies): Likewise.
 	(module_name): Don't look for current TU's parent.
+
+2019-10-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
 	* module.cc (trees_in::back_ref): New, broken out of ...
