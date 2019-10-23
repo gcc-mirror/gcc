@@ -1936,6 +1936,13 @@ operator_bitwise_and::wi_fold (tree type,
   return value_range_with_overflow (type, new_lb, new_ub);
 }
 
+static bool
+unsigned_mask (tree type, const value_range_base &op)
+{
+  return (TYPE_UNSIGNED (type)
+	  && op.singleton_p ());
+}
+
 bool
 operator_bitwise_and::op1_range (value_range_base &r, tree type,
 				 const value_range_base &lhs,
@@ -1944,6 +1951,37 @@ operator_bitwise_and::op1_range (value_range_base &r, tree type,
   // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
+
+  if (unsigned_mask (type, op2))
+    {
+      tree mask;
+      op2.singleton_p (&mask);
+
+      if (lhs.zero_p ())
+	{
+	  r = value_range_base (build_zero_cst (type),
+				fold_build1 (BIT_NOT_EXPR, type, mask));
+	  return true;
+	}
+      if (!lhs.contains_p (build_zero_cst (type)))
+	{
+	  unsigned nzeros = tree_ctz (mask);
+	  tree first_one = build_int_cst (type, 1 << nzeros);
+	  // If all bits are on, the lower bound is a better
+	  // approximation.
+	  if (nzeros == 0)
+	    r = value_range_base (type, lhs.lower_bound (), max_limit (type));
+	  else
+	    r = value_range_base (first_one, TYPE_MAX_VALUE (type));
+	  return true;
+	}
+    }
+
+  if (!lhs.contains_p (build_zero_cst (type)))
+    {
+      r = range_nonzero (type);
+      return true;
+    }
 
   // For now do nothing with bitwise AND of value_range's.
   r.set_varying (type);
