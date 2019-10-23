@@ -2204,40 +2204,12 @@ defaulted_late_check (tree fn)
       return;
     }
 
-  /* 8.4.2/2: An explicitly-defaulted function (...) may have an explicit
-     exception-specification only if it is compatible (15.4) with the 
-     exception-specification on the implicit declaration.  If a function
-     is explicitly defaulted on its first declaration, (...) it is
-     implicitly considered to have the same exception-specification as if
-     it had been implicitly declared.  */
-  maybe_instantiate_noexcept (fn);
-  tree fn_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-  if (!fn_spec)
-    {
-      if (DECL_DEFAULTED_IN_CLASS_P (fn))
-	TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
-    }
-  else if (UNEVALUATED_NOEXCEPT_SPEC_P (fn_spec))
-    /* Equivalent to the implicit spec.  */;
-  else if (DECL_DEFAULTED_IN_CLASS_P (fn)
-	   && !CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
-    /* We can't compare an explicit exception-specification on a
-       constructor defaulted in the class body to the implicit
-       exception-specification until after we've parsed any NSDMI; see
-       after_nsdmi_defaulted_late_checks.  */;
-  else
-    {
-      tree eh_spec = get_defaulted_eh_spec (fn);
-      if (!comp_except_specs (fn_spec, eh_spec, ce_normal))
-	{
-	  if (DECL_DEFAULTED_IN_CLASS_P (fn))
-	    DECL_DELETED_FN (fn) = true;
-	  else
-	    error ("function %q+D defaulted on its redeclaration "
-		   "with an exception-specification that differs from "
-		   "the implicit exception-specification %qX", fn, eh_spec);
-	}
-    }
+  /* If a function is explicitly defaulted on its first declaration without an
+     exception-specification, it is implicitly considered to have the same
+     exception-specification as if it had been implicitly declared.  */
+  if (!TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn))
+      && DECL_DEFAULTED_IN_CLASS_P (fn))
+    TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
 
   if (DECL_DEFAULTED_IN_CLASS_P (fn)
       && DECL_DECLARED_CONSTEXPR_P (implicit_fn))
@@ -2262,35 +2234,6 @@ defaulted_late_check (tree fn)
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;
     }
-}
-
-/* OK, we've parsed the NSDMI for class T, now we can check any explicit
-   exception-specifications on functions defaulted in the class body.  */
-
-void
-after_nsdmi_defaulted_late_checks (tree t)
-{
-  if (uses_template_parms (t))
-    return;
-  if (t == error_mark_node)
-    return;
-  for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
-    if (!DECL_ARTIFICIAL (fn)
-	&& DECL_DECLARES_FUNCTION_P (fn)
-	&& DECL_DEFAULTED_IN_CLASS_P (fn))
-      {
-	tree fn_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-	if (UNEVALUATED_NOEXCEPT_SPEC_P (fn_spec))
-	  continue;
-
-	tree eh_spec = get_defaulted_eh_spec (fn);
-	if (eh_spec == error_mark_node)
-	  continue;
-
-	if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
-				eh_spec, ce_normal))
-	  DECL_DELETED_FN (fn) = true;
-      }
 }
 
 /* Returns true iff FN can be explicitly defaulted, and gives any
