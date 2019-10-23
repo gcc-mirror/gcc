@@ -1532,21 +1532,17 @@ FILE *
 gcc::dump_manager::
 dump_begin (int phase, dump_flags_t *flag_ptr, int part)
 {
-  char *name;
-  struct dump_file_info *dfi;
-  FILE *stream;
-
   if (phase == TDI_none || !dump_phase_enabled_p (phase))
     return NULL;
 
-  name = get_dump_file_name (phase, part);
+  char *name = get_dump_file_name (phase, part);
   if (!name)
     return NULL;
-  dfi = get_dump_file_info (phase);
+  struct dump_file_info *dfi = get_dump_file_info (phase);
 
   /* We do not support re-opening of dump files with parts.  This would require
      tracking pstate per part of the dump file.  */
-  stream = dump_open (name, part != -1 || dfi->pstate < 0);
+  FILE *stream = dump_open (name, part != -1 || dfi->pstate < 0);
   if (stream)
     dfi->pstate = 1;
   free (name);

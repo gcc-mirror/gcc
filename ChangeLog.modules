@@ -1,5 +1,8 @@
 2019-10-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* dumpfile.c (dump_begin): Move decls for RAII.
+
 	gcc/cp/
 	* module.cc (trees_{in,out}::tpl_parm_value): Don't stream tpi
 	here.
