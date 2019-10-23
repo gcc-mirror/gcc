@@ -2695,7 +2695,11 @@ pop:
 	  if (gimple_assign_rhs2 (use_stmt) == op)
 	    neg = ! neg;
 	}
-      if (*code == ERROR_MARK)
+      if (CONVERT_EXPR_CODE_P (use_code)
+	  && tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (use_stmt)),
+				    TREE_TYPE (gimple_assign_rhs1 (use_stmt))))
+	;
+      else if (*code == ERROR_MARK)
 	*code = use_code;
       else if (use_code != *code)
 	{
@@ -5692,19 +5696,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
         which is defined by the loop-header-phi.  */
 
   gassign *stmt = as_a <gassign *> (stmt_info->stmt);
-  switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
-    {
-    case GIMPLE_BINARY_RHS:
-    case GIMPLE_TERNARY_RHS:
-      break;
-
-    case GIMPLE_UNARY_RHS:
-    case GIMPLE_SINGLE_RHS:
-      return false;
-
-    default:
-      gcc_unreachable ();
-    }
   enum tree_code code = gimple_assign_rhs_code (stmt);
   int op_type = TREE_CODE_LENGTH (code);
 

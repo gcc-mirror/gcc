@@ -1,3 +1,12 @@
+2019-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* gcc.dg/vect/vect-reduc-2char-big-array.c: Adjust.
+	* gcc.dg/vect/vect-reduc-2char.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2c.c: Likewise.
+
 2019-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/constexpr-dtor3.C: Expect in 'constexpr' expansion of
