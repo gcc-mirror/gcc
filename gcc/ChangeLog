@@ -1,5 +1,9 @@
 2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-streamer-out.c (cmp_symbol_files): Watch for overflow.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-reference.c (varpool_removal_hook, ipa_reference_c_finalize): Fix
 	previous patch.
 

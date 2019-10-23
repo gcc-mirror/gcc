@@ -2447,7 +2447,12 @@ cmp_symbol_files (const void *pn1, const void *pn2)
 
   /* Order within static library.  */
   if (n1->lto_file_data && n1->lto_file_data->id != n2->lto_file_data->id)
-    return n1->lto_file_data->id - n2->lto_file_data->id;
+    {
+      if (n1->lto_file_data->id > n2->lto_file_data->id)
+	return 1;
+      if (n1->lto_file_data->id < n2->lto_file_data->id)
+	return -1;
+    }
 
   /* And finaly order by the definition order.  */
   return n1->order - n2->order;
