@@ -48,3 +48,6 @@ test01()
   sa.construct(p);  // this is required to be ill-formed
   // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
 }
+
+// Needed because of PR c++/92193
+// { dg-prune-output "no matching function for call to" }

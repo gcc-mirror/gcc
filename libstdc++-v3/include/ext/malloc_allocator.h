@@ -169,13 +169,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // ! C++20
 
       template<typename _Up>
-	friend bool
+	friend _GLIBCXX20_CONSTEXPR bool
 	operator==(const malloc_allocator&, const malloc_allocator<_Up>&)
 	_GLIBCXX_NOTHROW
 	{ return true; }
 
       template<typename _Up>
-	friend bool
+	friend _GLIBCXX20_CONSTEXPR bool
 	operator!=(const malloc_allocator&, const malloc_allocator<_Up>&)
 	_GLIBCXX_NOTHROW
 	{ return false; }

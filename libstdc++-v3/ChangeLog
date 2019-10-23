@@ -1,5 +1,60 @@
 2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR c++/91369 Implement P0784R7 changes to allocation and construction
+	* include/bits/alloc_traits.h: Include <bits/stl_construct.h>.
+	(allocator_traits::_S_allocate, allocator_traits::_S_construct)
+	(allocator_traits::_S_destroy, allocator_traits::_S_max_size)
+	(allocator_traits::_S_select, allocator_traits::allocate)
+	(allocator_traits::deallocate, allocator_traits::construct)
+	(allocator_traits::destroy, allocator_traits::max_size)
+	(allocator_traits::select_on_container_copy_construction)
+	(allocator_traits<allocator<T>>): Add constexpr specifier for C++20.
+	(allocator_traits<allocator<T>>::construct): Use construct_at.
+	(allocator_traits<allocator<T>>::destroy): Use destroy_at.
+	(__alloc_on_copy, __alloc_on_move, __alloc_on_swap): Add constexpr
+	specifier.
+	(_Destroy(ForwardIterator, ForwardIterator, Alloc&))
+	(_Destroy(ForwardIterator, ForwardIterator, allocator<T>&)): Move here
+	from <bits/stl_construct.h>.
+	* include/bits/allocator.h (allocator::~allocator): Remove for C++20.
+	(allocator::allocate, allocate::deallocate): Define for C++20 and up.
+	(operator==, operator!=): Add constexpr specifier for C++20.
+	* include/bits/stl_construct.h: Don't include <ext/alloc_traits.h>.
+	(destroy_at): For C++20 add constexpr specifier and support for
+	destroying arrays.
+	(construct_at): Define new function for C++20.
+	(_Construct): Return result of placement new-expression. For C++11 and
+	up add constexpr. For C++20 dispatch to std::construct_at during
+	constant evaluation.
+	(_Destroy(pointer)): Add constexpr specifier. For C++20 dispatch to
+	std::destroy_at during constant evaluation.
+	(_Destroy_aux::__destroy, _Destroy_n_aux::__destroy_n): Add constexpr
+	specifier for C++20.
+	(_Destroy(ForwardIterator, ForwardIterator))
+	(_Destroy(ForwardIterator, Size)): Likewise. Do not elide trivial
+	destructors during constant evaluation.
+	(destroy, destroy_n): Add constexpr specifier for C++20.
+	(_Destroy(ForwardIterator, ForwardIterator, Alloc&))
+	(_Destroy(ForwardIterator, ForwardIterator, allocator<T>&)): Move to
+	<bits/alloc_traits.h>, to remove dependency on allocators.
+	* include/bits/stl_uninitialized.h: Include <ext/alloc_traits.h>.
+	Include <bits/stl_pair.h> instead of <utility>.
+	* include/ext/alloc_traits.h: Always include <bits/alloc_traits.h>.
+	(__alloc_traits::construct, __alloc_traits::destroy)
+	(__alloc_traits::_S_select_on_copy, __alloc_traits::_S_on_swap): Add
+	constexpr specifier.
+	* include/ext/malloc_allocator.h  (operator==, operator!=): Add
+	constexpr specifier for C++20.
+	* include/ext/new_allocator.h (operator==, operator!=): Likewise.
+	* testsuite/20_util/headers/memory/synopsis.cc: Add constexpr.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Ignore additional
+	errors due to constexpr function called after failed static_assert.
+	* testsuite/20_util/specialized_algorithms/construct_at/1.cc: New test.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Ignore additional errors due to constexpr function called after failed
+	static_assert.
+	* testsuite/23_containers/vector/cons/destructible_neg.cc: Likewise.
+
 	* testsuite/20_util/bind/91371.cc: Fix test to compile as C++11.
 
 	* include/debug/helper_functions.h (__valid_range): Change
