@@ -2700,6 +2700,7 @@ enum tree_tag {
 
   tt_node,		/* By-value node.  */
   tt_decl,		/* By-value mergeable decl.  */
+  tt_tpl_parm,		/* Template parm.  */
 
   tt_id,  		/* Identifier node.  */
   tt_conv_id,		/* Conversion operator name.  */
@@ -2837,6 +2838,7 @@ private:
   bool tree_node_vals (tree);
   tree tree_value ();
   tree decl_value ();
+  tree tpl_parm_value ();
 
 private:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
@@ -3031,13 +3033,14 @@ private:
   void type_node (tree);
   void tree_value (tree);
   void decl_value (tree, depset *);
+  void tpl_parm_value (tree);
 
- public:
+public:
   /* Serialize various definitions. */
   void write_definition (tree decl);
   void mark_declaration (tree decl, bool do_defn);
 
- private:
+private:
   void mark_function_def (tree decl);
   void mark_var_def (tree decl);
   void mark_class_def (tree decl);
@@ -6829,19 +6832,19 @@ unsigned
 trees_out::add_indirect_tpl_parms (tree parms)
 {
   unsigned len = 0;
-  for (tree probe = parms; probe; probe = TREE_CHAIN (probe), len++)
-    if (TREE_VISITED (probe))
-      break;
-  if (streaming_p ())
-    u (len);
-
-  for (unsigned ix = 0; ix != len; parms = TREE_CHAIN (parms), ix++)
+  for (; parms; parms = TREE_CHAIN (parms), len++)
     {
+      if (TREE_VISITED (parms))
+	break;
+
       int tag = insert (parms);
       dump (dumper::TREE)
 	&& dump ("Indirect:%d template's parameter %u %C:%N",
-		 tag, ix, TREE_CODE (parms), parms);
+		 tag, len, TREE_CODE (parms), parms);
     }
+
+  if (streaming_p ())
+    u (len);
 
   return len;
 }
@@ -6940,6 +6943,212 @@ trees_in::add_indirects (tree decl)
 
   dump (dumper::TREE) && dump ("Inserted %u indirects", count);
   return count == u ();
+}
+
+/* Stream a template parameter.  There are 4.5 kinds of parameter:
+   a) Template - TEMPLATE_DECL->TYPE_DECL->TEMPLATE_TEMPLATE_PARM
+   	TEMPLATE_TYPE_PARM_INDEX TPI
+   b) Type - TYPE_DECL->TEMPLATE_TYPE_PARM TEMPLATE_TYPE_PARM_INDEX TPI
+   c.1) NonTYPE - PARM_DECL DECL_INITIAL TPI We meet this first
+   c.2) NonTYPE - CONST_DECL DECL_INITIAL Same TPI
+   d) BoundTemplate - TYPE_DECL->BOUND_TEMPLATE_TEMPLATE_PARM
+       TEMPLATE_TYPE_PARM_INDEX->TPI
+       TEMPLATE_TEMPLATE_PARM_INFO->TEMPLATE_INFO
+
+   All of these point to a TEMPLATE_PARM_INDEX, and #B also has a TEMPLATE_INFO
+*/
+
+void
+trees_out::tpl_parm_value (tree parm)
+{
+  gcc_checking_assert (DECL_P (parm) && DECL_TEMPLATE_PARM_P (parm));
+
+  int parm_tag = insert (parm);
+  if (streaming_p ())
+    {
+      i (tt_tpl_parm);
+      dump (dumper::TREE) && dump ("Writing template parm:%d %C:%N",
+				   parm_tag, TREE_CODE (parm), parm);
+      start (parm);
+      tree_node_bools (parm);
+    }
+
+  tree inner = parm;
+  if (TREE_CODE (inner) == TEMPLATE_DECL)
+    {
+      inner = DECL_TEMPLATE_RESULT (inner);
+      int inner_tag = insert (inner);
+      if (streaming_p ())
+	{
+	  dump (dumper::TREE) && dump ("Writing inner template parm:%d %C:%N",
+				       inner_tag, TREE_CODE (inner), inner);
+	  start (inner);
+	  tree_node_bools (inner);
+	}
+    }
+
+  tree type = NULL_TREE;
+  tree tpi = NULL_TREE;
+  tree ti = NULL_TREE;
+  if (TREE_CODE (inner) == TYPE_DECL)
+    {
+      type = TREE_TYPE (inner);
+      int type_tag = insert (type);
+      if (streaming_p ())
+	{
+	  dump (dumper::TREE) && dump ("Writing template parm type:%d %C:%N",
+				       type_tag, TREE_CODE (type), type);
+	  start (type);
+	  tree_node_bools (type);
+	}
+
+      tpi = TEMPLATE_TYPE_PARM_INDEX (type);
+      if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+	{
+	  ti = TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type);
+	  int ti_tag = insert (ti);
+	  if (streaming_p ())
+	    {
+	      dump (dumper::TREE) && dump ("Writing template parm ti:%d %C:%N",
+					   ti_tag, TREE_CODE (ti), ti);
+	      start (ti);
+	      tree_node_bools (ti);
+	    }
+	}
+    }
+  else
+    tpi = DECL_INITIAL (inner);
+
+  if (inner != parm)
+    {
+      /* This is a template-template parameter, it could share a parm
+	 list with its context's container.  (Not the context itself,
+	 for this ttp is created before that even exists.)  */
+      // FIXME: Perhaps we should catch this directly in tpl_parms
+      // streaming?
+      unsigned tpl_levels = 0;
+      tpl_header (parm, &tpl_levels);
+      tpl_parms_fini (parm, tpl_levels);
+    }
+
+  if (TREE_VISITED (tpi))
+    {
+      /* Non-type parms consist of a PARM_DECL and a CONST_DECL
+	 sharing a single TPI.  We can meet either first.  */
+      ref_node (tpi);
+    }
+  else
+    {
+      int tpi_tag = insert (tpi);
+      if (streaming_p ())
+	{
+	  dump (dumper::TREE) && dump ("Writing template parm index:%d %C:%N",
+				       tpi_tag, TREE_CODE (tpi), tpi);
+	  start (tpi);
+	  tree_node_bools (tpi);
+	}
+      tree_node_vals (tpi);
+    }
+
+  tree_node_vals (parm);
+  if (inner != parm)
+    tree_node_vals (inner);
+  if (type)
+    tree_node_vals (type);
+  if (ti)
+    tree_node_vals (ti);
+
+  if (streaming_p ())
+    dump (dumper::TREE) && dump ("Wrote template parm:%d %C:%N",
+				 parm_tag, TREE_CODE (parm), parm);
+}
+
+tree
+trees_in::tpl_parm_value ()
+{
+  tree parm = start ();
+  if (!parm || !tree_node_bools (parm))
+    return NULL_TREE;
+
+  int parm_tag = insert (parm);
+  dump (dumper::TREE) && dump ("Reading template parm:%d %C:%N",
+			       parm_tag, TREE_CODE (parm), parm);
+
+  tree inner = parm;
+  if (TREE_CODE (inner) == TEMPLATE_DECL)
+    {
+      inner = start ();
+      if (!inner || !tree_node_bools (inner))
+	return NULL_TREE;
+      int inner_tag = insert (inner);
+      dump (dumper::TREE) && dump ("Reading inner template parm:%d %C:%N",
+				   inner_tag, TREE_CODE (inner), inner);
+      DECL_TEMPLATE_RESULT (parm) = inner;
+    }
+
+  tree type = NULL_TREE;
+  tree ti = NULL_TREE;
+  if (TREE_CODE (inner) == TYPE_DECL)
+    {
+      type = start ();
+      if (!type || !tree_node_bools (type))
+	return NULL_TREE;
+      int type_tag = insert (type);
+      dump (dumper::TREE) && dump ("Reading template parm type:%d %C:%N",
+				   type_tag, TREE_CODE (type), type);
+
+      TREE_TYPE (inner) = TREE_TYPE (parm) = type;
+      TYPE_NAME (type) = parm;
+
+      if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+	{
+	  ti = start ();
+	  if (!ti || !tree_node_bools (ti))
+	    return NULL_TREE;
+	  int ti_tag = insert (ti);
+	  dump (dumper::TREE) && dump ("Reading template parm ti:%d %C:%N",
+				       ti_tag, TREE_CODE (ti), ti);
+	  TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type) = ti;
+	}
+    }
+
+  if (inner != parm)
+    {
+      /* A template template parameter.  */
+      unsigned tpl_levels = 0;
+      tpl_header (parm, &tpl_levels);
+      tpl_parms_fini (parm, tpl_levels);
+    }
+
+  tree tpi = NULL_TREE;
+  int tpi_ref = i ();
+  if (tpi_ref < 0)
+    tpi = back_ref (tpi_ref);
+  else
+    {
+      tpi = start (tpi_ref);
+      if (!tpi || !tree_node_bools (tpi))
+	return NULL_TREE;
+      int tpi_tag = insert (tpi);
+      dump (dumper::TREE) && dump ("Reading template parm index:%d %C:%N",
+				   tpi_tag, TREE_CODE (tpi), tpi);
+      tree_node_vals (tpi);
+    }
+
+  tree_node_vals (parm);
+  if (inner != parm)
+    tree_node_vals (inner);
+  if (type)
+    tree_node_vals (type);
+  if (ti)
+    tree_node_vals (ti);
+  else if (type)
+    TYPE_CANONICAL (type) = canonical_type_parameter (type);
+
+  dump (dumper::TREE) && dump ("Read template parm:%d %C:%N",
+			       parm_tag, TREE_CODE (parm), parm);
+
+  return parm;
 }
 
 /* DECL is a decl node that must be written by value.  DEP is the
@@ -7577,7 +7786,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	      // was instantiated from.  For instance deferred
 	      // noexcept and (probably?) default parms.  We need to
 	      // refer to that specific node in some way.  For now
-	      // just clone it
+	      // just clone it.  We should preemptively puth those
+	      // things in the map when we reference their template by
+	      // name.
 	      return true;
 	    dump (dumper::TREE)
 	      && dump ("Wrote %s reference %N",
@@ -8320,6 +8531,8 @@ trees_out::tree_value (tree t)
 			       && (TREE_CODE (t) != VAR_DECL
 				   || (!DECL_NAME (t) && !DECL_CONTEXT (t)))
 			       && TREE_CODE (t) != FUNCTION_DECL));
+
+      gcc_checking_assert (!DECL_TEMPLATE_PARM_P (t));
     }
 
   if (streaming_p ())
@@ -8620,8 +8833,17 @@ trees_out::tree_node (tree t)
     }
 
  skip_normal:
-  if (DECL_P (t) && !decl_node (t, ref))
-    goto done;
+  if (DECL_P (t))
+    {
+      if (DECL_TEMPLATE_PARM_P (t))
+	{
+	  tpl_parm_value (t);
+	  goto done;
+	}
+
+      if (!decl_node (t, ref))
+	goto done;
+    }
 
   /* Otherwise by value */
   tree_value (t);
@@ -8690,6 +8912,11 @@ trees_in::tree_node ()
     case tt_decl:
       /* A new decl.  Stream it in.  */
       res = decl_value ();
+      break;
+
+    case tt_tpl_parm:
+      /* A template parameter.  Stream it in.  */
+      res = tpl_parm_value ();
       break;
 
     case tt_id:

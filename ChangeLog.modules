@@ -1,6 +1,13 @@
 2019-10-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum tree_tag): Add tt_tpl_parm.
+	(trees_{in,out}::tpl_parm_value): New.
+	(trees_out::add_indirect_tpl_parms): Simpilfy.
+	(trees_out::tree_value): No template parms here.
+	(trees_{in,out}::tree_node): Deal with call tpl_parm_value.
+
+	gcc/cp/
 	* pt.c (reduce_template_parm_level): Attach TPI to the type or
 	decl.
 	(convert_generic_types_to_packs): Pass new type to
