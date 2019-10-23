@@ -68,8 +68,8 @@ namespace __gnu_pbds
 	{
 	  typedef Metadata     					metadata_type;
 	  typedef _Alloc     					allocator_type;
-	  typedef typename _Alloc::template rebind<Metadata>	__rebind_m;
-	  typedef typename __rebind_m::other::const_reference  const_reference;
+	  typedef typename detail::rebind_traits<_Alloc, Metadata>::const_reference
+	    const_reference;
 
 	  const_reference
 	  get_metadata() const
@@ -99,8 +99,8 @@ namespace __gnu_pbds
 	typedef _Alloc						allocator_type;
 	typedef _ATraits					access_traits;
 	typedef typename _ATraits::type_traits			type_traits;
-	typedef typename _Alloc::template rebind<_Node_base>	__rebind_n;
-	typedef typename __rebind_n::other::pointer 		node_pointer;
+	typedef typename detail::rebind_traits<_Alloc, _Node_base>::pointer
+	  node_pointer;
 
 	node_pointer 						m_p_parent;
 	const node_type 	       				m_type;
@@ -108,8 +108,8 @@ namespace __gnu_pbds
 	_Node_base(node_type type) : m_type(type)
 	{ }
 
-	typedef typename _Alloc::template rebind<_ATraits>    __rebind_at;
-	typedef typename __rebind_at::other::const_pointer    a_const_pointer;
+	typedef typename detail::rebind_traits<_Alloc, _ATraits>::const_pointer
+	  a_const_pointer;
 	typedef typename _ATraits::const_iterator	      a_const_iterator;
 
 #ifdef _GLIBCXX_DEBUG
@@ -211,36 +211,36 @@ namespace __gnu_pbds
     struct _Inode
     : public _Node_base<_ATraits, Metadata>
     {
-      typedef _Node_base<_ATraits, Metadata> 			base_type;
-      typedef typename base_type::type_traits			type_traits;
-      typedef typename base_type::access_traits	       		access_traits;
-      typedef typename type_traits::value_type 			value_type;
-      typedef typename base_type::allocator_type		_Alloc;
-      typedef _Alloc						allocator_type;
-      typedef typename _Alloc::size_type 			size_type;
+      typedef _Node_base<_ATraits, Metadata>		base_type;
+      typedef typename base_type::type_traits		type_traits;
+      typedef typename base_type::access_traits		access_traits;
+      typedef typename type_traits::value_type		value_type;
+      typedef typename base_type::allocator_type	_Alloc;
+      typedef _Alloc					allocator_type;
+      typedef typename _Alloc::size_type		size_type;
 
     private:
-      typedef typename base_type::a_const_pointer      	       a_const_pointer;
-      typedef typename base_type::a_const_iterator     	      a_const_iterator;
+      typedef typename base_type::a_const_pointer	a_const_pointer;
+      typedef typename base_type::a_const_iterator	a_const_iterator;
 
-      typedef typename base_type::node_pointer			node_pointer;
-      typedef typename _Alloc::template rebind<base_type>	__rebind_n;
-      typedef typename __rebind_n::other::const_pointer      node_const_pointer;
+      typedef typename base_type::node_pointer		node_pointer;
+      typedef typename detail::rebind_traits<_Alloc, base_type>::const_pointer
+	node_const_pointer;
 
-      typedef _Leaf<_ATraits, Metadata>	 			leaf;
-      typedef typename _Alloc::template rebind<leaf>::other 	__rebind_l;
-      typedef typename __rebind_l::pointer 			leaf_pointer;
-      typedef typename __rebind_l::const_pointer 	    leaf_const_pointer;
+      typedef _Leaf<_ATraits, Metadata>	 		leaf;
+      typedef typename detail::rebind_traits<_Alloc, leaf>	__rebind_l;
+      typedef typename __rebind_l::pointer 		leaf_pointer;
+      typedef typename __rebind_l::const_pointer 	leaf_const_pointer;
 
-      typedef typename _Alloc::template rebind<_Inode>::other 	__rebind_in;
-      typedef typename __rebind_in::pointer 			inode_pointer;
-      typedef typename __rebind_in::const_pointer 	    inode_const_pointer;
+      typedef detail::rebind_traits<_Alloc, _Inode>	__rebind_in;
+      typedef typename __rebind_in::pointer		inode_pointer;
+      typedef typename __rebind_in::const_pointer 	inode_const_pointer;
 
       inline size_type
       get_pref_pos(a_const_iterator, a_const_iterator, a_const_pointer) const;
 
     public:
-      typedef typename _Alloc::template rebind<node_pointer>::other __rebind_np;
+      typedef detail::rebind_traits<_Alloc, node_pointer>	__rebind_np;
       typedef typename __rebind_np::pointer 		node_pointer_pointer;
       typedef typename __rebind_np::reference 		node_pointer_reference;
 
@@ -500,16 +500,12 @@ namespace __gnu_pbds
       typedef typename type_traits::const_reference 	const_reference;
 
       typedef allocator_type				_Alloc;
-      typedef typename _Alloc::template rebind<Node>	__rebind_n;
-      typedef typename __rebind_n::other::pointer	node_pointer;
-      typedef typename _Alloc::template rebind<Leaf>	__rebind_l;
-      typedef typename __rebind_l::other::pointer	leaf_pointer;
-      typedef typename __rebind_l::other::const_pointer	leaf_const_pointer;
-      typedef typename _Alloc::template rebind<Head>	__rebind_h;
-      typedef typename __rebind_h::other::pointer	head_pointer;
+      typedef typename rebind_traits<_Alloc, Node>::pointer	node_pointer;
+      typedef typename rebind_traits<_Alloc, Leaf>::pointer	leaf_pointer;
+      typedef typename rebind_traits<_Alloc, Leaf>::const_pointer	leaf_const_pointer;
+      typedef typename rebind_traits<_Alloc, Head>::pointer	head_pointer;
 
-      typedef typename _Alloc::template rebind<Inode> __rebind_in;
-      typedef typename __rebind_in::other::pointer 	inode_pointer;
+      typedef typename rebind_traits<_Alloc, Inode>::pointer 	inode_pointer;
       typedef typename Inode::iterator			inode_iterator;
 
       node_pointer 					m_p_nd;
@@ -814,16 +810,13 @@ namespace __gnu_pbds
     class _Node_citer
     {
     protected:
-      typedef typename _Alloc::template rebind<Node>	__rebind_n;
-      typedef typename __rebind_n::other::pointer	node_pointer;
+      typedef typename rebind_traits<_Alloc, Node>::pointer	node_pointer;
 
-      typedef typename _Alloc::template rebind<Leaf>	__rebind_l;
-      typedef typename __rebind_l::other::pointer	leaf_pointer;
-      typedef typename __rebind_l::other::const_pointer	leaf_const_pointer;
+      typedef typename rebind_traits<_Alloc, Leaf>::pointer	leaf_pointer;
+      typedef typename rebind_traits<_Alloc, Leaf>::const_pointer	leaf_const_pointer;
 
-      typedef typename _Alloc::template rebind<Inode> 	__rebind_in;
-      typedef typename __rebind_in::other::pointer 	inode_pointer;
-      typedef typename __rebind_in::other::const_pointer inode_const_pointer;
+      typedef typename rebind_traits<_Alloc, Inode>::pointer 	inode_pointer;
+      typedef typename rebind_traits<_Alloc, Inode>::const_pointer inode_const_pointer;
 
       typedef typename Node::a_const_pointer		a_const_pointer;
       typedef typename Node::a_const_iterator		a_const_iterator;
@@ -866,9 +859,7 @@ namespace __gnu_pbds
       typedef typename Node::metadata_type 		metadata_type;
 
       /// Const metadata reference type.
-      typedef typename _Alloc::template rebind<metadata_type> __rebind_m;
-      typedef typename __rebind_m::other 		__rebind_ma;
-      typedef typename __rebind_ma::const_reference    metadata_const_reference;
+      typedef typename rebind_traits<_Alloc, metadata_type>::const_reference    metadata_const_reference;
 
       inline
       _Node_citer(node_pointer p_nd = 0, a_const_pointer p_traits = 0)
@@ -946,8 +937,7 @@ namespace __gnu_pbds
     private:
       typedef _Node_citer<Node, Leaf, Head, Inode,
 			  _CIterator, Iterator, _Alloc>	base_type;
-      typedef typename _Alloc::template rebind<Node>	__rebind_n;
-      typedef typename __rebind_n::other::pointer	node_pointer;
+      typedef typename rebind_traits<_Alloc, Node>::pointer	node_pointer;
       typedef typename base_type::inode_pointer 	inode_pointer;
       typedef typename base_type::a_const_pointer 	a_const_pointer;
       typedef Iterator 					iterator;

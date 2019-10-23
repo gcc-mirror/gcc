@@ -76,8 +76,8 @@ namespace __gnu_pbds
   public:
     typedef typename _Alloc::size_type			  size_type;
     typedef String 					  key_type;
-    typedef typename _Alloc::template rebind<key_type>	  __rebind_k;
-    typedef typename __rebind_k::other::const_reference   key_const_reference;
+    typedef typename detail::rebind_traits<_Alloc, key_type>::const_reference
+      key_const_reference;
 
     enum
       {
