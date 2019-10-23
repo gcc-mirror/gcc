@@ -1,3 +1,9 @@
+2019-10-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not build
+	op from scalars in case there's a constant operand in its
+	definition.
+
 2019-10-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Guard
