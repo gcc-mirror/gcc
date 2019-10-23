@@ -2535,10 +2535,13 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		max_ovf = 1;
 	    }
 
-	  /* If we have overflow for the constant part and the resulting
-	     range will be symbolic, drop to VR_VARYING.  */
-	  if ((min_ovf && sym_min_op0 != sym_min_op1)
-	      || (max_ovf && sym_max_op0 != sym_max_op1))
+	  /* If the resulting range will be symbolic, we need to eliminate any
+	     explicit or implicit overflow introduced in the above computation
+	     because compare_values could make an incorrect use of it.  That's
+	     why we require one of the ranges to be a singleton.  */
+	  if ((sym_min_op0 != sym_min_op1 || sym_max_op0 != sym_max_op1)
+	      && (min_ovf || max_ovf
+		  || (min_op0 != max_op0 && min_op1 != max_op1)))
 	    {
 	      set_value_range_to_varying (vr);
 	      return;
