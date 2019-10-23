@@ -1,5 +1,7 @@
 2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/bind/91371.cc: Fix test to compile as C++11.
+
 	* include/debug/helper_functions.h (__valid_range): Change
 	_GLIBCXX_CONSTEXPR to _GLIBCXX14_CONSTEXPR.
 
