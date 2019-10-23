@@ -105,7 +105,7 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SMALL,
 DEFPARAM (PARAM_INLINE_HEURISTICS_HINT_PERCENT,
 	  "inline-heuristics-hint-percent",
 	  "The scale (in percents) applied to inline-insns-single and auto limits when heuristics hints that inlining is very profitable with -O3 and -Ofast.",
-	  1600, 100, 1000000)
+	  600, 100, 1000000)
 
 DEFPARAM (PARAM_INLINE_HEURISTICS_HINT_PERCENT_O2,
 	  "inline-heuristics-hint-percent-O2",
