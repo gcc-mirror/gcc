@@ -1,5 +1,9 @@
 2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (invoke): Add constexpr for C++20.
+	* include/std/version (__cpp_lib_constexpr_invoke): Define.
+	* testsuite/20_util/function_objects/invoke/constexpr.cc: New test.
+
 	PR c++/91369 Implement P0784R7 changes to allocation and construction
 	* include/bits/alloc_traits.h: Include <bits/stl_construct.h>.
 	(allocator_traits::_S_allocate, allocator_traits::_S_construct)

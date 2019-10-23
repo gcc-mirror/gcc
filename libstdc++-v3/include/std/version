@@ -158,6 +158,7 @@
 #endif
 #define __cpp_lib_constexpr 201711L
 #define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_invoke 201907L
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L
 #endif
