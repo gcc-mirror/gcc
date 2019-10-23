@@ -5661,6 +5661,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     }
 
   /* Vector shifted by vector.  */
+  bool was_scalar_shift_arg = scalar_shift_arg;
   if (!scalar_shift_arg)
     {
       optab = optab_for_tree_code (code, vectype, optab_vector);
@@ -5720,16 +5721,6 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      else if (!useless_type_conversion_p (TREE_TYPE (vectype),
 						   TREE_TYPE (op1)))
 		{
-		  if (slp_node
-		      && TYPE_MODE (TREE_TYPE (vectype))
-			 != TYPE_MODE (TREE_TYPE (op1)))
-		    {
-                      if (dump_enabled_p ())
-                        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                         "unusable type for last operand in"
-                                         " vector/vector shift/rotate.\n");
-		      return false;
-		    }
 		  if (vec_stmt && !slp_node)
 		    {
 		      op1 = fold_convert (TREE_TYPE (vectype), op1);
@@ -5831,18 +5822,36 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   && !useless_type_conversion_p (TREE_TYPE (vectype),
 						  TREE_TYPE (op1)))
 	    {
-	      /* Convert the scalar constant shift amounts in-place.  */
-	      slp_tree shift = SLP_TREE_CHILDREN (slp_node)[1];
-	      gcc_assert (SLP_TREE_DEF_TYPE (shift) == vect_constant_def);
-	      for (unsigned i = 0;
-		   i < SLP_TREE_SCALAR_OPS (shift).length (); ++i)
+	      if (was_scalar_shift_arg)
 		{
-		  SLP_TREE_SCALAR_OPS (shift)[i]
-		    = fold_convert (TREE_TYPE (vectype),
-				    SLP_TREE_SCALAR_OPS (shift)[i]);
-		  gcc_assert ((TREE_CODE (SLP_TREE_SCALAR_OPS (shift)[i])
-			       == INTEGER_CST));
+		  /* If the argument was the same in all lanes create
+		     the correctly typed vector shift amount directly.  */
+		  op1 = fold_convert (TREE_TYPE (vectype), op1);
+		  op1 = vect_init_vector (stmt_info, op1, TREE_TYPE (vectype),
+					  !loop_vinfo ? gsi : NULL);
+		  vec_oprnd1 = vect_init_vector (stmt_info, op1, vectype,
+						 !loop_vinfo ? gsi : NULL);
+                  vec_oprnds1.create (slp_node->vec_stmts_size);
+		  for (k = 0; k < slp_node->vec_stmts_size; k++)
+		    vec_oprnds1.quick_push (vec_oprnd1);
 		}
+	      else if (dt[1] == vect_constant_def)
+		{
+		  /* Convert the scalar constant shift amounts in-place.  */
+		  slp_tree shift = SLP_TREE_CHILDREN (slp_node)[1];
+		  gcc_assert (SLP_TREE_DEF_TYPE (shift) == vect_constant_def);
+		  for (unsigned i = 0;
+		       i < SLP_TREE_SCALAR_OPS (shift).length (); ++i)
+		    {
+		      SLP_TREE_SCALAR_OPS (shift)[i]
+			  = fold_convert (TREE_TYPE (vectype),
+					  SLP_TREE_SCALAR_OPS (shift)[i]);
+		      gcc_assert ((TREE_CODE (SLP_TREE_SCALAR_OPS (shift)[i])
+				   == INTEGER_CST));
+		    }
+		}
+	      else
+		gcc_assert (TYPE_MODE (op1_vectype) == TYPE_MODE (vectype));
 	    }
 
           /* vec_oprnd1 is available if operand 1 should be of a scalar-type
