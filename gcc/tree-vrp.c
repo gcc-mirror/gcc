@@ -1652,7 +1652,7 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
   value_range_kind vr0_kind = vr0.kind (), vr1_kind = vr1.kind ();
   tree vr0_min = vr0.min (), vr0_max = vr0.max ();
   tree vr1_min = vr1.min (), vr1_max = vr1.max ();
-  tree min = NULL, max = NULL;
+  tree min = NULL_TREE, max = NULL_TREE;
 
   /* This will normalize things such that calculating
      [0,0] - VR_VARYING is not dropped to varying, but is
@@ -1715,18 +1715,19 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
       combine_bound (code, wmin, min_ovf, expr_type, min_op0, min_op1);
       combine_bound (code, wmax, max_ovf, expr_type, max_op0, max_op1);
 
-      /* If we have overflow for the constant part and the resulting
-	 range will be symbolic, drop to VR_VARYING.  */
-      if (((bool)min_ovf && sym_min_op0 != sym_min_op1)
-	  || ((bool)max_ovf && sym_max_op0 != sym_max_op1))
+      /* If the resulting range will be symbolic, we need to eliminate any
+	 explicit or implicit overflow introduced in the above computation
+	 because compare_values could make an incorrect use of it.  That's
+	 why we require one of the ranges to be a singleton.  */
+      if ((sym_min_op0 != sym_min_op1 || sym_max_op0 != sym_max_op1)
+	  && ((bool)min_ovf || (bool)max_ovf
+	      || (min_op0 != max_op0 && min_op1 != max_op1)))
 	{
 	  vr->set_varying (expr_type);
 	  return;
 	}
 
       /* Adjust the range for possible overflow.  */
-      min = NULL_TREE;
-      max = NULL_TREE;
       set_value_range_with_overflow (kind, min, max, expr_type,
 				     wmin, wmax, min_ovf, max_ovf);
       if (kind == VR_VARYING)

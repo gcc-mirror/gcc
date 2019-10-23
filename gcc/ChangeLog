@@ -1,3 +1,10 @@
+2019-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/92131
+	* tree-vrp.c (extract_range_from_plus_minus_expr): If the resulting
+	range would be symbolic, drop to varying for any explicit overflow
+	in the constant part or if neither range is a singleton.
+
 2019-10-23  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/81669
