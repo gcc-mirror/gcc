@@ -796,8 +796,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public annotate_base, public _Cond
     {
     public:
-      typedef size_t 				size_type;
-      typedef ptrdiff_t 			difference_type;
+      typedef std::size_t 			size_type;
+      typedef std::ptrdiff_t 			difference_type;
       typedef _Tp 				value_type;
       typedef value_type* 			pointer;
       typedef const value_type* 		const_pointer;
