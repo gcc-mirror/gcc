@@ -30,17 +30,20 @@
 #ifndef _ALLOC_TRAITS_H
 #define _ALLOC_TRAITS_H 1
 
-#if __cplusplus >= 201103L
-
+#include <bits/stl_construct.h>
 #include <bits/memoryfwd.h>
-#include <bits/ptr_traits.h>
-#include <ext/numeric_traits.h>
-
-#define __cpp_lib_allocator_traits_is_always_equal 201411
+#if __cplusplus >= 201103L
+# include <bits/allocator.h>
+# include <bits/ptr_traits.h>
+# include <ext/numeric_traits.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __cplusplus >= 201103L
+#define __cpp_lib_allocator_traits_is_always_equal 201411
 
   struct __allocator_traits_base
   {
@@ -209,13 +212,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       template<typename _Alloc2>
-	static auto
+	static constexpr auto
 	_S_allocate(_Alloc2& __a, size_type __n, const_void_pointer __hint, int)
 	-> decltype(__a.allocate(__n, __hint))
 	{ return __a.allocate(__n, __hint); }
 
       template<typename _Alloc2>
-	static pointer
+	static constexpr pointer
 	_S_allocate(_Alloc2& __a, size_type __n, const_void_pointer, ...)
 	{ return __a.allocate(__n); }
 
@@ -238,41 +241,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = typename __construct_helper<_Tp, _Args...>::type;
 
       template<typename _Tp, typename... _Args>
-	static _Require<__has_construct<_Tp, _Args...>>
+	static constexpr _Require<__has_construct<_Tp, _Args...>>
 	_S_construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
 	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
 	{ __a.construct(__p, std::forward<_Args>(__args)...); }
 
       template<typename _Tp, typename... _Args>
-	static
+	static constexpr
 	_Require<__and_<__not_<__has_construct<_Tp, _Args...>>,
 			       is_constructible<_Tp, _Args...>>>
 	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
 	noexcept(noexcept(::new((void*)__p)
 			  _Tp(std::forward<_Args>(__args)...)))
-	{ ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
+	{ std::_Construct(__p, std::forward<_Args>(__args)...); }
 
       template<typename _Alloc2, typename _Tp>
-	static auto
+	static constexpr auto
 	_S_destroy(_Alloc2& __a, _Tp* __p, int)
 	noexcept(noexcept(__a.destroy(__p)))
 	-> decltype(__a.destroy(__p))
 	{ __a.destroy(__p); }
 
       template<typename _Alloc2, typename _Tp>
-	static void
+	static constexpr void
 	_S_destroy(_Alloc2&, _Tp* __p, ...)
 	noexcept(noexcept(__p->~_Tp()))
-	{ __p->~_Tp(); }
+	{ std::_Destroy(__p); }
 
       template<typename _Alloc2>
-	static auto
+	static constexpr auto
 	_S_max_size(_Alloc2& __a, int)
 	-> decltype(__a.max_size())
 	{ return __a.max_size(); }
 
       template<typename _Alloc2>
-	static size_type
+	static constexpr size_type
 	_S_max_size(_Alloc2&, ...)
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -282,13 +285,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Alloc2>
-	static auto
+	static constexpr auto
 	_S_select(_Alloc2& __a, int)
 	-> decltype(__a.select_on_container_copy_construction())
 	{ return __a.select_on_container_copy_construction(); }
 
       template<typename _Alloc2>
-	static _Alloc2
+	static constexpr _Alloc2
 	_S_select(_Alloc2& __a, ...)
 	{ return __a; }
 
@@ -301,7 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c a.allocate(n)
       */
-      _GLIBCXX_NODISCARD static pointer
+      _GLIBCXX_NODISCARD static _GLIBCXX20_CONSTEXPR pointer
       allocate(_Alloc& __a, size_type __n)
       { return __a.allocate(__n); }
 
@@ -316,7 +319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns <tt> a.allocate(n, hint) </tt> if that expression is
        *  well-formed, otherwise returns @c a.allocate(n)
       */
-      _GLIBCXX_NODISCARD static pointer
+      _GLIBCXX_NODISCARD static _GLIBCXX20_CONSTEXPR pointer
       allocate(_Alloc& __a, size_type __n, const_void_pointer __hint)
       { return _S_allocate(__a, __n, __hint, 0); }
 
@@ -328,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls <tt> a.deallocate(p, n) </tt>
       */
-      static void
+      static _GLIBCXX20_CONSTEXPR void
       deallocate(_Alloc& __a, pointer __p, size_type __n)
       { __a.deallocate(__p, __n); }
 
@@ -344,7 +347,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  arguments @a __args...
       */
       template<typename _Tp, typename... _Args>
-	static auto construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
+	static _GLIBCXX20_CONSTEXPR auto
+	construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
 	noexcept(noexcept(_S_construct(__a, __p,
 				       std::forward<_Args>(__args)...)))
 	-> decltype(_S_construct(__a, __p, std::forward<_Args>(__args)...))
@@ -359,7 +363,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  otherwise calls @c __p->~_Tp()
       */
       template<typename _Tp>
-	static void destroy(_Alloc& __a, _Tp* __p)
+	static _GLIBCXX20_CONSTEXPR void
+	destroy(_Alloc& __a, _Tp* __p)
 	noexcept(noexcept(_S_destroy(__a, __p, 0)))
 	{ _S_destroy(__a, __p, 0); }
 
@@ -371,7 +376,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns @c __a.max_size() if that expression is well-formed,
        *  otherwise returns @c numeric_limits<size_type>::max()
       */
-      static size_type max_size(const _Alloc& __a) noexcept
+      static _GLIBCXX20_CONSTEXPR size_type
+      max_size(const _Alloc& __a) noexcept
       { return _S_max_size(__a, 0); }
 
       /**
@@ -382,7 +388,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns @c __rhs.select_on_container_copy_construction() if that
        *  expression is well-formed, otherwise returns @a __rhs
       */
-      static _Alloc
+      static _GLIBCXX20_CONSTEXPR _Alloc
       select_on_container_copy_construction(const _Alloc& __rhs)
       { return _S_select(__rhs, 0); }
     };
@@ -440,7 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c a.allocate(n)
       */
-      _GLIBCXX_NODISCARD static pointer
+      _GLIBCXX_NODISCARD static _GLIBCXX20_CONSTEXPR pointer
       allocate(allocator_type& __a, size_type __n)
       { return __a.allocate(__n); }
 
@@ -454,7 +460,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Returns <tt> a.allocate(n, hint) </tt>
       */
-      _GLIBCXX_NODISCARD static pointer
+      _GLIBCXX_NODISCARD static _GLIBCXX20_CONSTEXPR pointer
       allocate(allocator_type& __a, size_type __n, const_void_pointer __hint)
       {
 #if __cplusplus <= 201703L
@@ -472,27 +478,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls <tt> a.deallocate(p, n) </tt>
       */
-      static void
+      static _GLIBCXX20_CONSTEXPR void
       deallocate(allocator_type& __a, pointer __p, size_type __n)
       { __a.deallocate(__p, __n); }
 
       /**
-       *  @brief  Construct an object of type @a _Up
+       *  @brief  Construct an object of type `_Up`
        *  @param  __a  An allocator.
-       *  @param  __p  Pointer to memory of suitable size and alignment for Tp
+       *  @param  __p  Pointer to memory of suitable size and alignment for
+       *	       an object of type `_Up`.
        *  @param  __args Constructor arguments.
        *
-       *  Calls <tt> __a.construct(__p, std::forward<Args>(__args)...) </tt>
+       *  Calls `__a.construct(__p, std::forward<_Args>(__args)...)`
+       *  in C++11, C++14 and C++17. Changed in C++20 to call
+       *  `std::construct_at(__p, std::forward<_Args>(__args)...)` instead.
       */
       template<typename _Up, typename... _Args>
-	static void
+	static _GLIBCXX20_CONSTEXPR void
 	construct(allocator_type& __a, _Up* __p, _Args&&... __args)
 	noexcept(noexcept(::new((void*)__p) _Up(std::forward<_Args>(__args)...)))
 	{
 #if __cplusplus <= 201703L
 	  __a.construct(__p, std::forward<_Args>(__args)...);
 #else
-	  ::new((void*)__p) _Up(std::forward<_Args>(__args)...);
+	  std::construct_at(__p, std::forward<_Args>(__args)...);
 #endif
 	}
 
@@ -504,14 +513,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Calls @c __a.destroy(__p).
       */
       template<typename _Up>
-	static void
+	static _GLIBCXX20_CONSTEXPR void
 	destroy(allocator_type& __a, _Up* __p)
 	noexcept(is_nothrow_destructible<_Up>::value)
 	{
 #if __cplusplus <= 201703L
 	  __a.destroy(__p);
 #else
-	  __p->~_Up();
+	  std::destroy_at(__p);
 #endif
 	}
 
@@ -520,7 +529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __a  An allocator.
        *  @return @c __a.max_size()
       */
-      static size_type
+      static _GLIBCXX20_CONSTEXPR size_type
       max_size(const allocator_type& __a) noexcept
       {
 #if __cplusplus <= 201703L
@@ -535,7 +544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __rhs  An allocator.
        *  @return @c __rhs
       */
-      static allocator_type
+      static _GLIBCXX20_CONSTEXPR allocator_type
       select_on_container_copy_construction(const allocator_type& __rhs)
       { return __rhs; }
     };
@@ -553,7 +562,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _Alloc>
-    inline void __alloc_on_copy(_Alloc& __one, const _Alloc& __two)
+    constexpr void
+    __alloc_on_copy(_Alloc& __one, const _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
       typedef typename __traits::propagate_on_container_copy_assignment __pocca;
@@ -566,7 +576,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Alloc>
-    inline _Alloc __alloc_on_copy(const _Alloc& __a)
+    constexpr _Alloc
+    __alloc_on_copy(const _Alloc& __a)
     {
       typedef allocator_traits<_Alloc> __traits;
       return __traits::select_on_container_copy_construction(__a);
@@ -583,7 +594,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _Alloc>
-    inline void __alloc_on_move(_Alloc& __one, _Alloc& __two)
+    constexpr void
+    __alloc_on_move(_Alloc& __one, _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
       typedef typename __traits::propagate_on_container_move_assignment __pocma;
@@ -609,7 +621,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _Alloc>
-    inline void __alloc_on_swap(_Alloc& __one, _Alloc& __two)
+    constexpr void
+    __alloc_on_swap(_Alloc& __one, _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
       typedef typename __traits::propagate_on_container_swap __pocs;
@@ -685,8 +698,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc>
     using _RequireNotAllocator
       = typename enable_if<!__is_allocator<_Alloc>::value, _Alloc>::type;
+#endif // C++11
+
+  /**
+   * Destroy a range of objects using the supplied allocator.  For
+   * non-default allocators we do not optimize away invocation of
+   * destroy() even if _Tp has a trivial destructor.
+   */
+
+  template<typename _ForwardIterator, typename _Allocator>
+    void
+    _Destroy(_ForwardIterator __first, _ForwardIterator __last,
+	     _Allocator& __alloc)
+    {
+      for (; __first != __last; ++__first)
+#if __cplusplus < 201103L
+	__alloc.destroy(std::__addressof(*__first));
+#else
+	allocator_traits<_Allocator>::destroy(__alloc,
+					      std::__addressof(*__first));
+#endif
+    }
+
+  template<typename _ForwardIterator, typename _Tp>
+    inline void
+    _Destroy(_ForwardIterator __first, _ForwardIterator __last,
+	     allocator<_Tp>&)
+    {
+      _Destroy(__first, __last);
+    }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++11
 #endif // _ALLOC_TRAITS_H

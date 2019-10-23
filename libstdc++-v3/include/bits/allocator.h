@@ -154,13 +154,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX20_CONSTEXPR
 	allocator(const allocator<_Tp1>&) _GLIBCXX_NOTHROW { }
 
+#if __cplusplus <= 201703L
       ~allocator() _GLIBCXX_NOTHROW { }
+#endif
 
-      friend bool
+#if __cplusplus > 201703L
+      [[nodiscard,__gnu__::__always_inline__]]
+      constexpr _Tp*
+      allocate(size_t __n)
+      {
+#ifdef __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
+#endif
+	return __allocator_base<_Tp>::allocate(__n, 0);
+      }
+
+      [[__gnu__::__always_inline__]]
+      constexpr void
+      deallocate(_Tp* __p, size_t __n)
+      {
+#ifdef __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  {
+	    ::operator delete(__p);
+	    return;
+	  }
+#endif
+	  __allocator_base<_Tp>::deallocate(__p, __n);
+      }
+#endif // C++20
+
+      friend _GLIBCXX20_CONSTEXPR bool
       operator==(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return true; }
 
-      friend bool
+      friend _GLIBCXX20_CONSTEXPR bool
       operator!=(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return false; }
 
@@ -168,13 +197,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _T1, typename _T2>
-    inline bool
+    inline _GLIBCXX20_CONSTEXPR bool
     operator==(const allocator<_T1>&, const allocator<_T2>&)
     _GLIBCXX_NOTHROW
     { return true; }
 
   template<typename _T1, typename _T2>
-    inline bool
+    inline _GLIBCXX20_CONSTEXPR bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
     _GLIBCXX_NOTHROW
     { return false; }

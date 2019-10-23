@@ -25,8 +25,14 @@ namespace std {
   template <class T> class allocator;
   template <> class allocator<void>;
   template <class T, class U>
+#if __cplusplus > 201703L
+  constexpr
+#endif
   bool operator==(const allocator<T>&, const allocator<U>&) throw();
   template <class T, class U>
+#if __cplusplus > 201703L
+  constexpr
+#endif
   bool operator!=(const allocator<T>&, const allocator<U>&) throw();
 
   //  lib.storage.iterator, raw storage iterator:
