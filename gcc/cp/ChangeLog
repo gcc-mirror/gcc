@@ -1,3 +1,14 @@
+2019-10-23  Jason Merrill  <jason@redhat.com>
+
+	Implement P1286R2, Contra CWG1778
+	* method.c (defaulted_late_check): Don't check explicit
+	exception-specification on defaulted function.
+	(after_nsdmi_defaulted_late_checks): Remove.
+	* parser.h (struct cp_unparsed_functions_entry): Remove classes.
+	* parser.c (unparsed_classes): Remove.
+	(push_unparsed_function_queues, cp_parser_class_specifier_1):
+	Adjust.
+
 2019-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_STMT>:
