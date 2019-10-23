@@ -2228,6 +2228,7 @@ output_constructor (struct varpool_node *node)
     fprintf (streamer_dump_file, "\nStreaming constructor of %s\n",
 	     node->name ());
 
+  timevar_push (TV_IPA_LTO_CTORS_OUT);
   ob = create_output_block (LTO_section_function_body);
 
   clear_line_info (ob);
@@ -2247,6 +2248,7 @@ output_constructor (struct varpool_node *node)
   if (streamer_dump_file)
     fprintf (streamer_dump_file, "Finished streaming %s\n",
 	     node->name ());
+  timevar_pop (TV_IPA_LTO_CTORS_OUT);
 }
 
 
@@ -2427,6 +2429,30 @@ produce_lto_section ()
   destroy_output_block (ob);
 }
 
+/* Compare symbols to get them sorted by filename (to optimize streaming)  */
+
+static int
+cmp_symbol_files (const void *pn1, const void *pn2)
+{
+  const symtab_node *n1 = *(const symtab_node * const *)pn1;
+  const symtab_node *n2 = *(const symtab_node * const *)pn2;
+
+  int file_order1 = n1->lto_file_data ? n1->lto_file_data->order : -1;
+  int file_order2 = n2->lto_file_data ? n2->lto_file_data->order : -1;
+
+  /* Order files same way as they appeared in the command line to reduce
+     seeking while copying sections.  */
+  if (file_order1 != file_order2)
+    return file_order1 - file_order2;
+
+  /* Order within static library.  */
+  if (n1->lto_file_data && n1->lto_file_data->id != n2->lto_file_data->id)
+    return n1->lto_file_data->id - n2->lto_file_data->id;
+
+  /* And finaly order by the definition order.  */
+  return n1->order - n2->order;
+}
+
 /* Main entry point from the pass manager.  */
 
 void
@@ -2435,8 +2461,9 @@ lto_output (void)
   struct lto_out_decl_state *decl_state;
   bitmap output = NULL;
   bitmap_obstack output_obstack;
-  int i, n_nodes;
+  unsigned int i, n_nodes;
   lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
+  auto_vec<symtab_node *> symbols_to_copy;
 
   prune_offload_funcs ();
 
@@ -2452,32 +2479,17 @@ lto_output (void)
   produce_lto_section ();
 
   n_nodes = lto_symtab_encoder_size (encoder);
-  /* Process only the functions with bodies.  */
+  /* Prepare vector of functions to output and then sort it to optimize
+     section copying.  */
   for (i = 0; i < n_nodes; i++)
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
+      if (snode->alias)
+	continue;
       if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
 	{
-	  if (lto_symtab_encoder_encode_body_p (encoder, node)
-	      && !node->alias)
-	    {
-	      if (flag_checking)
-		gcc_assert (bitmap_set_bit (output, DECL_UID (node->decl)));
-	      decl_state = lto_new_out_decl_state ();
-	      lto_push_out_decl_state (decl_state);
-	      if (gimple_has_body_p (node->decl)
-		  || (!flag_wpa
-		      && flag_incremental_link != INCREMENTAL_LINK_LTO)
-		  /* Thunks have no body but they may be synthetized
-		     at WPA time.  */
-		  || DECL_ARGUMENTS (node->decl))
-		output_function (node);
-	      else
-		copy_function_or_variable (node);
-	      gcc_assert (lto_get_out_decl_state () == decl_state);
-	      lto_pop_out_decl_state ();
-	      lto_record_function_out_decl_state (node->decl, decl_state);
-	    }
+	  if (lto_symtab_encoder_encode_body_p (encoder, node))
+	    symbols_to_copy.safe_push (node);
 	}
       else if (varpool_node *node = dyn_cast <varpool_node *> (snode))
 	{
@@ -2487,26 +2499,41 @@ lto_output (void)
 	  if (ctor && !in_lto_p)
 	    walk_tree (&ctor, wrap_refs, NULL, NULL);
 	  if (get_symbol_initial_value (encoder, node->decl) == error_mark_node
-	      && lto_symtab_encoder_encode_initializer_p (encoder, node)
-	      && !node->alias)
-	    {
-	      timevar_push (TV_IPA_LTO_CTORS_OUT);
-	      if (flag_checking)
-		gcc_assert (bitmap_set_bit (output, DECL_UID (node->decl)));
-	      decl_state = lto_new_out_decl_state ();
-	      lto_push_out_decl_state (decl_state);
-	      if (DECL_INITIAL (node->decl) != error_mark_node
-		  || (!flag_wpa
-		      && flag_incremental_link != INCREMENTAL_LINK_LTO))
-		output_constructor (node);
-	      else
-		copy_function_or_variable (node);
-	      gcc_assert (lto_get_out_decl_state () == decl_state);
-	      lto_pop_out_decl_state ();
-	      lto_record_function_out_decl_state (node->decl, decl_state);
-	      timevar_pop (TV_IPA_LTO_CTORS_OUT);
-	    }
+	      && lto_symtab_encoder_encode_initializer_p (encoder, node))
+	    symbols_to_copy.safe_push (node);
 	}
+    }
+  symbols_to_copy.qsort (cmp_symbol_files);
+  for (i = 0; i < symbols_to_copy.length (); i++)
+    {
+      symtab_node *snode = symbols_to_copy[i];
+      cgraph_node *cnode;
+      varpool_node *vnode;
+
+      if (flag_checking)
+	gcc_assert (bitmap_set_bit (output, DECL_UID (snode->decl)));
+
+      decl_state = lto_new_out_decl_state ();
+      lto_push_out_decl_state (decl_state);
+
+      if ((cnode = dyn_cast <cgraph_node *> (snode))
+	  && (gimple_has_body_p (cnode->decl)
+	      || (!flag_wpa
+		  && flag_incremental_link != INCREMENTAL_LINK_LTO)
+	      /* Thunks have no body but they may be synthetized
+		 at WPA time.  */
+	      || DECL_ARGUMENTS (cnode->decl)))
+	output_function (cnode);
+      else if ((vnode = dyn_cast <varpool_node *> (snode))
+	       && (DECL_INITIAL (vnode->decl) != error_mark_node
+		   || (!flag_wpa
+		       && flag_incremental_link != INCREMENTAL_LINK_LTO)))
+	output_constructor (vnode);
+      else
+	copy_function_or_variable (snode);
+      gcc_assert (lto_get_out_decl_state () == decl_state);
+      lto_pop_out_decl_state ();
+      lto_record_function_out_decl_state (snode->decl, decl_state);
     }
 
   /* Emit the callgraph after emitting function bodies.  This needs to

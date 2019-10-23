@@ -1,5 +1,12 @@
 2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-streamer-out.c (output_constructor): Push CTORS_OUT timevar.
+	(cmp_symbol_files): New.
+	(lto_output): Copy sections in file order.
+	* lto-streamer.h (lto_file_decl_data): Add field order.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-reference.h (ipa_reference_var_uid): Move offline.
 	* ipa-reference.c (reference_vars_map_t): new type.
 	(ipa_reference_vars_map, ipa_reference_vars_uids): New static vars.

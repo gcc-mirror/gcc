@@ -603,6 +603,9 @@ struct GTY(()) lto_file_decl_data
   /* Linked list used temporarily in reader */
   struct lto_file_decl_data *next;
 
+  /* Order in which the file appears on the command line.  */
+  int order;
+
   /* Sub ID for merged objects. */
   unsigned HOST_WIDE_INT id;
 

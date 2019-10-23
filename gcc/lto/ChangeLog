@@ -1,3 +1,9 @@
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (lto_file_finalize): Add order attribute.
+	(lto_create_files_from_ids): Pass order.
+	(lto_file_read): UPdate call of lto_create_files_from_ids.
+
 2019-10-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-common.c (read_cgraph_and_symbols): Grow ggc memory use after
