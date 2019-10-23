@@ -436,9 +436,7 @@ propagate_bits (ipa_reference_global_vars_info_t x_global, struct cgraph_node *x
 static void
 varpool_removal_hook (varpool_node *node, void *)
 {
-  int *id = ipa_reference_vars_map->get (node->decl)
-  if (id)
-    ipa_reference_vars_map->remove (*id);
+  ipa_reference_vars_map->remove (node->decl);
 }
 
 static bool ipa_init_p = false;
@@ -1291,7 +1289,7 @@ ipa_reference_c_finalize (void)
       ipa_ref_opt_sum_summaries = NULL;
       delete ipa_reference_vars_map;
       ipa_reference_vars_map = NULL;
-      symtab->remove_varpool_removal_hook (varpool_node_hooks)
+      symtab->remove_varpool_removal_hook (varpool_node_hooks);
     }
 
   if (ipa_init_p)

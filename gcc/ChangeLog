@@ -1,5 +1,10 @@
 2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-reference.c (varpool_removal_hook, ipa_reference_c_finalize): Fix
+	previous patch.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-streamer-out.c (output_constructor): Push CTORS_OUT timevar.
 	(cmp_symbol_files): New.
 	(lto_output): Copy sections in file order.
