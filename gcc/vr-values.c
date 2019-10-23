@@ -2102,7 +2102,10 @@ vr_values::range_for_op2 (gimple *stmt, tree type)
       if (TREE_CODE (op2) == SSA_NAME)
 	range_of_ssa_name (r, op2);
       else
-	r = value_range_base (op2, op2);
+	{
+	  r = value_range_base (op2, op2);
+	  r = r.normalize_addresses ();
+	}
       return r;
     }
   return value_range_base (type);
