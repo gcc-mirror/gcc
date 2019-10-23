@@ -1,3 +1,8 @@
+2019-10-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Guard
+	against out of range max skip or log values.
+
 2019-10-22  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraph.c (dump_graphviz): Change name to dump_name
