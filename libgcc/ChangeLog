@@ -1,3 +1,15 @@
+2019-10-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/lib2hw_mul.S: Fix wrong syntax in branch instruction.
+	s/RESULT_LO/RESLO, s/RESULT_HI/RESHI, s/MPY_OP1/MPY, 
+	s/MPY_OP1_S/MPYS, s/MAC_OP1/MAC, s/MPY_OP2/OP2, s/MAC_OP2/OP2.
+	Define symbols for 32-bit and f5series hardware multiply
+	register addresses.
+	Replace hard-coded register addresses with symbols.
+	Fix "_mspabi*" typo.
+	Fix whitespace.
+	* config/msp430/lib2mul.c: Add comment.
+
 2019-10-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/fptr.c (_dl_read_access_allowed): Change argument to
