@@ -6988,7 +6988,6 @@ trees_out::tpl_parm_value (tree parm)
     }
 
   tree type = NULL_TREE;
-  tree tpi = NULL_TREE;
   tree ti = NULL_TREE;
   if (TREE_CODE (inner) == TYPE_DECL)
     {
@@ -7002,7 +7001,6 @@ trees_out::tpl_parm_value (tree parm)
 	  tree_node_bools (type);
 	}
 
-      tpi = TEMPLATE_TYPE_PARM_INDEX (type);
       if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
 	{
 	  ti = TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type);
@@ -7016,8 +7014,6 @@ trees_out::tpl_parm_value (tree parm)
 	    }
 	}
     }
-  else
-    tpi = DECL_INITIAL (inner);
 
   if (inner != parm)
     {
@@ -7029,25 +7025,6 @@ trees_out::tpl_parm_value (tree parm)
       unsigned tpl_levels = 0;
       tpl_header (parm, &tpl_levels);
       tpl_parms_fini (parm, tpl_levels);
-    }
-
-  if (TREE_VISITED (tpi))
-    {
-      /* Non-type parms consist of a PARM_DECL and a CONST_DECL
-	 sharing a single TPI.  We can meet either first.  */
-      ref_node (tpi);
-    }
-  else
-    {
-      int tpi_tag = insert (tpi);
-      if (streaming_p ())
-	{
-	  dump (dumper::TREE) && dump ("Writing template parm index:%d %C:%N",
-				       tpi_tag, TREE_CODE (tpi), tpi);
-	  start (tpi);
-	  tree_node_bools (tpi);
-	}
-      tree_node_vals (tpi);
     }
 
   tree_node_vals (parm);
@@ -7118,21 +7095,6 @@ trees_in::tpl_parm_value ()
       unsigned tpl_levels = 0;
       tpl_header (parm, &tpl_levels);
       tpl_parms_fini (parm, tpl_levels);
-    }
-
-  tree tpi = NULL_TREE;
-  int tpi_ref = i ();
-  if (tpi_ref < 0)
-    tpi = back_ref (tpi_ref);
-  else
-    {
-      tpi = start (tpi_ref);
-      if (!tpi || !tree_node_bools (tpi))
-	return NULL_TREE;
-      int tpi_tag = insert (tpi);
-      dump (dumper::TREE) && dump ("Reading template parm index:%d %C:%N",
-				   tpi_tag, TREE_CODE (tpi), tpi);
-      tree_node_vals (tpi);
     }
 
   tree_node_vals (parm);
@@ -8520,108 +8482,27 @@ trees_out::tree_value (tree t)
   gcc_checking_assert (!TYPE_P (t));
 
   if (DECL_P (t))
-    {
-      /* Clones are recreated upon stream in.  */
-      gcc_checking_assert (!DECL_CLONED_FUNCTION_P (t));
-      /* No template, type, var or function, except template_parms and
-	 anonymous non-context vars.  */
-      gcc_checking_assert (DECL_TEMPLATE_PARM_P (t)
-			   || (TREE_CODE (t) != TEMPLATE_DECL
-			       && TREE_CODE (t) != TYPE_DECL
-			       && (TREE_CODE (t) != VAR_DECL
-				   || (!DECL_NAME (t) && !DECL_CONTEXT (t)))
-			       && TREE_CODE (t) != FUNCTION_DECL));
+    /* No template, type, var or function, except anonymous
+       non-context vars.  */
+    gcc_checking_assert ((TREE_CODE (t) != TEMPLATE_DECL
+			  && TREE_CODE (t) != TYPE_DECL
+			  && (TREE_CODE (t) != VAR_DECL
+			      || (!DECL_NAME (t) && !DECL_CONTEXT (t)))
+			  && TREE_CODE (t) != FUNCTION_DECL));
 
-      gcc_checking_assert (!DECL_TEMPLATE_PARM_P (t));
-    }
-
+  int tag = insert (t, WK_value);
   if (streaming_p ())
     {
       /* A new node -> tt_node.  */
       unique++;
       i (tt_node);
+      dump (dumper::TREE)
+	&& dump ("Writing tree:%d %C:%N", tag, TREE_CODE (t), t);
       start (t);
-
       tree_node_bools (t);
     }
 
-  int tag = insert (t, WK_value);
-  if (streaming_p ())
-    dump (dumper::TREE)
-      && dump ("Writing tree:%d %C:%N%S", tag, TREE_CODE (t), t, t);
-
-  tree inner = t;
-  int inner_tag = 0;
-
-  if (TREE_CODE (t) == TEMPLATE_DECL)
-    {
-      inner = DECL_TEMPLATE_RESULT (t);
-
-      if (streaming_p ())
-	{
-	  start (inner);
-	  tree_node_bools (inner);
-	}
-
-      inner_tag = insert (inner, WK_value);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Writing inner:%d %C:%N%S", inner_tag,
-		   TREE_CODE (inner), inner, inner);
-    }
-
-  tree type = NULL_TREE;
-  int type_tag = 0;
-  if (TREE_CODE (inner) == TYPE_DECL)
-    {
-      type = TREE_TYPE (inner);
-      gcc_checking_assert (t == TYPE_STUB_DECL (type));
-
-      if (streaming_p ())
-	{
-	  start (type);
-	  tree_node_bools (type);
-	}
-
-      type_tag = insert (type, WK_value);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Writing type:%d %C:%N%S", type_tag,
-		   TREE_CODE (type), type, type);
-      gcc_assert (!DECL_ORIGINAL_TYPE (inner));
-    }
-
-  if (inner_tag != 0)
-    {
-      unsigned tpl_levels = 0;
-      tpl_header (t, &tpl_levels);
-
-      tpl_parms_fini (t, tpl_levels);
-
-      tree_node_vals (t);
-    }
-
-  tree_node_vals (inner);
-
-  if (type)
-    tree_node_vals (type);
-
-  if (streaming_p () && DECL_P (inner) && DECL_MAYBE_IN_CHARGE_CDTOR_P (inner))
-    {
-      gcc_unreachable ();
-      bool cloned_p
-	= (DECL_CHAIN (inner) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (inner)));
-      bool needs_vtt_parm_p
-	= (cloned_p && CLASSTYPE_VBASECLASSES (DECL_CONTEXT (inner)));
-      bool omit_inherited_parms_p
-	= (cloned_p && ctor_omit_inherited_parms (inner, false));
-      unsigned flags = (int (cloned_p) << 0
-			| int (needs_vtt_parm_p) << 1
-			| int (omit_inherited_parms_p) << 1);
-      u (flags);
-      dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
-				   t, cloned_p ? "" : "not ");
-    }
+  tree_node_vals (t);
 
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written tree:%d %C:%N", tag, TREE_CODE (t), t);
@@ -8630,116 +8511,32 @@ trees_out::tree_value (tree t)
 tree
 trees_in::tree_value ()
 {
-  int tag = 0;
-
-  tree res = start ();
-  if (res && !tree_node_bools (res))
-    res = NULL_TREE;
+  tree t = start ();
+  if (!t || !tree_node_bools (t))
+    return NULL_TREE;
 
   /* Insert into map.  */
-  tag = insert (res);
-  if (res)
-    dump (dumper::TREE)
-      && dump ("Reading tree:%d %C", tag, TREE_CODE (res));
+  int tag = insert (t);
+  dump (dumper::TREE)
+    && dump ("Reading tree:%d %C", tag, TREE_CODE (t));
 
-  tree inner = res;
-  int inner_tag = 0;
-  if (res && TREE_CODE (res) == TEMPLATE_DECL)
+  if (!tree_node_vals (t))
     {
-      inner = start ();
-      if (inner)
-	{
-	  DECL_TEMPLATE_RESULT (res) = inner;
-
-	  if (!tree_node_bools (inner))
-	    res = NULL_TREE;
-	}
-      else
-	res = NULL_TREE;
-
-      inner_tag = insert (inner);
-      if (res)
-	dump (dumper::TREE)
-	  && dump ("Reading inner:%d %C", inner_tag, TREE_CODE (inner));
-    }
-
-  tree type = NULL_TREE;
-  int type_tag = 0;
-  if (res && TREE_CODE (inner) == TYPE_DECL)
-    {
-      type = start ();
-      if (type)
-	{
-	  TREE_TYPE (inner) = type;
-	  TYPE_NAME (type) = inner;
-
-	  if (!tree_node_bools (type))
-	    res = NULL_TREE;
-	}
-      type_tag = insert (type);
-      if (res)
-	dump (dumper::TREE)
-	  && dump ("Reading type:%d %C", type_tag, TREE_CODE (type));
-    }
-
-  if (!res)
-    {
-    bail:
-      if (inner_tag != 0)
-	back_refs[~inner_tag] = NULL_TREE;
-      if (type_tag != 0)
-	back_refs[~type_tag] = NULL_TREE;
-      if (tag != 0)
-	back_refs[~tag] = NULL_TREE;
+      back_refs[~tag] = NULL_TREE;
       set_overrun ();
       /* Bail.  */
       return NULL_TREE;
     }
 
-  if (inner_tag != 0)
-    {
-      /* A template template parameter.  */
-      unsigned tpl_levels = 0;
-      tpl_header (res, &tpl_levels);
-      tpl_parms_fini (res, tpl_levels);
+  dump (dumper::TREE) && dump ("Read tree:%d %C:%N", tag, TREE_CODE (t), t);
 
-      gcc_checking_assert (DECL_TEMPLATE_RESULT (res) == inner);
-      if (!tree_node_vals (res))
-	goto bail;
+  if (TREE_CODE (t) == INTEGER_CST && !TREE_OVERFLOW (t))
+    {
+      t = cache_integer_cst (t, true);
+      back_refs[~tag] = t;
     }
 
-  if (!tree_node_vals (inner))
-    goto bail;
-
-  if (type)
-    {
-      if (!tree_node_vals (type))
-	goto bail;
-
-      if (back_refs[~type_tag] == type)
-	{
-	  /* This is a new type.  */
-	  gcc_checking_assert (type == TYPE_MAIN_VARIANT (type));
-
-	  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-	      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
-	    TYPE_CANONICAL (type) = canonical_type_parameter (type);
-	}
-    }
-
-  dump (dumper::TREE) && dump ("Read tree:%d %C:%N", tag, TREE_CODE (res), res);
-
-  if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
-    {
-      res = cache_integer_cst (res, true);
-      back_refs[~tag] = res;
-    }
-
-  if (inner_tag)
-    /* Set the TEMPLATE_DECL's type.  */
-    TREE_TYPE (res) = TREE_TYPE (inner);
-
-  return res;
+  return t;
 }
 
 /* Stream out tree node T.  We automatically create local back

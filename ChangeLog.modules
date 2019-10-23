@@ -1,6 +1,11 @@
 2019-10-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::tpl_parm_value): Don't stream tpi
+	here.
+	(trees_{in,out}::tree_value): Strip now-unreachable code.
+
+	gcc/cp/
 	* module.cc (enum tree_tag): Add tt_tpl_parm.
 	(trees_{in,out}::tpl_parm_value): New.
 	(trees_out::add_indirect_tpl_parms): Simpilfy.
