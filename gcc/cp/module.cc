@@ -3868,13 +3868,20 @@ module_mapper *module_mapper::mapper;
 static tree
 get_clone_target (tree decl)
 {
+  tree target;
+
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
       tree res_orig = DECL_CLONED_FUNCTION (DECL_TEMPLATE_RESULT (decl));
-      return DECL_TI_TEMPLATE (res_orig);
+      
+      target = DECL_TI_TEMPLATE (res_orig);
     }
+  else
+    target = DECL_CLONED_FUNCTION (decl);
 
-  return DECL_CLONED_FUNCTION (decl);
+  gcc_checking_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (target));
+
+  return target;
 }
 
 /* Like FOR_EACH_CLONE, but will walk cloned templates.  */
@@ -6820,7 +6827,11 @@ trees_in::back_ref (int tag)
   if (tag < 0 && unsigned (~tag) < back_refs.length ())
     res = back_refs[~tag];
 
-  if (!res)
+  if (!res
+      /* Checking TREE_CODE is a dereference, so we know this is not a
+	 wild pointer.  Checking the code provides evidence we've not
+	 corrupted something.  */
+      || TREE_CODE (res) >= MAX_TREE_CODES)
     set_overrun ();
   else
     dump (dumper::TREE) && dump ("Read backref:%d found %C:%N%S", tag,
@@ -9191,14 +9202,17 @@ trees_in::tree_node ()
       {
 	tree target = tree_node ();
 	tree name = tree_node ();
-	tree clone;
 
-	FOR_EVERY_CLONE (clone, target)
-	  if (DECL_NAME (clone) == name)
-	    {
-	      res = clone;
-	      break;
-	    }
+	if (DECL_P (target) && DECL_MAYBE_IN_CHARGE_CDTOR_P (target))
+	  {
+	    tree clone;
+	    FOR_EVERY_CLONE (clone, target)
+	      if (DECL_NAME (clone) == name)
+		{
+		  res = clone;
+		  break;
+		}
+	  }
 
 	if (!res)
 	  set_overrun ();
@@ -17592,6 +17606,10 @@ bool
 module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 {
   unsigned n = dump.push (this);
+  
+  /* Stop GC happening, even in outermost loads (because our caller
+     could well be building up a lookup set).  */
+  function_depth++;
 
   unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
@@ -17612,6 +17630,8 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
       from ()->set_error (e);
       *mslot = NULL_TREE;
     }
+
+  function_depth--;
 
   bool ok = check_read (diags, ns, id);
   gcc_assert (ok || !outermost);
