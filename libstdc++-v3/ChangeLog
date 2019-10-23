@@ -1,5 +1,8 @@
 2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/throw_allocator.h (throw_allocator_base): Qualify
+	size_t and ptrdiff_t.
+
 	* include/ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp:
 	Use detail::rebind_traits.
 	* include/ext/pb_ds/detail/bin_search_tree_/node_iterators.hpp:
