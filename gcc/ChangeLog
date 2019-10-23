@@ -1,3 +1,11 @@
+2019-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90231
+	* tree-ssa-loop-ivopts.c (get_debug_computation_at): New function.
+	(remove_unused_ivs): Use it instead of get_computation_at.  When
+	choosing best candidate, only consider candidates where
+	get_debug_computation_at actually returns non-NULL.
+
 2019-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/92131
