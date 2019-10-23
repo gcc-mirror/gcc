@@ -1,6 +1,11 @@
 2019-10-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum ct_decl_flags): Add cdf_is_defn.
+	(module_state::{read,write}_cluster): Don't stream definitions
+	separately.
+
+	gcc/cp/
 	* module.cc (get_clone_target): Assert more.
 	(trees_in::back_ref): Check the tree's not insane.
 	(trees_in::tree_node): Check the clone target is ok.

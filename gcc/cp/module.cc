@@ -13650,9 +13650,10 @@ enum cluster_tag {
 /* Declaration modifiers.  */
 enum ct_decl_flags 
 {
-  cdf_is_voldemort = 0x1,	/* Is a voldemort.  */
-  cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
-  cdf_is_partial = 0x4		/* A partial specialization.  */
+  cdf_is_defn = 0x1,		/* Has a definition.  */
+  cdf_is_voldemort = 0x2,	/* Is a voldemort.  */
+  cdf_is_specialization = 0x4,  /* Some kind of specialization.  */
+  cdf_is_partial = 0x8		/* A partial specialization.  */
 };
 
 /* Binding modifiers.  */
@@ -13924,46 +13925,31 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      if (b->is_binding ())
-	continue;
-
-      tree decl = b->get_entity ();
-      dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
-		       TREE_CODE (decl), decl);
-
-      unsigned flags = 0;
-      switch (b->get_entity_kind ())
+      if (b->get_entity_kind () == depset::EK_DECL)
 	{
-	default:
-	  break;
+	  tree decl = b->get_entity ();
+	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
+			   TREE_CODE (decl), decl);
 
-	case depset::EK_SPECIALIZATION:
-	  flags |= cdf_is_specialization;
-	  if (b->is_partial ())
-	    flags |= cdf_is_partial;
-	  /* FALLTHROUGH.  */
-
-	case depset::EK_DECL:
-	case depset::EK_UNNAMED:
 	  sec.u (ct_decl);
 	  sec.tree_node (decl);
 	  dump () && dump ("Wrote declaration of %N", decl);
 
-	  if (b->cluster)
-	    flags |= cdf_is_voldemort;
-	  sec.u (flags);
-
-	  if (flags & cdf_is_voldemort)
-	    {
-	      dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
-	      sec.u (b->cluster - 1);
-	    }
+	  sec.u (0);
 
 	  /* Is this a good enough human name?  */
-	  if (b->get_entity_kind () != depset::EK_UNNAMED)
-	    if (!namer)
+	  if (!namer)
+	    namer = b;
+
+	  if (b->has_defn ())
+	    {
+	      sec.u (ct_defn);
+	      sec.tree_node (decl);
+	      dump () && dump ("Writing definition of %N", decl);
+	      sec.write_definition (decl);
+
 	      namer = b;
-	  break;
+	    }
 	}
     }
 
@@ -13974,6 +13960,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     {
       depset *b = scc[ix];
       tree decl = b->get_entity ();
+      int flags = 0;
       switch (b->get_entity_kind ())
 	{
 	default:
@@ -14026,12 +14013,40 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  }
 	  break;
 
+	case depset::EK_USING:
+	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
+			   TREE_CODE (decl), decl);
+	  break;
+
 	case depset::EK_SPECIALIZATION:
-	case depset::EK_DECL:
+	  flags |= cdf_is_specialization;
+	  if (b->is_partial ())
+	    flags |= cdf_is_partial;
+	  /* FALLTHROUGH.  */
+
 	case depset::EK_UNNAMED:
+	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
+			   TREE_CODE (decl), decl);
+
+	  sec.u (ct_decl);
+	  sec.tree_node (decl);
+	  dump () && dump ("Wrote declaration of %N", decl);
+
+	  if (b->cluster)
+	    flags |= cdf_is_voldemort;
+	  sec.u (flags);
+
+	  if (flags & cdf_is_voldemort)
+	    {
+	      dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
+	      sec.u (b->cluster - 1);
+	    }
+
+	  if (!namer)
+	    namer = b;
+
 	  if (b->has_defn ())
 	    {
-	      tree decl = b->get_entity ();
 	      sec.u (ct_defn);
 	      sec.tree_node (decl);
 	      dump () && dump ("Writing definition of %N", decl);
