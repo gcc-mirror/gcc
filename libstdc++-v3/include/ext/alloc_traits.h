@@ -132,6 +132,11 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     allocate(_Alloc& __a, size_type __n)
     { return __a.allocate(__n); }
 
+    template<typename _Hint>
+      _GLIBCXX_NODISCARD static pointer
+      allocate(_Alloc& __a, size_type __n, _Hint __hint)
+      { return __a.allocate(__n, __hint); }
+
     static void deallocate(_Alloc& __a, pointer __p, size_type __n)
     { __a.deallocate(__p, __n); }
 

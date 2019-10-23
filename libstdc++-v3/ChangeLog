@@ -1,3 +1,25 @@
+2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/backward/hash_set (hash_set): Use __alloc_traits.
+	* include/backward/hashtable.h (_Hashtable): Likewise.
+	* include/ext/alloc_traits.h (__alloc_traits::allocate): Add overload
+	taking a hint.
+	* include/ext/extptr_allocator.h (_ExtPtr_allocator::allocate): Ignore
+	hint.
+	* include/ext/slist (_Slist_base): Use __alloc_traits.
+	* include/tr1/hashtable.h (_Hashtable): Likewise.
+	* include/tr1/regex (match_results): Use vector::const_reference
+	instead of assuming the allocator defines it.
+	* testsuite/backward/hash_map/23528.cc: Use allocator_traits in C++11.
+	* testsuite/tr1/6_containers/unordered_map/capacity/29134-map.cc: Use
+	__gnu_test::max_size.
+	* testsuite/tr1/6_containers/unordered_multimap/capacity/
+	29134-multimap.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/capacity/
+	29134-multiset.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/capacity/29134-set.cc:
+	Likewise.
+
 2019-10-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_abi.h: Restore use of tr1/unordered_map
