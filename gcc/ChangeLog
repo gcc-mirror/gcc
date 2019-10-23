@@ -1,3 +1,15 @@
+2019-10-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430-protos.h (msp430_has_hwmult): New.
+	* config/msp430/msp430.c (msp430_no_hwmult): Remove.
+	(msp430_has_hwmult): New.
+	(msp430_output_labelref):
+	s/msp430_hwmult_type != MSP430_HWMULT_NONE/msp430_has_hwmult ()/
+	* config/msp430/msp430.md (mulhisi3): Likewise.
+	(umulhisi3): Likewise.
+	(mulsidi3): Likewise.
+	(umulsidi3): Likewise.
+
 2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/92074
