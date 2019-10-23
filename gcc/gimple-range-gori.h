@@ -152,15 +152,15 @@ public:
 protected:
   virtual void range_of_ssa_name (value_range_base &, tree name,
 				  gimple *s = NULL);
+  bool compute_operand_range (value_range_base &r, gimple *s,
+			      const value_range_base &lhs,
+			      tree name,
+			      const value_range_base *name_range = NULL);
   bool has_edge_range_p (edge e, tree name);
   gori_map m_gori_map;
 private:
   value_range_base get_tree_range (tree expr, tree name,
 				   const value_range_base *range_of_name);
-  bool compute_operand_range (value_range_base &r, gimple *s,
-			      const value_range_base &lhs,
-			      tree name,
-			      const value_range_base *name_range = NULL);
   bool compute_operand_range_switch (value_range_base &r, gswitch *s,
 				     const value_range_base &lhs,
 				     tree name,

@@ -22,6 +22,18 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gimple-range-gori.h"
 
+class equivalence_iterator
+{
+public:
+  equivalence_iterator (tree name, const value_range *,
+			const vec<assert_info> &);
+  tree next (void);
+private:
+  bitmap m_bitmap;
+  bitmap_iterator m_bitmap_iter;
+  unsigned int m_index;
+};
+
 /* The VR_VALUES class holds the current view of range information
    for all the SSA_NAMEs in the IL.
 
@@ -77,8 +89,22 @@ class vr_values : public gori_compute
   /* */
   void cleanup_edges_and_switches (void);
 
+  bool outgoing_edge_range_p (value_range_base &, edge, tree name,
+			      const value_range_base *name_range = NULL);
+  void save_equivalences (equivalence_iterator *);
  private:
-  void range_of_ssa_name (value_range_base &r, tree op, gimple *stmt);
+  void range_of_ssa_name (value_range_base &r, tree op, gimple * = NULL);
+  equivalence_iterator *m_equivalences;
+  bool outgoing_edge_range_with_equivalences_p (value_range_base &,
+						edge, tree name);
+  bool solve_equiv_at_statement (value_range_base &,
+				 tree, gimple *stmt,
+				 const value_range_base &);
+  bool solve_name_given_equivalence (value_range_base &r,
+				     tree name, tree equiv,
+				     const value_range_base &equiv_range);
+  value_range_base range_for_op2 (gimple *, tree type);
+
   value_range *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);

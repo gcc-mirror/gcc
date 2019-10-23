@@ -236,11 +236,16 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      tree name;
 	      value_range_base vr_new;
 	      const value_range *name_range;
-	      // Calculate the same range with GORI.
 	      name = asserts[i].name;
 	      name_range = get_value_range (name);
-	      vr_values->outgoing_edge_range_p (vr_new, pred_e, name,
-						name_range);
+
+	      equivalence_iterator iter (name, name_range, asserts);
+	      vr_values->save_equivalences (&iter);
+
+	      // Calculate the same range with GORI.
+	      if (!vr_values->outgoing_edge_range_p (vr_new, pred_e, name,
+						     name_range))
+		vr_new.set_undefined ();
 
 	      value_range *vr = try_find_new_range (asserts[i].name,
 						    asserts[i].expr,

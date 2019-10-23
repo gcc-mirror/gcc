@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "cfghooks.h"
 #include "range-op.h"
+#include "gimple-range.h"
 
 /* Set value range VR to a non-negative range of type TYPE.  */
 
@@ -1954,6 +1955,157 @@ vr_values::dump_all_value_ranges (FILE *file)
   fprintf (file, "\n");
   fprintf (file, "GORI map:\n");
   m_gori_map.dump (file);
+}
+
+equivalence_iterator::equivalence_iterator (tree name,
+					    const value_range *vr,
+					    const vec<assert_info> &asserts)
+{
+  // ?? Copy known equivalences, though I'm not convinced adding these
+  // makes any difference.
+  m_bitmap = BITMAP_ALLOC (NULL);
+  if (vr && vr->equiv ())
+    bitmap_copy (m_bitmap, vr->equiv ());
+
+  // Add in the assert relationships as equivalences.
+  for (unsigned i = 0; i < asserts.length (); ++i)
+    {
+      tree assert_name = asserts[i].name;
+      bitmap_set_bit (m_bitmap, SSA_NAME_VERSION (assert_name));
+    }
+
+  m_index = 0;
+  bitmap_clear_bit (m_bitmap, SSA_NAME_VERSION (name));
+  bmp_iter_set_init (&m_bitmap_iter, m_bitmap, 0, &m_index);
+}
+
+tree
+equivalence_iterator::next (void)
+{
+  if (bmp_iter_set (&m_bitmap_iter, &m_index))
+    {
+      tree equiv = ssa_name (m_index);
+      bmp_iter_next (&m_bitmap_iter, &m_index);
+      return equiv;
+    }
+  return NULL;
+}
+
+void
+vr_values::save_equivalences (equivalence_iterator *iter)
+{
+  m_equivalences = iter;
+}
+
+// Calculate a range on edge E and return it in R.  Try to evaluate a
+// range for NAME on this edge.  Return FALSE if this is either not a
+// control edge or NAME is not defined by this edge.
+
+bool
+vr_values::outgoing_edge_range_p (value_range_base &r, edge e, tree name,
+				  const value_range_base *name_range)
+{
+  if (gori_compute::outgoing_edge_range_p (r, e, name, name_range)
+      && !r.varying_p ())
+    return true;
+
+  return outgoing_edge_range_with_equivalences_p (r, e, name);
+}
+
+bool
+vr_values::outgoing_edge_range_with_equivalences_p
+				(value_range_base &r,
+				 edge e, tree name)
+{
+  value_range_base branch_range;
+  gimple *stmt = gimple_outgoing_edge_range_p (branch_range, e);
+  if (!stmt)
+    return false;
+
+  r.set_varying (TREE_TYPE (name));
+
+  // Use any equivalence that can help us solve for NAME, to refine
+  // the final range.
+  tree equiv;
+  while ((equiv = m_equivalences->next ()) != NULL)
+    {
+      if (!m_gori_map.is_export_p (equiv, e->src))
+	continue;
+
+      value_range_base equiv_range, tmp;
+      if (solve_equiv_at_statement (equiv_range, equiv, stmt, branch_range)
+	  // Try to solve conditional again with our new knowledge.
+	  && (solve_equiv_at_statement (tmp, name, stmt, branch_range)
+	      // If that doesn't work...then try with the USE/DEF
+	      // chain of the equivalence.
+	      || solve_name_given_equivalence (tmp, name, equiv, equiv_range))
+	  && !tmp.undefined_p ()
+	  && !tmp.varying_p ())
+	{
+	  tree name_type = TREE_TYPE (name);
+	  tree equiv_type = tmp.type ();
+
+	  if (equiv_type == name_type)
+	    r.intersect (tmp);
+	  else if (TYPE_PRECISION (equiv_type) == TYPE_PRECISION (name_type))
+	    {
+	      range_cast (tmp, name_type);
+	      r.intersect (tmp);
+	    }
+	}
+    }
+  return !r.varying_p ();
+}
+
+bool
+vr_values::solve_equiv_at_statement (value_range_base &r,
+				     tree name, gimple *stmt,
+				     const value_range_base &lhs)
+{
+  value_range_base known_range_of_name;
+  range_of_ssa_name (known_range_of_name, name);
+  return compute_operand_range (r, stmt, lhs, name, &known_range_of_name);
+}
+
+bool
+vr_values::solve_name_given_equivalence (value_range_base &r,
+					 tree name,
+					 tree equiv,
+					 const value_range_base &equiv_range)
+{
+  // Solve NAME in EQUIV = USE(NAME).
+  gimple *def = SSA_NAME_DEF_STMT (equiv);
+  if (gimple_range_handler (def) && gimple_range_operand1 (def) == name)
+    {
+      tree op2_type = TREE_TYPE (gimple_range_operand1 (def));
+      value_range_base op2_range = range_for_op2 (def, op2_type);
+      return gimple_range_calc_op1 (def, r, equiv_range, op2_range);
+    }
+  // Solve NAME in NAME = USE(EQUIV).
+  def =  SSA_NAME_DEF_STMT (name);
+  if (gimple_range_handler (def) && gimple_range_operand1 (def) == equiv)
+    {
+      tree op2_type = gimple_expr_type (def);
+      value_range_base op2_range = range_for_op2 (def, op2_type);
+      return gimple_range_fold (def, r, equiv_range, op2_range);
+    }
+  return false;
+}
+
+value_range_base
+vr_values::range_for_op2 (gimple *stmt, tree type)
+{
+  tree op2 = gimple_assign_rhs2 (stmt);
+  if (op2)
+    {
+      value_range_base r;
+      if (TREE_CODE (op2) == SSA_NAME)
+	range_of_ssa_name (r, op2);
+      else
+	r = value_range_base (op2, op2);
+      return r;
+    }
+  return value_range_base (type);
 }
 
 /* Initialize VRP lattice.  */
