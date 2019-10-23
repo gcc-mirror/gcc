@@ -1,5 +1,8 @@
 2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/helper_functions.h (__valid_range): Change
+	_GLIBCXX_CONSTEXPR to _GLIBCXX14_CONSTEXPR.
+
 	* include/ext/throw_allocator.h (throw_allocator_base): Qualify
 	size_t and ptrdiff_t.
 
