@@ -1,3 +1,9 @@
+2019-10-23  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/81669
+	* fibonacci_heap.h (fibonacci_node::fibonacci_node):
+	Initialize m_data.
+
 2019-10-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Use
