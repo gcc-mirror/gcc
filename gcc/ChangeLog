@@ -1,5 +1,28 @@
 2019-10-23  Michael Meissner  <meissner@linux.ibm.com>
 
+	* config/rs6000/rs6000-protos.h (rs6000_adjust_insn_length): New
+	declaration.
+	* config/rs6000/rs6000.c (rs6000_insn_cost): Use num_insns insn
+	attribute if it exists, rather than the insn size.  If we use the
+	insn size, adjust the size to remove the extra size that prefixed
+	instructions take.
+	(rs6000_adjust_insn_length): New function.
+	* config/rs6000/rs6000.h (ADJUST_INSN_LENGTH): New target hook to
+	update the instruction sized if prefixed instructions are used.
+	* config/rs6000/rs6000.md (prefixed_length attribute): Delete.
+	(non_prefixed_length attribute): Delete.
+	(num_insns attribute): New insn attribute to return the number of
+	instructions.
+	(max_prefixed_insns attribute): New insn attribute to return the
+	maximum number of prefixed instructions in an insn.
+	(length attribute): Do not adjust for prefix instructions here,
+	punt to ADJUST_INSN_LENGTH.
+	(mov<mode>_64bit): Set max_prefixed_insns and num_insns.
+	(movtd_64bit_nodm): Set max_prefixed_insns and num_insns.
+	(mov<mode>_ppc64): Set max_prefixed_insns and num_insns.
+	* config/rs6000/vsx.md: (vsx_mov<mode>_64bit): Set
+	max_prefixed_insns and num_insns.
+
 	* config/rs6000/rs6000.md (mov<mode>_64bit_dm): Reformat.
 	(movtd_64bit_nodm): Reformat.
 	(mov<mode>_32bit): Reformat.
