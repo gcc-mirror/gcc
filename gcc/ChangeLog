@@ -1,3 +1,16 @@
+2019-10-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (mov<mode>_64bit_dm): Reformat.
+	(movtd_64bit_nodm): Reformat.
+	(mov<mode>_32bit): Reformat.
+	(mov<mode>_softfloat): Reformat.
+	(FMOVE128_GPR splitter): Reformat.
+	(DIFD splitter): Reformat.
+	(TI2 splitter): Reformat.
+	* config/rs6000/predicates.md (lwa_operand): If the bottom two
+	bits of the offset for the memory address are non-zero, use PLWA
+	if prefixed instructions are available.
+
 2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (cmp_symbol_files): Watch for overflow.
