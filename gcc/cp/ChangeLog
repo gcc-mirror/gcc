@@ -126,6 +126,12 @@
 	* decl.c (cxx_maybe_build_cleanup): When clearing location of cleanup,
 	if cleanup is a nop, clear location of its operand too.
 
+2019-10-15  Andrew Sutton  <asutton@lock3software.com>
+
+	* parser.c (cp_parser_constructor_declarator_p): Pass an empty
+	decl-specifier-seq to make sure we parse type constraints as part
+	of a type-specifier.
+
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (build_clones): Break out of clone_function_decl.  Just
