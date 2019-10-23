@@ -28336,11 +28336,19 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
 	     looking for the type-specifier.  It is actually a function named
 	     `T::fn' that takes one parameter (of type `int') and returns a
 	     value of type `S'.  Constructors can be friends, but they must
-	     use a qualified name.  */
+	     use a qualified name.
+
+	     Parse with an empty set of declaration specifiers since we're
+	     trying to match a decl-specifier-seq of the first parameter.  
+	     This must be non-null so that cp_parser_simple_type_specifier
+	     will recognize a constrained placeholder type such as:
+	     'C<int> auto' where C is a type concept.  */
+	  cp_decl_specifier_seq ctor_specs;
+	  clear_decl_specs (&ctor_specs);
 	  cp_parser_type_specifier (parser,
 				    (friend_p ? CP_PARSER_FLAGS_NONE
 				     : (flags & ~CP_PARSER_FLAGS_OPTIONAL)),
-				    /*decl_specs=*/NULL,
+				    /*decl_specs=*/&ctor_specs,
 				    /*is_declarator=*/true,
 				    /*declares_class_or_enum=*/NULL,
 				    /*is_cv_qualifier=*/NULL);
