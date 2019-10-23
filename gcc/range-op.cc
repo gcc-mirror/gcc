@@ -1357,6 +1357,9 @@ public:
   virtual value_range_base fold_range (tree type,
 				       const value_range_base &op1,
 				       const value_range_base &op2) const;
+  virtual bool op1_range (value_range_base &, tree type,
+			  const value_range_base &lhs,
+			  const value_range_base &op2) const;
 
   virtual value_range_base wi_fold (tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
@@ -1477,6 +1480,47 @@ operator_lshift::wi_op_overflows (wide_int &res,
   return false;
 }
 
+bool
+operator_lshift::op1_range (value_range_base &r,
+			    tree type,
+			    const value_range_base &lhs,
+			    const value_range_base &op2) const
+{
+  tree shift_amount;
+  if (op2.singleton_p (&shift_amount))
+    {
+      value_range_base shifted (shift_amount, shift_amount), ub, lb;
+      const range_operator *rshift_op = range_op_handler (RSHIFT_EXPR, type);
+      ub = rshift_op->fold_range (type, lhs, shifted);
+      if (TYPE_UNSIGNED (type))
+	{
+	  r = ub;
+	  return true;
+	}
+      // For signed types, we can't just do an arithmetic rshift,
+      // because that will propagate the sign bit.
+      //
+      //  LHS
+      // 1110 = OP1 << 1
+      //
+      // Assuming a 4-bit signed integer, a right shift will result in
+      // OP1=1111, but OP1 could have also been 0111.  What we want is
+      // a range from 0111 to 1111.  That is, a range from the logical
+      // rshift (0111) to the arithmetic rshift (1111).
+      //
+      // Perform a logical rshift by doing the rshift as unsigned.
+      tree unsigned_type = make_unsigned_type (TYPE_PRECISION (type));
+      value_range_base unsigned_lhs = lhs;
+      range_cast (unsigned_lhs, unsigned_type);
+      rshift_op = range_op_handler (RSHIFT_EXPR, unsigned_type);
+      lb = rshift_op->fold_range (unsigned_type, unsigned_lhs, shifted);
+      range_cast (lb, type);
+      r = range_union (lb, ub);
+      return true;
+    }
+  return false;
+}
+
 
 class operator_rshift : public cross_product_operator
 {
@@ -1491,7 +1535,45 @@ public:
 				tree type,
 				const wide_int &w0,
 				const wide_int &w1) const;
+  virtual bool op1_range (value_range_base &, tree type,
+			  const value_range_base &lhs,
+			  const value_range_base &op2) const;
 } op_rshift;
+
+bool
+operator_rshift::op1_range (value_range_base &r,
+			    tree type,
+			    const value_range_base &lhs,
+			    const value_range_base &op2) const
+{
+  tree shift_amount;
+  if (op2.singleton_p (&shift_amount))
+    {
+      value_range_base shifted (shift_amount, shift_amount);
+      value_range_base lb, ub;
+      lb = range_op_handler (LSHIFT_EXPR, type)->fold_range (type, lhs,
+							     shifted);
+      //    LHS
+      // 0000 0111 = OP1 >> 3
+      //
+      // Assuming an 8-bit integer, OP1 is anything from 0011 1000 to
+      // 0011 1111.  That is, a range from LHS<<3 plus a mask of the 3
+      // bits we shifted on the right hand side (0x07).
+      //
+      // MASK = (1 << SHIFT) - 1
+      tree mask = fold_build2 (MINUS_EXPR, type,
+			       fold_build2 (LSHIFT_EXPR, type,
+					    build_one_cst (op2.type ()),
+					    shift_amount),
+			       build_one_cst (type));
+      value_range_base mask_range (build_zero_cst (type), mask);
+      ub = range_op_handler (PLUS_EXPR, type)->fold_range (type, lb,
+							   mask_range);
+      r = range_union (lb, ub);
+      return true;
+    }
+  return false;
+}
 
 bool
 operator_rshift::wi_op_overflows (wide_int &res,
