@@ -1,6 +1,15 @@
 2019-10-23  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91885
+	* gcc.dg/pr91885.c (__int64_t): Change from long to long long.
+	(__uint64_t): Change from unsigned long to unsigned long long.
+
+2019-10-23  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2019-09-26  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/91885
