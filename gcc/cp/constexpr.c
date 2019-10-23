@@ -4988,14 +4988,20 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					  non_constant_p, overflow_p,
 					  jump_target);
 	if (!CLEANUP_EH_ONLY (t) && !*non_constant_p)
-	  /* Also evaluate the cleanup.  If we weren't skipping at the
-	     start of the CLEANUP_BODY, change jump_target temporarily
-	     to &initial_jump_target, so that even a return or break or
-	     continue in the body doesn't skip the cleanup.  */
-	  cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
-					non_constant_p, overflow_p,
-					jump_target ? &initial_jump_target
-					: NULL);
+	  {
+	    location_t loc = input_location;
+	    if (EXPR_HAS_LOCATION (t))
+	      input_location = EXPR_LOCATION (t);
+	    /* Also evaluate the cleanup.  If we weren't skipping at the
+	       start of the CLEANUP_BODY, change jump_target temporarily
+	       to &initial_jump_target, so that even a return or break or
+	       continue in the body doesn't skip the cleanup.  */
+	    cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
+					  non_constant_p, overflow_p,
+					  jump_target ? &initial_jump_target
+					  : NULL);
+	    input_location = loc;
+	  }
       }
       break;
 
