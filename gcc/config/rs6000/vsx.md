@@ -1149,6 +1149,14 @@
                "vecstore,  vecload,   vecsimple, mffgpr,    mftgpr,    load,
                 store,     load,      store,     *,         vecsimple, vecsimple,
                 vecsimple, *,         *,         vecstore,  vecload")
+   (set_attr "num_insns"
+               "*,         *,         *,         2,         *,         2,
+                2,         2,         2,         2,         *,         *,
+                *,         5,         2,         *,         *")
+   (set_attr "max_prefixed_insns"
+               "*,         *,         *,         *,         *,         2,
+                2,         2,         2,         2,         *,         *,
+                *,         *,         *,         *,         *")
    (set_attr "length"
                "*,         *,         *,         8,         *,         8,
                 8,         8,         8,         8,         *,         *,
