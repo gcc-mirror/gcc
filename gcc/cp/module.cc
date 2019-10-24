@@ -6999,7 +6999,6 @@ trees_out::tpl_parm_value (tree parm)
     }
 
   tree type = NULL_TREE;
-  tree ti = NULL_TREE;
   if (TREE_CODE (inner) == TYPE_DECL)
     {
       type = TREE_TYPE (inner);
@@ -7010,19 +7009,6 @@ trees_out::tpl_parm_value (tree parm)
 				       type_tag, TREE_CODE (type), type);
 	  start (type);
 	  tree_node_bools (type);
-	}
-
-      if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
-	{
-	  ti = TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type);
-	  int ti_tag = insert (ti);
-	  if (streaming_p ())
-	    {
-	      dump (dumper::TREE) && dump ("Writing template parm ti:%d %C:%N",
-					   ti_tag, TREE_CODE (ti), ti);
-	      start (ti);
-	      tree_node_bools (ti);
-	    }
 	}
     }
 
@@ -7043,8 +7029,6 @@ trees_out::tpl_parm_value (tree parm)
     tree_node_vals (inner);
   if (type)
     tree_node_vals (type);
-  if (ti)
-    tree_node_vals (ti);
 
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Wrote template parm:%d %C:%N",
@@ -7075,7 +7059,6 @@ trees_in::tpl_parm_value ()
     }
 
   tree type = NULL_TREE;
-  tree ti = NULL_TREE;
   if (TREE_CODE (inner) == TYPE_DECL)
     {
       type = start ();
@@ -7087,17 +7070,6 @@ trees_in::tpl_parm_value ()
 
       TREE_TYPE (inner) = TREE_TYPE (parm) = type;
       TYPE_NAME (type) = parm;
-
-      if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
-	{
-	  ti = start ();
-	  if (!ti || !tree_node_bools (ti))
-	    return NULL_TREE;
-	  int ti_tag = insert (ti);
-	  dump (dumper::TREE) && dump ("Reading template parm ti:%d %C:%N",
-				       ti_tag, TREE_CODE (ti), ti);
-	  TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type) = ti;
-	}
     }
 
   if (inner != parm)
@@ -7112,11 +7084,10 @@ trees_in::tpl_parm_value ()
   if (inner != parm)
     tree_node_vals (inner);
   if (type)
-    tree_node_vals (type);
-  if (ti)
-    tree_node_vals (ti);
-  else if (type)
-    TYPE_CANONICAL (type) = canonical_type_parameter (type);
+    {
+      tree_node_vals (type);
+      TYPE_CANONICAL (type) = canonical_type_parameter (type);
+    }
 
   dump (dumper::TREE) && dump ("Read template parm:%d %C:%N",
 			       parm_tag, TREE_CODE (parm), parm);
@@ -9671,11 +9642,15 @@ trees_out::get_merge_kind (depset *dep)
 	{
 	  tree type = TREE_TYPE (decl);
 
-	  if (TYPE_NAME (type) != decl)
+	  if (TYPE_WAS_UNNAMED (type))
 	    /* Got a type name for linkage purposes.  */
 	    mk = MK_linkage;
-	  else if (TYPE_ANON_P (type))
-	    mk = MK_enum;
+	  else
+	    {
+	      gcc_checking_assert (TREE_CODE (type) == ENUMERAL_TYPE
+				   && TYPE_VALUES (type));
+	      mk = MK_enum;
+	    }
 	}
       break;
 
