@@ -1,6 +1,15 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/invoke/1.cc: Add more tests.
+	Move C++17-specific tests to ...
+	* testsuite/20_util/function_objects/invoke/3.cc: New test.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Change
+	"compile" test to "run".
+
+	Backport from mainline
 	2019-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/Makefile.am (doc-html-docbook-regenerate): New target.
