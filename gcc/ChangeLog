@@ -1,3 +1,11 @@
+2019-10-24  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	Backport from mainline
+	2019-10-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/t-multilib: Add new multilib variants and new
+	mappings.
+
 2019-10-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Guard
