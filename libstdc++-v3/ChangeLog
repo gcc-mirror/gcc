@@ -1,6 +1,11 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-05-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Move hoard.org back to http.
+
+	Backport from mainline
 	2019-08-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91456
