@@ -1,3 +1,10 @@
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_context_selector_matches): Remove.
+	* c-omp.c (c_omp_context_selector_matches): Remove.
+	* c-attribs.c (c_common_attribute_table): Add
+	"omp declare target {host,nohost,block}" attributes.
+
 2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
 
 	* c-lex.c (c_common_has_attribute): Update nodiscard value.

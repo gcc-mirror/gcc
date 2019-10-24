@@ -1,5 +1,17 @@
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimplify.h (omp_construct_selector_matches): Declare.
+	* gimplify.c (struct gimplify_omp_ctx): Add code member.
+	(gimplify_call_expr): Call omp_resolve_declare_variant and remap
+	called function if needed for flag_openmp.
+	(gimplify_scan_omp_clauses): Set ctx->code.
+	(omp_construct_selector_matches): New function.
+	* omp-general.h (omp_constructor_traits_to_codes,
+	omp_context_selector_matches, omp_resolve_declare_variant): Declare.
+	* omp-general.c (omp_constructor_traits_to_codes,
+	omp_context_selector_matches, omp_resolve_declare_variant): New
+	functions.
+
 	* config/arc/arc.c (hwloop_optimize): Add missing space in string
 	literal.
 	* config/rx/rx.c (rx_print_operand): Likewise.

@@ -19489,7 +19489,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  C_DECL_USED (variant) = 1;
 	  tree construct = c_omp_get_context_selector (ctx, "construct", NULL);
 	  c_omp_mark_declare_variant (match_loc, variant, construct);
-	  if (c_omp_context_selector_matches (ctx))
+	  if (omp_context_selector_matches (ctx))
 	    {
 	      tree attr
 		= tree_cons (get_identifier ("omp declare variant base"),
