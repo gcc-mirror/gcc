@@ -1,3 +1,14 @@
+2019-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_get_thread_pointer): Use
+	gen_get_thread_pointer.
+	(s390_expand_split_stack_prologue): Likewise.
+	* config/s390/s390.md (UNSPEC_GET_TP): New UNSPEC.
+	(*get_tp_31): New 31-bit splitter for UNSPEC_GET_TP.
+	(*get_tp_64): New 64-bit splitter for UNSPEC_GET_TP.
+	(get_thread_pointer<mode>): Use UNSPEC_GET_TP, use
+	parameterized name.
+
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_analyze_slp): When reduction group

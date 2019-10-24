@@ -1,3 +1,7 @@
+2019-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/load-thread-pointer-once-2.c: New test.
+
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/slp-reduc-9.c: New testcase.
