@@ -23,7 +23,7 @@
 
 #ifndef __cpp_lib_bind_front
 # error "Feature test macro for bind_front is missing"
-#elif __cpp_lib_bind_front < 201811L
+#elif __cpp_lib_bind_front < 201902L
 # error "Feature test macro for bind_front has wrong value"
 #endif
 

@@ -1,6 +1,16 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	P1651R0 bind_front should not unwrap reference_wrapper
+	* include/std/functional (bind_front): Don't unwrap reference_wrapper.
+	* include/std/version (__cpp_lib_bind_front): Update value.
+	* testsuite/20_util/function_objects/bind_front/1.cc: Fix test for
+	feature test macro.
+	* testsuite/20_util/function_objects/bind_front/2.cc: New test.
+
+	Backport from mainline
 	2019-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/92059
