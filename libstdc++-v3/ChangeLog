@@ -1,6 +1,15 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_nothrow_invocable/value.cc: Test converting to
+	void.
+	* testsuite/experimental/names.cc: Do not run for C++98 mode. Do not
+	include Library Fundamentals or Networking headers in C++11 mode.
+	* testsuite/ext/char8_t/atomic-1.cc: Do not run for C++98 mode.
+
+	Backport from mainline
 	2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (memory_resource)
