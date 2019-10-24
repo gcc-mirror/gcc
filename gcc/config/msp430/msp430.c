@@ -332,28 +332,9 @@ msp430_hard_regno_nregs (unsigned int, machine_mode mode)
 	  / UNITS_PER_WORD);
 }
 
-/* Implements HARD_REGNO_NREGS_HAS_PADDING.  */
-int
-msp430_hard_regno_nregs_has_padding (int regno ATTRIBUTE_UNUSED,
-				     machine_mode mode)
-{
-  if (mode == PSImode && msp430x)
-    return 1;
-  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
-	  / UNITS_PER_WORD);
-}
-
-/* Implements HARD_REGNO_NREGS_WITH_PADDING.  */
-int
-msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
-				      machine_mode mode)
-{
-  if (mode == PSImode)
-    return 2;
-  if (mode == CPSImode)
-    return 4;
-  return msp430_hard_regno_nregs (regno, mode);
-}
+/* subreg_get_info correctly handles PSImode registers, so defining
+   HARD_REGNO_NREGS_HAS_PADDING and HARD_REGNO_NREGS_WITH_PADDING
+   has no effect.  */
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK msp430_hard_regno_mode_ok
