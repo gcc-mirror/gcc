@@ -3,6 +3,35 @@
 	Backport from mainline
 	2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Add
+	dg-prune-output for different C++98 diagnostic.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Do not run for C++98.
+
+	Backport from mainline
+	2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/20_util/is_nothrow_invocable/value.cc: Test converting to
 	void.
 	* testsuite/experimental/names.cc: Do not run for C++98 mode. Do not
