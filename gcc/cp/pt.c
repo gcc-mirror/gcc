@@ -4429,33 +4429,40 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
       || !same_type_p (type, TREE_TYPE (TEMPLATE_PARM_DESCENDANTS (index))))
     {
       tree orig_decl = TEMPLATE_PARM_DECL (index);
-      tree decl, t;
 
-      decl = build_decl (DECL_SOURCE_LOCATION (orig_decl),
-			 TREE_CODE (orig_decl), DECL_NAME (orig_decl), type);
+      tree decl = build_decl (DECL_SOURCE_LOCATION (orig_decl),
+			      TREE_CODE (orig_decl), DECL_NAME (orig_decl),
+			      type);
       TREE_CONSTANT (decl) = TREE_CONSTANT (orig_decl);
       TREE_READONLY (decl) = TREE_READONLY (orig_decl);
       DECL_ARTIFICIAL (decl) = 1;
       SET_DECL_TEMPLATE_PARM_P (decl);
 
-      t = build_template_parm_index (TEMPLATE_PARM_IDX (index),
-				     TEMPLATE_PARM_LEVEL (index) - levels,
-				     TEMPLATE_PARM_ORIG_LEVEL (index),
-				     decl, type);
-      TEMPLATE_PARM_DESCENDANTS (index) = t;
-      TEMPLATE_PARM_PARAMETER_PACK (t)
+      tree tpi = build_template_parm_index (TEMPLATE_PARM_IDX (index),
+					    TEMPLATE_PARM_LEVEL (index) - levels,
+					    TEMPLATE_PARM_ORIG_LEVEL (index),
+					    decl, type);
+      TEMPLATE_PARM_DESCENDANTS (index) = tpi;
+      TEMPLATE_PARM_PARAMETER_PACK (tpi)
 	= TEMPLATE_PARM_PARAMETER_PACK (index);
 
 	/* Template template parameters need this.  */
+      tree inner = decl;
       if (TREE_CODE (decl) == TEMPLATE_DECL)
 	{
-	  DECL_TEMPLATE_RESULT (decl)
-	    = build_decl (DECL_SOURCE_LOCATION (decl),
-			  TYPE_DECL, DECL_NAME (decl), type);
-	  DECL_ARTIFICIAL (DECL_TEMPLATE_RESULT (decl)) = true;
+	  inner = build_decl (DECL_SOURCE_LOCATION (decl),
+			      TYPE_DECL, DECL_NAME (decl), type);
+	  DECL_TEMPLATE_RESULT (decl) = inner;
+	  DECL_ARTIFICIAL (inner) = true;
 	  DECL_TEMPLATE_PARMS (decl) = tsubst_template_parms
 	    (DECL_TEMPLATE_PARMS (orig_decl), args, complain);
 	}
+
+      /* Attach the TPI to the decl.  */
+      if (TREE_CODE (inner) == TYPE_DECL)
+	TEMPLATE_TYPE_PARM_INDEX (type) = tpi;
+      else
+	DECL_INITIAL (decl) = tpi;
     }
 
   return TEMPLATE_PARM_DESCENDANTS (index);
@@ -28440,7 +28447,7 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
       tree t = copy_type (o);
       TEMPLATE_TYPE_PARM_INDEX (t)
 	= reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (o),
-				      o, 0, 0, tf_none);
+				      t, 0, 0, tf_none);
       TREE_TYPE (TEMPLATE_TYPE_DECL (t)) = t;
       TYPE_STUB_DECL (t) = TYPE_NAME (t) = TEMPLATE_TYPE_DECL (t);
       TYPE_MAIN_VARIANT (t) = t;
