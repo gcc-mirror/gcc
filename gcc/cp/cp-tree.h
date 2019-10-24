@@ -1551,6 +1551,12 @@ check_constraint_info (tree t)
 #define PLACEHOLDER_TYPE_CONSTRAINTS(NODE) \
   DECL_SIZE_UNIT (TYPE_NAME (NODE))
 
+/* True if NODE is a constraint.  */
+#define CONSTR_P(NODE)                  \
+  (TREE_CODE (NODE) == ATOMIC_CONSTR    \
+   || TREE_CODE (NODE) == CONJ_CONSTR   \
+   || TREE_CODE (NODE) == DISJ_CONSTR)
+
 /* Valid for any normalized constraint.  */
 #define CONSTR_CHECK(NODE) \
   TREE_CHECK3 (NODE, ATOMIC_CONSTR, CONJ_CONSTR, DISJ_CONSTR)
@@ -7693,7 +7699,6 @@ struct diagnosing_failed_constraint
 
 /* in constraint.cc */
 
-extern void init_constraint_processing		();
 extern cp_expr finish_constraint_or_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_and_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_primary_expr	(cp_expr);
@@ -7761,8 +7766,10 @@ extern bool subsumes_constraints                (tree, tree);
 extern bool strictly_subsumes			(tree, tree, tree);
 extern bool weakly_subsumes			(tree, tree, tree);
 extern int more_constrained                     (tree, tree);
+extern bool constraints_equivalent_p            (tree, tree);
 extern bool atomic_constraints_identical_p	(tree, tree);
-extern hashval_t hash_atomic_constraint		(tree);
+extern hashval_t iterative_hash_constraint      (tree, hashval_t);
+extern hashval_t hash_atomic_constraint         (tree);
 extern void diagnose_constraints                (location_t, tree, tree);
 
 /* in logic.cc */

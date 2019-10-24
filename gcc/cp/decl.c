@@ -4409,9 +4409,6 @@ cxx_init_decl_processing (void)
     /* Ensure attribs.c is initialized.  */
     init_attributes ();
 
-    /* Ensure constraint.cc is initialized. */
-    init_constraint_processing ();
-
     extvisattr = build_tree_list (get_identifier ("externally_visible"),
 				  NULL_TREE);
     newattrs = tree_cons (get_identifier ("alloc_size"),
