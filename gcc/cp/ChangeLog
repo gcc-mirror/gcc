@@ -1,3 +1,7 @@
+2019-10-24  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (reshape_init_r): Add missing space.
+
 2019-10-22  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
