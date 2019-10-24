@@ -1,3 +1,12 @@
+2019-10-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (altivec_vavgu<VI_char>): Rename to...
+	(uavg<mode>3_ceil): ... This.
+	(altivec_vavgs<VI_char>): Rename to...
+	(avg<mode>3_ceil): ... This.
+	* config/rs6000/rs6000-builtin.def (VAVGUB, VAVGSB, VAVGUH, VAVGSH,
+	VAVGUW, VAVGSW): Adjust.
+
 2019-10-24  Nathan Sidwell  <nathan@acm.org>
 
 	* dumpfile.c (dump_begin): Reorder decls to use RAII.
