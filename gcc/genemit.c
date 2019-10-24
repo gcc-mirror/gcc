@@ -305,7 +305,7 @@ emit_c_code (const char *code, bool can_fail_p, const char *name)
   else
     printf ("#define FAIL _Pragma (\"GCC error \\\"%s cannot FAIL\\\"\")"
 	    " (void)0\n", name);
-  printf ("#define DONE return (_val = get_insns (),"
+  printf ("#define DONE return (_val = get_insns (), "
 	  "end_sequence (), _val)\n");
 
   rtx_reader_ptr->print_md_ptr_loc (code);

@@ -1,3 +1,15 @@
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arc/arc.c (hwloop_optimize): Add missing space in string
+	literal.
+	* config/rx/rx.c (rx_print_operand): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Likewise.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Likewise.
+	* ipa-sra.c (create_parameter_descriptors, process_scan_results):
+	Likewise.
+	* genemit.c (emit_c_code): Likewise.
+	* plugin.c (try_init_one_plugin): Likewise.  Formatting fix.
+
 2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symbols-summary.h (fast_function_summary<T *, V>::release,
