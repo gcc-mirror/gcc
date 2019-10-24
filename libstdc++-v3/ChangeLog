@@ -1,5 +1,7 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/allocator.xml: Use archived copy of CUJ article.
+
 	Backport from mainline
 	2019-05-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
