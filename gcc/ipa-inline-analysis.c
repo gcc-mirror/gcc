@@ -161,7 +161,8 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   /* When caching, update the cache entry.  */
   if (edge_growth_cache != NULL)
     {
-      ipa_fn_summaries->get_create (edge->callee)->min_size = min_size;
+      ipa_fn_summaries->get (edge->callee->function_symbol ())->min_size
+	 = min_size;
       edge_growth_cache_entry *entry
 	= edge_growth_cache->get_create (edge);
       entry->time = time;
@@ -265,7 +266,7 @@ estimate_size_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
-  ipa_fn_summary *s = ipa_fn_summaries->get (node);
+  ipa_size_summary *s = ipa_size_summaries->get (node);
   if (!es->predicate || *es->predicate != false)
     {
       int size = s->size + estimate_edge_growth (edge);
@@ -321,7 +322,7 @@ int
 estimate_growth (struct cgraph_node *node)
 {
   struct growth_data d = { node, false, false, 0 };
-  class ipa_fn_summary *info = ipa_fn_summaries->get (node);
+  class ipa_size_summary *info = ipa_size_summaries->get (node);
 
   node->call_for_symbol_and_aliases (do_estimate_growth_1, &d, true);
 
@@ -396,7 +397,7 @@ growth_likely_positive (struct cgraph_node *node,
       || node->address_taken)
     return true;
 
-  max_callers = ipa_fn_summaries->get (node)->size * 4 / edge_growth + 2;
+  max_callers = ipa_size_summaries->get (node)->size * 4 / edge_growth + 2;
 
   for (e = node->callers; e; e = e->next_caller)
     {

@@ -1142,8 +1142,8 @@ sem_function::merge (sem_item *alias_item)
 			 "cannot create wrapper of stdarg function.\n");
 	}
       else if (ipa_fn_summaries
-	       && ipa_fn_summaries->get (alias) != NULL
-	       && ipa_fn_summaries->get (alias)->self_size <= 2)
+	       && ipa_size_summaries->get (alias) != NULL
+	       && ipa_size_summaries->get (alias)->self_size <= 2)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf (MSG_MISSED_OPTIMIZATION, "Wrapper creation is not "
