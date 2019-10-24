@@ -458,6 +458,8 @@ fast_function_summary<T *, V>::release ()
     if ((*m_vector)[i] != NULL)
       this->release ((*m_vector)[i]);
 
+  vec_free (m_vector);
+ 
   this->m_released = true;
 }
 
@@ -918,6 +920,8 @@ fast_call_summary<T *, V>::release ()
   for (unsigned i = 0; i < m_vector->length (); i++)
     if ((*m_vector)[i] != NULL)
       this->release ((*m_vector)[i]);
+
+  vec_free (m_vector);
 
   this->m_released = true;
 }
