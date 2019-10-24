@@ -1,3 +1,7 @@
+2019-10-24  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.c (dump_begin): Reorder decls to use RAII.
+
 2019-10-24  Martin Liska  <mliska@suse.cz>
 
 	* symbol-summary.h (gt_pch_nx): Mark all functions
