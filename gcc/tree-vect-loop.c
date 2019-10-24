@@ -5697,6 +5697,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 
   gassign *stmt = as_a <gassign *> (stmt_info->stmt);
   enum tree_code code = gimple_assign_rhs_code (stmt);
+  bool lane_reduc_code_p
+    = (code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR);
   int op_type = TREE_CODE_LENGTH (code);
 
   scalar_dest = gimple_assign_lhs (stmt);
@@ -5749,8 +5751,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	return false;
 
       /* To properly compute ncopies we are interested in the widest
-	 input type in case we're looking at a widening accumulation.  */
-      if (tem
+	 non-reduction input type in case we're looking at a widening
+	 accumulation that we later handle in vect_transform_reduction.  */
+      if (lane_reduc_code_p
+	  && tem
 	  && (!vectype_in
 	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
 		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (tem))))))
@@ -6233,8 +6237,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       && vect_stmt_to_vectorize (use_stmt_info) == stmt_info)
     single_defuse_cycle = true;
 
-  bool lane_reduc_code_p
-    = (code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR);
   if (single_defuse_cycle || lane_reduc_code_p)
     {
       gcc_assert (code != COND_EXPR);
