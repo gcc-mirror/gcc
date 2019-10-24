@@ -498,9 +498,9 @@ do_whole_program_analysis (void)
   else
     gcc_unreachable ();
 
-  /* Inline summaries are needed for balanced partitioning.  Free them now so
+  /* Size summaries are needed for balanced partitioning.  Free them now so
      the memory can be used for streamer caches.  */
-  ipa_free_fn_summary ();
+  ipa_free_size_summary ();
 
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */

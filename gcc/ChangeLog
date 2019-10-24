@@ -1,3 +1,46 @@
+2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (symbol_table::process_new_functions): Call
+	ipa_free_size_summary.
+	* ipa-cp.c (ipcp_cloning_candidate_p): Update.
+	(devirtualization_time_bonus): Update.
+	(ipcp_propagate_stage): Update.
+	* ipa-fnsummary.c (ipa_size_summaries): New.
+	(ipa_fn_summary_alloc): Alloc size summary.
+	(dump_ipa_call_summary): Update.
+	(ipa_dump_fn_summary): Update.
+	(analyze_function_body): Update.
+	(compute_fn_summary): Likewise.
+	(ipa_get_stack_frame_offset): New function.
+	(inline_update_callee_summaries): Do not update frame offsets.
+	(ipa_merge_fn_summary_after_inlining): Update frame offsets here;
+	remove call and function summary.
+	(ipa_update_overall_fn_summary): Update.
+	(inline_read_section): Update.
+	(ipa_fn_summary_write): Update.
+	(ipa_free_fn_summary): Do not remove summaries.
+	(ipa_free_size_summary): New.
+	(release summary pass): Also run at WPA.
+	* ipa-fnsummary.h (ipa_size_summary): Declare.
+	(ipa_fn_summary): Remove size, self_size, stack_frame_offset,
+	estimated_self_stack_size.
+	(ipa_size_summary_t): New type.
+	(ipa_size_summaries): Declare.
+	(ipa_free_size_summary): Declare.
+	(ipa_get_stack_frame_offset): Declare.
+	* ipa-icf.c (sem_function::merge): Update.
+	* ipa-inline-analysis.c (estimate_size_after_inlining): Update.
+	(estimate_growth): Update.
+	(growth_likely_positive): Update.
+	(clone_inlined_nodes): Update.
+	(inline_call): Update.
+	* ipa-inline.c (caller_growth_limits): Update.
+	(edge_badness): Update.
+	(recursive_inlining): Update.
+	(inline_small_functions): Update.
+	(inline_to_all_callers_1): Update.
+	* ipa-prop.h (ipa_edge_args_sum_t): Update comment.
+
 2019-10-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.md (altivec_vavgu<VI_char>): Rename to...

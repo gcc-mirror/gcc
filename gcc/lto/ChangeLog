@@ -1,3 +1,8 @@
+2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (add_symbol_to_partition_1): Update.
+	(undo_parittion): Update.
+
 2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-common.c (lto_file_finalize): Add order attribute.

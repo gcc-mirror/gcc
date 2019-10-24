@@ -150,8 +150,7 @@ caller_growth_limits (struct cgraph_edge *e)
   int newsize;
   int limit = 0;
   HOST_WIDE_INT stack_size_limit = 0, inlined_stack;
-  ipa_fn_summary *info, *what_info;
-  ipa_fn_summary *outer_info = ipa_fn_summaries->get (to);
+  ipa_size_summary *outer_info = ipa_size_summaries->get (to);
 
   /* Look for function e->caller is inlined to.  While doing
      so work out the largest function body on the way.  As
@@ -163,28 +162,29 @@ caller_growth_limits (struct cgraph_edge *e)
      too much in order to prevent compiler from exploding".  */
   while (true)
     {
-      info = ipa_fn_summaries->get (to);
-      if (limit < info->self_size)
-	limit = info->self_size;
-      if (stack_size_limit < info->estimated_self_stack_size)
-	stack_size_limit = info->estimated_self_stack_size;
+      ipa_size_summary *size_info = ipa_size_summaries->get (to);
+      if (limit < size_info->self_size)
+	limit = size_info->self_size;
+      if (stack_size_limit < size_info->estimated_self_stack_size)
+	stack_size_limit = size_info->estimated_self_stack_size;
       if (to->global.inlined_to)
         to = to->callers->caller;
       else
 	break;
     }
 
-  what_info = ipa_fn_summaries->get (what);
+  ipa_fn_summary *what_info = ipa_fn_summaries->get (what);
+  ipa_size_summary *what_size_info = ipa_size_summaries->get (what);
 
-  if (limit < what_info->self_size)
-    limit = what_info->self_size;
+  if (limit < what_size_info->self_size)
+    limit = what_size_info->self_size;
 
   limit += limit * PARAM_VALUE (PARAM_LARGE_FUNCTION_GROWTH) / 100;
 
   /* Check the size after inlining against the function limits.  But allow
      the function to shrink if it went over the limits by forced inlining.  */
   newsize = estimate_size_after_inlining (to, e);
-  if (newsize >= info->size
+  if (newsize >= ipa_size_summaries->get (what)->size
       && newsize > PARAM_VALUE (PARAM_LARGE_FUNCTION_INSNS)
       && newsize > limit)
     {
@@ -203,7 +203,7 @@ caller_growth_limits (struct cgraph_edge *e)
   stack_size_limit += ((gcov_type)stack_size_limit
 		       * PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) / 100);
 
-  inlined_stack = (outer_info->stack_frame_offset
+  inlined_stack = (ipa_get_stack_frame_offset (to)
 		   + outer_info->estimated_self_stack_size
 		   + what_info->estimated_stack_size);
   /* Check new stack consumption with stack consumption at the place
@@ -213,7 +213,7 @@ caller_growth_limits (struct cgraph_edge *e)
 	 inline call, we can inline, too.
 	 This bit overoptimistically assume that we are good at stack
 	 packing.  */
-      && inlined_stack > info->estimated_stack_size
+      && inlined_stack > ipa_fn_summaries->get (to)->estimated_stack_size
       && inlined_stack > PARAM_VALUE (PARAM_LARGE_STACK_FRAME))
     {
       e->inline_failed = CIF_LARGE_STACK_FRAME_GROWTH_LIMIT;
@@ -1115,7 +1115,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   gcc_checking_assert ((edge_time * 100
 			- callee_info->time * 101).to_int () <= 0
 			|| callee->count.ipa ().initialized_p ());
-  gcc_checking_assert (growth <= callee_info->size);
+  gcc_checking_assert (growth <= ipa_size_summaries->get (callee)->size);
 
   if (dump)
     {
@@ -1219,7 +1219,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	     and it is not called once.  */
 	  if (!caller_info->single_caller && overall_growth < caller_growth
 	      && caller_info->inlinable
-	      && caller_info->size
+	      && ipa_size_summaries->get (caller)->size
 		 < (DECL_DECLARED_INLINE_P (caller->decl)
 		    ? inline_insns_single (caller, false)
 		    : inline_insns_auto (caller, false)))
@@ -1243,7 +1243,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
-      denominator *= ipa_fn_summaries->get (caller)->size + growth;
+      denominator *= ipa_size_summaries->get (caller)->size + growth;
 
       badness = - numerator / denominator;
 
@@ -1646,8 +1646,8 @@ recursive_inlining (struct cgraph_edge *edge,
     dump_printf_loc (MSG_NOTE, edge->call_stmt,
 		     "\n   Inlined %i times, "
 		     "body grown from size %i to %i, time %f to %f\n", n,
-		     ipa_fn_summaries->get (master_clone)->size,
-		     ipa_fn_summaries->get (node)->size,
+		     ipa_size_summaries->get (master_clone)->size,
+		     ipa_size_summaries->get (node)->size,
 		     ipa_fn_summaries->get (master_clone)->time.to_double (),
 		     ipa_fn_summaries->get (node)->time.to_double ());
 
@@ -1871,7 +1871,7 @@ inline_small_functions (void)
 	    /* Do not account external functions, they will be optimized out
 	       if not inlined.  Also only count the non-cold portion of program.  */
 	    if (inline_account_function_p (node))
-	      initial_size += info->size;
+	      initial_size += ipa_size_summaries->get (node)->size;
 	    info->growth = estimate_growth (node);
 
 	    int num_calls = 0;
@@ -1887,7 +1887,8 @@ inline_small_functions (void)
 		     n2 = ((struct ipa_dfs_info *) n2->aux)->next_cycle)
 		  if (opt_for_fn (n2->decl, optimize))
 		    {
-		      ipa_fn_summary *info2 = ipa_fn_summaries->get (n2);
+		      ipa_fn_summary *info2 = ipa_fn_summaries->get
+			 (n2->global.inlined_to ? n2->global.inlined_to : n2);
 		      if (info2->scc_no)
 			break;
 		      info2->scc_no = id;
@@ -2048,7 +2049,7 @@ inline_small_functions (void)
 	  fprintf (dump_file,
 		   "\nConsidering %s with %i size\n",
 		   callee->dump_name (),
-		   ipa_fn_summaries->get (callee)->size);
+		   ipa_size_summaries->get (callee)->size);
 	  fprintf (dump_file,
 		   " to be inlined into %s in %s:%i\n"
 		   " Estimated badness is %f, frequency %.2f.\n",
@@ -2174,7 +2175,7 @@ inline_small_functions (void)
 
       if (dump_enabled_p ())
 	{
-	  ipa_fn_summary *s = ipa_fn_summaries->get (edge->caller);
+	  ipa_fn_summary *s = ipa_fn_summaries->get (where);
 
 	  /* dump_printf can't handle %+i.  */
 	  char buf_net_change[100];
@@ -2185,7 +2186,9 @@ inline_small_functions (void)
 			   " Inlined %C into %C which now has time %f and "
 			   "size %i, net change of %s.\n",
 			   edge->callee, edge->caller,
-			   s->time.to_double (), s->size, buf_net_change);
+			   s->time.to_double (),
+			   ipa_size_summaries->get (edge->caller)->size,
+			   buf_net_change);
 	}
       if (min_size > overall_size)
 	{
@@ -2322,11 +2325,11 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 	  fprintf (dump_file,
 		   "\nInlining %s size %i.\n",
 		   ultimate->name (),
-		   ipa_fn_summaries->get (ultimate)->size);
+		   ipa_size_summaries->get (ultimate)->size);
 	  fprintf (dump_file,
 		   " Called once from %s %i insns.\n",
 		   node->callers->caller->name (),
-		   ipa_fn_summaries->get (node->callers->caller)->size);
+		   ipa_size_summaries->get (node->callers->caller)->size);
 	}
 
       /* Remember which callers we inlined to, delaying updating the
@@ -2337,7 +2340,7 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 	fprintf (dump_file,
 		 " Inlined into %s which now has %i size\n",
 		 caller->name (),
-		 ipa_fn_summaries->get (caller)->size);
+		 ipa_size_summaries->get (caller)->size);
       if (!(*num_calls)--)
 	{
 	  if (dump_file)
