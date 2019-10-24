@@ -780,6 +780,73 @@ diagnose_constraint_size (tree t)
   return false;
 }
 
+/* Key/value pair for caching subsumption results. This associates a pair of
+   constraints with a boolean value indicating the result.  */
+
+struct GTY((for_user)) subsumption_entry
+{
+  tree lhs;
+  tree rhs;
+  bool result;
+};
+
+/* Hashing function and equality for constraint entries.  */
+
+struct subsumption_hasher : ggc_ptr_hash<subsumption_entry>
+{
+  static hashval_t hash (subsumption_entry *e)
+  {
+    hashval_t val = 0;
+    val = iterative_hash_constraint (e->lhs, val);
+    val = iterative_hash_constraint (e->rhs, val);
+    return val;
+  }
+
+  static bool equal (subsumption_entry *e1, subsumption_entry *e2)
+  {
+    if (!constraints_equivalent_p (e1->lhs, e2->lhs))
+      return false;
+    if (!constraints_equivalent_p (e1->rhs, e2->rhs))
+      return false;
+    return true;
+  }
+};
+
+/* Caches the results of subsumes_non_null(t1, t1).  */
+
+static GTY ((deletable)) hash_table<subsumption_hasher> *subsumption_cache;
+
+/* Search for a previously cached subsumption result. */
+
+static bool*
+lookup_subsumption (tree t1, tree t2)
+{
+  if (!subsumption_cache)
+    return NULL;
+  subsumption_entry elt = { t1, t2, false };
+  subsumption_entry* found = subsumption_cache->find (&elt);
+  if (found)
+    return &found->result;
+  else
+    return 0;
+}
+
+/* Save a subsumption result. */
+
+static bool
+save_subsumption (tree t1, tree t2, bool result)
+{
+  if (!subsumption_cache)
+    subsumption_cache = hash_table<subsumption_hasher>::create_ggc(31);
+  subsumption_entry elt = {t1, t2, result};
+  subsumption_entry** slot = subsumption_cache->find_slot (&elt, INSERT);
+  subsumption_entry* entry = ggc_alloc<subsumption_entry> ();
+  *entry = elt;
+  *slot = entry;
+  return result;
+}
+
+
 /* Returns true if the LEFT constraint subsume the RIGHT constraints.
    This is done by deriving a proof of the conclusions on the RIGHT
    from the assumptions on the LEFT assumptions.  */
@@ -788,6 +855,9 @@ static bool
 subsumes_constraints_nonnull (tree lhs, tree rhs)
 {
   auto_timevar time (TV_CONSTRAINT_SUB);
+
+  if (bool *b = lookup_subsumption(lhs, rhs))
+    return *b;
 
   int n1 = dnf_size (lhs);
   int n2 = cnf_size (rhs);
@@ -803,19 +873,20 @@ subsumes_constraints_nonnull (tree lhs, tree rhs)
     }
 
   /* Decompose the smaller of the two formulas, and recursively
-     check the implication using the larger.  Note that for
-     constraints that are largely comprised of conjunctions the
-     it will usually be the case that n1 <= n2. */
+     check for implication of the larger.  */
+  bool result;
   if (n1 <= n2)
     {
       formula dnf = decompose_antecedents (lhs);
-      return derive_proofs (dnf, rhs, left);
+      result = derive_proofs (dnf, rhs, left);
     }
   else
     {
       formula cnf = decompose_consequents (rhs);
-      return derive_proofs (cnf, lhs, right);
+      result = derive_proofs (cnf, lhs, right);
     }
+
+  return save_subsumption (lhs, rhs, result);
 }
 
 /* Returns true if the LEFT constraints subsume the RIGHT
@@ -832,3 +903,5 @@ subsumes (tree lhs, tree rhs)
     return true;
   return subsumes_constraints_nonnull (lhs, rhs);
 }
+
+#include "gt-cp-logic.h"

@@ -151,6 +151,34 @@
 
 2019-10-15  Andrew Sutton  <asutton@lock3software.com>
 
+	Finish moving constraint and logic functionality of out pt.c.
+	Reimplement and re-enable subsumption caching.
+
+	* config-lang.in (gtfiles): Add logic.cc.
+	* constraint.cc (atomic_constraints_identical_p): Add assertions.
+	(hash_atomic_constraint): Likewise.
+	(constraints_equivalent_p): New.
+	(inchash::add_constraint): New.
+	(iterative_hash_constraint): New.
+	(decl_constraints): Moved from pt.c.
+	(get_constraints): Likewise.
+	(set_constraints): Likewise.
+	(remove_constraints): Likewise.
+	* cp-tree.h (CONSTR_P): New.
+	(init_constraint_processing): Remove.
+	(constraints_equivalent_p, iterative_hash_constraint): Declare.
+	* decl.c (cxx_init_decl_processing): Don't initialize constraints.
+	* logic.cc (subsumption_entry): Moved from pt.c.
+	(subsumption_hasher): Likewise.
+	(subsumption_cache): Likewise.
+	(lookup_subsumption): Likewise.
+	(save_subsumption): Likewise.
+	(subsumes_constraints_nonnull): Use subsumption cache.
+	* pt.c: Move aforementioned declarations out of this file.
+	(init_constraint_processing): Remove.
+
+2019-10-15  Andrew Sutton  <asutton@lock3software.com>
+
 	* parser.c (cp_parser_constructor_declarator_p): Pass an empty
 	decl-specifier-seq to make sure we parse type constraints as part
 	of a type-specifier.
