@@ -11596,7 +11596,7 @@ depset::hash::find_dependencies ()
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
 
-#if 1
+#if 0
 		  if (current->get_entity_kind () == EK_SPECIALIZATION)
 		    {
 		      gcc_assert (current->is_special ());
@@ -13788,7 +13788,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
 
-#if 1
+#if 0
   /* Sort the cluster according to its mergeable entities.  */
   sort_mergeables (scc, size);
 #endif

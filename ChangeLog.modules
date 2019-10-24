@@ -1,5 +1,16 @@
 2019-10-24  Nathan Sidwell  <nathan@acm.org>
 
+	Turn off mergeable ordering.
+	gcc/cp/
+	* module.cc (depset::hash::find_dependencies): No need to add
+	specialization keys here.
+	(module_state::erite_cluster): Or sort mergeables here.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[234]_b.C: Adjust scans.
+	* g++.dg/modules/inst-[23]_a.C: Likewise.
+	* g++.dg/modules/late-ret-[23_a.H: Likewise.
+	* g++.dg/modules/tpl-friend-1_a.C: Likewise.
+
 	Types always keyed by TYPE_NAME.  Use TYPE_NAME not TYPE_STUB_DECL.
 	gcc/cp/
 	* module.cc (enum merge_kind): Drop MK_linkage.

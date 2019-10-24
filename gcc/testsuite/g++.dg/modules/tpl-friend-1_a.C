@@ -36,6 +36,6 @@ template class TPL<float>;  // instantiate
 // { dg-final { scan-lang-dump-not {Connecting declaration decl template_decl:'::foo@foo:.'} module } }
 
 // { dg-final { scan-lang-dump {Template friend '::foo@foo:.' discovered} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo@foo:.'\n  \[1\]=decl declaration '::foo@foo:.'\n  \[2\]=binding '::foo'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::foo@foo:.'\n  \[1\]=specialization declaration '::foo@foo:.'\n  \[2\]=binding '::foo'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::TPL@foo:.'\n  \[1\]=binding '::TPL'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL@foo:.<float>'} module } }

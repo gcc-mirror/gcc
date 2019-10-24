@@ -15,7 +15,7 @@ namespace bar
 // { dg-final { scan-lang-dump {Lazily binding '::foo::TPL'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:.'@foo} module } }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:.<0x1>'\n  \[.*\]=specialization declaration '::foo::TPL@bar:.<0x1>::frob@bar:.<#unnamed#>'\n  \[.*\]=specialization declaration '::foo::TPL@bar:.<0x1>::TPL@bar:.<0x1>(\n  \[[0-9]*\]=clone (declaration|definition) '::foo[^\n]* @bar:.')*'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:.<0x1>'\n  \[1\]=specialization declaration '::foo::TPL@bar:.<0x1>::TPL@bar:.<0x1>'\n  \[2\]=specialization declaration '::foo::TPL@bar:.<0x1>::frob@bar:.<#unnamed#>'\n} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:.<0x1>::frob@bar:.<0x2>'} module } }
 // { dg-final { scan-lang-dump {Writing type spec key for mergeable specialization type_decl:'::foo::TPL@bar:.<0x1>'} module } }
 // { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@0 for '::foo::TPL@bar:.<0x1>'} module } }
