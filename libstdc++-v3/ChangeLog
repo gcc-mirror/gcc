@@ -1,6 +1,13 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92143
+	* libsupc++/new_opa.cc (operator new) [__APPLE__]: Increase alignment
+	to at least sizeof(void*).
+
+	Backport from mainline
 	2019-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/Makefile.am (doc-html-docbook-regenerate): New target.
