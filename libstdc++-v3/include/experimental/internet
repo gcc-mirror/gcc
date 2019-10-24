@@ -539,7 +539,7 @@ namespace ip
     const auto& __aa = __a._M_bytes;
     const auto& __bb = __b._M_bytes;
     int __i = 0;
-    for (; __aa[__i] == __bb[__i] && __i < 16; ++__i)
+    for (; __i < 16 && __aa[__i] == __bb[__i]; ++__i)
       ;
     return __i == 16 ? __a.scope_id() == __b.scope_id() : false;
   }
@@ -554,7 +554,7 @@ namespace ip
     const auto& __aa = __a._M_bytes;
     const auto& __bb = __b._M_bytes;
     int __i = 0;
-    for (; __aa[__i] == __bb[__i] && __i < 16; ++__i)
+    for (; __i < 16 && __aa[__i] == __bb[__i]; ++__i)
       ;
     return __i == 16 ? __a.scope_id() < __b.scope_id() : __aa[__i] < __bb[__i];
   }
