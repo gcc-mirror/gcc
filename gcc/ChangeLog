@@ -1,3 +1,11 @@
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): For reduction
+	chains try harder with operand swapping and instead of
+	putting a shifted chain into the reduction operands put
+	a repetition of the final reduction op there as if we'd
+	reassociate the expression.
+
 2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-reference.c (ipa_reference_optimization_summary_d): Rename
