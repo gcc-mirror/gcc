@@ -63,23 +63,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-#if __cplusplus <= 201703L
   /// allocator<void> specialization.
   template<>
     class allocator<void>
     {
     public:
+      typedef void        value_type;
       typedef size_t      size_type;
       typedef ptrdiff_t   difference_type;
+#if __cplusplus <= 201703L
       typedef void*       pointer;
       typedef const void* const_pointer;
-      typedef void        value_type;
 
       template<typename _Tp1>
 	struct rebind
 	{ typedef allocator<_Tp1> other; };
+#else
+      allocator() = default;
 
-#if __cplusplus >= 201103L
+      template<typename _Up>
+	constexpr
+	allocator(const allocator<_Up>&) { }
+#endif // ! C++20
+
+#if __cplusplus >= 201103L && __cplusplus <= 201703L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2103. std::allocator propagate_on_container_move_assignment
       typedef true_type propagate_on_container_move_assignment;
@@ -98,9 +105,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	destroy(_Up* __p)
 	noexcept(noexcept(__p->~_Up()))
 	{ __p->~_Up(); }
-#endif // C++11
+#endif // C++11 to C++17
     };
-#endif // ! C++20
 
   /**
    * @brief  The @a standard allocator, as per [20.4].
@@ -154,9 +160,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX20_CONSTEXPR
 	allocator(const allocator<_Tp1>&) _GLIBCXX_NOTHROW { }
 
-#if __cplusplus <= 201703L
+      _GLIBCXX20_CONSTEXPR
       ~allocator() _GLIBCXX_NOTHROW { }
-#endif
 
 #if __cplusplus > 201703L
       [[nodiscard,__gnu__::__always_inline__]]

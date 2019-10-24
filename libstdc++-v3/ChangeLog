@@ -1,5 +1,18 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocator.h (allocator<void>): Restore the explicit
+	specialization for C++20, but make its API consistent with the primary
+	template.
+	(allocator::~allocator()): Restore the destructor for C++20, but make
+	it constexpr.
+	* testsuite/20_util/allocator/rebind_c++20.cc: Check allocator<void>.
+	* testsuite/20_util/allocator/requirements/typedefs_c++20.cc: Likewise.
+	* testsuite/20_util/allocator/void.cc: Check that constructors and
+	destructors are trivial. Check for converting constructor in C++20.
+	* testsuite/ext/malloc_allocator/variadic_construct.cc: Simplify
+	dejagnu target selector.
+	* testsuite/ext/new_allocator/variadic_construct.cc: Likewise.
+
 	* include/experimental/executor (__use_future_ct, use_future_t):
 	Define partial specializations for std::allocator.
 	(__use_future_ch): Overload constructor for completion tokens using
