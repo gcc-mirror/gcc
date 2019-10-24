@@ -12266,6 +12266,9 @@ is_non_constant_shape_array (gfc_symbol *sym)
 	 simplification now.  */
       for (i = 0; i < sym->as->rank + sym->as->corank; i++)
 	{
+	  if (i == GFC_MAX_DIMENSIONS)
+	    break;
+
 	  e = sym->as->lower[i];
 	  if (e && (!resolve_index_expr(e)
 		    || !gfc_is_constant_expr (e)))

@@ -410,6 +410,9 @@ gfc_resolve_array_spec (gfc_array_spec *as, int check_constant)
 
   for (i = 0; i < as->rank + as->corank; i++)
     {
+      if (i == GFC_MAX_DIMENSIONS)
+	return false;
+
       e = as->lower[i];
       if (!resolve_array_bound (e, check_constant))
 	return false;
