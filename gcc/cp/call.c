@@ -7590,7 +7590,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	      && TYPE_MODE (TREE_TYPE (prom)) != TYPE_MODE (arg_type)
 	      && (complain & tf_warning))
 	    warning_at (loc, OPT_Wabi, "scoped enum %qT passed through %<...%>"
-			"as %qT before %<-fabi-version=6%>, %qT after",
+			" as %qT before %<-fabi-version=6%>, %qT after",
 			arg_type,
 			TREE_TYPE (prom), ENUM_UNDERLYING_TYPE (arg_type));
 	  if (!abi_version_at_least (6))
