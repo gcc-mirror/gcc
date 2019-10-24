@@ -1,3 +1,10 @@
+2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (uniform_random_bit_generator): Define for
+	C++20.
+	* testsuite/26_numerics/random/concept.cc: New test.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error line.
+
 2019-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional (invoke): Add constexpr for C++20.
