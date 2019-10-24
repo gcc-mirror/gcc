@@ -54,3 +54,14 @@ static_assert( !has_rebind<A> );
 static_assert( !has_construct<A> );
 static_assert( !has_destroy<A> );
 static_assert( !has_max_size<A> );
+
+using V = std::allocator<void>;
+
+static_assert( !has_pointer<V> );
+static_assert( !has_const_pointer<V> );
+static_assert( !has_reference<V> );
+static_assert( !has_const_reference<V> );
+static_assert( !has_rebind<V> );
+static_assert( !has_construct<V> );
+static_assert( !has_destroy<V> );
+static_assert( !has_max_size<V> );

@@ -23,6 +23,9 @@
 template<typename T> struct Alloc : std::allocator<T> { };
 
 using T = std::allocator_traits<Alloc<int>>;
-
 // Prior to C++20 this finds std::allocator<int>::rebind and so fails:
 static_assert( std::is_same_v<T::rebind_alloc<long>, Alloc<long>> );
+
+using V = std::allocator_traits<Alloc<void>>;
+// Prior to C++20 this finds std::allocator<void>::rebind and so fails:
+static_assert( std::is_same_v<V::rebind_alloc<long>, Alloc<long>> );
