@@ -4344,7 +4344,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
       STMT_VINFO_VECTYPE (stmt_info)
-	= get_vectype_for_scalar_type (scalar_type);
+	= get_vectype_for_scalar_type (vinfo, scalar_type);
       if (!STMT_VINFO_VECTYPE (stmt_info))
         {
           if (dump_enabled_p ())
@@ -4392,7 +4392,8 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 	  if (!vect_check_gather_scatter (stmt_info,
 					  as_a <loop_vec_info> (vinfo),
 					  &gs_info)
-	      || !get_vectype_for_scalar_type (TREE_TYPE (gs_info.offset)))
+	      || !get_vectype_for_scalar_type (vinfo,
+					       TREE_TYPE (gs_info.offset)))
 	    {
 	      if (fatal)
 		*fatal = false;

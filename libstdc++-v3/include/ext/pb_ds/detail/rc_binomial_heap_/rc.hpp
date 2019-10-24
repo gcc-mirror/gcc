@@ -54,13 +54,13 @@ namespace __gnu_pbds
       typedef typename allocator_type::size_type 	 size_type;
       typedef _Node 					 node;
 
-      typedef typename _Alloc::template rebind<node>	 __rebind_n;
-      typedef typename __rebind_n::other::pointer      	 node_pointer;
+      typedef typename rebind_traits<_Alloc, node>::pointer node_pointer;
 
-      typedef typename _Alloc::template rebind<node_pointer>  __rebind_np;
 
-      typedef typename __rebind_np::other::pointer 	 entry_pointer;
-      typedef typename __rebind_np::other::const_pointer entry_const_pointer;
+      typedef typename rebind_traits<_Alloc, node_pointer>::pointer
+	entry_pointer;
+      typedef typename rebind_traits<_Alloc, node_pointer>::const_pointer
+	entry_const_pointer;
 
       enum
 	{

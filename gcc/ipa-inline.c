@@ -1610,7 +1610,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	{
 	  fprintf (dump_file,
 		   "   Inlining call of depth %i", depth);
-	  if (node->count.nonzero_p ())
+	  if (node->count.nonzero_p () && curr->count.initialized_p ())
 	    {
 	      fprintf (dump_file, " called approx. %.2f times per call",
 		       (double)curr->count.to_gcov_type ()

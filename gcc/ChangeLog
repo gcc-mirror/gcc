@@ -1,3 +1,873 @@
+2019-10-24  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.c (dump_begin): Reorder decls to use RAII.
+
+2019-10-24  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h (gt_pch_nx): Mark all functions
+	with gcc_unreachable as we do not expect to be called.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): For reduction
+	chains try harder with operand swapping and instead of
+	putting a shifted chain into the reduction operands put
+	a repetition of the final reduction op there as if we'd
+	reassociate the expression.
+
+2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.c (ipa_reference_optimization_summary_d): Rename
+	statics_not_read and statics_not_written to statics_read and
+	statics_written respectively.
+	(no_module_statics): New static var.
+	(ipa_reference_get_not_read_global): Rename to ...
+	(ipa_reference_get_read_global): ... this.
+	(ipa_reference_get_not_written_global): Rename to ...
+	(ipa_reference_get_written_global): ... this.
+	(dump_static_vars_set_to_file): Dump no_module_statics.
+	(copy_static_var_set): Add for propagation parameter.
+	(ipa_init): Initialize no_module_statics.
+	(ipa_ref_opt_summary_t::duplicate): Update.
+	(ipa_ref_opt_summary_t::remove): Update.
+	(propagate): Update.
+	(write_node_summary_p): Look correctly for bitmap differences.
+	(ipa_reference_write_optimization_summary): Update.
+	(ipa_reference_read_optimization_summary): Update.
+	* ipa-reference.h
+	(ipa_reference_get_not_read_global): Rename to ...
+	(ipa_reference_get_read_global): ... this.
+	(ipa_reference_get_not_written_global): Rename to ...
+	(ipa_reference_get_written_global): ... this.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Update.
+	(call_may_clobber_ref_p_1): Update.
+
+2019-10-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_hard_regno_nregs_has_padding): Remove
+	and add comment.
+	(msp430_hard_regno_nregs_with_padding): Remove.
+
+2019-10-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/constraints.md: Allow post_inc for "Ya" constraint.
+	* config/msp430/msp430.md (430x_shift_left): Use RLAM when the constant
+	shift amount is between 1 and 4.
+	(430x_arithmetic_shift_right): Use RRAM when the constant shift amount
+	is between 1 and 4.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92205
+	* tree-vect-loop.c (vectorizable_reduction): Restrict
+	search for alternate vectype_in to lane-reducing patterns
+	we support.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92203
+	* treee-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Skip eliminating conversion stmts inserted by insertion.
+
+2019-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_get_thread_pointer): Use
+	gen_get_thread_pointer.
+	(s390_expand_split_stack_prologue): Likewise.
+	* config/s390/s390.md (UNSPEC_GET_TP): New UNSPEC.
+	(*get_tp_31): New 31-bit splitter for UNSPEC_GET_TP.
+	(*get_tp_64): New 64-bit splitter for UNSPEC_GET_TP.
+	(get_thread_pointer<mode>): Use UNSPEC_GET_TP, use
+	parameterized name.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_analyze_slp): When reduction group
+	SLP discovery fails try to handle the reduction as part
+	of SLP reduction discovery.
+
+2019-10-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_adjust_insn_length): New
+	declaration.
+	* config/rs6000/rs6000.c (rs6000_insn_cost): Use num_insns insn
+	attribute if it exists, rather than the insn size.  If we use the
+	insn size, adjust the size to remove the extra size that prefixed
+	instructions take.
+	(rs6000_adjust_insn_length): New function.
+	* config/rs6000/rs6000.h (ADJUST_INSN_LENGTH): New target hook to
+	update the instruction sized if prefixed instructions are used.
+	* config/rs6000/rs6000.md (prefixed_length attribute): Delete.
+	(non_prefixed_length attribute): Delete.
+	(num_insns attribute): New insn attribute to return the number of
+	instructions.
+	(max_prefixed_insns attribute): New insn attribute to return the
+	maximum number of prefixed instructions in an insn.
+	(length attribute): Do not adjust for prefix instructions here,
+	punt to ADJUST_INSN_LENGTH.
+	(mov<mode>_64bit): Set max_prefixed_insns and num_insns.
+	(movtd_64bit_nodm): Set max_prefixed_insns and num_insns.
+	(mov<mode>_ppc64): Set max_prefixed_insns and num_insns.
+	* config/rs6000/vsx.md: (vsx_mov<mode>_64bit): Set
+	max_prefixed_insns and num_insns.
+
+	* config/rs6000/rs6000.md (mov<mode>_64bit_dm): Reformat.
+	(movtd_64bit_nodm): Reformat.
+	(mov<mode>_32bit): Reformat.
+	(mov<mode>_softfloat): Reformat.
+	(FMOVE128_GPR splitter): Reformat.
+	(DIFD splitter): Reformat.
+	(TI2 splitter): Reformat.
+	* config/rs6000/predicates.md (lwa_operand): If the bottom two
+	bits of the offset for the memory address are non-zero, use PLWA
+	if prefixed instructions are available.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (cmp_symbol_files): Watch for overflow.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.c (varpool_removal_hook, ipa_reference_c_finalize): Fix
+	previous patch.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (output_constructor): Push CTORS_OUT timevar.
+	(cmp_symbol_files): New.
+	(lto_output): Copy sections in file order.
+	* lto-streamer.h (lto_file_decl_data): Add field order.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.h (ipa_reference_var_uid): Move offline.
+	* ipa-reference.c (reference_vars_map_t): new type.
+	(ipa_reference_vars_map, ipa_reference_vars_uids): New static vars.
+	(ipa_reference_var_uid): Implement.
+	(varpool_node_hooks): New static var.
+	(varpool_removal_hook): New function.
+	(is_improper): Do not check bitmap for id==-1
+	(get_static_name): Update.
+	(ipa_init): Initialize new datastructures.
+	(analyze_function): Do not recompute ids.
+	(propagate): Free reference_vars_to_consider.
+	(stream_out_bitmap): Update.
+	(ipa_reference_read_optimization_summary): Update.
+
+2019-10-23  qing zhao  <qing.zhao@oracle.com>
+
+	PR gcov-profile/91971
+	* coverage.c (coverage_init): Mangle the full path of filename when
+	filename is a absolute path.
+
+2019-10-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430-protos.h (msp430_has_hwmult): New.
+	* config/msp430/msp430.c (msp430_no_hwmult): Remove.
+	(msp430_has_hwmult): New.
+	(msp430_output_labelref):
+	s/msp430_hwmult_type != MSP430_HWMULT_NONE/msp430_has_hwmult ()/
+	* config/msp430/msp430.md (mulhisi3): Likewise.
+	(umulhisi3): Likewise.
+	(mulsidi3): Likewise.
+	(umulsidi3): Likewise.
+
+2019-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/92074
+	* params.def (inline-heuristics-hint-percent): Set to 600.
+
+2019-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* tree-vect-loop.c (check_reduction_path): Allow conversions
+	that only change the sign.
+	(vectorizable_reduction): Relax latch def stmts we handle further.
+
+2019-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90231
+	* tree-ssa-loop-ivopts.c (get_debug_computation_at): New function.
+	(remove_unused_ivs): Use it instead of get_computation_at.  When
+	choosing best candidate, only consider candidates where
+	get_debug_computation_at actually returns non-NULL.
+
+2019-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/92131
+	* tree-vrp.c (extract_range_from_plus_minus_expr): If the resulting
+	range would be symbolic, drop to varying for any explicit overflow
+	in the constant part or if neither range is a singleton.
+
+2019-10-23  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/81669
+	* fibonacci_heap.h (fibonacci_node::fibonacci_node):
+	Initialize m_data.
+
+2019-10-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Use
+	int_mode_for_mode rather than mode_for_int_vector for scalars.
+
+2019-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92179
+	* tree-vect-stmts.c (vectorizable_shift): For shift args
+	that are all the same remove type restriction in the SLP case.
+	Adjust SLP code to handle converting of the shift arg to
+	only apply in case the modes are different.
+
+2019-10-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/91969
+	* ipa-inline.c (recursive_inlining): Do not print
+	when curr->count is not initialized.
+
+2019-10-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not build
+	op from scalars in case there's a constant operand in its
+	definition.
+
+2019-10-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Guard
+	against out of range max skip or log values.
+
+2019-10-22  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraph.c (dump_graphviz): Change name to dump_name
+
+2019-10-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (rsbsi_carryin_reg): New pattern.
+	* config/arm/arm.c (arm_rtx_costs_internal, case MINUS): Handle
+	subtraction from a carry operation.
+
+2019-10-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/predicates.md (arm_borrow_operation): Handle CC_ADCmode.
+
+2019-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92173
+	* tree-vect-loop.c (vectorizable_reduction): If
+	vect_transform_reduction cannot handle code-generation try without
+	the single-def-use-cycle optimization.  Pass optab_vector to
+	optab_for_tree_code to get vector shifts as that's what we'd
+	generate.
+
+2019-10-22  Michael Matz  <matz@suse.de>
+
+	PR middle-end/90796
+	* gimple-loop-jam.c (any_access_function_variant_p): New function.
+	(adjust_unroll_factor): Use it to constrain safety, new parameter.
+	(tree_loop_unroll_and_jam): Adjust call and profitable unroll factor.
+
+2019-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92173
+	* tree-vect-loop.c (vectorizable_reduction): If
+	vect_transform_reduction cannot handle code-generation try without
+	the single-def-use-cycle optimization.  Pass optab_vector to
+	optab_for_tree_code to get vector shifts as that's what we'd
+	generate.
+
+2019-10-22  Martin Liska  <mliska@suse.cz>
+
+	* diagnostic-format-json.cc (json_from_expanded_location):
+	Use json::integer_number.
+	* gcov.c (output_intermediate_json_line): Use new
+	json::integer_number.
+	(output_json_intermediate_file): Likewise.
+	* json.cc (number::print): Move to ...
+	(float_number::print): ... this.
+	(integer_number::print): New.
+	(test_writing_numbers): Move to ...
+	(test_writing_float_numbers): ... this.
+	(test_writing_integer_numbers): New.
+	(json_cc_tests): Register test_writing_integer_numbers.
+	* json.h (class value): Add forward declaration
+	for float_number and integer_number.
+	(enum kind): Add JSON_INTEGER and JSON_FLOAT.
+	(class number): Move to ...
+	(class float_number): ... this.
+	(class integer_number): New.
+	* optinfo-emit-json.cc (optrecord_json_writer::impl_location_to_json):
+	Use json::integer_number.
+	(optrecord_json_writer::location_to_json): Likewise.
+	(optrecord_json_writer::profile_count_to_json): Likewise.
+	(optrecord_json_writer::pass_to_json): Likewise.
+
+2019-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_slp_bb_region): Check whether
+	autodetected_vector_size rather than vector_size is zero.
+	* tree-vect-loop.c (vect_analyze_loop): Likewise.
+	Set autodetected_vector_size immediately after calling
+	vect_analyze_loop_2.  Check for a fatal error before advancing
+	next_size.
+
+2019-10-21  Jason Merrill  <jason@redhat.com>
+
+	* lock-and-run.sh: Check for process existence rather than timeout.
+
+2019-10-21  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* expr.c (expand_expr_real_2): Don't widen constant op1 when expanding
+	widening multiplication.
+
+2019-10-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/iterators.md (t2_binop0): Fix typo in comment.
+	* config/arm/arm.md (addsi3_carryin_shift): Simplify selection of the
+	type attribute.
+	(subsi3_carryin_shift): Separate into register and constant controlled
+	alternatives.  Use shift_amount_operand for operand 4.  Set shift
+	attribute and simplify type attribute.
+	(subsi3_carryin_shift_alt): Likewise.
+	(rsbsi3_carryin_shift): Likewise.
+	(rsbsi3_carryin_shift_alt): Likewise.
+	(andsi_not_shiftsi_si): Enable for TARGET_32BIT.  Separate constant
+	and register controlled shifts into distinct alternatives.
+	(andsi_not_shiftsi_si_scc_no_reuse): Likewise.
+	(andsi_not_shiftsi_si_scc): Likewise.
+	(arm_cmpsi_negshiftsi_si): Likewise.
+	(not_shiftsi): Remove redundant M constraint from alternative 1.
+	(not_shiftsi_compare0): Likewise.
+	(arm_cmpsi_insn): Remove redundant alternative 2.
+	(cmpsi_shift_swp): Likewise.
+	(sub_shiftsi): Likewise.
+	(sub_shiftsi_compare0_scratch): Likewise.
+	* config/arm/thumb2.md (thumb_andsi_not_shiftsi_si): Delete pattern.
+	(thumb2_cmpsi_neg_shiftsi): Likewise.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92162
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Lookup
+	STMT_VINFO_REDUC_IDX in reduc_info.
+	* tree-vect-stmts.c (vectorizable_condition): Likewise.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::ops): New member.
+	(SLP_TREE_SCALAR_OPS): New.
+	(vect_get_slp_defs): Adjust prototype.
+	* tree-vect-slp.c (vect_free_slp_tree): Release
+	SLP_TREE_SCALAR_OPS.
+	(vect_create_new_slp_node): Initialize it.  New overload for
+	initializing by an operands array.
+	(_slp_oprnd_info::ops): New member.
+	(vect_create_oprnd_info): Initialize it.
+	(vect_free_oprnd_info): Release it.
+	(vect_get_and_check_slp_defs): Populate the operands array.
+	Do not swap operands in the IL when not necessary.
+	(vect_build_slp_tree_2): Build SLP nodes for invariant operands.
+	Record SLP_TREE_SCALAR_OPS for all invariant nodes.  Also
+	swap operands in the operands array.  Do not swap operands in
+	the IL.
+	(vect_slp_rearrange_stmts): Re-arrange SLP_TREE_SCALAR_OPS as well.
+	(vect_gather_slp_loads): Fix.
+	(vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_slp_analyze_node_operations_1): Search for a internal
+	def child for computing reduction SLP_TREE_NUMBER_OF_VEC_STMTS.
+	(vect_slp_analyze_node_operations): Skip ops-only stmts for
+	the def-type push/pop dance.
+	(vect_get_constant_vectors): Compute number_of_vectors here.
+	Use SLP_TREE_SCALAR_OPS and simplify greatly.
+	(vect_get_slp_vect_defs): Use gimple_get_lhs also for PHIs.
+	(vect_get_slp_defs): Simplify greatly.
+	* tree-vect-loop.c (vectorize_fold_left_reduction): Simplify.
+	(vect_transform_reduction): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_defs): Simplify.
+	(vectorizable_call): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92161
+	* tree-vect-loop.c (vect_analyze_loop_2): Reset stmts def-type
+	for reductions.
+
+2019-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (UNSPEC_RNDR, UNSPEC_RNDRRS): Define.
+	(aarch64_rndr): New define_insn.
+	(aarch64_rndrrs): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_ISA_RNG): Define.
+	(TARGET_RNG): Likewise.
+	* config/aarch64/aarch64.c (aarch64_expand_builtin): Use IGNORE
+	argument.
+	* config/aarch64/aarch64-protos.h (aarch64_general_expand_builtin):
+	Add fourth argument in prototype.
+	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins):
+	Add AARCH64_BUILTIN_RNG_RNDR, AARCH64_BUILTIN_RNG_RNDRRS.
+	(aarch64_init_rng_builtins): Define.
+	(aarch64_general_init_builtins): Call aarch64_init_rng_builtins.
+	(aarch64_expand_rng_builtin): Define.
+	(aarch64_general_expand_builtin): Use IGNORE argument, handle
+	RNG builtins.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_RNG when TARGET_RNG.
+	* config/aarch64/arm_acle.h (__rndr, __rndrrs): Define.
+
+2019-10-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-stmts (ensure_base_align): Only change alignment if new
+	alignment is more restrictive.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vec_info::vector_size): New member variable.
+	(vect_update_max_nunits): Update comment.
+	(current_vector_size): Delete.
+	* tree-vect-stmts.c (current_vector_size): Likewise.
+	(get_vectype_for_scalar_type): Use vec_info::vector_size instead
+	of current_vector_size.
+	(get_mask_type_for_scalar_type): Likewise.
+	* tree-vectorizer.c (try_vectorize_loop_1): Likewise.
+	* tree-vect-loop.c (vect_update_vf_for_slp): Likewise.
+	(vect_analyze_loop, vect_halve_mask_nunits): Likewise.
+	(vect_double_mask_nunits, vect_transform_loop): Likewise.
+	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.
+	(vect_make_slp_decision, vect_slp_bb_region): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_double_mask_nunits): Take a vec_info.
+	* tree-vect-loop.c (vect_double_mask_nunits): Likewise.
+	* tree-vect-stmts.c (supportable_narrowing_operation):  Update call
+	accordingly.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_halve_mask_nunits): Take a vec_info.
+	* tree-vect-loop.c (vect_halve_mask_nunits): Likewise.
+	* tree-vect-loop-manip.c (vect_maybe_permute_loop_masks): Update
+	call accordingly.
+	* tree-vect-stmts.c (supportable_widening_operation): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop-manip.c (vect_maybe_permute_loop_masks): Take
+	a loop_vec_info.
+	(vect_set_loop_condition_masked): Update call accordingly.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (supportable_narrowing_operation): Take a vec_info.
+	* tree-vect-stmts.c (supportable_narrowing_operation): Likewise.
+	(simple_integer_narrowing): Update call accordingly.
+	(vectorizable_conversion): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (simple_integer_narrowing): Take a vec_info.
+	(vectorizable_call): Update call accordingly.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (can_duplicate_and_interleave_p): Take a vec_info.
+	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.
+	(duplicate_and_interleave): Update call accordingly.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (duplicate_and_interleave): Take a vec_info.
+	* tree-vect-slp.c (duplicate_and_interleave): Likewise.
+	(vect_get_constant_vectors): Update call accordingly.
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (get_vectype_for_scalar_type): Take a vec_info.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Likewise.
+	(vect_prologue_cost_for_slp_op): Update call accordingly.
+	(vect_get_vec_def_for_operand, vect_get_gather_scatter_ops)
+	(vect_get_strided_load_store_ops, vectorizable_simd_clone_call)
+	(vect_supportable_shift, vect_is_simple_cond, vectorizable_comparison)
+	(get_mask_type_for_scalar_type): Likewise.
+	(vect_get_vector_types_for_stmt): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(get_initial_def_for_reduction, build_vect_cond_expr): Likewise.
+	* tree-vect-patterns.c (vect_supportable_direct_optab_p): Likewise.
+	(vect_split_statement, vect_convert_input): Likewise.
+	(vect_recog_widen_op_pattern, vect_recog_pow_pattern): Likewise.
+	(vect_recog_over_widening_pattern, vect_recog_mulhs_pattern): Likewise.
+	(vect_recog_average_pattern, vect_recog_cast_forwprop_pattern)
+	(vect_recog_rotate_pattern, vect_recog_vector_vector_shift_pattern)
+	(vect_synth_mult_by_constant, vect_recog_mult_pattern): Likewise.
+	(vect_recog_divmod_pattern, vect_recog_mixed_size_cond_pattern)
+	(check_bool_pattern, adjust_bool_pattern_cast, adjust_bool_pattern)
+	(search_type_for_mask_1, vect_recog_bool_pattern): Likewise.
+	(vect_recog_mask_conversion_pattern): Likewise.
+	(vect_add_conversion_to_pattern): Likewise.
+	(vect_recog_gather_scatter_pattern): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree_2): Likewise.
+	(vect_analyze_slp_instance, vect_get_constant_vectors): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (get_mask_type_for_scalar_type): Take a vec_info.
+	* tree-vect-stmts.c (get_mask_type_for_scalar_type): Likewise.
+	(vect_check_load_store_mask): Update call accordingly.
+	(vect_get_mask_type_for_stmt): Likewise.
+	* tree-vect-patterns.c (check_bool_pattern): Likewise.
+	(search_type_for_mask_1, vect_recog_mask_conversion_pattern): Likewise.
+	(vect_convert_mask_for_vectype): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-patterns.c (vect_supportable_direct_optab_p): Take
+	a vec_info.
+	(vect_recog_dot_prod_pattern): Update call accordingly.
+	(vect_recog_sad_pattern, vect_recog_pow_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_supportable_shift): Take a vec_info.
+	* tree-vect-stmts.c (vect_supportable_shift): Likewise.
+	* tree-vect-patterns.c (vect_synth_mult_by_constant): Update call
+	accordingly.
+
+2019-10-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.c (get_vec_alignment_for_array_type): Use
+	get_vectype_for_scalar_type_and_size instead of
+	get_vectype_for_scalar_type.
+
+2019-10-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* common.opt (-fcommon): Fix description.
+
+2019-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-protos.h (ix86_pre_reload_split): Declare.
+	* config/i386/i386.c (ix86_pre_reload_split): New function.
+	* config/i386/i386.md (*fix_trunc<mode>_i387_1, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_1, *add<mode>3_eq_0, *add<mode>3_ne_0,
+	*anddi3_doubleword, *andndi3_doubleword, *<code>di3_doubleword,
+	*one_cmpldi2_doubleword, *ashl<dwi>3_doubleword_mask,
+	*ashl<dwi>3_doubleword_mask_1, *ashl<mode>3_mask, *ashl<mode>3_mask_1,
+	*<shift_insn><mode>3_mask, *<shift_insn><mode>3_mask_1,
+	*<shift_insn><dwi>3_doubleword_mask,
+	*<shift_insn><dwi>3_doubleword_mask_1, *<rotate_insn><mode>3_mask,
+	*<rotate_insn><mode>3_mask_1, *<btsc><mode>_mask, *<btsc><mode>_mask_1,
+	*btr<mode>_mask, *btr<mode>_mask_1, *jcc_bt<mode>, *jcc_bt<mode>_1,
+	*jcc_bt<mode>_mask, *popcounthi2_1, frndintxf2_<rounding>,
+	*fist<mode>2_<rounding>_1, *<code><mode>3_1, *<code>di3_doubleword):
+	Use ix86_pre_reload_split instead of can_create_pseudo_p in condition.
+	* config/i386/sse.md (*sse4_1_<code>v8qiv8hi2<mask_name>_2,
+	*avx2_<code>v8qiv8si2<mask_name>_2,
+	*sse4_1_<code>v4qiv4si2<mask_name>_2,
+	*sse4_1_<code>v4hiv4si2<mask_name>_2,
+	*avx512f_<code>v8qiv8di2<mask_name>_2,
+	*avx2_<code>v4qiv4di2<mask_name>_2, *avx2_<code>v4hiv4di2<mask_name>_2,
+	*sse4_1_<code>v2hiv2di2<mask_name>_2,
+	*sse4_1_<code>v2siv2di2<mask_name>_2, sse4_2_pcmpestr,
+	sse4_2_pcmpistr): Likewise.
+
+2019-10-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration, --enable-objc-gc): hboehm.info
+	now defaults to https.
+
+2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_refs_since_match_p): Do not
+	skip non-zero array accesses.
+
+2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Take a bb_vec_info
+	and return a boolean success value.  Move the allocation and
+	initialization of the bb_vec_info to...
+	(vect_slp_bb_region): ...here.  Update call accordingly.
+	(vect_slp_bb): Apply PARAM_SLP_MAX_INSNS_IN_BB here rather
+	than in vect_slp_analyze_bb_1.
+
+2019-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Call save_datarefs
+	when processing the given datarefs for the first time and
+	check_datarefs subsequently.
+	(vect_slp_bb_region): New function, split out of...
+	(vect_slp_bb): ...here.  Don't recompute the region bounds and
+	dataref sets when retrying with a different vector size.
+
+2019-10-19  Jakub Jelinek  <jakub@redhat.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92140
+	* config/i386/predicates.md (int_nonimmediate_operand): New special
+	predicate.
+	* config/i386/i386.md (*add<mode>3_eq, *add<mode>3_ne,
+	*add<mode>3_eq_0, *add<mode>3_ne_0, *sub<mode>3_eq, *sub<mode>3_ne,
+	*sub<mode>3_eq_1, *sub<mode>3_eq_0, *sub<mode>3_ne_0): New
+	define_insn_and_split patterns.
+
+2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.md: Delete out--of-date comment about
+	special-casing integer loads.
+
+2019-10-19  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* escaped_string.h (escaped_string): New header.
+	* tree.c (escaped_string): Remove escaped_string class.
+
+2019-10-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92157
+	* tree-ssa-strlen.c (handle_builtin_string_cmp): Be prepared for
+	compute_string_length to return a negative result.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (negv<SIDI:mode>3): New expansion rule.
+	(negvsi3, negvdi3): Delete.
+	(negdi2_compare): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (subvdi4): Decompose calculation into 32-bit
+	operations.
+	(subdi3_compare1): Delete pattern.
+	(subvsi3_borrow): New insn pattern.
+	(subvsi3_borrow_imm): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (subv<mode>4): Delete.
+	(subvdi4): New expander pattern.
+	(subvsi4): Likewise.  Handle some immediate values.
+	(subvsi3_intmin): New insn pattern.
+	(subvsi3): Likewise.
+	(subvsi3_imm1): Likewise.
+	* config/arm/arm.c (select_cc_mode): Also allow minus for CC_V
+	idioms.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (usubvdi4): Allow registers or integers for
+	incoming operands.  Early split the calculation into SImode
+	operations.
+	(usubvsi3_borrow): New insn pattern.
+	(usubvsi3_borrow_imm): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (usubv<mode>4): Delete expansion.
+	(usubvsi4): New pattern.  Allow some immediate values for inputs.
+	(usubvdi4): New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_select_cc_mode): Allow either the first
+	or second operand of the PLUS inside a DImode equality test to be
+	sign-extend when selecting CC_Vmode.
+	* config/arm/arm.md (addvdi4): Early-split the operation into SImode
+	instructions.
+	(addsi3_cin_vout_reg, addsi3_cin_vout_imm, addsi3_cin_vout_0): New
+	expand patterns.
+	(addsi3_cin_vout_reg_insn, addsi3_cin_vout_imm_insn): New patterns.
+	(addsi3_cin_vout_0): Likewise.
+	(adddi3_compareV): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (addsi3_compareV_reg_nosum): New insn.
+	(addsi3_compareV_imm_nosum): New insn.  Also add peephole2 patterns
+	to transform this back into the summation version when that leads
+	to smaller code.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (addv<mode>4): Delete.
+	(addvsi4): New pattern.  Handle immediate values that the architecture
+	supports.
+	(addvdi4): New pattern.
+	(addsi3_compareV): Rename to ...
+	(addsi3_compareV_reg): ... this.  Add constraints for thumb2 variants
+	and use COMPARE rather than NE.
+	(addsi3_compareV_imm): New pattern.
+	* config/arm/arm.c (arm_select_cc_mode): Return CC_Vmode for
+	a signed-overflow check.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_ADC): New CC mode.
+	* config/arm/arm.c (arm_select_cc_mode): Detect selection of
+	CC_ADCmode.
+	(maybe_get_arm_condition_code): Handle CC_ADCmode.
+	* config/arm/arm.md (uaddvdi4): Early expansion of unsigned addition
+	with overflow.
+	(addsi3_cin_cout_reg, addsi3_cin_cout_imm, addsi3_cin_cout_0): New
+	expand patterns.
+	(addsi3_cin_cout_reg_insn, addsi3_cin_cout_0_insn): New insn patterns
+	(addsi3_cin_cout_imm_insn): Likewise.
+	(adddi3_compareC): Delete insn.
+	* config/arm/predicates.md (arm_carry_operation): Handle CC_ADCmode.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (adddi3): Call gen_addsi3_compare_op1.
+	* (uaddv<mode>4): Delete expansion pattern.
+	(uaddvsi4): New pattern.
+	(uaddvdi4): Likewise.
+	(addsi3_compareC): Delete pattern, change callers to use
+	addsi3_compare_op1.
+	(addsi3_compare_op1): No-longer anonymous.  Clean up constraints to
+	reduce the number of alternatives and re-work type attribute handling.
+	(addsi3_compare_op2): Clean up constraints to reduce the number of
+	alternatives and re-work type attribute handling.
+	(compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_NCV, CC_CZ): Delete CC modes.
+	* config/arm/arm.c (arm_select_cc_mode): Remove old selection code
+	for DImode operands.
+	(arm_gen_dicompare_reg): Remove unreachable expansion code.
+	(maybe_get_arm_condition_code): Remove support for CC_CZmode and
+	CC_NCVmode.
+	* config/arm/arm.md (arm_cmpdi_insn): Delete.
+	(arm_cmpdi_unsigned): Delete.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_const_double_prefer_rsbs_rsc): New function.
+	(arm_canonicalize_comparison): For GT/LE/GTU/GEU, use the constant
+	unchanged only if that will be cheaper.
+	(arm_select_cc_mode): Recognize a swapped comparison that will
+	be regenerated using RSBS or RSCS.  Relax restriction on selecting
+	CC_RSBmode.
+	(arm_gen_dicompare_reg): Handle LE/GT/LEU/GEU comparisons against
+	a constant.
+	(arm_gen_compare_reg): Handle compare (CONST, X) when the mode
+	is CC_RSBmode.
+	(maybe_get_arm_condition_code): CC_RSBmode now returns the same codes
+	as CCmode.
+	* config/arm/arm.md (rsb_imm_compare_scratch): New pattern.
+	(rscsi3_<CC_EXTEND>out_scratch): New pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_NV, CC_B): New CC modes.
+	* config/arm/arm.c (arm_select_cc_mode): Recognize constructs that
+	need these modes.
+	(arm_gen_dicompare_reg): New code to early expand the sub-operations
+	of EQ, NE, LT, GE, LTU and GEU.
+	* config/arm/iterators.md (CC_EXTEND): New code attribute.
+	* config/arm/predicates.md (arm_adcimm_operand): New predicate..
+	* config/arm/arm.md (cmpsi3_carryin_<CC_EXTEND>out): New pattern.
+	(cmpsi3_imm_carryin_<CC_EXTEND>out): Likewise.
+	(cmpsi3_0_carryin_<CC_EXTEND>out): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (cbranchdi4): Accept reg_or_int_operand for
+	operand 2.
+	(cstoredi4): Similarly, but for operand 3.
+	* config/arm/arm.c (arm_canoncialize_comparison): Allow
+	canonicalization of unsigned compares with a constant on Arm.
+	Prefer using const+1 and adjusting the comparison over swapping the
+	operands whenever the original constant was not valid.
+	(arm_gen_dicompare_reg): If Y is not a valid operand, force it to a
+	register here.
+	(arm_validize_comparison): Do not force invalid DImode operands to
+	registers here.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_select_cc_mode): For DImode equality tests
+	return CC_Zmode if comparing against a constant where one word is
+	zero.
+	(arm_gen_compare_reg): Split DImode handling to ...
+	(arm_gen_dicompare_reg): ... here.  Handle equality comparisons
+	against simple constants.
+	* config/arm/arm.md (arm_cmpdi_zero): Delete pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (subsi3_carryin_shift_alt): New pattern.
+	(rsbsi3_carryin_shift_alt): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (negscc_borrow): New pattern.
+	(mov_negscc): Don't split if the insn would match negscc_borrow.
+	* config/arm/thumb2.md (thumb2_mov_negscc): Likewise.
+	(thumb2_mov_negscc_strict_it): Likewise.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_insn_cost): New function.
+	(TARGET_INSN_COST): Override default definition.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_rtx_costs_internal, case MINUS): Handle
+	borrow operations.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (strip_carry_operation): New function.
+	(arm_rtx_costs_internal, case PLUS): Handle addtion with carry-in
+	for SImode.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/predicates.md (arm_carry_operation): New special
+	predicate.
+	* config/arm/iterators.md (LTUGEU): Delete iterator.
+	(cnb): Delete code attribute.
+	(optab): Delete ltu and geu elements.
+	* config/arm/arm.md (addsi3_carryin): Renamed from
+	addsi3_carryin_<optab>.  Remove iterator and use arm_carry_operand.
+	(add0si3_carryin): Similarly, but from add0si3_carryin_<optab>.
+	(addsi3_carryin_alt2): Similarly, but from addsi3_carryin_alt2_<optab>.
+	(addsi3_carryin_clobercc): Similarly.
+	(addsi3_carryin_shift): Similarly.  Do not allow register shifts in
+	Thumb2 state.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (arm_subdi3): Delete insn.
+	(zextendsidi_negsi, negdi_extendsidi): Delete insn_and_split.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-modes.def (CC_RSB): New CC mode.
+	* config/arm/predicates.md (arm_borrow_operation): Handle CC_RSBmode.
+	* config/arm/arm.c (arm_select_cc_mode): Detect when we should
+	return CC_RSBmode.
+	(maybe_get_arm_condition_code): Handle CC_RSBmode.
+	* config/arm/arm.md (subsi3_carryin): Make this pattern available to
+	expand.
+	(subdi3): Rewrite to early-expand the sub-operations.
+	(rsb_im_compare): New pattern.
+	(negdi2): Delete.
+	(negdi2_insn): Delete.
+	(arm_negsi2): Correct type attribute to alu_imm.
+	(negsi2_0compare): New insn pattern.
+	(negsi2_carryin): New insn pattern.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (addsi3_carryin_alt2): Use arm_not_operand for
+	operand 2.
+
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.md (addsi3_carryin_shift_<optab>): Reorder operands

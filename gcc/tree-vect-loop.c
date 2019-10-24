@@ -327,7 +327,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 				 "get vectype for scalar type:  %T\n",
 				 scalar_type);
 
-	      vectype = get_vectype_for_scalar_type (scalar_type);
+	      vectype = get_vectype_for_scalar_type (loop_vinfo, scalar_type);
 	      if (!vectype)
 		return opt_result::failure_at (phi,
 					       "not vectorized: unsupported "
@@ -1414,7 +1414,7 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Loop contains SLP and non-SLP stmts\n");
       /* Both the vectorization factor and unroll factor have the form
-	 current_vector_size * X for some rational X, so they must have
+	 loop_vinfo->vector_size * X for some rational X, so they must have
 	 a common multiple.  */
       vectorization_factor
 	= force_common_multiple (vectorization_factor,
@@ -2260,6 +2260,17 @@ again:
 	{
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
+	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+	      || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
+	    {
+	      /* vectorizable_reduction adjusts reduction stmt def-types,
+		 restore them to that of the PHI.  */
+	      STMT_VINFO_DEF_TYPE (STMT_VINFO_REDUC_DEF (stmt_info))
+		= STMT_VINFO_DEF_TYPE (stmt_info);
+	      STMT_VINFO_DEF_TYPE (vect_stmt_to_vectorize
+					(STMT_VINFO_REDUC_DEF (stmt_info)))
+		= STMT_VINFO_DEF_TYPE (stmt_info);
+	    }
 	}
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
 	   !gsi_end_p (si); gsi_next (&si))
@@ -2311,7 +2322,6 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
   auto_vector_sizes vector_sizes;
 
   /* Autodetect first vector size we try.  */
-  current_vector_size = 0;
   targetm.vectorize.autovectorize_vector_sizes (&vector_sizes,
 						loop->simdlen != 0);
   unsigned int next_size = 0;
@@ -2333,7 +2343,7 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
   unsigned n_stmts = 0;
   poly_uint64 autodetected_vector_size = 0;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
-  poly_uint64 first_vector_size = 0;
+  poly_uint64 next_vector_size = 0;
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
@@ -2347,6 +2357,7 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return loop_vinfo;
 	}
+      loop_vinfo->vector_size = next_vector_size;
 
       bool fatal = false;
 
@@ -2354,6 +2365,9 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = orig_loop_vinfo;
 
       opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
+      if (next_size == 0)
+	autodetected_vector_size = loop_vinfo->vector_size;
+
       if (res)
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
@@ -2365,7 +2379,6 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	      if (first_loop_vinfo == NULL)
 		{
 		  first_loop_vinfo = loop_vinfo;
-		  first_vector_size = current_vector_size;
 		  loop->aux = NULL;
 		}
 	      else
@@ -2380,31 +2393,27 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
       else
 	delete loop_vinfo;
 
-      if (next_size == 0)
-	autodetected_vector_size = current_vector_size;
-
-      if (next_size < vector_sizes.length ()
-	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
-	next_size += 1;
-
       if (fatal)
 	{
 	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return opt_loop_vec_info::propagate_failure (res);
 	}
 
+      if (next_size < vector_sizes.length ()
+	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
+	next_size += 1;
+
       if (next_size == vector_sizes.length ()
-	  || known_eq (current_vector_size, 0U))
+	  || known_eq (autodetected_vector_size, 0U))
 	{
 	  if (first_loop_vinfo)
 	    {
-	      current_vector_size = first_vector_size;
 	      loop->aux = (loop_vec_info) first_loop_vinfo;
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_NOTE, vect_location,
 				   "***** Choosing vector size ");
-		  dump_dec (MSG_NOTE, current_vector_size);
+		  dump_dec (MSG_NOTE, first_loop_vinfo->vector_size);
 		  dump_printf (MSG_NOTE, "\n");
 		}
 	      return first_loop_vinfo;
@@ -2414,13 +2423,13 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 	}
 
       /* Try the next biggest vector size.  */
-      current_vector_size = vector_sizes[next_size++];
+      next_vector_size = vector_sizes[next_size++];
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "***** Re-trying analysis with "
 			   "vector size ");
-	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_dec (MSG_NOTE, next_vector_size);
 	  dump_printf (MSG_NOTE, "\n");
 	}
     }
@@ -2686,7 +2695,11 @@ pop:
 	  if (gimple_assign_rhs2 (use_stmt) == op)
 	    neg = ! neg;
 	}
-      if (*code == ERROR_MARK)
+      if (CONVERT_EXPR_CODE_P (use_code)
+	  && tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (use_stmt)),
+				    TREE_TYPE (gimple_assign_rhs1 (use_stmt))))
+	;
+      else if (*code == ERROR_MARK)
 	*code = use_code;
       else if (use_code != *code)
 	{
@@ -3774,7 +3787,7 @@ get_initial_def_for_reduction (stmt_vec_info stmt_vinfo,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (init_val);
-  tree vectype = get_vectype_for_scalar_type (scalar_type);
+  tree vectype = get_vectype_for_scalar_type (loop_vinfo, scalar_type);
   tree def_for_init;
   tree init_def;
   REAL_VALUE_TYPE real_init_val = dconst0;
@@ -3878,6 +3891,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 {
   vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   stmt_vec_info stmt_vinfo = stmts[0];
+  vec_info *vinfo = stmt_vinfo->vinfo;
   unsigned HOST_WIDE_INT nunits;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type;
@@ -3970,7 +3984,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 	    {
 	      /* First time round, duplicate ELTS to fill the
 		 required number of vectors.  */
-	      duplicate_and_interleave (&ctor_seq, vector_type, elts,
+	      duplicate_and_interleave (vinfo, &ctor_seq, vector_type, elts,
 					number_of_vectors, *vec_oprnds);
 	      break;
 	    }
@@ -4249,9 +4263,9 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 (CCOMPARE).  The then and else values mirror the main VEC_COND_EXPR:
 	 the reduction phi corresponds to NEW_PHI_TREE and the new values
 	 correspond to INDEX_BEFORE_INCR.  */
-      gcc_assert (STMT_VINFO_REDUC_IDX (stmt_info) >= 1);
+      gcc_assert (STMT_VINFO_REDUC_IDX (reduc_info) >= 1);
       tree index_cond_expr;
-      if (STMT_VINFO_REDUC_IDX (stmt_info) == 2)
+      if (STMT_VINFO_REDUC_IDX (reduc_info) == 2)
 	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
 				  ccompare, indx_before_incr, new_phi_tree);
       else
@@ -5302,10 +5316,7 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
   if (slp_node)
     {
       auto_vec<vec<tree> > vec_defs (2);
-      auto_vec<tree> sops(2);
-      sops.quick_push (ops[0]);
-      sops.quick_push (ops[1]);
-      vect_get_slp_defs (sops, slp_node, &vec_defs);
+      vect_get_slp_defs (slp_node, &vec_defs);
       vec_oprnds0.safe_splice (vec_defs[1 - reduc_index]);
       vec_defs[0].release ();
       vec_defs[1].release ();
@@ -5555,11 +5566,11 @@ build_vect_cond_expr (enum tree_code code, tree vop[3], tree mask,
    corresponds to the type of arguments to the reduction stmt, and should *NOT*
    be used to create the vectorized stmt.  The right vectype for the vectorized
    stmt is obtained from the type of the result X:
-        get_vectype_for_scalar_type (TREE_TYPE (X))
+      get_vectype_for_scalar_type (vinfo, TREE_TYPE (X))
 
    This means that, contrary to "regular" reductions (or "regular" stmts in
    general), the following equation:
-      STMT_VINFO_VECTYPE == get_vectype_for_scalar_type (TREE_TYPE (X))
+      STMT_VINFO_VECTYPE == get_vectype_for_scalar_type (vinfo, TREE_TYPE (X))
    does *NOT* necessarily hold for reduction patterns.  */
 
 bool
@@ -5685,20 +5696,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
         which is defined by the loop-header-phi.  */
 
   gassign *stmt = as_a <gassign *> (stmt_info->stmt);
-  switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
-    {
-    case GIMPLE_BINARY_RHS:
-    case GIMPLE_TERNARY_RHS:
-      break;
-
-    case GIMPLE_UNARY_RHS:
-    case GIMPLE_SINGLE_RHS:
-      return false;
-
-    default:
-      gcc_unreachable ();
-    }
   enum tree_code code = gimple_assign_rhs_code (stmt);
+  bool lane_reduc_code_p
+    = (code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR);
   int op_type = TREE_CODE_LENGTH (code);
 
   scalar_dest = gimple_assign_lhs (stmt);
@@ -5751,8 +5751,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	return false;
 
       /* To properly compute ncopies we are interested in the widest
-	 input type in case we're looking at a widening accumulation.  */
-      if (tem
+	 non-reduction input type in case we're looking at a widening
+	 accumulation that we later handle in vect_transform_reduction.  */
+      if (lane_reduc_code_p
+	  && tem
 	  && (!vectype_in
 	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
 		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (tem))))))
@@ -6144,7 +6146,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
       scalar_mode elt_mode = SCALAR_TYPE_MODE (TREE_TYPE (vectype_out));
       if (!neutral_op
-	  && !can_duplicate_and_interleave_p (group_size, elt_mode))
+	  && !can_duplicate_and_interleave_p (loop_vinfo, group_size,
+					      elt_mode))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6232,61 +6235,65 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       && (!STMT_VINFO_IN_PATTERN_P (use_stmt_info)
 	  || !STMT_VINFO_PATTERN_DEF_SEQ (use_stmt_info))
       && vect_stmt_to_vectorize (use_stmt_info) == stmt_info)
-    STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info) = single_defuse_cycle = true;
+    single_defuse_cycle = true;
 
-  if (single_defuse_cycle
-      || code == DOT_PROD_EXPR
-      || code == WIDEN_SUM_EXPR
-      || code == SAD_EXPR)
+  if (single_defuse_cycle || lane_reduc_code_p)
     {
       gcc_assert (code != COND_EXPR);
 
       /* 4. Supportable by target?  */
+      bool ok = true;
 
       /* 4.1. check support for the operation in the loop  */
-      optab optab = optab_for_tree_code (code, vectype_in, optab_default);
+      optab optab = optab_for_tree_code (code, vectype_in, optab_vector);
       if (!optab)
-        {
-          if (dump_enabled_p ())
+	{
+	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "no optab.\n");
-
-          return false;
+	  ok = false;
         }
 
       machine_mode vec_mode = TYPE_MODE (vectype_in);
-      if (optab_handler (optab, vec_mode) == CODE_FOR_nothing)
+      if (ok && optab_handler (optab, vec_mode) == CODE_FOR_nothing)
         {
           if (dump_enabled_p ())
             dump_printf (MSG_NOTE, "op not supported by target.\n");
-
 	  if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
 	      || !vect_worthwhile_without_simd_p (loop_vinfo, code))
-            return false;
-
-          if (dump_enabled_p ())
-	    dump_printf (MSG_NOTE, "proceeding using word mode.\n");
+	    ok = false;
+	  else
+	    if (dump_enabled_p ())
+	      dump_printf (MSG_NOTE, "proceeding using word mode.\n");
         }
 
       /* Worthwhile without SIMD support?  */
-      if (!VECTOR_MODE_P (TYPE_MODE (vectype_in))
+      if (ok
+	  && !VECTOR_MODE_P (TYPE_MODE (vectype_in))
 	  && !vect_worthwhile_without_simd_p (loop_vinfo, code))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not worthwhile without SIMD support.\n");
-
-          return false;
+	  ok = false;
         }
+
+      /* lane-reducing operations have to go through vect_transform_reduction.
+         For the other cases try without the single cycle optimization.  */
+      if (!ok)
+	{
+	  if (lane_reduc_code_p)
+	    return false;
+	  else
+	    single_defuse_cycle = false;
+	}
     }
+  STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info) = single_defuse_cycle;
 
   /* If the reduction stmt is one of the patterns that have lane
      reduction embedded we cannot handle the case of ! single_defuse_cycle.  */
-  if ((ncopies > 1
-       && ! single_defuse_cycle)
-      && (code == DOT_PROD_EXPR
-	  || code == WIDEN_SUM_EXPR
-	  || code == SAD_EXPR))
+  if ((ncopies > 1 && ! single_defuse_cycle)
+      && lane_reduc_code_p)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6473,16 +6480,8 @@ vect_transform_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    {
 	      /* Get vec defs for all the operands except the reduction index,
 		 ensuring the ordering of the ops in the vector is kept.  */
-	      auto_vec<tree, 3> slp_ops;
 	      auto_vec<vec<tree>, 3> vec_defs;
-
-	      slp_ops.quick_push (ops[0]);
-	      slp_ops.quick_push (ops[1]);
-	      if (op_type == ternary_op)
-		slp_ops.quick_push (ops[2]);
-
-	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs);
-
+	      vect_get_slp_defs (slp_node, &vec_defs);
 	      vec_oprnds0.safe_splice (vec_defs[0]);
 	      vec_defs[0].release ();
 	      vec_oprnds1.safe_splice (vec_defs[1]);
@@ -7743,19 +7742,19 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
 /* Return a mask type with half the number of elements as TYPE.  */
 
 tree
-vect_halve_mask_nunits (tree type)
+vect_halve_mask_nunits (vec_info *vinfo, tree type)
 {
   poly_uint64 nunits = exact_div (TYPE_VECTOR_SUBPARTS (type), 2);
-  return build_truth_vector_type (nunits, current_vector_size);
+  return build_truth_vector_type (nunits, vinfo->vector_size);
 }
 
 /* Return a mask type with twice as many elements as TYPE.  */
 
 tree
-vect_double_mask_nunits (tree type)
+vect_double_mask_nunits (vec_info *vinfo, tree type)
 {
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type) * 2;
-  return build_truth_vector_type (nunits, current_vector_size);
+  return build_truth_vector_type (nunits, vinfo->vector_size);
 }
 
 /* Record that a fully-masked version of LOOP_VINFO would need MASKS to
@@ -8241,7 +8240,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "LOOP EPILOGUE VECTORIZED (VS=");
-	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_dec (MSG_NOTE, loop_vinfo->vector_size);
 	  dump_printf (MSG_NOTE, ")\n");
 	}
     }
@@ -8293,14 +8292,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
 	  unsigned int ratio;
 	  while (next_size < vector_sizes.length ()
-		 && !(constant_multiple_p (current_vector_size,
+		 && !(constant_multiple_p (loop_vinfo->vector_size,
 					   vector_sizes[next_size], &ratio)
 		      && eiters >= lowest_vf / ratio))
 	    next_size += 1;
 	}
       else
 	while (next_size < vector_sizes.length ()
-	       && maybe_lt (current_vector_size, vector_sizes[next_size]))
+	       && maybe_lt (loop_vinfo->vector_size, vector_sizes[next_size]))
 	  next_size += 1;
 
       if (next_size == vector_sizes.length ())

@@ -535,15 +535,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Standard Library Concepts </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0898r3.pdf">
 	P0898R3
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_concepts &gt;= 201806L</code> </entry>
     </row>
 
     <row>

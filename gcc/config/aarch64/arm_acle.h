@@ -193,6 +193,22 @@ __ttest (void)
 #pragma GCC pop_options
 #endif
 
+#pragma GCC push_options
+#pragma GCC target ("+nothing+rng")
+__extension__ static __inline int __attribute__ ((__always_inline__))
+__rndr (uint64_t *__res)
+{
+  return __builtin_aarch64_rndr (__res);
+}
+
+__extension__ static __inline int __attribute__ ((__always_inline__))
+__rndrrs (uint64_t *__res)
+{
+  return __builtin_aarch64_rndrrs (__res);
+}
+
+#pragma GCC pop_options
+
 #ifdef __cplusplus
 }
 #endif

@@ -21,6 +21,8 @@ foo ()
      2005-12-26  Kazu Hirata  <kazu@codesourcery.com>
                                                                                 
         PR tree-optimization/25125
+
+     but we still handle the reduction.
    */
 
   for (i = 0; i < N; i++)
@@ -43,5 +45,4 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vect_recog_widen_sum_pattern: detected" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! vect_widen_sum_qi_to_hi } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_sum_qi_to_hi } } } } */

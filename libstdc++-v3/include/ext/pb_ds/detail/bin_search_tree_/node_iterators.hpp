@@ -58,10 +58,7 @@ namespace __gnu_pbds
     class bin_search_tree_const_node_it_
     {
     private:
-      typedef
-      typename _Alloc::template rebind<
-      Node>::other::pointer
-      node_pointer;
+      typedef typename rebind_traits<_Alloc, Node>::pointer node_pointer;
 
     public:
       /// Category.
@@ -83,9 +80,8 @@ namespace __gnu_pbds
       typedef typename Node::metadata_type metadata_type;
 
       /// Const metadata reference type.
-      typedef
-      typename _Alloc::template rebind<metadata_type>::other::const_reference
-      metadata_const_reference;
+      typedef typename rebind_traits<_Alloc, metadata_type>::const_reference
+	metadata_const_reference;
 
 
       bin_search_tree_const_node_it_(const node_pointer p_nd = 0)
@@ -137,10 +133,7 @@ namespace __gnu_pbds
     : public PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC
     {
     private:
-      typedef
-      typename _Alloc::template rebind<
-      Node>::other::pointer
-      node_pointer;
+      typedef typename rebind_traits<_Alloc, Node>::pointer node_pointer;
 
     public:
       /// Iterator's value type.

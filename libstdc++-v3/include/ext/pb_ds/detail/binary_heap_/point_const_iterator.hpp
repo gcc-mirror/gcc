@@ -55,7 +55,7 @@ namespace __gnu_pbds
     class binary_heap_point_const_iterator_
     {
     protected:
-      typedef typename _Alloc::template rebind<Entry>::other::pointer entry_pointer;
+      typedef typename rebind_traits<_Alloc, Entry>::pointer entry_pointer;
 
     public:
       /// Category.
@@ -68,23 +68,19 @@ namespace __gnu_pbds
       typedef Value_Type value_type;
 
       /// Iterator's pointer type.
-      typedef typename _Alloc::template rebind<value_type>::other::pointer
-      pointer;
+      typedef typename rebind_traits<_Alloc, value_type>::pointer pointer;
 
       /// Iterator's const pointer type.
-      typedef
-      typename _Alloc::template rebind<value_type>::other::const_pointer
-      const_pointer;
+      typedef typename rebind_traits<_Alloc, value_type>::const_pointer
+	const_pointer;
 
       /// Iterator's reference type.
-      typedef
-      typename _Alloc::template rebind<value_type>::other::reference
-      reference;
+      typedef typename rebind_traits<_Alloc, value_type>::reference
+	reference;
 
       /// Iterator's const reference type.
-      typedef
-      typename _Alloc::template rebind<value_type>::other::const_reference
-      const_reference;
+      typedef typename rebind_traits<_Alloc, value_type>::const_reference
+	const_reference;
 
       inline
       binary_heap_point_const_iterator_(entry_pointer p_e) : m_p_e(p_e)

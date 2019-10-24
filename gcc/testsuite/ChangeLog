@@ -1,3 +1,216 @@
+2019-10-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.dg/ipa/ipa-sra-19.c: Remove dg-skip-if. Add argument type to
+	prototype of k.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-10a.c: New testcase.
+	* gcc.dg/vect/slp-reduc-10b.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10c.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10d.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10e.c: Likewise.
+
+2019-10-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/emulate-slli.c: Skip for -mcpu=msp430.
+	Add shift by a constant 5 bits.
+	Update scan-assembler directives.
+	* gcc.target/msp430/emulate-srai.c: Likewise.
+	* gcc.target/msp430/emulate-srli.c: Skip for -mcpu=msp430.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92205
+	* gcc.dg/vect/pr92205.c: New testcase.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92203
+	* gcc.dg/torture/pr92203.c: New testcase.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* gcc.dg/vect/vect-reduc-2short.c: Fix typo.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* gcc.dg/vect/vect-reduc-2char-big-array.c: Adjust again.
+	* gcc.dg/vect/vect-reduc-2char.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2c.c: Likewise.
+
+2019-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/load-thread-pointer-once-2.c: New test.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-9.c: New testcase.
+
+2019-10-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr70010.c: Add -Wno-psabi.
+	* gcc.target/powerpc/pr70010-[12].c: Require LTO.
+	* gcc.target/powerpc/pr91275.c: Add -mcpu=power8.
+
+2019-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* gcc.dg/vect/vect-reduc-2char-big-array.c: Adjust.
+	* gcc.dg/vect/vect-reduc-2char.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2c.c: Likewise.
+
+2019-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/constexpr-dtor3.C: Expect in 'constexpr' expansion of
+	message on the line with variable declaration.
+	* g++.dg/ext/constexpr-attr-cleanup1.C: Likewise.
+
+2019-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20191023-1.c: New test.
+
+2019-10-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/91969
+	* g++.dg/ipa/pr91969.C: New test.
+
+2019-10-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/85746
+	* g++.dg/pr85746.C: New file.
+
+2019-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92173
+	* gcc.dg/torture/pr92173.c: New testcase.
+
+2019-10-22  Michael Matz  <matz@suse.de>
+
+	PR middle-end/90796
+	* gcc.dg/unroll-and-jam.c: Add three invalid and one valid case.
+
+2019-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92173
+	* gcc.dg/torture/pr92173.c: New testcase.
+
+2019-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/diagnostic/aka5.h: New test.
+	* g++.dg/diagnostic/aka5a.C: Likewise.
+	* g++.dg/diagnostic/aka5b.C: Likewise.
+	* g++.target/aarch64/diag_aka_1.C: Likewise.
+
+2019-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/Wnonnull.c: Provide prototypes for strlen and memcpy.
+	Use __SIZE_TYPE__ instead of size_t.
+
+2019-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/parse/qualified2.C: Tighten dg-error directive.
+	* g++.old-deja/g++.other/decl5.C: Don't expect redundant error.
+
+2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92015
+	* g++.dg/cpp0x/constexpr-92015.C: New test.
+
+2019-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92062 - ODR-use ignored for static member of class template.
+	* g++.dg/cpp0x/constexpr-odr1.C: New test.
+	* g++.dg/cpp0x/constexpr-odr2.C: New test.
+
+2019-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92106 - ICE with structured bindings and -Wreturn-local-addr.
+	* g++.dg/cpp1z/decomp50.C: New test.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92162
+	* gcc.dg/pr92162.c: New testcase.
+
+2019-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92161
+	* gfortran.dg/pr92161.f: New testcase.
+
+2019-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/acle/rng_1.c: New test.
+
+2019-10-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/91532
+	* gcc.target/aarch64/sve/fmla_2.c: Add dg-scan check for two st1d
+	insns.
+
+2019-10-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix some fallout for small targets.
+
+	PR testsuite/52641
+	* gcc.dg/torture/pr86034.c: Use 32-bit base type for a bitfield of
+	width > 16 bits.
+	* gcc.dg/torture/pr90972.c [avr]: Add option "-w".
+	* gcc.dg/torture/pr87693.c: Same.
+	* gcc.dg/torture/pr91178.c: Add dg-require-effective-target size32plus.
+	* gcc.dg/torture/pr91178-2.c: Same.
+	* gcc.dg/torture/20181024-1.c
+	* gcc.dg/torture/pr86554-1.c: Use 32-bit integers.
+	* gcc.dg/tree-ssa/pr91091-1.c: Same.
+
+2019-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/alias-access-path-2.c: New testcase.
+	* gcc.dg/tree-ssa/alias-access-path-11.c: xfail.
+
+2019-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/nodiscard-reason-only-one.C: In dg-error or dg-warning
+	remove (?n) uses and replace .* with \[^\n\r]*.
+	* g++.dg/cpp2a/nodiscard-reason.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-once.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-reason-nonstring.C: Likewise.
+
+2019-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92140
+	* gcc.target/i386/pr92140.c: New test.
+	* gcc.c-torture/execute/pr92140.c: New test.
+
+2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/Wnonnull.c: Add attributed function declarations for
+	memcpy and strlen for Darwin.
+
+2019-10-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92157
+	* gcc.dg/strlenopt-69.c: Disable test failing due to PR 92155.
+	* gcc.dg/strlenopt-87.c: New test.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/negdi-3.c: Update expected output to allow NEGS.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/builtin-arith-overflow-3.c: New test.
+
+2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/negdi-3.c: Remove XFAIL markers.
+
 2019-10-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/pr53447-1.c: Remove XFAIL.
@@ -189,6 +402,10 @@
 	* gcc.dg/ipa/pr91088.c: New test.
 	* gcc.dg/ipa/pr91089.c: Add sub-test for range analysis.
 	* g++.dg/tree-ssa/ivopts-3.C: Force a function to be noinline.
+
+2019-10-15  Andrew Sutton  <asutton@lock3software.com>
+
+	* g++.dg/cpp2a/concepts5.C: New test.
 
 2019-10-15  Andrew Pinski  <apinski@marvell.com>
 

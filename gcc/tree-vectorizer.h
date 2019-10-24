@@ -120,6 +120,8 @@ struct _slp_tree {
   vec<slp_tree> children;
   /* A group of scalar stmts to be vectorized together.  */
   vec<stmt_vec_info> stmts;
+  /* A group of scalar operands to be vectorized together.  */
+  vec<tree> ops;
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
   vec<unsigned> load_permutation;
@@ -171,6 +173,7 @@ public:
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
+#define SLP_TREE_SCALAR_OPS(S)                   (S)->ops
 #define SLP_TREE_VEC_STMTS(S)                    (S)->vec_stmts
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
@@ -325,6 +328,10 @@ public:
 
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
+
+  /* The vector size for this loop in bytes, or 0 if we haven't picked
+     a size yet.  */
+  poly_uint64 vector_size;
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
@@ -1472,7 +1479,7 @@ vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
 static inline void
 vect_update_max_nunits (poly_uint64 *max_nunits, poly_uint64 nunits)
 {
-  /* All unit counts have the form current_vector_size * X for some
+  /* All unit counts have the form vec_info::vector_size * X for some
      rational X, so two unit sizes must have a common multiple.
      Everything is a multiple of the initial value of 1.  */
   *max_nunits = force_common_multiple (*max_nunits, nunits);
@@ -1588,10 +1595,9 @@ extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
-extern poly_uint64 current_vector_size;
-extern tree get_vectype_for_scalar_type (tree);
+extern tree get_vectype_for_scalar_type (vec_info *, tree);
 extern tree get_vectype_for_scalar_type_and_size (tree, poly_uint64);
-extern tree get_mask_type_for_scalar_type (tree);
+extern tree get_mask_type_for_scalar_type (vec_info *, tree);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_get_loop_mask_type (loop_vec_info);
 extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
@@ -1603,8 +1609,8 @@ extern bool supportable_widening_operation (enum tree_code, stmt_vec_info,
 					    tree, tree, enum tree_code *,
 					    enum tree_code *, int *,
 					    vec<tree> *);
-extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
-					     enum tree_code *,
+extern bool supportable_narrowing_operation (vec_info *, enum tree_code, tree,
+					     tree, enum tree_code *,
 					     int *, vec<tree> *);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
@@ -1634,7 +1640,7 @@ extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				stmt_vector_for_cost *, bool);
 extern void vect_get_store_cost (stmt_vec_info, int,
 				 unsigned int *, stmt_vector_for_cost *);
-extern bool vect_supportable_shift (enum tree_code, tree);
+extern bool vect_supportable_shift (vec_info *, enum tree_code, tree);
 extern tree vect_gen_perm_mask_any (tree, const vec_perm_indices &);
 extern tree vect_gen_perm_mask_checked (tree, const vec_perm_indices &);
 extern void optimize_mask_stores (class loop*);
@@ -1705,8 +1711,8 @@ extern opt_loop_vec_info vect_analyze_loop (class loop *,
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
-extern tree vect_halve_mask_nunits (tree);
-extern tree vect_double_mask_nunits (tree);
+extern tree vect_halve_mask_nunits (vec_info *, tree);
+extern tree vect_double_mask_nunits (vec_info *, tree);
 extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
 				   unsigned int, tree, tree);
 extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
@@ -1747,15 +1753,16 @@ extern void vect_schedule_slp (vec_info *);
 extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
-extern void vect_get_slp_defs (vec<tree> , slp_tree, vec<vec<tree> > *);
+extern void vect_get_slp_defs (slp_tree, vec<vec<tree> > *, unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);
 extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);
-extern bool can_duplicate_and_interleave_p (unsigned int, machine_mode,
+extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int,
+					    machine_mode,
 					    unsigned int * = NULL,
 					    tree * = NULL, tree * = NULL);
-extern void duplicate_and_interleave (gimple_seq *, tree, vec<tree>,
-				      unsigned int, vec<tree> &);
+extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
+				      vec<tree>, unsigned int, vec<tree> &);
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 
 /* In tree-vect-patterns.c.  */

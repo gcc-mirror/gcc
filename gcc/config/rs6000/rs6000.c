@@ -21076,14 +21076,32 @@ rs6000_insn_cost (rtx_insn *insn, bool speed)
   if (recog_memoized (insn) < 0)
     return 0;
 
+  /* If we are optimizing for size, just use the length.  */
   if (!speed)
     return get_attr_length (insn);
 
+  /* Use the cost if provided.  */
   int cost = get_attr_cost (insn);
   if (cost > 0)
     return cost;
 
-  int n = get_attr_length (insn) / 4;
+  /* If the insn tells us how many insns there are, use that.  Otherwise use
+     the length/4.  Adjust the insn length to remove the extra size that
+     prefixed instructions take.  */
+  int n = get_attr_num_insns (insn);
+  if (n == 0)
+    {
+      int length = get_attr_length (insn);
+      if (get_attr_prefixed (insn) == PREFIXED_YES)
+	{
+	  int adjust = 0;
+	  ADJUST_INSN_LENGTH (insn, adjust);
+	  length -= adjust;
+	}
+
+      n = length / 4;
+    }
+
   enum attr_type type = get_attr_type (insn);
 
   switch (type)
@@ -25085,6 +25103,37 @@ rs6000_asm_output_opcode (FILE *stream)
     fprintf (stream, "p");
 
   return;
+}
+
+/* Adjust the length of an INSN.  LENGTH is the currently-computed length and
+   should be adjusted to reflect any required changes.  This macro is used when
+   there is some systematic length adjustment required that would be difficult
+   to express in the length attribute.
+
+   In the PowerPC, we use this to adjust the length of an instruction if one or
+   more prefixed instructions are generated, using the attribute
+   num_prefixed_insns.  A prefixed instruction is 8 bytes instead of 4, but the
+   hardware requires that a prefied instruciton does not cross a 64-byte
+   boundary.  This means the compiler has to assume the length of the first
+   prefixed instruction is 12 bytes instead of 8 bytes.  Since the length is
+   already set for the non-prefixed instruction, we just need to udpate for the
+   difference.  */
+
+int
+rs6000_adjust_insn_length (rtx_insn *insn, int length)
+{
+  if (TARGET_PREFIXED_ADDR && NONJUMP_INSN_P (insn))
+    {
+      rtx pattern = PATTERN (insn);
+      if (GET_CODE (pattern) != USE && GET_CODE (pattern) != CLOBBER
+	  && get_attr_prefixed (insn) == PREFIXED_YES)
+	{
+	  int num_prefixed = get_attr_max_prefixed_insns (insn);
+	  length += 4 * (num_prefixed + 1);
+	}
+    }
+
+  return length;
 }
 
 

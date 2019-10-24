@@ -262,6 +262,8 @@
     UNSPECV_TSTART		; Represent transaction start.
     UNSPECV_TCOMMIT		; Represent transaction commit.
     UNSPECV_TCANCEL		; Represent transaction cancel.
+    UNSPEC_RNDR			; Represent RNDR
+    UNSPEC_RNDRRS		; Represent RNDRRS
   ]
 )
 
@@ -7336,6 +7338,26 @@
   "TARGET_TME && (UINTVAL (operands[0]) <= 65535)"
   "tcancel\\t#%0"
   [(set_attr "type" "tme")]
+)
+
+(define_insn "aarch64_rndr"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_RNDR))
+   (set (reg:CC_Z CC_REGNUM)
+	(unspec_volatile:CC_Z [(const_int 0)] UNSPEC_RNDR))]
+  "TARGET_RNG"
+  "mrs\t%0, RNDR"
+  [(set_attr "type" "mrs")]
+)
+
+(define_insn "aarch64_rndrrs"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_RNDRRS))
+   (set (reg:CC_Z CC_REGNUM)
+	(unspec_volatile:CC_Z [(const_int 0)] UNSPEC_RNDRRS))]
+  "TARGET_RNG"
+  "mrs\t%0, RNDRRS"
+  [(set_attr "type" "mrs")]
 )
 
 ;; AdvSIMD Stuff

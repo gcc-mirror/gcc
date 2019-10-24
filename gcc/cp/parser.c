@@ -2138,16 +2138,13 @@ cp_parser_context_new (cp_parser_context* next)
   parser->unparsed_queues->last ().funs_with_definitions
 #define unparsed_nsdmis \
   parser->unparsed_queues->last ().nsdmis
-#define unparsed_classes \
-  parser->unparsed_queues->last ().classes
 #define unparsed_noexcepts \
   parser->unparsed_queues->last ().noexcepts
 
 static void
 push_unparsed_function_queues (cp_parser *parser)
 {
-  cp_unparsed_functions_entry e = { NULL, make_tree_vector (), NULL, NULL,
-				    NULL };
+  cp_unparsed_functions_entry e = { NULL, make_tree_vector (), NULL, NULL };
   vec_safe_push (parser->unparsed_queues, e);
 }
 
@@ -24247,7 +24244,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	     error recovery (c++/71169, c++/71832).  */
 	  vec_safe_truncate (unparsed_funs_with_default_args, 0);
 	  vec_safe_truncate (unparsed_nsdmis, 0);
-	  vec_safe_truncate (unparsed_classes, 0);
 	  vec_safe_truncate (unparsed_funs_with_definitions, 0);
 	}
 
@@ -24301,12 +24297,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
-
-      /* Now do some post-NSDMI bookkeeping.  */
-      FOR_EACH_VEC_SAFE_ELT (unparsed_classes, ix, class_type)
-	after_nsdmi_defaulted_late_checks (class_type);
-      vec_safe_truncate (unparsed_classes, 0);
-      after_nsdmi_defaulted_late_checks (type);
 
       /* If there are noexcept-specifiers that have not yet been processed,
 	 take care of them now.  */
@@ -24397,8 +24387,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  cp_parser_late_parsing_for_member (parser, decl);
       vec_safe_truncate (unparsed_funs_with_definitions, 0);
     }
-  else
-    vec_safe_push (unparsed_classes, type);
 
   /* Put back any saved access checks.  */
   pop_deferring_access_checks ();
@@ -24690,12 +24678,8 @@ cp_parser_class_head (cp_parser* parser,
 	 ... [or] the definition or explicit instantiation of a
 	 class member of a namespace outside of its namespace.  */
       if (scope == nested_name_specifier)
-	{
-	  permerror (nested_name_specifier_token_start->location,
-		     "extra qualification not allowed");
-	  nested_name_specifier = NULL_TREE;
-	  num_templates = 0;
-	}
+	permerror (nested_name_specifier_token_start->location,
+		   "extra qualification not allowed");
     }
   /* An explicit-specialization must be preceded by "template <>".  If
      it is not, try to recover gracefully.  */
@@ -27063,6 +27047,11 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       arguments = error_mark_node;
     else
       {
+	if (vec->is_empty())
+	  /* e.g. [[attr()]].  */
+	  error_at (token->location, "parentheses must be omitted if "
+		    "%qE attribute argument list is empty",
+		    attr_id);
 	arguments = build_tree_list_vec (vec);
 	release_tree_vector (vec);
       }
@@ -27077,9 +27066,9 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 }
 
 /* Check that the attribute ATTRIBUTE appears at most once in the
-   attribute-list ATTRIBUTES.  This is enforced for noreturn (7.6.3)
-   and deprecated (7.6.5).  Note that carries_dependency (7.6.4)
-   isn't implemented yet in GCC.  */
+   attribute-list ATTRIBUTES.  This is enforced for noreturn (7.6.3),
+   nodiscard, and deprecated (7.6.5).  Note that
+   carries_dependency (7.6.4) isn't implemented yet in GCC.  */
 
 static void
 cp_parser_check_std_attribute (tree attributes, tree attribute)
@@ -27094,6 +27083,10 @@ cp_parser_check_std_attribute (tree attributes, tree attribute)
       else if (is_attribute_p ("deprecated", name)
 	       && lookup_attribute ("deprecated", attributes))
 	error ("attribute %<deprecated%> can appear at most once "
+	       "in an attribute-list");
+      else if (is_attribute_p ("nodiscard", name)
+	       && lookup_attribute ("nodiscard", attributes))
+	error ("attribute %<nodiscard%> can appear at most once "
 	       "in an attribute-list");
     }
 }
@@ -28838,11 +28831,19 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
 	     looking for the type-specifier.  It is actually a function named
 	     `T::fn' that takes one parameter (of type `int') and returns a
 	     value of type `S'.  Constructors can be friends, but they must
-	     use a qualified name.  */
+	     use a qualified name.
+
+	     Parse with an empty set of declaration specifiers since we're
+	     trying to match a decl-specifier-seq of the first parameter.  
+	     This must be non-null so that cp_parser_simple_type_specifier
+	     will recognize a constrained placeholder type such as:
+	     'C<int> auto' where C is a type concept.  */
+	  cp_decl_specifier_seq ctor_specs;
+	  clear_decl_specs (&ctor_specs);
 	  cp_parser_type_specifier (parser,
 				    (friend_p ? CP_PARSER_FLAGS_NONE
 				     : (flags & ~CP_PARSER_FLAGS_OPTIONAL)),
-				    /*decl_specs=*/NULL,
+				    /*decl_specs=*/&ctor_specs,
 				    /*is_declarator=*/true,
 				    /*declares_class_or_enum=*/NULL,
 				    /*is_cv_qualifier=*/NULL);

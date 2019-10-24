@@ -295,19 +295,16 @@ gt_ggc_mx(function_summary<T *>* const &summary)
 
 template <typename T>
 void
-gt_pch_nx(function_summary<T *>* const &summary)
+gt_pch_nx (function_summary<T *> *const &)
 {
-  gcc_checking_assert (summary->m_ggc);
-  gt_pch_nx (&summary->m_map);
+  gcc_unreachable ();
 }
 
 template <typename T>
 void
-gt_pch_nx(function_summary<T *>* const& summary, gt_pointer_operator op,
-	  void *cookie)
+gt_pch_nx (function_summary<T *> *const &, gt_pointer_operator, void *)
 {
-  gcc_checking_assert (summary->m_ggc);
-  gt_pch_nx (&summary->m_map, op, cookie);
+  gcc_unreachable ();
 }
 
 /* Help template from std c++11.  */
@@ -538,18 +535,17 @@ gt_ggc_mx (fast_function_summary<T *, va_gc>* const &summary)
 
 template <typename T>
 void
-gt_pch_nx (fast_function_summary<T *, va_gc>* const &summary)
+gt_pch_nx (fast_function_summary<T *, va_gc> *const &)
 {
-  gt_pch_nx (summary->m_vector);
+  gcc_unreachable ();
 }
 
 template <typename T>
 void
-gt_pch_nx (fast_function_summary<T *, va_gc>* const& summary,
-	   gt_pointer_operator op,
-	   void *cookie)
+gt_pch_nx (fast_function_summary<T *, va_gc> *const &, gt_pointer_operator,
+	   void *)
 {
-  gt_pch_nx (summary->m_vector, op, cookie);
+  gcc_unreachable ();
 }
 
 /* Base class for call_summary and fast_call_summary classes.  */
@@ -784,19 +780,16 @@ gt_ggc_mx(call_summary<T *>* const &summary)
 
 template <typename T>
 void
-gt_pch_nx(call_summary<T *>* const &summary)
+gt_pch_nx (call_summary<T *> *const &)
 {
-  gcc_checking_assert (summary->m_ggc);
-  gt_pch_nx (&summary->m_map);
+  gcc_unreachable ();
 }
 
 template <typename T>
 void
-gt_pch_nx(call_summary<T *>* const& summary, gt_pointer_operator op,
-	  void *cookie)
+gt_pch_nx (call_summary<T *> *const &, gt_pointer_operator, void *)
 {
-  gcc_checking_assert (summary->m_ggc);
-  gt_pch_nx (&summary->m_map, op, cookie);
+  gcc_unreachable ();
 }
 
 /* We want to pass just pointer types as argument for fast_call_summary
@@ -994,18 +987,16 @@ gt_ggc_mx (fast_call_summary<T *, va_gc>* const &summary)
 
 template <typename T>
 void
-gt_pch_nx (fast_call_summary<T *, va_gc>* const &summary)
+gt_pch_nx (fast_call_summary<T *, va_gc> *const &)
 {
-  gt_pch_nx (&summary->m_vector);
+  gcc_unreachable ();
 }
 
 template <typename T>
 void
-gt_pch_nx (fast_call_summary<T *, va_gc>* const& summary,
-	   gt_pointer_operator op,
-	   void *cookie)
+gt_pch_nx (fast_call_summary<T *, va_gc> *const &, gt_pointer_operator, void *)
 {
-  gt_pch_nx (&summary->m_vector, op, cookie);
+  gcc_unreachable ();
 }
 
 #endif  /* GCC_SYMBOL_SUMMARY_H  */

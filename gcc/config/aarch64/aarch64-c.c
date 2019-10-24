@@ -160,6 +160,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_FRINT, "__ARM_FEATURE_FRINT", pfile);
   aarch64_def_or_undef (TARGET_TME, "__ARM_FEATURE_TME", pfile);
+  aarch64_def_or_undef (TARGET_RNG, "__ARM_FEATURE_RNG", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A

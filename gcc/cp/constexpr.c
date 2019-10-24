@@ -1259,7 +1259,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     }
 
   bool save_ffbcp = force_folding_builtin_constant_p;
-  force_folding_builtin_constant_p = true;
+  force_folding_builtin_constant_p |= ctx->manifestly_const_eval;
   tree save_cur_fn = current_function_decl;
   /* Return name of ctx->call->fundef->decl for __builtin_FUNCTION ().  */
   if (fndecl_built_in_p (fun, BUILT_IN_FUNCTION)
@@ -2886,7 +2886,10 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
 	  : field == part)
 	{
 	  if (value)
-	    return value;
+	    {
+	      STRIP_ANY_LOCATION_WRAPPER (value);
+	      return value;
+	    }
 	  else
 	    /* We're in the middle of initializing it.  */
 	    break;
@@ -2976,6 +2979,7 @@ cxx_eval_bit_field_ref (const constexpr_ctx *ctx, tree t,
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (whole), i, field, value)
     {
       tree bitpos = bit_position (field);
+      STRIP_ANY_LOCATION_WRAPPER (value);
       if (bitpos == start && DECL_SIZE (field) == TREE_OPERAND (t, 1))
 	return value;
       if (TREE_CODE (TREE_TYPE (field)) == INTEGER_TYPE
@@ -4983,14 +4987,20 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					  non_constant_p, overflow_p,
 					  jump_target);
 	if (!CLEANUP_EH_ONLY (t) && !*non_constant_p)
-	  /* Also evaluate the cleanup.  If we weren't skipping at the
-	     start of the CLEANUP_BODY, change jump_target temporarily
-	     to &initial_jump_target, so that even a return or break or
-	     continue in the body doesn't skip the cleanup.  */
-	  cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
-					non_constant_p, overflow_p,
-					jump_target ? &initial_jump_target
-					: NULL);
+	  {
+	    location_t loc = input_location;
+	    if (EXPR_HAS_LOCATION (t))
+	      input_location = EXPR_LOCATION (t);
+	    /* Also evaluate the cleanup.  If we weren't skipping at the
+	       start of the CLEANUP_BODY, change jump_target temporarily
+	       to &initial_jump_target, so that even a return or break or
+	       continue in the body doesn't skip the cleanup.  */
+	    cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
+					  non_constant_p, overflow_p,
+					  jump_target ? &initial_jump_target
+					  : NULL);
+	    input_location = loc;
+	  }
       }
       break;
 

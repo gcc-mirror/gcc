@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -finline-functions" } */
+/* { dg-options "-O2 -finline-functions -Wno-psabi" } */
 /* { dg-final { scan-assembler {\mbl vadd_no_vsx\M} } } */
 
 typedef int vec_t __attribute__((vector_size(16)));

@@ -11737,7 +11737,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
 /* Implement TARGET_EXPAND_BUILTIN.  */
 static rtx
-aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int)
+aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
@@ -11745,7 +11745,7 @@ aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int)
   switch (code & AARCH64_BUILTIN_CLASS)
     {
     case AARCH64_BUILTIN_GENERAL:
-      return aarch64_general_expand_builtin (subcode, exp, target);
+      return aarch64_general_expand_builtin (subcode, exp, target, ignore);
     }
   gcc_unreachable ();
 }
@@ -11828,7 +11828,9 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     /* Caller assumes we cannot fail.  */
     gcc_assert (use_rsqrt_p (mode));
 
-  machine_mode mmsk = mode_for_int_vector (mode).require ();
+  machine_mode mmsk = (VECTOR_MODE_P (mode)
+		       ? mode_for_int_vector (mode).require ()
+		       : int_mode_for_mode (mode).require ());
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
     /* When calculating the approximate square root, compare the

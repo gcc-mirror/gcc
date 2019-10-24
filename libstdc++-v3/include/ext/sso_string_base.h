@@ -140,7 +140,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       size_type
       _M_max_size() const
-      { return (_M_get_allocator().max_size() - 1) / 2; }
+      {
+	typedef __alloc_traits<_CharT_alloc_type> _ATraits;
+	return (_ATraits::max_size(_M_get_allocator()) - 1) / 2;
+      }
 
       _CharT*
       _M_data() const

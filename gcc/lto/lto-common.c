@@ -2177,7 +2177,8 @@ create_subid_section_table (struct lto_section_slot *ls, splay_tree file_ids,
 /* Read declarations and other initializations for a FILE_DATA.  */
 
 static void
-lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
+lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
+		   int order)
 {
   const char *data;
   size_t len;
@@ -2195,6 +2196,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 
   file_data->renaming_hash_table = lto_create_renaming_table ();
   file_data->file_name = file->filename;
+  file_data->order = order;
 #ifdef ACCEL_COMPILER
   lto_input_mode_table (file_data);
 #else
@@ -2231,9 +2233,9 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 
 static int
 lto_create_files_from_ids (lto_file *file, struct lto_file_decl_data *file_data,
-			   int *count)
+			   int *count, int order)
 {
-  lto_file_finalize (file_data, file);
+  lto_file_finalize (file_data, file, order);
   if (symtab->dump_file)
     fprintf (symtab->dump_file,
 	     "Creating file %s with sub id " HOST_WIDE_INT_PRINT_HEX "\n",
@@ -2285,9 +2287,10 @@ lto_file_read (lto_file *file, FILE *resolution_file, int *count)
   lto_resolution_read (file_ids, resolution_file, file);
 
   /* Finalize each lto file for each submodule in the merged object.  */
+  int order = 0;
   for (file_data = file_list.first; file_data != NULL;
        file_data = file_data->next)
-    lto_create_files_from_ids (file, file_data, count);
+    lto_create_files_from_ids (file, file_data, count, order++);
 
   splay_tree_delete (file_ids);
   htab_delete (section_hash_table);

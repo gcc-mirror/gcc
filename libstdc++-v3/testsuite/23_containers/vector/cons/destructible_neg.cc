@@ -43,3 +43,7 @@ test02()
 }
 
 // { dg-error "value type is destructible" "" { target *-*-* } 0 }
+
+// Needed because of PR c++/92193
+// { dg-prune-output "deleted function" }
+// { dg-prune-output "private within this context" }
