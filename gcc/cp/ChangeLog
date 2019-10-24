@@ -1,3 +1,7 @@
+2019-10-24  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (reshape_init_r): Add missing space.
+
 2019-10-24  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (reduce_template_parm_level): Attach the new TPI to the new
