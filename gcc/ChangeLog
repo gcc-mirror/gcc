@@ -1,3 +1,30 @@
+2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.c (ipa_reference_optimization_summary_d): Rename
+	statics_not_read and statics_not_written to statics_read and
+	statics_written respectively.
+	(no_module_statics): New static var.
+	(ipa_reference_get_not_read_global): Rename to ...
+	(ipa_reference_get_read_global): ... this.
+	(ipa_reference_get_not_written_global): Rename to ...
+	(ipa_reference_get_written_global): ... this.
+	(dump_static_vars_set_to_file): Dump no_module_statics.
+	(copy_static_var_set): Add for propagation parameter.
+	(ipa_init): Initialize no_module_statics.
+	(ipa_ref_opt_summary_t::duplicate): Update.
+	(ipa_ref_opt_summary_t::remove): Update.
+	(propagate): Update.
+	(write_node_summary_p): Look correctly for bitmap differences.
+	(ipa_reference_write_optimization_summary): Update.
+	(ipa_reference_read_optimization_summary): Update.
+	* ipa-reference.h
+	(ipa_reference_get_not_read_global): Rename to ...
+	(ipa_reference_get_read_global): ... this.
+	(ipa_reference_get_not_written_global): Rename to ...
+	(ipa_reference_get_written_global): ... this.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Update.
+	(call_may_clobber_ref_p_1): Update.
+
 2019-10-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_hard_regno_nregs_has_padding): Remove

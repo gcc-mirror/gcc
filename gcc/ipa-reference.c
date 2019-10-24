@@ -74,8 +74,8 @@ struct ipa_reference_global_vars_info_d
 
 struct ipa_reference_optimization_summary_d
 {
-  bitmap statics_not_read;
-  bitmap statics_not_written;
+  bitmap statics_read;
+  bitmap statics_written;
 };
 
 typedef ipa_reference_local_vars_info_d *ipa_reference_local_vars_info_t;
@@ -103,6 +103,8 @@ varpool_node_hook_list *varpool_node_hooks;
    static we are considering.  This is added to the local info when asm
    code is found that clobbers all memory.  */
 static bitmap all_module_statics;
+/* Zero bitmap.  */
+static bitmap no_module_statics;
 /* Set of all statics that should be ignored because they are touched by
    -fno-ipa-reference code.  */
 static bitmap ignore_module_statics;
@@ -193,7 +195,7 @@ get_reference_optimization_summary (struct cgraph_node *node)
    NULL if no data is available.  */
 
 bitmap
-ipa_reference_get_not_read_global (struct cgraph_node *fn)
+ipa_reference_get_read_global (struct cgraph_node *fn)
 {
   if (!opt_for_fn (current_function_decl, flag_ipa_reference))
     return NULL;
@@ -208,10 +210,10 @@ ipa_reference_get_not_read_global (struct cgraph_node *fn)
 	  || (avail == AVAIL_INTERPOSABLE
 	      && flags_from_decl_or_type (fn->decl) & ECF_LEAF))
       && opt_for_fn (fn2->decl, flag_ipa_reference))
-    return info->statics_not_read;
+    return info->statics_read;
   else if (avail == AVAIL_NOT_AVAILABLE
 	   && flags_from_decl_or_type (fn->decl) & ECF_LEAF)
-    return all_module_statics;
+    return no_module_statics;
   else
     return NULL;
 }
@@ -222,7 +224,7 @@ ipa_reference_get_not_read_global (struct cgraph_node *fn)
    call.  Returns NULL if no data is available.  */
 
 bitmap
-ipa_reference_get_not_written_global (struct cgraph_node *fn)
+ipa_reference_get_written_global (struct cgraph_node *fn)
 {
   if (!opt_for_fn (current_function_decl, flag_ipa_reference))
     return NULL;
@@ -237,10 +239,10 @@ ipa_reference_get_not_written_global (struct cgraph_node *fn)
 	  || (avail == AVAIL_INTERPOSABLE
 	      && flags_from_decl_or_type (fn->decl) & ECF_LEAF))
       && opt_for_fn (fn2->decl, flag_ipa_reference))
-    return info->statics_not_written;
+    return info->statics_written;
   else if (avail == AVAIL_NOT_AVAILABLE
 	   && flags_from_decl_or_type (fn->decl) & ECF_LEAF)
-    return all_module_statics;
+    return no_module_statics;
   else
     return NULL;
 }
@@ -315,6 +317,8 @@ dump_static_vars_set_to_file (FILE *f, bitmap set)
     return;
   else if (set == all_module_statics)
     fprintf (f, "ALL");
+  else if (set == no_module_statics)
+    fprintf (f, "NO");
   else
     EXECUTE_IF_SET_IN_BITMAP (set, 0, index, bi)
       {
@@ -358,9 +362,11 @@ union_static_var_sets (bitmap &x, bitmap y)
    But if SET is NULL or the maximum set, return that instead.  */
 
 static bitmap
-copy_static_var_set (bitmap set)
+copy_static_var_set (bitmap set, bool for_propagation)
 {
   if (set == NULL || set == all_module_statics)
+    return set;
+  if (!for_propagation && set == no_module_statics)
     return set;
   bitmap_obstack *o = set->obstack;
   gcc_checking_assert (o);
@@ -468,6 +474,7 @@ ipa_init (void)
   bitmap_obstack_initialize (&local_info_obstack);
   bitmap_obstack_initialize (&optimization_summary_obstack);
   all_module_statics = BITMAP_ALLOC (&optimization_summary_obstack);
+  no_module_statics = BITMAP_ALLOC (&optimization_summary_obstack);
   ignore_module_statics = BITMAP_ALLOC (&optimization_summary_obstack);
 
   if (ipa_ref_var_info_summaries == NULL)
@@ -552,10 +559,10 @@ ipa_ref_opt_summary_t::duplicate (cgraph_node *, cgraph_node *,
 				  ipa_reference_optimization_summary_d
 				  *dst_ginfo)
 {
-  dst_ginfo->statics_not_read =
-    copy_static_var_set (ginfo->statics_not_read);
-  dst_ginfo->statics_not_written =
-    copy_static_var_set (ginfo->statics_not_written);
+  dst_ginfo->statics_read =
+    copy_static_var_set (ginfo->statics_read, false);
+  dst_ginfo->statics_written =
+    copy_static_var_set (ginfo->statics_written, false);
 }
 
 /* Called when node is removed.  */
@@ -564,13 +571,15 @@ void
 ipa_ref_opt_summary_t::remove (cgraph_node *,
 			       ipa_reference_optimization_summary_d *ginfo)
 {
-  if (ginfo->statics_not_read
-      && ginfo->statics_not_read != all_module_statics)
-    BITMAP_FREE (ginfo->statics_not_read);
+  if (ginfo->statics_read
+      && ginfo->statics_read != all_module_statics
+      && ginfo->statics_read != no_module_statics)
+    BITMAP_FREE (ginfo->statics_read);
 
-  if (ginfo->statics_not_written
-      && ginfo->statics_not_written != all_module_statics)
-    BITMAP_FREE (ginfo->statics_not_written);
+  if (ginfo->statics_written
+      && ginfo->statics_written != all_module_statics
+      && ginfo->statics_written != no_module_statics)
+    BITMAP_FREE (ginfo->statics_written);
 }
 
 /* Analyze each function in the cgraph to see which global or statics
@@ -802,11 +811,12 @@ propagate (void)
       if (read_all)
 	node_g->statics_read = all_module_statics;
       else
-	node_g->statics_read = copy_static_var_set (node_l->statics_read);
+	node_g->statics_read = copy_static_var_set (node_l->statics_read, true);
       if (write_all)
 	node_g->statics_written = all_module_statics;
       else
-	node_g->statics_written = copy_static_var_set (node_l->statics_written);
+	node_g->statics_written
+	  = copy_static_var_set (node_l->statics_written, true);
 
       /* Merge the sets of this cycle with all sets of callees reached
          from this cycle.  */
@@ -890,12 +900,26 @@ propagate (void)
       ipa_reference_vars_info_t node_info;
       ipa_reference_global_vars_info_t node_g;
 
+      /* No need to produce summaries for inline clones.  */
+      if (node->global.inlined_to)
+	continue;
+
       node_info = get_reference_vars_info (node);
-      if (!node->alias && opt_for_fn (node->decl, flag_ipa_reference)
-	  && (node->get_availability () > AVAIL_INTERPOSABLE
-	      || (flags_from_decl_or_type (node->decl) & ECF_LEAF)))
+      if (!node->alias && opt_for_fn (node->decl, flag_ipa_reference))
 	{
 	  node_g = &node_info->global;
+	  bool read_all = 
+		(node_g->statics_read == all_module_statics
+		 || bitmap_equal_p (node_g->statics_read, all_module_statics));
+	  bool written_all = 
+		(node_g->statics_written == all_module_statics
+		 || bitmap_equal_p (node_g->statics_written,
+				    all_module_statics));
+
+	  /* There is no need to produce summary if we collected nothing
+	     useful.  */
+	  if (read_all && written_all)
+	    continue;
 
 	  ipa_reference_optimization_summary_d *opt
 	    = ipa_ref_opt_sum_summaries->get_create (node);
@@ -903,27 +927,25 @@ propagate (void)
 	  /* Create the complimentary sets.  */
 
 	  if (bitmap_empty_p (node_g->statics_read))
-	    opt->statics_not_read = all_module_statics;
+	    opt->statics_read = no_module_statics;
+	  else if (read_all)
+	    opt->statics_read = all_module_statics;
 	  else
 	    {
-	      opt->statics_not_read
+	      opt->statics_read
 		 = BITMAP_ALLOC (&optimization_summary_obstack);
-	      if (node_g->statics_read != all_module_statics)
-		bitmap_and_compl (opt->statics_not_read,
-				  all_module_statics,
-				  node_g->statics_read);
+	      bitmap_copy (opt->statics_read, node_g->statics_read);
 	    }
 
 	  if (bitmap_empty_p (node_g->statics_written))
-	    opt->statics_not_written = all_module_statics;
+	    opt->statics_written = no_module_statics;
+	  else if (written_all)
+	    opt->statics_written = all_module_statics;
 	  else
 	    {
-	      opt->statics_not_written
+	      opt->statics_written
 	        = BITMAP_ALLOC (&optimization_summary_obstack);
-	      if (node_g->statics_written != all_module_statics)
-		bitmap_and_compl (opt->statics_not_written,
-				  all_module_statics,
-				  node_g->statics_written);
+	      bitmap_copy (opt->statics_written, node_g->statics_written);
 	    }
 	}
    }
@@ -958,9 +980,7 @@ write_node_summary_p (struct cgraph_node *node,
   if (!node->definition || node->global.inlined_to)
     return false;
   info = get_reference_optimization_summary (node);
-  if (!info
-      || (bitmap_empty_p (info->statics_not_read)
-	  && bitmap_empty_p (info->statics_not_written)))
+  if (!info)
     return false;
 
   /* See if we want to encode it.
@@ -973,11 +993,17 @@ write_node_summary_p (struct cgraph_node *node,
       && !referenced_from_this_partition_p (node, encoder))
     return false;
 
-  /* See if the info has non-empty intersections with vars we want to encode.  */
-  if (!bitmap_intersect_p (info->statics_not_read, ltrans_statics)
-      && !bitmap_intersect_p (info->statics_not_written, ltrans_statics))
-    return false;
-  return true;
+  /* See if the info has non-empty intersections with vars we want to
+     encode.  */
+  bitmap_iterator bi;
+  unsigned int i;
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (ltrans_statics, info->statics_read, 0,
+				  i, bi)
+    return true;
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (ltrans_statics, info->statics_written, 0,
+				  i, bi)
+    return true;
+  return false;
 }
 
 /* Stream out BITS&LTRANS_STATICS as list of decls to OB.
@@ -1079,9 +1105,9 @@ ipa_reference_write_optimization_summary (void)
 	    node_ref = lto_symtab_encoder_encode (encoder, snode);
 	    streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
-	    stream_out_bitmap (ob, info->statics_not_read, ltrans_statics,
+	    stream_out_bitmap (ob, info->statics_read, ltrans_statics,
 			       ltrans_statics_bitcount);
-	    stream_out_bitmap (ob, info->statics_not_written, ltrans_statics,
+	    stream_out_bitmap (ob, info->statics_written, ltrans_statics,
 			       ltrans_statics_bitcount);
 	  }
       }
@@ -1108,6 +1134,7 @@ ipa_reference_read_optimization_summary (void)
   ipa_reference_vars_uids = 0;
 
   all_module_statics = BITMAP_ALLOC (&optimization_summary_obstack);
+  no_module_statics = BITMAP_ALLOC (&optimization_summary_obstack);
 
   while ((file_data = file_data_vec[j++]))
     {
@@ -1156,57 +1183,65 @@ ipa_reference_read_optimization_summary (void)
 	      ipa_reference_optimization_summary_d *info
 		= ipa_ref_opt_sum_summaries->get_create (node);
 
-	      info->statics_not_read = BITMAP_ALLOC
-		(&optimization_summary_obstack);
-	      info->statics_not_written = BITMAP_ALLOC
-		(&optimization_summary_obstack);
 	      if (dump_file)
 		fprintf (dump_file,
-			 "\nFunction name:%s:\n  static not read:",
+			 "\nFunction name:%s:\n  static read:",
 			 node->dump_asm_name ());
 
-	      /* Set the statics not read.  */
+	      /* Set the statics read.  */
 	      v_count = streamer_read_hwi (ib);
 	      if (v_count == -1)
 		{
-		  info->statics_not_read = all_module_statics;
+		  info->statics_read = all_module_statics;
 		  if (dump_file)
 		    fprintf (dump_file, " all module statics");
 		}
+	      else if (v_count == 0)
+		info->statics_read = no_module_statics;
 	      else
-		for (j = 0; j < (unsigned int)v_count; j++)
-		  {
-		    unsigned int var_index = streamer_read_uhwi (ib);
-		    tree v_decl = lto_file_decl_data_get_var_decl (file_data,
-								   var_index);
-		    bitmap_set_bit (info->statics_not_read,
-				    ipa_reference_var_uid (v_decl));
-		    if (dump_file)
-		      fprintf (dump_file, " %s", fndecl_name (v_decl));
-		  }
+		{
+		  info->statics_read = BITMAP_ALLOC
+		    (&optimization_summary_obstack);
+		  for (j = 0; j < (unsigned int)v_count; j++)
+		    {
+		      unsigned int var_index = streamer_read_uhwi (ib);
+		      tree v_decl = lto_file_decl_data_get_var_decl (file_data,
+								     var_index);
+		      bitmap_set_bit (info->statics_read,
+				      ipa_reference_var_uid (v_decl));
+		      if (dump_file)
+			fprintf (dump_file, " %s", fndecl_name (v_decl));
+		    }
+		}
 
 	      if (dump_file)
 		fprintf (dump_file,
-			 "\n  static not written:");
-	      /* Set the statics not written.  */
+			 "\n  static written:");
+	      /* Set the statics written.  */
 	      v_count = streamer_read_hwi (ib);
 	      if (v_count == -1)
 		{
-		  info->statics_not_written = all_module_statics;
+		  info->statics_written = all_module_statics;
 		  if (dump_file)
 		    fprintf (dump_file, " all module statics");
 		}
+	      else if (v_count == 0)
+		info->statics_written = no_module_statics;
 	      else
-		for (j = 0; j < (unsigned int)v_count; j++)
-		  {
-		    unsigned int var_index = streamer_read_uhwi (ib);
-		    tree v_decl = lto_file_decl_data_get_var_decl (file_data,
-								   var_index);
-		    bitmap_set_bit (info->statics_not_written,
-				    ipa_reference_var_uid (v_decl));
-		    if (dump_file)
-		      fprintf (dump_file, " %s", fndecl_name (v_decl));
-		  }
+		{
+		  info->statics_written = BITMAP_ALLOC
+		    (&optimization_summary_obstack);
+		  for (j = 0; j < (unsigned int)v_count; j++)
+		    {
+		      unsigned int var_index = streamer_read_uhwi (ib);
+		      tree v_decl = lto_file_decl_data_get_var_decl (file_data,
+								     var_index);
+		      bitmap_set_bit (info->statics_written,
+				      ipa_reference_var_uid (v_decl));
+		      if (dump_file)
+			fprintf (dump_file, " %s", fndecl_name (v_decl));
+		    }
+		}
 	      if (dump_file)
 		fprintf (dump_file, "\n");
 	    }
