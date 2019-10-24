@@ -1,5 +1,11 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88338 Implement P0898R3, C++20 concepts library
+	* doc/xml/manual/status_cxx2020.xml: Update status.
+	* doc/html/*: Regenerate.
+	* testsuite/std/concepts/1.cc: New test.
+	* testsuite/std/concepts/2.cc: New test.
+
 	* include/bits/random.h (uniform_random_bit_generator): Define for
 	C++20.
 	* testsuite/26_numerics/random/concept.cc: New test.
