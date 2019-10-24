@@ -1,3 +1,11 @@
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-10a.c: New testcase.
+	* gcc.dg/vect/slp-reduc-10b.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10c.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10d.c: Likewise.
+	* gcc.dg/vect/slp-reduc-10e.c: Likewise.
+
 2019-10-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/emulate-slli.c: Skip for -mcpu=msp430.

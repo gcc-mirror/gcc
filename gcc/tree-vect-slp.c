@@ -433,20 +433,35 @@ again:
 	     the def-stmt/s of the first stmt.  Allow different definition
 	     types for reduction chains: the first stmt must be a
 	     vect_reduction_def (a phi node), and the rest
-	     vect_internal_def.  */
+	     end in the reduction chain.  */
 	  tree type = TREE_TYPE (oprnd);
 	  if ((oprnd_info->first_dt != dt
 	       && !(oprnd_info->first_dt == vect_reduction_def
-		    && dt == vect_internal_def)
+		    && !STMT_VINFO_DATA_REF (stmt_info)
+		    && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+		    && def_stmt_info
+		    && !STMT_VINFO_DATA_REF (def_stmt_info)
+		    && (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
+			== REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
 	       && !((oprnd_info->first_dt == vect_external_def
 		     || oprnd_info->first_dt == vect_constant_def)
 		    && (dt == vect_external_def
 			|| dt == vect_constant_def)))
-	      || !types_compatible_p (oprnd_info->first_op_type, type))
+	      || !types_compatible_p (oprnd_info->first_op_type, type)
+	      || (!STMT_VINFO_DATA_REF (stmt_info)
+		  && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+		  && ((!def_stmt_info
+		       || STMT_VINFO_DATA_REF (def_stmt_info)
+		       || (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
+			   != REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
+		      != (oprnd_info->first_dt != vect_reduction_def))))
 	    {
 	      /* Try swapping operands if we got a mismatch.  */
 	      if (i == commutative_op && !swapped)
 		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "trying swapped operands\n");
 		  swapped = true;
 		  goto again;
 		}
@@ -484,9 +499,26 @@ again:
 	  oprnd_info->ops.quick_push (oprnd);
 	  break;
 
-	case vect_reduction_def:
-	case vect_induction_def:
 	case vect_internal_def:
+	case vect_reduction_def:
+	  if (oprnd_info->first_dt == vect_reduction_def
+	      && !STMT_VINFO_DATA_REF (stmt_info)
+	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	      && !STMT_VINFO_DATA_REF (def_stmt_info)
+	      && (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
+		  == REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
+	    {
+	      /* For a SLP reduction chain we want to duplicate the
+	         reduction to each of the chain members.  That gets
+		 us a sane SLP graph (still the stmts are not 100%
+		 correct wrt the initial values).  */
+	      gcc_assert (!first);
+	      oprnd_info->def_stmts.quick_push (oprnd_info->def_stmts[0]);
+	      oprnd_info->ops.quick_push (oprnd_info->ops[0]);
+	      break;
+	    }
+	  /* Fallthru.  */
+	case vect_induction_def:
 	  oprnd_info->def_stmts.quick_push (def_stmt_info);
 	  oprnd_info->ops.quick_push (oprnd);
 	  break;
@@ -1182,15 +1214,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  /* Else def types have to match.  */
 	  stmt_vec_info other_info;
 	  FOR_EACH_VEC_ELT (stmts, i, other_info)
-	    {
-	      /* But for reduction chains only check on the first stmt.  */
-	      if (!STMT_VINFO_DATA_REF (other_info)
-		  && REDUC_GROUP_FIRST_ELEMENT (other_info)
-		  && REDUC_GROUP_FIRST_ELEMENT (other_info) != stmt_info)
-		continue;
-	      if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
-		return NULL;
-	    }
+	    if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
+	      return NULL;
 	}
       else
 	return NULL;
