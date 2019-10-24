@@ -1,3 +1,8 @@
+2019-10-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.dg/ipa/ipa-sra-19.c: Remove dg-skip-if. Add argument type to
+	prototype of k.
+
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/slp-reduc-10a.c: New testcase.
