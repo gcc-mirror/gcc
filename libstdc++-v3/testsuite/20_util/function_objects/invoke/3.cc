@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 #include <functional>
 
@@ -25,6 +26,8 @@ struct abstract {
 };
 
 static_assert( noexcept(std::__invoke(std::declval<abstract>())),
+    "It should be possible to use abstract types with INVOKE" );
+static_assert( noexcept(std::invoke(std::declval<abstract>())),
     "It should be possible to use abstract types with INVOKE" );
 
 struct F {
@@ -39,3 +42,8 @@ static_assert( !noexcept(std::__invoke(std::declval<F&>())), "" );
 static_assert( noexcept(std::__invoke(std::declval<F>())), "" );
 static_assert( !noexcept(std::__invoke(std::declval<F>(), 1)), "" );
 static_assert( noexcept(std::__invoke(std::declval<F>(), 1, 2)), "" );
+
+static_assert( !noexcept(std::invoke(std::declval<F&>())), "" );
+static_assert( noexcept(std::invoke(std::declval<F>())), "" );
+static_assert( !noexcept(std::invoke(std::declval<F>(), 1)), "" );
+static_assert( noexcept(std::invoke(std::declval<F>(), 1, 2)), "" );
