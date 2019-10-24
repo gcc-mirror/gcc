@@ -1,3 +1,12 @@
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* gcc.dg/vect/vect-reduc-2char-big-array.c: Adjust again.
+	* gcc.dg/vect/vect-reduc-2char.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2c.c: Likewise.
+
 2019-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/load-thread-pointer-once-2.c: New test.
