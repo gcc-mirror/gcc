@@ -21212,7 +21212,10 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 
       /* If the contexts differ, we may not be talking about the same
 	 thing.  */
-      if (parm_die && parm_die->die_parent != context_die)
+      if (parm_die
+	  && parm_die->die_parent != context_die
+	  && (parm_die->die_parent->die_tag != DW_TAG_GNU_formal_parameter_pack
+	      || parm_die->die_parent->die_parent != context_die))
 	{
 	  if (!DECL_ABSTRACT_P (node))
 	    {
