@@ -1,5 +1,9 @@
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* decl2.c (cplus_decl_attributes): Add "omp declare target block"
+	attribute in between declare target and end declare target
+	pragmas.
+
 	* call.c (convert_arg_to_ellipsis): Add missing space in string
 	literal.
 

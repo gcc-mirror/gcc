@@ -1,3 +1,7 @@
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-8.c: New test.
+
 2019-10-24  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.dg/ipa/ipa-sra-19.c: Remove dg-skip-if. Add argument type to

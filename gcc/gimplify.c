@@ -219,6 +219,7 @@ struct gimplify_omp_ctx
   location_t location;
   enum omp_clause_default_kind default_kind;
   enum omp_region_type region_type;
+  enum tree_code code;
   bool combined_loop;
   bool distribute;
   bool target_firstprivatize_array_bases;
@@ -3384,6 +3385,13 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 
   /* Remember the original function pointer type.  */
   fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
+
+  if (flag_openmp && fndecl)
+    {
+      tree variant = omp_resolve_declare_variant (fndecl);
+      if (variant != fndecl)
+	CALL_EXPR_FN (*expr_p) = build1 (ADDR_EXPR, fnptrtype, variant);
+    }
 
   /* There is a sequence point before the call, so any side effects in
      the calling expression must occur before the actual call.  Force
@@ -8137,6 +8145,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
   int nowait = -1;
 
   ctx = new_omp_context (region_type);
+  ctx->code = code;
   outer_ctx = ctx->outer_context;
   if (code == OMP_TARGET)
     {
@@ -10322,6 +10331,99 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 
   gimplify_omp_ctxp = ctx->outer_context;
   delete_omp_context (ctx);
+}
+
+/* Return 0 if CONSTRUCTS selectors don't match the OpenMP context,
+   -1 if unknown yet (simd is involved, won't be known until vectorization)
+   and positive number if they do, the number is then the number of constructs
+   in the OpenMP context.  */
+
+HOST_WIDE_INT
+omp_construct_selector_matches (enum tree_code *constructs, int nconstructs)
+{
+  int matched = 0, cnt = 0;
+  bool simd_seen = false;
+  for (struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp; ctx;)
+    {
+      if (((ctx->region_type & ORT_PARALLEL) && ctx->code == OMP_PARALLEL)
+	  || ((ctx->region_type & (ORT_TARGET | ORT_IMPLICIT_TARGET | ORT_ACC))
+	      == ORT_TARGET && ctx->code == OMP_TARGET)
+	  || ((ctx->region_type & ORT_TEAMS) && ctx->code == OMP_TEAMS)
+	  || (ctx->region_type == ORT_WORKSHARE && ctx->code == OMP_FOR)
+	  || (ctx->region_type == ORT_SIMD
+	      && ctx->code == OMP_SIMD
+	      && !omp_find_clause (ctx->clauses, OMP_CLAUSE_BIND)))
+	{
+	  ++cnt;
+	  if (matched < nconstructs && ctx->code == constructs[matched])
+	    {
+	      if (ctx->code == OMP_SIMD)
+		{
+		  if (matched)
+		    return 0;
+		  simd_seen = true;
+		}
+	      ++matched;
+	    }
+	  if (ctx->code == OMP_TARGET)
+	    return matched < nconstructs ? 0 : simd_seen ? -1 : cnt;
+	}
+      else if (ctx->region_type == ORT_WORKSHARE
+	       && ctx->code == OMP_LOOP
+	       && ctx->outer_context
+	       && ctx->outer_context->region_type == ORT_COMBINED_PARALLEL
+	       && ctx->outer_context->outer_context
+	       && ctx->outer_context->outer_context->code == OMP_LOOP
+	       && ctx->outer_context->outer_context->distribute)
+	ctx = ctx->outer_context->outer_context;
+      ctx = ctx->outer_context;
+    }
+  if (cnt == 0
+      && constructs[0] == OMP_SIMD
+      && lookup_attribute ("omp declare simd",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    {
+      /* Declare simd is a maybe case, it is supposed to be added only to the
+	 omp-simd-clone.c added clones and not to the base function.  */
+      gcc_assert (matched == 0);
+      ++cnt;
+      simd_seen = true;
+      if (++matched == nconstructs)
+	return -1;
+    }
+  if (tree attr = lookup_attribute ("omp declare variant variant",
+				    DECL_ATTRIBUTES (current_function_decl)))
+    {
+      enum tree_code variant_constructs[5];
+      int variant_nconstructs
+	= omp_constructor_traits_to_codes (TREE_VALUE (attr),
+					   variant_constructs);
+      for (int i = 0; i < variant_nconstructs; i++)
+	{
+	  ++cnt;
+	  if (matched < nconstructs
+	      && variant_constructs[i] == constructs[matched])
+	    {
+	      if (variant_constructs[i] == OMP_SIMD)
+		{
+		  if (matched)
+		    return 0;
+		  simd_seen = true;
+		}
+	      ++matched;
+	    }
+	}
+    }
+  if (lookup_attribute ("omp declare target block",
+			DECL_ATTRIBUTES (current_function_decl)))
+    {
+      ++cnt;
+      if (matched < nconstructs && constructs[matched] == OMP_TARGET)
+	++matched;
+    }
+  if (matched == nconstructs)
+    return simd_seen ? -1 : cnt;
+  return 0;
 }
 
 /* Gimplify OACC_CACHE.  */
