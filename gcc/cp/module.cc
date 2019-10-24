@@ -164,9 +164,6 @@ Classes used:
    The mapper object uses fileno IO to communicate with the server or
    program.   */
 
-// FIXME: I'm probably using TYPE_NAME in places TYPE_STUB_DECL is
-// correct.  They are usually the same, except when 'typedef struct {} foo'
-
 /* In expermental (trunk) sources, MODULE_VERSION is a #define passed
    in from the Makefile.  It records the modification date of the
    source directory -- that's the only way to stay sane.  In release
@@ -1962,7 +1959,7 @@ elf_out::strtab_write (tree decl, int inner)
 {
   tree ctx = CP_DECL_CONTEXT (decl);
   if (TYPE_P (ctx))
-    ctx = TYPE_STUB_DECL (ctx);
+    ctx = TYPE_NAME (ctx);
   if (ctx != global_namespace)
     strtab_write (ctx, -1);
 
@@ -2754,7 +2751,6 @@ enum merge_kind
 
   MK_indirect_mask = 0x4,
   MK_local_friend = MK_indirect_mask |0x1, /* Found by container, name.  */
-  MK_linkage = MK_indirect_mask | 0x2,	/* Found by TYPEDEF name.  */
   MK_enum = MK_indirect_mask | 0x3,	/* Found by CTX, & 1stMemberNAME.  */
 
   /* Template specialization kinds below. These are all found via
@@ -3924,7 +3920,7 @@ node_template_info (tree decl, int &use)
 		 this is not!.  */
 	      tree ctx = CP_DECL_CONTEXT (decl);
 	      if (TYPE_P (ctx))
-		ctx = TYPE_STUB_DECL (ctx);
+		ctx = TYPE_NAME (ctx);
 	      node_template_info (ctx, use);
 	      use_tpl = use != 2 ? use : 0;
 	    }
@@ -4512,7 +4508,7 @@ friend_from_decl_list (tree frnd)
       tree tmpl = NULL_TREE;
       if (TYPE_P (frnd))
 	{
-	  res = TYPE_STUB_DECL (frnd);
+	  res = TYPE_NAME (frnd);
 	  if (CLASSTYPE_TEMPLATE_INFO (frnd))
 	    tmpl = CLASSTYPE_TI_TEMPLATE (frnd);
 	}
@@ -5553,7 +5549,7 @@ trees_out::core_vals (tree t)
       WT (t->type_common.main_variant);
 
       tree canonical = t->type_common.canonical;
-      if (TEMPLATE_PARM_P (TYPE_NAME (t)))
+      if (DECL_TEMPLATE_PARM_P (TYPE_NAME (t)))
 	/* We do not want to wander into different templates.
 	   Reconstructed on stream in.  */
 	canonical = t;
@@ -5596,7 +5592,8 @@ trees_out::core_vals (tree t)
 	  break;
 
 	case TYPE_DECL:
-	  if (DECL_ORIGINAL_TYPE (t))
+	  if (DECL_ORIGINAL_TYPE (t)
+	      && t != TYPE_NAME (TYPE_MAIN_VARIANT (type)))
 	    /* This is a typedef.  We set its type separately.  */
 	    type = NULL_TREE;
 	  break;
@@ -6886,32 +6883,30 @@ trees_out::add_indirects (tree decl)
   // perhaps default template parms too.  I think the former can be
   // referenced from instantiations (as they are lazily instantiated).
   // Also (deferred?) exception specifications of templates.
-  tree proxy = decl;
+  tree inner = decl;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
       count += add_indirect_tpl_parms (DECL_TEMPLATE_PARMS (decl));
 
-      proxy = DECL_TEMPLATE_RESULT (decl);
-      int tag = insert (proxy);
+      inner = DECL_TEMPLATE_RESULT (decl);
+      int tag = insert (inner);
       if (streaming_p ())
 	dump (dumper::TREE)
 	  && dump ("Indirect:%d template's result %C:%N",
-		   tag, TREE_CODE (proxy), proxy);
+		   tag, TREE_CODE (inner), inner);
       count++;
     }
 
-  if (TREE_CODE (proxy) == TYPE_DECL
-      && (DECL_ORIGINAL_TYPE (proxy)
-	  || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
+  if (TREE_CODE (inner) == TYPE_DECL)
     {
       /* Make sure the type is in the map too.  Otherwise we get
 	 different RECORD_TYPEs for the same type, and things go
 	 south.  */
-      tree proxy_type = TREE_TYPE (proxy);
-      int tag = insert (proxy_type);
+      tree type = TREE_TYPE (inner);
+      int tag = insert (type);
       if (streaming_p ())
 	dump (dumper::TREE) && dump ("Indirect:%d decl's type %C:%N", tag,
-				     TREE_CODE (proxy_type), proxy_type);
+				     TREE_CODE (type), type);
       count++;
     }
 
@@ -6927,28 +6922,25 @@ trees_in::add_indirects (tree decl)
 {
   unsigned count = 0;
 	    
-  tree proxy = decl;
-  if (TREE_CODE (proxy) == TEMPLATE_DECL)
+  tree inner = decl;
+  if (TREE_CODE (inner) == TEMPLATE_DECL)
     {
       count += add_indirect_tpl_parms (DECL_TEMPLATE_PARMS (decl));
 
-      proxy = DECL_TEMPLATE_RESULT (decl);
-      int tag = insert (proxy);
+      inner = DECL_TEMPLATE_RESULT (decl);
+      int tag = insert (inner);
       dump (dumper::TREE)
 	&& dump ("Indirect:%d templates's result %C:%N", tag,
-		 TREE_CODE (proxy), proxy);
+		 TREE_CODE (inner), inner);
       count++;
     }
 
-  if (TREE_CODE (proxy) == TYPE_DECL
-      && (DECL_ORIGINAL_TYPE (proxy)
-	  || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
+  if (TREE_CODE (inner) == TYPE_DECL)
     {
-      tree proxy_type = TREE_TYPE (proxy);
-      int tag = insert (proxy_type);
+      tree type = TREE_TYPE (inner);
+      int tag = insert (type);
       dump (dumper::TREE)
-	&& dump ("Indirect:%d decl's type %C:%N", tag,
-		 TREE_CODE (proxy_type), proxy_type);
+	&& dump ("Indirect:%d decl's type %C:%N", tag, TREE_CODE (type), type);
       count++;
     }
 
@@ -7150,52 +7142,68 @@ trees_out::decl_value (tree decl, depset *dep)
 
   tree inner = decl;
   int inner_tag = 0;
-
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
       inner = DECL_TEMPLATE_RESULT (decl);
 
+      inner_tag = insert (inner, WK_value);
       if (streaming_p ())
 	{
 	  start (inner);
 	  tree_node_bools (inner);
+	  dump (dumper::TREE)
+	    && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], inner_tag,
+		     TREE_CODE (inner), inner, inner);
 	}
-
-      inner_tag = insert (inner, WK_value);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], inner_tag,
-		   TREE_CODE (inner), inner, inner);
     }
 
   tree type = NULL_TREE;
   int type_tag = 0;
+  tree stub_decl = NULL_TREE;
+  int stub_tag = 0;
   if (TREE_CODE (inner) == TYPE_DECL)
     {
       type = TREE_TYPE (inner);
-      bool is_stub = inner == TYPE_STUB_DECL (type);
+      bool has_type = (type == TYPE_MAIN_VARIANT (type)
+		       && TYPE_NAME (type) == inner);
 
       if (streaming_p ())
-	u (is_stub ? TREE_CODE (type) : 0);
+	u (has_type ? TREE_CODE (type) : 0);
 
-      if (is_stub)
+      if (has_type)
 	{
+	  type_tag = insert (type, WK_value);
 	  if (streaming_p ())
 	    {
 	      start (type, true);
 	      tree_node_bools (type);
+	      dump (dumper::TREE)
+		&& dump ("Writing type:%d %C:%N", type_tag,
+			 TREE_CODE (type), type);
 	    }
 
-	  type_tag = insert (type, WK_value);
+	  stub_decl = TYPE_STUB_DECL (type);
+	  bool has_stub = inner != stub_decl;
 	  if (streaming_p ())
-	    dump (dumper::TREE)
-	      && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], type_tag,
-		       TREE_CODE (type), type, type);
+	    u (has_stub ? TREE_CODE (stub_decl) : 0);
+	  if (has_stub)
+	    {
+	      stub_tag = insert (stub_decl);
+	      if (streaming_p ())
+		{
+		  start (stub_decl, true);
+		  tree_node_bools (stub_decl);
+		  dump (dumper::TREE)
+		    && dump ("Writing stub_decl:%d %C:%N", stub_tag,
+			     TREE_CODE (stub_decl), stub_decl);
+		}
+	    }
+	  else
+	    stub_decl = NULL_TREE;
 	}
       else
 	/* Regular typedef.  */
 	type = NULL_TREE;
-      gcc_assert (!type || !DECL_ORIGINAL_TYPE (inner));
     }
 
   tree container = get_container (decl);
@@ -7228,12 +7236,15 @@ trees_out::decl_value (tree decl, depset *dep)
   if (inner_tag != 0)
     {
       tree_node_vals (inner);
-  
       tpl_parms_fini (decl, tpl_levels);
     }
 
   if (type)
-    tree_node_vals (type);
+    {
+      tree_node_vals (type);
+      if (stub_decl)
+	tree_node_vals (stub_decl);
+    }
 
   // FIXME: It'd be nice if there was a flag to tell us to go look for
   // constraints.  Not a modules-specific problem though.
@@ -7243,8 +7254,7 @@ trees_out::decl_value (tree decl, depset *dep)
       tree_node (constraints);
     }
 
-  if (TREE_CODE (inner) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (inner))
+  if (!type && TREE_CODE (inner) == TYPE_DECL)
     {
       /* A typedef type.  */
       int type_tag = insert (TREE_TYPE (inner));
@@ -7316,13 +7326,8 @@ trees_in::decl_value ()
   if (decl && TREE_CODE (decl) == TEMPLATE_DECL)
     {
       inner = start ();
-      if (inner)
-	{
-	  DECL_TEMPLATE_RESULT (decl) = inner;
-
-	  if (!tree_node_bools (inner))
-	    decl = NULL_TREE;
-	}
+      if (inner && tree_node_bools (inner))
+	DECL_TEMPLATE_RESULT (decl) = inner;
       else
 	decl = NULL_TREE;
 
@@ -7334,18 +7339,17 @@ trees_in::decl_value ()
 
   tree type = NULL_TREE;
   int type_tag = 0;
+  tree stub_decl = NULL_TREE;
+  int stub_tag = 0;
   if (decl && TREE_CODE (inner) == TYPE_DECL)
     {
       if (unsigned type_code = u ())
 	{
 	  type = start (type_code);
-	  if (type)
+	  if (type && tree_node_bools (type))
 	    {
 	      TREE_TYPE (inner) = type;
 	      TYPE_NAME (type) = inner;
-
-	      if (!tree_node_bools (type))
-		decl = NULL_TREE;
 	    }
 	  else
 	    decl = NULL_TREE;
@@ -7353,7 +7357,25 @@ trees_in::decl_value ()
 	  type_tag = insert (type);
 	  if (decl)
 	    dump (dumper::TREE)
-	      && dump ("Reading %d %C", type_tag, TREE_CODE (type));
+	      && dump ("Reading type:%d %C", type_tag, TREE_CODE (type));
+
+	  if (unsigned stub_code = u ())
+	    {
+	      stub_decl = start (stub_code);
+	      if (stub_decl && tree_node_bools (stub_decl))
+		{
+		  TREE_TYPE (stub_decl) = type;
+		  TYPE_STUB_DECL (type) = stub_decl;
+		}
+	      else
+		decl = NULL_TREE;
+
+	      stub_tag = insert (stub_decl);
+	      if (decl)
+		dump (dumper::TREE)
+		  && dump ("Reading stub_decl:%d %C", stub_tag,
+			   TREE_CODE (stub_decl));
+	    }
 	}
     }
 
@@ -7364,13 +7386,15 @@ trees_in::decl_value ()
 	back_refs[~inner_tag] = NULL_TREE;
       if (type_tag != 0)
 	back_refs[~type_tag] = NULL_TREE;
+      if (stub_tag != 0)
+	back_refs[~stub_tag] = NULL_TREE;
       if (tag != 0)
 	back_refs[~tag] = NULL_TREE;
       set_overrun ();
       /* Bail.  */
       return NULL_TREE;
     }
-  
+
   // FIXME: this needs a cleanup
   tree container_1 = tree_node ();
   unsigned tpl_levels = 0;
@@ -7481,12 +7505,6 @@ trees_in::decl_value ()
 		  }
 	    }
 	}
-      else if (mk == MK_linkage)
-	{
-	  /* KEY will be the typedef.  We're its TREE_TYPE's TYPE_STUB_DECL.  */
-	  if (tree tdef_type = TREE_TYPE (key))
-	    existing = TYPE_STUB_DECL (tdef_type);
-	}
       else if (mk == MK_unique)
 	kind = "unique";
       else
@@ -7512,7 +7530,12 @@ trees_in::decl_value ()
 	    }
 
 	  if (type_tag != 0)
-	    back_refs[~type_tag] = TREE_TYPE (existing);
+	    {
+	      tree existing_type = TREE_TYPE (existing);
+	      back_refs[~type_tag] = existing_type;
+	      if (stub_tag != 0)
+		back_refs[~stub_tag] = TYPE_STUB_DECL (existing_type);
+	    }
 
 	  kind = "matched";
 	}
@@ -7540,7 +7563,8 @@ trees_in::decl_value ()
 	goto bail;
     }
 
-  if (type && !tree_node_vals (type))
+  if (type && (!tree_node_vals (type)
+	       || (stub_decl && !tree_node_vals (stub_decl))))
     goto bail;
 
   tree constraints = NULL_TREE;
@@ -7550,7 +7574,7 @@ trees_in::decl_value ()
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (decl), decl);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
-  bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !TREE_TYPE (inner);
+  bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !type;
   if (is_typedef)
     {
       /* Frob it to be ready for cloning.  */
@@ -7600,6 +7624,10 @@ trees_in::decl_value ()
 	  /* Point at the to-be-discarded type & decl.  */
 	  TYPE_NAME (type) = inner;
 	  TREE_TYPE (inner) = type;
+
+	  TYPE_STUB_DECL (type) = stub_decl ? stub_decl : inner;
+	  if (stub_decl)
+	    TREE_TYPE (stub_decl) = type;
 	}
 
       if (inner_tag)
@@ -7894,7 +7922,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       if (DECL_TINFO_P (decl))
 	goto tinfo;
 
-      if (decl == TYPE_STUB_DECL (TREE_TYPE (decl))
+      if (!DECL_ORIGINAL_TYPE (decl)
 	  && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
 	{
 	  /* A type_decl of a typename.  */
@@ -8097,12 +8125,12 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
 	if (name && IDENTIFIER_ANON_P (name))
 	  {
+	    // FIXME: Probably wonky with streaming the TYPE_NAME always
 	    if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	      {
 		gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl) && code == tt_named);
 		proxy = TYPE_NAME (TREE_TYPE (decl));
 		name = DECL_NAME (proxy);
-		gcc_checking_assert (code == tt_named);
 		if (IDENTIFIER_ANON_P (name))
 		  {
 		    // FIXME: what about namespace-scope anon classes?
@@ -8207,33 +8235,23 @@ void
 trees_out::type_node (tree type)
 {
   gcc_assert (TYPE_P (type));
-  tree name = TYPE_NAME (type);
 
-  if (name
-      && TREE_CODE (name) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (name))
-    /* A typedef type that is not the original type.  */;
+  tree name = TYPE_NAME (type);
+  if (!name)
+    ;
+  // FIXME: The following TYPE_DCL check can go when we nolonger have
+  // mergeable sorting.  It catches the TEMPLATE_DECL of a tpltplparm
+  else if (TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
+    ;
   else if (TYPE_PTRMEMFUNC_P (type))
-    /* We deal with ptrmemfuncs further down.  */
     name = NULL_TREE;
-  else
-    {
-      name = TYPE_STUB_DECL (type);
-      if (!name)
-	;
-      else if (type != TYPE_MAIN_VARIANT (type))
-	name = NULL_TREE;
-      else if (DECL_IMPLICIT_TYPEDEF_P (name))
-	/* Implicit typedef.  */;
-      else if (TREE_CODE (type) == TYPENAME_TYPE)
-	/* A typename type.  */;
-      else if (DECL_TEMPLATE_PARM_P (name))
-	/* A template parameter.  */;
-      else if (TREE_CODE (name) == TYPE_DECL && DECL_TINFO_P (name))
-	/* A tinfo type.  */;
-      else
-	name = NULL_TREE;
-    }
+  // FIXME: TYPENAME_TYPES go through to decl_node, why the
+  // difference?
+  // Perhaps we should just let record, union and enum tags through here?
+  else if (TREE_CODE (type) == UNBOUND_CLASS_TEMPLATE)
+    name = NULL_TREE;
+  else if (type != TYPE_MAIN_VARIANT (type))
+    name = NULL_TREE;  
 
   if (name)
     {
@@ -8241,8 +8259,9 @@ trees_out::type_node (tree type)
 	{
 	  i (tt_typedef_type);
 	  dump (dumper::TREE)
-	    && dump ("Writing typedef %C:%N%S",
-		     TREE_CODE (name), name, name);
+	    && dump ("Writing %stypedef %C:%N",
+		     DECL_IMPLICIT_TYPEDEF_P (name) ? "implicit " : "",
+		     TREE_CODE (name), name);
 	}
       tree_node (name);
       if (streaming_p ())
@@ -8741,9 +8760,11 @@ trees_in::tree_node ()
 
     case tt_typedef_type:
       res = tree_node ();
-      dump (dumper::TREE)
-	&& dump ("Read typedef %C:%N%S",
-		 res ? TREE_CODE (res) : ERROR_MARK, res, res);
+      if (res)
+	dump (dumper::TREE)
+	  && dump ("Read %stypedef %C:%N",
+		   DECL_IMPLICIT_TYPEDEF_P (res) ? "implicit " : "",
+		   TREE_CODE (res), res);
       res = tree_node ();
       break;
 
@@ -9638,18 +9659,19 @@ trees_out::get_merge_kind (depset *dep)
   switch (dep->get_entity_kind ())
     {
     default:
-      if (TREE_CODE (decl) == TYPE_DECL && IDENTIFIER_ANON_P (DECL_NAME (decl)))
+      if (TREE_CODE (decl) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (decl);
 
-	  if (TYPE_WAS_UNNAMED (type))
-	    /* Got a type name for linkage purposes.  */
-	    mk = MK_linkage;
-	  else
+	  gcc_checking_assert (decl == TYPE_NAME (type));
+	  if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	    {
-	      gcc_checking_assert (TREE_CODE (type) == ENUMERAL_TYPE
-				   && TYPE_VALUES (type));
-	      mk = MK_enum;
+	      if (TREE_CODE (type) == ENUMERAL_TYPE && TYPE_VALUES (type))
+		/* Keyed by first enum value.  */
+		mk = MK_enum;
+	      else
+		/* No way to merge it.  */
+		mk = MK_unique;
 	    }
 	}
       break;
@@ -9696,7 +9718,7 @@ trees_out::get_container (tree decl)
   if (!container)
     container = CP_DECL_CONTEXT (decl);
   if (TYPE_P (container))
-    container = TYPE_STUB_DECL (container);
+    container = TYPE_NAME (container);
 
   int use_tpl;
   if (tree template_info = node_template_info (container, use_tpl))
@@ -9799,7 +9821,7 @@ trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
     }
  else if (mk & MK_indirect_mask)
    {
-     tree name = NULL_TREE;
+     tree name = decl;
 
      if (mk == MK_enum)
        {
@@ -9934,12 +9956,12 @@ has_definition (tree decl)
 
     case TYPE_DECL:
       {
-	if (!DECL_IMPLICIT_TYPEDEF_P (decl))
-	  break;
-
 	tree type = TREE_TYPE (decl);
-	if (TREE_CODE (type) == ENUMERAL_TYPE
-	    ? TYPE_VALUES (type) : TYPE_FIELDS (type))
+
+	if (type == TYPE_MAIN_VARIANT (type)
+	    && decl == TYPE_NAME (type)
+	    && (TREE_CODE (type) == ENUMERAL_TYPE
+		? TYPE_VALUES (type) : TYPE_FIELDS (type)))
 	  return true;
       }
       break;
@@ -10240,7 +10262,7 @@ trees_out::write_class_def (tree defn)
 
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base)
-	as_base = TYPE_STUB_DECL (as_base);
+	as_base = TYPE_NAME (as_base);
       tree_node (as_base);
       if (as_base && as_base != defn)
 	write_class_def (as_base);
@@ -10735,8 +10757,8 @@ trees_out::write_definition (tree decl)
     case TYPE_DECL:
       {
 	tree type = TREE_TYPE (decl);
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && TYPE_MAIN_VARIANT (type) == type);
+	gcc_assert (TYPE_MAIN_VARIANT (type) == type
+		    && TYPE_NAME (type) == decl);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  write_enum_def (decl);
 	else
@@ -10776,8 +10798,8 @@ trees_out::mark_declaration (tree decl, bool do_defn)
     case TYPE_DECL:
       {
 	tree type = TREE_TYPE (decl);
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && TYPE_MAIN_VARIANT (type) == type);
+	gcc_assert (TYPE_MAIN_VARIANT (type) == type
+		    && TYPE_NAME (type) == decl);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  mark_enum_def (decl);
 	else
@@ -10816,8 +10838,8 @@ trees_in::read_definition (tree decl)
     case TYPE_DECL:
       {
 	tree type = TREE_TYPE (decl);
-	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && TYPE_MAIN_VARIANT (type) == type);
+	gcc_assert (TYPE_MAIN_VARIANT (type) == type
+		    && TYPE_NAME (type) == decl);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  return read_enum_def (decl, maybe_template);
 	else
@@ -11136,7 +11158,7 @@ depset::hash::add_binding (tree ns, tree value)
 
       if (TREE_CODE (inner) == CONST_DECL
 	  && TREE_CODE (DECL_CONTEXT (inner)) == ENUMERAL_TYPE)
-	inner = TYPE_STUB_DECL (DECL_CONTEXT (inner));
+	inner = TYPE_NAME (DECL_CONTEXT (inner));
       else if (TREE_CODE (inner) == TEMPLATE_DECL)
 	inner = DECL_TEMPLATE_RESULT (inner);
 
@@ -11176,7 +11198,7 @@ depset::hash::add_binding (tree ns, tree value)
 	  // drop it for non-function decls :(
 	  maybe_using = ovl_make (decl, NULL_TREE);
 	  if (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
-				    ? TYPE_STUB_DECL (TREE_TYPE (decl))
+				    ? TYPE_NAME (TREE_TYPE (decl))
 				    : STRIP_TEMPLATE (decl)))
 	    OVL_EXPORT_P (maybe_using) = true;
 	  ek = depset::EK_USING;
@@ -11704,7 +11726,7 @@ binding_cmp (const void *a_, const void *b_)
     }
   else
     a_export = DECL_MODULE_EXPORT_P (TREE_CODE (a_ent) == CONST_DECL
-				     ? TYPE_STUB_DECL (TREE_TYPE (a_ent))
+				     ? TYPE_NAME (TREE_TYPE (a_ent))
 				     : STRIP_TEMPLATE (a_ent));
   
   bool b_using = b->get_entity_kind () == depset::EK_USING;
@@ -11716,7 +11738,7 @@ binding_cmp (const void *a_, const void *b_)
     }
   else
     b_export = DECL_MODULE_EXPORT_P (TREE_CODE (b_ent) == CONST_DECL
-				     ? TYPE_STUB_DECL (TREE_TYPE (b_ent))
+				     ? TYPE_NAME (TREE_TYPE (b_ent))
 				     : STRIP_TEMPLATE (b_ent));
 
   /* Non-exports before exports.  */
@@ -17146,7 +17168,7 @@ module_visible_instantiation_path (bitmap *path_map_p)
 	  if (TREE_CODE (decl) == TREE_LIST)
 	    decl = TREE_PURPOSE (decl);
 	  if (TYPE_P (decl))
-	    decl = TYPE_STUB_DECL (decl);
+	    decl = TYPE_NAME (decl);
 	  if (unsigned mod = get_originating_module (decl))
 	    if (!bitmap_bit_p (path_map, mod))
 	      {
@@ -17195,7 +17217,7 @@ get_originating_module_decl (tree decl)
   if (TREE_CODE (decl) == CONST_DECL
       && DECL_CONTEXT (decl)
       && (TREE_CODE (DECL_CONTEXT (decl)) == ENUMERAL_TYPE))
-    decl = TYPE_STUB_DECL (DECL_CONTEXT (decl));
+    decl = TYPE_NAME (DECL_CONTEXT (decl));
 
   gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
 		       || TREE_CODE (decl) == FUNCTION_DECL
@@ -17211,7 +17233,7 @@ get_originating_module_decl (tree decl)
 
       if (TYPE_P (ctx))
 	{
-	  ctx = TYPE_STUB_DECL (ctx);
+	  ctx = TYPE_NAME (ctx);
 	  if (!ctx)
 	    {
 	      /* Some kind of internal type.  */
@@ -17261,7 +17283,7 @@ get_instantiating_module_decl (tree decl)
   if (TREE_CODE (decl) == CONST_DECL
       && DECL_CONTEXT (decl)
       && (TREE_CODE (DECL_CONTEXT (decl)) == ENUMERAL_TYPE))
-    decl = TYPE_STUB_DECL (DECL_CONTEXT (decl));
+    decl = TYPE_NAME (DECL_CONTEXT (decl));
 
   gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
 		       || TREE_CODE (decl) == FUNCTION_DECL
@@ -17283,7 +17305,7 @@ get_instantiating_module_decl (tree decl)
 
       if (TYPE_P (ctx))
 	{
-	  ctx = TYPE_STUB_DECL (ctx);
+	  ctx = TYPE_NAME (ctx);
 	  if (!ctx)
 	    /* Always return something, global_namespace is a useful
 	       non-owning decl.  */

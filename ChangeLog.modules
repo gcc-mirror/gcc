@@ -1,5 +1,22 @@
 2019-10-24  Nathan Sidwell  <nathan@acm.org>
 
+	Types always keyed by TYPE_NAME.  Use TYPE_NAME not TYPE_STUB_DECL.
+	gcc/cp/
+	* module.cc (enum merge_kind): Drop MK_linkage.
+	(trees_out::core_vals): Fix DECL_TEMPLATE_PARM_P thinko.
+	TYPE_DECLS for linkage are not regular typedefs.
+	(trees_{in,out}::add_indirects): Always add a TYPE_DECL's type.
+	(trees_{in,out}::decl_value): Write the stub_decl if it's
+	different.
+	(trees_out::{type,decl}_node): Cleanup some type_decl handling.
+	(trees_out::get_merge_kind): Drop MK_linkage.
+	(trees_{in,out}::key_mergeable): Likewise.
+	(trees_out::{has,write,mark}_definition): Adjust.
+	(trees_in::read_definition): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[bd].C: Adjust scans.
+	* g++.dg/modules/tdef-6_b..C: Adjust scans.
+
 	gcc/cp/
 	* module.cc (trees_{in,out}::tpl_parm_value): No need to stream
 	bound ttp's TI here.
