@@ -5106,7 +5106,8 @@ s390_get_thread_pointer (void)
 {
   rtx tp = gen_reg_rtx (Pmode);
 
-  emit_move_insn (tp, gen_rtx_REG (Pmode, TP_REGNUM));
+  emit_insn (gen_get_thread_pointer (Pmode, tp));
+
   mark_reg_pointer (tp, BITS_PER_WORD);
 
   return tp;
@@ -11711,7 +11712,7 @@ s390_expand_split_stack_prologue (void)
       /* Get thread pointer.  r1 is the only register we can always destroy - r0
 	 could contain a static chain (and cannot be used to address memory
 	 anyway), r2-r6 can contain parameters, and r6-r15 are callee-saved.  */
-      emit_move_insn (r1, gen_rtx_REG (Pmode, TP_REGNUM));
+      emit_insn (gen_get_thread_pointer (Pmode, r1));
       /* Aim at __private_ss.  */
       guard = gen_rtx_MEM (Pmode, plus_constant (Pmode, r1, psso));
 
