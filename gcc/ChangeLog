@@ -1,3 +1,8 @@
+2019-10-24  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h (gt_pch_nx): Mark all functions
+	with gcc_unreachable as we do not expect to be called.
+
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): For reduction
