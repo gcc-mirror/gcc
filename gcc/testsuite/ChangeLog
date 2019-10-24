@@ -1,5 +1,10 @@
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92205
+	* gcc.dg/vect/pr92205.c: New testcase.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92203
 	* gcc.dg/torture/pr92203.c: New testcase.
 

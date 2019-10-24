@@ -1,5 +1,12 @@
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92205
+	* tree-vect-loop.c (vectorizable_reduction): Restrict
+	search for alternate vectype_in to lane-reducing patterns
+	we support.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92203
 	* treee-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
 	Skip eliminating conversion stmts inserted by insertion.
