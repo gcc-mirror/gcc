@@ -6239,7 +6239,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 			       (CONSTRUCTOR_ELT (stripped_init,0)->value))))
 		{
 		  if (complain & tf_error)
-		    error ("too many braces around scalar initializer"
+		    error ("too many braces around scalar initializer "
 		           "for type %qT", type);
 		  init = error_mark_node;
 		}
