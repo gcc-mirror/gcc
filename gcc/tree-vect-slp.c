@@ -2271,14 +2271,18 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	      {
 		/* Dissolve reduction chain group.  */
 		stmt_vec_info vinfo = first_element;
+		stmt_vec_info last = NULL;
 		while (vinfo)
 		  {
 		    stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
 		    REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
 		    REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
+		    last = vinfo;
 		    vinfo = next;
 		  }
 		STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
+		/* It can be still vectorized as part of an SLP reduction.  */
+		loop_vinfo->reductions.safe_push (last);
 	      }
 	}
 

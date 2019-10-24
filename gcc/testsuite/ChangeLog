@@ -1,3 +1,7 @@
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-9.c: New testcase.
+
 2019-10-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr70010.c: Add -Wno-psabi.
