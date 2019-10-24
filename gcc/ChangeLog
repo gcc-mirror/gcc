@@ -1,3 +1,9 @@
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92203
+	* treee-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Skip eliminating conversion stmts inserted by insertion.
+
 2019-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_get_thread_pointer): Use
