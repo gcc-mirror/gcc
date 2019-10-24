@@ -1,3 +1,15 @@
+2019-10-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.c (CPTI_STD_IDENTIFIER): Delete.
+	(std_identifier): Delete.
+	(DECL_NAME_SPACE_STD_P): Compare against std_node.
+	* decl.c (initialize_predefined_identifiers): 'std' is not needed.
+	(cxx_init_decl_processing): Adjust creation of ::std.  Use
+	{push,pop}_nested_namespace.
+	(cxx_builtin_function): Use {push,pop}_nested_namespace.
+	* except.c (init_exception_processing): Likewise.
+	* rtti.c (init_rtti_processing): Likewise.
+
 2019-10-23  Jason Merrill  <jason@redhat.com>
 
 	Implement P1286R2, Contra CWG1778

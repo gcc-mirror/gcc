@@ -168,10 +168,10 @@ init_rtti_processing (void)
 {
   tree type_info_type;
 
-  push_namespace (std_identifier);
+  push_nested_namespace (std_node);
   type_info_type = xref_tag (class_type, get_identifier ("type_info"),
 			     /*tag_scope=*/ts_current, false);
-  pop_namespace ();
+  pop_nested_namespace (std_node);
   const_type_info_type_node
     = cp_build_qualified_type (type_info_type, TYPE_QUAL_CONST);
   type_info_ptr_type = build_pointer_type (const_type_info_type_node);

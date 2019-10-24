@@ -149,7 +149,6 @@ enum cp_tree_index
     CPTI_PFN_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
     CPTI_GLOBAL_IDENTIFIER,
-    CPTI_STD_IDENTIFIER,
     CPTI_ANON_IDENTIFIER,
     CPTI_AUTO_IDENTIFIER,
     CPTI_DECLTYPE_AUTO_IDENTIFIER,
@@ -289,7 +288,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define vptr_identifier			cp_global_trees[CPTI_VPTR_IDENTIFIER]
 /* The name of the ::, std & anon namespaces.  */
 #define global_identifier		cp_global_trees[CPTI_GLOBAL_IDENTIFIER]
-#define std_identifier			cp_global_trees[CPTI_STD_IDENTIFIER]
 #define anon_identifier			cp_global_trees[CPTI_ANON_IDENTIFIER]
 /* auto and declspec(auto) identifiers.  */
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
@@ -3335,9 +3333,7 @@ struct GTY(()) lang_decl {
 
 /* Nonzero if NODE is the std namespace.  */
 #define DECL_NAMESPACE_STD_P(NODE)			\
-  (TREE_CODE (NODE) == NAMESPACE_DECL			\
-   && CP_DECL_CONTEXT (NODE) == global_namespace	\
-   && DECL_NAME (NODE) == std_identifier)
+  ((NODE) == std_node)
 
 /* In a TREE_LIST in an attribute list, indicates that the attribute
    must be applied at instantiation time.  */
