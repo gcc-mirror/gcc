@@ -30,7 +30,7 @@ template class __gnu_debug::unordered_map<string, float>;
 template class __gnu_debug::unordered_map<string, int,
                                           hash<string>, equal_to<string>, 
                                           allocator<pair<const string, int>>>;
-#ifndef __STRICT_ANSI__
+#if !defined __STRICT_ANSI__ && __cplusplus <= 201703L
 template class __gnu_debug::unordered_map<string, float,
                                           hash<string>, equal_to<string>, 
                                           allocator<char>>;

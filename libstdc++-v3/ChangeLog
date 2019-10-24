@@ -1,6 +1,14 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/requirements/debug_container.cc:
+	Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Change
+	dg-do directive for C++17 and C++2a.
+
+	Backport from mainline
 	2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/function_objects/invoke/1.cc: Add more tests.
