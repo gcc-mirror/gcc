@@ -1,5 +1,10 @@
 2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
 
+	* symbols-summary.h (fast_function_summary<T *, V>::release,
+	fast_call_summary<T *, V>::release): Free m_vector.
+
+2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphunit.c (symbol_table::process_new_functions): Call
 	ipa_free_size_summary.
 	* ipa-cp.c (ipcp_cloning_candidate_p): Update.
