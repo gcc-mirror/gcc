@@ -1,6 +1,12 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (memory_resource)
+	(default_resource_mgr): Fix indentation.
+
+	Backport from mainline
 	2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89164
