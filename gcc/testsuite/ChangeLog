@@ -1,6 +1,11 @@
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65930
+	* gcc.dg/vect/vect-reduc-2short.c: Fix typo.
+
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
 	* gcc.dg/vect/vect-reduc-2char-big-array.c: Adjust again.
 	* gcc.dg/vect/vect-reduc-2char.c: Likewise.
 	* gcc.dg/vect/vect-reduc-2short.c: Likewise.
