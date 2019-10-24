@@ -1,6 +1,12 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* include/experimental/internet: Include netinet/in.h if we have
+	_GLIBCXX_HAVE_NETINET_IN_H defined.
+
+	Backport from mainline
 	2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/internet (operator==, operator<): Fix loop
