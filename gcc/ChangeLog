@@ -1,3 +1,11 @@
+2019-10-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/constraints.md: Allow post_inc for "Ya" constraint.
+	* config/msp430/msp430.md (430x_shift_left): Use RLAM when the constant
+	shift amount is between 1 and 4.
+	(430x_arithmetic_shift_right): Use RRAM when the constant shift amount
+	is between 1 and 4.
+
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92205

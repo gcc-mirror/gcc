@@ -1,3 +1,11 @@
+2019-10-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/emulate-slli.c: Skip for -mcpu=msp430.
+	Add shift by a constant 5 bits.
+	Update scan-assembler directives.
+	* gcc.target/msp430/emulate-srai.c: Likewise.
+	* gcc.target/msp430/emulate-srli.c: Skip for -mcpu=msp430.
+
 2019-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92205
