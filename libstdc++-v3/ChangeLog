@@ -1,5 +1,10 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/executor (__use_future_ct, use_future_t):
+	Define partial specializations for std::allocator.
+	(__use_future_ch): Overload constructor for completion tokens using
+	std::allocator.
+
 	PR libstdc++/88338 Implement P0898R3, C++20 concepts library
 	* doc/xml/manual/status_cxx2020.xml: Update status.
 	* doc/html/*: Regenerate.
