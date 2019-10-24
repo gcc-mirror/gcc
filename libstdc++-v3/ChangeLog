@@ -1,6 +1,20 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91456
+	* include/bits/std_function.h (__check_func_return_type): Remove.
+	(function::_Callable): Use std::__is_invocable_impl instead of
+	__check_func_return_type.
+	* include/std/type_traits (__is_invocable_impl): Add another defaulted
+	template parameter. Define a separate partial specialization for
+	INVOKE and INVOKE<void>. For INVOKE<R> replace is_convertible check
+	with a check that models delayed temporary materialization.
+	* testsuite/20_util/function/91456.cc: New test.
+	* testsuite/20_util/is_invocable/91456.cc: New test.
+
+	Backport from mainline
 	2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* include/experimental/internet: Include netinet/in.h if we have
