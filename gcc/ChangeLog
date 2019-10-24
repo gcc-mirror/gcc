@@ -1,3 +1,9 @@
+2019-10-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_analyze_slp): When reduction group
+	SLP discovery fails try to handle the reduction as part
+	of SLP reduction discovery.
+
 2019-10-23  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_adjust_insn_length): New
