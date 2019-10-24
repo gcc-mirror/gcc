@@ -1,3 +1,9 @@
+2019-10-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr70010.c: Add -Wno-psabi.
+	* gcc.target/powerpc/pr70010-[12].c: Require LTO.
+	* gcc.target/powerpc/pr91275.c: Add -mcpu=power8.
+
 2019-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65930
