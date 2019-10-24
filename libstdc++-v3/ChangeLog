@@ -1,6 +1,12 @@
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (operator==, operator<): Fix loop
+	condition to avoid reading past the end of the array.
+
+	Backport from mainline
 	2019-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	P1651R0 bind_front should not unwrap reference_wrapper
