@@ -1,5 +1,13 @@
 2019-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper)
+	(input_iterator_wrapper, forward_iterator_wrapper)
+	bidirectional_iterator_wrapper, random_access_iterator_wrapper): Remove
+	user-provided copy constructors and copy assignment operators so they
+	are defined implicitly.
+	(input_iterator_wrapper): Initialize members in default constructor.
+	(forward_iterator_wrapper): Remove assignments to members of base.
+
 	* include/bits/allocator.h: Check __cpp_constexpr_dynamic_alloc
 	before making the std::allocator destructor constexpr.
 	* testsuite/20_util/allocator/requirements/constexpr.cc: New test.
