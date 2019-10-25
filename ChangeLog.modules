@@ -1,6 +1,13 @@
 2019-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum tree_tag): Delete tt_typename_decl.
+	(trees_out::decl_node): Do not handle TYPENAME_TYPE here ...
+	(trees_out::type_node): ... handle them here instead.
+	(trees_in::tree_node): Delete tt_typename_decl, handle
+	TYPENAME_TYPE as a derived_type.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Fixup anonymous case.
 
 	Remove mergeable sorting code.

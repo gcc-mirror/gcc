@@ -2695,7 +2695,6 @@ enum tree_tag {
   tt_lambda_id,		/* Lambda name.  */
 
   tt_typedef_type,	/* A (possibly implicit) typedefed type.  */
-  tt_typename_decl,	/* A type decl for a typedef.  */
 
   tt_derived_type,	/* A type derived from another type.  */
   tt_variant_type,	/* A variant of another type.  */
@@ -7905,39 +7904,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
     case TYPE_DECL:
       if (DECL_TINFO_P (decl))
 	goto tinfo;
-
-      if (!DECL_ORIGINAL_TYPE (decl)
-	  && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
-	{
-	  /* A type_decl of a typename.  */
-	  if (streaming_p ())
-	    i (tt_typename_decl);
-	  tree type = TREE_TYPE (decl);
-	  gcc_assert (CP_DECL_CONTEXT (decl) == TYPE_CONTEXT (type));
-	  tree_node (TYPE_CONTEXT (type));
-	  tree_node (DECL_NAME (decl));
-	  tree_node (TYPENAME_TYPE_FULLNAME (type));
-	  if (streaming_p ())
-	    {
-	      enum tag_types tag_type = none_type;
-	      if (TYPENAME_IS_ENUM_P (type))
-		tag_type = enum_type;
-	      else if (TYPENAME_IS_CLASS_P (type))
-		tag_type = class_type;
-	      u (int (tag_type));
-	    }
-
-	  int tag = insert (decl);
-	  if (streaming_p ())
-	    dump (dumper::TREE)
-	      && dump ("Wrote:%d typename decl %P", tag,
-		       TYPE_CONTEXT (type), DECL_NAME (decl));
-	  int type_tag = insert (type);
-	  if (streaming_p ())
-	    dump (dumper::TREE) && dump ("Wrote:%d typename type", type_tag);
-
-	  return false;
-	}
       break;
     }
 
@@ -8216,19 +8182,26 @@ trees_out::type_node (tree type)
   tree name = TYPE_NAME (type);
   if (!name)
     ;
-  // FIXME: The following TYPE_DCL check can go when we nolonger have
+  // FIXME: The following TYPE_DECL check can go when we nolonger have
   // mergeable sorting.  It catches the TEMPLATE_DECL of a tpltplparm
   else if (TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
     ;
   else if (TYPE_PTRMEMFUNC_P (type))
     name = NULL_TREE;
-  // FIXME: TYPENAME_TYPES go through to decl_node, why the
-  // difference?
-  // Perhaps we should just let record, union and enum tags through here?
+  // FIXME: Perhaps we should just let record, union and enum tags
+  // through here?
   else if (TREE_CODE (type) == UNBOUND_CLASS_TEMPLATE)
     name = NULL_TREE;
+  else if (TREE_CODE (type) == TYPENAME_TYPE)
+    name = NULL_TREE;
   else if (type != TYPE_MAIN_VARIANT (type))
-    name = NULL_TREE;  
+    name = NULL_TREE;
+#if 0
+  else
+    gcc_checking_assert (TREE_CODE (type) == RECORD_TYPE
+			 || TREE_CODE (type) == UNION_TYPE
+			 || TREE_CODE (type) == ENUMERAL_TYPE);
+#endif
 
   if (name)
     {
@@ -8414,6 +8387,23 @@ trees_out::type_node (tree type)
       if (streaming_p ())
 	u (PACK_EXPANSION_LOCAL_P (type));
       tree_node (PACK_EXPANSION_PARAMETER_PACKS (type));
+      break;
+
+    case TYPENAME_TYPE:
+      {
+	tree_node (TYPE_CONTEXT (type));
+	tree_node (DECL_NAME (TYPE_NAME (type)));
+	tree_node (TYPENAME_TYPE_FULLNAME (type));
+	if (streaming_p ())
+	  {
+	    enum tag_types tag_type = none_type;
+	    if (TYPENAME_IS_ENUM_P (type))
+	      tag_type = enum_type;
+	    else if (TYPENAME_IS_CLASS_P (type))
+	      tag_type = class_type;
+	    u (int (tag_type));
+	  }
+	}
       break;
 
     case UNBOUND_CLASS_TEMPLATE:
@@ -8745,28 +8735,6 @@ trees_in::tree_node ()
       res = tree_node ();
       break;
 
-    case tt_typename_decl:
-      {
-	tree context = tree_node ();
-	tree name = tree_node ();
-	tree fullname = tree_node ();
-	enum tag_types tag_type = tag_types (u ());
-
-	if (!get_overrun ())
-	  {
-	    res = build_typename_type (context, name, fullname, tag_type);
-	    tree decl = TYPE_STUB_DECL (res);
-	    int decl_tag = insert (decl);
-	    dump (dumper::TREE)
-	      && dump ("Created:%d typename decl %P", decl_tag, context, name);
-
-	    int type_tag = insert (res);
-	    dump (dumper::TREE)
-	      && dump ("Created:%d typename type", type_tag);
-	  }
-      }
-      break;
-
     case tt_derived_type:
       /* A type derived from some other type.  */
       {
@@ -8889,6 +8857,18 @@ trees_in::tree_node ()
 		  PACK_EXPANSION_LOCAL_P (expn) = local;
 		  res = expn;
 		}
+	    }
+	    break;
+
+	  case TYPENAME_TYPE:
+	    {
+	      tree ctx = tree_node ();
+	      tree name = tree_node ();
+	      tree fullname = tree_node ();
+	      enum tag_types tag_type = tag_types (u ());
+
+	      if (!get_overrun ())
+		res = build_typename_type (ctx, name, fullname, tag_type);
 	    }
 	    break;
 
