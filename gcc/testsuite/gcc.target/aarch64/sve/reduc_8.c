@@ -15,6 +15,5 @@ reduc (int *restrict a, int *restrict b, int *restrict c)
 }
 
 /* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.s, } 1 } } */
-/* We ought to use the CMPNE result for the SEL too.  */
-/* { dg-final { scan-assembler-not {\tcmpeq\tp[0-9]+\.s, } { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {\tcmpeq\tp[0-9]+\.s, } } } */
 /* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s, } 1 } } */
