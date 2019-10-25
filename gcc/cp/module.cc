@@ -2695,7 +2695,6 @@ enum tree_tag {
   tt_lambda_id,		/* Lambda name.  */
 
   tt_typedef_type,	/* A (possibly implicit) typedefed type.  */
-
   tt_derived_type,	/* A type derived from another type.  */
   tt_variant_type,	/* A variant of another type.  */
 
@@ -8183,52 +8182,9 @@ trees_out::type_node (tree type)
 {
   gcc_assert (TYPE_P (type));
 
-  tree name = TYPE_NAME (type);
-  if (!name)
-    ;
-  // FIXME: The following TYPE_DECL check can go when we nolonger have
-  // mergeable sorting.  It catches the TEMPLATE_DECL of a tpltplparm
-  else if (TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
-    ;
-  else if (TYPE_PTRMEMFUNC_P (type))
-    name = NULL_TREE;
-  // FIXME: Perhaps we should just let record, union and enum tags
-  // through here?
-  else if (TREE_CODE (type) == UNBOUND_CLASS_TEMPLATE)
-    name = NULL_TREE;
-  else if (TREE_CODE (type) == TYPENAME_TYPE)
-    name = NULL_TREE;
-  else if (type != TYPE_MAIN_VARIANT (type))
-    name = NULL_TREE;
-#if 0
-  else
-    gcc_checking_assert (TREE_CODE (type) == RECORD_TYPE
-			 || TREE_CODE (type) == UNION_TYPE
-			 || TREE_CODE (type) == ENUMERAL_TYPE);
-#endif
-
-  if (name)
-    {
-      if (streaming_p ())
-	{
-	  i (tt_typedef_type);
-	  dump (dumper::TREE)
-	    && dump ("Writing %stypedef %C:%N",
-		     DECL_IMPLICIT_TYPEDEF_P (name) ? "implicit " : "",
-		     TREE_CODE (name), name);
-	}
-      tree_node (name);
-      if (streaming_p ())
-	dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
-				     TREE_CODE (name), name, name);
-      if (ref_node (type) == WK_none)
-	/* We emitted the type node via the name.  */
-	return;
-    }
-
   tree root = (TYPE_NAME (type)
 	       ? TREE_TYPE (TYPE_NAME (type)) : TYPE_MAIN_VARIANT (type));
-  
+
   if (type != root)
     {
       if (streaming_p ())
@@ -8307,6 +8263,33 @@ trees_out::type_node (tree type)
 	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
       return;
     }
+
+  if (tree name = TYPE_NAME (type))
+    if (DECL_TEMPLATE_PARM_P (name)
+	|| (TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name))
+	|| TREE_CODE (type) == RECORD_TYPE
+	|| TREE_CODE (type) == UNION_TYPE
+	|| TREE_CODE (type) == ENUMERAL_TYPE)
+      {
+	/* We can meet template parms that we didn't meet in the
+	   tpl_parms walk, because we're referring to a derived type
+	   that was previously constructed from equivalent template
+	   parms. */
+	if (streaming_p ())
+	  {
+	    i (tt_typedef_type);
+	    dump (dumper::TREE)
+	      && dump ("Writing %stypedef %C:%N",
+		       DECL_IMPLICIT_TYPEDEF_P (name) ? "implicit " : "",
+		       TREE_CODE (name), name);
+	  }
+	tree_node (name);
+	if (streaming_p ())
+	  dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
+				       TREE_CODE (name), name, name);
+	gcc_checking_assert (TREE_VISITED (type));
+	return;
+      }
 
   if (streaming_p ())
     {
@@ -8732,11 +8715,13 @@ trees_in::tree_node ()
     case tt_typedef_type:
       res = tree_node ();
       if (res)
-	dump (dumper::TREE)
-	  && dump ("Read %stypedef %C:%N",
-		   DECL_IMPLICIT_TYPEDEF_P (res) ? "implicit " : "",
-		   TREE_CODE (res), res);
-      res = tree_node ();
+	{
+	  dump (dumper::TREE)
+	    && dump ("Read %stypedef %C:%N",
+		     DECL_IMPLICIT_TYPEDEF_P (res) ? "implicit " : "",
+		     TREE_CODE (res), res);
+	  res = TREE_TYPE (res);
+	}
       break;
 
     case tt_derived_type:

@@ -1,6 +1,11 @@
 2019-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::type_node): Move typdef printing after
+	variant printing.
+	(trees_in::tree_node): Simplity tt_typedef_type.
+
+	gcc/cp/
 	* module.cc (trees_out::core_vals): Check if template parm has a
 	canonical type before processing it.
 	(trees_in::tpl_parm_value): Likewise.
