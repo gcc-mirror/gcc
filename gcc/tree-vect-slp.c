@@ -537,19 +537,19 @@ again:
   /* Swap operands.  */
   if (swapped)
     {
-      /* If there are already uses of this stmt in a SLP instance then
-         we've committed to the operand order and can't swap it.  */
-      if (STMT_VINFO_NUM_SLP_USES (stmt_info) != 0)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Build SLP failed: cannot swap operands of "
-			     "shared stmt %G", stmt_info->stmt);
-	  return -1;
-	}
-
       if (first_op_cond)
 	{
+	  /* If there are already uses of this stmt in a SLP instance then
+	     we've committed to the operand order and can't swap it.  */
+	  if (STMT_VINFO_NUM_SLP_USES (stmt_info) != 0)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: cannot swap operands of "
+				 "shared stmt %G", stmt_info->stmt);
+	      return -1;
+	    }
+
 	  /* To get rid of this swapping we have to move the stmt code
 	     to the SLP tree as well (and gather it here per stmt).  */
 	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
@@ -1410,28 +1410,6 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		    {
 		      if (!swap_not_matching)
 			goto fail;
-		      swap_not_matching = false;
-		      break;
-		    }
-		  /* Verify if we can safely swap or if we committed to a
-		     specific operand order already.
-		     ???  Instead of modifying GIMPLE stmts here we could
-		     record whether we want to swap operands in the SLP
-		     node and temporarily do that when processing it
-		     (or wrap operand accessors in a helper).  */
-		  else if (swap[j] != 0
-			   || STMT_VINFO_NUM_SLP_USES (stmt_info))
-		    {
-		      if (!swap_not_matching)
-			{
-			  if (dump_enabled_p ())
-			    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-					     vect_location,
-					     "Build SLP failed: cannot swap "
-					     "operands of shared stmt %G",
-					     stmts[j]->stmt);
-			  goto fail;
-			}
 		      swap_not_matching = false;
 		      break;
 		    }

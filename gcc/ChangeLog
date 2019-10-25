@@ -1,3 +1,10 @@
+2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Only fail
+	swapping if we actually have to modify the IL on a shared stmt.
+	(vect_build_slp_tree_2): Never fail swapping on shared stmts
+	because we no longer modify the IL.
+
 2019-10-25  Martin Liska  <mliska@suse.cz>
 
 	* tree.c (dump_tree_statistics): Use sorted index 'j' and not 'i'.
