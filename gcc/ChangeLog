@@ -1,3 +1,14 @@
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vectorizable_reduction): Restrict the
+	LOOP_VINFO_CAN_FULLY_MASK_P handling to cases that will be
+	handled by vect_transform_reduction.  Allow fully-masked loops
+	to be used with reduction chains.
+	* tree-vect-stmts.c (vectorizable_operation): Handle reduction
+	operations in fully-masked loops.
+	(vectorizable_condition): Reject EXTRACT_LAST_REDUCTION
+	operations in fully-masked loops.
+
 2019-10-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vectorizable_reduction): Verify

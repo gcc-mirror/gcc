@@ -1,3 +1,22 @@
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr65947-1.c: No longer expect doubled dump lines
+	for FOLD_EXTRACT_LAST reductions.
+	* gcc.dg/vect/pr65947-2.c: Likewise.
+	* gcc.dg/vect/pr65947-3.c: Likewise.
+	* gcc.dg/vect/pr65947-4.c: Likewise.
+	* gcc.dg/vect/pr65947-5.c: Likewise.
+	* gcc.dg/vect/pr65947-6.c: Likewise.
+	* gcc.dg/vect/pr65947-9.c: Likewise.
+	* gcc.dg/vect/pr65947-10.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr65947-14.c: Likewise.
+	* gcc.dg/vect/pr80631-1.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/vect-cond-reduc-3.c: Likewise.
+	* gcc.dg/vect/vect-cond-reduc-4.c: Likewise.
+
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-variant-8.c: New test.

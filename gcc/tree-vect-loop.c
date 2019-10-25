@@ -6319,38 +6319,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   else
     vec_num = 1;
 
-  internal_fn cond_fn = get_conditional_internal_fn (code);
-  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
-  bool mask_by_cond_expr = use_mask_by_cond_expr_p (code, cond_fn, vectype_in);
-
   vect_model_reduction_cost (stmt_info, reduc_fn, reduction_type, ncopies,
 			     cost_vec);
-  if (loop_vinfo && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
-    {
-      if (reduction_type != FOLD_LEFT_REDUCTION
-	  && !mask_by_cond_expr
-	  && (cond_fn == IFN_LAST
-	      || !direct_internal_fn_supported_p (cond_fn, vectype_in,
-						  OPTIMIZE_FOR_SPEED)))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop because no"
-			     " conditional operation is available.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
-	}
-      else if (reduc_index == -1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop for chained"
-			     " reductions.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
-	}
-      else
-	vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
-			       vectype_in, NULL);
-    }
   if (dump_enabled_p ()
       && reduction_type == FOLD_LEFT_REDUCTION)
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -6366,6 +6336,27 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
     {
       STMT_VINFO_DEF_TYPE (stmt_info) = vect_internal_def;
       STMT_VINFO_DEF_TYPE (vect_orig_stmt (stmt_info)) = vect_internal_def;
+    }
+  else if (loop_vinfo && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
+    {
+      vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+      internal_fn cond_fn = get_conditional_internal_fn (code);
+
+      if (reduction_type != FOLD_LEFT_REDUCTION
+	  && !use_mask_by_cond_expr_p (code, cond_fn, vectype_in)
+	  && (cond_fn == IFN_LAST
+	      || !direct_internal_fn_supported_p (cond_fn, vectype_in,
+						  OPTIMIZE_FOR_SPEED)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "can't use a fully-masked loop because no"
+			     " conditional operation is available.\n");
+	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	}
+      else
+	vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
+			       vectype_in, NULL);
     }
   return true;
 }
