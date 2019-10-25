@@ -1,3 +1,13 @@
+2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_map_clause): Add and pass allow_commons
+	argument.
+	(gfc_match_omp_clauses): Update calls to permit common blocks for
+	OpenACC's copy/copyin/copyout, create/delete, host,
+	pcopy/pcopy_in/pcopy_out, present_or_copy, present_or_copy_in,
+	present_or_copy_out, present_or_create and self.
+
 2019-10-24  Martin Liska  <mliska@suse.cz>
 
 	PR fortran/92174
