@@ -1,3 +1,8 @@
+2019-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_cmp.h: Check __cpp_lib_concepts before defining
+	concepts. Fix comment.
+
 2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Switch
