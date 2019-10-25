@@ -1,3 +1,7 @@
+2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/gnu/gpl-3.0.xml: Switch www.gnu.org to https.
+
 2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* doc/xml/manual/status_cxx2020.xml: Add rows and update status.
