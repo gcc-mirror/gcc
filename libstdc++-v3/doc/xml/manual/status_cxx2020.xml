@@ -1127,6 +1127,160 @@ Feature-testing recommendations for C++</link>.
       <entry> <code>__cpp_lib_bounded_array_traits &gt;= 201902L</code> </entry>
     </row>
 
+    <row>
+      <entry> std::to_array </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0325r4.html">
+	P0325R4
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_to_array &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Bit operations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">
+	P0553R4
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_bitops &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Mathematical constants </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0631r8.pdf">
+	P0631R8
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_math_constants &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Layout-compatibility and pointer-interconvertibility traits </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0466r5.pdf">
+	P0466R5
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_is_layout_compatible &gt;= 201907L</code>,
+        <code>__cpp_lib_is_layout_interconvertible &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <entry> std::stop_token and std::jthread </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0660r10.pdf">
+	P0660R10
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_jthread &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Text formatting </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0645r10.html">
+	P0645R10
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_format &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <entry> constexpr std::invoke and related utilities </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1065r2.html">
+	P1065R2
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_invoke &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <entry> constexpr std::allocator and related utilities </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0784r7.html">
+	P0784R7
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_constexpr_dynamic_alloc &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Atomic waiting and notifying, std::semaphore, std::latch and std::barrier </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1135r6.html">
+	P1135R6
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_atomic_lock_free_type_aliases &gt;= 201907L</code> in &lt;atomic&gt;,
+        <code>__cpp_lib_atomic_flag_test &gt;= 201907L</code> in &lt;atomic&gt;,
+        <code>__cpp_lib_atomic_wait &gt;= 201907L</code> in &lt;atomic&gt;,
+        <code>__cpp_lib_semaphore &gt;= 201907L</code> in &lt;semaphore&gt;,
+        <code>__cpp_lib_latch &gt;= 201907L</code> in &lt;latch&gt;,
+        <code>__cpp_lib_barrier &gt;= 201907L</code> in &lt;barrier&gt;
+      </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> std::source_location </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1208r6.pdf">
+	P1208R6
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_source_location &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Adding &lt;=&gt; to the standard library </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1614r2.html">
+	P1614R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_spaceship &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Efficient access to std::basic_stringbuf's Buffer </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0408r7.pdf">
+	P0408R7
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
   </tbody>
 </tgroup>
 </table>

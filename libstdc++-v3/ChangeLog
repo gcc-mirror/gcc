@@ -1,3 +1,7 @@
+2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* doc/xml/manual/status_cxx2020.xml: Add rows and update status.
+
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/allocator.h (allocator<void>): Restore the explicit
