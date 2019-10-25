@@ -1,7 +1,12 @@
 2019-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocator.h: Check __cpp_constexpr_dynamic_alloc
+	before making the std::allocator destructor constexpr.
+	* testsuite/20_util/allocator/requirements/constexpr.cc: New test.
+
 	* include/bits/range_cmp.h: Check __cpp_lib_concepts before defining
 	concepts. Fix comment.
+	* include/bits/allocator.h 
 
 2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
