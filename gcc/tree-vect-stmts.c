@@ -5929,7 +5929,7 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out;
-  int ncopies;
+  int ncopies, vec_num;
   int j, i;
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;
@@ -6066,9 +6066,15 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
   if (slp_node)
-    ncopies = 1;
+    {
+      ncopies = 1;
+      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+    }
   else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
+    {
+      ncopies = vect_get_num_copies (loop_vinfo, vectype);
+      vec_num = 1;
+    }
 
   gcc_assert (ncopies >= 1);
 
@@ -6121,8 +6127,34 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       return false;
     }
 
+  int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
+  vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
+  internal_fn cond_fn = get_conditional_internal_fn (code);
+
   if (!vec_stmt) /* transformation not required.  */
     {
+      /* If this operation is part of a reduction, a fully-masked loop
+	 should only change the active lanes of the reduction chain,
+	 keeping the inactive lanes as-is.  */
+      if (loop_vinfo
+	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
+	  && reduc_idx >= 0)
+	{
+	  if (cond_fn == IFN_LAST
+	      || !direct_internal_fn_supported_p (cond_fn, vectype,
+						  OPTIMIZE_FOR_SPEED))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "can't use a fully-masked loop because no"
+				 " conditional operation is available.\n");
+	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	    }
+	  else
+	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
+				   vectype, NULL);
+	}
+
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_operation");
       vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
@@ -6134,6 +6166,8 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "transform binary/unary operation.\n");
+
+  bool masked_loop_p = loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
 
   /* POINTER_DIFF_EXPR has pointer arguments which are vectorized as
      vectors with unsigned elements, but the result is signed.  So, we
@@ -6252,22 +6286,41 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  ? vec_oprnds1[i] : NULL_TREE);
 	  vop2 = ((op_type == ternary_op)
 		  ? vec_oprnds2[i] : NULL_TREE);
-	  gassign *new_stmt = gimple_build_assign (vec_dest, code,
-						   vop0, vop1, vop2);
-	  new_temp = make_ssa_name (vec_dest, new_stmt);
-	  gimple_assign_set_lhs (new_stmt, new_temp);
-	  new_stmt_info
-	    = vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
-	  if (vec_cvt_dest)
+	  if (masked_loop_p && reduc_idx >= 0)
 	    {
-	      new_temp = build1 (VIEW_CONVERT_EXPR, vectype_out, new_temp);
-	      gassign *new_stmt
-		= gimple_build_assign (vec_cvt_dest, VIEW_CONVERT_EXPR,
-				       new_temp);
-	      new_temp = make_ssa_name (vec_cvt_dest, new_stmt);
+	      /* Perform the operation on active elements only and take
+		 inactive elements from the reduction chain input.  */
+	      gcc_assert (!vop2);
+	      vop2 = reduc_idx == 1 ? vop1 : vop0;
+	      tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
+					      vectype, i * ncopies + j);
+	      gcall *call = gimple_build_call_internal (cond_fn, 4, mask,
+							vop0, vop1, vop2);
+	      new_temp = make_ssa_name (vec_dest, call);
+	      gimple_call_set_lhs (call, new_temp);
+	      gimple_call_set_nothrow (call, true);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt_info, call, gsi);
+	    }
+	  else
+	    {
+	      gassign *new_stmt = gimple_build_assign (vec_dest, code,
+						       vop0, vop1, vop2);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
 	      new_stmt_info
 		= vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+	      if (vec_cvt_dest)
+		{
+		  new_temp = build1 (VIEW_CONVERT_EXPR, vectype_out, new_temp);
+		  gassign *new_stmt
+		    = gimple_build_assign (vec_cvt_dest, VIEW_CONVERT_EXPR,
+					   new_temp);
+		  new_temp = make_ssa_name (vec_cvt_dest, new_stmt);
+		  gimple_assign_set_lhs (new_stmt, new_temp);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+		}
 	    }
           if (slp_node)
 	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
@@ -9996,6 +10049,16 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
 		return false;
 	    }
+	}
+      if (loop_vinfo
+	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
+	  && reduction_type == EXTRACT_LAST_REDUCTION)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "can't yet use a fully-masked loop for"
+			     " EXTRACT_LAST_REDUCTION.\n");
+	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
 	}
       if (expand_vec_cond_expr_p (vectype, comp_vectype,
 				     cond_code))
