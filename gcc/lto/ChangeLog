@@ -1,3 +1,9 @@
+2019-10-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backport from mainline
+	* lto-partition.c (add_symbol_to_partition_1): Update.
+	(undo_parittion): Update.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.
