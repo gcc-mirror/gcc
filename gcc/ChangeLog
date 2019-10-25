@@ -1,3 +1,9 @@
+2019-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/85969
+	* config/avr/gen-avr-mmcu-specs.c (str_prefix_p): Remove unused
+	static function.
+
 2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
