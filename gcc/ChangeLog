@@ -1,3 +1,19 @@
+2019-10-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backport from mainline
+
+	2019-10-18  Jakub Jelinek  <jakub@redhat.com>
+	PR middle-end/92153
+	* ggc-page.c (release_pages): Read g->alloc_size before free rather
+	than after it.
+
+	2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
+	* ggc-page.c (release_pages): Output statistics when !quiet_flag.
+	(ggc_collect): Dump later to not interfere with release_page dump.
+	(ggc_trim): New function.
+	* ggc-none.c (ggc_trim): New.
+	* ggc.h (ggc_trim): Declare.
+
 2019-10-24  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	Backport from mainline
