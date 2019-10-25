@@ -1,3 +1,12 @@
+2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Verify
+	STMT_VINFO_REDUC_IDX on the to be vectorized stmts is set up
+	correctly.
+	* tree-vect-patterns.c (vect_mark_pattern_stmts): Transfer
+	STMT_VINFO_REDUC_IDX from the original stmts to the pattern
+	stmts.
+
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.h (omp_construct_selector_matches): Declare.

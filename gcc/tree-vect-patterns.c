@@ -5075,6 +5075,7 @@ static inline void
 vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
                          tree pattern_vectype)
 {
+  stmt_vec_info orig_stmt_info_saved = orig_stmt_info;
   gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info);
 
   gimple *orig_pattern_stmt = NULL;
@@ -5134,6 +5135,57 @@ vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
     }
   else
     vect_set_pattern_stmt (pattern_stmt, orig_stmt_info, pattern_vectype);
+
+  /* Transfer reduction path info to the pattern.  */
+  if (STMT_VINFO_REDUC_IDX (orig_stmt_info_saved) != -1)
+    {
+      vec_info *vinfo = orig_stmt_info_saved->vinfo;
+      tree lookfor = gimple_op (orig_stmt_info_saved->stmt,
+				1 + STMT_VINFO_REDUC_IDX (orig_stmt_info));
+      /* Search the pattern def sequence and the main pattern stmt.  Note
+         we may have inserted all into a containing pattern def sequence
+	 so the following is a bit awkward.  */
+      gimple_stmt_iterator si;
+      gimple *s;
+      if (def_seq)
+	{
+	  si = gsi_start (def_seq);
+	  s = gsi_stmt (si);
+	  gsi_next (&si);
+	}
+      else
+	{
+	  si = gsi_none ();
+	  s = pattern_stmt;
+	}
+      do
+	{
+	  bool found = false;
+	  for (unsigned i = 1; i < gimple_num_ops (s); ++i)
+	    if (gimple_op (s, i) == lookfor)
+	      {
+		STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i - 1;
+		lookfor = gimple_get_lhs (s);
+		found = true;
+		break;
+	      }
+	  if (found && s == pattern_stmt)
+	    break;
+	  if (s == pattern_stmt)
+	    gcc_unreachable ();
+	  if (gsi_end_p (si))
+	    s = pattern_stmt;
+	  else
+	    {
+	      s = gsi_stmt (si);
+	      if (s == pattern_stmt)
+		/* Found the end inside a bigger pattern def seq.  */
+		si = gsi_none ();
+	      else
+		gsi_next (&si);
+	    }
+	} while (1);
+    }
 }
 
 /* Function vect_pattern_recog_1

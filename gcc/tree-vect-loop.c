@@ -5719,7 +5719,19 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   /* PHIs should not participate in patterns.  */
   gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
   gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
-  tree reduc_def = PHI_RESULT (reduc_def_phi);
+
+  /* Verify following REDUC_IDX from the latch def leads us back to the PHI.  */
+  tree reduc_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
+					  loop_latch_edge (loop));
+  while (reduc_def != PHI_RESULT (reduc_def_phi))
+    {
+      stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
+      def = vect_stmt_to_vectorize (def);
+      gcc_assert (STMT_VINFO_REDUC_IDX (def) != -1);
+      reduc_def = gimple_op (def->stmt, 1 + STMT_VINFO_REDUC_IDX (def));
+    }
+
+  reduc_def = PHI_RESULT (reduc_def_phi);
   int reduc_index = -1;
   for (i = 0; i < op_type; i++)
     {
