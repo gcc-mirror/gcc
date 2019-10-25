@@ -1,5 +1,18 @@
 2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/loop_add_5.c: Remove XFAILs for tests
+	that now pass.
+	* gcc.target/aarch64/sve/reduc_1.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_2.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_5.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_8.c: Likewise.
+	* gcc.target/aarch64/sve/slp_13.c: Likewise.
+	* gcc.target/aarch64/sve/slp_5.c: Likewise.  Update expected
+	WHILELO counts.
+	* gcc.target/aarch64/sve/slp_7.c: Likewise.
+
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/pr65947-1.c: No longer expect doubled dump lines
 	for FOLD_EXTRACT_LAST reductions.
 	* gcc.dg/vect/pr65947-2.c: Likewise.
