@@ -1,6 +1,6 @@
 /* Exercise -Wlarger-than= with a byte-size suffix.
    { dg-do compile }
-   { dg-skip-if "small address space" { "pdp11-*-*" } }
+   { dg-skip-if "small address space" { "pdp11-*-*" } { "avr-*-*" } }
    { dg-options "-Wlarger-than=1MiB" } */
 
 #define MB (1000 * 1000)    /* MegaByte */

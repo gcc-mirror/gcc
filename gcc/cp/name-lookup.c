@@ -2268,7 +2268,13 @@ diagnose_name_conflict (tree decl, tree bval)
       && (TREE_CODE (decl) != TYPE_DECL
 	  || DECL_ARTIFICIAL (decl) == DECL_ARTIFICIAL (bval))
       && CP_DECL_CONTEXT (decl) == CP_DECL_CONTEXT (bval))
-    error ("redeclaration of %q#D", decl);
+    {
+      if (concept_definition_p (decl))
+        error ("redeclaration of %q#D with different template parameters",
+               decl);
+      else
+        error ("redeclaration of %q#D", decl);
+    }
   else
     error ("%q#D conflicts with a previous declaration", decl);
 
@@ -2333,6 +2339,9 @@ matching_fn_p (tree one, tree two)
 			TREE_TYPE (TREE_TYPE (two))))
 	return false;
     }
+
+  if (!equivalently_constrained (one, two))
+    return false;
 
   return true;
 }
@@ -4604,6 +4613,7 @@ do_class_using_decl (tree scope, tree name)
       maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
       name = ctor_identifier;
       CLASSTYPE_NON_AGGREGATE (current_class_type) = true;
+      TYPE_HAS_USER_CONSTRUCTOR (current_class_type) = true;
     }
 
   /* Cannot introduce a constructor name.  */

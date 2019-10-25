@@ -2347,7 +2347,7 @@ The following options apply to the build of the Objective-C runtime library.
 @item --enable-objc-gc
 Specify that an additional variant of the GNU Objective-C runtime library
 is built, using an external build of the Boehm-Demers-Weiser garbage
-collector (@uref{http://www.hboehm.info/gc/}).  This library needs to be
+collector (@uref{https://www.hboehm.info/gc/}).  This library needs to be
 available for each multilib variant, unless configured with
 @option{--enable-objc-gc=@samp{auto}} in which case the build of the
 additional runtime library is skipped when not available and the build

@@ -42,6 +42,7 @@
 #define PB_DS_BRANCH_POLICY_BASE_HPP
 
 #include <ext/pb_ds/tag_and_trait.hpp>
+#include <ext/pb_ds/detail/types_traits.hpp>
 
 namespace __gnu_pbds
 {
@@ -59,8 +60,8 @@ namespace __gnu_pbds
 	typedef typename remove_const<value_type>::type	rcvalue_type;
 	typedef typename remove_const<key_type>::type	rckey_type;
 
-	typedef typename _Alloc::template rebind<rcvalue_type>::other rebind_v;
-	typedef typename _Alloc::template rebind<rckey_type>::other   rebind_k;
+	typedef rebind_traits<_Alloc, rcvalue_type>	rebind_v;
+	typedef rebind_traits<_Alloc, rckey_type>	rebind_k;
 
 	typedef	typename rebind_v::reference 		reference;
 	typedef	typename rebind_v::const_reference 	const_reference;
@@ -91,7 +92,7 @@ namespace __gnu_pbds
 	typedef typename Node_CItr::value_type 		   it_type;
        	typedef typename std::iterator_traits<it_type>::value_type value_type;
 	typedef typename remove_const<value_type>::type		   rcvalue_type;
-	typedef typename _Alloc::template rebind<rcvalue_type>::other rebind_v;
+	typedef rebind_traits<_Alloc, rcvalue_type>	rebind_v;
 	typedef	typename rebind_v::reference 		reference;
 	typedef	typename rebind_v::const_reference 	const_reference;
 	typedef	typename rebind_v::const_pointer	const_pointer;

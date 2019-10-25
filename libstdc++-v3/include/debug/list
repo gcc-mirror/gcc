@@ -916,7 +916,7 @@ namespace __gnu_debug
       _S_size(const std::__debug::list<_Tp, _Alloc>& __seq)
       {
 	return __seq.empty()
-	  ? std::make_pair(0, __dp_exact) : std::make_pair(1, __dp_equality);
+	  ? std::make_pair(0, __dp_exact) : std::make_pair(1, __dp_sign);
       }
     };
 #endif

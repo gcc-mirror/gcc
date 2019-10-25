@@ -1348,6 +1348,10 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	}
     }
 
+  /* Set if VAL represents the maximum length based on array size (set
+     when exact length cannot be determined).  */
+  bool maxbound = false;
+
   if (!val && rkind == SRK_LENRANGE)
     {
       if (TREE_CODE (arg) == ADDR_EXPR)
@@ -1443,6 +1447,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	      pdata->minlen = ssize_int (0);
 	    }
 	}
+      maxbound = true;
     }
 
   if (!val)
@@ -1456,25 +1461,23 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
 	  && tree_int_cst_lt (val, pdata->minlen)))
     pdata->minlen = val;
 
-  if (pdata->maxbound)
+  if (pdata->maxbound && TREE_CODE (pdata->maxbound) == INTEGER_CST)
     {
       /* Adjust the tighter (more optimistic) string length bound
 	 if necessary and proceed to adjust the more conservative
 	 bound.  */
       if (TREE_CODE (val) == INTEGER_CST)
 	{
-	  if (TREE_CODE (pdata->maxbound) == INTEGER_CST)
-	    {
-	      if (tree_int_cst_lt (pdata->maxbound, val))
-		pdata->maxbound = val;
-	    }
-	  else
-	    pdata->maxbound = build_all_ones_cst (size_type_node);
+	  if (tree_int_cst_lt (pdata->maxbound, val))
+	    pdata->maxbound = val;
 	}
       else
 	pdata->maxbound = val;
     }
-  else
+  else if (pdata->maxbound || maxbound)
+    /* Set PDATA->MAXBOUND only if it either isn't INTEGER_CST or
+       if VAL corresponds to the maximum length determined based
+       on the type of the object.  */
     pdata->maxbound = val;
 
   if (tight_bound)
@@ -1655,8 +1658,11 @@ get_range_strlen (tree arg, bitmap *visited,
 
 /* Try to obtain the range of the lengths of the string(s) referenced
    by ARG, or the size of the largest array ARG refers to if the range
-   of lengths cannot be determined, and store all in *PDATA.  ELTSIZE
-   is the expected size of the string element in bytes: 1 for char and
+   of lengths cannot be determined, and store all in *PDATA which must
+   be zero-initialized on input except PDATA->MAXBOUND may be set to
+   a non-null tree node other than INTEGER_CST to request to have it
+   set to the length of the longest string in a PHI.  ELTSIZE is
+   the expected size of the string element in bytes: 1 for char and
    some power of 2 for wide characters.
    Return true if the range [PDATA->MINLEN, PDATA->MAXLEN] is suitable
    for optimization.  Returning false means that a nonzero PDATA->MINLEN
@@ -1668,6 +1674,7 @@ bool
 get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)
 {
   bitmap visited = NULL;
+  tree maxbound = pdata->maxbound;
 
   if (!get_range_strlen (arg, &visited, SRK_LENRANGE, pdata, eltsize))
     {
@@ -1680,9 +1687,10 @@ get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)
   else if (!pdata->minlen)
     pdata->minlen = ssize_int (0);
 
-  /* Unless its null, leave the more conservative MAXBOUND unchanged.  */
-  if (!pdata->maxbound)
-    pdata->maxbound = pdata->maxlen;
+  /* If it's unchanged from it initial non-null value, set the conservative
+     MAXBOUND to SIZE_MAX.  Otherwise leave it null (if it is null).  */
+  if (maxbound && pdata->maxbound == maxbound)
+    pdata->maxbound = build_all_ones_cst (size_type_node);
 
   if (visited)
     BITMAP_FREE (visited);

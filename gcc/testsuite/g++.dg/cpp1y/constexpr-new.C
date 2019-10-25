@@ -4,7 +4,7 @@ constexpr int *f4(bool b) {
   if (b) {
     return nullptr;
   } else {
-    return new int{42}; // { dg-error "call to non-.constexpr." }
+    return new int{42}; // { dg-error "call to non-.constexpr." "" { target c++17_down } }
   }
 }
 static_assert(f4(true) == nullptr, "");

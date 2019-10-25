@@ -1,11 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O2"  } */
-/* { dg-skip-if "" { powerpc*-*-* } } */
 
 typedef int __attribute__((__vector_size__(16))) vectype;
 
 vectype dk();
-vectype k();
+vectype k(vectype);
 
 int b;
 vectype *j;

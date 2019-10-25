@@ -242,6 +242,12 @@ enum can_compare_purpose
    (without splitting it into pieces).  */
 extern int can_compare_p (enum rtx_code, machine_mode,
 			  enum can_compare_purpose);
+
+/* Return whether the backend can emit a vector comparison for code CODE,
+   comparing operands of mode CMP_OP_MODE and producing a result with
+   VALUE_MODE.  */
+extern bool can_vcond_compare_p (enum rtx_code, machine_mode, machine_mode);
+
 extern rtx prepare_operand (enum insn_code, rtx, int, machine_mode,
 			    machine_mode, int);
 /* Emit a pair of rtl insns to compare two rtx's and to jump

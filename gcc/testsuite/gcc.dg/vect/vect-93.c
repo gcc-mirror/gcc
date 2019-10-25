@@ -29,6 +29,7 @@ main1 (float *pa)
 	abort ();
     }
 
+#pragma GCC unroll 0
   for (i = 1; i <= N2; i++)
     {
       pa[i] = 3.0;

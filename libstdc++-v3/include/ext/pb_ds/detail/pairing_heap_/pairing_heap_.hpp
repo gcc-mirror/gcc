@@ -80,7 +80,7 @@ namespace __gnu_pbds
       typedef PB_DS_P_HEAP_BASE				base_type;
       typedef typename base_type::node_pointer 		node_pointer;
 
-      typedef typename _Alloc::template rebind<Value_Type>::other __rebind_a;
+      typedef rebind_traits<_Alloc, Value_Type>		__rebind_a;
 
     public:
       typedef Value_Type 				value_type;

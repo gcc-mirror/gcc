@@ -1957,8 +1957,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	else
 	  // The rvalue's allocator cannot be moved, or is not equal,
 	  // so we need to individually move each element.
-	  _M_assign_dispatch(std::__make_move_if_noexcept_iterator(__x.begin()),
-			     std::__make_move_if_noexcept_iterator(__x.end()),
+	  _M_assign_dispatch(std::make_move_iterator(__x.begin()),
+			     std::make_move_iterator(__x.end()),
 			     __false_type{});
       }
 #endif

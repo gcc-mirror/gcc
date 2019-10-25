@@ -17,8 +17,8 @@ struct A
   T t;
 };
 
-A::A() noexcept = default;   // { dg-error "defaulted" }
-A::~A() noexcept = default;  // { dg-error "defaulted" }
+A::A() noexcept = default;
+A::~A() noexcept = default;
 
 struct U
 {
@@ -51,10 +51,10 @@ V v;
 
 struct C
 {
-  C() noexcept = default;	// { dg-message "exception-specification" }
-  ~C() noexcept = default;	// { dg-message "exception-specification" }
+  C() noexcept = default;
+  ~C() noexcept = default;
 
   V v;
 };
 
-C c;				// { dg-error "deleted" }
+C c;

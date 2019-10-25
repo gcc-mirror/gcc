@@ -400,7 +400,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0xf00000c0, 0x00000000, 0x00000000 },	/* SIBCALL_REGS */	\
+  { 0xf003fcc0, 0x00000000, 0x00000000 },	/* SIBCALL_REGS */	\
   { 0xffffffc0, 0x00000000, 0x00000000 },	/* JALR_REGS */		\
   { 0xffffffff, 0x00000000, 0x00000000 },	/* GR_REGS */		\
   { 0x00000000, 0xffffffff, 0x00000000 },	/* FP_REGS */		\

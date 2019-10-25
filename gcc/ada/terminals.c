@@ -170,7 +170,7 @@ struct TTY_Process {
   BOOL usePipe;
 };
 
-/* Control whether create_child cause the process to inherit GPS'
+/* Control whether create_child cause the process to inherit GNAT Studio'
    error mode setting.  The default is 1, to minimize the possibility of
    subprocesses blocking when accessing unmounted drives.  */
 static int Vw32_start_process_inherit_error_mode = 1;

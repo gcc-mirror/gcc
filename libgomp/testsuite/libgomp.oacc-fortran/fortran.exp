@@ -56,11 +56,17 @@ if { $lang_test_file_found } {
 	    # Allow for spec subsitution.
 	    lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
 	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
+	    append lang_link_flags " -lquadmath"
 	} else {
 	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
 	}
     } else {
         set ld_library_path "$always_ld_library_path"
+        if { [check_no_compiler_messages has_libquadmath executable {
+                 int main() {return 0;}
+              } "-lgfortran -lquadmath"] } then {
+            append lang_link_flags " -lquadmath"
+        }
     }
     append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
     set_ld_library_path_env_vars

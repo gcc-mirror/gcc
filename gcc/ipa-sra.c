@@ -1137,8 +1137,8 @@ create_parameter_descriptors (cgraph_node *node,
 	      && TYPE_NONALIASED_COMPONENT (type))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, " not a candidate, reference to a"
-			 "nonaliased component array\n");
+		fprintf (dump_file, " not a candidate, reference to "
+			 "a nonaliased component array\n");
 	      continue;
 	    }
 	  if (!is_gimple_reg (parm))
@@ -2284,8 +2284,8 @@ process_scan_results (cgraph_node *node, struct function *fun,
       if (nonarg_acc_size > param_size_limit
 	  || (!desc->by_ref && nonarg_acc_size == param_size_limit))
 	{
-	  disqualify_split_candidate (desc, "Would result into a too big set of"
-				      "replacements.");
+	  disqualify_split_candidate (desc, "Would result into a too big set "
+				      "of replacements.");
 	}
       else
 	{

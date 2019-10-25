@@ -61,10 +61,10 @@ namespace __gnu_pbds
       struct entry_pred<_VTp, Pred, _Alloc, false>
       {
       private:
-	typedef typename _Alloc::template rebind<_VTp>		__rebind_v;
+	typedef rebind_traits<_Alloc, _VTp>		__rebind_v;
 
       public:
-	typedef typename __rebind_v::other::const_pointer	entry;
+	typedef typename __rebind_v::const_pointer	entry;
 
 	struct type : public Pred
 	{

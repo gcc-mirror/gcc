@@ -195,9 +195,8 @@ constant_after_peeling (tree op, gimple *stmt, class loop *loop)
   /* Induction variables are constants when defined in loop.  */
   if (loop_containing_stmt (stmt) != loop)
     return false;
-  tree ev = analyze_scalar_evolution (loop, op);
-  if (chrec_contains_undetermined (ev)
-      || chrec_contains_symbols (ev))
+  tree ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, op));
+  if (chrec_contains_undetermined (ev))
     return false;
   return true;
 }

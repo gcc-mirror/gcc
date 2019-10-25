@@ -603,6 +603,9 @@ struct GTY(()) lto_file_decl_data
   /* Linked list used temporarily in reader */
   struct lto_file_decl_data *next;
 
+  /* Order in which the file appears on the command line.  */
+  int order;
+
   /* Sub ID for merged objects. */
   unsigned HOST_WIDE_INT id;
 
@@ -909,6 +912,7 @@ void lto_output_decl_state_refs (struct output_block *,
 			         struct lto_out_decl_state *);
 void lto_output_location (struct output_block *, struct bitpack_d *, location_t);
 void lto_output_init_mode_table (void);
+void lto_prepare_function_for_streaming (cgraph_node *);
 
 
 /* In lto-cgraph.c  */

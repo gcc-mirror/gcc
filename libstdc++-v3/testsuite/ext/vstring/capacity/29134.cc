@@ -19,13 +19,14 @@
 
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   __gnu_cxx::__vstring vs;
 
-  VERIFY( vs.max_size() <= vs.get_allocator().max_size() );
+  VERIFY( vs.max_size() <= __gnu_test::max_size(vs.get_allocator()) );
 }
 
 int main()

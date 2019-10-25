@@ -55,6 +55,7 @@ extern rtx standard_80387_constant_rtx (int);
 extern int standard_sse_constant_p (rtx, machine_mode);
 extern const char *standard_sse_constant_opcode (rtx_insn *, rtx *);
 extern bool ix86_standard_x87sse_constant_load_p (const rtx_insn *, rtx);
+extern bool ix86_pre_reload_split (void);
 extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx_insn *);
@@ -193,11 +194,11 @@ extern void ix86_expand_lfloorceil (rtx, rtx, bool);
 extern void ix86_expand_rint (rtx, rtx);
 extern void ix86_expand_floorceil (rtx, rtx, bool);
 extern void ix86_expand_floorceildf_32 (rtx, rtx, bool);
-extern void ix86_expand_round_sse4 (rtx, rtx);
-extern void ix86_expand_round (rtx, rtx);
-extern void ix86_expand_rounddf_32 (rtx, rtx);
 extern void ix86_expand_trunc (rtx, rtx);
 extern void ix86_expand_truncdf_32 (rtx, rtx);
+extern void ix86_expand_round (rtx, rtx);
+extern void ix86_expand_rounddf_32 (rtx, rtx);
+extern void ix86_expand_round_sse4 (rtx, rtx);
 
 extern void ix86_expand_vecop_qihi (enum rtx_code, rtx, rtx, rtx);
 

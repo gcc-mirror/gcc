@@ -2499,6 +2499,14 @@ operation_could_trap_helper_p (enum tree_code op,
       /* Constructing an object cannot trap.  */
       return false;
 
+    case COND_EXPR:
+    case VEC_COND_EXPR:
+      /* Whether *COND_EXPR can trap depends on whether the
+	 first argument can trap, so signal it as not handled.
+	 Whether lhs is floating or not doesn't matter.  */
+      *handled = false;
+      return false;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (fp_operation && flag_trapping_math)
@@ -2522,6 +2530,10 @@ operation_could_trap_p (enum tree_code op, bool fp_operation, bool honor_trapv,
 		     && !flag_finite_math_only);
   bool honor_snans = fp_operation && flag_signaling_nans != 0;
   bool handled;
+
+  /* This function cannot tell whether or not COND_EXPR and VEC_COND_EXPR could
+     trap, because that depends on the respective condition op.  */
+  gcc_assert (op != COND_EXPR && op != VEC_COND_EXPR);
 
   if (TREE_CODE_CLASS (op) != tcc_comparison
       && TREE_CODE_CLASS (op) != tcc_unary
@@ -2608,6 +2620,13 @@ tree_could_trap_p (tree expr)
   tree t, base, div = NULL_TREE;
 
   if (!expr)
+    return false;
+
+  /* In COND_EXPR and VEC_COND_EXPR only the condition may trap, but
+     they won't appear as operands in GIMPLE form, so this is just for the
+     GENERIC uses where it needs to recurse on the operands and so
+     *COND_EXPR itself doesn't trap.  */
+  if (TREE_CODE (expr) == COND_EXPR || TREE_CODE (expr) == VEC_COND_EXPR)
     return false;
 
   code = TREE_CODE (expr);

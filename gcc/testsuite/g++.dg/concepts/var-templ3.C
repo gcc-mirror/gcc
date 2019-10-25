@@ -1,5 +1,5 @@
 // PR c++/68666
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 struct A {

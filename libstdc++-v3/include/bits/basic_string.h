@@ -3138,7 +3138,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
   template<typename _CharT, typename _Traits, typename _Alloc>
     class basic_string
     {
-      typedef typename _Alloc::template rebind<_CharT>::other _CharT_alloc_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<_CharT>::other _CharT_alloc_type;
+      typedef __gnu_cxx::__alloc_traits<_CharT_alloc_type> _CharT_alloc_traits;
 
       // Types:
     public:
@@ -3154,8 +3156,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
       typedef value_type&				    reference;
       typedef const value_type&				    const_reference;
 #endif
-      typedef typename _CharT_alloc_type::pointer	    pointer;
-      typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
+      typedef typename _CharT_alloc_traits::pointer	    pointer;
+      typedef typename _CharT_alloc_traits::const_pointer   const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, basic_string>  iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, basic_string>
                                                             const_iterator;
@@ -3191,7 +3193,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
       struct _Rep : _Rep_base
       {
 	// Types:
-	typedef typename _Alloc::template rebind<char>::other _Raw_bytes_alloc;
+	typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	  rebind<char>::other _Raw_bytes_alloc;
 
 	// (Public) Data members:
 

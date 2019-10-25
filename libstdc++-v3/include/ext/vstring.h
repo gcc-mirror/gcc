@@ -58,6 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef _Base<_CharT, _Traits, _Alloc>                __vstring_base;    
       typedef typename __vstring_base::_CharT_alloc_type    _CharT_alloc_type;
+      typedef __alloc_traits<_CharT_alloc_type> _CharT_alloc_traits;
 
       // Types:
     public:
@@ -68,8 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _CharT_alloc_type::difference_type   difference_type;
       typedef value_type&               	            reference;
       typedef const value_type&                             const_reference;
-      typedef typename _CharT_alloc_type::pointer	    pointer;
-      typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
+      typedef typename _CharT_alloc_traits::pointer	    pointer;
+      typedef typename _CharT_alloc_traits::const_pointer   const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, __versa_string>  iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, __versa_string>
                                                             const_iterator;

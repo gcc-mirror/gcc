@@ -103,11 +103,11 @@ copy_from_range(It first_it, It last_it)
 {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
   typedef std::map<key_type, mapped_type, Cmp_Fn,
-		   typename _Alloc::template rebind<value_type>::other>
+		   typename rebind_traits<_Alloc, value_type>::allocator_type>
     map_type;
 #else
   typedef std::set<key_type, Cmp_Fn,
-		   typename _Alloc::template rebind<Key>::other>
+		   typename rebind_traits<_Alloc, Key>::allocator_type>
     map_type;
 #endif
 

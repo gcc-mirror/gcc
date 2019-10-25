@@ -89,18 +89,21 @@ namespace __gnu_pbds
 #endif
     class left_child_next_sibling_heap : public Cmp_Fn
     {
-    protected:
+    public:
       typedef
-      typename _Alloc::template rebind<
-      left_child_next_sibling_heap_node_<Value_Type, Node_Metadata,
-					 _Alloc> >::other
-      node_allocator;
+	left_child_next_sibling_heap_node_<Value_Type, Node_Metadata, _Alloc>
+	node;
 
-      typedef typename node_allocator::value_type     	node;
-      typedef typename node_allocator::pointer 		node_pointer;
-      typedef typename node_allocator::const_pointer	node_const_pointer;
+    private:
+      typedef typename detail::rebind_traits<_Alloc, node> alloc_traits;
+
+    protected:
+      typedef typename alloc_traits::allocator_type node_allocator;
+
+      typedef typename alloc_traits::pointer 		node_pointer;
+      typedef typename alloc_traits::const_pointer	node_const_pointer;
       typedef Node_Metadata node_metadata;
-      typedef std::pair< node_pointer, node_pointer> 	node_pointer_pair;
+      typedef std::pair<node_pointer, node_pointer> 	node_pointer_pair;
 
     private:
       typedef cond_dealtor< node, _Alloc> 		cond_dealtor_t;
@@ -111,17 +114,17 @@ namespace __gnu_pbds
 	};
 
       typedef integral_constant<int, simple_value> 	no_throw_copies_t;
-      typedef typename _Alloc::template rebind<Value_Type>	__rebind_v;
+      typedef rebind_traits<_Alloc, Value_Type>	__rebind_v;
 
     public:
       typedef typename _Alloc::size_type 		size_type;
       typedef typename _Alloc::difference_type 	difference_type;
       typedef Value_Type 				value_type;
 
-      typedef typename __rebind_v::other::pointer 	pointer;
-      typedef typename __rebind_v::other::const_pointer const_pointer;
-      typedef typename __rebind_v::other::reference	reference;
-      typedef typename __rebind_v::other::const_reference const_reference;
+      typedef typename __rebind_v::pointer 	pointer;
+      typedef typename __rebind_v::const_pointer const_pointer;
+      typedef typename __rebind_v::reference	reference;
+      typedef typename __rebind_v::const_reference const_reference;
 
       typedef left_child_next_sibling_heap_node_point_const_iterator_<node, _Alloc>
       point_const_iterator;

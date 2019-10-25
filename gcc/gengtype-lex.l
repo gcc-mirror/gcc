@@ -58,7 +58,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
     /* Include '::' in identifiers to capture C++ scope qualifiers.  */
 ID	{CID}({HWS}::{HWS}{CID})*
 EOID	[^[:alnum:]_]
-CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static
+CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static|mutable
 
 %x in_struct in_struct_comment in_comment
 %option warn noyywrap nounput nodefault perf-report

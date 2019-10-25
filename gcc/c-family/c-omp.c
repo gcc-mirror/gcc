@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "gomp-constants.h"
 #include "memmodel.h"
+#include "attribs.h"
+#include "gimplify.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -2011,7 +2013,7 @@ c_omp_declare_simd_clauses_to_numbers (tree parms, tree clauses)
 	  if (arg == NULL_TREE)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"%qD is not an function argument", decl);
+			"%qD is not a function argument", decl);
 	      continue;
 	    }
 	  OMP_CLAUSE_DECL (c) = build_int_cst (integer_type_node, idx);
@@ -2026,7 +2028,7 @@ c_omp_declare_simd_clauses_to_numbers (tree parms, tree clauses)
 	      if (arg == NULL_TREE)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%qD is not an function argument", decl);
+			    "%qD is not a function argument", decl);
 		  continue;
 		}
 	      OMP_CLAUSE_LINEAR_STEP (c)
@@ -2119,4 +2121,267 @@ c_omp_predetermined_sharing (tree decl)
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+/* Diagnose errors in an OpenMP context selector, return CTX if
+   it is correct or error_mark_node otherwise.  */
+
+tree
+c_omp_check_context_selector (location_t loc, tree ctx)
+{
+  /* Each trait-set-selector-name can only be specified once.
+     There are just 4 set names.  */
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
+      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	{
+	  error_at (loc, "selector set %qs specified more than once",
+	  	    IDENTIFIER_POINTER (TREE_PURPOSE (t1)));
+	  return error_mark_node;
+	}
+  for (tree t = ctx; t; t = TREE_CHAIN (t))
+    {
+      /* Each trait-selector-name can only be specified once.  */
+      if (list_length (TREE_VALUE (t)) < 5)
+	{
+	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
+	      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+		{
+		  error_at (loc,
+			    "selector %qs specified more than once in set %qs",
+			    IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+		  return error_mark_node;
+		}
+	}
+      else
+	{
+	  hash_set<tree> pset;
+	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	    if (pset.add (TREE_PURPOSE (t1)))
+	      {
+		error_at (loc,
+			  "selector %qs specified more than once in set %qs",
+			  IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			  IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+		return error_mark_node;
+	      }
+	}
+
+      static const char *const kind[] = {
+	"host", "nohost", "cpu", "gpu", "fpga", "any", NULL };
+      static const char *const vendor[] = {
+	"amd", "arm", "bsc", "cray", "fujitsu", "gnu", "ibm", "intel",
+	"llvm", "pgi", "ti", "unknown", NULL };
+      static const char *const extension[] = { NULL };
+      static const char *const atomic_default_mem_order[] = {
+	"seq_cst", "relaxed", "acq_rel", NULL };
+      struct known_properties { const char *set; const char *selector;
+				const char *const *props; };
+      known_properties props[] = {
+	{ "device", "kind", kind },
+	{ "implementation", "vendor", vendor },
+	{ "implementation", "extension", extension },
+	{ "implementation", "atomic_default_mem_order",
+	  atomic_default_mem_order } };
+      for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	for (unsigned i = 0; i < ARRAY_SIZE (props); i++)
+	  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+					   props[i].selector)
+	      && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)),
+					      props[i].set))
+	    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	      for (unsigned j = 0; ; j++)
+		{
+		  if (props[i].props[j] == NULL)
+		    {
+		      if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				   " score"))
+			break;
+		      if (props[i].props == atomic_default_mem_order)
+			{
+			  error_at (loc,
+				    "incorrect property %qs of %qs selector",
+				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    "atomic_default_mem_order");
+			  return error_mark_node;
+			}
+		      else
+			warning_at (loc, 0,
+				    "unknown property %qs of %qs selector",
+				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    props[i].selector);
+		      break;
+		    }
+		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    props[i].props[j]))
+		    {
+		      if (props[i].props == atomic_default_mem_order
+			  && t2 != TREE_VALUE (t1))
+			{
+			  tree t3 = TREE_VALUE (t1);
+			  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)),
+				       " score")
+			      && t2 == TREE_CHAIN (TREE_VALUE (t1)))
+			    break;
+			  error_at (loc,
+				    "%qs selector must have a single property",
+				    "atomic_default_mem_order");
+			  return error_mark_node;
+			}
+		      break;
+		    }
+		}
+    }
+  return ctx;
+}
+
+/* From context selector CTX, return trait-selector with name SEL in
+   trait-selector-set with name SET if any, or NULL_TREE if not found.
+   If SEL is NULL, return the list of trait-selectors in SET.  */
+
+tree
+c_omp_get_context_selector (tree ctx, const char *set, const char *sel)
+{
+  tree setid = get_identifier (set);
+  tree selid = sel ? get_identifier (sel) : NULL_TREE;
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    if (TREE_PURPOSE (t1) == setid)
+      {
+	if (sel == NULL)
+	  return TREE_VALUE (t1);
+	for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	  if (TREE_PURPOSE (t2) == selid)
+	    return t2;
+      }
+  return NULL_TREE;
+}
+
+/* Register VARIANT as variant of some base function marked with
+   #pragma omp declare variant.  CONSTRUCT is corresponding construct
+   selector set.  */
+
+void
+c_omp_mark_declare_variant (location_t loc, tree variant, tree construct)
+{
+  tree attr = lookup_attribute ("omp declare variant variant",
+				DECL_ATTRIBUTES (variant));
+  if (attr == NULL_TREE)
+    {
+      attr = tree_cons (get_identifier ("omp declare variant variant"),
+			unshare_expr (construct),
+			DECL_ATTRIBUTES (variant));
+      DECL_ATTRIBUTES (variant) = attr;
+      return;
+    }
+  tree t1 = TREE_VALUE (attr);
+  tree t2 = construct;
+  tree simd = get_identifier ("simd");
+  while (t1 && t2)
+    {
+      if (TREE_PURPOSE (t1) != TREE_PURPOSE (t2))
+	break;
+      if (TREE_PURPOSE (t1) == simd)
+	{
+	  if ((TREE_VALUE (t1) == NULL_TREE)
+	      != (TREE_VALUE (t2) == NULL_TREE))
+	    break;
+	  if (TREE_VALUE (t1))
+	    {
+	      struct declare_variant_simd_data {
+		bool inbranch, notinbranch;
+		tree simdlen;
+		auto_vec<tree,16> data_sharing;
+		auto_vec<tree,16> aligned;
+		declare_variant_simd_data ()
+		  : inbranch(false), notinbranch(false), simdlen(NULL_TREE) {}
+	      } data[2];
+	      unsigned int i;
+	      for (i = 0; i < 2; i++)
+		for (tree c = TREE_VALUE (i ? t2 : t1);
+		     c; c = OMP_CLAUSE_CHAIN (c))
+		  {
+		    vec<tree> *v;
+		    switch (OMP_CLAUSE_CODE (c))
+		      {
+		      case OMP_CLAUSE_INBRANCH:
+			data[i].inbranch = true;
+			continue;
+		      case OMP_CLAUSE_NOTINBRANCH:
+			data[i].notinbranch = true;
+			continue;
+		      case OMP_CLAUSE_SIMDLEN:
+			data[i].simdlen = OMP_CLAUSE_SIMDLEN_EXPR (c);
+			continue;
+		      case OMP_CLAUSE_UNIFORM:
+		      case OMP_CLAUSE_LINEAR:
+			v = &data[i].data_sharing;
+			break;
+		      case OMP_CLAUSE_ALIGNED:
+			v = &data[i].aligned;
+			break;
+		      default:
+			gcc_unreachable ();
+		      }
+		    unsigned HOST_WIDE_INT argno
+		      = tree_to_uhwi (OMP_CLAUSE_DECL (c));
+		    if (argno >= v->length ())
+		      v->safe_grow_cleared (argno + 1);
+		    (*v)[argno] = c;
+		  }
+	      if (data[0].inbranch != data[1].inbranch
+		  || data[0].notinbranch != data[1].notinbranch
+		  || !simple_cst_equal (data[0].simdlen,
+					data[1].simdlen)
+		  || (data[0].data_sharing.length ()
+		      != data[1].data_sharing.length ())
+		  || (data[0].aligned.length ()
+		      != data[1].aligned.length ()))
+		break;
+	      tree c1, c2;
+	      FOR_EACH_VEC_ELT (data[0].data_sharing, i, c1)
+		{
+		  c2 = data[1].data_sharing[i];
+		  if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
+		    break;
+		  if (c1 == NULL_TREE)
+		    continue;
+		  if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_CODE (c2))
+		    break;
+		  if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_LINEAR)
+		    continue;
+		  if (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c1)
+		      != OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c2))
+		    break;
+		  if (OMP_CLAUSE_LINEAR_KIND (c1)
+		      != OMP_CLAUSE_LINEAR_KIND (c2))
+		    break;
+		  if (!simple_cst_equal (OMP_CLAUSE_LINEAR_STEP (c1),
+					 OMP_CLAUSE_LINEAR_STEP (c2)))
+		    break;
+		}
+	      if (i < data[0].data_sharing.length ())
+		break;
+	      FOR_EACH_VEC_ELT (data[0].aligned, i, c1)
+		{
+		  c2 = data[1].aligned[i];
+		  if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
+		    break;
+		  if (c1 == NULL_TREE)
+		    continue;
+		  if (!simple_cst_equal (OMP_CLAUSE_ALIGNED_ALIGNMENT (c1),
+					 OMP_CLAUSE_ALIGNED_ALIGNMENT (c2)))
+		    break;
+		}
+	      if (i < data[0].aligned.length ())
+		break;
+	    }
+	}
+      t1 = TREE_CHAIN (t1);
+      t2 = TREE_CHAIN (t2);
+    }
+  if (t1 || t2)
+    error_at (loc, "%qD used as a variant with incompatible %<constructor%> "
+		   "selector sets", variant);
 }

@@ -66,6 +66,7 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
   match m = MATCH_ERROR;
   bool star = false;
   int i;
+  bool saw_boz = false;
 
   i = ar->dimen + ar->codimen;
 
@@ -90,6 +91,12 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
     m = gfc_match_init_expr (&ar->start[i]);
   else if (!star)
     m = gfc_match_expr (&ar->start[i]);
+
+  if (ar->start[i] && ar->start[i]->ts.type == BT_BOZ)
+    {
+      gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+      saw_boz = true;
+    }
 
   if (m == MATCH_NO)
     gfc_error ("Expected array subscript at %C");
@@ -117,6 +124,12 @@ end_element:
   else
     m = gfc_match_expr (&ar->end[i]);
 
+  if (ar->end[i] && ar->end[i]->ts.type == BT_BOZ)
+    {
+      gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+      saw_boz = true;
+    }
+
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
@@ -132,6 +145,12 @@ end_element:
       m = init ? gfc_match_init_expr (&ar->stride[i])
 	       : gfc_match_expr (&ar->stride[i]);
 
+      if (ar->stride[i] && ar->stride[i]->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+	  saw_boz = true;
+	}
+
       if (m == MATCH_NO)
 	gfc_error ("Expected array subscript stride at %C");
       if (m != MATCH_YES)
@@ -142,7 +161,7 @@ matched:
   if (star)
     ar->dimen_type[i] = DIMEN_STAR;
 
-  return MATCH_YES;
+  return (saw_boz ? MATCH_ERROR : MATCH_YES);
 }
 
 
@@ -391,6 +410,9 @@ gfc_resolve_array_spec (gfc_array_spec *as, int check_constant)
 
   for (i = 0; i < as->rank + as->corank; i++)
     {
+      if (i == GFC_MAX_DIMENSIONS)
+	return false;
+
       e = as->lower[i];
       if (!resolve_array_bound (e, check_constant))
 	return false;
@@ -843,6 +865,10 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 
       sym->as->cotype = as->cotype;
       sym->as->corank = as->corank;
+      /* Check F2018:C822.  */
+      if (sym->as->rank + sym->as->corank > GFC_MAX_DIMENSIONS)
+	goto too_many;
+
       for (i = 0; i < as->corank; i++)
 	{
 	  sym->as->lower[sym->as->rank + i] = as->lower[i];
@@ -861,6 +887,10 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
       sym->as->cray_pointee = as->cray_pointee;
       sym->as->cp_was_assumed = as->cp_was_assumed;
 
+      /* Check F2018:C822.  */
+      if (sym->as->rank + sym->as->corank > GFC_MAX_DIMENSIONS)
+	goto too_many;
+
       for (i = 0; i < sym->as->corank; i++)
 	{
 	  sym->as->lower[as->rank + i] = sym->as->lower[i];
@@ -875,6 +905,12 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 
   free (as);
   return true;
+
+too_many:
+
+  gfc_error ("rank + corank of %qs exceeds %d at %C", sym->name,
+	     GFC_MAX_DIMENSIONS);
+  return false;
 }
 
 
@@ -1763,6 +1799,7 @@ expand_constructor (gfc_constructor_base base)
 	  gfc_free_expr (e);
 	  return false;
 	}
+      e->from_constructor = 1;
       current_expand.offset = &c->offset;
       current_expand.repeat = &c->repeat;
       current_expand.component = c->n.component;

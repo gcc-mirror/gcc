@@ -8780,6 +8780,7 @@ package body Freeze is
       --  (either in pragma CPP_Constructor or in a pragma import).
 
       if Is_Constructor (E)
+        and then Convention (E) = Convention_CPP
         and then
            (No (Interface_Name (E))
               or else String_Equal

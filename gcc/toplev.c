@@ -1110,6 +1110,7 @@ general_init (const char *argv0, bool init_signals)
   global_dc->option_enabled = option_enabled;
   global_dc->option_state = &global_options;
   global_dc->option_name = option_name;
+  global_dc->get_option_url = get_option_url;
 
   if (init_signals)
     {
@@ -1170,7 +1171,7 @@ general_init (const char *argv0, bool init_signals)
   /* Create the passes.  */
   g->set_passes (new gcc::pass_manager (g));
 
-  symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
+  symtab = new (ggc_alloc <symbol_table> ()) symbol_table ();
 
   statistics_early_init ();
   debuginfo_early_init ();

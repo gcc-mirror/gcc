@@ -53,6 +53,7 @@
 #include <bits/stl_numeric.h>
 #include <bits/allocator.h>
 #include <bits/gthr.h>
+#include <ext/alloc_traits.h>
 #include <tr1/functional>
 
 # ifdef __GC
@@ -565,7 +566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 # define __ROPE_DEFINE_ALLOC(_Tp, __name) \
         typedef typename \
-          _Alloc::template rebind<_Tp>::other __name##Alloc; \
+          __alloc_traits<_Alloc>::template rebind<_Tp>::other __name##Alloc; \
         static _Tp* __name##_allocate(size_type __n) \
           { return __name##Alloc().allocate(__n); } \
         static void __name##_deallocate(_Tp *__p, size_type __n) \
@@ -1499,7 +1500,7 @@ protected:
 
 #define __ROPE_DEFINE_ALLOC(_Tp, __name) \
         typedef typename \
-          _Alloc::template rebind<_Tp>::other __name##Alloc; \
+          __alloc_traits<_Alloc>::template rebind<_Tp>::other __name##Alloc; \
         static _Tp* __name##_allocate(std::size_t __n) \
           { return __name##Alloc().allocate(__n); } \
         static void __name##_deallocate(_Tp *__p, std::size_t __n) \
@@ -1855,7 +1856,8 @@ protected:
       {
 	_CharT* __buf = this->_Data_allocate(_S_rounded_up_size(1));
 	
-	_M_get_allocator().construct(__buf, __c);
+	__alloc_traits<allocator_type>::construct(_M_get_allocator(),
+						  __buf, __c);
 	__try
 	  {
 	    this->_M_tree_ptr = _S_new_RopeLeaf(__buf, 1,

@@ -2401,7 +2401,7 @@ copy_fixed_regs (const_bitmap in)
    non-register target.  */
 
 static void
-scan_insn (bb_info_t bb_info, rtx_insn *insn)
+scan_insn (bb_info_t bb_info, rtx_insn *insn, int max_active_local_stores)
 {
   rtx body;
   insn_info_type *insn_info = insn_info_type_pool.allocate ();
@@ -2523,8 +2523,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 		    fprintf (dump_file, "handling memset as BLKmode store\n");
 		  if (mems_found == 1)
 		    {
-		      if (active_local_stores_len++
-			  >= PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES))
+		      if (active_local_stores_len++ >= max_active_local_stores)
 			{
 			  active_local_stores_len = 1;
 			  active_local_stores = NULL;
@@ -2584,8 +2583,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
      it as cannot delete.  This simplifies the processing later.  */
   if (mems_found == 1)
     {
-      if (active_local_stores_len++
-	  >= PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES))
+      if (active_local_stores_len++ >= max_active_local_stores)
 	{
 	  active_local_stores_len = 1;
 	  active_local_stores = NULL;
@@ -2657,6 +2655,12 @@ dse_step1 (void)
   bitmap_set_bit (all_blocks, ENTRY_BLOCK);
   bitmap_set_bit (all_blocks, EXIT_BLOCK);
 
+  /* For -O1 reduce the maximum number of active local stores for RTL DSE
+     since this can consume huge amounts of memory (PR89115).  */
+  int max_active_local_stores = PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES);
+  if (optimize < 2)
+    max_active_local_stores /= 10;
+
   FOR_ALL_BB_FN (bb, cfun)
     {
       insn_info_t ptr;
@@ -2684,7 +2688,7 @@ dse_step1 (void)
 	  FOR_BB_INSNS (bb, insn)
 	    {
 	      if (INSN_P (insn))
-		scan_insn (bb_info, insn);
+		scan_insn (bb_info, insn, max_active_local_stores);
 	      cselib_process_insn (insn);
 	      if (INSN_P (insn))
 		df_simulate_one_insn_forwards (bb, insn, regs_live);

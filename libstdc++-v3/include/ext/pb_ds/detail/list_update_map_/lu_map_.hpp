@@ -78,7 +78,7 @@ namespace __gnu_pbds
 #ifdef _GLIBCXX_DEBUG
 #define PB_DS_DEBUG_MAP_BASE_C_DEC \
     debug_map_base<Key, Eq_Fn, \
-	      typename _Alloc::template rebind<Key>::other::const_reference>
+		   typename rebind_traits<_Alloc, Key>::const_reference>
 #endif
 
     /// list-based (with updates) associative container.
@@ -101,17 +101,19 @@ namespace __gnu_pbds
      : public lu_map_entry_metadata_base<typename Update_Policy::metadata_type>
       {
 	typename traits_base::value_type m_value;
-	typename _Alloc::template rebind<entry>::other::pointer m_p_next;
+	typename rebind_traits<_Alloc, entry>::pointer m_p_next;
       };
 
-      typedef typename _Alloc::template rebind<entry>::other entry_allocator;
-      typedef typename entry_allocator::pointer entry_pointer;
-      typedef typename entry_allocator::const_pointer const_entry_pointer;
-      typedef typename entry_allocator::reference entry_reference;
-      typedef typename entry_allocator::const_reference const_entry_reference;
+      typedef rebind_traits<_Alloc, entry>		  entry_alloc_traits;
+      typedef typename entry_alloc_traits::allocator_type entry_allocator;
+      typedef typename entry_alloc_traits::pointer	  entry_pointer;
+      typedef typename entry_alloc_traits::const_pointer  const_entry_pointer;
+      typedef typename entry_alloc_traits::reference	  entry_reference;
+      typedef typename entry_alloc_traits::const_reference const_entry_reference;
 
-      typedef typename _Alloc::template rebind<entry_pointer>::other entry_pointer_allocator;
-      typedef typename entry_pointer_allocator::pointer entry_pointer_array;
+      typedef rebind_traits<_Alloc, entry_pointer>	entry_pointer_alloc_traits;
+      typedef typename entry_pointer_alloc_traits::allocator_type entry_pointer_allocator;
+      typedef typename entry_pointer_alloc_traits::pointer entry_pointer_array;
 
       typedef typename traits_base::value_type value_type_;
       typedef typename traits_base::pointer pointer_;

@@ -1,11 +1,8 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 template <int I> struct B { static const int i = I; };
 template <int I> concept bool Few = I < 10;
 
-constexpr int g(B<Few> b) { return b.i; }
+constexpr int g(B<Few> b); // { dg-error "does not constrain a type|invalid" }
 
-#define SA(X) static_assert((X),#X)
-SA(g(B<2>{}) == 2);
-SA(g(B<10>{}) == 10); 		// { dg-error "" }

@@ -4832,8 +4832,12 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	attributes = tree_cons (get_identifier ("omp declare target implicit"),
 				NULL_TREE, attributes);
       else
-	attributes = tree_cons (get_identifier ("omp declare target"),
-				NULL_TREE, attributes);
+	{
+	  attributes = tree_cons (get_identifier ("omp declare target"),
+				  NULL_TREE, attributes);
+	  attributes = tree_cons (get_identifier ("omp declare target block"),
+				  NULL_TREE, attributes);
+	}
     }
 
   /* Look up the current declaration with all the attributes merged
@@ -10959,8 +10963,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("decimal floating-point not supported "
 			   "for this target"));
-	      pedwarn (loc, OPT_Wpedantic,
-		       "ISO C does not support decimal floating-point");
+	      pedwarn_c11 (loc, OPT_Wpedantic,
+			   "ISO C does not support decimal floating-point "
+			   "before C2X");
 	      return specs;
 	    case RID_FRACT:
 	    case RID_ACCUM:

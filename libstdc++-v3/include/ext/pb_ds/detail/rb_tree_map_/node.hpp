@@ -55,23 +55,14 @@ namespace __gnu_pbds
       typedef Value_Type 		value_type;
       typedef Metadata 			metadata_type;
 
-      typedef
-      typename _Alloc::template rebind<
-      rb_tree_node_<
-      Value_Type,
-      Metadata,
-      _Alloc> >::other::pointer
-      node_pointer;
+      typedef typename rebind_traits<_Alloc, rb_tree_node_>::pointer
+	node_pointer;
 
-      typedef
-      typename _Alloc::template rebind<
-	metadata_type>::other::reference
-      metadata_reference;
+      typedef typename rebind_traits<_Alloc, metadata_type>::reference
+	metadata_reference;
 
-      typedef
-      typename _Alloc::template rebind<
-	metadata_type>::other::const_reference
-      metadata_const_reference;
+      typedef typename rebind_traits<_Alloc, metadata_type>::const_reference
+	metadata_const_reference;
 
       bool
       special() const
@@ -109,13 +100,8 @@ namespace __gnu_pbds
       typedef Value_Type 		value_type;
       typedef null_type 	metadata_type;
 
-      typedef
-      typename _Alloc::template rebind<
-      rb_tree_node_<
-      Value_Type,
-      null_type,
-      _Alloc> >::other::pointer
-      node_pointer;
+      typedef typename rebind_traits<_Alloc, rb_tree_node_>::pointer
+	node_pointer;
 
       bool
       special() const

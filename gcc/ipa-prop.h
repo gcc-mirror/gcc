@@ -165,6 +165,7 @@ public:
   enum value_range_kind type;
   wide_int min;
   wide_int max;
+  bool nonzero_p (tree) const;
 };
 
 /* A jump function for a callsite represents the values passed as actual
@@ -640,7 +641,7 @@ class GTY((user)) ipa_edge_args_sum_t : public call_summary <ipa_edge_args *>
   ipa_edge_args_sum_t (symbol_table *table, bool ggc)
     : call_summary<ipa_edge_args *> (table, ggc) { }
 
-  /* Hook that is called by summary when an edge is duplicated.  */
+  /* Hook that is called by summary when an edge is removed.  */
   virtual void remove (cgraph_edge *cs, ipa_edge_args *args);
   /* Hook that is called by summary when an edge is duplicated.  */
   virtual void duplicate (cgraph_edge *src,

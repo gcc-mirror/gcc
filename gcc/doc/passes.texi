@@ -20,6 +20,7 @@ where near complete.
 * Parsing pass::         The language front end turns text into bits.
 * Gimplification pass::  The bits are turned into something we can optimize.
 * Pass manager::         Sequencing the optimization passes.
+* IPA passes::           Inter-procedural optimizations.
 * Tree SSA passes::      Optimizations on a high-level representation.
 * RTL passes::           Optimizations on a low-level representation.
 * Optimization info::    Dumping optimization information from passes.
@@ -177,6 +178,277 @@ is "dce".
 TODO: describe the global variables set up by the pass manager,
 and a brief description of how a new pass should use it.
 I need to look at what info RTL passes use first@enddots{}
+
+@node IPA passes
+@section Inter-procedural optimization passes
+@cindex IPA passes
+@cindex inter-procedural optimization passes
+
+The inter-procedural optimization (IPA) passes use call graph
+information to perform transformations across function boundaries.
+IPA is a critical part of link-time optimization (LTO) and
+whole-program (WHOPR) optimization, and these passes are structured
+with the needs of LTO and WHOPR in mind by dividing their operations
+into stages.  For detailed discussion of the LTO/WHOPR IPA pass stages
+and interfaces, see @ref{IPA}.
+
+The following briefly describes the inter-procedural optimization (IPA)
+passes, which are split into small IPA passes, regular IPA passes,
+and late IPA passes, according to the LTO/WHOPR processing model.
+
+@menu
+* Small IPA passes::
+* Regular IPA passes::
+* Late IPA passes::
+@end menu
+
+@node Small IPA passes
+@subsection Small IPA passes
+@cindex small IPA passes
+A small IPA pass is a pass derived from @code{simple_ipa_opt_pass}.
+As described in @ref{IPA}, it does everything at once and 
+defines only the @emph{Execute} stage.  During this
+stage it accesses and modifies the function bodies.
+No @code{generate_summary}, @code{read_summary}, or @code{write_summary}
+hooks are defined.
+
+@itemize @bullet
+@item IPA free lang data
+
+This pass frees resources that are used by the front end but are
+not needed once it is done.  It is located in @file{tree.c} and is described by
+@code{pass_ipa_free_lang_data}.
+
+@item IPA function and variable visibility
+
+This is a local function pass handling visibilities of all symbols.  This
+happens before LTO streaming, so @option{-fwhole-program} should be ignored
+at this level.  It is located in @file{ipa-visibility.c} and is described by
+@code{pass_ipa_function_and_variable_visibility}.
+
+@item IPA remove symbols
+
+This pass performs reachability analysis and reclaims all unreachable nodes.
+It is located in @file{passes.c} and is described by
+@code{pass_ipa_remove_symbols}.
+
+@item IPA OpenACC
+
+This is a pass group for OpenACC processing.  It is located in
+@file{tree-ssa-loop.c} and is described by @code{pass_ipa_oacc}.
+
+@item IPA points-to analysis
+
+This is a tree-based points-to analysis pass. The idea behind this analyzer
+is to generate set constraints from the program, then solve the resulting
+constraints in order to generate the points-to sets.  It is located in 
+@file{tree-ssa-structalias.c} and is described by @code{pass_ipa_pta}.
+
+@item IPA OpenACC kernels
+
+This is a pass group for processing OpenACC kernels regions.  It is a
+subpass of the IPA OpenACC pass group that runs on offloaded functions
+containing OpenACC kernels loops.  It is located in
+@file{tree-ssa-loop.c} and is described by
+@code{pass_ipa_oacc_kernels}.
+
+@item Target clone
+
+This is a pass for parsing functions with multiple target attributes.
+It is located in @file{multiple_target.c} and is described by
+@code{pass_target_clone}.
+
+@item IPA auto profile
+
+This pass uses AutoFDO profiling data to annotate the control flow graph.
+It is located in @file{auto-profile.c} and is described by
+@code{pass_ipa_auto_profile}.
+
+@item IPA tree profile
+
+This pass does profiling for all functions in the call graph. 
+It calculates branch
+probabilities and basic block execution counts. It is located
+in @file{tree-profile.c} and is described by @code{pass_ipa_tree_profile}.
+
+@item IPA free function summary
+
+This pass is a small IPA pass when argument @code{small_p} is true.
+It releases inline function summaries and call summaries.
+It is located in @file{ipa-fnsummary.c} and is described by
+@code{pass_ipa_free_free_fn_summary}.
+
+@item IPA increase alignment
+
+This pass increases the alignment of global arrays to improve
+vectorization. It is located in @file{tree-vectorizer.c}
+and is described by @code{pass_ipa_increase_alignment}.
+
+@item IPA transactional memory
+
+This pass is for transactional memory support.
+It is located in @file{trans-mem.c} and is described by
+@code{pass_ipa_tm}.
+
+@item IPA lower emulated TLS
+
+This pass lowers thread-local storage (TLS) operations
+to emulation functions provided by libgcc.
+It is located in @file{tree-emutls.c} and is described by
+@code{pass_ipa_lower_emutls}.
+
+@end itemize
+
+@node Regular IPA passes
+@subsection Regular IPA passes
+@cindex regular IPA passes
+
+A regular IPA pass is a pass derived from @code{ipa_opt_pass_d} that
+is executed in WHOPR compilation. Regular IPA passes may have summary
+hooks implemented in any of the LGEN, WPA or LTRANS stages (@pxref{IPA}).
+
+@itemize @bullet
+@item IPA whole program visibility
+
+This pass performs various optimizations involving symbol visibility
+with @option{-fwhole-program}, including symbol privatization,
+discovering local functions, and dismantling comdat groups.  It is
+located in @file{ipa-visibility.c} and is described by
+@code{pass_ipa_whole_program_visibility}.
+
+@item IPA profile
+
+The IPA profile pass propagates profiling frequencies across the call
+graph.  It is located in @file{ipa-profile.c} and is described by
+@code{pass_ipa_profile}.
+
+@item IPA identical code folding
+
+This is the inter-procedural identical code folding pass.
+The goal of this transformation is to discover functions
+and read-only variables that have exactly the same semantics.  It is
+located in @file{ipa-icf.c} and is described by @code{pass_ipa_icf}.
+
+@item IPA devirtualization
+
+This pass performs speculative devirtualization based on the type
+inheritance graph.  When a polymorphic call has only one likely target
+in the unit, it is turned into a speculative call. It is located in
+@file{ipa-devirt.c} and is described by @code{pass_ipa_devirt}.
+
+@item IPA constant propagation
+
+The goal of this pass is to discover functions that are always invoked
+with some arguments with the same known constant values and to modify
+the functions accordingly.  It can also do partial specialization and
+type-based devirtualization.  It is located in @file{ipa-cp.c} and is
+described by @code{pass_ipa_cp}.
+
+@item IPA scalar replacement of aggregates
+
+This pass can replace an aggregate parameter with a set of other parameters
+representing part of the original, turning those passed by reference
+into new ones which pass the value directly.  It also removes unused
+function return values and unused function parameters.  This pass is
+located in @file{ipa-sra.c} and is described by @code{pass_ipa_sra}.
+
+@item IPA constructor/destructor merge
+
+This pass merges multiple constructors and destructors for static
+objects into single functions.  It's only run at LTO time unless the
+target doesn't support constructors and destructors natively.  The
+pass is located in @file{ipa.c} and is described by
+@code{pass_ipa_cdtor_merge}.
+
+@item IPA HSA
+
+This pass is part of the GCC support for HSA (Heterogeneous System
+Architecture) accelerators.  It is responsible for creation of HSA
+clones and emitting HSAIL instructions for them.  It is located in
+@file{ipa-hsa.c} and is described by @code{pass_ipa_hsa}.
+
+@item IPA function summary
+
+This pass provides function analysis for inter-procedural passes.
+It collects estimates of function body size, execution time, and frame
+size for each function.  It also estimates information about function
+calls: call statement size, time and how often the parameters change
+for each call.  It is located in @file{ipa-fnsummary.c} and is
+described by @code{pass_ipa_fn_summary}.
+
+@item IPA inline
+
+The IPA inline pass handles function inlining with whole-program
+knowledge. Small functions that are candidates for inlining are
+ordered in increasing badness, bounded by unit growth parameters.
+Unreachable functions are removed from the call graph.  Functions called
+once and not exported from the unit are inlined.  This pass is located in
+@file{ipa-inline.c} and is described by @code{pass_ipa_inline}.
+
+@item IPA pure/const analysis
+
+This pass marks functions as being either const (@code{TREE_READONLY}) or
+pure (@code{DECL_PURE_P}).  The per-function information is produced
+by @code{pure_const_generate_summary}, then the global information is computed
+by performing a transitive closure over the call graph.   It is located in
+@file{ipa-pure-const.c} and is described by @code{pass_ipa_pure_const}.
+
+@item IPA free function summary
+
+This pass is a regular IPA pass when argument @code{small_p} is false.
+It releases inline function summaries and call summaries.
+It is located in @file{ipa-fnsummary.c} and is described by
+@code{pass_ipa_free_fn_summary}.
+
+@item IPA reference
+
+This pass gathers information about how variables whose scope is
+confined to the compilation unit are used.  It is located in
+@file{ipa-reference.c} and is described by @code{pass_ipa_reference}.
+
+@item IPA single use
+
+This pass checks whether variables are used by a single function.
+It is located in @file{ipa.c} and is described by
+@code{pass_ipa_single_use}.
+
+@item IPA comdats
+
+This pass looks for static symbols that are used exclusively
+within one comdat group, and moves them into that comdat group. It is
+located in @file{ipa-comdats.c} and is described by
+@code{pass_ipa_comdats}.
+
+@end itemize
+
+@node Late IPA passes
+@subsection Late IPA passes
+@cindex late IPA passes
+
+Late IPA passes are simple IPA passes executed after
+the regular passes.  In WHOPR mode the passes are executed after
+partitioning and thus see just parts of the compiled unit.
+
+@itemize @bullet
+@item Materialize all clones
+
+Once all functions from compilation unit are in memory, produce all clones
+and update all calls.  It is located in @file{ipa.c} and is described by
+@code{pass_materialize_all_clones}.
+
+@item IPA points-to analysis
+
+Points-to analysis; this is the same as the points-to-analysis pass
+run with the small IPA passes (@pxref{Small IPA passes}).
+
+@item OpenMP simd clone
+
+This is the OpenMP constructs' SIMD clone pass.  It creates the appropriate
+SIMD clones for functions tagged as elemental SIMD functions.
+It is located in @file{omp-simd-clone.c} and is described by
+@code{pass_omp_simd_clone}.
+
+@end itemize
 
 @node Tree SSA passes
 @section Tree SSA passes

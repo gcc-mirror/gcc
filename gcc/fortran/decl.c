@@ -2441,6 +2441,7 @@ variable_decl (int elem)
   match m;
   bool t;
   gfc_symbol *sym;
+  char c;
 
   initializer = NULL;
   as = NULL;
@@ -2454,40 +2455,45 @@ variable_decl (int elem)
      name to be '%FILL' which gives it an anonymous (inaccessible) name.  */
   m = MATCH_NO;
   gfc_gobble_whitespace ();
-  if (gfc_peek_ascii_char () == '%')
+  c = gfc_peek_ascii_char ();
+  if (c == '%')
     {
-      gfc_next_ascii_char ();
+      gfc_next_ascii_char ();	/* Burn % character.  */
       m = gfc_match ("fill");
-    }
+      if (m == MATCH_YES)
+	{
+	  if (gfc_current_state () != COMP_STRUCTURE)
+	    {
+	      if (flag_dec_structure)
+		gfc_error ("%qs not allowed outside STRUCTURE at %C", "%FILL");
+	      else
+		gfc_error ("%qs at %C is a DEC extension, enable with "
+		       "%<-fdec-structure%>", "%FILL");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 
-  if (m != MATCH_YES)
+	  if (attr_seen)
+	    {
+	      gfc_error ("%qs entity cannot have attributes at %C", "%FILL");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
+
+	  /* %FILL components are given invalid fortran names.  */
+	  snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
+	}
+      else
+	{
+	  gfc_error ("Invalid character %qc in variable name at %C", c);
+	  return MATCH_ERROR;
+	}
+    }
+  else
     {
       m = gfc_match_name (name);
       if (m != MATCH_YES)
 	goto cleanup;
-    }
-
-  else
-    {
-      m = MATCH_ERROR;
-      if (gfc_current_state () != COMP_STRUCTURE)
-	{
-	  if (flag_dec_structure)
-	    gfc_error ("%qs not allowed outside STRUCTURE at %C", "%FILL");
-	  else
-	    gfc_error ("%qs at %C is a DEC extension, enable with "
-		       "%<-fdec-structure%>", "%FILL");
-	  goto cleanup;
-	}
-
-      if (attr_seen)
-	{
-	  gfc_error ("%qs entity cannot have attributes at %C", "%FILL");
-	  goto cleanup;
-	}
-
-      /* %FILL components are given invalid fortran names.  */
-      snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
     }
 
   var_locus = gfc_current_locus;
@@ -2676,7 +2682,7 @@ variable_decl (int elem)
       then we want to set the type & bail out.  */
   if (flag_cray_pointer && !gfc_comp_struct (gfc_current_state ()))
     {
-      gfc_find_symbol (name, gfc_current_ns, 1, &sym);
+      gfc_find_symbol (name, gfc_current_ns, 0, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
 	{
 	  m = MATCH_YES;
@@ -6196,13 +6202,17 @@ gfc_match_prefix (gfc_typespec *ts)
 	  found_prefix = true;
 	}
 
-      if (!seen_type && ts != NULL
-	  && gfc_match_decl_type_spec (ts, 0) == MATCH_YES
-	  && gfc_match_space () == MATCH_YES)
+      if (!seen_type && ts != NULL)
 	{
-
-	  seen_type = true;
-	  found_prefix = true;
+	  match m;
+	  m = gfc_match_decl_type_spec (ts, 0);
+	  if (m == MATCH_ERROR)
+	    goto error;
+	  if (m == MATCH_YES && gfc_match_space () == MATCH_YES)
+	    {
+	      seen_type = true;
+	      found_prefix = true;
+	    }
 	}
 
       if (gfc_match ("elemental% ") == MATCH_YES)
@@ -7253,13 +7263,16 @@ gfc_match_function_decl (void)
   if (sym->attr.is_bind_c == 1)
     {
       sym->attr.is_bind_c = 0;
-      if (sym->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(sym->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
+
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state != COMP_SUBMODULE)
+	{
+	  locus loc;
+	  loc = sym->old_symbol != NULL
+	    ? sym->old_symbol->declared_at : gfc_current_locus;
+	  gfc_error_now ("BIND(C) attribute at %L can only be used for "
+			 "variables or common blocks", &loc);
+	}
     }
 
   if (found_match != MATCH_YES)
@@ -7272,6 +7285,24 @@ gfc_match_function_decl (void)
       else
 	found_match = suffix_match;
     }
+
+  /* F2018 C1550 (R1526) If MODULE appears in the prefix of a module
+     subprogram and a binding label is specified, it shall be the
+     same as the binding label specified in the corresponding module
+     procedure interface body.  */
+    if (sym->attr.is_bind_c && sym->attr.module_procedure && sym->old_symbol
+  	&& strcmp (sym->name, sym->old_symbol->name) == 0
+	&& strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
+      {
+	  const char *null = "NULL", *s1, *s2;
+	  s1 = sym->binding_label;
+	  if (!s1) s1 = null;
+	  s2 = sym->old_symbol->binding_label;
+	  if (!s2) s2 = null;
+          gfc_error ("Mismatch in BIND(C) names (%qs/%qs) at %C", s1, s2);
+	  sym->refs++;	/* Needed to avoid an ICE in gfc_release_symbol */
+	  return MATCH_ERROR;
+      }
 
   if(found_match != MATCH_YES)
     m = MATCH_ERROR;
@@ -7511,15 +7542,15 @@ gfc_match_entry (void)
      not allowed for procedures.  */
   if (entry->attr.is_bind_c == 1)
     {
+      locus loc;
+
       entry->attr.is_bind_c = 0;
-      if (entry->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(entry->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
-    }
+
+      loc = entry->old_symbol != NULL
+	? entry->old_symbol->declared_at : gfc_current_locus; 
+      gfc_error_now ("BIND(C) attribute at %L can only be used for "
+		     "variables or common blocks", &loc);
+     }
 
   /* Check what next non-whitespace character is so we can tell if there
      is the required parens if we have a BIND(C).  */
@@ -7719,13 +7750,16 @@ gfc_match_subroutine (void)
   if (sym->attr.is_bind_c == 1)
     {
       sym->attr.is_bind_c = 0;
-      if (sym->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(sym->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
+
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state != COMP_SUBMODULE)
+	{
+	  locus loc;
+	  loc = sym->old_symbol != NULL
+	    ? sym->old_symbol->declared_at : gfc_current_locus;
+	  gfc_error_now ("BIND(C) attribute at %L can only be used for "
+			 "variables or common blocks", &loc);
+	}
     }
 
   /* C binding names are not allowed for internal procedures.  */
@@ -7766,6 +7800,24 @@ gfc_match_subroutine (void)
           gfc_error ("Missing required parentheses before BIND(C) at %C");
           return MATCH_ERROR;
         }
+
+      /* F2018 C1550 (R1526) If MODULE appears in the prefix of a module
+	 subprogram and a binding label is specified, it shall be the
+	 same as the binding label specified in the corresponding module
+	 procedure interface body.  */
+      if (sym->attr.module_procedure && sym->old_symbol
+  	  && strcmp (sym->name, sym->old_symbol->name) == 0
+	  && strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
+	{
+	  const char *null = "NULL", *s1, *s2;
+	  s1 = sym->binding_label;
+	  if (!s1) s1 = null;
+	  s2 = sym->old_symbol->binding_label;
+	  if (!s2) s2 = null;
+          gfc_error ("Mismatch in BIND(C) names (%qs/%qs) at %C", s1, s2);
+	  sym->refs++;	/* Needed to avoid an ICE in gfc_release_symbol */
+	  return MATCH_ERROR;
+	}
 
       /* Scan the dummy arguments for an alternate return.  */
       for (arg = sym->formal; arg; arg = arg->next)
@@ -8470,15 +8522,6 @@ attr_decl1 (void)
     {
       m = MATCH_ERROR;
       goto cleanup;
-    }
-
-  /* Check F2018:C822.  */
-  if (sym->attr.dimension && sym->attr.codimension
-      && sym->as && sym->as->rank + sym->as->corank > 15)
-    {
-      gfc_error ("rank + corank of %qs exceeds 15 at %C", sym->name);
-      m = MATCH_ERROR;
-      return m;
     }
 
   if (sym->attr.cray_pointee && sym->as != NULL)

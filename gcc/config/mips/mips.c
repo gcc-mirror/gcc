@@ -2409,7 +2409,8 @@ mips_cannot_force_const_mem (machine_mode mode, rtx x)
      references, reload will consider forcing C into memory and using
      one of the instruction's memory alternatives.  Returning false
      here will force it to use an input reload instead.  */
-  if (CONST_INT_P (x) && mips_legitimate_constant_p (mode, x))
+  if ((CONST_INT_P (x) || GET_CODE (x) == CONST_VECTOR)
+      && mips_legitimate_constant_p (mode, x))
     return true;
 
   split_const (x, &base, &offset);
@@ -16957,6 +16958,26 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_msa_vshf_d:
       gcc_assert (has_target_p && nops == 4);
       std::swap (ops[1], ops[3]);
+      break;
+
+    case CODE_FOR_msa_dpadd_s_w:
+    case CODE_FOR_msa_dpadd_s_h:
+    case CODE_FOR_msa_dpadd_s_d:
+    case CODE_FOR_msa_dpadd_u_w:
+    case CODE_FOR_msa_dpadd_u_h:
+    case CODE_FOR_msa_dpadd_u_d:
+    case CODE_FOR_msa_dpsub_s_w:
+    case CODE_FOR_msa_dpsub_s_h:
+    case CODE_FOR_msa_dpsub_s_d:
+    case CODE_FOR_msa_dpsub_u_w:
+    case CODE_FOR_msa_dpsub_u_h:
+    case CODE_FOR_msa_dpsub_u_d:
+      /* Force the operands which correspond to the same in-out register
+	  to have the same pseudo assigned to them.  If the input operand
+	  is not REG, create one for it.  */
+      if (!REG_P (ops[1].value))
+	ops[1].value = copy_to_mode_reg (ops[1].mode, ops[1].value);
+      create_output_operand (&ops[0], ops[1].value, ops[1].mode);
       break;
 
     default:

@@ -132,9 +132,14 @@ namespace __gnu_test
       ITERATOR_VERIFY(ptr >= SharedInfo->first && ptr <= SharedInfo->last);
     }
 
-    output_iterator_wrapper(const output_iterator_wrapper& in)
-    : ptr(in.ptr), SharedInfo(in.SharedInfo)
-    { }
+#if __cplusplus >= 201103L
+    output_iterator_wrapper() = delete;
+
+    output_iterator_wrapper(const output_iterator_wrapper&) = default;
+
+    output_iterator_wrapper&
+    operator=(const output_iterator_wrapper&) = default;
+#endif
 
     WritableObject<T>
     operator*() const
@@ -142,14 +147,6 @@ namespace __gnu_test
       ITERATOR_VERIFY(ptr < SharedInfo->last);
       ITERATOR_VERIFY(SharedInfo->writtento[ptr - SharedInfo->first] == false);
       return WritableObject<T>(ptr, SharedInfo);
-    }
-
-    output_iterator_wrapper&
-    operator=(const output_iterator_wrapper& in)
-    {
-      ptr = in.ptr;
-      SharedInfo = in.SharedInfo;
-      return *this;
     }
 
     output_iterator_wrapper&
@@ -203,7 +200,7 @@ namespace __gnu_test
 			 std::ptrdiff_t, T*, T&>
   {
   protected:
-    input_iterator_wrapper()
+    input_iterator_wrapper() : ptr(0), SharedInfo(0)
     { }
 
   public:
@@ -215,9 +212,12 @@ namespace __gnu_test
     : ptr(_ptr), SharedInfo(SharedInfo_in)
     { ITERATOR_VERIFY(ptr >= SharedInfo->first && ptr <= SharedInfo->last); }
 
-    input_iterator_wrapper(const input_iterator_wrapper& in)
-    : ptr(in.ptr), SharedInfo(in.SharedInfo)
-    { }
+#if __cplusplus >= 201103L
+    input_iterator_wrapper(const input_iterator_wrapper&) = default;
+
+    input_iterator_wrapper&
+    operator=(const input_iterator_wrapper&) = default;
+#endif
 
     bool
     operator==(const input_iterator_wrapper& in) const
@@ -245,14 +245,6 @@ namespace __gnu_test
     operator->() const
     {
       return &**this;
-    }
-
-    input_iterator_wrapper&
-    operator=(const input_iterator_wrapper& in)
-    {
-      ptr = in.ptr;
-      SharedInfo = in.SharedInfo;
-      return *this;
     }
 
     input_iterator_wrapper&
@@ -298,19 +290,20 @@ namespace __gnu_test
   {
     typedef BoundsContainer<T> ContainerType;
     typedef std::forward_iterator_tag iterator_category;
+
     forward_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : input_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
-    forward_iterator_wrapper(const forward_iterator_wrapper& in)
-    : input_iterator_wrapper<T>(in)
+    forward_iterator_wrapper()
     { }
 
-    forward_iterator_wrapper()
-    {
-      this->ptr = 0;
-      this->SharedInfo = 0;
-    }
+#if __cplusplus >= 201103L
+    forward_iterator_wrapper(const forward_iterator_wrapper&) = default;
+
+    forward_iterator_wrapper&
+    operator=(const forward_iterator_wrapper&) = default;
+#endif
 
     T&
     operator*() const
@@ -352,24 +345,22 @@ namespace __gnu_test
   {
     typedef BoundsContainer<T> ContainerType;
     typedef std::bidirectional_iterator_tag iterator_category;
+
     bidirectional_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : forward_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
-    bidirectional_iterator_wrapper(const bidirectional_iterator_wrapper& in)
-    : forward_iterator_wrapper<T>(in)
+    bidirectional_iterator_wrapper()
+    : forward_iterator_wrapper<T>()
     { }
 
-    bidirectional_iterator_wrapper(): forward_iterator_wrapper<T>()
-    { }
+#if __cplusplus >= 201103L
+    bidirectional_iterator_wrapper(
+	const bidirectional_iterator_wrapper&) = default;
 
     bidirectional_iterator_wrapper&
-    operator=(const bidirectional_iterator_wrapper& in)
-    {
-      this->ptr = in.ptr;
-      this->SharedInfo = in.SharedInfo;
-      return *this;
-    }
+    operator=(const bidirectional_iterator_wrapper&) = default;
+#endif
 
     bidirectional_iterator_wrapper&
     operator++()
@@ -417,24 +408,22 @@ namespace __gnu_test
   {
     typedef BoundsContainer<T> ContainerType;
     typedef std::random_access_iterator_tag iterator_category;
+
     random_access_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
     : bidirectional_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
-    random_access_iterator_wrapper(const random_access_iterator_wrapper<T>& in)
-    : bidirectional_iterator_wrapper<T>(in)
+    random_access_iterator_wrapper()
+    : bidirectional_iterator_wrapper<T>()
     { }
 
-    random_access_iterator_wrapper():bidirectional_iterator_wrapper<T>()
-    { }
+#if __cplusplus >= 201103L
+    random_access_iterator_wrapper(
+	const random_access_iterator_wrapper&) = default;
 
     random_access_iterator_wrapper&
-    operator=(const random_access_iterator_wrapper& in)
-    {
-      this->ptr = in.ptr;
-      this->SharedInfo = in.SharedInfo;
-      return *this;
-    }
+    operator=(const random_access_iterator_wrapper&) = default;
+#endif
 
     random_access_iterator_wrapper&
     operator++()

@@ -56,7 +56,7 @@ class fibonacci_node
 public:
   /* Default constructor.  */
   fibonacci_node (): m_parent (NULL), m_child (NULL), m_left (this),
-    m_right (this), m_degree (0), m_mark (0)
+    m_right (this), m_data (NULL), m_degree (0), m_mark (0)
   {
   }
 

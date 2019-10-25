@@ -29,8 +29,8 @@ SUBROUTINE test1(a,b,c,d,e)
  call as_size( (c) ) ! { dg-error "The upper bound in the last dimension must appear in the reference to the assumed size array" }
  call as_size( (d) )
  call as_size( (e) ) ! { dg-error "Rank mismatch" }
- call as_size(a(1)) ! { dg-error "Element of assumed-shaped" }
- call as_size(b(1)) ! { dg-error "Element of assumed-shaped" }
+ call as_size(a(1)) ! { dg-error "Element of assumed-shape" }
+ call as_size(b(1)) ! { dg-error "Element of assumed-shape" }
  call as_size(c(1))
  call as_size(d(1))
  call as_size( (a(1)) ) ! { dg-error "Rank mismatch" }
@@ -89,8 +89,8 @@ SUBROUTINE test1(a,b,c,d,e)
  call as_expl( (c) ) ! { dg-error "The upper bound in the last dimension must appear in the reference to the assumed size array" }
  call as_expl( (d) )
  call as_expl( (e) ) ! { dg-error "Rank mismatch" }
- call as_expl(a(1)) ! { dg-error "Element of assumed-shaped" }
- call as_expl(b(1)) ! { dg-error "Element of assumed-shaped" }
+ call as_expl(a(1)) ! { dg-error "Element of assumed-shape" }
+ call as_expl(b(1)) ! { dg-error "Element of assumed-shape" }
  call as_expl(c(1))
  call as_expl(d(1))
  call as_expl( (a(1)) ) ! { dg-error "Rank mismatch" }

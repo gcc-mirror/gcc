@@ -54,7 +54,8 @@ static const unsigned HOST_WIDE_INT unknown[4] = {
 
 static tree compute_object_offset (const_tree, const_tree);
 static bool addr_object_size (struct object_size_info *,
-			      const_tree, int, unsigned HOST_WIDE_INT *);
+			      const_tree, int, unsigned HOST_WIDE_INT *,
+			      tree * = NULL);
 static unsigned HOST_WIDE_INT alloc_object_size (const gcall *, int);
 static tree pass_through_call (const gcall *);
 static void collect_object_sizes_for (struct object_size_info *, tree);
@@ -172,9 +173,14 @@ compute_object_offset (const_tree expr, const_tree var)
 
 static bool
 addr_object_size (struct object_size_info *osi, const_tree ptr,
-		  int object_size_type, unsigned HOST_WIDE_INT *psize)
+		  int object_size_type, unsigned HOST_WIDE_INT *psize,
+		  tree *pdecl /* = NULL */)
 {
   tree pt_var, pt_var_size = NULL_TREE, var_size, bytes;
+
+  tree dummy;
+  if (!pdecl)
+    pdecl = &dummy;
 
   gcc_assert (TREE_CODE (ptr) == ADDR_EXPR);
 
@@ -195,7 +201,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	  || TREE_CODE (TREE_OPERAND (pt_var, 0)) != SSA_NAME)
 	{
 	  compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
-				       object_size_type & ~1, &sz);
+				       object_size_type & ~1, &sz, pdecl);
 	}
       else
 	{
@@ -232,7 +238,10 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	   && DECL_P (pt_var)
 	   && tree_fits_uhwi_p (DECL_SIZE_UNIT (pt_var))
 	   && tree_to_uhwi (DECL_SIZE_UNIT (pt_var)) < offset_limit)
-    pt_var_size = DECL_SIZE_UNIT (pt_var);
+    {
+      *pdecl = pt_var;
+      pt_var_size = DECL_SIZE_UNIT (pt_var);
+    }
   else if (pt_var
 	   && TREE_CODE (pt_var) == STRING_CST
 	   && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
@@ -478,13 +487,16 @@ pass_through_call (const gcall *call)
 
 
 /* Compute __builtin_object_size value for PTR and set *PSIZE to
-   the resulting value.  OBJECT_SIZE_TYPE is the second argument
-   to __builtin_object_size.  Return true on success and false
-   when the object size could not be determined.  */
+   the resulting value.  If the declared object is known and PDECL
+   is nonnull, sets *PDECL to the object's DECL.  OBJECT_SIZE_TYPE
+   is the second argument   to __builtin_object_size.
+   Returns true on success and false when the object size could not
+   be determined.  */
 
 bool
 compute_builtin_object_size (tree ptr, int object_size_type,
-			     unsigned HOST_WIDE_INT *psize)
+			     unsigned HOST_WIDE_INT *psize,
+			     tree *pdecl /* = NULL */)
 {
   gcc_assert (object_size_type >= 0 && object_size_type <= 3);
 
@@ -496,7 +508,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
     init_offset_limit ();
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
-    return addr_object_size (NULL, ptr, object_size_type, psize);
+    return addr_object_size (NULL, ptr, object_size_type, psize, pdecl);
 
   if (TREE_CODE (ptr) != SSA_NAME
       || !POINTER_TYPE_P (TREE_TYPE (ptr)))
@@ -520,7 +532,8 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	      ptr = gimple_assign_rhs1 (def);
 
 	      if (tree_fits_shwi_p (offset)
-		  && compute_builtin_object_size (ptr, object_size_type, psize))
+		  && compute_builtin_object_size (ptr, object_size_type,
+						  psize, pdecl))
 		{
 		  /* Return zero when the offset is out of bounds.  */
 		  unsigned HOST_WIDE_INT off = tree_to_shwi (offset);
@@ -889,6 +902,9 @@ cond_expr_object_size (struct object_size_info *osi, tree var, gimple *stmt)
     reexamine |= merge_object_sizes (osi, var, then_, 0);
   else
     expr_object_size (osi, var, then_);
+
+  if (object_sizes[object_size_type][varno] == unknown[object_size_type])
+    return reexamine;
 
   if (TREE_CODE (else_) == SSA_NAME)
     reexamine |= merge_object_sizes (osi, var, else_, 0);

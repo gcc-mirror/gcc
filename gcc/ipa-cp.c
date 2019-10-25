@@ -731,7 +731,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   init_caller_stats (&stats);
   node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats, false);
 
-  if (ipa_fn_summaries->get (node)->self_size < stats.n_calls)
+  if (ipa_size_summaries->get (node)->self_size < stats.n_calls)
     {
       if (dump_file)
 	fprintf (dump_file, "Considering %s for cloning; code might shrink.\n",
@@ -2629,13 +2629,14 @@ devirtualization_time_bonus (struct cgraph_node *node,
       if (!isummary->inlinable)
 	continue;
 
+      int size = ipa_size_summaries->get (callee)->size;
       /* FIXME: The values below need re-considering and perhaps also
 	 integrating into the cost metrics, at lest in some very basic way.  */
-      if (isummary->size <= MAX_INLINE_INSNS_AUTO / 4)
+      if (size <= MAX_INLINE_INSNS_AUTO / 4)
 	res += 31 / ((int)speculative + 1);
-      else if (isummary->size <= MAX_INLINE_INSNS_AUTO / 2)
+      else if (size <= MAX_INLINE_INSNS_AUTO / 2)
 	res += 15 / ((int)speculative + 1);
-      else if (isummary->size <= MAX_INLINE_INSNS_AUTO
+      else if (size <= MAX_INLINE_INSNS_AUTO
 	       || DECL_DECLARED_INLINE_P (callee->decl))
 	res += 7 / ((int)speculative + 1);
     }
@@ -3334,7 +3335,7 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 				   ipa_get_param_count (info));
 	initialize_node_lattices (node);
       }
-    ipa_fn_summary *s = ipa_fn_summaries->get (node);
+    ipa_size_summary *s = ipa_size_summaries->get (node);
     if (node->definition && !node->alias && s != NULL)
       overall_size += s->self_size;
     max_count = max_count.max (node->count.ipa ());

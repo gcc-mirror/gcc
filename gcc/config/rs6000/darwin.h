@@ -329,9 +329,9 @@
 /* This is supported in cctools 465 and later.  The macro test
    above prevents using it in earlier build environments.  */
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)          \
-  if ((LOG) != 0)                                             \
+  if ((LOG) > 0)                                             \
     {                                                         \
-      if ((MAX_SKIP) == 0)                                    \
+      if ((MAX_SKIP) <= 0)                                    \
         fprintf ((FILE), "\t.p2align %d\n", (LOG));           \
       else                                                    \
         fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP)); \
@@ -505,6 +505,9 @@ do {									\
 /* So far, there is no rs6000_fold_builtin, if one is introduced, then
    this will need to be modified similar to the x86 case.  */
 #define TARGET_FOLD_BUILTIN SUBTARGET_FOLD_BUILTIN
+
+/* First available SYMBOL flag bit for use by subtargets.  */
+#define SYMBOL_FLAG_SUBT_DEP (SYMBOL_FLAG_MACH_DEP)
 
 /* Use standard DWARF numbering for DWARF debugging information.  */
 #define RS6000_USE_DWARF_NUMBERING

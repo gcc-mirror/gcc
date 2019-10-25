@@ -244,11 +244,11 @@ class opt_mode
 public:
   enum from_int { dummy = MAX_MACHINE_MODE };
 
-  ALWAYS_INLINE opt_mode () : m_mode (E_VOIDmode) {}
-  ALWAYS_INLINE opt_mode (const T &m) : m_mode (m) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode () : m_mode (E_VOIDmode) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode (const T &m) : m_mode (m) {}
   template<typename U>
-  ALWAYS_INLINE opt_mode (const U &m) : m_mode (T (m)) {}
-  ALWAYS_INLINE opt_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode (const U &m) : m_mode (T (m)) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode (from_int m) : m_mode (machine_mode (m)) {}
 
   machine_mode else_void () const;
   machine_mode else_blk () const { return else_mode (BLKmode); }
@@ -324,8 +324,12 @@ struct pod_mode
   typedef typename T::measurement_type measurement_type;
 
   machine_mode m_mode;
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
-  ALWAYS_INLINE operator T () const { return from_int (m_mode); }
+  ALWAYS_INLINE CONSTEXPR
+  operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  operator T () const { return from_int (m_mode); }
+
   ALWAYS_INLINE pod_mode &operator = (const T &m) { m_mode = m; return *this; }
 };
 
@@ -403,8 +407,11 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_int_mode () {}
-  ALWAYS_INLINE scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -428,8 +435,11 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_float_mode () {}
-  ALWAYS_INLINE scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -453,11 +463,20 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_mode () {}
-  ALWAYS_INLINE scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE scalar_mode (const scalar_int_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE scalar_mode (const scalar_float_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE scalar_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (const scalar_int_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (const scalar_float_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -494,8 +513,11 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE complex_mode () {}
-  ALWAYS_INLINE complex_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  complex_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -764,14 +786,29 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE fixed_size_mode () {}
-  ALWAYS_INLINE fixed_size_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_float_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_mode_pod &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const complex_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_int_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_float_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_mode_pod &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const complex_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 

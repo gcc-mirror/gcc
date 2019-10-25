@@ -7,7 +7,7 @@ int data;
 
 int callee (int i)
 {
-  switch (i)
+  switch (i % 128)
     {
       case -126:  return i + 13;
       case -127:  return i + 5;
@@ -45,7 +45,7 @@ int fn2 ();
 
 int callee_complex_predicate (int i)
 {
-  switch (i )
+  switch (i)
     {
       case 0:
 	fn ();
@@ -100,10 +100,10 @@ int caller ()
 }
  
 /* { dg-final { scan-ipa-dump-times "Creating a specialized node of callee" 7 "cp" } } */
-/* { dg-final { scan-ipa-dump "op0 < -127" "fnsummary" } } */
-/* { dg-final { scan-ipa-dump "op0 > -126" "fnsummary" } } */
-/* { dg-final { scan-ipa-dump "op0 != -8"  "fnsummary" } } */
-/* { dg-final { scan-ipa-dump "op0 != 0"   "fnsummary" } } */
-/* { dg-final { scan-ipa-dump "op0 < 5"    "fnsummary" } } */
-/* { dg-final { scan-ipa-dump "op0 > 7"    "fnsummary" } } */
+/* { dg-final { scan-ipa-dump-not "op0,\\(# % 128\\) < -127" "fnsummary" } } */
+/* { dg-final { scan-ipa-dump "op0,\\(# % 128\\) > -126" "fnsummary" } } */
+/* { dg-final { scan-ipa-dump "op0,\\(# % 128\\) != -8"  "fnsummary" } } */
+/* { dg-final { scan-ipa-dump "op0,\\(# % 128\\) != 0"   "fnsummary" } } */
+/* { dg-final { scan-ipa-dump "op0,\\(# % 128\\) < 5"    "fnsummary" } } */
+/* { dg-final { scan-ipa-dump "op0,\\(# % 128\\) > 7"    "fnsummary" } } */
 /* { dg-final { scan-ipa-dump "loop depth: 1 .+ time:\[ \]*\[0-9\]+ predicate: \\(op0 == 1000\\)\[\r\n]+" "fnsummary" } } */

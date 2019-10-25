@@ -778,8 +778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _InputIterator, typename _Size, typename _OutputIterator>
     _GLIBCXX20_CONSTEXPR
     _OutputIterator
-    __copy_n(_InputIterator __first, _Size __n,
-	     _OutputIterator __result, input_iterator_tag)
+    __copy_n_a(_InputIterator __first, _Size __n, _OutputIterator __result)
     {
       if (__n > 0)
 	{
@@ -794,6 +793,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
       return __result;
+    }
+ 
+  template<typename _CharT, typename _Size>
+    __enable_if_t<__is_char<_CharT>::__value, _CharT*>
+    __copy_n_a(istreambuf_iterator<_CharT, char_traits<_CharT>>,
+	       _Size, _CharT*);
+
+  template<typename _InputIterator, typename _Size, typename _OutputIterator>
+    _GLIBCXX20_CONSTEXPR
+    _OutputIterator
+    __copy_n(_InputIterator __first, _Size __n,
+	     _OutputIterator __result, input_iterator_tag)
+    {
+      return std::__niter_wrap(__result,
+			       __copy_n_a(__first, __n,
+					  std::__niter_base(__result)));
     }
 
   template<typename _RandomAccessIterator, typename _Size,
@@ -826,6 +841,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_can_increment(__first, __n);
+      __glibcxx_requires_can_increment(__result, __n);
 
       return std::__copy_n(__first, __n, __result,
 			   std::__iterator_category(__first));
@@ -878,7 +895,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return pair<_OutputIterator1, _OutputIterator2>(__out_true, __out_false);
     }
-#endif
+#endif // C++11
 
   template<typename _ForwardIterator, typename _Predicate>
     _GLIBCXX20_CONSTEXPR

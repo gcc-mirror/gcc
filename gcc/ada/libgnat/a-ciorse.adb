@@ -394,7 +394,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
            (Element => Position.Node.Element.all'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -788,7 +788,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
               (Element => Node.Element.all'Access,
                Control => (Controlled with TC))
             do
-               Lock (TC.all);
+               Busy (TC.all);
             end return;
          end;
       end Constant_Reference;
@@ -1017,7 +1017,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                     Pos       => Position,
                     Old_Key   => new Key_Type'(Key (Position))))
          do
-               Lock (Tree.TC);
+               Busy (Tree.TC);
             end return;
          end;
       end Reference_Preserving_Key;
@@ -1049,7 +1049,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                     Pos       => Find (Container, Key),
                     Old_Key   => new Key_Type'(Key)))
             do
-               Lock (Tree.TC);
+               Busy (Tree.TC);
             end return;
          end;
       end Reference_Preserving_Key;
@@ -1688,7 +1688,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
         Container.Tree.TC'Unrestricted_Access;
    begin
       return R : constant Reference_Control_Type := (Controlled with TC) do
-         Lock (TC.all);
+         Busy (TC.all);
       end return;
    end Pseudo_Reference;
 

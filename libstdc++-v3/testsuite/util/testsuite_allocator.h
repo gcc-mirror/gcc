@@ -45,6 +45,18 @@ namespace unord = std::tr1;
 
 namespace __gnu_test
 {
+  // A common API for calling max_size() on an allocator in any -std mode.
+  template<typename A>
+    typename A::size_type
+    max_size(const A& a)
+    {
+#if __cplusplus >= 201103L
+      return std::allocator_traits<A>::max_size(a);
+#else
+      return a.max_size();
+#endif
+    }
+
   class tracker_allocator_counter
   {
   public:
@@ -252,7 +264,7 @@ namespace __gnu_test
       Alloc a;
       try
 	{
-	  (void) a.allocate(a.max_size() + 1);
+	  (void) a.allocate(__gnu_test::max_size(a) + 1);
 	}
       catch(std::bad_alloc&)
 	{

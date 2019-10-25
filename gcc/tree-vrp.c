@@ -379,10 +379,7 @@ value_range_base::singleton_p (tree *result) const
 	    }
 	  return false;
 	}
-
-      /* An anti-range that includes an extreme, is just a range with
-	 one sub-range.  Use the one sub-range.  */
-      if (vrp_val_is_min (m_min, true) || vrp_val_is_max (m_max, true))
+      if (num_pairs () == 1)
 	{
 	  value_range_base vr0, vr1;
 	  ranges_from_anti_range (this, &vr0, &vr1, true);
@@ -431,8 +428,8 @@ value_range_base::dump (FILE *file) const
 
       fprintf (file, ", ");
 
-      if (INTEGRAL_TYPE_P (ttype)
-	  && vrp_val_is_max (max ())
+      if (supports_type_p (ttype)
+	  && vrp_val_is_max (max (), true)
 	  && TYPE_PRECISION (ttype) != 1)
 	fprintf (file, "+INF");
       else
@@ -730,6 +727,24 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
       return;
     }
 
+  /* Convert POLY_INT_CST bounds into worst-case INTEGER_CST bounds.  */
+  if (POLY_INT_CST_P (min))
+    {
+      tree type_min = vrp_val_min (TREE_TYPE (min), true);
+      widest_int lb
+	= constant_lower_bound_with_limit (wi::to_poly_widest (min),
+					   wi::to_widest (type_min));
+      min = wide_int_to_tree (TREE_TYPE (min), lb);
+    }
+  if (POLY_INT_CST_P (max))
+    {
+      tree type_max = vrp_val_max (TREE_TYPE (max), true);
+      widest_int ub
+	= constant_upper_bound_with_limit (wi::to_poly_widest (max),
+					   wi::to_widest (type_max));
+      max = wide_int_to_tree (TREE_TYPE (max), ub);
+    }
+
   /* Nothing to canonicalize for symbolic ranges.  */
   if (TREE_CODE (min) != INTEGER_CST
       || TREE_CODE (max) != INTEGER_CST)
@@ -803,13 +818,13 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
 	  kind = VR_RANGE;
 	}
       else if (is_min
-	       /* As a special exception preserve non-null ranges.  */
-	       && !(TYPE_UNSIGNED (TREE_TYPE (min))
-		    && integer_zerop (max)))
+	       /* Allow non-zero pointers to be normalized to [1,MAX].  */
+	       || (POINTER_TYPE_P (TREE_TYPE (min))
+		   && integer_zerop (min)))
         {
 	  tree one = build_int_cst (TREE_TYPE (max), 1);
 	  min = int_const_binop (PLUS_EXPR, max, one);
-	  max = vrp_val_max (TREE_TYPE (max));
+	  max = vrp_val_max (TREE_TYPE (max), true);
 	  kind = VR_RANGE;
         }
       else if (is_max)
@@ -913,15 +928,21 @@ vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 	      && bitmap_equal_p (b1, b2)));
 }
 
+static bool
+range_has_numeric_bounds_p (const value_range_base *vr)
+{
+  return (vr->min ()
+	  && TREE_CODE (vr->min ()) == INTEGER_CST
+	  && TREE_CODE (vr->max ()) == INTEGER_CST);
+}
+
 /* Return true if max and min of VR are INTEGER_CST.  It's not necessary
    a singleton.  */
 
 bool
 range_int_cst_p (const value_range_base *vr)
 {
-  return (vr->kind () == VR_RANGE
-	  && TREE_CODE (vr->min ()) == INTEGER_CST
-	  && TREE_CODE (vr->max ()) == INTEGER_CST);
+  return (vr->kind () == VR_RANGE && range_has_numeric_bounds_p (vr));
 }
 
 /* Return true if VR is a INTEGER_CST singleton.  */
@@ -1631,7 +1652,7 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
   value_range_kind vr0_kind = vr0.kind (), vr1_kind = vr1.kind ();
   tree vr0_min = vr0.min (), vr0_max = vr0.max ();
   tree vr1_min = vr1.min (), vr1_max = vr1.max ();
-  tree min = NULL, max = NULL;
+  tree min = NULL_TREE, max = NULL_TREE;
 
   /* This will normalize things such that calculating
      [0,0] - VR_VARYING is not dropped to varying, but is
@@ -1694,18 +1715,19 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
       combine_bound (code, wmin, min_ovf, expr_type, min_op0, min_op1);
       combine_bound (code, wmax, max_ovf, expr_type, max_op0, max_op1);
 
-      /* If we have overflow for the constant part and the resulting
-	 range will be symbolic, drop to VR_VARYING.  */
-      if (((bool)min_ovf && sym_min_op0 != sym_min_op1)
-	  || ((bool)max_ovf && sym_max_op0 != sym_max_op1))
+      /* If the resulting range will be symbolic, we need to eliminate any
+	 explicit or implicit overflow introduced in the above computation
+	 because compare_values could make an incorrect use of it.  That's
+	 why we require one of the ranges to be a singleton.  */
+      if ((sym_min_op0 != sym_min_op1 || sym_max_op0 != sym_max_op1)
+	  && ((bool)min_ovf || (bool)max_ovf
+	      || (min_op0 != max_op0 && min_op1 != max_op1)))
 	{
 	  vr->set_varying (expr_type);
 	  return;
 	}
 
       /* Adjust the range for possible overflow.  */
-      min = NULL_TREE;
-      max = NULL_TREE;
       set_value_range_with_overflow (kind, min, max, expr_type,
 				     wmin, wmax, min_ovf, max_ovf);
       if (kind == VR_VARYING)
@@ -1763,119 +1785,102 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
     vr->set (kind, min, max);
 }
 
-/* Normalize a value_range for use in range_ops and return it.  */
+/* Return the range-ops handler for CODE and EXPR_TYPE.  If no
+   suitable operator is found, return NULL and set VR to VARYING.  */
 
-static value_range_base
-normalize_for_range_ops (const value_range_base &vr)
+static const range_operator *
+get_range_op_handler (value_range_base *vr,
+		      enum tree_code code,
+		      tree expr_type)
 {
-  tree type = vr.type ();
-
-  /* This will return ~[0,0] for [&var, &var].  */
-  if (POINTER_TYPE_P (type) && !range_includes_zero_p (&vr))
-    {
-      value_range_base temp;
-      temp.set_nonzero (type);
-      return temp;
-    }
-  if (vr.symbolic_p ())
-    return normalize_for_range_ops (vr.normalize_symbolics ());
-  if (TREE_CODE (vr.min ()) == INTEGER_CST
-      && TREE_CODE (vr.max ()) == INTEGER_CST)
-    return vr;
-  /* Anything not strictly numeric at this point becomes varying.  */
-  return value_range_base (vr.type ());
+  const range_operator *op = range_op_handler (code, expr_type);
+  if (!op)
+    vr->set_varying (expr_type);
+  return op;
 }
 
-/* Fold a binary expression of two value_range's with range-ops.  */
+/* If the types passed are supported, return TRUE, otherwise set VR to
+   VARYING and return FALSE.  */
 
-void
-range_fold_binary_expr (value_range_base *vr,
-			enum tree_code code,
-			tree expr_type,
-			const value_range_base *vr0_,
-			const value_range_base *vr1_)
+static bool
+supported_types_p (value_range_base *vr,
+		   tree type0,
+		   tree type1 = NULL)
 {
-  if (!value_range_base::supports_type_p (expr_type)
-      || (!vr0_->undefined_p ()
-	  && !value_range_base::supports_type_p (vr0_->type ()))
-      || (!vr1_->undefined_p ()
-	  && !value_range_base::supports_type_p (vr1_->type ())))
+  if (!value_range_base::supports_type_p (type0)
+      || (type1 && !value_range_base::supports_type_p (type1)))
     {
-      vr->set_varying (expr_type);
-      return;
+      vr->set_varying (type0);
+      return false;
     }
-  if (vr0_->undefined_p () && vr1_->undefined_p ())
+  return true;
+}
+
+/* If any of the ranges passed are defined, return TRUE, otherwise set
+   VR to UNDEFINED and return FALSE.  */
+
+static bool
+defined_ranges_p (value_range_base *vr,
+		  const value_range_base *vr0,
+		  const value_range_base *vr1 = NULL)
+{
+  if (vr0->undefined_p () && (!vr1 || vr1->undefined_p ()))
     {
       vr->set_undefined ();
-      return;
+      return false;
     }
-  range_operator *op = range_op_handler (code, expr_type);
-  if (!op)
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
+  return true;
+}
 
-  /* Mimic any behavior users of extract_range_from_binary_expr may
-     expect.  */
-  value_range_base vr0 = *vr0_, vr1 = *vr1_;
-  if (vr0.undefined_p ())
-    vr0.set_varying (expr_type);
-  else if (vr1.undefined_p ())
-    vr1.set_varying (expr_type);
+static value_range_base
+drop_undefines_to_varying (const value_range_base *vr, tree expr_type)
+{
+  if (vr->undefined_p ())
+    return value_range_base (expr_type);
+  else
+    return *vr;
+}
 
-  /* Handle symbolics.  */
-  if (vr0.symbolic_p () || vr1.symbolic_p ())
+/* If any operand is symbolic, perform a binary operation on them and
+   return TRUE, otherwise return FALSE.  */
+
+static bool
+range_fold_binary_symbolics_p (value_range_base *vr,
+			       tree_code code,
+			       tree expr_type,
+			       const value_range_base *vr0,
+			       const value_range_base *vr1)
+{
+  if (vr0->symbolic_p () || vr1->symbolic_p ())
     {
       if ((code == PLUS_EXPR || code == MINUS_EXPR))
 	{
-	  extract_range_from_plus_minus_expr (vr, code, expr_type,
-					      &vr0, &vr1);
-	  return;
+	  extract_range_from_plus_minus_expr (vr, code, expr_type, vr0, vr1);
+	  return true;
 	}
       if (POINTER_TYPE_P (expr_type) && code == POINTER_PLUS_EXPR)
 	{
-	  extract_range_from_pointer_plus_expr (vr, code, expr_type,
-						&vr0, &vr1);
-	  return;
+	  extract_range_from_pointer_plus_expr (vr, code, expr_type, vr0, vr1);
+	  return true;
 	}
+      const range_operator *op = get_range_op_handler (vr, code, expr_type);
+      *vr = op->fold_range (expr_type,
+			    vr0->normalize_symbolics (),
+			    vr1->normalize_symbolics ());
+      return true;
     }
-
-  /* Do the range-ops dance.  */
-  value_range_base n0 = normalize_for_range_ops (vr0);
-  value_range_base n1 = normalize_for_range_ops (vr1);
-  *vr = op->fold_range (expr_type, n0, n1);
+  return false;
 }
 
-/* Fold a unary expression of a value_range with range-ops.  */
+/* If operand is symbolic, perform a unary operation on it and return
+   TRUE, otherwise return FALSE.  */
 
-void
-range_fold_unary_expr (value_range_base *vr,
-		       enum tree_code code, tree expr_type,
-		       const value_range_base *vr0,
-		       tree vr0_type)
+static bool
+range_fold_unary_symbolics_p (value_range_base *vr,
+			      tree_code code,
+			      tree expr_type,
+			      const value_range_base *vr0)
 {
-  /* Mimic any behavior users of extract_range_from_unary_expr may
-     expect.  */
-  if (!value_range_base::supports_type_p (expr_type)
-      || !value_range_base::supports_type_p (vr0_type))
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
-  if (vr0->undefined_p ())
-    {
-      vr->set_undefined ();
-      return;
-    }
-  range_operator *op = range_op_handler (code, expr_type);
-  if (!op)
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
-
-  /* Handle symbolics.  */
   if (vr0->symbolic_p ())
     {
       if (code == NEGATE_EXPR)
@@ -1884,7 +1889,7 @@ range_fold_unary_expr (value_range_base *vr,
 	  value_range_base zero;
 	  zero.set_zero (vr0->type ());
 	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &zero, vr0);
-	  return;
+	  return true;
 	}
       if (code == BIT_NOT_EXPR)
 	{
@@ -1892,30 +1897,64 @@ range_fold_unary_expr (value_range_base *vr,
 	  value_range_base minusone;
 	  minusone.set (build_int_cst (vr0->type (), -1));
 	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
-	  return;
+	  return true;
 	}
+      const range_operator *op = get_range_op_handler (vr, code, expr_type);
       *vr = op->fold_range (expr_type,
-			    normalize_for_range_ops (*vr0),
+			    vr0->normalize_symbolics (),
 			    value_range_base (expr_type));
-      return;
+      return true;
     }
-  if (CONVERT_EXPR_CODE_P (code) && (POINTER_TYPE_P (expr_type)
-				     || POINTER_TYPE_P (vr0->type ())))
-    {
-      /* This handles symbolic conversions such such as [25, x_4].  */
-      if (!range_includes_zero_p (vr0))
-	vr->set_nonzero (expr_type);
-      else if (vr0->zero_p ())
-	vr->set_zero (expr_type);
-      else
-	vr->set_varying (expr_type);
-      return;
-    }
+  return false;
+}
 
-  /* Do the range-ops dance.  */
-  value_range_base n0 = normalize_for_range_ops (*vr0);
-  value_range_base n1 (expr_type);
-  *vr = op->fold_range (expr_type, n0, n1);
+/* Perform a binary operation on a pair of ranges.  */
+
+void
+range_fold_binary_expr (value_range_base *vr,
+			enum tree_code code,
+			tree expr_type,
+			const value_range_base *vr0_,
+			const value_range_base *vr1_)
+{
+  if (!supported_types_p (vr, expr_type)
+      || !defined_ranges_p (vr, vr0_, vr1_))
+    return;
+  const range_operator *op = get_range_op_handler (vr, code, expr_type);
+  if (!op)
+    return;
+
+  value_range_base vr0 = drop_undefines_to_varying (vr0_, expr_type);
+  value_range_base vr1 = drop_undefines_to_varying (vr1_, expr_type);
+  if (range_fold_binary_symbolics_p (vr, code, expr_type, &vr0, &vr1))
+    return;
+
+  *vr = op->fold_range (expr_type,
+			vr0.normalize_addresses (),
+			vr1.normalize_addresses ());
+}
+
+/* Perform a unary operation on a range.  */
+
+void
+range_fold_unary_expr (value_range_base *vr,
+		       enum tree_code code, tree expr_type,
+		       const value_range_base *vr0,
+		       tree vr0_type)
+{
+  if (!supported_types_p (vr, expr_type, vr0_type)
+      || !defined_ranges_p (vr, vr0))
+    return;
+  const range_operator *op = get_range_op_handler (vr, code, expr_type);
+  if (!op)
+    return;
+
+  if (range_fold_unary_symbolics_p (vr, code, expr_type, vr0))
+    return;
+
+  *vr = op->fold_range (expr_type,
+			vr0->normalize_addresses (),
+			value_range_base (expr_type));
 }
 
 /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,
@@ -6000,7 +6039,24 @@ value_range::union_ (const value_range *other)
     }
 }
 
-/* Normalize symbolics into constants.  */
+/* Normalize addresses into constants.  */
+
+value_range_base
+value_range_base::normalize_addresses () const
+{
+  if (!POINTER_TYPE_P (type ()) || range_has_numeric_bounds_p (this))
+    return *this;
+
+  if (!range_includes_zero_p (this))
+    {
+      gcc_checking_assert (TREE_CODE (m_min) == ADDR_EXPR
+			   || TREE_CODE (m_max) == ADDR_EXPR);
+      return range_nonzero (type ());
+    }
+  return value_range_base (type ());
+}
+
+/* Normalize symbolics and addresses into constants.  */
 
 value_range_base
 value_range_base::normalize_symbolics () const
@@ -6011,7 +6067,7 @@ value_range_base::normalize_symbolics () const
   bool min_symbolic = !is_gimple_min_invariant (min ());
   bool max_symbolic = !is_gimple_min_invariant (max ());
   if (!min_symbolic && !max_symbolic)
-    return *this;
+    return normalize_addresses ();
 
   // [SYM, SYM] -> VARYING
   if (min_symbolic && max_symbolic)

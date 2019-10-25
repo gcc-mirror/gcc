@@ -136,7 +136,7 @@
 #if __cplusplus > 201703L
 #include <bit>
 // #include <compare>
-// #include <concepts>
+#include <concepts>
 #include <numbers>
 // #include <ranges>
 #include <span>

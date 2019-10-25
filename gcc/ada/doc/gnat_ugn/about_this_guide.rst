@@ -90,11 +90,11 @@ following documents:
 * :title:`GNAT Reference_Manual`, which contains all reference material for the GNAT
   implementation of Ada.
 
-* :title:`Using the GNAT Programming Studio`, which describes the GPS
+* :title:`Using GNAT Studio`, which describes the GNAT Studio
   Integrated Development Environment.
 
-* :title:`GNAT Programming Studio Tutorial`, which introduces the
-  main GPS features through examples.
+* :title:`GNAT Studio Tutorial`, which introduces the
+  main GNAT Studio features through examples.
 
 * :title:`Debugging with GDB`,
   for all details on the use of the GNU source-level debugger.

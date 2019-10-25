@@ -47,3 +47,7 @@ test02()
 
 // In Debug Mode the "required from here" errors come from <debug/vector>
 // { dg-error "required from here" "" { target *-*-* } 163 }
+
+// Needed because of PR c++/92193
+// { dg-prune-output "deleted function" }
+// { dg-prune-output "private within this context" }

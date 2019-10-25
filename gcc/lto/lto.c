@@ -304,6 +304,14 @@ lto_wpa_write_files (void)
 
   timevar_push (TV_WHOPR_WPA_IO);
 
+  cgraph_node *node;
+  /* Do body modifications needed for streaming before we fork out
+     worker processes.  */
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    if (!node->clone_of && gimple_has_body_p (node->decl))
+      lto_prepare_function_for_streaming (node);
+
+  ggc_trim ();
   /* Generate a prefix for the LTRANS unit files.  */
   blen = strlen (ltrans_output_list);
   temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));
@@ -490,9 +498,9 @@ do_whole_program_analysis (void)
   else
     gcc_unreachable ();
 
-  /* Inline summaries are needed for balanced partitioning.  Free them now so
+  /* Size summaries are needed for balanced partitioning.  Free them now so
      the memory can be used for streamer caches.  */
-  ipa_free_fn_summary ();
+  ipa_free_size_summary ();
 
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */

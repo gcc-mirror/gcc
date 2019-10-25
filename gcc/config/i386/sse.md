@@ -9694,18 +9694,17 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512f_rndscale<mode><round_saeonly_name>"
+(define_insn "avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	    [(match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
 	     (match_operand:SI 3 "const_0_to_255_operand")]
 	    UNSPEC_ROUND)
-	  (match_dup 1)
+	  (match_operand:VF_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F"
-  "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|%0, %1, %<iptr>2<round_saeonly_op4>, %3}"
+  "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %<iptr>2<round_saeonly_scalar_mask_op4>, %3}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
@@ -17364,7 +17363,7 @@
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_SSE4_1 && <mask_avx512bw_condition> && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17421,7 +17420,7 @@
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17470,7 +17469,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17536,7 +17535,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17580,7 +17579,7 @@
 		       (const_int 2) (const_int 3)
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
-  "TARGET_AVX512F && can_create_pseudo_p ()"
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17627,7 +17626,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17694,7 +17693,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17741,7 +17740,7 @@
 		(const_int 1)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17805,7 +17804,7 @@
 		(const_int 0)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -18088,7 +18087,7 @@
 	   (match_dup 6)]
 	  UNSPEC_PCMPESTR))]
   "TARGET_SSE4_2
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -18224,7 +18223,7 @@
 	   (match_dup 4)]
 	  UNSPEC_PCMPISTR))]
   "TARGET_SSE4_2
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -19622,9 +19621,16 @@
    (set_attr "mode" "OI")])
 
 ;; Clear the upper 128bits of AVX registers, equivalent to a NOP
-;; if the upper 128bits are unused.
-(define_insn "avx_vzeroupper"
-  [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)]
+;; if the upper 128bits are unused.  Initially we expand the instructions
+;; as though they had no effect on the SSE registers, but later add SETs and
+;; CLOBBERs to the PARALLEL to model the real effect.
+(define_expand "avx_vzeroupper"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)])]
+  "TARGET_AVX")
+
+(define_insn "*avx_vzeroupper"
+  [(match_parallel 0 "vzeroupper_pattern"
+     [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)])]
   "TARGET_AVX"
   "vzeroupper"
   [(set_attr "type" "sse")

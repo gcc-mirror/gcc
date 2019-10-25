@@ -116,9 +116,9 @@ Running GDB
 
 This section describes how to initiate the debugger.
 
-The debugger can be launched from a ``GPS`` menu or
+The debugger can be launched from a ``GNAT Studio`` menu or
 directly from the command line. The description below covers the latter use.
-All the commands shown can be used in the ``GPS`` debug console window,
+All the commands shown can be used in the ``GNAT Studio`` debug console window,
 but there are usually more GUI-based ways to achieve the same effect.
 
 The command to run ``GDB`` is

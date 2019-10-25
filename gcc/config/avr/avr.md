@@ -344,7 +344,7 @@
   })
 
 
-;; Defining nonlocal_goto_receiver means we must also define this.
+;; Defining nonlocal_goto_receiver means we must also define this
 ;; even though its function is identical to that in builtins.c
 
 (define_expand "nonlocal_goto"

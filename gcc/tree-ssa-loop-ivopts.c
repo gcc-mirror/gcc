@@ -4089,6 +4089,94 @@ get_computation_at (class loop *loop, gimple *at,
   return fold_convert (type, aff_combination_to_tree (&aff));
 }
 
+/* Like get_computation_at, but try harder, even if the computation
+   is more expensive.  Intended for debug stmts.  */
+
+static tree
+get_debug_computation_at (class loop *loop, gimple *at,
+			  struct iv_use *use, struct iv_cand *cand)
+{
+  if (tree ret = get_computation_at (loop, at, use, cand))
+    return ret;
+
+  tree ubase = use->iv->base, ustep = use->iv->step;
+  tree cbase = cand->iv->base, cstep = cand->iv->step;
+  tree var;
+  tree utype = TREE_TYPE (ubase), ctype = TREE_TYPE (cbase);
+  widest_int rat;
+
+  /* We must have a precision to express the values of use.  */
+  if (TYPE_PRECISION (utype) >= TYPE_PRECISION (ctype))
+    return NULL_TREE;
+
+  /* Try to handle the case that get_computation_at doesn't,
+     try to express
+     use = ubase + (var - cbase) / ratio.  */
+  if (!constant_multiple_of (cstep, fold_convert (TREE_TYPE (cstep), ustep),
+			     &rat))
+    return NULL_TREE;
+
+  bool neg_p = false;
+  if (wi::neg_p (rat))
+    {
+      if (TYPE_UNSIGNED (ctype))
+	return NULL_TREE;
+      neg_p = true;
+      rat = wi::neg (rat);
+    }
+
+  /* If both IVs can wrap around and CAND doesn't have a power of two step,
+     it is unsafe.  Consider uint16_t CAND with step 9, when wrapping around,
+     the values will be ... 0xfff0, 0xfff9, 2, 11 ... and when use is say
+     uint8_t with step 3, those values divided by 3 cast to uint8_t will be
+     ... 0x50, 0x53, 0, 3 ... rather than expected 0x50, 0x53, 0x56, 0x59.  */
+  if (!use->iv->no_overflow
+      && !cand->iv->no_overflow
+      && !integer_pow2p (cstep))
+    return NULL_TREE;
+
+  int bits = wi::exact_log2 (rat);
+  if (bits == -1)
+    bits = wi::floor_log2 (rat) + 1;
+  if (!cand->iv->no_overflow
+      && TYPE_PRECISION (utype) + bits > TYPE_PRECISION (ctype))
+    return NULL_TREE;
+
+  var = var_at_stmt (loop, cand, at);
+
+  if (POINTER_TYPE_P (ctype))
+    {
+      ctype = unsigned_type_for (ctype);
+      cbase = fold_convert (ctype, cbase);
+      cstep = fold_convert (ctype, cstep);
+      var = fold_convert (ctype, var);
+    }
+
+  ubase = unshare_expr (ubase);
+  cbase = unshare_expr (cbase);
+  if (stmt_after_increment (loop, cand, at))
+    var = fold_build2 (MINUS_EXPR, TREE_TYPE (var), var,
+		       unshare_expr (cstep));
+
+  var = fold_build2 (MINUS_EXPR, TREE_TYPE (var), var, cbase);
+  var = fold_build2 (EXACT_DIV_EXPR, TREE_TYPE (var), var,
+		     wide_int_to_tree (TREE_TYPE (var), rat));
+  if (POINTER_TYPE_P (utype))
+    {
+      var = fold_convert (sizetype, var);
+      if (neg_p)
+	var = fold_build1 (NEGATE_EXPR, sizetype, var);
+      var = fold_build2 (POINTER_PLUS_EXPR, utype, ubase, var);
+    }
+  else
+    {
+      var = fold_convert (utype, var);
+      var = fold_build2 (neg_p ? MINUS_EXPR : PLUS_EXPR, utype,
+			 ubase, var);
+    }
+  return var;
+}
+
 /* Adjust the cost COST for being in loop setup rather than loop body.
    If we're optimizing for space, the loop setup overhead is constant;
    if we're optimizing for speed, amortize it over the per-iteration cost.
@@ -7523,6 +7611,7 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 	      struct iv_use dummy_use;
 	      struct iv_cand *best_cand = NULL, *cand;
 	      unsigned i, best_pref = 0, cand_pref;
+	      tree comp = NULL_TREE;
 
 	      memset (&dummy_use, 0, sizeof (dummy_use));
 	      dummy_use.iv = info->iv;
@@ -7543,18 +7632,20 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 		    ? 1 : 0;
 		  if (best_cand == NULL || best_pref < cand_pref)
 		    {
-		      best_cand = cand;
-		      best_pref = cand_pref;
+		      tree this_comp
+			= get_debug_computation_at (data->current_loop,
+						    SSA_NAME_DEF_STMT (def),
+						    &dummy_use, cand);
+		      if (this_comp)
+			{
+			  best_cand = cand;
+			  best_pref = cand_pref;
+			  comp = this_comp;
+			}
 		    }
 		}
 
 	      if (!best_cand)
-		continue;
-
-	      tree comp = get_computation_at (data->current_loop,
-					      SSA_NAME_DEF_STMT (def),
-					      &dummy_use, best_cand);
-	      if (!comp)
 		continue;
 
 	      if (count > 1)

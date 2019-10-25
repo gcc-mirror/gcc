@@ -194,6 +194,7 @@ extern bool prefixed_store_p (rtx_insn *);
 extern bool prefixed_paddi_p (rtx_insn *);
 extern void rs6000_asm_output_opcode (FILE *);
 extern void rs6000_final_prescan_insn (rtx_insn *, rtx [], int);
+extern int rs6000_adjust_insn_length (rtx_insn *, int);
 
 /* Return true if the address can be used for a prefixed load, store, or add
    immediate instructions that cannot be used with a non-prefixed instruction.

@@ -1271,7 +1271,7 @@ package body Sem_Ch7 is
 
       procedure Generate_Parent_References;
       --  For a child unit, generate references to parent units, for
-      --  GPS navigation purposes.
+      --  GNAT Studio navigation purposes.
 
       function Is_Public_Child (Child, Unit : Entity_Id) return Boolean;
       --  Child and Unit are entities of compilation units. True if Child

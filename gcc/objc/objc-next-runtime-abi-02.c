@@ -345,6 +345,8 @@ next_runtime_abi_02_init_metadata_attributes (void)
   meta_ehtype = get_identifier ("V2_EHTY");
 
   meta_const_str = get_identifier ("V2_CSTR");
+
+  meta_ivar_ref = get_identifier ("V2_IVRF");
 }
 
 static void next_runtime_02_initialize (void)
@@ -2795,8 +2797,8 @@ ivar_offset_ref (tree class_name, tree field_decl)
   else
     decl = create_hidden_decl (TREE_TYPE (size_zero_node), buf);
 
-  /* Make sure it ends up in an ObjC section.  */
-  OBJCMETA (decl, objc_meta, meta_base);
+  /* Identify so that we can indirect these where the ABI requires.  */
+  OBJCMETA (decl, objc_meta, meta_ivar_ref);
 
   e.decl = decl;
   e.offset = byte_position (field_decl);

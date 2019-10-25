@@ -317,7 +317,8 @@ interleave_supported_p (vec_perm_indices *indices, tree vectype,
    latter.  Return true on success, adding any new statements to SEQ.  */
 
 static bool
-vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
+vect_maybe_permute_loop_masks (loop_vec_info loop_vinfo, gimple_seq *seq,
+			       rgroup_masks *dest_rgm,
 			       rgroup_masks *src_rgm)
 {
   tree src_masktype = src_rgm->mask_type;
@@ -329,7 +330,7 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
     {
       /* Unpacking the source masks gives at least as many mask bits as
 	 we need.  We can then VIEW_CONVERT any excess bits away.  */
-      tree unpack_masktype = vect_halve_mask_nunits (src_masktype);
+      tree unpack_masktype = vect_halve_mask_nunits (loop_vinfo, src_masktype);
       for (unsigned int i = 0; i < dest_rgm->masks.length (); ++i)
 	{
 	  tree src = src_rgm->masks[i / 2];
@@ -689,7 +690,8 @@ vect_set_loop_condition_masked (class loop *loop, loop_vec_info loop_vinfo,
 	  {
 	    rgroup_masks *half_rgm = &(*masks)[nmasks / 2 - 1];
 	    if (!half_rgm->masks.is_empty ()
-		&& vect_maybe_permute_loop_masks (&header_seq, rgm, half_rgm))
+		&& vect_maybe_permute_loop_masks (loop_vinfo, &header_seq,
+						  rgm, half_rgm))
 	      continue;
 	  }
 
@@ -2966,9 +2968,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
    *COND_EXPR_STMT_LIST.  */
 
 class loop *
-vect_loop_versioning (loop_vec_info loop_vinfo,
-		      unsigned int th, bool check_profitability,
-		      poly_uint64 versioning_threshold)
+vect_loop_versioning (loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *nloop;
   class loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
@@ -2988,10 +2988,15 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   bool version_align = LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo);
   bool version_alias = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
   bool version_niter = LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo);
+  poly_uint64 versioning_threshold
+    = LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
   tree version_simd_if_cond
     = LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (loop_vinfo);
+  unsigned th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
 
-  if (check_profitability)
+  if (th >= vect_vf_for_cost (loop_vinfo)
+      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && !ordered_p (th, versioning_threshold))
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),
 					    th - 1));

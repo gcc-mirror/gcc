@@ -1,12 +1,12 @@
 /* { dg-do link } */
-/* { dg-options "--param allow-store-data-races=0" } */
+/* { dg-options "-fno-allow-store-data-races" } */
 /* { dg-final { simulate-thread } } */
 
 #include <stdio.h>
 #include "simulate-thread.h"
 
 /* This file tests that speculative store movement out of a loop doesn't 
-   happen.  This is disallowed when --param allow-store-data-races is 0.  */
+   happen.  This is disallowed when -fno-allow-store-data-races.  */
 
 int global = 100;
 

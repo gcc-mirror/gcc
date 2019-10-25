@@ -1142,8 +1142,8 @@ sem_function::merge (sem_item *alias_item)
 			 "cannot create wrapper of stdarg function.\n");
 	}
       else if (ipa_fn_summaries
-	       && ipa_fn_summaries->get (alias) != NULL
-	       && ipa_fn_summaries->get (alias)->self_size <= 2)
+	       && ipa_size_summaries->get (alias) != NULL
+	       && ipa_size_summaries->get (alias)->self_size <= 2)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf (MSG_MISSED_OPTIMIZATION, "Wrapper creation is not "
@@ -1688,13 +1688,10 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
   gcc_assert (bb1 != NULL);
   gcc_assert (bb2 != NULL);
 
-  si2 = gsi_start_phis (bb2);
-  for (si1 = gsi_start_phis (bb1); !gsi_end_p (si1);
-       gsi_next (&si1))
+  si2 = gsi_start_nonvirtual_phis (bb2);
+  for (si1 = gsi_start_nonvirtual_phis (bb1); !gsi_end_p (si1);
+       gsi_next_nonvirtual_phi (&si1))
     {
-      gsi_next_nonvirtual_phi (&si1);
-      gsi_next_nonvirtual_phi (&si2);
-
       if (gsi_end_p (si1) && gsi_end_p (si2))
 	break;
 
@@ -1731,7 +1728,7 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
 	    return return_false ();
 	}
 
-      gsi_next (&si2);
+      gsi_next_nonvirtual_phi (&si2);
     }
 
   return true;

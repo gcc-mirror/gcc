@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "tree-vector-builder.h"
 #include "gimple-fold.h"
+#include "escaped_string.h"
 
 /* Tree code classes.  */
 
@@ -9672,7 +9673,7 @@ dump_tree_statistics (void)
 	  {
 	    unsigned j = indices[i];
 	    fprintf (stderr, "%-20s %6" PRIu64 "%c %9" PRIu64 "%c\n",
-		     tree_node_kind_names[i], SIZE_AMOUNT (tree_node_counts[j]),
+		     tree_node_kind_names[j], SIZE_AMOUNT (tree_node_counts[j]),
 		     SIZE_AMOUNT (tree_node_sizes[j]));
 	    total_nodes += tree_node_counts[j];
 	    total_bytes += tree_node_sizes[j];
@@ -13224,22 +13225,6 @@ typedef_variant_p (const_tree type)
 {
   return is_typedef_decl (TYPE_NAME (type));
 }
-
-/* A class to handle converting a string that might contain
-   control characters, (eg newline, form-feed, etc), into one
-   in which contains escape sequences instead.  */
-
-class escaped_string
-{
- public:
-  escaped_string () { m_owned = false; m_str = NULL; };
-  ~escaped_string () { if (m_owned) free (m_str); }
-  operator const char *() const { return (const char *) m_str; }
-  void escape (const char *);
- private:
-  char *m_str;
-  bool  m_owned;
-};
 
 /* PR 84195: Replace control characters in "unescaped" with their
    escaped equivalents.  Allow newlines if -fmessage-length has
