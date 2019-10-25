@@ -177,8 +177,7 @@ typedef struct _slp_oprnd_info
      stmt.  */
   tree first_op_type;
   enum vect_def_type first_dt;
-  bool first_pattern;
-  bool second_pattern;
+  bool any_pattern;
 } *slp_oprnd_info;
 
 
@@ -199,8 +198,7 @@ vect_create_oprnd_info (int nops, int group_size)
       oprnd_info->ops.create (group_size);
       oprnd_info->first_dt = vect_uninitialized_def;
       oprnd_info->first_op_type = NULL_TREE;
-      oprnd_info->first_pattern = false;
-      oprnd_info->second_pattern = false;
+      oprnd_info->any_pattern = false;
       oprnds_info.quick_push (oprnd_info);
     }
 
@@ -339,13 +337,11 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
   tree oprnd;
   unsigned int i, number_of_oprnds;
   enum vect_def_type dt = vect_uninitialized_def;
-  bool pattern = false;
   slp_oprnd_info oprnd_info;
   int first_op_idx = 1;
   unsigned int commutative_op = -1U;
   bool first_op_cond = false;
   bool first = stmt_num == 0;
-  bool second = stmt_num == 1;
 
   if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
     {
@@ -418,13 +414,12 @@ again:
 	  return -1;
 	}
 
-      if (second)
-	oprnd_info->second_pattern = pattern;
+      if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
+	oprnd_info->any_pattern = true;
 
       if (first)
 	{
 	  oprnd_info->first_dt = dt;
-	  oprnd_info->first_pattern = pattern;
 	  oprnd_info->first_op_type = TREE_TYPE (oprnd);
 	}
       else
@@ -1311,7 +1306,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	      /* ???  Rejecting patterns this way doesn't work.  We'd have to
 		 do extra work to cancel the pattern so the uses see the
 		 scalar version.  */
-	      && !is_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (child)[0]))
+	      && !oprnd_info->any_pattern)
 	    {
 	      slp_tree grandchild;
 
@@ -1358,7 +1353,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  /* ???  Rejecting patterns this way doesn't work.  We'd have to
 	     do extra work to cancel the pattern so the uses see the
 	     scalar version.  */
-	  && !is_pattern_stmt_p (stmt_info))
+	  && !is_pattern_stmt_p (stmt_info)
+	  && !oprnd_info->any_pattern)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -1447,7 +1443,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		  /* ???  Rejecting patterns this way doesn't work.  We'd have
 		     to do extra work to cancel the pattern so the uses see the
 		     scalar version.  */
-		  && !is_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (child)[0]))
+		  && !oprnd_info->any_pattern)
 		{
 		  unsigned int j;
 		  slp_tree grandchild;
