@@ -1,6 +1,11 @@
 2019-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::core_vals): Check if template parm has a
+	canonical type before processing it.
+	(trees_in::tpl_parm_value): Likewise.
+
+	gcc/cp/
 	* module.cc (enum tree_tag): Delete tt_typename_decl.
 	(trees_out::decl_node): Do not handle TYPENAME_TYPE here ...
 	(trees_out::type_node): ... handle them here instead.

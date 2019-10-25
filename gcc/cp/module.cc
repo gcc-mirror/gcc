@@ -5532,7 +5532,7 @@ trees_out::core_vals (tree t)
       WT (t->type_common.main_variant);
 
       tree canonical = t->type_common.canonical;
-      if (DECL_TEMPLATE_PARM_P (TYPE_NAME (t)))
+      if (canonical && DECL_TEMPLATE_PARM_P (TYPE_NAME (t)))
 	/* We do not want to wander into different templates.
 	   Reconstructed on stream in.  */
 	canonical = t;
@@ -7061,7 +7061,11 @@ trees_in::tpl_parm_value ()
   if (type)
     {
       tree_node_vals (type);
-      TYPE_CANONICAL (type) = canonical_type_parameter (type);
+      if (TYPE_CANONICAL (type))
+	{
+	  gcc_checking_assert (TYPE_CANONICAL (type) == type);
+	  TYPE_CANONICAL (type) = canonical_type_parameter (type);
+	}
     }
 
   dump (dumper::TREE) && dump ("Read template parm:%d %C:%N",
