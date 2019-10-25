@@ -9673,7 +9673,7 @@ dump_tree_statistics (void)
 	  {
 	    unsigned j = indices[i];
 	    fprintf (stderr, "%-20s %6" PRIu64 "%c %9" PRIu64 "%c\n",
-		     tree_node_kind_names[i], SIZE_AMOUNT (tree_node_counts[j]),
+		     tree_node_kind_names[j], SIZE_AMOUNT (tree_node_counts[j]),
 		     SIZE_AMOUNT (tree_node_sizes[j]));
 	    total_nodes += tree_node_counts[j];
 	    total_bytes += tree_node_sizes[j];

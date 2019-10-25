@@ -1,3 +1,7 @@
+2019-10-25  Martin Liska  <mliska@suse.cz>
+
+	* tree.c (dump_tree_statistics): Use sorted index 'j' and not 'i'.
+
 2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop.c (vectorizable_reduction): Restrict the
