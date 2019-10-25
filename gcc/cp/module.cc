@@ -2488,28 +2488,20 @@ public:
   public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
     depset *current;         /* Current depset being depended.  */
-    bool for_mergeable;	     /* For mergeables.  */
     bool sneakoscope;        /* Detecting dark magic (of a voldemort
 				type).  */
     bool reached_unreached;  /* We reached an unreached entity.  */
 
   public:
-    hash (size_t size, bool for_merge = false)
+    hash (size_t size)
       : parent (size), current (NULL),
-	for_mergeable (for_merge), sneakoscope (false),
-	reached_unreached (false)
+	sneakoscope (false), reached_unreached (false)
     {
       worklist.create (size);
     }
     ~hash ()
     {
       worklist.release ();
-    }
-
-  public:
-    bool is_for_mergeable () const 
-    {
-      return for_mergeable;
     }
 
   private:
@@ -2522,8 +2514,6 @@ public:
     depset *find_binding (tree ctx, tree name);
 
   public:
-    void add_mergeable (depset *);
-    void add_mergeable_horcrux (depset *);
     depset *add_dependency (tree decl, entity_kind);
     depset *add_partial_redirect (depset *partial);
     bool add_binding (tree ns, tree value);
@@ -3017,12 +3007,6 @@ public:
   merge_kind get_merge_kind (depset *);
   tree get_container (tree decl);
   void key_mergeable (merge_kind, depset *, tree decl);
-
-public:
-  bool is_for_mergeable () const
-  {
-    return dep_hash->is_for_mergeable ();
-  }
 
 private:
   bool decl_node (tree, walk_kind ref);
@@ -9648,13 +9632,6 @@ trees_out::get_merge_kind (depset *dep)
 
   tree decl = dep->get_entity ();
 
-  if (dep_hash->for_mergeable && !streaming_p ())
-    {
-      /* When /determining/ mergeable ordering, there's an indirection.  */
-      gcc_assert (dep->is_special ());
-      dep = dep->deps[0];
-    }
-
   merge_kind mk = MK_named;
   switch (dep->get_entity_kind ())
     {
@@ -9752,13 +9729,6 @@ trees_out::get_container (tree decl)
 void
 trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
 {
-  if (dep && dep_hash->for_mergeable && !streaming_p ())
-    {
-      /* When /determining/ mergeable ordering, there's an indirection.  */
-      gcc_assert (dep->is_special ());
-      dep = dep->deps[0];
-    }
-
   if (streaming_p ())
     dump (dumper::MERGE)
       && dump ("Writing %s key for mergeable %s %C:%N", merge_kind_name[mk],
@@ -10946,17 +10916,13 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 			  == get_instantiating_module_decl (decl))
 			 == (ek != EK_UNNAMED));
 
-  depset **slot = entity_slot (decl, !is_for_mergeable ());
-  if (!slot)
-    return NULL;
+  depset **slot = entity_slot (decl, true);
   depset *dep = *slot;
   bool binding_p = current && current->is_binding ();
 
   if (!dep)
     {
-      bool has_def = (!is_for_mergeable ()
-		      && ek != EK_USING
-		      && has_definition (decl));
+      bool has_def = ek != EK_USING && has_definition (decl);
       bool maybe_spec = ek == EK_MAYBE_SPEC;
       if (maybe_spec)
 	{
@@ -11112,8 +11078,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	      tree c_decl = OVL_FUNCTION (current->get_entity ());
 
 	      if (TREE_CODE (c_decl) == CONST_DECL
-		  && DECL_CONTEXT (c_decl) == TREE_TYPE (decl)
-		  && !is_for_mergeable ())
+		  && DECL_CONTEXT (c_decl) == TREE_TYPE (decl))
 		/* Make DECL depend on CURRENT.  */
 		dep->deps.safe_push (current);
 	    }
@@ -11143,7 +11108,7 @@ depset::hash::add_binding (tree ns, tree value)
   current = make_binding (ns, NULL_TREE);
 
   tree name = NULL_TREE;
-  gcc_checking_assert (!is_for_mergeable () && TREE_PUBLIC (ns));
+  gcc_checking_assert (TREE_PUBLIC (ns));
   for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
@@ -11566,50 +11531,16 @@ depset::hash::find_dependencies ()
 	      tree decl = current->get_entity ();
 	      dump (dumper::DEPEND)
 		&& dump ("Dependencies of %s %C:%N",
-			 is_for_mergeable () ? "mergeable"
-			 : current->entity_kind_name (), TREE_CODE (decl), decl);
+			 current->entity_kind_name (), TREE_CODE (decl), decl);
 	      dump.indent ();
 	      walker.begin ();
-	      if (is_for_mergeable ())
-		{
-		  merge_kind mk = walker.get_merge_kind (current);
-		  tree container = walker.get_container (decl);
-		  walker.tree_node (container);
-		  unsigned tpl_parms = 0;
-		  if (TREE_CODE (decl) == TEMPLATE_DECL)
-		    walker.tpl_header (decl, &tpl_parms);
-		  if (TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL)
-		    walker.fn_parms_init (STRIP_TEMPLATE (decl));
-		  walker.key_mergeable (mk, current, decl);
-
-		  if (mk & MK_template_mask)
-		    /* We also want to make specializations of members
-		       depend on their container -- that might well be
-		       in the same SCC.  */
-		    walker.tree_node (CP_DECL_CONTEXT (decl));
-		}
-	      else if (current->get_entity_kind () == EK_USING)
+	      if (current->get_entity_kind () == EK_USING)
 		walker.tree_node (OVL_FUNCTION (decl));
 	      else if (TREE_VISITED (decl))
 		/* A global tree.  */;
 	      else
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
-
-#if 0
-		  if (current->get_entity_kind () == EK_SPECIALIZATION)
-		    {
-		      gcc_assert (current->is_special ());
-		      /* Even though specializations end up keyed to
-		         their primary template, we need to explicitly
-		         make them depend on both that and the
-		         args.  */
-		      spec_entry *entry
-			= reinterpret_cast <spec_entry *> (current->deps[0]);
-		      walker.tree_node (entry->tmpl);
-		      walker.tree_node (entry->args);
-		    }
-#endif
 
 		  /* Turn the Sneakoscope on when depending the decl.  */
 		  sneakoscope = true;
@@ -11636,53 +11567,6 @@ depset::hash::find_dependencies ()
     }
 
   unreached.release ();
-}
-
-/* Add a decl into the mergeable hash.  */
-
-void
-depset::hash::add_mergeable (depset *mergeable)
-{
-  gcc_checking_assert (is_for_mergeable () && !mergeable->is_binding ());
-  tree decl = mergeable->get_entity ();
-
-  /* All entities go into the table.  */
-  depset **slot = entity_slot (decl, true);
-  gcc_checking_assert (!*slot);
-  depset *dep = make_entity (decl, mergeable->get_entity_kind ());
-  *slot = dep;
-
-  /* Only add mergeable depsets for walking.  */
-  if (mergeable->is_mergeable ())
-    worklist.safe_push (dep);
-
-  /* So we can locate the mergeable depset this depset refers to,
-     mark the first dep.  */
-  dep->set_special ();
-  dep->deps.safe_push (mergeable);
-
-  if (mergeable->is_partial ())
-    add_partial_redirect (dep);
-}
-
-void
-depset::hash::add_mergeable_horcrux (depset *unnamed)
-{
-  gcc_checking_assert (is_for_mergeable ());
-  tree decl = unnamed->get_entity ();
-
-  /* All horcruxes go into the dependency table.  */
-  depset **slot = entity_slot (decl, true);
-  depset *dep = *slot;
-  if (dep)
-    gcc_checking_assert (!dep->is_special ());
-  else
-    {
-      dep = make_entity (decl, unnamed->get_entity_kind ());
-      *slot = dep;
-      if (unnamed->is_partial ())
-	add_partial_redirect (dep);
-    }
 }
 
 /* Compare two binding entries.  TYPE_DECL before non-exported before
@@ -11975,8 +11859,7 @@ depset::hash::connect ()
 	(v->is_binding ()
 	 ? dump ("Connecting binding %P", v->get_entity (), v->get_name ())
 	 : dump ("Connecting %s %s %C:%N",
-		 is_for_mergeable () ? "mergeable"
-		 : !v->has_defn () ? "declaration" : "definition",
+		 !v->has_defn () ? "declaration" : "definition",
 		 v->entity_kind_name (), TREE_CODE (v->get_entity ()),
 		 v->get_entity ()));
       if (!v->cluster)
@@ -13662,117 +13545,6 @@ enum ct_bind_flags
   cbf_wrapped = 0x8,  	/* ... that is wrapped.  */
 };
 
-/* Sort the mergeable entities in SCC such that those that depend on
-   one another are placed later.  The cluster must already have been
-   sorted via cluster_cmp, so the bindings and usings are last.  */
-
-static unsigned
-sort_mergeables (depset *scc[], unsigned size)
-{
-  depset::hash table (size, true);
-
-  dump.indent ();
-
-  unsigned lwm = size;
-  bool refs_unnamed = false;
-  for (unsigned ix = size; ix--;)
-    {
-      depset *dep = scc[ix];
-      switch (dep->get_entity_kind ())
-	{
-	case depset::EK_BINDING:
-	case depset::EK_USING:
-	  gcc_checking_assert (lwm == ix + 1);
-	  lwm = ix;
-	  break;
-
-	default:
-	  table.add_mergeable (dep);
-	  if (dep->refs_unnamed () && dep->is_mergeable ())
-	    refs_unnamed = true;
-	  break;
-	}
-    }
-
-  dump (dumper::MERGE) && dump ("Ordering %u depsets", lwm);
-
-  if (refs_unnamed)
-    /* Insert horcrux markers for the unnameable decls outside of the
-       mergeable set.  */
-    for (unsigned ix = lwm; ix--;)
-      {
-	depset *dep = scc[ix];
-	if (dep->refs_unnamed () && dep->is_mergeable ())
-	  {
-	    for (unsigned jx = dep->is_special ();
-		 jx != dep->deps.length (); jx++)
-	      {
-		depset *d = dep->deps[jx];
-		if ((d->get_entity_kind () == depset::EK_UNNAMED
-		     || d->get_entity_kind () == depset::EK_SPECIALIZATION
-		     || (d->get_entity_kind () == depset::EK_DECL
-			 && d->is_pseudo_spec ()))
-		    /* And not in this cluster. */
-		    && d->cluster)
-		  table.add_mergeable_horcrux (d);
-	      }
-	  }
-      }
-
-  table.find_dependencies ();
-
-  vec<depset *> order = table.connect ();
-
-  /* Now rewrite entries [0,lwm), in the dependency order we
-     discovered.  Usually each entity is in its own cluster.  Rarely,
-     we can get multi-entity clusters, in which case all but one must
-     only be reached from within the cluster.  This happens for
-     something like:
-
-     template<typename T>
-     auto Foo (const T &arg) -> TPL<decltype (arg)>;
-
-     The instantiation of TPL will be in the specialization table, and
-     refer to Foo via arg.  But we can only get to that specialization
-     from Foo's declaration, so we only need to treat Foo as mergable
-     (We'll do structural comparison of TPL<decltype (arg)>).
-
-     Finding the single cluster entry dep is very tricky and
-     expensive.  Let's just not do that.  It's harmless in this case
-     anyway. */
-  unsigned pos = 0;
-  unsigned count = 0;
-  unsigned cluster = ~0u;
-  for (unsigned ix = 0; ix != order.length (); ix++)
-    {
-      if (order[ix]->is_special ())
-	{
-	  depset *dep = order[ix]->deps[0];
-
-	  gcc_checking_assert (pos != lwm);
-	  scc[pos++] = dep;
-	  if (dep->is_mergeable ())
-	    count++;
-
-	  dump (dumper::MERGE) && dump ("%s %u is %N%s", dep->is_mergeable ()
-					? "Mergeable" : "Unique",
-					ix, dep->get_entity (),
-					order[ix]->cluster == cluster
-					? " (tight)" : "");
-	}
-
-      cluster = order[ix]->cluster;
-    }
-
-  gcc_checking_assert (pos == lwm);
-
-  order.release ();
-  dump (dumper::MERGE) && dump ("Ordered %u mergeables", count);
-  dump.outdent ();
-
-  return count;
-}
-
 /* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
    defns < decls < bindings.  Returns number of non-implicit template
    specializations. */
@@ -13787,11 +13559,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
-
-#if 0
-  /* Sort the cluster according to its mergeable entities.  */
-  sort_mergeables (scc, size);
-#endif
 
   if (dump (dumper::CLUSTER))
     {

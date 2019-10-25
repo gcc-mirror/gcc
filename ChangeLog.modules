@@ -1,3 +1,17 @@
+2019-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	Remove mergeable sorting code.
+	gcc/cp/
+	* module.cc (depset::hash): Delete for_mergeable,
+	is_for_mergeable.
+	(depset::hash::add_mergeable{,_horcrux}): Delete.
+	(trees_out::get_merge_kind): Remove for_mergeable indirection.
+	(trees_out::key_mergeable): Likewise.
+	(depset::hash::add_dependency): Remove mergeable handling.
+	(depset::hash::find_dependencies): Likewise.  Remove #if'd out code.
+	(sort_mergeables): Delete.
+	(module_state::write_cluster): Remove #if'd out code.
+
 2019-10-24  Nathan Sidwell  <nathan@acm.org>
 
 	Turn off mergeable ordering.
