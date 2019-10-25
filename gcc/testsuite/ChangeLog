@@ -1,5 +1,10 @@
 2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/reduc_strict_3.c (double_reduc1): Prevent
+	the loop from being unrolled.
+
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/loop_add_5.c: Remove XFAILs for tests
 	that now pass.
 	* gcc.target/aarch64/sve/reduc_1.c: Likewise.
