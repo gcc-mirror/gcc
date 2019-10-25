@@ -1,5 +1,8 @@
 2019-10-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::decl_node): Fixup anonymous case.
+
 	Remove mergeable sorting code.
 	gcc/cp/
 	* module.cc (depset::hash): Delete for_mergeable,

@@ -8109,26 +8109,19 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
 	if (name && IDENTIFIER_ANON_P (name))
 	  {
-	    // FIXME: Probably wonky with streaming the TYPE_NAME always
 	    if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	      {
 		gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl) && code == tt_named);
-		proxy = TYPE_NAME (TREE_TYPE (decl));
+		// FIXME: what about namespace-scope anon classes?
+		gcc_checking_assert (TREE_CODE (TREE_TYPE (decl))
+				     == ENUMERAL_TYPE);
+		proxy = TYPE_VALUES (TREE_TYPE (decl));
+		/* If the values list is empty, then the enum is
+		   empty.  As it's anonymous, how did we manage to
+		   refer to it?  */
+		gcc_checking_assert (proxy);
+		proxy = TREE_VALUE (proxy);
 		name = DECL_NAME (proxy);
-		if (IDENTIFIER_ANON_P (name))
-		  {
-		    // FIXME: what about namespace-scope anon classes?
-		    gcc_checking_assert (TREE_CODE (TREE_TYPE (decl))
-					 == ENUMERAL_TYPE);
-		    proxy = TYPE_VALUES (TREE_TYPE (decl));
-		    /* If the values list is empty, then the enum is
-	  	       empty.  As it's anonymous, how did we manage to
-	  	       refer to it?  */
-		    gcc_checking_assert (proxy);
-		    proxy = TREE_VALUE (proxy);
-		    name = DECL_NAME (proxy);
-		  }
-		gcc_checking_assert (TYPE_STUB_DECL (TREE_TYPE (proxy)) == decl);
 		code = tt_anon;
 	      }
 	    else
