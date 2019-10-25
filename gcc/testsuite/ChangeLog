@@ -1,3 +1,8 @@
+2019-10-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr70100.c: Add -mvsx.
+	Allow AIX ABI function name.
+
 2019-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92222
