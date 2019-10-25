@@ -1,5 +1,10 @@
 2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/policy_data_structures_biblio.xml: Switch
+	pubs.opengroup.org to https.
+
+2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/xml/gnu/gpl-3.0.xml: Switch www.gnu.org to https.
 
 2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
