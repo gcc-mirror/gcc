@@ -1,3 +1,8 @@
+2019-10-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91581 - ICE in exception-specification of defaulted ctor.
+	* g++.dg/cpp0x/noexcept55.C: New test.
+
 2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
