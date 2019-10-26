@@ -1,3 +1,10 @@
+2019-10-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91289
+	* config/rs6000/rs6000-logue.c (rs6000_emit_allocate_stack): Don't add
+	an immediate to r0; use r11 instead.  Save and restore r11 to r0 around
+	this.
+
 2019-10-26  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* config/i386/sse.md
