@@ -2035,6 +2035,25 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "SF")])
 
+(define_insn "*sse_vmrcpv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,x")
+	(vec_merge:V4SF
+	  (vec_duplicate:V4SF
+	    (unspec:SF [(match_operand:SF 1 "nonimmediate_operand" "xm,xm")]
+		         UNSPEC_RCP))
+	  (match_operand:V4SF 2 "register_operand" "0,x")
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   rcpss\t{%1, %0|%0, %1}
+   vrcpss\t{%1, %2, %0|%0, %2, %1}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "atom_sse_attr" "rcp")
+   (set_attr "btver2_sse_attr" "rcp")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "SF")])
+
 (define_insn "<mask_codefor>rcp14<mode><mask_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
 	(unspec:VF_AVX512VL
@@ -2130,6 +2149,25 @@
    (set_attr "btver2_sse_attr" "sqrt")
    (set_attr "mode" "<ssescalarmode>")])
 
+(define_insn "*<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (sqrt:<ssescalarmode>
+	      (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "xm,<round_scalar_constraint>")))
+	  (match_operand:VF_128 2 "register_operand" "0,v")
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   sqrt<ssescalarmodesuffix>\t{%1, %0|%0, %1}
+   vsqrt<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %1<round_scalar_mask_op3>}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "atom_sse_attr" "sqrt")
+   (set_attr "prefix" "<round_scalar_prefix>")
+   (set_attr "btver2_sse_attr" "sqrt")
+   (set_attr "mode" "<ssescalarmode>")])
+
 (define_expand "rsqrt<mode>2"
   [(set (match_operand:VF1_128_256 0 "register_operand")
 	(unspec:VF1_128_256
@@ -2214,6 +2252,23 @@
   "@
    rsqrtss\t{%1, %0|%0, %k1}
    vrsqrtss\t{%1, %2, %0|%0, %2, %k1}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "SF")])
+
+(define_insn "*sse_vmrsqrtv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,x")
+	(vec_merge:V4SF
+	  (vec_duplicate:V4SF
+	    (unspec:SF [(match_operand:SF 1 "nonimmediate_operand" "xm,xm")]
+		         UNSPEC_RSQRT))
+	  (match_operand:V4SF 2 "register_operand" "0,x")
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   rsqrtss\t{%1, %0|%0, %1}
+   vrsqrtss\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "prefix" "orig,vex")
@@ -9705,6 +9760,22 @@
 	  (const_int 1)))]
   "TARGET_AVX512F"
   "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %<iptr>2<round_saeonly_scalar_mask_op4>, %3}"
+  [(set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_rndscale<mode><round_saeonly_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (unspec:<ssescalarmode>
+	      [(match_operand:<ssescalarmode> 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	       (match_operand:SI 3 "const_0_to_255_operand")]
+	      UNSPEC_ROUND))
+          (match_operand:VF_128 1 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|%0, %1, %2<round_saeonly_op4>, %3}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
@@ -17954,9 +18025,33 @@
   [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x,v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 2 "register_operand" "Yr,*x,x,v")
+	    [(match_operand:VF_128 2 "nonimmediate_operand" "Yrm,*xm,xm,vm")
 	     (match_operand:SI 3 "const_0_to_15_operand" "n,n,n,n")]
 	    UNSPEC_ROUND)
+	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
+	  (const_int 1)))]
+  "TARGET_SSE4_1"
+  "@
+   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}
+   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}
+   vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}
+   vrndscale<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx,avx512f")
+   (set_attr "type" "ssecvt")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex,evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*sse4_1_round<ssescalarmodesuffix>"
+  [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x,v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (unspec:<ssescalarmode>
+	      [(match_operand:<ssescalarmode> 2 "nonimmediate_operand" "Yrm,*xm,xm,vm")
+	       (match_operand:SI 3 "const_0_to_15_operand" "n,n,n,n")]
+	      UNSPEC_ROUND))
 	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
   "TARGET_SSE4_1"
