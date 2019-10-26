@@ -1,3 +1,9 @@
+2019-10-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Switch pubs.opengroup.org to https.
+	* doc/xml/manual/locale.xml (LC_ALL): Ditto.
+	* doc/xml/manual/messages.xml: Ditto.
+	
 2019-10-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
