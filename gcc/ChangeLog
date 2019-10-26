@@ -1,5 +1,50 @@
 2019-10-26  Hongtao Liu  <hongtao.liu@intel.com>
 
+	* config/i386/sse.md
+	(<sse>_vm<plusminus_insn><mode>3<mask_scalar_name><round_scalar_name>,
+	<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name><round_scalar_name>,
+	<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>,
+	<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>,
+	<sse>_vmmaskcmp<mode>3):
+	Change predicates from vector_operand to nonimmediate_operand,
+	constraints xBm to xm, since scalar operations don't need
+	memory address alignment.
+	(avx512f_vmcmp<mode>3<round_saeonly_name>,
+	avx512f_vmcmp<mode>3_mask<round_saeonly_name>): Replace
+	round_saeonly_nimm_predicate with
+	round_saeonly_nimm_scalar_predicate.
+	(fmai_vmfmadd_<mode><round_name>, fmai_vmfmsub_<mode><round_name>,
+	fmai_vmfnmadd_<mode><round_name>,fmai_vmfnmsub_<mode><round_name>,
+	*fmai_fmadd_<mode>, *fmai_fmsub_<mode>,
+	*fmai_fnmadd_<mode><round_name>, *fmai_fnmsub_<mode><round_name>,
+	avx512f_vmfmadd_<mode>_mask3<round_name>,
+	avx512f_vmfmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfmsub_<mode>_mask<round_name>,
+	avx512f_vmfmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfmsub_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask3<round_name>,
+	*avx512f_vmfnmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmsub_<mode>_mask<round_name>,
+	*avx512f_vmfnmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfnmsub_<mode>_maskz_1<round_name>,
+	cvtusi2<ssescalarmodesuffix>32<round_name>,
+	cvtusi2<ssescalarmodesuffix>64<round_name>, ): Replace
+	round_nimm_predicate with round_nimm_scalr_predicate.
+	(avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>,
+	avx512f_sfixupimm<mode>_mask<round_saeonly_name>,
+	avx512er_vmrcp28<mode><round_saeonly_name>,
+	avx512er_vmrsqrt28<mode><round_saeonly_name>,
+	): Replace round_saeonly_nimm_predicate with
+	round_saeonly_nimm_scalar_predicate.
+	(avx512dq_vmfpclass<mode><mask_scalar_merge_name>): Replace
+	vector_operand with nonimmediate_operand.
+	* config/i386/subst.md (round_scalar_nimm_predicate,
+	round_saeonly_scalar_nimm_predicate): Replace
+	vector_operand with nonimmediate_operand.
+
+2019-10-26  Hongtao Liu  <hongtao.liu@intel.com>
+
 	PR target/89071
 	* config/i386/i386.md (*rcpsf2_sse): Add
 	avx_partial_xmm_update, prefer m constraint for TARGET_AVX.
