@@ -61,23 +61,23 @@ static void collect_dfa_stats (struct dfa_stats_d *);
 /* Renumber all of the gimple stmt uids.  */
 
 void
-renumber_gimple_stmt_uids (void)
+renumber_gimple_stmt_uids (struct function *fun)
 {
   basic_block bb;
 
-  set_gimple_stmt_max_uid (cfun, 0);
-  FOR_ALL_BB_FN (bb, cfun)
+  set_gimple_stmt_max_uid (fun, 0);
+  FOR_ALL_BB_FN (bb, fun)
     {
       gimple_stmt_iterator bsi;
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  gimple *stmt = gsi_stmt (bsi);
-	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fun));
 	}
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  gimple *stmt = gsi_stmt (bsi);
-	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fun));
 	}
     }
 }
