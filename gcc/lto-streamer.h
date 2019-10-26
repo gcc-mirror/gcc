@@ -879,6 +879,7 @@ void lto_output_decl_state_refs (struct output_block *,
 			         struct lto_out_decl_state *);
 void lto_output_location (struct output_block *, struct bitpack_d *, location_t);
 void lto_output_init_mode_table (void);
+void lto_prepare_function_for_streaming (cgraph_node *);
 
 
 /* In lto-cgraph.c  */

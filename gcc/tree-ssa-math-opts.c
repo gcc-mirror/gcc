@@ -3840,7 +3840,7 @@ pass_optimize_widening_mul::execute (function *fun)
 
   memset (&widen_mul_stats, 0, sizeof (widen_mul_stats));
   calculate_dominance_info (CDI_DOMINATORS);
-  renumber_gimple_stmt_uids ();
+  renumber_gimple_stmt_uids (cfun);
 
   math_opts_dom_walker (&cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
