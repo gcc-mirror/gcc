@@ -1907,6 +1907,7 @@ fixup_type_variants (tree t)
 	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
 
       TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
+      CLASSTYPE_FINAL (variants) = CLASSTYPE_FINAL (t);
 
       TYPE_BINFO (variants) = TYPE_BINFO (t);
 
