@@ -1,3 +1,22 @@
+2019-10-26  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89071
+	* config/i386/i386.md (*rcpsf2_sse): Add
+	avx_partial_xmm_update, prefer m constraint for TARGET_AVX.
+	(*rsqrtsf2_sse): Ditto.
+	(*sqrt<mode>2_sse): Ditto.
+	(sse4_1_round<mode>2): separate constraint vm, add
+	avx_partail_xmm_update, prefer m constraint for TARGET_AVX.
+	* config/i386/sse.md (*sse_vmrcpv4sf2"): New define_insn used
+	by pass rpad.
+	(*<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>*):
+	Ditto.
+	(*sse_vmrsqrtv4sf2): Ditto.
+	(*avx512f_rndscale<mode><round_saeonly_name>): Ditto.
+	(*sse4_1_round<ssescalarmodesuffix>): Ditto.
+	(sse4_1_round<ssescalarmodesuffix>): Add m constraint and
+	<iptr> pointer size modifier since vround support memory operand.
+
 2019-10-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/85969
