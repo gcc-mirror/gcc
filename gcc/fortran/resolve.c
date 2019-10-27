@@ -16777,8 +16777,8 @@ resolve_equivalence (gfc_equiv *eq)
 }
 
 
-/* Function called by resolve_fntype to flag other symbol used in the
-   length type parameter specification of function resuls.  */
+/* Function called by resolve_fntype to flag other symbols used in the
+   length type parameter specification of function results.  */
 
 static bool
 flag_fn_result_spec (gfc_expr *expr,
