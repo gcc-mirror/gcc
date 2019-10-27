@@ -1,3 +1,10 @@
+2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/86248
+	* gfortran.dg/char_result_19.f90 : New test.
+	* gfortran.dg/char_result_mod_19.f90 : Module for the new test.
+
 2019-10-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN):Guard
