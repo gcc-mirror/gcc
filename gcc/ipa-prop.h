@@ -457,7 +457,6 @@ static inline tree
 ipa_get_param (class ipa_node_params *info, int i)
 {
   gcc_checking_assert (info->descriptors);
-  gcc_checking_assert (!flag_wpa);
   tree t = (*info->descriptors)[i].decl_or_type;
   gcc_checking_assert (TREE_CODE (t) == PARM_DECL);
   return t;

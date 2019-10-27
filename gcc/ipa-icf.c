@@ -1266,6 +1266,7 @@ sem_function::merge (sem_item *alias_item)
 
       /* Remove the function's body.  */
       ipa_merge_profiles (original, alias);
+      symtab->call_cgraph_removal_hooks (alias);
       alias->release_body (true);
       alias->reset ();
       /* Notice global symbol possibly produced RTL.  */
@@ -1287,11 +1288,13 @@ sem_function::merge (sem_item *alias_item)
     {
       gcc_assert (!create_alias);
       alias->icf_merged = true;
+      symtab->call_cgraph_removal_hooks (alias);
       local_original->icf_merged = true;
 
       /* FIXME update local_original counts.  */
       ipa_merge_profiles (original, alias, true);
       alias->create_wrapper (local_original);
+      symtab->call_cgraph_insertion_hooks (alias);
 
       if (dump_enabled_p ())
 	dump_printf (MSG_OPTIMIZED_LOCATIONS,
