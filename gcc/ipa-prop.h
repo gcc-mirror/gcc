@@ -640,6 +640,11 @@ class GTY((user)) ipa_edge_args_sum_t : public call_summary <ipa_edge_args *>
   ipa_edge_args_sum_t (symbol_table *table, bool ggc)
     : call_summary<ipa_edge_args *> (table, ggc) { }
 
+  void remove (cgraph_edge *edge)
+  {
+    call_summary <ipa_edge_args *>::remove (edge);
+  }
+
   /* Hook that is called by summary when an edge is removed.  */
   virtual void remove (cgraph_edge *cs, ipa_edge_args *args);
   /* Hook that is called by summary when an edge is duplicated.  */
@@ -679,7 +684,8 @@ extern GTY(()) function_summary <ipcp_transformation *> *ipcp_transformation_sum
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
 #define IPA_NODE_REF(NODE) (ipa_node_params_sum->get_create (NODE))
-#define IPA_EDGE_REF(EDGE) (ipa_edge_args_sum->get_create (EDGE))
+#define IPA_EDGE_REF(EDGE) (ipa_edge_args_sum->get (EDGE))
+#define IPA_EDGE_REF_GET_CREATE(EDGE) (ipa_edge_args_sum->get_create (EDGE))
 /* This macro checks validity of index returned by
    ipa_get_param_decl_index function.  */
 #define IS_VALID_JUMP_FUNC_INDEX(I) ((I) != -1)

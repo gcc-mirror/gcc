@@ -1,5 +1,25 @@
 2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-cp.c (propagate_constants_across_call): If args are not available
+	just drop everything to varying.
+	(find_aggregate_values_for_callers_subset): Watch for missing
+	edge summary.
+	(find_more_scalar_values_for_callers_subs): Likewise.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge,
+	update_jump_functions_after_inlining, propagate_controlled_uses):
+	Watch for missing summaries.
+	(ipa_propagate_indirect_call_infos): Remove summary after propagation
+	is finished.
+	(ipa_write_node_info): Watch for missing summaries.
+	(ipa_read_edge_info): Create new ref.
+	(ipa_edge_args_sum_t): Add remove.
+	(IPA_EDGE_REF_GET_CREATE): New macro.
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Watch for missing
+	edge summary.
+	(remap_edge_change_prob): Likewise.
+
+2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-transform.c (inline_call): update function summaries
 	after expanidng thunk.
 
