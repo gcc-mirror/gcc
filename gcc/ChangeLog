@@ -1,3 +1,10 @@
+2019-10-27  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*<sse>_vm<plusminus_insn><mode>3,
+	<sse>_vm<multdiv_mnemonic><mode>3): Remove <iptr> since
+	operand already has scalar mode.
+	(iptr): Remove SF/DF.
+
 2019-10-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91289
