@@ -1854,7 +1854,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 				     struct cgraph_edge *cs)
 {
   class ipa_node_params *info = IPA_NODE_REF (cs->caller);
-  class ipa_edge_args *args = IPA_EDGE_REF (cs);
+  class ipa_edge_args *args = IPA_EDGE_REF_GET_CREATE (cs);
   gcall *call = cs->call_stmt;
   int n, arg_num = gimple_call_num_args (call);
   bool useful_context = false;
@@ -2652,6 +2652,8 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 {
   class ipa_edge_args *top = IPA_EDGE_REF (cs);
   class ipa_edge_args *args = IPA_EDGE_REF (e);
+  if (!args)
+    return;
   int count = ipa_get_cs_argument_count (args);
   int i;
 
@@ -3575,6 +3577,8 @@ static void
 propagate_controlled_uses (struct cgraph_edge *cs)
 {
   class ipa_edge_args *args = IPA_EDGE_REF (cs);
+  if (!args)
+    return;
   struct cgraph_node *new_root = cs->caller->global.inlined_to
     ? cs->caller->global.inlined_to : cs->caller;
   class ipa_node_params *new_root_info = IPA_NODE_REF (new_root);
@@ -3702,6 +3706,7 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 
   propagate_controlled_uses (cs);
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+  ipa_edge_args_sum->remove (cs);
 
   return changed;
 }
@@ -4380,6 +4385,12 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     {
       class ipa_edge_args *args = IPA_EDGE_REF (e);
 
+      if (!args)
+	{
+	  streamer_write_uhwi (ob, 0);
+	  continue;
+	}
+
       streamer_write_uhwi (ob,
 			   ipa_get_cs_argument_count (args) * 2
 			   + (args->polymorphic_call_contexts != NULL));
@@ -4393,15 +4404,19 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
       class ipa_edge_args *args = IPA_EDGE_REF (e);
-
-      streamer_write_uhwi (ob,
-			   ipa_get_cs_argument_count (args) * 2
-  			   + (args->polymorphic_call_contexts != NULL));
-      for (j = 0; j < ipa_get_cs_argument_count (args); j++)
+      if (!args)
+	streamer_write_uhwi (ob, 0);
+      else
 	{
-	  ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
-	  if (args->polymorphic_call_contexts != NULL)
-	    ipa_get_ith_polymorhic_call_context (args, j)->stream_out (ob);
+	  streamer_write_uhwi (ob,
+			       ipa_get_cs_argument_count (args) * 2
+			       + (args->polymorphic_call_contexts != NULL));
+	  for (j = 0; j < ipa_get_cs_argument_count (args); j++)
+	    {
+	      ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
+	      if (args->polymorphic_call_contexts != NULL)
+		ipa_get_ith_polymorhic_call_context (args, j)->stream_out (ob);
+	    }
 	}
       ipa_write_indirect_edge_info (ob, e);
     }
@@ -4422,7 +4437,7 @@ ipa_read_edge_info (class lto_input_block *ib,
     return;
   if (prevails && e->possibly_call_in_translation_unit_p ())
     {
-      class ipa_edge_args *args = IPA_EDGE_REF (e);
+      class ipa_edge_args *args = IPA_EDGE_REF_GET_CREATE (e);
       vec_safe_grow_cleared (args->jump_functions, count);
       if (contexts_computed)
 	vec_safe_grow_cleared (args->polymorphic_call_contexts, count);

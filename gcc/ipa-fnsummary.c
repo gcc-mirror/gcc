@@ -452,6 +452,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
   vec<tree> known_vals = vNULL;
   vec<ipa_agg_jump_function_p> known_aggs = vNULL;
+  class ipa_edge_args *args;
 
   if (clause_ptr)
     *clause_ptr = inline_p ? 0 : 1 << predicate::not_inlined_condition;
@@ -462,10 +463,10 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 
   if (ipa_node_params_sum
       && !e->call_stmt_cannot_inline_p
-      && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr))
+      && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr)
+      && (args = IPA_EDGE_REF (e)) != NULL)
     {
       class ipa_node_params *caller_parms_info, *callee_pi;
-      class ipa_edge_args *args = IPA_EDGE_REF (e);
       class ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
 
@@ -3160,6 +3161,8 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
     {
       int i;
       class ipa_edge_args *args = IPA_EDGE_REF (edge);
+      if (!args)
+	return;
       class ipa_call_summary *es = ipa_call_summaries->get (edge);
       class ipa_call_summary *inlined_es
 	= ipa_call_summaries->get (inlined_edge);
