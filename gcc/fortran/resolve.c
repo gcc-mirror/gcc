@@ -7005,6 +7005,10 @@ gfc_expr_to_initialize (gfc_expr *e)
   for (ref = result->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->next == NULL)
       {
+	if (ref->u.ar.dimen == 0
+	    && ref->u.ar.as && ref->u.ar.as->corank)
+	  return result;
+
 	ref->u.ar.type = AR_FULL;
 
 	for (i = 0; i < ref->u.ar.dimen; i++)
@@ -15948,8 +15952,8 @@ resolve_equivalence (gfc_equiv *eq)
 }
 
 
-/* Function called by resolve_fntype to flag other symbol used in the
-   length type parameter specification of function resuls.  */
+/* Function called by resolve_fntype to flag other symbols used in the
+   length type parameter specification of function results.  */
 
 static bool
 flag_fn_result_spec (gfc_expr *expr,
