@@ -1,3 +1,8 @@
+2019-10-27  Eric Botcazou <ebotcazou@adacore.com>
+
+	* cgraph.c (cgraph_node::rtl_info): Fix cut&pasto in comment.
+	* cgraph.h (cgraph_node::rtl_info): Likewise.
+
 2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (propagate_constants_across_call): If args are not available
