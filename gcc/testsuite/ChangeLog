@@ -1,3 +1,9 @@
+2019-10-27  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gcc.c-torture/execute/fprintf-2.c: Silence a Free/NetBSD libc warning.
+	* gcc.c-torture/execute/printf-2.c: Likewise.
+	* gcc.c-torture/execute/user-printf.c: Likewise.
+
 2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86248
