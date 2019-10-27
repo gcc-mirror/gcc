@@ -1,3 +1,8 @@
+2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::merge): Update function summaries.
+	* ipa-prop.h (ipa_get_param): Do not sanity check for WPA.
+
 2019-10-27  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* config/i386/sse.md (*<sse>_vm<plusminus_insn><mode>3,
