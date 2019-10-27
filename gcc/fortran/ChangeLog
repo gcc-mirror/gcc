@@ -1,3 +1,15 @@
+2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86248
+	* resolve.c (flag_fn_result_spec): Correct a typo before the
+	function declaration.
+	* trans-decl.c (gfc_sym_identifier): Boost the length of 'name'
+	to allow for all variants. Simplify the code by using a pointer
+	to the symbol's proc_name and taking the return out of each of
+	the conditional branches. Allow symbols with fn_result_spec set
+	that do not come from a procedure namespace and have a module
+	name to go through the non-fn_result_spec branch.
+
 2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
@@ -23,7 +35,7 @@
 
 	PR fortran/92174
 	* decl.c (attr_decl1): Move check for F2018:C822 from here ...
-	* array.c (gfc_set_array_spec): ... to here. 
+	* array.c (gfc_set_array_spec): ... to here.
 
 2019-10-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
