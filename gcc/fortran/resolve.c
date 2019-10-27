@@ -1866,7 +1866,7 @@ resolve_procedure_expression (gfc_expr* expr)
 
 
 /* Check that name is not a derived type.  */
- 
+
 static bool
 is_dt_name (const char *name)
 {
@@ -13539,7 +13539,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
     }
   else
     {
-      /* If proc has not been resolved at this point, proc->name may 
+      /* If proc has not been resolved at this point, proc->name may
 	 actually be a USE associated entity. See PR fortran/89647. */
       if (!proc->resolved
 	  && proc->attr.function == 0 && proc->attr.subroutine == 0)
@@ -16554,8 +16554,8 @@ resolve_equivalence (gfc_equiv *eq)
 }
 
 
-/* Function called by resolve_fntype to flag other symbol used in the
-   length type parameter specification of function resuls.  */
+/* Function called by resolve_fntype to flag other symbols used in the
+   length type parameter specification of function results.  */
 
 static bool
 flag_fn_result_spec (gfc_expr *expr,
