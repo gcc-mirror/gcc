@@ -3706,7 +3706,6 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 
   propagate_controlled_uses (cs);
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
-  ipa_edge_args_sum->remove (cs);
 
   return changed;
 }
