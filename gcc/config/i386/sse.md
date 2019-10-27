@@ -850,8 +850,7 @@
    (V16QI "b") (V8HI "w") (V4SI "k") (V2DI "q")
    (V16SF "k") (V8DF "q")
    (V8SF "k") (V4DF "q")
-   (V4SF "k") (V2DF "q")
-   (SF "k") (DF "q")])
+   (V4SF "k") (V2DF "q")])
 
 ;; Mapping of vector modes to VPTERNLOG suffix
 (define_mode_attr ternlogsuffix
@@ -1851,8 +1850,8 @@
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
-   <plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
+   <plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %2}
+   v<plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
    (set_attr "prefix" "orig,vex")
@@ -1927,8 +1926,8 @@
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
-   <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
+   <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %2}
+   v<multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse<multdiv_mnemonic>")
    (set_attr "prefix" "orig,vex")
