@@ -529,7 +529,7 @@ static char* iso_3166[] =
   "UM", "United States Minor Outlying Islands",
   "US", "United States",
   "US", "United States of America",
-  "US", "United-States"
+  "US", "United-States",
   "UY", "Uruguay",
   "UZ", "Uzbekistan",
 
