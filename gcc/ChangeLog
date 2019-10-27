@@ -1,5 +1,10 @@
 2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-transform.c (inline_call): update function summaries
+	after expanidng thunk.
+
+2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-icf.c (sem_function::merge): Update function summaries.
 	* ipa-prop.h (ipa_get_param): Do not sanity check for WPA.
 
