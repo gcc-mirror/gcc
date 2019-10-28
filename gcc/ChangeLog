@@ -1,5 +1,10 @@
 2019-10-28  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
+	PR target/82981
+	* config/mips/mips.md (<u>mulditi3): Generate patterns for high
+	doubleword and low doubleword result of multiplication on
+	MIPS64R6.
+
 	* config/mips/mips.c (DIRECT_BUILTIN_PURE): New macro. Add a
 	pure qualifier to the built-in.
 	(MSA_BUILTIN_PURE): New macro. Add a pure qualifier to the MSA

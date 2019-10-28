@@ -1,5 +1,8 @@
 2019-10-28  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
+	PR target/82981
+	* gcc.target/mips/mips64r6-ti-mult.c: New test.
+
 	* gcc.target/mips/mips-builtins-pure.c: New test.
 
 	* gcc.target/mips/msa-insert-split.c: New test.
