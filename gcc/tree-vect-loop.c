@@ -4263,9 +4263,9 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 (CCOMPARE).  The then and else values mirror the main VEC_COND_EXPR:
 	 the reduction phi corresponds to NEW_PHI_TREE and the new values
 	 correspond to INDEX_BEFORE_INCR.  */
-      gcc_assert (STMT_VINFO_REDUC_IDX (reduc_info) >= 1);
+      gcc_assert (STMT_VINFO_REDUC_IDX (stmt_info) >= 1);
       tree index_cond_expr;
-      if (STMT_VINFO_REDUC_IDX (reduc_info) == 2)
+      if (STMT_VINFO_REDUC_IDX (stmt_info) == 2)
 	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
 				  ccompare, indx_before_incr, new_phi_tree);
       else
@@ -5720,19 +5720,24 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
   gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
 
-  /* Verify following REDUC_IDX from the latch def leads us back to the PHI.  */
+  /* Verify following REDUC_IDX from the latch def leads us back to the PHI
+     and compute the reduction chain length.  */
   tree reduc_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
 					  loop_latch_edge (loop));
+  unsigned reduc_chain_length = 0;
+  bool only_slp_reduc_chain = true;
   while (reduc_def != PHI_RESULT (reduc_def_phi))
     {
       stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
       def = vect_stmt_to_vectorize (def);
       gcc_assert (STMT_VINFO_REDUC_IDX (def) != -1);
+      if (!REDUC_GROUP_FIRST_ELEMENT (def))
+	only_slp_reduc_chain = false;
       reduc_def = gimple_op (def->stmt, 1 + STMT_VINFO_REDUC_IDX (def));
+      reduc_chain_length++;
     }
 
   reduc_def = PHI_RESULT (reduc_def_phi);
-  int reduc_index = -1;
   for (i = 0; i < op_type; i++)
     {
       tree op = gimple_op (stmt, i + 1);
@@ -5753,7 +5758,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       if ((dt == vect_reduction_def || dt == vect_nested_cycle)
 	  && op == reduc_def)
 	{
-	  reduc_index = i;
 	  continue;
 	}
 
@@ -5792,10 +5796,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   if (!vectype_in)
     vectype_in = vectype_out;
   STMT_VINFO_REDUC_VECTYPE_IN (reduc_info) = vectype_in;
-  /* For the SSA cycle we store on each participating stmt the operand index
-     where the cycle continues.  Store the one relevant for the actual
-     operation in the reduction meta.  */
-  STMT_VINFO_REDUC_IDX (reduc_info) = reduc_index;
 
   enum vect_reduction_type v_reduc_type = STMT_VINFO_REDUC_TYPE (phi_info);
   STMT_VINFO_REDUC_TYPE (reduc_info) = v_reduc_type;
@@ -5805,28 +5805,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       if (slp_node)
 	return false;
 
-      /* TODO: We can't yet handle reduction chains, since we need to treat
-	 each COND_EXPR in the chain specially, not just the last one.
-	 E.g. for:
-
-	    x_1 = PHI <x_3, ...>
-	    x_2 = a_2 ? ... : x_1;
-	    x_3 = a_3 ? ... : x_2;
-
-	 we're interested in the last element in x_3 for which a_2 || a_3
-	 is true, whereas the current reduction chain handling would
-	 vectorize x_2 as a normal VEC_COND_EXPR and only treat x_3
-	 as a reduction operation.  */
-      if (reduc_index == -1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "conditional reduction chains not supported\n");
-	  return false;
-	}
-
       /* When the condition uses the reduction value in the condition, fail.  */
-      if (reduc_index == 0)
+      if (STMT_VINFO_REDUC_IDX (stmt_info) == 0)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5995,17 +5975,18 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	 outer-loop vectorization is safe.  */
       if (needs_fold_left_reduction_p (scalar_type, orig_code))
 	{
-	  STMT_VINFO_REDUC_TYPE (reduc_info)
-	    = reduction_type = FOLD_LEFT_REDUCTION;
-	  /* When vectorizing a reduction chain w/o SLP the reduction PHI is not
-	     directy used in stmt.  */
-	  if (reduc_index == -1)
+	  /* When vectorizing a reduction chain w/o SLP the reduction PHI
+	     is not directy used in stmt.  */
+	  if (!only_slp_reduc_chain
+	      && reduc_chain_length != 1)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "in-order reduction chain without SLP.\n");
 	      return false;
 	    }
+	  STMT_VINFO_REDUC_TYPE (reduc_info)
+	    = reduction_type = FOLD_LEFT_REDUCTION;
 	}
       else if (!commutative_tree_code (orig_code)
 	       || !associative_tree_code (orig_code))
@@ -6410,7 +6391,7 @@ vect_transform_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
      reduction variable.  */
   stmt_vec_info phi_info = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info));
   gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
-  int reduc_index = STMT_VINFO_REDUC_IDX (reduc_info);
+  int reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
   tree vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (reduc_info);
 
   if (slp_node)

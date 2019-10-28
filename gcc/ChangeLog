@@ -1,3 +1,12 @@
+2019-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	STMT_VINFO_REDUC_IDX from the actual stmt.
+	(vect_transform_reduction): Likewise.
+	(vectorizable_reduction): Compute the reduction chain length,
+	do not recompute the reduction operand index.  Remove no longer
+	necessary restriction for condition reduction chains.
+
 2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/92225
