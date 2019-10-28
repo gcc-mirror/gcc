@@ -52,11 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 /* The cp_lexer_* routines mediate between the lexer proper (in libcpp
    and c-lex.c) and the C++ parser.  */
 
-static cp_token eof_token =
-{
-  CPP_EOF, RID_MAX, 0, false, false, false, 0, { NULL }
-};
-
 /* The various kinds of non integral constant we encounter. */
 enum non_integral_constant {
   NIC_NONE,
@@ -660,12 +655,10 @@ cp_lexer_new_main (void)
       vec_safe_push (lexer->buffer, token);
     }
 
-  lexer->last_token = lexer->buffer->address ()
+  lexer->next_token = lexer->buffer->address ();
+  lexer->last_token = lexer->next_token
                       + lexer->buffer->length ()
 		      - 1;
-  lexer->next_token = lexer->buffer->length ()
-		      ? lexer->buffer->address ()
-		      : &eof_token;
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -687,7 +680,14 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 
   /* We do not own the buffer.  */
   lexer->buffer = NULL;
-  lexer->next_token = first == last ? &eof_token : first;
+
+  /* Insert an EOF token.  */
+  lexer->saved_type = last->type;
+  lexer->saved_keyword = last->keyword;
+  last->type = CPP_EOF;
+  last->keyword = RID_MAX;
+
+  lexer->next_token = first;
   lexer->last_token = last;
 
   lexer->saved_tokens.create (CP_SAVED_TOKEN_STACK);
@@ -704,7 +704,14 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 static void
 cp_lexer_destroy (cp_lexer *lexer)
 {
-  vec_free (lexer->buffer);
+  if (lexer->buffer)
+    vec_free (lexer->buffer);
+  else
+    {
+      /* Restore the token we overwrite with EOF.  */
+      lexer->last_token->type = lexer->saved_type;
+      lexer->last_token->keyword = lexer->saved_keyword;
+    }
   lexer->saved_tokens.release ();
   ggc_free (lexer);
 }
@@ -731,8 +738,6 @@ cp_lexer_debugging_p (cp_lexer *lexer)
 static inline cp_token_position
 cp_lexer_token_position (cp_lexer *lexer, bool previous_p)
 {
-  gcc_assert (!previous_p || lexer->next_token != &eof_token);
-
   return lexer->next_token - previous_p;
 }
 
@@ -751,10 +756,7 @@ cp_lexer_set_token_position (cp_lexer *lexer, cp_token_position pos)
 static inline cp_token_position
 cp_lexer_previous_token_position (cp_lexer *lexer)
 {
-  if (lexer->next_token == &eof_token)
-    return lexer->last_token - 1;
-  else
-    return cp_lexer_token_position (lexer, true);
+  return cp_lexer_token_position (lexer, true);
 }
 
 static inline cp_token *
@@ -807,6 +809,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
   token->keyword = RID_MAX;
   token->purged_p = false;
   token->error_reported = false;
+  token->tree_check_p = false;
 
   /* On some systems, some header files are surrounded by an
      implicit extern "C" block.  Set a flag in the token if it
@@ -1082,16 +1085,9 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
 
   --n;
   token = lexer->next_token;
-  gcc_assert (!n || token != &eof_token);
-  while (n != 0)
+  while (n && token->type != CPP_EOF)
     {
       ++token;
-      if (token == lexer->last_token)
-	{
-	  token = &eof_token;
-	  break;
-	}
-
       if (!token->purged_p)
 	--n;
     }
@@ -1113,18 +1109,12 @@ cp_lexer_consume_token (cp_lexer* lexer)
 {
   cp_token *token = lexer->next_token;
 
-  gcc_assert (token != &eof_token);
   gcc_assert (!lexer->in_pragma || token->type != CPP_PRAGMA_EOL);
 
   do
     {
+      gcc_assert (token->type != CPP_EOF);
       lexer->next_token++;
-      if (lexer->next_token == lexer->last_token)
-	{
-	  lexer->next_token = &eof_token;
-	  break;
-	}
-
     }
   while (lexer->next_token->purged_p);
 
@@ -1150,21 +1140,14 @@ cp_lexer_purge_token (cp_lexer *lexer)
 {
   cp_token *tok = lexer->next_token;
 
-  gcc_assert (tok != &eof_token);
+  gcc_assert (tok->type != CPP_EOF);
   tok->purged_p = true;
   tok->location = UNKNOWN_LOCATION;
   tok->u.value = NULL_TREE;
   tok->keyword = RID_MAX;
 
   do
-    {
-      tok++;
-      if (tok == lexer->last_token)
-	{
-	  tok = &eof_token;
-	  break;
-	}
-    }
+    tok++;
   while (tok->purged_p);
   lexer->next_token = tok;
 }
@@ -1178,12 +1161,9 @@ cp_lexer_purge_tokens_after (cp_lexer *lexer, cp_token *tok)
 {
   cp_token *peek = lexer->next_token;
 
-  if (peek == &eof_token)
-    peek = lexer->last_token;
-
   gcc_assert (tok < peek);
 
-  for ( tok += 1; tok != peek; tok += 1)
+  for (tok++; tok != peek; tok++)
     {
       tok->purged_p = true;
       tok->location = UNKNOWN_LOCATION;
@@ -6616,6 +6596,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
       token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
+      token->tree_check_p = true;
       token->u.tree_check_value->value = parser->scope;
       token->u.tree_check_value->checks = get_deferred_access_checks ();
       token->u.tree_check_value->qualifying_scope =
@@ -14801,6 +14782,7 @@ cp_parser_decltype (cp_parser *parser)
      it again.  */
   start_token->type = CPP_DECLTYPE;
   start_token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
+  start_token->tree_check_p = true;
   start_token->u.tree_check_value->value = expr;
   start_token->u.tree_check_value->checks = get_deferred_access_checks ();
   start_token->keyword = RID_MAX;
@@ -16588,6 +16570,7 @@ cp_parser_template_id (cp_parser *parser,
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
       token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
+      token->tree_check_p = true;
       token->u.tree_check_value->value = template_id;
       token->u.tree_check_value->checks = get_deferred_access_checks ();
       token->keyword = RID_MAX;
