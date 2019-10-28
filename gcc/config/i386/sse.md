@@ -5324,7 +5324,7 @@
 	(unspec:SWI48 [(match_operand:SF 1 "nonimmediate_operand" "v,m")]
 		      UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE"
-  "%vcvtss2si<rex64suffix>\t{%1, %0|%0, %k1}"
+  "%vcvtss2si<rex64suffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
@@ -10147,7 +10147,7 @@
   "!TARGET_SSE2 && TARGET_SSE
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
-   movhps\t{%1, %0|%q0, %1}
+   movhps\t{%1, %0|%0, %1}
    movhlps\t{%1, %0|%0, %1}
    movlps\t{%H1, %0|%0, %H1}"
   [(set_attr "type" "ssemov")
