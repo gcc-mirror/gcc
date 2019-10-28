@@ -844,7 +844,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	{
 	  if (reg == 0)
 	    {
-	      gcc_assert (!reload_in_progress);
+	      gcc_assert (!lra_in_progress);
 	      reg = gen_reg_rtx (Pmode);
 	    }
 
@@ -928,7 +928,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	      emit_use (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM));
 #endif
 
-	      if (reload_in_progress)
+	      if (lra_in_progress)
 		df_set_regs_ever_live (REGNO (pic), true);
 	      pic_ref = gen_rtx_PLUS (Pmode, pic,
 				      machopic_gen_offset (XEXP (orig, 0)));
@@ -952,7 +952,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
 	      if (reg == 0)
 		{
-		  gcc_assert (!reload_in_progress);
+		  gcc_assert (!lra_in_progress);
 		  reg = gen_reg_rtx (Pmode);
 		}
 
@@ -998,7 +998,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 #if 0
 		  emit_use (pic_offset_table_rtx);
 #endif
-		  if (reload_in_progress)
+		  if (lra_in_progress)
 		    df_set_regs_ever_live (REGNO (pic), true);
 		  pic_ref = gen_rtx_PLUS (Pmode,
 					  pic,
