@@ -1,5 +1,10 @@
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/92226
+	* gcc.dg/strlenopt-88.c: New test.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
 	PR c/66970
 	* c-c++-common/cpp/has-builtin-2.c: New test.
 	* c-c++-common/cpp/has-builtin-3.c: New test.
