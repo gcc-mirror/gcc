@@ -676,6 +676,9 @@ struct cpp_callbacks
   /* Callback to identify whether an attribute exists.  */
   int (*has_attribute) (cpp_reader *);
 
+  /* Callback to determine whether a built-in function is recognized.  */
+  int (*has_builtin) (cpp_reader *);
+
   /* Callback that can change a user lazy into normal macro.  */
   void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
 
@@ -855,7 +858,8 @@ enum cpp_builtin_type
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
-  BT_HAS_ATTRIBUTE		/* `__has_attribute__(x)' */
+  BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
+  BT_HAS_BUILTIN		/* `__has_builtin(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))

@@ -1,3 +1,10 @@
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66970
+	* c-c++-common/cpp/has-builtin-2.c: New test.
+	* c-c++-common/cpp/has-builtin-3.c: New test.
+	* c-c++-common/cpp/has-builtin.c: New test.
+
 2019-10-28  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
 	PR target/82981

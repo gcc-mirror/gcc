@@ -801,6 +801,7 @@ extern void c_register_addr_space (const char *str, addr_space_t as);
 extern bool in_late_binary_op;
 extern const char *c_addr_space_name (addr_space_t as);
 extern tree identifier_global_value (tree);
+extern bool names_builtin_p (const char *);
 extern tree c_linkage_bindings (tree);
 extern void record_builtin_type (enum rid, const char *, tree);
 extern tree build_void_list_node (void);
@@ -1022,6 +1023,7 @@ extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
 			      const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
 extern int c_common_has_attribute (cpp_reader *);
+extern int c_common_has_builtin (cpp_reader *);
 
 extern bool parse_optimize_options (tree, bool);
 

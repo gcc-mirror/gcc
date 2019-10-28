@@ -1,3 +1,8 @@
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66970
+	* cp-objcp-common.c (names_builtin_p): Define new function.
+
 2019-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.h (struct cp_token): Drop {ENUM,BOOL}_BITFIELD C-ism.
