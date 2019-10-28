@@ -1,3 +1,11 @@
+2019-10-28  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	Backport from mainline
+	PR target/70010
+	* gcc.target/powerpc/pr70010.c: Add -Wno-psabi.
+	* gcc.target/powerpc/pr70010-1.c: Require LTO.
+	* gcc.target/powerpc/pr70010-2.c: Require LTO.
+
 2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/92225
