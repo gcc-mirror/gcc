@@ -3883,11 +3883,8 @@ node_template_info (tree decl, int &use)
   if (DECL_IMPLICIT_TYPEDEF_P (decl))
     {
       tree type = TREE_TYPE (decl);
-      /* During read in, type might not have been set yet!  */
-      // FIXME:This sounds wrong now.
-      if (type)
-	ti = TYPE_TEMPLATE_INFO (type);
 
+      ti = TYPE_TEMPLATE_INFO (type);
       if (ti)
 	{
 	  if (TYPE_LANG_SPECIFIC (type))

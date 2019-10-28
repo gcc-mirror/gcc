@@ -1,6 +1,9 @@
 2019-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (node_template_info): Type cannot be NULL.
+
+	gcc/cp/
 	* module.cc (trees_out::{fn_parms_ini,tpl_header}): Privatize,
 	resolving fixme.
 	(trees_out::core_vals): Resolve TEMPLATE_DECL &
