@@ -1,5 +1,11 @@
 2019-10-28  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92252
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Adjust
+	STMT_VINFO_REDUC_IDX when swapping operands.
+
+2019-10-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92241
 	* tree-vect-loop.c (vect_fixup_scalar_cycles_with_patterns): When
 	we failed to update the reduction index do not use the pattern
