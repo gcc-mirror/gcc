@@ -1,3 +1,66 @@
+2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/abort-1.f90: Add 'dg-do run'.
+	* testsuite/libgomp.oacc-fortran/abort-2.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/lib-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/common-block-1.f90:
+	Use 'stop' not abort().
+	* testsuite/libgomp.oacc-fortran/common-block-2.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/common-block-3.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/data-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/data-2.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/data-5.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/dummy-array.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/gemm-2.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/gemm.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/host_data-2.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/host_data-3.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/host_data-4.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-collapse-3.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-collapse-4.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-independent.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-map-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-parallel-loop-data-enter-exit.f95:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-1.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-2.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-3.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-6.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-vector-1.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-vector-2.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-worker-1.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-worker-2.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-worker-3.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-worker-4.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-worker-5.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-worker-6.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-worker-7.f90:
+	Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/lib-12.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/lib-13.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/lib-14.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/kernels-acc-loop-reduction-2.f90:
+	Likewise and also add 'dg-do run'.
+	* testsuite/libgomp.oacc-fortran/kernels-acc-loop-reduction.f90:
+	Ditto.
+
 2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

@@ -15,7 +15,7 @@ subroutine check
   common /BLOCK/ x, y
 
   do i = 1, n
-     if (x(i) .ne. y) call abort
+     if (x(i) .ne. y) stop 1
   end do
 end subroutine check
 

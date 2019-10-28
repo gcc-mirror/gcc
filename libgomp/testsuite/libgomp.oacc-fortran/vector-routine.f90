@@ -21,7 +21,7 @@ program main
   !$acc end parallel
 
   do i = 1, N
-    if (a(i) .ne. 0) call abort
+    if (a(i) .ne. 0) stop 1
   end do
 
 contains

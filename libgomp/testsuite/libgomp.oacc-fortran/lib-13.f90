@@ -25,8 +25,8 @@ program main
 
   call acc_wait (nprocs + 1)
 
-  if (acc_async_test (1) .neqv. .TRUE.) call abort
-  if (acc_async_test (2) .neqv. .TRUE.) call abort
-  if (acc_async_test (nprocs + 1) .neqv. .TRUE.) call abort
+  if (acc_async_test (1) .neqv. .TRUE.) stop 1
+  if (acc_async_test (2) .neqv. .TRUE.) stop 2
+  if (acc_async_test (nprocs + 1) .neqv. .TRUE.) stop 3
 
 end program
