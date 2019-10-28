@@ -1,3 +1,13 @@
+2019-10-25  Jiufu Guo  <guojiufu@linux.ibm.com>	    
+
+	PR tree-optimization/88760
+	* config/rs6000/rs6000-common.c (rs6000_option_optimization_table):
+	Enable -funroll-loops for -O2 and above.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
+	PARAM_MAX_UNROLL_TIMES to 2 and PARAM_MAX_UNROLLED_INSNS to 20, and
+	do not turn on web and rngreg implicitly, if the unroller is not
+	explicitly enabled.
+
 2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (ipa_propagate_indirect_call_infos): Do not remove
