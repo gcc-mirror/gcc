@@ -1,5 +1,13 @@
 2019-10-28  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
+	* config/mips/mips.c (DIRECT_BUILTIN_PURE): New macro. Add a
+	pure qualifier to the built-in.
+	(MSA_BUILTIN_PURE): New macro. Add a pure qualifier to the MSA
+	built-ins.
+	(struct mips_builtin_description): Add is_pure flag.
+	(mips_init_builtins): Mark built-in as pure if the flag in the
+	corresponding mips_builtin_description struct is set.
+
 	* config/mips/mips-msa.md (msa_insert_<msaftm_f>): Add an
 	alternative which covers the floating-point input value. Also
 	forbid the split of insert.d pattern for floating-point values.
