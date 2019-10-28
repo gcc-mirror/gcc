@@ -1,5 +1,11 @@
 2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
 
+	PR target/92225
+	* config/i386/sse.md (REDUC_SSE_SMINMAX_MODE): Use TARGET_SSE4_2
+	condition for V2DImode.
+
+2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/sse.md (sse_cvtss2si<rex64namesuffix>_2):
 	Remove %k operand modifier.
 	(*vec_extractv2df_1_sse): Remove %q operand modifier.
