@@ -1,3 +1,9 @@
+2019-10-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backport from mainline
+	PR rtl-optimization/92007
+	* g++.dg/opt/pr92007.C: New test (from Arseny Solokha).
+
 2019-10-28  Peter Bergner <bergner@linux.ibm.com>
 	    Jiufu Guo  <guojiufu@linux.ibm.com>
 
