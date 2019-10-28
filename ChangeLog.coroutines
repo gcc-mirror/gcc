@@ -1,5 +1,16 @@
 2019-10-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-passes.c (first_vuser): Delete.
+	(move_edge_and_update_vdef): Delete.
+	(execute_expand_coro_ifns): Delete.
+	(class pass_coroutine_expand_ifns): Delete.
+	(make_pass_coroutine_expand_ifns): Delete.
+	* passes.def: Delete coroutine_expand_ifns pass.
+	* tree-pass.h (make_pass_coroutine_expand_ifns): Delete.
+
+2019-10-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r277499.
 
 2019-10-21  Iain Sandoe  <iain@sandoe.co.uk>
