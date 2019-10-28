@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -flto -mvsx" } */
+/* { dg-require-effective-target lto } */
 
 vector int c, a, b;
 
