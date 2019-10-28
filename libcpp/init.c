@@ -403,6 +403,7 @@ static const struct builtin_macro builtin_array[] =
   B("__COUNTER__",	 BT_COUNTER,       true),
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
+  B("__has_builtin",	 BT_HAS_BUILTIN,   true),
   /* Keep builtins not used for -traditional-cpp at the end, and
      update init_builtins() if any more are added.  */
   B("_Pragma",		 BT_PRAGMA,        true),
@@ -483,7 +484,8 @@ cpp_init_special_builtins (cpp_reader *pfile)
 
   for (b = builtin_array; b < builtin_array + n; b++)
     {
-      if (b->value == BT_HAS_ATTRIBUTE
+      if ((b->value == BT_HAS_ATTRIBUTE
+	   || b->value == BT_HAS_BUILTIN)
 	  && (CPP_OPTION (pfile, lang) == CLK_ASM
 	      || pfile->cb.has_attribute == NULL))
 	continue;

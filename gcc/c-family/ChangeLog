@@ -1,3 +1,13 @@
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66970
+	* c-common.c (c_common_nodes_and_builtins): Call c_define_builtins
+	even when only preprocessing.
+	* c-common.h (names_builtin_p): Declare new function.
+	* c-lex.c (init_c_lex): Set has_builtin.
+	(c_common_has_builtin): Define a new function.
+	* c-ppoutput.c (init_pp_output): Set has_builtin.
+
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_omp_context_selector_matches): Remove.

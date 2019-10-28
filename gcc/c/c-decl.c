@@ -9990,6 +9990,34 @@ identifier_global_value	(tree t)
   return NULL_TREE;
 }
 
+/* Returns true if NAME refers to a built-in function or function-like
+   operator.  */
+
+bool
+names_builtin_p (const char *name)
+{
+  tree id = get_identifier (name);
+  if (tree decl = identifier_global_value (id))
+    return TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_BUILTIN (decl);
+
+  /* Also detect common reserved C words that aren't strictly built-in
+     functions.  */
+  switch (C_RID_CODE (id))
+    {
+    case RID_BUILTIN_CONVERTVECTOR:
+    case RID_BUILTIN_HAS_ATTRIBUTE:
+    case RID_BUILTIN_SHUFFLE:
+    case RID_CHOOSE_EXPR:
+    case RID_OFFSETOF:
+    case RID_TYPES_COMPATIBLE_P:
+      return true;
+    default:
+      break;
+    }
+
+  return false;
+}
+
 /* In C, the only C-linkage public declaration is at file scope.  */
 
 tree
