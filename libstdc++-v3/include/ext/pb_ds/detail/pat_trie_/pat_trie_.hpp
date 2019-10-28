@@ -83,7 +83,7 @@ namespace __gnu_pbds
 #ifdef _GLIBCXX_DEBUG
 #define PB_DS_DEBUG_MAP_BASE_C_DEC \
     debug_map_base<Key,	eq_by_less<Key, std::less<Key> >, \
-		 typename _Alloc::template rebind<Key>::other::const_reference>
+		 typename rebind_traits<_Alloc, Key>::const_reference>
 #endif
 
 
@@ -109,35 +109,34 @@ namespace __gnu_pbds
     {
     private:
       typedef pat_trie_base				base_type;
-      typedef PB_DS_PAT_TRIE_TRAITS_BASE 	       	traits_base;
+      typedef PB_DS_PAT_TRIE_TRAITS_BASE 		traits_base;
       typedef Node_And_It_Traits			traits_type;
 
       typedef typename traits_type::synth_access_traits synth_access_traits;
       typedef typename synth_access_traits::const_iterator a_const_iterator;
 
-      typedef typename traits_type::node 		node;
-      typedef typename _Alloc::template rebind<node>	__rebind_n;
-      typedef typename __rebind_n::other::const_pointer node_const_pointer;
-      typedef typename __rebind_n::other::pointer 	node_pointer;
+      typedef typename traits_type::node		node;
+      typedef rebind_traits<_Alloc, node>		__rebind_n;
+      typedef typename __rebind_n::const_pointer	node_const_pointer;
+      typedef typename __rebind_n::pointer		node_pointer;
 
-      typedef typename traits_type::head 		head;
-      typedef typename _Alloc::template rebind<head>	__rebind_h;
-      typedef typename __rebind_h::other 		head_allocator;
-      typedef typename head_allocator::pointer 		head_pointer;
+      typedef typename traits_type::head		head;
+      typedef rebind_traits<_Alloc, head>		__rebind_h;
+      typedef typename __rebind_h::allocator_type 	head_allocator;
+      typedef typename __rebind_h::pointer 		head_pointer;
 
-      typedef typename traits_type::leaf 		leaf;
-      typedef typename _Alloc::template rebind<leaf>	__rebind_l;
-      typedef typename __rebind_l::other 		leaf_allocator;
-      typedef typename leaf_allocator::pointer 		leaf_pointer;
-      typedef typename leaf_allocator::const_pointer 	leaf_const_pointer;
+      typedef typename traits_type::leaf		leaf;
+      typedef rebind_traits<_Alloc, leaf>		__rebind_l;
+      typedef typename __rebind_l::allocator_type	leaf_allocator;
+      typedef typename __rebind_l::pointer 		leaf_pointer;
+      typedef typename __rebind_l::const_pointer	leaf_const_pointer;
 
-      typedef typename traits_type::inode 		inode;
+      typedef typename traits_type::inode		inode;
       typedef typename inode::iterator 			inode_iterator;
-      typedef typename _Alloc::template rebind<inode> 	__rebind_in;
-      typedef typename __rebind_in::other 		__rebind_ina;
-      typedef typename __rebind_in::other      	       	inode_allocator;
-      typedef typename __rebind_ina::pointer 		inode_pointer;
-      typedef typename __rebind_ina::const_pointer 	inode_const_pointer;
+      typedef rebind_traits<_Alloc, inode>		__rebind_in;
+      typedef typename __rebind_in::allocator_type	inode_allocator;
+      typedef typename __rebind_in::pointer 		inode_pointer;
+      typedef typename __rebind_in::const_pointer	inode_const_pointer;
 
 
       /// Conditional deallocator.
@@ -179,7 +178,8 @@ namespace __gnu_pbds
       {
       private:
 	typedef inode_pointer 			       	__inp;
-	typedef typename _Alloc::template rebind<__inp>::other 	__rebind_inp;
+	typedef typename rebind_traits<_Alloc, __inp>::allocator_type
+	  __rebind_inp;
 
 #ifdef _GLIBCXX_DEBUG
 	typedef std::_GLIBCXX_STD_C::list<__inp, __rebind_inp> 	bag_type;

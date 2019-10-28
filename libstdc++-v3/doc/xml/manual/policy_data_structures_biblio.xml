@@ -1232,7 +1232,7 @@
     <biblioentry xml:id="biblio.select_man">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/select.html">
+	      xlink:href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/select.html">
 	  select
 	</link>
       </title>

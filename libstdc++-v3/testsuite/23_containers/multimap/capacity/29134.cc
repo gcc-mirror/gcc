@@ -19,14 +19,15 @@
 
 #include <map>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   std::multimap<int, int> mm;
 
-  VERIFY( (mm.max_size() == std::allocator<std::_Rb_tree_node<
-	                    std::pair<const int, int> > >().max_size()) );
+  std::allocator<std::_Rb_tree_node<std::pair<const int, int> > > a;
+  VERIFY( mm.max_size() == __gnu_test::max_size(a) );
 }
 
 int main()

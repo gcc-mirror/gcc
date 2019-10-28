@@ -265,7 +265,7 @@
 (define_code_iterator FCVT [unsigned_float float])
 
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
-;; a stack pointer opoerand.  The minus operation is a candidate for an rsub
+;; a stack pointer operand.  The minus operation is a candidate for an rsub
 ;; and hence only plus is supported.
 (define_code_attr t2_binop0
   [(plus "rk") (minus "r") (ior "r") (xor "r") (and "r")])

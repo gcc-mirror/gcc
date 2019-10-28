@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-mcpu=power8" { target powerpc*-*-* } } */
+/* { dg-additional-options "-w" { target avr-*-* } } */
 
 long f;
 void a();

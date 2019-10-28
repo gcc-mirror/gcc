@@ -75,6 +75,8 @@ extern void omp_firstprivatize_variable (struct gimplify_omp_ctx *, tree);
 extern enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 					   bool (*) (tree), fallback_t);
 
+HOST_WIDE_INT omp_construct_selector_matches (enum tree_code *, int);
+
 extern void gimplify_type_sizes (tree, gimple_seq *);
 extern void gimplify_one_sizepos (tree *, gimple_seq *);
 extern gbind *gimplify_body (tree, bool);

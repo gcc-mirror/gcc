@@ -3,3 +3,4 @@
 
 *.[cCh] whitespace=indent-with-non-tab,space-before-tab,trailing-space
 *.cc whitespace=indent-with-non-tab,space-before-tab,trailing-space
+ChangeLog whitespace=indent-with-non-tab,space-before-tab,trailing-space

@@ -326,7 +326,7 @@ BEGIN {
   }
 }
 /^\t\t=== .* ===$/ { curvar = ""; next }
-/^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|WARNING|ERROR|UNSUPPORTED|UNTESTED|KFAIL):/ {
+/^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|WARNING|ERROR|UNSUPPORTED|UNTESTED|KFAIL|KPASS):/ {
   testname=\$2
   # Ugly hack for gfortran.dg/dg.exp
   if ("$TOOL" == "gfortran" && testname ~ /^gfortran.dg\/g77\//)

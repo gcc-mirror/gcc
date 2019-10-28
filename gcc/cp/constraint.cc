@@ -905,6 +905,9 @@ normalize_constraint_expression (tree expr, bool diag = false)
 bool
 atomic_constraints_identical_p (tree t1, tree t2)
 {
+  gcc_assert (TREE_CODE (t1) == ATOMIC_CONSTR);
+  gcc_assert (TREE_CODE (t2) == ATOMIC_CONSTR);
+
   if (ATOMIC_CONSTR_EXPR (t1) != ATOMIC_CONSTR_EXPR (t2))
     return false;
 
@@ -914,9 +917,44 @@ atomic_constraints_identical_p (tree t1, tree t2)
   return true;
 }
 
+/* True if T1 and T2 are equivalent, meaning they have the same syntactic
+   structure and all corresponding constraints are identical.  */
+
+bool
+constraints_equivalent_p (tree t1, tree t2)
+{
+  gcc_assert (CONSTR_P (t1));
+  gcc_assert (CONSTR_P (t2));
+
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return false;
+
+  switch (TREE_CODE (t1))
+  {
+  case CONJ_CONSTR:
+  case DISJ_CONSTR:
+    if (!constraints_equivalent_p (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0)))
+      return false;
+    if (!constraints_equivalent_p (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1)))
+      return false;
+    break;
+  case ATOMIC_CONSTR:
+    if (!atomic_constraints_identical_p(t1, t2))
+      return false;
+    break;
+  default:
+    gcc_unreachable ();
+  }
+  return true;
+}
+
+/* Compute the hash value for T.  */
+
 hashval_t
 hash_atomic_constraint (tree t)
 {
+  gcc_assert (TREE_CODE (t) == ATOMIC_CONSTR);
+
   /* Hash the identity of the expression.  */
   hashval_t val = htab_hash_pointer (ATOMIC_CONSTR_EXPR (t));
 
@@ -929,6 +967,41 @@ hash_atomic_constraint (tree t)
     }
 
   return val;
+}
+
+namespace inchash
+{
+
+static void
+add_constraint (tree t, hash& h)
+{
+  h.add_int(TREE_CODE (t));
+  switch (TREE_CODE (t))
+  {
+  case CONJ_CONSTR:
+  case DISJ_CONSTR:
+    add_constraint (TREE_OPERAND (t, 0), h);
+    add_constraint (TREE_OPERAND (t, 1), h);
+    break;
+  case ATOMIC_CONSTR:
+    h.merge_hash (hash_atomic_constraint (t));
+    break;
+  default:
+    gcc_unreachable ();
+  }
+}
+
+}
+
+/* Computes a hash code for the constraint T.  */
+
+hashval_t
+iterative_hash_constraint (tree t, hashval_t val)
+{
+  gcc_assert (CONSTR_P (t));
+  inchash::hash h (val);
+  inchash::add_constraint (t, h);
+  return h.end ();
 }
 
 // -------------------------------------------------------------------------- //
@@ -1015,6 +1088,61 @@ build_constraints (tree tr, tree dr)
   ci->associated_constr = combine_constraint_expressions (tr, dr);
 
   return (tree)ci;
+}
+
+/* A mapping from declarations to constraint information.  */
+
+static GTY ((cache)) tree_cache_map *decl_constraints;
+
+/* Returns the template constraints of declaration T. If T is not
+   constrained, return NULL_TREE. Note that T must be non-null. */
+
+tree
+get_constraints (tree t)
+{
+  if (!flag_concepts)
+    return NULL_TREE;
+  if (!decl_constraints)
+    return NULL_TREE;
+
+  gcc_assert (DECL_P (t));
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    t = DECL_TEMPLATE_RESULT (t);
+  tree* found = decl_constraints->get (t);
+  if (found)
+    return *found;
+  else
+    return NULL_TREE;
+}
+
+/* Associate the given constraint information CI with the declaration
+   T. If T is a template, then the constraints are associated with
+   its underlying declaration. Don't build associations if CI is
+   NULL_TREE.  */
+
+void
+set_constraints (tree t, tree ci)
+{
+  if (!ci)
+    return;
+  gcc_assert (t && flag_concepts);
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    t = DECL_TEMPLATE_RESULT (t);
+  bool found = hash_map_safe_put<hm_ggc> (decl_constraints, t, ci);
+  gcc_assert (!found);
+}
+
+/* Remove the associated constraints of the declaration T.  */
+
+void
+remove_constraints (tree t)
+{
+  gcc_assert (DECL_P (t));
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    t = DECL_TEMPLATE_RESULT (t);
+
+  if (decl_constraints)
+    decl_constraints->remove (t);
 }
 
 /* Returns the template-head requires clause for the template

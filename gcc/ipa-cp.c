@@ -731,7 +731,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   init_caller_stats (&stats);
   node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats, false);
 
-  if (ipa_fn_summaries->get (node)->self_size < stats.n_calls)
+  if (ipa_size_summaries->get (node)->self_size < stats.n_calls)
     {
       if (dump_file)
 	fprintf (dump_file, "Considering %s for cloning; code might shrink.\n",
@@ -2309,10 +2309,17 @@ propagate_constants_across_call (struct cgraph_edge *cs)
   callee_info = IPA_NODE_REF (callee);
 
   args = IPA_EDGE_REF (cs);
-  args_count = ipa_get_cs_argument_count (args);
   parms_count = ipa_get_param_count (callee_info);
   if (parms_count == 0)
     return false;
+  if (!args)
+    {
+      for (i = 0; i < parms_count; i++)
+	ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
+								 i));
+      return ret;
+    }
+  args_count = ipa_get_cs_argument_count (args);
 
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series
@@ -2629,13 +2636,14 @@ devirtualization_time_bonus (struct cgraph_node *node,
       if (!isummary->inlinable)
 	continue;
 
+      int size = ipa_size_summaries->get (callee)->size;
       /* FIXME: The values below need re-considering and perhaps also
 	 integrating into the cost metrics, at lest in some very basic way.  */
-      if (isummary->size <= MAX_INLINE_INSNS_AUTO / 4)
+      if (size <= MAX_INLINE_INSNS_AUTO / 4)
 	res += 31 / ((int)speculative + 1);
-      else if (isummary->size <= MAX_INLINE_INSNS_AUTO / 2)
+      else if (size <= MAX_INLINE_INSNS_AUTO / 2)
 	res += 15 / ((int)speculative + 1);
-      else if (isummary->size <= MAX_INLINE_INSNS_AUTO
+      else if (size <= MAX_INLINE_INSNS_AUTO
 	       || DECL_DECLARED_INLINE_P (callee->decl))
 	res += 7 / ((int)speculative + 1);
     }
@@ -3334,7 +3342,7 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 				   ipa_get_param_count (info));
 	initialize_node_lattices (node);
       }
-    ipa_fn_summary *s = ipa_fn_summaries->get (node);
+    ipa_size_summary *s = ipa_size_summaries->get (node);
     if (node->definition && !node->alias && s != NULL)
       overall_size += s->self_size;
     max_count = max_count.max (node->count.ipa ());
@@ -4065,7 +4073,8 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  if (IPA_NODE_REF (cs->caller)->node_dead)
 	    continue;
 
-	  if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
+	  if (!IPA_EDGE_REF (cs)
+	      || i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      || (i == 0
 		  && call_passes_through_thunk_p (cs)))
 	    {
@@ -4134,7 +4143,8 @@ find_more_contexts_for_caller_subset (cgraph_node *node,
 
       FOR_EACH_VEC_ELT (callers, j, cs)
 	{
-	  if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs)))
+	  if (!IPA_EDGE_REF (cs)
+	      || i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs)))
 	    return;
 	  ipa_jump_func *jfunc = ipa_get_ith_jump_func (IPA_EDGE_REF (cs),
 							    i);
@@ -4450,6 +4460,11 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 
   FOR_EACH_VEC_ELT (callers, j, cs)
     {
+      if (!IPA_EDGE_REF (cs))
+	{
+	  count = 0;
+	  break;
+	}
       int c = ipa_get_cs_argument_count (IPA_EDGE_REF (cs));
       if (c < count)
 	count = c;

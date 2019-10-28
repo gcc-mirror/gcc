@@ -50,14 +50,6 @@
 #define SPECFILE_USAGE_URL                              \
   "https://gcc.gnu.org/gcc-5/changes.html"
 
-/* Return true iff STR starts with PREFIX.  */
-
-static bool
-str_prefix_p (const char *str, const char *prefix)
-{
-  return strncmp (str, prefix, strlen (prefix)) == 0;
-}
-
 
 static const char header[] =
   "#\n"

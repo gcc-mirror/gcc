@@ -31,6 +31,7 @@
 #define _RC_STRING_BASE_H 1
 
 #include <ext/atomicity.h>
+#include <ext/alloc_traits.h>
 #include <bits/stl_iterator_base_funcs.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -120,7 +121,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _CharT            _M_align;
 	};
 
-	typedef typename _Alloc::template rebind<_Rep>::other _Rep_alloc_type;
+	typedef typename __alloc_traits<_Alloc>::template rebind<_Rep>::other
+	  _Rep_alloc_type;
 
  	_CharT*
 	_M_refdata() throw()

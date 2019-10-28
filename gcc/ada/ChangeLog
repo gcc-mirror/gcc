@@ -1,3 +1,7 @@
+2019-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* locales.c (iso_3166): Add missing comma after "United-States".
+
 2019-10-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* Makefile.rtl (a-except.o): Put -O1 earlier so that it can be

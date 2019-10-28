@@ -22,6 +22,7 @@
 #include <memory>
 #include <stdexcept>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/8230
 void test02()
@@ -30,11 +31,11 @@ void test02()
   try 
     {
       std::allocator<int> alloc;
-      const std::allocator<int>::size_type n = alloc.max_size();
+      const std::allocator<int>::size_type n = __gnu_test::max_size(alloc);
       int* p = alloc.allocate(n + 1);
       p[n] = 2002;
     } 
-  catch(const std::bad_alloc& e) 
+  catch(const std::bad_alloc& e)
     {
       // Allowed.
       test = true;

@@ -1789,7 +1789,7 @@ namespace regex_constants
        */
       //@{
       typedef sub_match<_Bi_iter>                             value_type;
-      typedef typename _Allocator::const_reference            const_reference;
+      typedef typename _Base_type::const_reference            const_reference;
       typedef const_reference                                 reference;
       typedef typename _Base_type::const_iterator             const_iterator;
       typedef const_iterator                                  iterator;

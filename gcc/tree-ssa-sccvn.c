@@ -5459,8 +5459,13 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 
 	  /* If this is an assignment from our leader (which
 	     happens in the case the value-number is a constant)
-	     then there is nothing to do.  */
-	  if (gimple_assign_single_p (stmt)
+	     then there is nothing to do.  Likewise if we run into
+	     inserted code that needed a conversion because of
+	     our type-agnostic value-numbering of loads.  */
+	  if ((gimple_assign_single_p (stmt)
+	       || (is_gimple_assign (stmt)
+		   && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+		       || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)))
 	      && sprime == gimple_assign_rhs1 (stmt))
 	    return;
 

@@ -84,6 +84,9 @@ extern void omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 extern gimple *omp_build_barrier (tree lhs);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
+extern int omp_constructor_traits_to_codes (tree, enum tree_code *);
+extern int omp_context_selector_matches (tree);
+extern tree omp_resolve_declare_variant (tree);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);

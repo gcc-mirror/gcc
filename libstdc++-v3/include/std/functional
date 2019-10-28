@@ -72,19 +72,22 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus > 201402L
-# define __cpp_lib_invoke 201411
+#if __cplusplus >= 201703L
+# define __cpp_lib_invoke 201411L
+# if __cplusplus > 201703L
+#  define __cpp_lib_constexpr_invoke 201907L
+# endif
 
   /// Invoke a callable object.
   template<typename _Callable, typename... _Args>
-    inline invoke_result_t<_Callable, _Args...>
+    inline _GLIBCXX20_CONSTEXPR invoke_result_t<_Callable, _Args...>
     invoke(_Callable&& __fn, _Args&&... __args)
     noexcept(is_nothrow_invocable_v<_Callable, _Args...>)
     {
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);
     }
-#endif
+#endif // C++17
 
   template<typename _MemFunPtr,
 	   bool __is_mem_fn = is_member_function_pointer<_MemFunPtr>::value>

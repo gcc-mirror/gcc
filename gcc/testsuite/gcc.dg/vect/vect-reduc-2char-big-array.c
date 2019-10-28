@@ -62,4 +62,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { target { ! vect_no_int_min_max } } } } */

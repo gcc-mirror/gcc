@@ -82,6 +82,7 @@
 		  (match_test ("CONST_INT_P (XEXP (XEXP (op, 0), 1))"))
 		  (match_test ("IN_RANGE (INTVAL (XEXP (XEXP (op, 0), 1)), HOST_WIDE_INT_M1U << 15, (1 << 15)-1)"))))
 	(match_code "reg" "0")
+	(match_code "post_inc" "0")
 	)))
 
 (define_constraint "Yc"

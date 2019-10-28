@@ -971,7 +971,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
   unsigned HOST_WIDE_INT bytes;
   if (dump_enabled_p ())
     {
-      if (current_vector_size.is_constant (&bytes))
+      if (loop_vinfo->vector_size.is_constant (&bytes))
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 			 "loop vectorized using %wu byte vectors\n", bytes);
       else
@@ -1347,7 +1347,8 @@ get_vec_alignment_for_array_type (tree type)
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
   poly_uint64 array_size, vector_size;
 
-  tree vectype = get_vectype_for_scalar_type (strip_array_types (type));
+  tree scalar_type = strip_array_types (type);
+  tree vectype = get_vectype_for_scalar_type_and_size (scalar_type, 0);
   if (!vectype
       || !poly_int_tree_p (TYPE_SIZE (type), &array_size)
       || !poly_int_tree_p (TYPE_SIZE (vectype), &vector_size)

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target size32plus } */
 
 int a;
 extern int f[10][91125];

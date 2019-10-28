@@ -332,28 +332,9 @@ msp430_hard_regno_nregs (unsigned int, machine_mode mode)
 	  / UNITS_PER_WORD);
 }
 
-/* Implements HARD_REGNO_NREGS_HAS_PADDING.  */
-int
-msp430_hard_regno_nregs_has_padding (int regno ATTRIBUTE_UNUSED,
-				     machine_mode mode)
-{
-  if (mode == PSImode && msp430x)
-    return 1;
-  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
-	  / UNITS_PER_WORD);
-}
-
-/* Implements HARD_REGNO_NREGS_WITH_PADDING.  */
-int
-msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
-				      machine_mode mode)
-{
-  if (mode == PSImode)
-    return 2;
-  if (mode == CPSImode)
-    return 4;
-  return msp430_hard_regno_nregs (regno, mode);
-}
+/* subreg_get_info correctly handles PSImode registers, so defining
+   HARD_REGNO_NREGS_HAS_PADDING and HARD_REGNO_NREGS_WITH_PADDING
+   has no effect.  */
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK msp430_hard_regno_mode_ok
@@ -3097,20 +3078,22 @@ use_32bit_hwmult (void)
 /* Returns true if the current MCU does not have a
    hardware multiplier of any kind.  */
 
-static bool
-msp430_no_hwmult (void)
+bool
+msp430_has_hwmult (void)
 {
   static const char * cached_match = NULL;
   static bool cached_result;
 
   if (msp430_hwmult_type == MSP430_HWMULT_NONE)
-    return true;
-
-  if (msp430_hwmult_type != MSP430_HWMULT_AUTO)
     return false;
 
-  if (target_mcu == NULL)
+  /* TRUE for any other explicit hwmult specified.  */
+  if (msp430_hwmult_type != MSP430_HWMULT_AUTO)
     return true;
+
+  /* Now handle -mhwmult=auto.  */
+  if (target_mcu == NULL)
+    return false;
 
   if (target_mcu == cached_match)
     return cached_result;
@@ -3119,11 +3102,11 @@ msp430_no_hwmult (void)
 
   msp430_extract_mcu_data (target_mcu);
   if (extracted_mcu_data.name != NULL)
-    return cached_result = extracted_mcu_data.hwmpy == 0;
+    return cached_result = extracted_mcu_data.hwmpy != 0;
 
   /* If we do not recognise the MCU name, we assume that it does not support
      any kind of hardware multiply - this is the safest assumption to make.  */
-  return cached_result = true;
+  return cached_result = false;
 }
 
 /* This function does the same as the default, but it will replace GCC
@@ -3143,13 +3126,13 @@ msp430_output_labelref (FILE *file, const char *name)
 
   /* If we have been given a specific MCU name then we may be
      able to make use of its hardware multiply capabilities.  */
-  if (msp430_hwmult_type != MSP430_HWMULT_NONE)
+  if (msp430_has_hwmult ())
     {
       if (strcmp ("__mspabi_mpyi", name) == 0)
 	{
 	  if (msp430_use_f5_series_hwmult ())
 	    name = "__mulhi2_f5";
-	  else if (! msp430_no_hwmult ())
+	  else
 	    name = "__mulhi2";
 	}
       else if (strcmp ("__mspabi_mpyl", name) == 0)
@@ -3158,7 +3141,7 @@ msp430_output_labelref (FILE *file, const char *name)
 	    name = "__mulsi2_f5";
 	  else if (use_32bit_hwmult ())
 	    name = "__mulsi2_hw32";
-	  else if (! msp430_no_hwmult ())
+	  else
 	    name = "__mulsi2";
 	}
     }

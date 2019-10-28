@@ -1,3 +1,104 @@
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cplus_decl_attributes): Add "omp declare target block"
+	attribute in between declare target and end declare target
+	pragmas.
+
+	* call.c (convert_arg_to_ellipsis): Add missing space in string
+	literal.
+
+2019-10-24  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (reshape_init_r): Add missing space.
+
+2019-10-24  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (reduce_template_parm_level): Attach the new TPI to the new
+	DECL.
+	(convert_generic_types_to_packs): Pass the copied type to
+	reduce_templatE_parm_level.
+
+2019-10-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.c (CPTI_STD_IDENTIFIER): Delete.
+	(std_identifier): Delete.
+	(DECL_NAME_SPACE_STD_P): Compare against std_node.
+	* decl.c (initialize_predefined_identifiers): 'std' is not needed.
+	(cxx_init_decl_processing): Adjust creation of ::std.  Use
+	{push,pop}_nested_namespace.
+	(cxx_builtin_function): Use {push,pop}_nested_namespace.
+	* except.c (init_exception_processing): Likewise.
+	* rtti.c (init_rtti_processing): Likewise.
+
+2019-10-23  Jason Merrill  <jason@redhat.com>
+
+	Implement P1286R2, Contra CWG1778
+	* method.c (defaulted_late_check): Don't check explicit
+	exception-specification on defaulted function.
+	(after_nsdmi_defaulted_late_checks): Remove.
+	* parser.h (struct cp_unparsed_functions_entry): Remove classes.
+	* parser.c (unparsed_classes): Remove.
+	(push_unparsed_function_queues, cp_parser_class_specifier_1):
+	Adjust.
+
+2019-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_STMT>:
+	Temporarily change input_location to CLEANUP_STMT location.
+
+2019-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85887
+	* decl.c (expand_static_init): Drop ECF_LEAF from __cxa_guard_acquire
+	and __cxa_guard_release.
+
+2019-10-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/85746
+	* constexpr.c (cxx_eval_builtin_function_call): Only set
+	force_folding_builtin_constant_p if manifestly_const_eval.
+
+2019-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (STF_USER_VISIBLE): New constant.
+	(strip_typedefs, strip_typedefs_expr): Take a flags argument.
+	* tree.c (strip_typedefs, strip_typedefs_expr): Likewise,
+	updating mutual calls accordingly.  When STF_USER_VISIBLE is true,
+	only look through typedefs if user_facing_original_type_p.
+	* error.c (dump_template_bindings, type_to_string): Pass
+	STF_USER_VISIBLE to strip_typedefs.
+	(dump_type): Likewise, unless pp_c_flag_gnu_v3 is set.
+
+2019-10-21  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/83534 - typeinfo of noexcept function
+	* rtti.c (get_tinfo_decl_dynamic): Do not call
+	TYPE_MAIN_VARIANT for function.
+	(get_typeid): Likewise.
+
+2019-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_class_head): Improve error recovery upon
+	extra qualification error.
+
+2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92015
+	* constexpr.c (cxx_eval_component_reference, cxx_eval_bit_field_ref):
+	Use STRIP_ANY_LOCATION_WRAPPER on CONSTRUCTOR elts.
+
+2019-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92062 - ODR-use ignored for static member of class template.
+	* pt.c (has_value_dependent_address): Strip location wrappers.
+
+2019-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92106 - ICE with structured bindings and -Wreturn-local-addr.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Avoid
+	recursing on null initializer and return false instead.
+
 2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
 
 	Implement p1301 [[nodiscard("should have a reason")]] + p1771 DR
@@ -67,6 +168,40 @@
 
 	* decl.c (cxx_maybe_build_cleanup): When clearing location of cleanup,
 	if cleanup is a nop, clear location of its operand too.
+
+2019-10-15  Andrew Sutton  <asutton@lock3software.com>
+
+	Finish moving constraint and logic functionality of out pt.c.
+	Reimplement and re-enable subsumption caching.
+
+	* config-lang.in (gtfiles): Add logic.cc.
+	* constraint.cc (atomic_constraints_identical_p): Add assertions.
+	(hash_atomic_constraint): Likewise.
+	(constraints_equivalent_p): New.
+	(inchash::add_constraint): New.
+	(iterative_hash_constraint): New.
+	(decl_constraints): Moved from pt.c.
+	(get_constraints): Likewise.
+	(set_constraints): Likewise.
+	(remove_constraints): Likewise.
+	* cp-tree.h (CONSTR_P): New.
+	(init_constraint_processing): Remove.
+	(constraints_equivalent_p, iterative_hash_constraint): Declare.
+	* decl.c (cxx_init_decl_processing): Don't initialize constraints.
+	* logic.cc (subsumption_entry): Moved from pt.c.
+	(subsumption_hasher): Likewise.
+	(subsumption_cache): Likewise.
+	(lookup_subsumption): Likewise.
+	(save_subsumption): Likewise.
+	(subsumes_constraints_nonnull): Use subsumption cache.
+	* pt.c: Move aforementioned declarations out of this file.
+	(init_constraint_processing): Remove.
+
+2019-10-15  Andrew Sutton  <asutton@lock3software.com>
+
+	* parser.c (cp_parser_constructor_declarator_p): Pass an empty
+	decl-specifier-seq to make sure we parse type constraints as part
+	of a type-specifier.
 
 2019-10-15  Nathan Sidwell  <nathan@acm.org>
 

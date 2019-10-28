@@ -92,8 +92,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const_pointer address(const_reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
-      _GLIBCXX_NODISCARD pointer allocate(size_type __n, void* __hint = 0)
-      { return _M_real_alloc.allocate(__n,__hint); }
+      _GLIBCXX_NODISCARD pointer allocate(size_type __n, const void* = 0)
+      { return _M_real_alloc.allocate(__n); }
 
       void deallocate(pointer __p, size_type __n)
       { _M_real_alloc.deallocate(__p.get(), __n); }

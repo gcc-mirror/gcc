@@ -340,7 +340,10 @@ symbol_table::process_new_functions (void)
 		 and splitting.  This is redundant for functions added late.
 		 Just throw away whatever it did.  */
 	      if (!summaried_computed)
-		ipa_free_fn_summary ();
+		{
+		  ipa_free_fn_summary ();
+		  ipa_free_size_summary ();
+		}
 	    }
 	  else if (ipa_fn_summaries != NULL)
 	    compute_fn_summary (node, true);

@@ -4429,33 +4429,40 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
       || !same_type_p (type, TREE_TYPE (TEMPLATE_PARM_DESCENDANTS (index))))
     {
       tree orig_decl = TEMPLATE_PARM_DECL (index);
-      tree decl, t;
 
-      decl = build_decl (DECL_SOURCE_LOCATION (orig_decl),
-			 TREE_CODE (orig_decl), DECL_NAME (orig_decl), type);
+      tree decl = build_decl (DECL_SOURCE_LOCATION (orig_decl),
+			      TREE_CODE (orig_decl), DECL_NAME (orig_decl),
+			      type);
       TREE_CONSTANT (decl) = TREE_CONSTANT (orig_decl);
       TREE_READONLY (decl) = TREE_READONLY (orig_decl);
       DECL_ARTIFICIAL (decl) = 1;
       SET_DECL_TEMPLATE_PARM_P (decl);
 
-      t = build_template_parm_index (TEMPLATE_PARM_IDX (index),
-				     TEMPLATE_PARM_LEVEL (index) - levels,
-				     TEMPLATE_PARM_ORIG_LEVEL (index),
-				     decl, type);
-      TEMPLATE_PARM_DESCENDANTS (index) = t;
-      TEMPLATE_PARM_PARAMETER_PACK (t)
+      tree tpi = build_template_parm_index (TEMPLATE_PARM_IDX (index),
+					    TEMPLATE_PARM_LEVEL (index) - levels,
+					    TEMPLATE_PARM_ORIG_LEVEL (index),
+					    decl, type);
+      TEMPLATE_PARM_DESCENDANTS (index) = tpi;
+      TEMPLATE_PARM_PARAMETER_PACK (tpi)
 	= TEMPLATE_PARM_PARAMETER_PACK (index);
 
 	/* Template template parameters need this.  */
+      tree inner = decl;
       if (TREE_CODE (decl) == TEMPLATE_DECL)
 	{
-	  DECL_TEMPLATE_RESULT (decl)
-	    = build_decl (DECL_SOURCE_LOCATION (decl),
-			  TYPE_DECL, DECL_NAME (decl), type);
-	  DECL_ARTIFICIAL (DECL_TEMPLATE_RESULT (decl)) = true;
+	  inner = build_decl (DECL_SOURCE_LOCATION (decl),
+			      TYPE_DECL, DECL_NAME (decl), type);
+	  DECL_TEMPLATE_RESULT (decl) = inner;
+	  DECL_ARTIFICIAL (inner) = true;
 	  DECL_TEMPLATE_PARMS (decl) = tsubst_template_parms
 	    (DECL_TEMPLATE_PARMS (orig_decl), args, complain);
 	}
+
+      /* Attach the TPI to the decl.  */
+      if (TREE_CODE (inner) == TYPE_DECL)
+	TEMPLATE_TYPE_PARM_INDEX (type) = tpi;
+      else
+	DECL_INITIAL (decl) = tpi;
     }
 
   return TEMPLATE_PARM_DESCENDANTS (index);
@@ -6542,6 +6549,8 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
 static bool
 has_value_dependent_address (tree op)
 {
+  STRIP_ANY_LOCATION_WRAPPER (op);
+
   /* We could use get_inner_reference here, but there's no need;
      this is only relevant for template non-type arguments, which
      can only be expressed as &id-expression.  */
@@ -28459,7 +28468,7 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
       tree t = copy_type (o);
       TEMPLATE_TYPE_PARM_INDEX (t)
 	= reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (o),
-				      o, 0, 0, tf_none);
+				      t, 0, 0, tf_none);
       TREE_TYPE (TEMPLATE_TYPE_DECL (t)) = t;
       TYPE_STUB_DECL (t) = TYPE_NAME (t) = TEMPLATE_TYPE_DECL (t);
       TYPE_MAIN_VARIANT (t) = t;
@@ -28500,163 +28509,6 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
 					replacement);
 
   return tsubst (parm, replacement, tf_none, NULL_TREE);
-}
-
-/* A mapping from declarations to constraint information. Note that
-   both templates and their underlying declarations are mapped to the
-   same constraint information.
-
-   FIXME: This is defined in pt.c because garbage collection
-   code is not being generated for constraint.cc. */
-
-static GTY ((cache)) tree_cache_map *decl_constraints;
-
-/* Returns the template constraints of declaration T. If T is not
-   constrained, return NULL_TREE. Note that T must be non-null. */
-
-tree
-get_constraints (tree t)
-{
-  if (!flag_concepts)
-    return NULL_TREE;
-  if (!decl_constraints)
-    return NULL_TREE;
-
-  gcc_assert (DECL_P (t));
-  if (TREE_CODE (t) == TEMPLATE_DECL)
-    t = DECL_TEMPLATE_RESULT (t);
-  tree* found = decl_constraints->get (t);
-  if (found)
-    return *found;
-  else
-    return NULL_TREE;
-}
-
-/* Associate the given constraint information CI with the declaration
-   T. If T is a template, then the constraints are associated with
-   its underlying declaration. Don't build associations if CI is
-   NULL_TREE.  */
-
-void
-set_constraints (tree t, tree ci)
-{
-  if (!ci)
-    return;
-  gcc_assert (t && flag_concepts);
-  if (TREE_CODE (t) == TEMPLATE_DECL)
-    t = DECL_TEMPLATE_RESULT (t);
-  bool found = hash_map_safe_put<hm_ggc> (decl_constraints, t, ci);
-  gcc_assert (!found);
-}
-
-/* Remove the associated constraints of the declaration T.  */
-
-void
-remove_constraints (tree t)
-{
-  gcc_assert (DECL_P (t));
-  if (TREE_CODE (t) == TEMPLATE_DECL)
-    t = DECL_TEMPLATE_RESULT (t);
-
-  if (decl_constraints)
-    decl_constraints->remove (t);
-}
-
-static hashval_t
-hash_subsumption_args (tree t1, tree t2)
-{
-  gcc_assert (TREE_CODE (t1) == CHECK_CONSTR);
-  gcc_assert (TREE_CODE (t2) == CHECK_CONSTR);
-  int val = 0;
-  val = iterative_hash_object (CHECK_CONSTR_CONCEPT (t1), val);
-  val = iterative_hash_template_arg (CHECK_CONSTR_ARGS (t1), val);
-  val = iterative_hash_object (CHECK_CONSTR_CONCEPT (t2), val);
-  val = iterative_hash_template_arg (CHECK_CONSTR_ARGS (t2), val);
-  return val;
-}
-
-/* Compare the constraints of two subsumption entries.  The LEFT1 and
-   LEFT2 arguments comprise the first subsumption pair and the RIGHT1
-   and RIGHT2 arguments comprise the second. These are all CHECK_CONSTRs. */
-
-static bool
-comp_subsumption_args (tree left1, tree left2, tree right1, tree right2)
-{
-  if (CHECK_CONSTR_CONCEPT (left1) == CHECK_CONSTR_CONCEPT (right1))
-    if (CHECK_CONSTR_CONCEPT (left2) == CHECK_CONSTR_CONCEPT (right2))
-      if (comp_template_args (CHECK_CONSTR_ARGS (left1),
-                             CHECK_CONSTR_ARGS (right1)))
-        return comp_template_args (CHECK_CONSTR_ARGS (left2),
-                                  CHECK_CONSTR_ARGS (right2));
-  return false;
-}
-
-/* Key/value pair for learning and memoizing subsumption results. This
-   associates a pair of check constraints (including arguments) with
-   a boolean value indicating the result.  */
-
-struct GTY((for_user)) subsumption_entry
-{
-  tree t1;
-  tree t2;
-  bool result;
-};
-
-/* Hashing function and equality for constraint entries.  */
-
-struct subsumption_hasher : ggc_ptr_hash<subsumption_entry>
-{
-  static hashval_t hash (subsumption_entry *e)
-  {
-    return hash_subsumption_args (e->t1, e->t2);
-  }
-
-  static bool equal (subsumption_entry *e1, subsumption_entry *e2)
-  {
-    ++comparing_specializations;
-    bool eq = comp_subsumption_args(e1->t1, e1->t2, e2->t1, e2->t2);
-    --comparing_specializations;
-    return eq;
-  }
-};
-
-static GTY (()) hash_table<subsumption_hasher> *subsumption_table;
-
-/* Search for a previously cached subsumption result. */
-
-bool*
-lookup_subsumption_result (tree t1, tree t2)
-{
-  subsumption_entry elt = { t1, t2, false };
-  subsumption_entry* found = subsumption_table->find (&elt);
-  if (found)
-    return &found->result;
-  else
-    return 0;
-}
-
-/* Save a subsumption result. */
-
-bool
-save_subsumption_result (tree t1, tree t2, bool result)
-{
-  subsumption_entry elt = {t1, t2, result};
-  subsumption_entry** slot = subsumption_table->find_slot (&elt, INSERT);
-  subsumption_entry* entry = ggc_alloc<subsumption_entry> ();
-  *entry = elt;
-  *slot = entry;
-  return result;
-}
-
-/* Set up the hash table for constraint association. */
-
-void
-init_constraint_processing (void)
-{
-  if (!flag_concepts)
-    return;
-
-  subsumption_table = hash_table<subsumption_hasher>::create_ggc(37);
 }
 
 GTY(()) tree current_failed_constraint;

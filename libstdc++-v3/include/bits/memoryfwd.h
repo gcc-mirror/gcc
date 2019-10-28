@@ -63,12 +63,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     class allocator;
 
+#if __cplusplus <= 201703L
   template<>
     class allocator<void>;
+#endif
 
+#if __cplusplus >= 201103L
   /// Declare uses_allocator so it can be specialized in \<queue\> etc.
   template<typename, typename>
     struct uses_allocator;
+#endif
 
   /// @} group memory
 
