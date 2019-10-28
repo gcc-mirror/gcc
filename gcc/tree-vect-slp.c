@@ -563,6 +563,10 @@ again:
 	    {
 	      swap_ssa_operands (stmt, gimple_assign_rhs2_ptr (stmt),
 				 gimple_assign_rhs3_ptr (stmt));
+	      if (STMT_VINFO_REDUC_IDX (stmt_info) == 1)
+		STMT_VINFO_REDUC_IDX (stmt_info) = 2;
+	      else if (STMT_VINFO_REDUC_IDX (stmt_info) == 2)
+		STMT_VINFO_REDUC_IDX (stmt_info) = 1;
 	      bool honor_nans = HONOR_NANS (TREE_OPERAND (cond, 0));
 	      code = invert_tree_comparison (TREE_CODE (cond), honor_nans);
 	      gcc_assert (code != ERROR_MARK);
