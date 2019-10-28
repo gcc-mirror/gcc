@@ -1,6 +1,10 @@
 2019-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Stream template info's
+	typedefs needing access checks.
+
+	gcc/cp/
 	* module.cc (depset): Correct documentation.
 	(walk_kind_name): Delete unused.
 	(trees_out::get_container): Lookup for redirect.

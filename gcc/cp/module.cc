@@ -5924,9 +5924,27 @@ trees_out::core_vals (tree t)
       break;
 
     case TEMPLATE_INFO:
-      WT (((lang_tree_node *)t)->template_info.tmpl);
-      WT (((lang_tree_node *)t)->template_info.args);
-      // FIXME: typedefs_needing_access_checking
+      {
+	WT (((lang_tree_node *)t)->template_info.tmpl);
+	WT (((lang_tree_node *)t)->template_info.args);
+
+	const vec<qualified_typedef_usage_t, va_gc> *ac
+	  = (((lang_tree_node *)t)
+	     ->template_info.typedefs_needing_access_checking);
+	unsigned len = vec_safe_length (ac);
+	if (streaming_p ())
+	  u (len);
+	if (len)
+	  {
+	    for (unsigned ix = 0; ix != len; ix++)
+	      {
+		const qualified_typedef_usage_t &m = (*ac)[ix];
+		WT (m.typedef_decl);
+		WT (m.context);
+		state->write_location (*this, m.locus);
+	      }
+	  }
+      }
       break;
 
     case TEMPLATE_PARM_INDEX:
@@ -6322,7 +6340,21 @@ trees_in::core_vals (tree t)
     case TEMPLATE_INFO:
       RT (((lang_tree_node *)t)->template_info.tmpl);
       RT (((lang_tree_node *)t)->template_info.args);
-      // FIXME: typedefs_needing_access_checking
+      if (unsigned len = u ())
+	{
+	  vec<qualified_typedef_usage_t, va_gc> *ac;
+	  vec_alloc (ac, len);
+	  ((lang_tree_node *)t)->template_info.typedefs_needing_access_checking
+	    = ac;
+	  for (unsigned ix = 0; ix != len; ix++)
+	    {
+	      qualified_typedef_usage_t m;
+	      RT (m.typedef_decl);
+	      RT (m.context);
+	      m.locus = state->read_location (*this);
+	      ac->quick_push (m);
+	    }
+	}
       break;
 
     case TEMPLATE_PARM_INDEX:
