@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
    fact, they are the same transformation applied to different views of
    the CFG.  */
 
-void delete_dead_or_redundant_assignment (gimple_stmt_iterator *, const char *);
 static void delete_dead_or_redundant_call (gimple_stmt_iterator *, const char *);
 
 /* Bitmap of blocks that have had EH statements cleaned.  We should
@@ -639,7 +638,8 @@ dse_optimize_redundant_stores (gimple *stmt)
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
 	      if (is_gimple_assign (use_stmt))
-		delete_dead_or_redundant_assignment (&gsi, "redundant");
+		delete_dead_or_redundant_assignment (&gsi, "redundant",
+						     need_eh_cleanup);
 	      else if (is_gimple_call (use_stmt))
 		delete_dead_or_redundant_call (&gsi, "redundant");
 	      else
@@ -900,7 +900,8 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
 /* Delete a dead store at GSI, which is a gimple assignment. */
 
 void
-delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type)
+delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type,
+				     bitmap need_eh_cleanup)
 {
   gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -915,7 +916,7 @@ delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type
 
   /* Remove the dead store.  */
   basic_block bb = gimple_bb (stmt);
-  if (gsi_remove (gsi, true))
+  if (gsi_remove (gsi, true) && need_eh_cleanup)
     bitmap_set_bit (need_eh_cleanup, bb->index);
 
   /* And release any SSA_NAMEs set in this statement back to the
@@ -1059,7 +1060,7 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  && !by_clobber_p)
 	return;
 
-      delete_dead_or_redundant_assignment (gsi, "dead");
+      delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
     }
 }
 
