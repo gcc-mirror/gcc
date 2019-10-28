@@ -1,3 +1,15 @@
+2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/91272
+	* gcc.target/aarch64/sve/clastb_1.c: Add dg-scan.
+	* gcc.target/aarch64/sve/clastb_2.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_3.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_4.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_5.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_6.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_7.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_8.c: Likewise.
+
 2019-10-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92252
