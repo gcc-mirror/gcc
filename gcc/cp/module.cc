@@ -5770,14 +5770,18 @@ trees_out::core_vals (tree t)
       WT (t->decl_non_common.result);
       break;
 
-      /* Miscelaneous common nodes.  */
+      /* Miscellaneous common nodes.  */
     case BLOCK:
-      WT (t->block.supercontext);
+      state->write_location (*this, t->block.locus);
+      state->write_location (*this, t->block.end_locus);
       chained_decls (t->block.vars);
-      WT (t->block.abstract_origin);
-      // FIXME: nonlocalized_vars, fragment_origin, fragment_chain
+      /* nonlocalized_vars is a middle-end thing.  */
       WT (t->block.subblocks);
+      WT (t->block.supercontext);
+      WT (t->block.abstract_origin);
+      /* fragment_origin, fragment_chain are middle-end things.  */
       WT (t->block.chain);
+      // FIXME: block_num, die?
       break;
 
     case CALL_EXPR:
@@ -6196,14 +6200,18 @@ trees_in::core_vals (tree t)
       RT (t->decl_non_common.result);
       break;
 
-      /* Miscelaneous common nodes.  */
+      /* Miscellaneous common nodes.  */
     case BLOCK:
-      RT (t->block.supercontext);
+      t->block.locus = state->read_location (*this);
+      t->block.end_locus = state->read_location (*this);
       t->block.vars = chained_decls ();
-      RT (t->block.abstract_origin);
-      // FIXME: nonlocalized_vars, fragment_origin, fragment_chain
+      /* nonlocalized_vars is middle-end.  */
       RT (t->block.subblocks);
+      RT (t->block.supercontext);
+      RT (t->block.abstract_origin);
+      /* fragment_origin, fragment_chain are middle-end.  */
       RT (t->block.chain);
+      // block_num, die?
       break;
 
     case CALL_EXPR:
