@@ -1,3 +1,10 @@
+2019-10-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/92242
+	* ipa-fnsummary.c (ipa_merge_fn_summary_after_inlining): Check
+	for missing EDGE_REF
+	* ipa-prop.c (update_jump_functions_after_inlining): Likewise.
+
 2019-10-25  Jiufu Guo  <guojiufu@linux.ibm.com>	    
 
 	PR tree-optimization/88760

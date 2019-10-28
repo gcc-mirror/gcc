@@ -3315,7 +3315,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   if (ipa_node_params_sum && callee_info->conds)
     {
       class ipa_edge_args *args = IPA_EDGE_REF (edge);
-      int count = ipa_get_cs_argument_count (args);
+      int count = args ? ipa_get_cs_argument_count (args) : 0;
       int i;
 
       if (count)
