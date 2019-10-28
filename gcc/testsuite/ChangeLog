@@ -1,3 +1,8 @@
+2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91863
+	* gfortran.dg/bind-c-intent-out.f90: New.
+
 2019-10-25  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR tree-optimization/88760
