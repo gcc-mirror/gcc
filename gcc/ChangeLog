@@ -1,5 +1,11 @@
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/92226
+	* tree-ssa-strlen.c (compare_nonzero_chars): Return -1 also when
+	the offset is in the open range outlined by SI's length.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
 	PR c/66970
 	* doc/cpp.texi (__has_builtin): Document.
 	* doc/extend.texi (__builtin_frob_return_addr): Correct spelling.
