@@ -1,3 +1,7 @@
+2019-10-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.c-torture/compile/pr72802.c: Skip for Darwin.
+
 2019-10-28  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	Backport from mainline
