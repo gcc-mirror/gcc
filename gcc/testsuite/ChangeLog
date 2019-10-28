@@ -1,3 +1,7 @@
+2019-10-28  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* gcc.target/mips/msa-insert-split.c: New test.
+
 2019-10-28  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* gcc.target/riscv/save-restore-2.c: New file.
