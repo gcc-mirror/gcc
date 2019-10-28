@@ -1,5 +1,7 @@
 2019-10-28  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
+	* gcc.target/mips/mips-builtins-pure.c: New test.
+
 	* gcc.target/mips/msa-insert-split.c: New test.
 
 2019-10-28  Andrew Burgess  <andrew.burgess@embecosm.com>
