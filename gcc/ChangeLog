@@ -1,3 +1,9 @@
+2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/91272
+	* tree-vect-stmts.c (vectorizable_condition): Support
+	EXTRACT_LAST_REDUCTION with fully-masked loops.
+
 2019-10-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92252
