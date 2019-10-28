@@ -2741,7 +2741,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	  /* We must check range due to calls with variable number of arguments
 	     and we cannot combine jump functions with operations.  */
 	  if (dst->value.pass_through.operation == NOP_EXPR
-	      && (dst->value.pass_through.formal_id
+	      && (top && dst->value.pass_through.formal_id
 		  < ipa_get_cs_argument_count (top)))
 	    {
 	      int dst_fid = dst->value.pass_through.formal_id;
@@ -3430,7 +3430,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	continue;
 
       /* We must check range due to calls with variable number of arguments:  */
-      if (ici->param_index >= ipa_get_cs_argument_count (top))
+      if (!top || ici->param_index >= ipa_get_cs_argument_count (top))
 	{
 	  ici->param_index = -1;
 	  continue;
