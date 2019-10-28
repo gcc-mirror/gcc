@@ -1,3 +1,17 @@
+2019-10-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/92007
+	* cfgcleanup.c (thread_jump): Add an assertion that we don't
+	call it after reload if hot/cold partitioning has been done.
+	(class pass_postreload_jump): Rename to
+	pass_jump_after_combine.
+	(make_pass_postreload_jump): Rename to
+	make_pass_jump_after_combine.
+	* passes.def(pass_postreload_jump): Move before reload, rename
+	to pass_jump_after_combine.
+	* tree-pass.h (make_pass_postreload_jump): Rename to
+	make_pass_jump_after_combine.
+
 2019-10-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/92242
