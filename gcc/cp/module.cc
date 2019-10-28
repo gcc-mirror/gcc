@@ -2997,7 +2997,6 @@ private:
   unsigned add_indirect_tpl_parms (tree);
 public:
   void add_indirects (tree);
-public: // FIXME: while merge sortable is a thing
   void fn_parms_init (tree);
   void tpl_header (tree decl, unsigned *tpl_levels);
 
@@ -5923,9 +5922,8 @@ trees_out::core_vals (tree t)
 
     case TEMPLATE_DECL:
       /* Streamed with the template_decl node itself.  */
-      // FIXME: Not streamed, but right now maybe streamed
-      // gcc_checking_assert
-      //	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
+      gcc_checking_assert
+      	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
       gcc_checking_assert
 	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
       if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (t))
@@ -5946,7 +5944,8 @@ trees_out::core_vals (tree t)
 	  WU (((lang_tree_node *)t)->tpi.orig_level);
 	}
       WT (((lang_tree_node *)t)->tpi.decl);
-      // FIXME: TEMPLATE_PARM_DESCENDANTS?
+      /* TEMPLATE_PARM_DESCENDANTS (AKA TREE_CHAIN) is an internal
+	 cache, do not stream.  */
       break;
       
     case TRAIT_EXPR:
@@ -6988,11 +6987,7 @@ trees_out::tpl_parm_value (tree parm)
 
   if (inner != parm)
     {
-      /* This is a template-template parameter, it could share a parm
-	 list with its context's container.  (Not the context itself,
-	 for this ttp is created before that even exists.)  */
-      // FIXME: Perhaps we should catch this directly in tpl_parms
-      // streaming?
+      /* This is a template-template parameter.  */
       unsigned tpl_levels = 0;
       tpl_header (parm, &tpl_levels);
       tpl_parms_fini (parm, tpl_levels);

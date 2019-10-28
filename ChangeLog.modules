@@ -1,6 +1,15 @@
-2019-10-25  Nathan Sidwell  <nathan@acm.org>
+2019-10-28  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_out::{fn_parms_ini,tpl_header}): Privatize,
+	resolving fixme.
+	(trees_out::core_vals): Resolve TEMPLATE_DECL &
+	TEMPLATE_PARM_INDEX fixmes.
+	(trees_out::tpl_parm_value): Resolve template template parm fixme.
 
 	Merge trunk r277514.
+
+2019-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
 	* module.cc (trees_out::type_node): Move typedef printing after
