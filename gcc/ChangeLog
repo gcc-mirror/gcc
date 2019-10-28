@@ -1,5 +1,16 @@
 2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
+	PR tree-optimization/92163
+	* tree-ssa-dse.c (delete_dead_or_redundant_assignment): New param
+	need_eh_cleanup with default value NULL. Gate on need_eh_cleanup
+	before calling bitmap_set_bit.
+	(dse_optimize_redundant_stores): Pass global need_eh_cleanup to
+	delete_dead_or_redundant_assignment.
+	(dse_dom_walker::dse_optimize_stmt): Likewise.
+	* tree-ssa-dse.h (delete_dead_or_redundant_assignment): Adjust prototype.
+
+2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
 	PR middle-end/91272
 	* tree-vect-stmts.c (vectorizable_condition): Support
 	EXTRACT_LAST_REDUCTION with fully-masked loops.

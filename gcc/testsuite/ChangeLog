@@ -1,5 +1,10 @@
 2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
+	PR tree-optimization/92163
+	* gcc.dg/tree-ssa/pr92163.c: New test.
+
+2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
 	PR middle-end/91272
 	* gcc.target/aarch64/sve/clastb_1.c: Add dg-scan.
 	* gcc.target/aarch64/sve/clastb_2.c: Likewise.
