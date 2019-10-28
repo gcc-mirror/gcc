@@ -5977,10 +5977,10 @@ d_print_mod (struct d_print_info *dpi, int options,
       d_append_string (dpi, "&&");
       return;
     case DEMANGLE_COMPONENT_COMPLEX:
-      d_append_string (dpi, "complex ");
+      d_append_string (dpi, " _Complex");
       return;
     case DEMANGLE_COMPONENT_IMAGINARY:
-      d_append_string (dpi, "imaginary ");
+      d_append_string (dpi, " _Imaginary");
       return;
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
       if (d_last_char (dpi) != '(')
