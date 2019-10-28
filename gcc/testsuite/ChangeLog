@@ -1,5 +1,11 @@
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
+	* gcc.dg/strlenopt-89.c: New test.
+	* gcc.dg/strlenopt-90.c: New test.
+	* gcc.dg/Wstringop-overflow-20.c: New test.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/92226
 	* gcc.dg/strlenopt-88.c: New test.
 

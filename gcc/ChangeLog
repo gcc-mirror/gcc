@@ -1,5 +1,10 @@
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
+	* tree-ssa-strlen.c (get_addr_stridx): Add argument and use it.
+	(handle_store): Pass argument to get_addr_stridx.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/92226
 	* tree-ssa-strlen.c (compare_nonzero_chars): Return -1 also when
 	the offset is in the open range outlined by SI's length.
