@@ -1,3 +1,23 @@
+2019-10-28  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.h (struct cp_token): Drop {ENUM,BOOL}_BITFIELD C-ism.
+	Add tree_check_p flag, use as nested union discriminator.
+	(struct cp_lexer): Add saved_type & saved_keyword fields.
+	* parser.c (eof_token): Delete.
+	(cp_lexer_new_main): Always init last_token to last token of
+	buffer.
+	(cp_lexer_new_from_tokens): Overlay EOF token at end of range.
+	(cp_lexer_destroy): Restore token under the EOF.
+	(cp_lexer_previous_token_position): No check for eof_token here.
+	(cp_lexer_get_preprocessor_token): Clear tree_check_p.
+	(cp_lexer_peek_nth_token): Check CPP_EOF not eof_token.
+	(cp_lexer_consume_token): Assert not CPP_EOF, no check for
+	eof_token.
+	(cp_lexer_purge_token): Likewise.
+	(cp_lexer_purge_tokens_after): No check for EOF token.
+	(cp_parser_nested_name_specifier, cp_parser_decltype)
+	(cp_parser_template_id): Set tree_check_p.
+
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl2.c (cplus_decl_attributes): Add "omp declare target block"
