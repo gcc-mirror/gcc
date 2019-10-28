@@ -1,6 +1,11 @@
 2019-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset): Correct documentation.
+	(walk_kind_name): Delete unused.
+	(trees_out::get_container): Lookup for redirect.
+
+	gcc/cp/
 	* module.cc (node_template_info): Type cannot be NULL.
 
 	gcc/cp/

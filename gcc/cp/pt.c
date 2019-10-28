@@ -26983,12 +26983,12 @@ resolve_typename_type (tree type, bool only_current_p)
   gcc_checking_assert (uses_template_parms (scope));
 
   /* Usually the non-qualified identifier of a TYPENAME_TYPE is
-     TYPE_IDENTIFIER (type). But when 'type' is a typedef variant of
-     a TYPENAME_TYPE node, then TYPE_NAME (type) is set to the TYPE_DECL representing
-     the typedef. In that case TYPE_IDENTIFIER (type) is not the non-qualified
-     identifier  of the TYPENAME_TYPE anymore.
-     So by getting the TYPE_IDENTIFIER of the _main declaration_ of the
-     TYPENAME_TYPE instead, we avoid messing up with a possible
+     TYPE_IDENTIFIER (type). But when 'type' is a typedef variant of a
+     TYPENAME_TYPE node, then TYPE_NAME (type) is set to the TYPE_DECL
+     representing the typedef. In that case TYPE_IDENTIFIER (type) is
+     not the non-qualified identifier of the TYPENAME_TYPE anymore.
+     So by getting the TYPE_IDENTIFIER of the _main declaration_ of
+     the TYPENAME_TYPE instead, we avoid messing up with a possible
      typedef variant case.  */
   name = TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (type));
 

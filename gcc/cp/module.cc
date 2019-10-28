@@ -2285,11 +2285,9 @@ private:
   };
 
 public:
-  /* The first slot may be special
-     1) when doing the mergeable sort, it refers to the original
-     depset of the decl being ordered.
-     2) for EK_SPECIALIZATIONS it is a spec_entry pointer.
-     Neither are relevant for the SCC determination.  */
+  /* The first slot is special for EK_SPECIALIZATIONS it is a
+     spec_entry pointer.  It is not relevant for the SCC
+     determination.  */
   vec<depset *> deps;  /* Depsets we reference.  */
 
 public:
@@ -2725,8 +2723,6 @@ enum walk_kind {
 
   WK_value,	/* By-value walk.  */
 };
-static char const *const walk_kind_name[] =
-  {NULL, NULL, "body", "mergeable", "clone", NULL};
 
 enum merge_kind
 {
@@ -9657,17 +9653,9 @@ trees_out::get_container (tree decl)
       if (use_tpl == 2)
 	{
 	  /* A partial or explicit specialization.  */
-	  // FIXME: We can't lookup in the depset hash because we're
-	  // called from the mergeable ordering sort.  Once that goes
-	  // away it'll be ok.
-	  for (tree partial
-		 = DECL_TEMPLATE_SPECIALIZATIONS (TI_TEMPLATE (template_info));
-	       partial; partial = TREE_CHAIN (partial))
-	    if (TREE_TYPE (partial) == TREE_TYPE (container))
-	      {
-		container = TREE_VALUE (partial);
-		break;
-	      }
+	  if (depset *dep = dep_hash->find_entity (decl))
+	    if (dep->get_entity_kind () == depset::EK_REDIRECT)
+	      container = dep->deps[0]->get_entity ();
 	}
       else if (!use_tpl)
 	container = TI_TEMPLATE (template_info);
