@@ -1,5 +1,16 @@
 2019-10-28  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92241
+	* tree-vect-loop.c (vect_fixup_scalar_cycles_with_patterns): When
+	we failed to update the reduction index do not use the pattern
+	stmts for the reduction chain.
+	(vectorizable_reduction): When the reduction chain is corrupt,
+	fail.
+	* tree-vect-patterns.c (vect_mark_pattern_stmts): Stop when we
+	fail to update the reduction chain.
+
+2019-10-28  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
 	STMT_VINFO_REDUC_IDX from the actual stmt.
 	(vect_transform_reduction): Likewise.
