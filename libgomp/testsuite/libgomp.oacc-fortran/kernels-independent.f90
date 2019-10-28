@@ -26,7 +26,7 @@ subroutine foo (a,  b,  c)
   !$acc end kernels
 
   do i = 1, n
-    if (c(i) .ne. a(i) + b(i)) call abort
+    if (c(i) .ne. a(i) + b(i)) stop 1
   end do
 
 end subroutine

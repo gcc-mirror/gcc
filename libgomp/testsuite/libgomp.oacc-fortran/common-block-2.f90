@@ -16,7 +16,7 @@ subroutine validate
   common /BLOCK/ x, y, z, j
 
   do i = 1, n
-     if (abs(x(i) - i - z) .ge. 0.0001) call abort
+     if (abs(x(i) - i - z) .ge. 0.0001) stop 1
   end do
 end subroutine validate
 
@@ -135,7 +135,7 @@ program main
   end do
   !$acc end parallel
 
-  if (j .ne. n) call abort
+  if (j .ne. n) stop 2
 
   ! Test firstprivate, copy
 

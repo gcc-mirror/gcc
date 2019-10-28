@@ -15,5 +15,5 @@ program reduction
   end do
   !$acc end kernels
 
-  if (red .ne. n) call abort
+  if (red .ne. n) stop 1
 end program reduction

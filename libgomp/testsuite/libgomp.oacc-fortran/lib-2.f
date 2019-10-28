@@ -1,3 +1,5 @@
+! { dg-do run }
+!
       USE OPENACC
 
       IF (ACC_GET_NUM_DEVICES (ACC_DEVICE_HOST) .NE. 1) STOP 1
