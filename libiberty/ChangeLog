@@ -1,3 +1,9 @@
+2019-10-28  Miguel Saldivar  <saldivarcher@gmail.com>
+
+	* cp-demangle.c (d_print_mod): Add a space before printing `complex`
+	and `imaginary`, as opposed to after.
+	* testsuite/demangle-expected: Adjust test.
+
 2019-10-03  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
 
 	* rust-demangle.c (looks_like_rust): Remove.
