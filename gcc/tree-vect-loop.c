@@ -689,13 +689,16 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
 	stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
 	while (next)
 	  {
-	    if (! STMT_VINFO_IN_PATTERN_P (next))
+	    if (! STMT_VINFO_IN_PATTERN_P (next)
+		|| STMT_VINFO_REDUC_IDX (STMT_VINFO_RELATED_STMT (next)) == -1)
 	      break;
 	    next = REDUC_GROUP_NEXT_ELEMENT (next);
 	  }
-	/* If not all stmt in the chain are patterns try to handle
-	   the chain without patterns.  */
-	if (! next)
+	/* If not all stmt in the chain are patterns or if we failed
+	   to update STMT_VINFO_REDUC_IDX try to handle the chain
+	   without patterns.  */
+	if (! next
+	    && STMT_VINFO_REDUC_IDX (STMT_VINFO_RELATED_STMT (first)) != -1)
 	  {
 	    vect_fixup_reduc_chain (first);
 	    LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
@@ -5730,7 +5733,13 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
     {
       stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
       def = vect_stmt_to_vectorize (def);
-      gcc_assert (STMT_VINFO_REDUC_IDX (def) != -1);
+      if (STMT_VINFO_REDUC_IDX (def) == -1)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "reduction chain broken by patterns.\n");
+	  return false;
+	}
       if (!REDUC_GROUP_FIRST_ELEMENT (def))
 	only_slp_reduc_chain = false;
       reduc_def = gimple_op (def->stmt, 1 + STMT_VINFO_REDUC_IDX (def));
