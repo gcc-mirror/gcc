@@ -1,3 +1,9 @@
+2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse_cvtss2si<rex64namesuffix>_2):
+	Remove %k operand modifier.
+	(*vec_extractv2df_1_sse): Remove %q operand modifier.
+
 2019-10-28  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR rtl-optimization/92007
@@ -19,7 +25,7 @@
 	for missing EDGE_REF
 	* ipa-prop.c (update_jump_functions_after_inlining): Likewise.
 
-2019-10-25  Jiufu Guo  <guojiufu@linux.ibm.com>	    
+2019-10-25  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR tree-optimization/88760
 	* config/rs6000/rs6000-common.c (rs6000_option_optimization_table):
@@ -2630,7 +2636,7 @@
 
 2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
 
-        * match.pd (sinh (x) / cosh (x)): New simplification rule.
+	* match.pd (sinh (x) / cosh (x)): New simplification rule.
 
 2019-10-04  Martin Jambor  <mjambor@suse.cz>
 
@@ -5131,7 +5137,7 @@
 	Define to speculation_safe_value_not_needed.
 
 2019-09-20  Richard Biener  <rguenther@suse.de>
-	Uros Bizjak  <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/91814
 	* config/i386/i386-features.c (gen_gpr_to_xmm_move_src): Revert
@@ -5179,98 +5185,98 @@
 
 2019-09-20  Martin Jambor  <mjambor@suse.cz>
 
-        * coretypes.h (cgraph_edge): Declare.
-        * ipa-param-manipulation.c: Rewrite.
-        * ipa-param-manipulation.h: Likewise.
-        * Makefile.in (GTFILES): Added ipa-param-manipulation.h and ipa-sra.c.
-        (OBJS): Added ipa-sra.o.
-        * cgraph.h (ipa_replace_map): Removed fields old_tree, replace_p
-        and ref_p, added fields param_adjustments and performed_splits.
-        (struct cgraph_clone_info): Remove ags_to_skip and
-        combined_args_to_skip, new field param_adjustments.
-        (cgraph_node::create_clone): Changed parameters to use
-        ipa_param_adjustments.
-        (cgraph_node::create_virtual_clone): Likewise.
-        (cgraph_node::create_virtual_clone_with_body): Likewise.
-        (tree_function_versioning): Likewise.
-        (cgraph_build_function_type_skip_args): Removed.
-        * cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Convert to
-        using ipa_param_adjustments.
-        (clone_of_p): Likewise.
-        * cgraphclones.c (cgraph_build_function_type_skip_args): Removed.
-        (build_function_decl_skip_args): Likewise.
-        (duplicate_thunk_for_node): Adjust parameters using
-        ipa_param_body_adjustments, copy param_adjustments instead of
-        args_to_skip.
-        (cgraph_node::create_clone): Convert to using ipa_param_adjustments.
-        (cgraph_node::create_virtual_clone): Likewise.
-        (cgraph_node::create_version_clone_with_body): Likewise.
-        (cgraph_materialize_clone): Likewise.
-        (symbol_table::materialize_all_clones): Likewise.
-        * ipa-fnsummary.c (ipa_fn_summary_t::duplicate): Simplify
-        ipa_replace_map check.
-        * ipa-cp.c (get_replacement_map): Do not initialize removed fields.
-        (initialize_node_lattices): Make aware that some parameters might have
-        already been removed.
-        (want_remove_some_param_p): New function.
-        (create_specialized_node): Convert to using ipa_param_adjustments and
-        deal with possibly pre-existing adjustments.
-        * lto-cgraph.c (output_cgraph_opt_summary_p): Likewise.
-        (output_node_opt_summary): Do not stream removed fields.  Stream
-        parameter adjustments instead of argumetns to skip.
-        (input_node_opt_summary): Likewise.
-        (input_node_opt_summary): Likewise.
-        * lto-section-in.c (lto_section_name): Added ipa-sra section.
-        * lto-streamer.h (lto_section_type): Likewise.
-        * tree-inline.h (copy_body_data): New fields killed_new_ssa_names and
+	* coretypes.h (cgraph_edge): Declare.
+	* ipa-param-manipulation.c: Rewrite.
+	* ipa-param-manipulation.h: Likewise.
+	* Makefile.in (GTFILES): Added ipa-param-manipulation.h and ipa-sra.c.
+	(OBJS): Added ipa-sra.o.
+	* cgraph.h (ipa_replace_map): Removed fields old_tree, replace_p
+	and ref_p, added fields param_adjustments and performed_splits.
+	(struct cgraph_clone_info): Remove ags_to_skip and
+	combined_args_to_skip, new field param_adjustments.
+	(cgraph_node::create_clone): Changed parameters to use
+	ipa_param_adjustments.
+	(cgraph_node::create_virtual_clone): Likewise.
+	(cgraph_node::create_virtual_clone_with_body): Likewise.
+	(tree_function_versioning): Likewise.
+	(cgraph_build_function_type_skip_args): Removed.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Convert to
+	using ipa_param_adjustments.
+	(clone_of_p): Likewise.
+	* cgraphclones.c (cgraph_build_function_type_skip_args): Removed.
+	(build_function_decl_skip_args): Likewise.
+	(duplicate_thunk_for_node): Adjust parameters using
+	ipa_param_body_adjustments, copy param_adjustments instead of
+	args_to_skip.
+	(cgraph_node::create_clone): Convert to using ipa_param_adjustments.
+	(cgraph_node::create_virtual_clone): Likewise.
+	(cgraph_node::create_version_clone_with_body): Likewise.
+	(cgraph_materialize_clone): Likewise.
+	(symbol_table::materialize_all_clones): Likewise.
+	* ipa-fnsummary.c (ipa_fn_summary_t::duplicate): Simplify
+	ipa_replace_map check.
+	* ipa-cp.c (get_replacement_map): Do not initialize removed fields.
+	(initialize_node_lattices): Make aware that some parameters might have
+	already been removed.
+	(want_remove_some_param_p): New function.
+	(create_specialized_node): Convert to using ipa_param_adjustments and
+	deal with possibly pre-existing adjustments.
+	* lto-cgraph.c (output_cgraph_opt_summary_p): Likewise.
+	(output_node_opt_summary): Do not stream removed fields.  Stream
+	parameter adjustments instead of argumetns to skip.
+	(input_node_opt_summary): Likewise.
+	(input_node_opt_summary): Likewise.
+	* lto-section-in.c (lto_section_name): Added ipa-sra section.
+	* lto-streamer.h (lto_section_type): Likewise.
+	* tree-inline.h (copy_body_data): New fields killed_new_ssa_names and
 	param_body_adjs.
-        (copy_decl_to_var): Declare.
-        * tree-inline.c (update_clone_info): Do not remap old_tree.
-        (remap_gimple_stmt): Use ipa_param_body_adjustments to modify gimple
-        statements, walk all extra generated statements and remap their
-        operands.
-        (redirect_all_calls): Add killed SSA names to a hash set.
-        (remap_ssa_name): Do not remap killed SSA names.
-        (copy_arguments_for_versioning): Renames to copy_arguments_nochange,
-        half of functionality moved to ipa_param_body_adjustments.
-        (copy_decl_to_var): Make exported.
-        (copy_body): Destroy killed_new_ssa_names hash set.
-        (expand_call_inline): Remap performed splits.
-        (update_clone_info): Likewise.
-        (tree_function_versioning): Simplify tree_map processing.  Updated to
-        accept ipa_param_adjustments and use ipa_param_body_adjustments.
-        * omp-simd-clone.c (simd_clone_vector_of_formal_parm_types): Adjust
-        for the new interface.
-        (simd_clone_clauses_extract): Likewise, make args an auto_vec.
-        (simd_clone_compute_base_data_type): Likewise.
-        (simd_clone_init_simd_arrays): Adjust for the new interface.
-        (simd_clone_adjust_argument_types): Likewise.
-        (struct modify_stmt_info): Likewise.
-        (ipa_simd_modify_stmt_ops): Likewise.
-        (ipa_simd_modify_function_body): Likewise.
-        (simd_clone_adjust): Likewise.
-        * tree-sra.c: Removed IPA-SRA.  Include tree-sra.h.
-        (type_internals_preclude_sra_p): Make public.
-        * tree-sra.h: New file.
-        * ipa-inline-transform.c (save_inline_function_body): Update to
-        refelct new tree_function_versioning signature.
-        * ipa-prop.c (adjust_agg_replacement_values): Use a helper from
-        ipa_param_adjustments to get current parameter indices.
-        (ipcp_modif_dom_walker::before_dom_children): Likewise.
-        (ipcp_update_bits): Likewise.
-        (ipcp_update_vr): Likewise.
-        * ipa-split.c (split_function): Convert to using ipa_param_adjustments.
-        * ipa-sra.c: New file.
-        * multiple_target.c (create_target_clone): Update to reflet new type
-        of create_version_clone_with_body.
-        * trans-mem.c (ipa_tm_create_version): Update to reflect new type of
-        tree_function_versioning.
+	(copy_decl_to_var): Declare.
+	* tree-inline.c (update_clone_info): Do not remap old_tree.
+	(remap_gimple_stmt): Use ipa_param_body_adjustments to modify gimple
+	statements, walk all extra generated statements and remap their
+	operands.
+	(redirect_all_calls): Add killed SSA names to a hash set.
+	(remap_ssa_name): Do not remap killed SSA names.
+	(copy_arguments_for_versioning): Renames to copy_arguments_nochange,
+	half of functionality moved to ipa_param_body_adjustments.
+	(copy_decl_to_var): Make exported.
+	(copy_body): Destroy killed_new_ssa_names hash set.
+	(expand_call_inline): Remap performed splits.
+	(update_clone_info): Likewise.
+	(tree_function_versioning): Simplify tree_map processing.  Updated to
+	accept ipa_param_adjustments and use ipa_param_body_adjustments.
+	* omp-simd-clone.c (simd_clone_vector_of_formal_parm_types): Adjust
+	for the new interface.
+	(simd_clone_clauses_extract): Likewise, make args an auto_vec.
+	(simd_clone_compute_base_data_type): Likewise.
+	(simd_clone_init_simd_arrays): Adjust for the new interface.
+	(simd_clone_adjust_argument_types): Likewise.
+	(struct modify_stmt_info): Likewise.
+	(ipa_simd_modify_stmt_ops): Likewise.
+	(ipa_simd_modify_function_body): Likewise.
+	(simd_clone_adjust): Likewise.
+	* tree-sra.c: Removed IPA-SRA.  Include tree-sra.h.
+	(type_internals_preclude_sra_p): Make public.
+	* tree-sra.h: New file.
+	* ipa-inline-transform.c (save_inline_function_body): Update to
+	refelct new tree_function_versioning signature.
+	* ipa-prop.c (adjust_agg_replacement_values): Use a helper from
+	ipa_param_adjustments to get current parameter indices.
+	(ipcp_modif_dom_walker::before_dom_children): Likewise.
+	(ipcp_update_bits): Likewise.
+	(ipcp_update_vr): Likewise.
+	* ipa-split.c (split_function): Convert to using ipa_param_adjustments.
+	* ipa-sra.c: New file.
+	* multiple_target.c (create_target_clone): Update to reflet new type
+	of create_version_clone_with_body.
+	* trans-mem.c (ipa_tm_create_version): Update to reflect new type of
+	tree_function_versioning.
 	(modify_function): Update to reflect new type of
 	tree_function_versioning.
-        * params.def (PARAM_IPA_SRA_MAX_REPLACEMENTS): New.
-        * passes.def: Remove old IPA-SRA and add new one.
-        * tree-pass.h (make_pass_early_ipa_sra): Remove declaration.
-        (make_pass_ipa_sra): Declare.
+	* params.def (PARAM_IPA_SRA_MAX_REPLACEMENTS): New.
+	* passes.def: Remove old IPA-SRA and add new one.
+	* tree-pass.h (make_pass_early_ipa_sra): Remove declaration.
+	(make_pass_ipa_sra): Declare.
 	* dbgcnt.def: Remove eipa_sra.  Added ipa_sra_params and
 	ipa_sra_retvalues.
 	* doc/invoke.texi (ipa-sra-max-replacements): New.
@@ -7495,7 +7501,7 @@
 	(convert_scalars_to_vector): Do not call it.
 
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
-            Uros Bizjak  <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	* builtins.c (mathfn_built_in_2): Change CASE_MATHFN to
 	CASE_MATHFN_FLOATN for roundeven.
@@ -7521,25 +7527,25 @@
 
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
 
-        * builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
-        for ROUNDEVEN.
-        * builtins.def: Added function definitions for roundeven function
-        variants.
-        * fold-const-call.c (fold_const_call_ss): Added case for roundeven
-        function call.  Adjust condition for floor, ceil, trunc and round.
-        * fold-const.c (negate_mathfn_p): Added case for roundeven function.
-        (tree_call_nonnegative_warnv_p): Added case for roundeven function.
-        (integer_valued_real_call_p): Added case for roundeven function.
-        * real.c (is_even): New function. Returns true if real number is even,
-        otherwise returns false.
-        (is_halfway_below): New function. Returns true if real number is
-        halfway between two integers, else return false.
-        (real_roundeven): New function. Round real number to nearest integer,
-        rounding halfway cases towards even.
-        * real.h (real_value): Added descriptive comments.  Added function
-        declaration for roundeven function.
-        * doc/extend.texi (Other Builtins): List roundeven variants among
-        functions which can be handled as builtins.
+	* builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
+	for ROUNDEVEN.
+	* builtins.def: Added function definitions for roundeven function
+	variants.
+	* fold-const-call.c (fold_const_call_ss): Added case for roundeven
+	function call.  Adjust condition for floor, ceil, trunc and round.
+	* fold-const.c (negate_mathfn_p): Added case for roundeven function.
+	(tree_call_nonnegative_warnv_p): Added case for roundeven function.
+	(integer_valued_real_call_p): Added case for roundeven function.
+	* real.c (is_even): New function. Returns true if real number is even,
+	otherwise returns false.
+	(is_halfway_below): New function. Returns true if real number is
+	halfway between two integers, else return false.
+	(real_roundeven): New function. Round real number to nearest integer,
+	rounding halfway cases towards even.
+	* real.h (real_value): Added descriptive comments.  Added function
+	declaration for roundeven function.
+	* doc/extend.texi (Other Builtins): List roundeven variants among
+	functions which can be handled as builtins.
 
 2019-08-26  Richard Biener  <rguenther@suse.de>
 
