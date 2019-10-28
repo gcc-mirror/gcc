@@ -23,6 +23,6 @@ program main
   !$acc end kernels
 
   do i = 0, 32 * 32 - 1
-     if (arr(i) .ne. i + (i / 32) * 2) call abort
+     if (arr(i) .ne. i + (i / 32) * 2) stop 1
   end do
 end program main

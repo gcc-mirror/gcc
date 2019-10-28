@@ -23,8 +23,8 @@ program refcount_test
      if (h(i) .eq. i) c = c + 1
   end do
   ! h[] should be filled with uninitialized device values,
-  ! abort if it's not.
-  if (c .eq. N) call abort
+  ! 'stop' if it's not.
+  if (c .eq. N) stop 1
 
   h(:) = 0
 
@@ -37,20 +37,20 @@ program refcount_test
   ! No actual copyout should happen.
   call acc_copyout (h)
   do i = 1, N
-     if (h(i) .ne. 0) call abort
+     if (h(i) .ne. 0) stop 2
   end do
 
   !$acc exit data delete (h(1:N))
 
   ! This should not actually be deleted yet.
-  if (acc_is_present (h) .eqv. .FALSE.) call abort
+  if (acc_is_present (h) .eqv. .FALSE.) stop 3
 
   !$acc exit data copyout (h(1:N)) finalize
 
   do i = 1, N
-     if (h(i) .ne. 111) call abort
+     if (h(i) .ne. 111) stop 4
   end do
 
-  if (acc_is_present (h) .eqv. .TRUE.) call abort
+  if (acc_is_present (h) .eqv. .TRUE.) stop 5
 
 end program refcount_test

@@ -35,6 +35,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimplify.h"
+#include "cgraph.h"
+#include "symbol-summary.h"
+#include "hsa-common.h"
+#include "tree-pass.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -537,6 +542,299 @@ omp_max_simt_vf (void)
       }
   return 0;
 }
+
+/* Store the construct selectors as tree codes from last to first,
+   return their number.  */
+
+int
+omp_constructor_traits_to_codes (tree ctx, enum tree_code *constructs)
+{
+  int nconstructs = list_length (ctx);
+  int i = nconstructs - 1;
+  for (tree t2 = ctx; t2; t2 = TREE_CHAIN (t2), i--)
+    {
+      const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t2));
+      if (!strcmp (sel, "target"))
+	constructs[i] = OMP_TARGET;
+      else if (!strcmp (sel, "teams"))
+	constructs[i] = OMP_TEAMS;
+      else if (!strcmp (sel, "parallel"))
+	constructs[i] = OMP_PARALLEL;
+      else if (!strcmp (sel, "for") || !strcmp (sel, "do"))
+	constructs[i] = OMP_FOR;
+      else if (!strcmp (sel, "simd"))
+	constructs[i] = OMP_SIMD;
+      else
+	gcc_unreachable ();
+    }
+  gcc_assert (i == -1);
+  return nconstructs;
+}
+
+/* Return 1 if context selector matches the current OpenMP context, 0
+   if it does not and -1 if it is unknown and need to be determined later.
+   Some properties can be checked right away during parsing (this routine),
+   others need to wait until the whole TU is parsed, others need to wait until
+   IPA, others until vectorization.  */
+
+int
+omp_context_selector_matches (tree ctx)
+{
+  int ret = 1;
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    {
+      char set = IDENTIFIER_POINTER (TREE_PURPOSE (t1))[0];
+      if (set == 'c')
+	{
+	  /* For now, ignore the construct set.  While something can be
+	     determined already during parsing, we don't know until end of TU
+	     whether additional constructs aren't added through declare variant
+	     unless "omp declare variant variant" attribute exists already
+	     (so in most of the cases), and we'd need to maintain set of
+	     surrounding OpenMP constructs, which is better handled during
+	     gimplification.  */
+	  if (symtab->state == PARSING
+	      || (cfun->curr_properties & PROP_gimple_any) != 0)
+	    {
+	      ret = -1;
+	      continue;
+	    }
+
+	  enum tree_code constructs[5];
+	  int nconstructs
+	    = omp_constructor_traits_to_codes (TREE_VALUE (t1), constructs);
+	  HOST_WIDE_INT r
+	    = omp_construct_selector_matches (constructs, nconstructs);
+	  if (r == 0)
+	    return 0;
+	  if (r == -1)
+	    ret = -1;
+	  continue;
+	}
+      for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	{
+	  const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t2));
+	  switch (*sel)
+	    {
+	    case 'v':
+	      if (set == 'i' && !strcmp (sel, "vendor"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    if (!strcmp (prop, " score") || !strcmp (prop, "gnu"))
+		      continue;
+		    return 0;
+		  }
+	      break;
+	    case 'e':
+	      if (set == 'i' && !strcmp (sel, "extension"))
+		/* We don't support any extensions right now.  */
+		return 0;
+	      break;
+	    case 'a':
+	      if (set == 'i' && !strcmp (sel, "atomic_default_mem_order"))
+		{
+		  enum omp_memory_order omo
+		    = ((enum omp_memory_order)
+		       (omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER));
+		  if (omo == OMP_MEMORY_ORDER_UNSPECIFIED)
+		    {
+		      /* We don't know yet, until end of TU.  */
+		      if (symtab->state == PARSING)
+			{
+			  ret = -1;
+			  break;
+			}
+		      else
+			omo = OMP_MEMORY_ORDER_RELAXED;
+		    }
+		  tree t3 = TREE_VALUE (t2);
+		  const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		  if (!strcmp (prop, " score"))
+		    {
+		      t3 = TREE_CHAIN (t3);
+		      prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    }
+		  if (!strcmp (prop, "relaxed")
+		      && omo != OMP_MEMORY_ORDER_RELAXED)
+		    return 0;
+		  else if (!strcmp (prop, "seq_cst")
+			   && omo != OMP_MEMORY_ORDER_SEQ_CST)
+		    return 0;
+		  else if (!strcmp (prop, "acq_rel")
+			   && omo != OMP_MEMORY_ORDER_ACQ_REL)
+		    return 0;
+		}
+	      if (set == 'd' && !strcmp (sel, "arch"))
+		/* For now, need a target hook.  */
+		ret = -1;
+	      break;
+	    case 'u':
+	      if (set == 'i' && !strcmp (sel, "unified_address"))
+		{
+		  if ((omp_requires_mask & OMP_REQUIRES_UNIFIED_ADDRESS) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      if (set == 'i' && !strcmp (sel, "unified_shared_memory"))
+		{
+		  if ((omp_requires_mask
+		       & OMP_REQUIRES_UNIFIED_SHARED_MEMORY) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      break;
+	    case 'd':
+	      if (set == 'i' && !strcmp (sel, "dynamic_allocators"))
+		{
+		  if ((omp_requires_mask
+		       & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      break;
+	    case 'r':
+	      if (set == 'i' && !strcmp (sel, "reverse_offload"))
+		{
+		  if ((omp_requires_mask & OMP_REQUIRES_REVERSE_OFFLOAD) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      break;
+	    case 'k':
+	      if (set == 'd' && !strcmp (sel, "kind"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    if (!strcmp (prop, "any"))
+		      continue;
+		    if (!strcmp (prop, "fpga"))
+		      return 0;	/* Right now GCC doesn't support any fpgas.  */
+		    if (!strcmp (prop, "host"))
+		      {
+			if (ENABLE_OFFLOADING || hsa_gen_requested_p ())
+			  ret = -1;
+			continue;
+		      }
+		    if (!strcmp (prop, "nohost"))
+		      {
+			if (ENABLE_OFFLOADING || hsa_gen_requested_p ())
+			  ret = -1;
+			else
+			  return 0;
+			continue;
+		      }
+		    if (!strcmp (prop, "cpu") || !strcmp (prop, "gpu"))
+		      {
+			bool maybe_gpu = false;
+			if (hsa_gen_requested_p ())
+			  maybe_gpu = true;
+			else if (ENABLE_OFFLOADING)
+			  for (const char *c = getenv ("OFFLOAD_TARGET_NAMES");
+			       c; )
+			    {
+			      if (!strncmp (c, "nvptx", strlen ("nvptx"))
+				  || !strncmp (c, "amdgcn", strlen ("amdgcn")))
+				{
+				  maybe_gpu = true;
+				  break;
+				}
+			      else if ((c = strchr (c, ',')))
+				c++;
+			    }
+			if (!maybe_gpu)
+			  {
+			    if (prop[0] == 'g')
+			      return 0;
+			  }
+			else
+			  ret = -1;
+			continue;
+		      }
+		    /* Any other kind doesn't match.  */
+		    return 0;
+		  }
+	      break;
+	    case 'i':
+	      if (set == 'd' && !strcmp (sel, "isa"))
+		/* For now, need a target hook.  */
+		ret = -1;
+	      break;
+	    case 'c':
+	      if (set == 'u' && !strcmp (sel, "condition"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  if (TREE_PURPOSE (t3) == NULL_TREE)
+		    {
+		      if (integer_zerop (TREE_VALUE (t3)))
+			return 0;
+		      if (integer_nonzerop (TREE_VALUE (t3)))
+			break;
+		      ret = -1;
+		    }
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
+  return ret;
+}
+
+/* Try to resolve declare variant, return the variant decl if it should
+   be used instead of base, or base otherwise.  */
+
+tree
+omp_resolve_declare_variant (tree base)
+{
+  tree variant = NULL_TREE;
+  for (tree attr = DECL_ATTRIBUTES (base); attr; attr = TREE_CHAIN (attr))
+    {
+      attr = lookup_attribute ("omp declare variant base", attr);
+      if (attr == NULL_TREE)
+	break;
+      switch (omp_context_selector_matches (TREE_VALUE (TREE_VALUE (attr))))
+	{
+	case 0:
+	  /* No match, ignore.  */
+	  break;
+	case -1:
+	  /* Needs to be deferred.  */
+	  return base;
+	default:
+	  /* FIXME: Scoring not implemented yet, so just resolve it
+	     if there is a single variant only.  */
+	  if (variant)
+	    return base;
+	  if (TREE_CODE (TREE_PURPOSE (TREE_VALUE (attr))) == FUNCTION_DECL)
+	    variant = TREE_PURPOSE (TREE_VALUE (attr));
+	  else
+	    return base;
+	}
+    }
+  return variant ? variant : base;
+}
+
 
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK
    macro on gomp-constants.h.  We do not check for overflow.  */

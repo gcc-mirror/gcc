@@ -1846,7 +1846,7 @@ cgraph_node::local_info (tree decl)
   return &node->ultimate_alias_target ()->local;
 }
 
-/* Return local info for the compiled function.  */
+/* Return RTL info for the compiled function.  */
 
 cgraph_rtl_info *
 cgraph_node::rtl_info (const_tree decl)

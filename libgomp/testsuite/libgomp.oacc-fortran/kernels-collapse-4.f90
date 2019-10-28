@@ -30,11 +30,11 @@ program collapse4
       end do
     end do
   end do
-  if (l .neqv. r) call abort
+  if (l .neqv. r) stop 1
   do i = 2, 6
     do j = -2, 4
       do k = 13, 18
-         if (a(i, j, k) .ne. b(i, j, k)) call abort
+         if (a(i, j, k) .ne. b(i, j, k)) stop 2
       end do
     end do
   end do

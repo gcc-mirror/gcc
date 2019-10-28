@@ -4282,7 +4282,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 	{
 	  if (nested_in_vect_loop_p (loop, stmt_info))
 	    return opt_result::failure_at (stmt_info->stmt,
-					   "not vectorized:"
+					   "not vectorized: "
 					   "not suitable for strided load %G",
 					   stmt_info->stmt);
 	  STMT_VINFO_STRIDED_P (stmt_info) = true;

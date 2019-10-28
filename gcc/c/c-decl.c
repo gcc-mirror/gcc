@@ -4832,8 +4832,12 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	attributes = tree_cons (get_identifier ("omp declare target implicit"),
 				NULL_TREE, attributes);
       else
-	attributes = tree_cons (get_identifier ("omp declare target"),
-				NULL_TREE, attributes);
+	{
+	  attributes = tree_cons (get_identifier ("omp declare target"),
+				  NULL_TREE, attributes);
+	  attributes = tree_cons (get_identifier ("omp declare target block"),
+				  NULL_TREE, attributes);
+	}
     }
 
   /* Look up the current declaration with all the attributes merged

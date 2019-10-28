@@ -1,3 +1,310 @@
+2019-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	STMT_VINFO_REDUC_IDX from the actual stmt.
+	(vect_transform_reduction): Likewise.
+	(vectorizable_reduction): Compute the reduction chain length,
+	do not recompute the reduction operand index.  Remove no longer
+	necessary restriction for condition reduction chains.
+
+2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92225
+	* config/i386/sse.md (REDUC_SSE_SMINMAX_MODE): Use TARGET_SSE4_2
+	condition for V2DImode.
+
+2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse_cvtss2si<rex64namesuffix>_2):
+	Remove %k operand modifier.
+	(*vec_extractv2df_1_sse): Remove %q operand modifier.
+
+2019-10-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/92007
+	* cfgcleanup.c (thread_jump): Add an assertion that we don't
+	call it after reload if hot/cold partitioning has been done.
+	(class pass_postreload_jump): Rename to
+	pass_jump_after_combine.
+	(make_pass_postreload_jump): Rename to
+	make_pass_jump_after_combine.
+	* passes.def(pass_postreload_jump): Move before reload, rename
+	to pass_jump_after_combine.
+	* tree-pass.h (make_pass_postreload_jump): Rename to
+	make_pass_jump_after_combine.
+
+2019-10-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/92242
+	* ipa-fnsummary.c (ipa_merge_fn_summary_after_inlining): Check
+	for missing EDGE_REF
+	* ipa-prop.c (update_jump_functions_after_inlining): Likewise.
+
+2019-10-25  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/88760
+	* config/rs6000/rs6000-common.c (rs6000_option_optimization_table):
+	Enable -funroll-loops for -O2 and above.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
+	PARAM_MAX_UNROLL_TIMES to 2 and PARAM_MAX_UNROLLED_INSNS to 20, and
+	do not turn on web and rngreg implicitly, if the unroller is not
+	explicitly enabled.
+
+2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): Do not remove
+	jump functions.
+
+2019-10-27  Eric Botcazou <ebotcazou@adacore.com>
+
+	* cgraph.c (cgraph_node::rtl_info): Fix cut&pasto in comment.
+	* cgraph.h (cgraph_node::rtl_info): Likewise.
+
+2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (propagate_constants_across_call): If args are not available
+	just drop everything to varying.
+	(find_aggregate_values_for_callers_subset): Watch for missing
+	edge summary.
+	(find_more_scalar_values_for_callers_subs): Likewise.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge,
+	update_jump_functions_after_inlining, propagate_controlled_uses):
+	Watch for missing summaries.
+	(ipa_propagate_indirect_call_infos): Remove summary after propagation
+	is finished.
+	(ipa_write_node_info): Watch for missing summaries.
+	(ipa_read_edge_info): Create new ref.
+	(ipa_edge_args_sum_t): Add remove.
+	(IPA_EDGE_REF_GET_CREATE): New macro.
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Watch for missing
+	edge summary.
+	(remap_edge_change_prob): Likewise.
+
+2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c (inline_call): update function summaries
+	after expanidng thunk.
+
+2019-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::merge): Update function summaries.
+	* ipa-prop.h (ipa_get_param): Do not sanity check for WPA.
+
+2019-10-27  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*<sse>_vm<plusminus_insn><mode>3,
+	<sse>_vm<multdiv_mnemonic><mode>3): Remove <iptr> since
+	operand already has scalar mode.
+	(iptr): Remove SF/DF.
+
+2019-10-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91289
+	* config/rs6000/rs6000-logue.c (rs6000_emit_allocate_stack): Don't add
+	an immediate to r0; use r11 instead.  Save and restore r11 to r0 around
+	this.
+
+2019-10-26  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md
+	(<sse>_vm<plusminus_insn><mode>3<mask_scalar_name><round_scalar_name>,
+	<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name><round_scalar_name>,
+	<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>,
+	<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>,
+	<sse>_vmmaskcmp<mode>3):
+	Change predicates from vector_operand to nonimmediate_operand,
+	constraints xBm to xm, since scalar operations don't need
+	memory address alignment.
+	(avx512f_vmcmp<mode>3<round_saeonly_name>,
+	avx512f_vmcmp<mode>3_mask<round_saeonly_name>): Replace
+	round_saeonly_nimm_predicate with
+	round_saeonly_nimm_scalar_predicate.
+	(fmai_vmfmadd_<mode><round_name>, fmai_vmfmsub_<mode><round_name>,
+	fmai_vmfnmadd_<mode><round_name>,fmai_vmfnmsub_<mode><round_name>,
+	*fmai_fmadd_<mode>, *fmai_fmsub_<mode>,
+	*fmai_fnmadd_<mode><round_name>, *fmai_fnmsub_<mode><round_name>,
+	avx512f_vmfmadd_<mode>_mask3<round_name>,
+	avx512f_vmfmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfmsub_<mode>_mask<round_name>,
+	avx512f_vmfmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfmsub_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask<round_name>,
+	*avx512f_vmfnmadd_<mode>_mask3<round_name>,
+	*avx512f_vmfnmadd_<mode>_maskz_1<round_name>,
+	*avx512f_vmfnmsub_<mode>_mask<round_name>,
+	*avx512f_vmfnmsub_<mode>_mask3<round_name>,
+	*avx512f_vmfnmsub_<mode>_maskz_1<round_name>,
+	cvtusi2<ssescalarmodesuffix>32<round_name>,
+	cvtusi2<ssescalarmodesuffix>64<round_name>, ): Replace
+	round_nimm_predicate with round_nimm_scalr_predicate.
+	(avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>,
+	avx512f_sfixupimm<mode>_mask<round_saeonly_name>,
+	avx512er_vmrcp28<mode><round_saeonly_name>,
+	avx512er_vmrsqrt28<mode><round_saeonly_name>,
+	): Replace round_saeonly_nimm_predicate with
+	round_saeonly_nimm_scalar_predicate.
+	(avx512dq_vmfpclass<mode><mask_scalar_merge_name>): Replace
+	vector_operand with nonimmediate_operand.
+	* config/i386/subst.md (round_scalar_nimm_predicate,
+	round_saeonly_scalar_nimm_predicate): Replace
+	vector_operand with nonimmediate_operand.
+
+2019-10-26  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89071
+	* config/i386/i386.md (*rcpsf2_sse): Add
+	avx_partial_xmm_update, prefer m constraint for TARGET_AVX.
+	(*rsqrtsf2_sse): Ditto.
+	(*sqrt<mode>2_sse): Ditto.
+	(sse4_1_round<mode>2): separate constraint vm, add
+	avx_partail_xmm_update, prefer m constraint for TARGET_AVX.
+	* config/i386/sse.md (*sse_vmrcpv4sf2"): New define_insn used
+	by pass rpad.
+	(*<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>*):
+	Ditto.
+	(*sse_vmrsqrtv4sf2): Ditto.
+	(*avx512f_rndscale<mode><round_saeonly_name>): Ditto.
+	(*sse4_1_round<ssescalarmodesuffix>): Ditto.
+	(sse4_1_round<ssescalarmodesuffix>): Add m constraint and
+	<iptr> pointer size modifier since vround support memory operand.
+
+2019-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/85969
+	* config/avr/gen-avr-mmcu-specs.c (str_prefix_p): Remove unused
+	static function.
+
+2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (oacc_default_clause): Privatize fortran common blocks.
+	(omp_notice_variable): Defer the expansion of DECL_VALUE_EXPR for
+	common block decls.
+
+2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92222
+	* tree-vect-slp.c (_slp_oprnd_info::first_pattern): Remove.
+	(_slp_oprnd_info::second_pattern): Likewise.
+	(_slp_oprnd_info::any_pattern): New.
+	(vect_create_oprnd_info): Adjust.
+	(vect_get_and_check_slp_defs): Compute whether any stmt is
+	in a pattern.
+	(vect_build_slp_tree_2): Avoid building up a node from scalars
+	if any of the operand defs, not just the first, is in a pattern.
+
+2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Only fail
+	swapping if we actually have to modify the IL on a shared stmt.
+	(vect_build_slp_tree_2): Never fail swapping on shared stmts
+	because we no longer modify the IL.
+
+2019-10-25  Martin Liska  <mliska@suse.cz>
+
+	* tree.c (dump_tree_statistics): Use sorted index 'j' and not 'i'.
+
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vectorizable_reduction): Restrict the
+	LOOP_VINFO_CAN_FULLY_MASK_P handling to cases that will be
+	handled by vect_transform_reduction.  Allow fully-masked loops
+	to be used with reduction chains.
+	* tree-vect-stmts.c (vectorizable_operation): Handle reduction
+	operations in fully-masked loops.
+	(vectorizable_condition): Reject EXTRACT_LAST_REDUCTION
+	operations in fully-masked loops.
+
+2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Verify
+	STMT_VINFO_REDUC_IDX on the to be vectorized stmts is set up
+	correctly.
+	* tree-vect-patterns.c (vect_mark_pattern_stmts): Transfer
+	STMT_VINFO_REDUC_IDX from the original stmts to the pattern
+	stmts.
+
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.h (omp_construct_selector_matches): Declare.
+	* gimplify.c (struct gimplify_omp_ctx): Add code member.
+	(gimplify_call_expr): Call omp_resolve_declare_variant and remap
+	called function if needed for flag_openmp.
+	(gimplify_scan_omp_clauses): Set ctx->code.
+	(omp_construct_selector_matches): New function.
+	* omp-general.h (omp_constructor_traits_to_codes,
+	omp_context_selector_matches, omp_resolve_declare_variant): Declare.
+	* omp-general.c (omp_constructor_traits_to_codes,
+	omp_context_selector_matches, omp_resolve_declare_variant): New
+	functions.
+
+	* config/arc/arc.c (hwloop_optimize): Add missing space in string
+	literal.
+	* config/rx/rx.c (rx_print_operand): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Likewise.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Likewise.
+	* ipa-sra.c (create_parameter_descriptors, process_scan_results):
+	Likewise.
+	* genemit.c (emit_c_code): Likewise.
+	* plugin.c (try_init_one_plugin): Likewise.  Formatting fix.
+
+2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symbols-summary.h (fast_function_summary<T *, V>::release,
+	fast_call_summary<T *, V>::release): Free m_vector.
+
+2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (symbol_table::process_new_functions): Call
+	ipa_free_size_summary.
+	* ipa-cp.c (ipcp_cloning_candidate_p): Update.
+	(devirtualization_time_bonus): Update.
+	(ipcp_propagate_stage): Update.
+	* ipa-fnsummary.c (ipa_size_summaries): New.
+	(ipa_fn_summary_alloc): Alloc size summary.
+	(dump_ipa_call_summary): Update.
+	(ipa_dump_fn_summary): Update.
+	(analyze_function_body): Update.
+	(compute_fn_summary): Likewise.
+	(ipa_get_stack_frame_offset): New function.
+	(inline_update_callee_summaries): Do not update frame offsets.
+	(ipa_merge_fn_summary_after_inlining): Update frame offsets here;
+	remove call and function summary.
+	(ipa_update_overall_fn_summary): Update.
+	(inline_read_section): Update.
+	(ipa_fn_summary_write): Update.
+	(ipa_free_fn_summary): Do not remove summaries.
+	(ipa_free_size_summary): New.
+	(release summary pass): Also run at WPA.
+	* ipa-fnsummary.h (ipa_size_summary): Declare.
+	(ipa_fn_summary): Remove size, self_size, stack_frame_offset,
+	estimated_self_stack_size.
+	(ipa_size_summary_t): New type.
+	(ipa_size_summaries): Declare.
+	(ipa_free_size_summary): Declare.
+	(ipa_get_stack_frame_offset): Declare.
+	* ipa-icf.c (sem_function::merge): Update.
+	* ipa-inline-analysis.c (estimate_size_after_inlining): Update.
+	(estimate_growth): Update.
+	(growth_likely_positive): Update.
+	(clone_inlined_nodes): Update.
+	(inline_call): Update.
+	* ipa-inline.c (caller_growth_limits): Update.
+	(edge_badness): Update.
+	(recursive_inlining): Update.
+	(inline_small_functions): Update.
+	(inline_to_all_callers_1): Update.
+	* ipa-prop.h (ipa_edge_args_sum_t): Update comment.
+
+2019-10-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (altivec_vavgu<VI_char>): Rename to...
+	(uavg<mode>3_ceil): ... This.
+	(altivec_vavgs<VI_char>): Rename to...
+	(avg<mode>3_ceil): ... This.
+	* config/rs6000/rs6000-builtin.def (VAVGUB, VAVGSB, VAVGUH, VAVGSH,
+	VAVGUW, VAVGSW): Adjust.
+
 2019-10-24  Nathan Sidwell  <nathan@acm.org>
 
 	* dumpfile.c (dump_begin): Reorder decls to use RAII.
@@ -2344,7 +2651,7 @@
 
 2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
 
-        * match.pd (sinh (x) / cosh (x)): New simplification rule.
+	* match.pd (sinh (x) / cosh (x)): New simplification rule.
 
 2019-10-04  Martin Jambor  <mjambor@suse.cz>
 
@@ -4845,7 +5152,7 @@
 	Define to speculation_safe_value_not_needed.
 
 2019-09-20  Richard Biener  <rguenther@suse.de>
-	Uros Bizjak  <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/91814
 	* config/i386/i386-features.c (gen_gpr_to_xmm_move_src): Revert
@@ -4893,98 +5200,98 @@
 
 2019-09-20  Martin Jambor  <mjambor@suse.cz>
 
-        * coretypes.h (cgraph_edge): Declare.
-        * ipa-param-manipulation.c: Rewrite.
-        * ipa-param-manipulation.h: Likewise.
-        * Makefile.in (GTFILES): Added ipa-param-manipulation.h and ipa-sra.c.
-        (OBJS): Added ipa-sra.o.
-        * cgraph.h (ipa_replace_map): Removed fields old_tree, replace_p
-        and ref_p, added fields param_adjustments and performed_splits.
-        (struct cgraph_clone_info): Remove ags_to_skip and
-        combined_args_to_skip, new field param_adjustments.
-        (cgraph_node::create_clone): Changed parameters to use
-        ipa_param_adjustments.
-        (cgraph_node::create_virtual_clone): Likewise.
-        (cgraph_node::create_virtual_clone_with_body): Likewise.
-        (tree_function_versioning): Likewise.
-        (cgraph_build_function_type_skip_args): Removed.
-        * cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Convert to
-        using ipa_param_adjustments.
-        (clone_of_p): Likewise.
-        * cgraphclones.c (cgraph_build_function_type_skip_args): Removed.
-        (build_function_decl_skip_args): Likewise.
-        (duplicate_thunk_for_node): Adjust parameters using
-        ipa_param_body_adjustments, copy param_adjustments instead of
-        args_to_skip.
-        (cgraph_node::create_clone): Convert to using ipa_param_adjustments.
-        (cgraph_node::create_virtual_clone): Likewise.
-        (cgraph_node::create_version_clone_with_body): Likewise.
-        (cgraph_materialize_clone): Likewise.
-        (symbol_table::materialize_all_clones): Likewise.
-        * ipa-fnsummary.c (ipa_fn_summary_t::duplicate): Simplify
-        ipa_replace_map check.
-        * ipa-cp.c (get_replacement_map): Do not initialize removed fields.
-        (initialize_node_lattices): Make aware that some parameters might have
-        already been removed.
-        (want_remove_some_param_p): New function.
-        (create_specialized_node): Convert to using ipa_param_adjustments and
-        deal with possibly pre-existing adjustments.
-        * lto-cgraph.c (output_cgraph_opt_summary_p): Likewise.
-        (output_node_opt_summary): Do not stream removed fields.  Stream
-        parameter adjustments instead of argumetns to skip.
-        (input_node_opt_summary): Likewise.
-        (input_node_opt_summary): Likewise.
-        * lto-section-in.c (lto_section_name): Added ipa-sra section.
-        * lto-streamer.h (lto_section_type): Likewise.
-        * tree-inline.h (copy_body_data): New fields killed_new_ssa_names and
+	* coretypes.h (cgraph_edge): Declare.
+	* ipa-param-manipulation.c: Rewrite.
+	* ipa-param-manipulation.h: Likewise.
+	* Makefile.in (GTFILES): Added ipa-param-manipulation.h and ipa-sra.c.
+	(OBJS): Added ipa-sra.o.
+	* cgraph.h (ipa_replace_map): Removed fields old_tree, replace_p
+	and ref_p, added fields param_adjustments and performed_splits.
+	(struct cgraph_clone_info): Remove ags_to_skip and
+	combined_args_to_skip, new field param_adjustments.
+	(cgraph_node::create_clone): Changed parameters to use
+	ipa_param_adjustments.
+	(cgraph_node::create_virtual_clone): Likewise.
+	(cgraph_node::create_virtual_clone_with_body): Likewise.
+	(tree_function_versioning): Likewise.
+	(cgraph_build_function_type_skip_args): Removed.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Convert to
+	using ipa_param_adjustments.
+	(clone_of_p): Likewise.
+	* cgraphclones.c (cgraph_build_function_type_skip_args): Removed.
+	(build_function_decl_skip_args): Likewise.
+	(duplicate_thunk_for_node): Adjust parameters using
+	ipa_param_body_adjustments, copy param_adjustments instead of
+	args_to_skip.
+	(cgraph_node::create_clone): Convert to using ipa_param_adjustments.
+	(cgraph_node::create_virtual_clone): Likewise.
+	(cgraph_node::create_version_clone_with_body): Likewise.
+	(cgraph_materialize_clone): Likewise.
+	(symbol_table::materialize_all_clones): Likewise.
+	* ipa-fnsummary.c (ipa_fn_summary_t::duplicate): Simplify
+	ipa_replace_map check.
+	* ipa-cp.c (get_replacement_map): Do not initialize removed fields.
+	(initialize_node_lattices): Make aware that some parameters might have
+	already been removed.
+	(want_remove_some_param_p): New function.
+	(create_specialized_node): Convert to using ipa_param_adjustments and
+	deal with possibly pre-existing adjustments.
+	* lto-cgraph.c (output_cgraph_opt_summary_p): Likewise.
+	(output_node_opt_summary): Do not stream removed fields.  Stream
+	parameter adjustments instead of argumetns to skip.
+	(input_node_opt_summary): Likewise.
+	(input_node_opt_summary): Likewise.
+	* lto-section-in.c (lto_section_name): Added ipa-sra section.
+	* lto-streamer.h (lto_section_type): Likewise.
+	* tree-inline.h (copy_body_data): New fields killed_new_ssa_names and
 	param_body_adjs.
-        (copy_decl_to_var): Declare.
-        * tree-inline.c (update_clone_info): Do not remap old_tree.
-        (remap_gimple_stmt): Use ipa_param_body_adjustments to modify gimple
-        statements, walk all extra generated statements and remap their
-        operands.
-        (redirect_all_calls): Add killed SSA names to a hash set.
-        (remap_ssa_name): Do not remap killed SSA names.
-        (copy_arguments_for_versioning): Renames to copy_arguments_nochange,
-        half of functionality moved to ipa_param_body_adjustments.
-        (copy_decl_to_var): Make exported.
-        (copy_body): Destroy killed_new_ssa_names hash set.
-        (expand_call_inline): Remap performed splits.
-        (update_clone_info): Likewise.
-        (tree_function_versioning): Simplify tree_map processing.  Updated to
-        accept ipa_param_adjustments and use ipa_param_body_adjustments.
-        * omp-simd-clone.c (simd_clone_vector_of_formal_parm_types): Adjust
-        for the new interface.
-        (simd_clone_clauses_extract): Likewise, make args an auto_vec.
-        (simd_clone_compute_base_data_type): Likewise.
-        (simd_clone_init_simd_arrays): Adjust for the new interface.
-        (simd_clone_adjust_argument_types): Likewise.
-        (struct modify_stmt_info): Likewise.
-        (ipa_simd_modify_stmt_ops): Likewise.
-        (ipa_simd_modify_function_body): Likewise.
-        (simd_clone_adjust): Likewise.
-        * tree-sra.c: Removed IPA-SRA.  Include tree-sra.h.
-        (type_internals_preclude_sra_p): Make public.
-        * tree-sra.h: New file.
-        * ipa-inline-transform.c (save_inline_function_body): Update to
-        refelct new tree_function_versioning signature.
-        * ipa-prop.c (adjust_agg_replacement_values): Use a helper from
-        ipa_param_adjustments to get current parameter indices.
-        (ipcp_modif_dom_walker::before_dom_children): Likewise.
-        (ipcp_update_bits): Likewise.
-        (ipcp_update_vr): Likewise.
-        * ipa-split.c (split_function): Convert to using ipa_param_adjustments.
-        * ipa-sra.c: New file.
-        * multiple_target.c (create_target_clone): Update to reflet new type
-        of create_version_clone_with_body.
-        * trans-mem.c (ipa_tm_create_version): Update to reflect new type of
-        tree_function_versioning.
+	(copy_decl_to_var): Declare.
+	* tree-inline.c (update_clone_info): Do not remap old_tree.
+	(remap_gimple_stmt): Use ipa_param_body_adjustments to modify gimple
+	statements, walk all extra generated statements and remap their
+	operands.
+	(redirect_all_calls): Add killed SSA names to a hash set.
+	(remap_ssa_name): Do not remap killed SSA names.
+	(copy_arguments_for_versioning): Renames to copy_arguments_nochange,
+	half of functionality moved to ipa_param_body_adjustments.
+	(copy_decl_to_var): Make exported.
+	(copy_body): Destroy killed_new_ssa_names hash set.
+	(expand_call_inline): Remap performed splits.
+	(update_clone_info): Likewise.
+	(tree_function_versioning): Simplify tree_map processing.  Updated to
+	accept ipa_param_adjustments and use ipa_param_body_adjustments.
+	* omp-simd-clone.c (simd_clone_vector_of_formal_parm_types): Adjust
+	for the new interface.
+	(simd_clone_clauses_extract): Likewise, make args an auto_vec.
+	(simd_clone_compute_base_data_type): Likewise.
+	(simd_clone_init_simd_arrays): Adjust for the new interface.
+	(simd_clone_adjust_argument_types): Likewise.
+	(struct modify_stmt_info): Likewise.
+	(ipa_simd_modify_stmt_ops): Likewise.
+	(ipa_simd_modify_function_body): Likewise.
+	(simd_clone_adjust): Likewise.
+	* tree-sra.c: Removed IPA-SRA.  Include tree-sra.h.
+	(type_internals_preclude_sra_p): Make public.
+	* tree-sra.h: New file.
+	* ipa-inline-transform.c (save_inline_function_body): Update to
+	refelct new tree_function_versioning signature.
+	* ipa-prop.c (adjust_agg_replacement_values): Use a helper from
+	ipa_param_adjustments to get current parameter indices.
+	(ipcp_modif_dom_walker::before_dom_children): Likewise.
+	(ipcp_update_bits): Likewise.
+	(ipcp_update_vr): Likewise.
+	* ipa-split.c (split_function): Convert to using ipa_param_adjustments.
+	* ipa-sra.c: New file.
+	* multiple_target.c (create_target_clone): Update to reflet new type
+	of create_version_clone_with_body.
+	* trans-mem.c (ipa_tm_create_version): Update to reflect new type of
+	tree_function_versioning.
 	(modify_function): Update to reflect new type of
 	tree_function_versioning.
-        * params.def (PARAM_IPA_SRA_MAX_REPLACEMENTS): New.
-        * passes.def: Remove old IPA-SRA and add new one.
-        * tree-pass.h (make_pass_early_ipa_sra): Remove declaration.
-        (make_pass_ipa_sra): Declare.
+	* params.def (PARAM_IPA_SRA_MAX_REPLACEMENTS): New.
+	* passes.def: Remove old IPA-SRA and add new one.
+	* tree-pass.h (make_pass_early_ipa_sra): Remove declaration.
+	(make_pass_ipa_sra): Declare.
 	* dbgcnt.def: Remove eipa_sra.  Added ipa_sra_params and
 	ipa_sra_retvalues.
 	* doc/invoke.texi (ipa-sra-max-replacements): New.
@@ -7209,7 +7516,7 @@
 	(convert_scalars_to_vector): Do not call it.
 
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
-            Uros Bizjak  <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	* builtins.c (mathfn_built_in_2): Change CASE_MATHFN to
 	CASE_MATHFN_FLOATN for roundeven.
@@ -7235,25 +7542,25 @@
 
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
 
-        * builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
-        for ROUNDEVEN.
-        * builtins.def: Added function definitions for roundeven function
-        variants.
-        * fold-const-call.c (fold_const_call_ss): Added case for roundeven
-        function call.  Adjust condition for floor, ceil, trunc and round.
-        * fold-const.c (negate_mathfn_p): Added case for roundeven function.
-        (tree_call_nonnegative_warnv_p): Added case for roundeven function.
-        (integer_valued_real_call_p): Added case for roundeven function.
-        * real.c (is_even): New function. Returns true if real number is even,
-        otherwise returns false.
-        (is_halfway_below): New function. Returns true if real number is
-        halfway between two integers, else return false.
-        (real_roundeven): New function. Round real number to nearest integer,
-        rounding halfway cases towards even.
-        * real.h (real_value): Added descriptive comments.  Added function
-        declaration for roundeven function.
-        * doc/extend.texi (Other Builtins): List roundeven variants among
-        functions which can be handled as builtins.
+	* builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
+	for ROUNDEVEN.
+	* builtins.def: Added function definitions for roundeven function
+	variants.
+	* fold-const-call.c (fold_const_call_ss): Added case for roundeven
+	function call.  Adjust condition for floor, ceil, trunc and round.
+	* fold-const.c (negate_mathfn_p): Added case for roundeven function.
+	(tree_call_nonnegative_warnv_p): Added case for roundeven function.
+	(integer_valued_real_call_p): Added case for roundeven function.
+	* real.c (is_even): New function. Returns true if real number is even,
+	otherwise returns false.
+	(is_halfway_below): New function. Returns true if real number is
+	halfway between two integers, else return false.
+	(real_roundeven): New function. Round real number to nearest integer,
+	rounding halfway cases towards even.
+	* real.h (real_value): Added descriptive comments.  Added function
+	declaration for roundeven function.
+	* doc/extend.texi (Other Builtins): List roundeven variants among
+	functions which can be handled as builtins.
 
 2019-08-26  Richard Biener  <rguenther@suse.de>
 

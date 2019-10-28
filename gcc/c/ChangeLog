@@ -1,3 +1,20 @@
+2019-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR c/92249
+	* gimple-parser.c (c_parser_parse_gimple_body): Make
+	current_bb the entry block initially to easier recover
+	from errors.
+	(c_parser_gimple_compound_statement): Adjust.
+
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_finish_omp_declare_variant): Use
+	omp_context_selector_matches instead of
+	c_omp_context_selector_matches.
+	* c-decl.c (c_decl_attributes): Add "omp declare target block"
+	attribute in between declare target and end declare target
+	pragmas.
+
 2019-10-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_attribute_any_word): Rename to

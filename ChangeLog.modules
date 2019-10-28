@@ -1,7 +1,9 @@
 2019-10-25  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r277514.
+
 	gcc/cp/
-	* module.cc (trees_out::type_node): Move typdef printing after
+	* module.cc (trees_out::type_node): Move typedef printing after
 	variant printing.
 	(trees_in::tree_node): Simplity tt_typedef_type.
 

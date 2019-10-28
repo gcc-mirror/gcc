@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
+fast_function_summary <ipa_size_summary *, va_heap> *ipa_size_summaries;
 fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
 
 /* Edge predicates goes here.  */
@@ -451,6 +452,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
   vec<tree> known_vals = vNULL;
   vec<ipa_agg_jump_function_p> known_aggs = vNULL;
+  class ipa_edge_args *args;
 
   if (clause_ptr)
     *clause_ptr = inline_p ? 0 : 1 << predicate::not_inlined_condition;
@@ -461,10 +463,10 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 
   if (ipa_node_params_sum
       && !e->call_stmt_cannot_inline_p
-      && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr))
+      && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr)
+      && (args = IPA_EDGE_REF (e)) != NULL)
     {
       class ipa_node_params *caller_parms_info, *callee_pi;
-      class ipa_edge_args *args = IPA_EDGE_REF (e);
       class ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
 
@@ -552,6 +554,8 @@ ipa_fn_summary_alloc (void)
 {
   gcc_checking_assert (!ipa_fn_summaries);
   ipa_fn_summaries = ipa_fn_summary_t::create_ggc (symtab);
+  ipa_size_summaries = new fast_function_summary <ipa_size_summary *, va_heap>
+							 (symtab);
   ipa_call_summaries = new ipa_call_summary_t (symtab);
 }
 
@@ -791,9 +795,10 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	       es->call_stmt_size, es->call_stmt_time);
 
       ipa_fn_summary *s = ipa_fn_summaries->get (callee);
+      ipa_size_summary *ss = ipa_size_summaries->get (callee);
       if (s != NULL)
-	fprintf (f, "callee size:%2i stack:%2i",
-		 (int) (s->size / ipa_fn_summary::size_scale),
+	fprintf (f, " callee size:%2i stack:%2i",
+		 (int) (ss->size / ipa_fn_summary::size_scale),
 		 (int) s->estimated_stack_size);
 
       if (es->predicate)
@@ -817,13 +822,11 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	  }
       if (!edge->inline_failed)
 	{
-	  ipa_fn_summary *s = ipa_fn_summaries->get (callee);
-	  fprintf (f, "%*sStack frame offset %i, callee self size %i,"
-		   " callee size %i\n",
+	  ipa_size_summary *ss = ipa_size_summaries->get (callee);
+	  fprintf (f, "%*sStack frame offset %i, callee self size %i\n",
 		   indent + 2, "",
-		   (int) s->stack_frame_offset,
-		   (int) s->estimated_self_stack_size,
-		   (int) s->estimated_stack_size);
+		   (int) ipa_get_stack_frame_offset (callee),
+		   (int) ss->estimated_self_stack_size);
 	  dump_ipa_call_summary (f, indent + 2, callee, info);
 	}
     }
@@ -853,6 +856,7 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
   if (node->definition)
     {
       class ipa_fn_summary *s = ipa_fn_summaries->get (node);
+      class ipa_size_summary *ss = ipa_size_summaries->get (node);
       if (s != NULL)
 	{
 	  size_time_entry *e;
@@ -865,11 +869,11 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	  if (s->fp_expressions)
 	    fprintf (f, " fp_expression");
 	  fprintf (f, "\n  global time:     %f\n", s->time.to_double ());
-	  fprintf (f, "  self size:       %i\n", s->self_size);
-	  fprintf (f, "  global size:     %i\n", s->size);
+	  fprintf (f, "  self size:       %i\n", ss->self_size);
+	  fprintf (f, "  global size:     %i\n", ss->size);
 	  fprintf (f, "  min size:       %i\n", s->min_size);
 	  fprintf (f, "  self stack:      %i\n",
-		   (int) s->estimated_self_stack_size);
+		   (int) ss->estimated_self_stack_size);
 	  fprintf (f, "  global stack:    %i\n", (int) s->estimated_stack_size);
 	  if (s->growth)
 	    fprintf (f, "  estimated growth:%i\n", (int) s->growth);
@@ -2655,8 +2659,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	}
     }
   ipa_fn_summary *s = ipa_fn_summaries->get (node);
+  ipa_size_summary *ss = ipa_size_summaries->get (node);
   s->time = time;
-  s->self_size = size;
+  ss->self_size = size;
   nonconstant_names.release ();
   ipa_release_body_info (&fbi);
   if (opt_for_fn (node->decl, optimize))
@@ -2684,7 +2689,6 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 {
   HOST_WIDE_INT self_stack_size;
   struct cgraph_edge *e;
-  class ipa_fn_summary *info;
 
   gcc_assert (!node->global.inlined_to);
 
@@ -2694,14 +2698,14 @@ compute_fn_summary (struct cgraph_node *node, bool early)
   /* Create a new ipa_fn_summary.  */
   ((ipa_fn_summary_t *)ipa_fn_summaries)->remove_callees (node);
   ipa_fn_summaries->remove (node);
-  info = ipa_fn_summaries->get_create (node);
+  class ipa_fn_summary *info = ipa_fn_summaries->get_create (node);
+  class ipa_size_summary *size_info = ipa_size_summaries->get_create (node);
 
   /* Estimate the stack size for the function if we're optimizing.  */
   self_stack_size = optimize && !node->thunk.thunk_p
 		    ? estimated_stack_frame_size (node) : 0;
-  info->estimated_self_stack_size = self_stack_size;
+  size_info->estimated_self_stack_size = self_stack_size;
   info->estimated_stack_size = self_stack_size;
-  info->stack_frame_offset = 0;
 
   if (node->thunk.thunk_p)
     {
@@ -2719,7 +2723,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       t = predicate::not_inlined ();
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);
-      info->self_size = info->size;
+      size_info->self_size = size_info->size;
       if (stdarg_p (TREE_TYPE (node->decl)))
 	{
 	  info->inlinable = false;
@@ -2775,16 +2779,15 @@ compute_fn_summary (struct cgraph_node *node, bool early)
   node->calls_comdat_local = (e != NULL);
 
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
-  info->size = info->self_size;
-  info->stack_frame_offset = 0;
-  info->estimated_stack_size = info->estimated_self_stack_size;
+  size_info->size = size_info->self_size;
+  info->estimated_stack_size = size_info->estimated_self_stack_size;
 
   /* Code above should compute exactly the same result as
      ipa_update_overall_fn_summary but because computation happens in
      different order the roundoff errors result in slight changes.  */
   ipa_update_overall_fn_summary (node);
   /* In LTO mode we may have speculative edges set.  */
-  gcc_assert (in_lto_p || info->size == info->self_size);
+  gcc_assert (in_lto_p || size_info->size == size_info->self_size);
 }
 
 
@@ -3104,6 +3107,26 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 			       ret_nonspec_time, hints, vNULL);
 }
 
+/* Return stack frame offset where frame of NODE is supposed to start inside
+   of the function it is inlined to.
+   Return 0 for functions that are not inlined.  */
+
+HOST_WIDE_INT
+ipa_get_stack_frame_offset (struct cgraph_node *node)
+{
+  HOST_WIDE_INT offset = 0;
+  if (!node->global.inlined_to)
+    return 0;
+  node = node->callers->caller;
+  while (true)
+    {
+      offset += ipa_size_summaries->get (node)->estimated_self_stack_size;
+      if (!node->global.inlined_to)
+	return offset;
+      node = node->callers->caller;
+    }
+}
+
 
 /* Update summary information of inline clones after inlining.
    Compute peak stack usage.  */
@@ -3112,19 +3135,7 @@ static void
 inline_update_callee_summaries (struct cgraph_node *node, int depth)
 {
   struct cgraph_edge *e;
-  ipa_fn_summary *callee_info = ipa_fn_summaries->get (node);
-  ipa_fn_summary *caller_info = ipa_fn_summaries->get (node->callers->caller);
-  HOST_WIDE_INT peak;
 
-  callee_info->stack_frame_offset
-    = caller_info->stack_frame_offset
-    + caller_info->estimated_self_stack_size;
-  peak = callee_info->stack_frame_offset
-    + callee_info->estimated_self_stack_size;
-
-  ipa_fn_summary *s = ipa_fn_summaries->get (node->global.inlined_to);
-  if (s->estimated_stack_size < peak)
-    s->estimated_stack_size = peak;
   ipa_propagate_frequency (node);
   for (e = node->callees; e; e = e->next_callee)
     {
@@ -3150,6 +3161,8 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
     {
       int i;
       class ipa_edge_args *args = IPA_EDGE_REF (edge);
+      if (!args)
+	return;
       class ipa_call_summary *es = ipa_call_summaries->get (edge);
       class ipa_call_summary *inlined_es
 	= ipa_call_summaries->get (inlined_edge);
@@ -3284,11 +3297,10 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   class ipa_fn_summary *info = ipa_fn_summaries->get (to);
   clause_t clause = 0;	/* not_inline is known to be false.  */
   size_time_entry *e;
-  vec<int> operand_map = vNULL;
-  vec<int> offset_map = vNULL;
+  auto_vec<int, 8> operand_map;
+  auto_vec<int, 8> offset_map;
   int i;
   predicate toplev_predicate;
-  predicate true_p = true;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
 
   if (es->predicate)
@@ -3303,7 +3315,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   if (ipa_node_params_sum && callee_info->conds)
     {
       class ipa_edge_args *args = IPA_EDGE_REF (edge);
-      int count = ipa_get_cs_argument_count (args);
+      int count = args ? ipa_get_cs_argument_count (args) : 0;
       int i;
 
       if (count)
@@ -3375,39 +3387,43 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 			&callee_info->loop_stride,
 			operand_map, offset_map, clause, &toplev_predicate);
 
-  ipa_call_summary *s = ipa_call_summaries->get (edge);
-  inline_update_callee_summaries (edge->callee, s->loop_depth);
+  HOST_WIDE_INT stack_frame_offset = ipa_get_stack_frame_offset (edge->callee);
+  HOST_WIDE_INT peak = stack_frame_offset + callee_info->estimated_stack_size;
 
-  /* We do not maintain predicates of inlined edges, free it.  */
-  edge_set_predicate (edge, &true_p);
-  /* Similarly remove param summaries.  */
-  es->param.release ();
-  operand_map.release ();
-  offset_map.release ();
+  if (info->estimated_stack_size < peak)
+    info->estimated_stack_size = peak;
+
+  inline_update_callee_summaries (edge->callee, es->loop_depth);
+
+  /* Free summaries that are not maintained for inline clones/edges.  */
+  ipa_call_summaries->remove (edge);
+  ipa_fn_summaries->remove (edge->callee);
 }
 
-/* For performance reasons ipa_merge_fn_summary_after_inlining is not updating overall size
-   and time.  Recompute it.  */
+/* For performance reasons ipa_merge_fn_summary_after_inlining is not updating
+   overall size and time.  Recompute it.  */
 
 void
 ipa_update_overall_fn_summary (struct cgraph_node *node)
 {
   class ipa_fn_summary *info = ipa_fn_summaries->get_create (node);
+  class ipa_size_summary *size_info = ipa_size_summaries->get_create (node);
   size_time_entry *e;
   int i;
 
-  info->size = 0;
+  size_info->size = 0;
   info->time = 0;
   for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
     {
-      info->size += e->size;
+      size_info->size += e->size;
       info->time += e->time;
     }
-  estimate_calls_size_and_time (node, &info->size, &info->min_size,
+  estimate_calls_size_and_time (node, &size_info->size, &info->min_size,
 				&info->time, NULL,
 				~(clause_t) (1 << predicate::false_condition),
 				vNULL, vNULL, vNULL);
-  info->size = (info->size + ipa_fn_summary::size_scale / 2) / ipa_fn_summary::size_scale;
+  size_info->size = (size_info->size + ipa_fn_summary::size_scale / 2)
+		    / ipa_fn_summary::size_scale;
 }
 
 
@@ -3558,6 +3574,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       unsigned int index;
       struct cgraph_node *node;
       class ipa_fn_summary *info;
+      class ipa_size_summary *size_info;
       lto_symtab_encoder_t encoder;
       struct bitpack_d bp;
       struct cgraph_edge *e;
@@ -3568,6 +3585,8 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
       info = node->prevailing_p () ? ipa_fn_summaries->get_create (node) : NULL;
+      size_info = node->prevailing_p ()
+		  ? ipa_size_summaries->get_create (node) : NULL;
 
       int stack_size = streamer_read_uhwi (&ib);
       int size = streamer_read_uhwi (&ib);
@@ -3576,8 +3595,8 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       if (info)
 	{
 	  info->estimated_stack_size
-	    = info->estimated_self_stack_size = stack_size;
-	  info->size = info->self_size = size;
+	    = size_info->estimated_self_stack_size = stack_size;
+	  size_info->size = size_info->self_size = size;
 	  info->time = time;
 	}
 
@@ -3768,6 +3787,7 @@ ipa_fn_summary_write (void)
       if (cnode && cnode->definition && !cnode->alias)
 	{
 	  class ipa_fn_summary *info = ipa_fn_summaries->get (cnode);
+	  class ipa_size_summary *size_info = ipa_size_summaries->get (cnode);
 	  struct bitpack_d bp;
 	  struct cgraph_edge *edge;
 	  int i;
@@ -3775,8 +3795,8 @@ ipa_fn_summary_write (void)
 	  struct condition *c;
 
 	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, cnode));
-	  streamer_write_hwi (ob, info->estimated_self_stack_size);
-	  streamer_write_hwi (ob, info->self_size);
+	  streamer_write_hwi (ob, size_info->estimated_self_stack_size);
+	  streamer_write_hwi (ob, size_info->self_size);
 	  info->time.stream_out (ob);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
@@ -3846,23 +3866,33 @@ ipa_fn_summary_write (void)
 }
 
 
-/* Release inline summary.  */
+/* Release function summary.  */
 
 void
 ipa_free_fn_summary (void)
 {
-  struct cgraph_node *node;
   if (!ipa_call_summaries)
     return;
-  FOR_EACH_DEFINED_FUNCTION (node)
-    if (!node->alias)
-      ipa_fn_summaries->remove (node);
   ipa_fn_summaries->release ();
   ipa_fn_summaries = NULL;
   ipa_call_summaries->release ();
   delete ipa_call_summaries;
   ipa_call_summaries = NULL;
   edge_predicate_pool.release ();
+  /* During IPA this is one of largest datastructures to release.  */
+  if (flag_wpa)
+    ggc_trim ();
+}
+
+/* Release function summary.  */
+
+void
+ipa_free_size_summary (void)
+{
+  if (!ipa_size_summaries)
+    return;
+  ipa_size_summaries->release ();
+  ipa_size_summaries = NULL;
 }
 
 namespace {
@@ -3937,10 +3967,12 @@ public:
       gcc_assert (n == 0);
       small_p = param;
     }
-  virtual bool gate (function *) { return small_p || !flag_wpa; }
+  virtual bool gate (function *) { return true; }
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();
+      if (!flag_wpa)
+	ipa_free_size_summary ();
       return 0;
     }
 

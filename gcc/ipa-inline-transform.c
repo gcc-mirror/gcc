@@ -200,7 +200,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    {
 	      gcc_assert (!e->callee->alias);
 	      if (overall_size)
-		*overall_size -= ipa_fn_summaries->get (e->callee)->size;
+		*overall_size -= ipa_size_summaries->get (e->callee)->size;
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;
@@ -352,12 +352,14 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (to->thunk.thunk_p)
     {
       struct cgraph_node *target = to->callees->callee;
+      symtab->call_cgraph_removal_hooks (to);
       if (in_lto_p)
 	to->get_untransformed_body ();
       to->expand_thunk (false, true);
       /* When thunk is instrumented we may have multiple callees.  */
       for (e = to->callees; e && e->callee != target; e = e->next_callee)
 	;
+      symtab->call_cgraph_insertion_hooks (to);
       gcc_assert (e);
     }
 
@@ -478,7 +480,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   gcc_assert (curr->callee->global.inlined_to == to);
 
-  old_size = ipa_fn_summaries->get (to)->size;
+  old_size = ipa_size_summaries->get (to)->size;
   ipa_merge_fn_summary_after_inlining (e);
   if (e->in_polymorphic_cdtor)
     mark_all_inlined_calls_cdtor (e->callee);
@@ -492,8 +494,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
        work for further inlining into this function.  Before inlining
        the function we inlined to again we expect the caller to update
        the overall summary.  */
-    ipa_fn_summaries->get (to)->size += estimated_growth;
-  new_size = ipa_fn_summaries->get (to)->size;
+    ipa_size_summaries->get (to)->size += estimated_growth;
+  new_size = ipa_size_summaries->get (to)->size;
 
   if (callee->calls_comdat_local)
     to->calls_comdat_local = true;

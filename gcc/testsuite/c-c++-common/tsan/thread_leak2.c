@@ -1,5 +1,9 @@
 /* { dg-shouldfail "tsan" } */
 
+/* { dg-additional-options "-fno-unroll-loops" { target { powerpc*-*-* } } } */
+/* -fno-unroll-loops help to avoid ThreadSanitizer reporting multi-times
+   message for pthread_create at difference calling addresses.  */
+
 #include <pthread.h>
 #include <unistd.h>
 

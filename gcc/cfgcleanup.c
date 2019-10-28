@@ -259,6 +259,10 @@ thread_jump (edge e, basic_block b)
   bool failed = false;
   reg_set_iterator rsi;
 
+  /* Jump threading may cause fixup_partitions to introduce new crossing edges,
+     which is not allowed after reload.  */
+  gcc_checking_assert (!reload_completed || !crtl->has_bb_partition);
+
   if (b->flags & BB_NONTHREADABLE_BLOCK)
     return NULL;
 
@@ -3280,10 +3284,10 @@ make_pass_jump (gcc::context *ctxt)
 
 namespace {
 
-const pass_data pass_data_postreload_jump =
+const pass_data pass_data_jump_after_combine =
 {
   RTL_PASS, /* type */
-  "postreload_jump", /* name */
+  "jump_after_combine", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_JUMP, /* tv_id */
   0, /* properties_required */
@@ -3293,20 +3297,20 @@ const pass_data pass_data_postreload_jump =
   0, /* todo_flags_finish */
 };
 
-class pass_postreload_jump : public rtl_opt_pass
+class pass_jump_after_combine : public rtl_opt_pass
 {
 public:
-  pass_postreload_jump (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_postreload_jump, ctxt)
+  pass_jump_after_combine (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_jump_after_combine, ctxt)
   {}
 
   /* opt_pass methods: */
   virtual unsigned int execute (function *);
 
-}; // class pass_postreload_jump
+}; // class pass_jump_after_combine
 
 unsigned int
-pass_postreload_jump::execute (function *)
+pass_jump_after_combine::execute (function *)
 {
   cleanup_cfg (flag_thread_jumps ? CLEANUP_THREADING : 0);
   return 0;
@@ -3315,9 +3319,9 @@ pass_postreload_jump::execute (function *)
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_postreload_jump (gcc::context *ctxt)
+make_pass_jump_after_combine (gcc::context *ctxt)
 {
-  return new pass_postreload_jump (ctxt);
+  return new pass_jump_after_combine (ctxt);
 }
 
 namespace {

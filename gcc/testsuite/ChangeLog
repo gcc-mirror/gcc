@@ -1,3 +1,117 @@
+2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92225
+	* gcc.target/i386/pr92225.c: New test.
+
+2019-10-28  Michael Matz  <matz@suse.de>
+
+	PR middle-end/90796
+	* gcc.dg/unroll-and-jam.c: Disable loop-invariant motion and adjust.
+
+2019-10-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/92007
+	* g++.dg/opt/pr92007.C: New test (from Arseny Solokha).
+
+2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91863
+	* gfortran.dg/bind-c-intent-out.f90: New.
+
+2019-10-25  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/88760
+	* gcc.target/powerpc/small-loop-unroll.c: New test.
+	* c-c++-common/tsan/thread_leak2.c: Update test.
+	* gcc.dg/pr59643.c: Update test.
+	* gcc.target/powerpc/loop_align.c: Update test.
+	* gcc.target/powerpc/ppc-fma-1.c: Update test.
+	* gcc.target/powerpc/ppc-fma-2.c: Update test.
+	* gcc.target/powerpc/ppc-fma-3.c: Update test.
+	* gcc.target/powerpc/ppc-fma-4.c: Update test.
+	* gcc.target/powerpc/pr78604.c: Update test.
+
+2019-10-27  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gcc.c-torture/execute/fprintf-2.c: Silence a Free/NetBSD libc warning.
+	* gcc.c-torture/execute/printf-2.c: Likewise.
+	* gcc.c-torture/execute/user-printf.c: Likewise.
+
+2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86248
+	* gfortran.dg/char_result_19.f90 : New test.
+	* gfortran.dg/char_result_mod_19.f90 : Module for the new test.
+
+2019-10-26  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89071
+	* gcc.target/i386/pr87007-4.c: New test.
+	* gcc.target/i386/pr87007-5.c: Ditto.
+
+2019-10-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91581 - ICE in exception-specification of defaulted ctor.
+	* g++.dg/cpp0x/noexcept55.C: New test.
+
+2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/common-block-1.f90: New test.
+	* gfortran.dg/goacc/common-block-2.f90: New test.
+	* gfortran.dg/goacc/common-block-3.f90: New test.
+
+2019-10-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr70100.c: Add -mvsx.
+	Allow AIX ABI function name.
+
+2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92222
+	* gcc.dg/torture/pr92222.c: New testcase.
+
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_strict_3.c (double_reduc1): Prevent
+	the loop from being unrolled.
+
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/loop_add_5.c: Remove XFAILs for tests
+	that now pass.
+	* gcc.target/aarch64/sve/reduc_1.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_2.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_5.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_8.c: Likewise.
+	* gcc.target/aarch64/sve/slp_13.c: Likewise.
+	* gcc.target/aarch64/sve/slp_5.c: Likewise.  Update expected
+	WHILELO counts.
+	* gcc.target/aarch64/sve/slp_7.c: Likewise.
+
+2019-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr65947-1.c: No longer expect doubled dump lines
+	for FOLD_EXTRACT_LAST reductions.
+	* gcc.dg/vect/pr65947-2.c: Likewise.
+	* gcc.dg/vect/pr65947-3.c: Likewise.
+	* gcc.dg/vect/pr65947-4.c: Likewise.
+	* gcc.dg/vect/pr65947-5.c: Likewise.
+	* gcc.dg/vect/pr65947-6.c: Likewise.
+	* gcc.dg/vect/pr65947-9.c: Likewise.
+	* gcc.dg/vect/pr65947-10.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr65947-14.c: Likewise.
+	* gcc.dg/vect/pr80631-1.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/vect-cond-reduc-3.c: Likewise.
+	* gcc.dg/vect/vect-cond-reduc-4.c: Likewise.
+
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-8.c: New test.
+
 2019-10-24  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.dg/ipa/ipa-sra-19.c: Remove dg-skip-if. Add argument type to

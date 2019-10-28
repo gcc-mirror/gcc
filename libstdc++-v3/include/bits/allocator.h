@@ -160,7 +160,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX20_CONSTEXPR
 	allocator(const allocator<_Tp1>&) _GLIBCXX_NOTHROW { }
 
-      _GLIBCXX20_CONSTEXPR
+#if __cpp_constexpr_dynamic_alloc
+      constexpr
+#endif
       ~allocator() _GLIBCXX_NOTHROW { }
 
 #if __cplusplus > 201703L

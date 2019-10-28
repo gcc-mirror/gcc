@@ -25,7 +25,7 @@ program main
 
   call acc_update_device_async (h, sizeof (h), async)
 
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
   h(:) = 0
 
@@ -34,7 +34,7 @@ program main
   call acc_wait (async)
 
   do i = 1, N
-    if (h(i) /= i + i) call abort
+    if (h(i) /= i + i) stop 2
   end do 
 
   call acc_copyin (h, sizeof (h))
@@ -43,16 +43,16 @@ program main
 
   call acc_update_self_async (h, sizeof (h), async)
   
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 3
 
   do i = 1, N
-    if (h(i) /= i + i) call abort
+    if (h(i) /= i + i) stop 4
   end do 
 
   call acc_delete_async (h, async)
 
   call acc_wait (async)
 
-  if (acc_is_present (h) .neqv. .FALSE.) call abort
+  if (acc_is_present (h) .neqv. .FALSE.) stop 5
   
 end program

@@ -1,3 +1,44 @@
+2019-10-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Switch pubs.opengroup.org to https.
+	* doc/xml/manual/locale.xml (LC_ALL): Ditto.
+	* doc/xml/manual/messages.xml: Ditto.
+	
+2019-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2019-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper)
+	(input_iterator_wrapper, forward_iterator_wrapper)
+	bidirectional_iterator_wrapper, random_access_iterator_wrapper): Remove
+	user-provided copy constructors and copy assignment operators so they
+	are defined implicitly.
+	(input_iterator_wrapper): Initialize members in default constructor.
+	(forward_iterator_wrapper): Remove assignments to members of base.
+
+	* include/bits/allocator.h: Check __cpp_constexpr_dynamic_alloc
+	before making the std::allocator destructor constexpr.
+	* testsuite/20_util/allocator/requirements/constexpr.cc: New test.
+
+	* include/bits/range_cmp.h: Check __cpp_lib_concepts before defining
+	concepts. Fix comment.
+	* include/bits/allocator.h 
+
+2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Switch
+	pubs.opengroup.org to https.
+
+2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
+	
+	* doc/xml/gnu/gpl-3.0.xml: Switch www.gnu.org to https.
+
+2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* doc/xml/manual/status_cxx2020.xml: Add rows and update status.
+
 2019-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/allocator.h (allocator<void>): Restore the explicit

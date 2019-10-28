@@ -1,4 +1,6 @@
+! { dg-do run }
 ! { dg-additional-options "-cpp" }
+!
 ! TODO: Have to disable the acc_on_device builtin for we want to test the
 ! libgomp library function?  The command line option
 ! '-fno-builtin-acc_on_device' is valid for C/C++/ObjC/ObjC++ but not for
