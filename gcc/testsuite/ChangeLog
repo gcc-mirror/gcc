@@ -1,3 +1,8 @@
+2019-10-28  Michael Matz  <matz@suse.de>
+
+	PR middle-end/90796
+	* gcc.dg/unroll-and-jam.c: Disable loop-invariant motion and adjust.
+
 2019-10-28  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR rtl-optimization/92007
