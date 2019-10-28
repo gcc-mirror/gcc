@@ -289,6 +289,10 @@ along with GCC; see the file COPYING3.  If not see
 #define FP_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 
+/* True when REGNO is in SIBCALL_REGS set.  */
+#define SIBCALL_REG_P(REGNO)	\
+  TEST_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], REGNO)
+
 #define FP_REG_RTX_P(X) (REG_P (X) && FP_REG_P (REGNO (X)))
 
 /* Use s0 as the frame pointer if it is so requested.  */
@@ -917,5 +921,9 @@ extern unsigned riscv_stack_boundary;
 
 #define SWSP_REACH (4LL << C_SxSP_BITS)
 #define SDSP_REACH (8LL << C_SxSP_BITS)
+
+/* Called from RISCV_REORG, this is defined in riscv-sr.c.  */
+
+extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #endif /* ! GCC_RISCV_H */

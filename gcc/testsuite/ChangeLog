@@ -1,3 +1,13 @@
+2019-10-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* gcc.target/riscv/save-restore-2.c: New file.
+	* gcc.target/riscv/save-restore-3.c: New file.
+	* gcc.target/riscv/save-restore-4.c: New file.
+	* gcc.target/riscv/save-restore-5.c: New file.
+	* gcc.target/riscv/save-restore-6.c: New file.
+	* gcc.target/riscv/save-restore-7.c: New file.
+	* gcc.target/riscv/save-restore-8.c: New file.
+
 2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/92163

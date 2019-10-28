@@ -1,3 +1,13 @@
+2019-10-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config.gcc: Add riscv-sr.o to extra_objs for riscv.
+	* config/riscv/riscv-sr.c: New file.
+	* config/riscv/riscv.c (riscv_reorg): New function.
+	(TARGET_MACHINE_DEPENDENT_REORG): Define.
+	* config/riscv/riscv.h (SIBCALL_REG_P): Define.
+	(riscv_remove_unneeded_save_restore_calls): Declare.
+	* config/riscv/t-riscv (riscv-sr.o): New build rule.
+
 2019-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/92163
