@@ -1,5 +1,11 @@
 2019-10-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	libstdc++-v3/
+	* include/experimental/coroutine: Include <bits/stl_function.h>
+	instead of <functional>.
+
+2019-10-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* coroutine-passes.c (first_vuser): Delete.
 	(move_edge_and_update_vdef): Delete.
