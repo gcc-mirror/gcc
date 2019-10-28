@@ -1,3 +1,13 @@
+2019-10-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91926
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Correct the
+	assignment of the attribute field to account correctly for an
+	assumed shape dummy. Assign separately to the gfc and cfi
+	descriptors since the atribute can be different. Add branch to
+	correctly handle missing optional dummies.
+
 2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

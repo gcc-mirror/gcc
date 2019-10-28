@@ -1,3 +1,11 @@
+2019-10-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91926
+	* gfortran.dg/ISO_Fortran_binding_13.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_13.c : Additional source.
+	* gfortran.dg/ISO_Fortran_binding_14.f90 : New test.
+
 2019-10-28  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	Backport from mainline
