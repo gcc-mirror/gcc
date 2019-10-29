@@ -457,7 +457,6 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
 	     bool force)
 {
   stmt_vec_info dstmt_vinfo;
-  basic_block bb, def_bb;
   enum vect_def_type dt;
 
   /* case 1: we are only interested in uses that need to be vectorized.  Uses
@@ -473,28 +472,8 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
   if (!dstmt_vinfo)
     return opt_result::success ();
 
-  def_bb = gimple_bb (dstmt_vinfo->stmt);
-
-  /* case 2: A reduction phi (STMT) defined by a reduction stmt (DSTMT_VINFO).
-     DSTMT_VINFO must have already been processed, because this should be the
-     only way that STMT, which is a reduction-phi, was put in the worklist,
-     as there should be no other uses for DSTMT_VINFO in the loop.  So we just
-     check that everything is as expected, and we are done.  */
-  bb = gimple_bb (stmt_vinfo->stmt);
-  if (gimple_code (stmt_vinfo->stmt) == GIMPLE_PHI
-      && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
-      && gimple_code (dstmt_vinfo->stmt) != GIMPLE_PHI
-      && STMT_VINFO_DEF_TYPE (dstmt_vinfo) == vect_reduction_def
-      && bb->loop_father == def_bb->loop_father)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "reduc-stmt defining reduc-phi in the same nest.\n");
-      gcc_assert (STMT_VINFO_RELEVANT (dstmt_vinfo) < vect_used_by_reduction);
-      gcc_assert (STMT_VINFO_LIVE_P (dstmt_vinfo)
-		  || STMT_VINFO_RELEVANT (dstmt_vinfo) > vect_unused_in_scope);
-      return opt_result::success ();
-    }
+  basic_block def_bb = gimple_bb (dstmt_vinfo->stmt);
+  basic_block bb = gimple_bb (stmt_vinfo->stmt);
 
   /* case 3a: outer-loop stmt defining an inner-loop stmt:
 	outer-loop-header-bb:

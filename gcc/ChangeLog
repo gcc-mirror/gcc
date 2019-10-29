@@ -1,3 +1,16 @@
+2019-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* tree-vect-loop.c (check_reduction_path): Relax single-use
+	check allowing out-of-loop uses.
+	(vect_is_simple_reduction): SLP reduction chains cannot have
+	intermediate stmts used outside of the loop.
+	(vect_create_epilog_for_reduction): The adjustment might need
+	to be converted.
+	(vectorizable_reduction): Annotate live stmts of the reduction
+	chain with STMT_VINFO_REDUC_DEF.
+	* tree-vect-stms.c (process_use): Remove no longer true asserts.
+
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* calls.c (pass_by_reference): Leave the target to decide whether
