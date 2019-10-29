@@ -156,13 +156,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       // Conversion from iterator to const_iterator.
       template<typename _Iter,
-	      typename = _Require<is_same<_Self, const_iterator>,
-				  is_same<_Iter, iterator>>>
+	       typename = _Require<is_same<_Self, const_iterator>,
+				   is_same<_Iter, iterator>>>
        _Deque_iterator(const _Iter& __x) noexcept
        : _M_cur(__x._M_cur), _M_first(__x._M_first),
 	 _M_last(__x._M_last), _M_node(__x._M_node) { }
 
-      _Deque_iterator(const _Deque_iterator&) = default;
+      _Deque_iterator(const _Deque_iterator& __x) noexcept
+       : _M_cur(__x._M_cur), _M_first(__x._M_first),
+	 _M_last(__x._M_last), _M_node(__x._M_node) { }
+
       _Deque_iterator& operator=(const _Deque_iterator&) = default;
 #endif
 

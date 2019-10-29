@@ -1,3 +1,10 @@
+2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92267
+	* include/bits/stl_deque.h (_Deque_iterator(const _Deque_iterator&)):
+	Do not define as defaulted.
+	* testsuite/23_containers/deque/types/92267.cc: New test.
+
 2019-10-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/codecvt.xml: Switch pubs.opengroup.org to https.
