@@ -672,7 +672,7 @@ public:
   static ipcp_transformation_t *create_ggc (symbol_table *symtab)
   {
     ipcp_transformation_t *summary
-      = new (ggc_cleared_alloc <ipcp_transformation_t> ())
+      = new (ggc_alloc_no_dtor <ipcp_transformation_t> ())
       ipcp_transformation_t (symtab, true);
     return summary;
   }
@@ -710,7 +710,7 @@ ipa_check_create_node_params (void)
 {
   if (!ipa_node_params_sum)
     ipa_node_params_sum
-      = (new (ggc_cleared_alloc <ipa_node_params_t> ())
+      = (new (ggc_alloc_no_dtor <ipa_node_params_t> ())
 	 ipa_node_params_t (symtab, true));
 }
 

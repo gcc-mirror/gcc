@@ -2546,7 +2546,7 @@ ipa_sra_generate_summary (void)
   gcc_checking_assert (!func_sums);
   gcc_checking_assert (!call_sums);
   func_sums
-    = (new (ggc_cleared_alloc <ipa_sra_function_summaries> ())
+    = (new (ggc_alloc_no_dtor <ipa_sra_function_summaries> ())
        ipa_sra_function_summaries (symtab, true));
   call_sums = new ipa_sra_call_summaries (symtab);
 
@@ -2805,7 +2805,7 @@ ipa_sra_read_summary (void)
   gcc_checking_assert (!func_sums);
   gcc_checking_assert (!call_sums);
   func_sums
-    = (new (ggc_cleared_alloc <ipa_sra_function_summaries> ())
+    = (new (ggc_alloc_no_dtor <ipa_sra_function_summaries> ())
        ipa_sra_function_summaries (symtab, true));
   call_sums = new ipa_sra_call_summaries (symtab);
 
@@ -3989,9 +3989,10 @@ ipa_sra_analysis (void)
     process_isra_node_results (node, clone_num_suffixes);
 
   delete clone_num_suffixes;
-  func_sums->release ();
+  func_sums->~ipa_sra_function_summaries ();
+  ggc_free (func_sums);
   func_sums = NULL;
-  call_sums->release ();
+  delete call_sums;
   call_sums = NULL;
 
   if (dump_file)
