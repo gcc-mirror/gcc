@@ -1,3 +1,8 @@
+2019-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92258
+	* config/i386/sse.md (iptr): Revert 2019-10-27 change.
+
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
 	* tree-ssa-strlen.c (get_addr_stridx): Add argument and use it.
