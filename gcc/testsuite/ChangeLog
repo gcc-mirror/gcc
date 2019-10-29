@@ -1,3 +1,8 @@
+2019-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/other/ptrmem8.C: Test locations too.
+	* g++.dg/template/dtor6.C: Likewise.
+
 2019-10-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90998 - ICE with copy elision in init by ctor and -Wconversion.

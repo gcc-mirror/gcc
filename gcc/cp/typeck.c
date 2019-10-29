@@ -5829,10 +5829,10 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 	  if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
 	    {
 	      if (complain & tf_error)
-		error (DECL_CONSTRUCTOR_P (fn)
-		       ? G_("taking address of constructor %qD")
-		       : G_("taking address of destructor %qD"),
-		       fn);
+		error_at (loc, DECL_CONSTRUCTOR_P (fn)
+			  ? G_("taking address of constructor %qD")
+			  : G_("taking address of destructor %qD"),
+			  fn);
 	      return error_mark_node;
 	    }
 	}
@@ -5847,19 +5847,19 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 	    {
 	      if (complain & tf_error)
 		{
-		  error ("invalid use of %qE to form a "
-			 "pointer-to-member-function", xarg.get_value ());
+		  error_at (loc, "invalid use of %qE to form a "
+			    "pointer-to-member-function", xarg.get_value ());
 		  if (TREE_CODE (xarg) != OFFSET_REF)
-		    inform (input_location, "  a qualified-id is required");
+		    inform (loc, "  a qualified-id is required");
 		}
 	      return error_mark_node;
 	    }
 	  else
 	    {
 	      if (complain & tf_error)
-		error ("parentheses around %qE cannot be used to form a"
-		       " pointer-to-member-function",
-		       xarg.get_value ());
+		error_at (loc, "parentheses around %qE cannot be used to "
+			  "form a pointer-to-member-function",
+			  xarg.get_value ());
 	      else
 		return error_mark_node;
 	      PTRMEM_OK_P (xarg) = 1;
