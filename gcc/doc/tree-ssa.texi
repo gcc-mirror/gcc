@@ -392,7 +392,7 @@ to do this :
   FOR_EACH_IMM_USE_STMT (stmt, iterator, ssa_var)
     @{
       if (stmt == last_stmt)
-        BREAK_FROM_IMM_USE_STMT (iter);
+        BREAK_FROM_IMM_USE_STMT (iterator);
 
       FOR_EACH_IMM_USE_ON_STMT (imm_use_p, iterator)
         SET_USE (imm_use_p, ssa_var_2);

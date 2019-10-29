@@ -1,3 +1,8 @@
+2019-10-29  Richard Biener  <rguenther@suse.de>
+
+	* doc/tree-ssa.texi (Immediate Uses): Fix FOR_EACH_IMM_USE_STMT
+	example.
+
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-stmts.c (vectorizable_condition): Get the reduction
