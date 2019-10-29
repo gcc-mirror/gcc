@@ -1,5 +1,10 @@
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
+	* lto.c (do_whole_program_analysis): Pass
+	title as dump_memory_report argument.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
 	* lto.c (do_whole_program_analysis): Remove argument.
 
 2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
