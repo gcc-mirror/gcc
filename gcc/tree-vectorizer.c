@@ -874,6 +874,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
   vec_info_shared shared;
   auto_purge_vect_location sentinel;
   vect_location = find_loop_location (loop);
+
   if (LOCATION_LOCUS (vect_location.get_location_t ()) != UNKNOWN_LOCATION
       && dump_enabled_p ())
     dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
@@ -881,10 +882,17 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		 LOCATION_FILE (vect_location.get_location_t ()),
 		 LOCATION_LINE (vect_location.get_location_t ()));
 
-  /* Try to analyze the loop, retaining an opt_problem if dump_enabled_p.  */
-  opt_loop_vec_info loop_vinfo
-    = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
-  loop->aux = loop_vinfo;
+  opt_loop_vec_info loop_vinfo = opt_loop_vec_info::success (NULL);
+  /* In the case of epilogue vectorization the loop already has its
+     loop_vec_info set, we do not require to analyze the loop in this case.  */
+  if (loop_vec_info vinfo = loop_vec_info_for_loop (loop))
+    loop_vinfo = opt_loop_vec_info::success (vinfo);
+  else
+    {
+      /* Try to analyze the loop, retaining an opt_problem if dump_enabled_p.  */
+      loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
+      loop->aux = loop_vinfo;
+    }
 
   if (!loop_vinfo)
     if (dump_enabled_p ())
@@ -1012,8 +1020,13 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 
   /* Epilogue of vectorized loop must be vectorized too.  */
   if (new_loop)
-    ret |= try_vectorize_loop_1 (simduid_to_vf_htab, num_vectorized_loops,
-				 new_loop, loop_vinfo, NULL, NULL);
+    {
+      /* Don't include vectorized epilogues in the "vectorized loops" count.
+       */
+      unsigned dont_count = *num_vectorized_loops;
+      ret |= try_vectorize_loop_1 (simduid_to_vf_htab, &dont_count,
+				   new_loop, loop_vinfo, NULL, NULL);
+    }
 
   return ret;
 }

@@ -888,6 +888,8 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
 	    }
 	}
     }
+
+  epilogue_vinfos.create (6);
 }
 
 /* Free all levels of MASKS.  */
@@ -912,6 +914,7 @@ _loop_vec_info::~_loop_vec_info ()
   release_vec_loop_masks (&masks);
   delete ivexpr_map;
   delete scan_map;
+  epilogue_vinfos.release ();
 
   loop->aux = NULL;
 }
@@ -1685,9 +1688,20 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
       return 0;
     }
 
-  HOST_WIDE_INT estimated_niter = estimated_stmt_executions_int (loop);
-  if (estimated_niter == -1)
-    estimated_niter = likely_max_stmt_executions_int (loop);
+  HOST_WIDE_INT estimated_niter;
+
+  /* If we are vectorizing an epilogue then we know the maximum number of
+     scalar iterations it will cover is at least one lower than the
+     vectorization factor of the main loop.  */
+  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+    estimated_niter
+      = vect_vf_for_cost (LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo)) - 1;
+  else
+    {
+      estimated_niter = estimated_stmt_executions_int (loop);
+      if (estimated_niter == -1)
+	estimated_niter = likely_max_stmt_executions_int (loop);
+    }
   if (estimated_niter != -1
       && ((unsigned HOST_WIDE_INT) estimated_niter
 	  < MAX (th, (unsigned) min_profitable_estimate)))
@@ -1874,6 +1888,15 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
   int res;
   unsigned int max_vf = MAX_VECTORIZATION_FACTOR;
   poly_uint64 min_vf = 2;
+  loop_vec_info orig_loop_vinfo = NULL;
+
+  /* If we are dealing with an epilogue then orig_loop_vinfo points to the
+     loop_vec_info of the first vectorized loop.  */
+  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+    orig_loop_vinfo = LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo);
+  else
+    orig_loop_vinfo = loop_vinfo;
+  gcc_assert (orig_loop_vinfo);
 
   /* The first group of checks is independent of the vector size.  */
   fatal = true;
@@ -2153,8 +2176,18 @@ start_over:
   /* During peeling, we need to check if number of loop iterations is
      enough for both peeled prolog loop and vector loop.  This check
      can be merged along with threshold check of loop versioning, so
-     increase threshold for this case if necessary.  */
-  if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
+     increase threshold for this case if necessary.
+
+     If we are analyzing an epilogue we still want to check what its
+     versioning threshold would be.  If we decide to vectorize the epilogues we
+     will want to use the lowest versioning threshold of all epilogues and main
+     loop.  This will enable us to enter a vectorized epilogue even when
+     versioning the loop.  We can't simply check whether the epilogue requires
+     versioning though since we may have skipped some versioning checks when
+     analyzing the epilogue.  For instance, checks for alias versioning will be
+     skipped when dealing with epilogues as we assume we already checked them
+     for the main loop.  So instead we always check the 'orig_loop_vinfo'.  */
+  if (LOOP_REQUIRES_VERSIONING (orig_loop_vinfo))
     {
       poly_uint64 niters_th = 0;
       unsigned int th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
@@ -2347,6 +2380,14 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
   poly_uint64 autodetected_vector_size = 0;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
   poly_uint64 next_vector_size = 0;
+  poly_uint64 lowest_th = 0;
+  unsigned vectorized_loops = 0;
+
+  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is enabled, this
+     is not a simd loop and it is the most inner loop.  */
+  bool vect_epilogues
+    = !loop->simdlen && loop->inner == NULL
+      && PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK);
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
@@ -2366,6 +2407,8 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 
       if (orig_loop_vinfo)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = orig_loop_vinfo;
+      else if (vect_epilogues && first_loop_vinfo)
+	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
       opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
       if (next_size == 0)
@@ -2374,18 +2417,43 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
       if (res)
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
+	  vectorized_loops++;
 
-	  if (loop->simdlen
-	      && maybe_ne (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
-			   (unsigned HOST_WIDE_INT) loop->simdlen))
+	  if ((loop->simdlen
+	       && maybe_ne (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+			    (unsigned HOST_WIDE_INT) loop->simdlen))
+	      || vect_epilogues)
 	    {
 	      if (first_loop_vinfo == NULL)
 		{
 		  first_loop_vinfo = loop_vinfo;
+		  lowest_th
+		    = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
 		  loop->aux = NULL;
 		}
 	      else
-		delete loop_vinfo;
+		{
+		  /* Keep track of vector sizes that we know we can vectorize
+		     the epilogue with.  Only vectorize first epilogue.  */
+		  if (vect_epilogues
+		      && first_loop_vinfo->epilogue_vinfos.is_empty ())
+		    {
+		      loop->aux = NULL;
+		      first_loop_vinfo->epilogue_vinfos.reserve (1);
+		      first_loop_vinfo->epilogue_vinfos.quick_push (loop_vinfo);
+		      LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
+		      poly_uint64 th
+			= LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
+		      gcc_assert (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
+				  || maybe_ne (lowest_th, 0U));
+		      /* Keep track of the known smallest versioning
+			 threshold.  */
+		      if (ordered_p (lowest_th, th))
+			lowest_th = ordered_min (lowest_th, th);
+		    }
+		  else
+		    delete loop_vinfo;
+		}
 	    }
 	  else
 	    {
@@ -2419,6 +2487,8 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 		  dump_dec (MSG_NOTE, first_loop_vinfo->vector_size);
 		  dump_printf (MSG_NOTE, "\n");
 		}
+	      LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo) = lowest_th;
+
 	      return first_loop_vinfo;
 	    }
 	  else
@@ -7932,6 +8002,186 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
     *seen_store = stmt_info;
 }
 
+/* Helper function to pass to simplify_replace_tree to enable replacing tree's
+   in the hash_map with its corresponding values.  */
+
+static tree
+find_in_mapping (tree t, void *context)
+{
+  hash_map<tree,tree>* mapping = (hash_map<tree, tree>*) context;
+
+  tree *value = mapping->get (t);
+  return value ? *value : t;
+}
+
+/* Update EPILOGUE's loop_vec_info.  EPILOGUE was constructed as a copy of the
+   original loop that has now been vectorized.
+
+   The inits of the data_references need to be advanced with the number of
+   iterations of the main loop.  This has been computed in vect_do_peeling and
+   is stored in parameter ADVANCE.  We first restore the data_references
+   initial offset with the values recored in ORIG_DRS_INIT.
+
+   Since the loop_vec_info of this EPILOGUE was constructed for the original
+   loop, its stmt_vec_infos all point to the original statements.  These need
+   to be updated to point to their corresponding copies as well as the SSA_NAMES
+   in their PATTERN_DEF_SEQs and RELATED_STMTs.
+
+   The data_reference's connections also need to be updated.  Their
+   corresponding dr_vec_info need to be reconnected to the EPILOGUE's
+   stmt_vec_infos, their statements need to point to their corresponding copy,
+   if they are gather loads or scatter stores then their reference needs to be
+   updated to point to its corresponding copy and finally we set
+   'base_misaligned' to false as we have already peeled for alignment in the
+   prologue of the main loop.  */
+
+static void
+update_epilogue_loop_vinfo (class loop *epilogue, tree advance,
+			    drs_init_vec &orig_drs_init)
+{
+  loop_vec_info epilogue_vinfo = loop_vec_info_for_loop (epilogue);
+  auto_vec<gimple *> stmt_worklist;
+  hash_map<tree,tree> mapping;
+  gimple *orig_stmt, *new_stmt;
+  gimple_stmt_iterator epilogue_gsi;
+  gphi_iterator epilogue_phi_gsi;
+  stmt_vec_info stmt_vinfo = NULL, related_vinfo;
+  basic_block *epilogue_bbs = get_loop_body (epilogue);
+
+  LOOP_VINFO_BBS (epilogue_vinfo) = epilogue_bbs;
+
+  /* Restore original data_reference's offset, before the previous loop and its
+     prologue.  */
+  std::pair<data_reference*, tree> *dr_init;
+  unsigned i;
+  for (i = 0; orig_drs_init.iterate (i, &dr_init); i++)
+    DR_OFFSET (dr_init->first) = dr_init->second;
+
+  /* Advance data_reference's with the number of iterations of the previous
+     loop and its prologue.  */
+  vect_update_inits_of_drs (epilogue_vinfo, advance, PLUS_EXPR);
+
+
+  /* The EPILOGUE loop is a copy of the original loop so they share the same
+     gimple UIDs.  In this loop we update the loop_vec_info of the EPILOGUE to
+     point to the copied statements.  We also create a mapping of all LHS' in
+     the original loop and all the LHS' in the EPILOGUE and create worklists to
+     update teh STMT_VINFO_PATTERN_DEF_SEQs and STMT_VINFO_RELATED_STMTs.  */
+  for (unsigned i = 0; i < epilogue->num_nodes; ++i)
+    {
+      for (epilogue_phi_gsi = gsi_start_phis (epilogue_bbs[i]);
+	   !gsi_end_p (epilogue_phi_gsi); gsi_next (&epilogue_phi_gsi))
+	{
+	  new_stmt = epilogue_phi_gsi.phi ();
+
+	  gcc_assert (gimple_uid (new_stmt) > 0);
+	  stmt_vinfo
+	    = epilogue_vinfo->stmt_vec_infos[gimple_uid (new_stmt) - 1];
+
+	  orig_stmt = STMT_VINFO_STMT (stmt_vinfo);
+	  STMT_VINFO_STMT (stmt_vinfo) = new_stmt;
+
+	  mapping.put (gimple_phi_result (orig_stmt),
+		       gimple_phi_result (new_stmt));
+	  /* PHI nodes can not have patterns or related statements.  */
+	  gcc_assert (STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo) == NULL
+		      && STMT_VINFO_RELATED_STMT (stmt_vinfo) == NULL);
+	}
+
+      for (epilogue_gsi = gsi_start_bb (epilogue_bbs[i]);
+	   !gsi_end_p (epilogue_gsi); gsi_next (&epilogue_gsi))
+	{
+	  new_stmt = gsi_stmt (epilogue_gsi);
+
+	  gcc_assert (gimple_uid (new_stmt) > 0);
+	  stmt_vinfo
+	    = epilogue_vinfo->stmt_vec_infos[gimple_uid (new_stmt) - 1];
+
+	  orig_stmt = STMT_VINFO_STMT (stmt_vinfo);
+	  STMT_VINFO_STMT (stmt_vinfo) = new_stmt;
+
+	  if (tree old_lhs = gimple_get_lhs (orig_stmt))
+	    mapping.put (old_lhs, gimple_get_lhs (new_stmt));
+
+	  if (STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo))
+	    {
+	      gimple_seq seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
+	      for (gimple_stmt_iterator gsi = gsi_start (seq);
+		   !gsi_end_p (gsi); gsi_next (&gsi))
+		stmt_worklist.safe_push (gsi_stmt (gsi));
+	    }
+
+	  related_vinfo = STMT_VINFO_RELATED_STMT (stmt_vinfo);
+	  if (related_vinfo != NULL && related_vinfo != stmt_vinfo)
+	    {
+	      gimple *stmt = STMT_VINFO_STMT (related_vinfo);
+	      stmt_worklist.safe_push (stmt);
+	      /* Set BB such that the assert in
+		'get_initial_def_for_reduction' is able to determine that
+		the BB of the related stmt is inside this loop.  */
+	      gimple_set_bb (stmt,
+			     gimple_bb (new_stmt));
+	      related_vinfo = STMT_VINFO_RELATED_STMT (related_vinfo);
+	      gcc_assert (related_vinfo == NULL
+			  || related_vinfo == stmt_vinfo);
+	    }
+	}
+    }
+
+  /* The PATTERN_DEF_SEQs and RELATED_STMTs in the epilogue were constructed
+     using the original main loop and thus need to be updated to refer to the
+     cloned variables used in the epilogue.  */
+  for (unsigned i = 0; i < stmt_worklist.length (); ++i)
+    {
+      gimple *stmt = stmt_worklist[i];
+      tree *new_op;
+
+      for (unsigned j = 1; j < gimple_num_ops (stmt); ++j)
+	{
+	  tree op = gimple_op (stmt, j);
+	  if ((new_op = mapping.get(op)))
+	    gimple_set_op (stmt, j, *new_op);
+	  else
+	    {
+	      op = simplify_replace_tree (op, NULL_TREE, NULL_TREE,
+				     &find_in_mapping, &mapping);
+	      gimple_set_op (stmt, j, op);
+	    }
+	}
+    }
+
+  struct data_reference *dr;
+  vec<data_reference_p> datarefs = epilogue_vinfo->shared->datarefs;
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
+    {
+      orig_stmt = DR_STMT (dr);
+      gcc_assert (gimple_uid (orig_stmt) > 0);
+      stmt_vinfo = epilogue_vinfo->stmt_vec_infos[gimple_uid (orig_stmt) - 1];
+      /* Data references for gather loads and scatter stores do not use the
+	 updated offset we set using ADVANCE.  Instead we have to make sure the
+	 reference in the data references point to the corresponding copy of
+	 the original in the epilogue.  */
+      if (STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo))
+	{
+	  DR_REF (dr)
+	    = simplify_replace_tree (DR_REF (dr), NULL_TREE, NULL_TREE,
+				     &find_in_mapping, &mapping);
+	  DR_BASE_ADDRESS (dr)
+	    = simplify_replace_tree (DR_BASE_ADDRESS (dr), NULL_TREE, NULL_TREE,
+				     &find_in_mapping, &mapping);
+	}
+      DR_STMT (dr) = STMT_VINFO_STMT (stmt_vinfo);
+      stmt_vinfo->dr_aux.stmt = stmt_vinfo;
+      /* The vector size of the epilogue is smaller than that of the main loop
+	 so the alignment is either the same or lower. This means the dr will
+	 thus by definition be aligned.  */
+      STMT_VINFO_DR_INFO (stmt_vinfo)->base_misaligned = false;
+    }
+
+  epilogue_vinfo->shared->datarefs_copy.release ();
+  epilogue_vinfo->shared->save_datarefs ();
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -7969,11 +8219,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (th >= vect_vf_for_cost (loop_vinfo)
       && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Profitability threshold is %d loop iterations.\n",
-                         th);
-      check_profitability = true;
+	if (dump_enabled_p ())
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Profitability threshold is %d loop iterations.\n",
+			   th);
+	check_profitability = true;
     }
 
   /* Make sure there exists a single-predecessor exit bb.  Do this before 
@@ -8017,9 +8267,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = niters;
   tree nitersm1 = unshare_expr (LOOP_VINFO_NITERSM1 (loop_vinfo));
   bool niters_no_overflow = loop_niters_no_overflow (loop_vinfo);
+  tree advance;
+  drs_init_vec orig_drs_init;
+
   epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector,
 			      &step_vector, &niters_vector_mult_vf, th,
-			      check_profitability, niters_no_overflow);
+			      check_profitability, niters_no_overflow,
+			      &advance, orig_drs_init);
+
   if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
       && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
     scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
@@ -8278,57 +8533,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      since vectorized loop can have loop-carried dependencies.  */
   loop->safelen = 0;
 
-  /* Don't vectorize epilogue for epilogue.  */
-  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo))
-    epilogue = NULL;
-
-  if (!PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK))
-    epilogue = NULL;
-
   if (epilogue)
     {
-      auto_vector_sizes vector_sizes;
-      targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
-      unsigned int next_size = 0;
+      update_epilogue_loop_vinfo (epilogue, advance, orig_drs_init);
 
-      /* Note LOOP_VINFO_NITERS_KNOWN_P and LOOP_VINFO_INT_NITERS work
-         on niters already ajusted for the iterations of the prologue.  */
-      if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	  && known_eq (vf, lowest_vf))
-	{
-	  unsigned HOST_WIDE_INT eiters
-	    = (LOOP_VINFO_INT_NITERS (loop_vinfo)
-	       - LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo));
-	  eiters
-	    = eiters % lowest_vf + LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
-	  epilogue->nb_iterations_upper_bound = eiters - 1;
-	  epilogue->any_upper_bound = true;
-
-	  unsigned int ratio;
-	  while (next_size < vector_sizes.length ()
-		 && !(constant_multiple_p (loop_vinfo->vector_size,
-					   vector_sizes[next_size], &ratio)
-		      && eiters >= lowest_vf / ratio))
-	    next_size += 1;
-	}
-      else
-	while (next_size < vector_sizes.length ()
-	       && maybe_lt (loop_vinfo->vector_size, vector_sizes[next_size]))
-	  next_size += 1;
-
-      if (next_size == vector_sizes.length ())
-	epilogue = NULL;
-    }
-
-  if (epilogue)
-    {
+      epilogue->simduid = loop->simduid;
       epilogue->force_vectorize = loop->force_vectorize;
       epilogue->safelen = loop->safelen;
       epilogue->dont_vectorize = false;
-
-      /* We may need to if-convert epilogue to vectorize it.  */
-      if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))
-	tree_if_conversion (epilogue);
     }
 
   return epilogue;
