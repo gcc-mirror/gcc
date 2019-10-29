@@ -3910,10 +3910,6 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	    tree elt = TREE_OPERAND (probe, 1);
 	    if (TREE_CODE (elt) == FIELD_DECL && DECL_MUTABLE_P (elt))
 	      mutable_p = true;
-	    if (evaluated
-		&& modifying_const_object_p (TREE_CODE (t), probe, mutable_p)
-		&& const_object_being_modified == NULL_TREE)
-	      const_object_being_modified = probe;
 	    if (TREE_CODE (probe) == ARRAY_REF)
 	      {
 		elt = eval_and_check_array_index (ctx, probe, false,
@@ -3921,6 +3917,15 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 		if (*non_constant_p)
 		  return t;
 	      }
+	    /* We don't check modifying_const_object_p for ARRAY_REFs.  Given
+	       "int a[10]", an ARRAY_REF "a[2]" can be "const int", even though
+	       the array isn't const.  Instead, check "a" in the next iteration;
+	       that will detect modifying "const int a[10]".  */
+	    else if (evaluated
+		     && modifying_const_object_p (TREE_CODE (t), probe,
+						  mutable_p)
+		     && const_object_being_modified == NULL_TREE)
+	      const_object_being_modified = probe;
 	    vec_safe_push (refs, elt);
 	    vec_safe_push (refs, TREE_TYPE (probe));
 	    probe = ob;
