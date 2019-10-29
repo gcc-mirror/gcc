@@ -1,3 +1,8 @@
+2019-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (build_x_unary_op): Use the location_t argument in
+	three error_at.
+
 2019-10-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90998 - ICE with copy elision in init by ctor and -Wconversion.
@@ -25,8 +30,8 @@
 
 	* cp-tree.h (cxx_simulate_builtin_function_decl): Declare.
 	* decl.c (cxx_simulate_builtin_function_decl): New function.
-	* cp-objcp-common.h (LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL): Define
-	to the above.
+	* cp-objcp-common.h (LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL):
+	Define to the above.
 
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
