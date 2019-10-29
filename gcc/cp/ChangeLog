@@ -1,3 +1,9 @@
+2019-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92201
+	* cp-gimplify.c (cp_gimplify_expr): If gimplify_to_rvalue changes the
+	function pointer type, re-add cast to the original one.
+
 2019-10-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91548 - fix detecting modifying const objects for ARRAY_REF.

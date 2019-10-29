@@ -838,11 +838,17 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  && CALL_EXPR_FN (*expr_p)
 	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
 	{
+	  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 	  enum gimplify_status t
 	    = gimplify_to_rvalue (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
 				  is_gimple_call_addr);
 	  if (t == GS_ERROR)
 	    ret = GS_ERROR;
+	  /* GIMPLE considers most pointer conversion useless, but for
+	     calls we actually care about the exact function pointer type.  */
+	  else if (TREE_TYPE (CALL_EXPR_FN (*expr_p)) != fnptrtype)
+	    CALL_EXPR_FN (*expr_p)
+	      = build1 (NOP_EXPR, fnptrtype, CALL_EXPR_FN (*expr_p));
 	}
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;
