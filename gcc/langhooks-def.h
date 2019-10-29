@@ -171,6 +171,7 @@ extern tree lhd_make_node (enum tree_code);
 extern tree lhd_unit_size_without_reusable_padding (tree);
 
 #define LANG_HOOKS_MAKE_TYPE lhd_make_node
+#define LANG_HOOKS_SIMULATE_ENUM_DECL	NULL
 #define LANG_HOOKS_CLASSIFY_RECORD	NULL
 #define LANG_HOOKS_TYPE_FOR_SIZE	lhd_type_for_size
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
@@ -204,6 +205,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
+  LANG_HOOKS_SIMULATE_ENUM_DECL, \
   LANG_HOOKS_CLASSIFY_RECORD, \
   LANG_HOOKS_TYPE_FOR_MODE, \
   LANG_HOOKS_TYPE_FOR_SIZE, \
