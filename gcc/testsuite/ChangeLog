@@ -1,3 +1,10 @@
+2019-10-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91548 - fix detecting modifying const objects for ARRAY_REF.
+	* g++.dg/cpp1y/constexpr-tracking-const15.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const16.C: New test.
+	* g++.dg/cpp1z/constexpr-tracking-const1.C: New test.
+
 2019-10-29  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/92144

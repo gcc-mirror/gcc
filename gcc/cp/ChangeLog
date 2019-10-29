@@ -1,3 +1,9 @@
+2019-10-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91548 - fix detecting modifying const objects for ARRAY_REF.
+	* constexpr.c (cxx_eval_store_expression): Don't call
+	modifying_const_object_p for ARRAY_REF.
+
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* cp-objcp-common.h (cxx_simulate_enum_decl): Declare.
