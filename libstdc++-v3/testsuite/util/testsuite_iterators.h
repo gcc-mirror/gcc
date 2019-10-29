@@ -590,5 +590,145 @@ namespace __gnu_test
     size() const
     { return bounds.size(); }
   };
-}
-#endif
+
+#if __cplusplus > 201703L
+  template<typename T>
+    struct contiguous_iterator_wrapper
+    : random_access_iterator_wrapper<T>
+    {
+      using random_access_iterator_wrapper<T>::random_access_iterator_wrapper;
+
+      using iterator_concept = std::contiguous_iterator_tag;
+
+      contiguous_iterator_wrapper&
+      operator++()
+      {
+	random_access_iterator_wrapper<T>::operator++();
+	return *this;
+      }
+
+      contiguous_iterator_wrapper&
+      operator--()
+      {
+	random_access_iterator_wrapper<T>::operator--();
+	return *this;
+      }
+
+      contiguous_iterator_wrapper
+      operator++(int)
+      {
+	auto tmp = *this;
+	++*this;
+	return tmp;
+      }
+
+      contiguous_iterator_wrapper
+      operator--(int)
+      {
+	auto tmp = *this;
+	--*this;
+	return tmp;
+      }
+
+      contiguous_iterator_wrapper&
+      operator+=(std::ptrdiff_t n)
+      {
+	random_access_iterator_wrapper<T>::operator+=(n);
+	return *this;
+      }
+
+      friend contiguous_iterator_wrapper
+      operator+(contiguous_iterator_wrapper iter, std::ptrdiff_t n)
+      { return iter += n; }
+
+      friend contiguous_iterator_wrapper
+      operator+(std::ptrdiff_t n, contiguous_iterator_wrapper iter)
+      { return iter += n; }
+
+      contiguous_iterator_wrapper&
+      operator-=(std::ptrdiff_t n)
+      { return *this += -n; }
+
+      friend contiguous_iterator_wrapper
+      operator-(contiguous_iterator_wrapper iter, std::ptrdiff_t n)
+      { return iter -= n; }
+    };
+
+  // A type meeting the minimum std::range requirements
+  template<typename T, template<typename> class Iter>
+    class test_range
+    {
+      // Adds default constructor to Iter<T> if needed
+      struct iterator : Iter<T>
+      {
+	using Iter<T>::Iter;
+
+	iterator() : Iter<T>(nullptr, nullptr) { }
+
+	using Iter<T>::operator++;
+
+	iterator& operator++() { Iter<T>::operator++(); return *this; }
+      };
+
+      template<typename I>
+	struct sentinel
+	{
+	  T* end;
+
+	  friend bool operator==(const sentinel& s, const I& i)
+	  { return s.end == i.ptr; }
+
+	  friend bool operator!=(const sentinel& s, const I& i)
+	  { return !(s == i); }
+
+	  friend bool operator==(const I& i, const sentinel& s)
+	  { return s == i; }
+
+	  friend bool operator!=(const I& i, const sentinel& s)
+	  { return !(s == i); }
+	};
+
+      auto
+      get_iterator(T* p)
+      {
+	if constexpr (std::default_constructible<Iter<T>>)
+	  return Iter<T>(p, &bounds);
+	else
+	  return iterator(p, &bounds);
+      }
+
+    public:
+      test_range(T* first, T* last) : bounds(first, last)
+      { }
+
+      template<std::size_t N>
+	explicit
+	test_range(T (&arr)[N]) : test_range(arr, arr+N)
+	{ }
+
+      auto begin() & { return get_iterator(bounds.first); }
+
+      auto end() &
+      {
+	using I = decltype(get_iterator(bounds.last));
+	if constexpr (std::sentinel_for<I, I>)
+	  return get_iterator(bounds.last);
+	else
+	  return sentinel<I>{bounds.last};
+      }
+
+      typename Iter<T>::ContainerType bounds;
+    };
+
+  // A type meeting the minimum std::sized_range requirements
+  template<typename T, template<typename> class Iter>
+    struct test_sized_range : test_range<T, Iter>
+    {
+      using test_range<T, Iter>::test_range;
+
+      std::size_t size() const noexcept
+      { return this->bounds.size(); }
+    };
+#endif // C++20
+} // namespace __gnu_test
+#endif // _TESTSUITE_ITERATORS

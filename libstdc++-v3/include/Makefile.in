@@ -473,6 +473,7 @@ bits_headers = \
 	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
+	${bits_srcdir}/iterator_concepts.h \
 	${bits_srcdir}/list.tcc \
 	${bits_srcdir}/locale_classes.h \
 	${bits_srcdir}/locale_classes.tcc \

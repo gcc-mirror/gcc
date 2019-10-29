@@ -1,8 +1,4 @@
-// { dg-do compile }
-
-// 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
-
-// Copyright (C) 2007-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,19 +15,47 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
 
-#include <numeric>
-#include <testsuite_api.h>
+#include <iterator>
+#include <testsuite_hooks.h>
 
-namespace std
+struct X
 {
-  using __gnu_test::NonDefaultConstructible;
+  int value;
 
-  typedef NonDefaultConstructible 		value_type;
-  typedef value_type* 		input_iterator_type;
-  typedef value_type* 		output_iterator_type;
+  constexpr X(int i) : value(i) { }
 
-  template output_iterator_type
-  adjacent_difference(input_iterator_type, input_iterator_type,
-		      output_iterator_type);
-} 
+  X(const X&) = default;
+  X& operator=(const X&) = default;
+
+  constexpr X& operator=(X&& x)
+  {
+    value = x.value;
+    x.value = -1;
+    return *this;
+  }
+};
+
+constexpr bool
+test_X(int i, int j)
+{
+  X x1{i}, x2{j};
+  std::ranges::iter_swap(&x1, &x2);
+  return x1.value == j &&  x2.value == i;
+}
+
+static_assert( test_X(1, 2) );
+
+void
+test01()
+{
+  VERIFY( test_X(3, 4) );
+}
+
+int
+main()
+{
+  test01();
+}

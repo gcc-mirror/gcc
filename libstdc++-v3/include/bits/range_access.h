@@ -34,6 +34,8 @@
 
 #if __cplusplus >= 201103L
 #include <initializer_list>
+#include <bits/iterator_concepts.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -344,60 +346,722 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <typename _Container>
     constexpr auto
-    __adl_end(_Container& __cont) noexcept(noexcept(end(__cont)))
-    { return end(__cont); }
-
-  template <typename _Container>
-    constexpr auto
-    __adl_cbegin(_Container& __cont) noexcept(noexcept(cbegin(__cont)))
-    { return cbegin(__cont); }
-
-  template <typename _Container>
-    constexpr auto
-    __adl_cend(_Container& __cont) noexcept(noexcept(cend(__cont)))
-    { return cend(__cont); }
-
-  template <typename _Container>
-    constexpr auto
-    __adl_rbegin(_Container& __cont) noexcept(noexcept(rbegin(__cont)))
-    { return rbegin(__cont); }
-
-  template <typename _Container>
-    constexpr auto
-    __adl_rend(_Container& __cont) noexcept(noexcept(rend(__cont)))
-    { return rend(__cont); }
-
-  template <typename _Container>
-    constexpr auto
-    __adl_crbegin(_Container& __cont) noexcept(noexcept(crbegin(__cont)))
-    { return crbegin(__cont); }
-
-  template <typename _Container>
-    constexpr auto
-    __adl_crend(_Container& __cont) noexcept(noexcept(crend(__cont)))
-    { return crend(__cont); }
-
-  template <typename _Container>
-    constexpr auto
     __adl_data(_Container& __cont) noexcept(noexcept(data(__cont)))
     { return data(__cont); }
 
-  template <typename _Container>
-    constexpr auto
-    __adl_cdata(_Container& __cont) noexcept(noexcept(cdata(__cont)))
-    { return cdata(__cont); }
+namespace ranges
+{
+  template<typename>
+    inline constexpr bool disable_sized_range = false;
 
-  template <typename _Container>
-    constexpr auto
-    __adl_size(_Container& __cont) noexcept(noexcept(size(__cont)))
-    { return size(__cont); }
+  namespace __detail
+  {
+    using __max_diff_type = long long;
+    using __max_size_type = unsigned long long;
 
-  template <typename _Container>
-    constexpr auto
-    __adl_empty(_Container& __cont) noexcept(noexcept(empty(__cont)))
-    { return empty(__cont); }
+    template<typename _Tp>
+      concept __is_integer_like = integral<_Tp>
+	|| same_as<_Tp, __max_diff_type> || same_as<_Tp, __max_size_type>;
+
+    template<typename _Tp>
+      concept __is_signed_integer_like = signed_integral<_Tp>
+	|| same_as<_Tp, __max_diff_type>;
+
+    template<integral _Tp>
+      constexpr make_unsigned_t<_Tp>
+      __to_unsigned_like(_Tp __t) noexcept
+      { return __t; }
+  } // namespace __detail
+
+  namespace __cust_access
+  {
+    template<typename _Tp>
+      constexpr decay_t<_Tp>
+      __decay_copy(_Tp&& __t)
+      noexcept(is_nothrow_convertible_v<_Tp, decay_t<_Tp>>)
+      { return std::forward<_Tp>(__t); }
+
+    template<typename _Tp>
+      concept __member_begin = is_lvalue_reference_v<_Tp>
+	&& requires(_Tp __t)
+	{ { __decay_copy(__t.begin()) } -> input_or_output_iterator; };
+
+    template<typename _Tp> void begin(_Tp&&) = delete;
+    template<typename _Tp> void begin(initializer_list<_Tp>&&) = delete;
+
+    template<typename _Tp>
+      concept __adl_begin = requires(_Tp&& __t)
+	{
+	  { __decay_copy(begin(std::forward<_Tp>(__t))) }
+	    -> input_or_output_iterator;
+	};
+
+    template<typename _Tp>
+      concept __complete_type = requires(_Tp* __p) { __p + 1; };
+
+    struct _Begin
+    {
+    private:
+      template<typename _Tp>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__member_begin<_Tp>)
+	    return noexcept(__decay_copy(std::declval<_Tp>().begin()));
+	  else
+	    return noexcept(__decay_copy(begin(std::declval<_Tp>())));
+	}
+
+    public:
+      template<__complete_type _Tp, size_t _Nm>
+	constexpr _Tp*
+	operator()(_Tp (&__e)[_Nm]) const noexcept
+	{ return __e; }
+
+      template<typename _Tp> requires __member_begin<_Tp> || __adl_begin<_Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	{
+	  if constexpr (__member_begin<_Tp>)
+	    return __e.begin();
+	  else
+	    return begin(std::forward<_Tp>(__e));
+	}
+    };
+
+    template<typename _Tp>
+      concept __member_end = is_lvalue_reference_v<_Tp>
+	&& requires(_Tp __t)
+	{
+	  { __decay_copy(__t.end()) }
+	    -> sentinel_for<decltype(_Begin{}(__t))>;
+	};
+
+    template<typename _Tp> void end(_Tp&&) = delete;
+    template<typename _Tp> void end(initializer_list<_Tp>&&) = delete;
+
+    template<typename _Tp>
+      concept __adl_end = requires(_Tp&& __t)
+	{
+	  { __decay_copy(end(std::forward<_Tp>(__t))) }
+	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	};
+
+    struct _End
+    {
+    private:
+      template<typename _Tp>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__member_end<_Tp>)
+	    return noexcept(__decay_copy(std::declval<_Tp>().end()));
+	  else
+	    return noexcept(__decay_copy(end(std::declval<_Tp>())));
+	}
+
+    public:
+      template<__complete_type _Tp, size_t _Nm>
+	constexpr _Tp*
+	operator()(_Tp (&__e)[_Nm]) const noexcept
+	{ return __e + _Nm; }
+
+      template<typename _Tp> requires __member_end<_Tp> || __adl_end<_Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	{
+	  if constexpr (__member_end<_Tp>)
+	    return __e.end();
+	  else
+	    return end(std::forward<_Tp>(__e));
+	}
+    };
+
+    template<typename _Tp>
+      constexpr decltype(auto)
+      __as_const(_Tp&& __t) noexcept
+      {
+	if constexpr (is_lvalue_reference_v<_Tp>)
+	  return static_cast<const remove_reference_t<_Tp>&>(__t);
+	else
+	  return static_cast<const _Tp&&>(__t);
+      }
+
+    struct _CBegin
+    {
+      template<typename _Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_Begin{}(__cust_access::__as_const((_Tp&&)__e))))
+	requires requires { _Begin{}(__cust_access::__as_const((_Tp&&)__e)); }
+	{
+	  return _Begin{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	}
+    };
+
+    struct _CEnd
+    {
+      template<typename _Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_End{}(__cust_access::__as_const((_Tp&&)__e))))
+	requires requires { _End{}(__cust_access::__as_const((_Tp&&)__e)); }
+	{
+	  return _End{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	}
+    };
+
+    template<typename _Tp>
+      concept __member_rbegin = is_lvalue_reference_v<_Tp>
+	&& requires(_Tp __t)
+	{ { __decay_copy(__t.rbegin()) } -> input_or_output_iterator; };
+
+    template<typename _Tp> void rbegin(_Tp&&) = delete;
+
+    template<typename _Tp>
+      concept __adl_rbegin = requires(_Tp&& __t)
+	{
+	  { __decay_copy(rbegin(std::forward<_Tp>(__t))) }
+	    -> input_or_output_iterator;
+	};
+
+    template<typename _Tp>
+      concept __reversable = requires(_Tp&& __t)
+	{
+	  { _Begin{}(std::forward<_Tp>(__t)) } -> bidirectional_iterator;
+	  { _End{}(std::forward<_Tp>(__t)) }
+	    -> same_as<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	};
+
+    struct _RBegin
+    {
+    private:
+      template<typename _Tp>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__member_rbegin<_Tp>)
+	    return noexcept(__decay_copy(std::declval<_Tp>().rbegin()));
+	  else if constexpr (__adl_rbegin<_Tp>)
+	    return noexcept(__decay_copy(rbegin(std::declval<_Tp>())));
+	  else if constexpr (noexcept(_End{}(std::declval<_Tp>())))
+	    {
+	      using _It = decltype(_End{}(std::declval<_Tp>()));
+	      // std::reverse_iterator copy-initializes its member.
+	      return is_nothrow_copy_constructible_v<_It>;
+	    }
+	  else
+	    return false;
+	}
+
+    public:
+      template<typename _Tp>
+	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(_S_noexcept<_Tp>())
+	{
+	  if constexpr (__member_rbegin<_Tp>)
+	    return __e.rbegin();
+	  else if constexpr (__adl_rbegin<_Tp>)
+	    return rbegin(std::forward<_Tp>(__e));
+	  else
+	    return std::make_reverse_iterator(_End{}(std::forward<_Tp>(__e)));
+	}
+    };
+
+    template<typename _Tp>
+      concept __member_rend = is_lvalue_reference_v<_Tp>
+	&& requires(_Tp __t)
+	{
+	  { __decay_copy(__t.rend()) }
+	    -> sentinel_for<decltype(_RBegin{}(__t))>;
+	};
+
+    template<typename _Tp> void rend(_Tp&&) = delete;
+
+    template<typename _Tp>
+      concept __adl_rend = requires(_Tp&& __t)
+	{
+	  { __decay_copy(rend(std::forward<_Tp>(__t))) }
+	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
+	};
+
+    struct _REnd
+    {
+    private:
+      template<typename _Tp>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__member_rend<_Tp>)
+	    return noexcept(__decay_copy(std::declval<_Tp>().rend()));
+	  else if constexpr (__adl_rend<_Tp>)
+	    return noexcept(__decay_copy(rend(std::declval<_Tp>())));
+	  else if constexpr (noexcept(_Begin{}(std::declval<_Tp>())))
+	    {
+	      using _It = decltype(_Begin{}(std::declval<_Tp>()));
+	      // std::reverse_iterator copy-initializes its member.
+	      return is_nothrow_copy_constructible_v<_It>;
+	    }
+	  else
+	    return false;
+	}
+
+    public:
+      template<typename _Tp>
+	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(_S_noexcept<_Tp>())
+	{
+	  if constexpr (__member_rend<_Tp>)
+	    return __e.rend();
+	  else if constexpr (__adl_rend<_Tp>)
+	    return rend(std::forward<_Tp>(__e));
+	  else
+	    return std::make_reverse_iterator(_Begin{}(std::forward<_Tp>(__e)));
+	}
+    };
+
+    struct _CRBegin
+    {
+      template<typename _Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_RBegin{}(__cust_access::__as_const((_Tp&&)__e))))
+	requires requires { _RBegin{}(__cust_access::__as_const((_Tp&&)__e)); }
+	{
+	  return _RBegin{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	}
+    };
+
+    struct _CREnd
+    {
+      template<typename _Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_REnd{}(__cust_access::__as_const((_Tp&&)__e))))
+	requires requires { _REnd{}(__cust_access::__as_const((_Tp&&)__e)); }
+	{
+	  return _REnd{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	}
+    };
+
+    template<typename _Tp>
+      concept __member_size = !disable_sized_range<remove_cvref_t<_Tp>>
+	&& requires(_Tp&& __t)
+	{
+	  { __decay_copy(std::forward<_Tp>(__t).size()) }
+	    -> __detail::__is_integer_like;
+	};
+
+    template<typename _Tp> void size(_Tp&&) = delete;
+
+    template<typename _Tp>
+      concept __adl_size = !disable_sized_range<remove_cvref_t<_Tp>>
+	&& requires(_Tp&& __t)
+	{
+	  { __decay_copy(size(std::forward<_Tp>(__t))) }
+	    -> __detail::__is_integer_like;
+	};
+
+    // FIXME: needed due to PR c++/92268
+    template<forward_iterator _It, sized_sentinel_for<_It> _End>
+      requires requires (_It __it, _End __end)
+      { { __end - __it } -> __detail::__is_integer_like; }
+      void
+      __subtractable_fwd_iter(_It, _End)
+      { }
+
+    template<typename _Tp>
+      concept __sizable = requires(_Tp&& __t)
+	{
+	  __subtractable_fwd_iter(_Begin{}(std::forward<_Tp>(__t)),
+				  _End{}(std::forward<_Tp>(__t)));
+	};
+
+    struct _Size
+    {
+    private:
+      template<typename _Tp>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__member_size<_Tp>)
+	    return noexcept(__decay_copy(std::declval<_Tp>().size()));
+	  else if constexpr (__adl_size<_Tp>)
+	    return noexcept(__decay_copy(size(std::declval<_Tp>())));
+	  else if constexpr (__sizable<_Tp>)
+	    return noexcept(_End{}(std::declval<_Tp>())
+			    - _Begin{}(std::declval<_Tp>()));
+	}
+
+    public:
+      template<__complete_type _Tp, size_t _Nm>
+	constexpr size_t
+	operator()(_Tp (&__e)[_Nm]) const noexcept
+	{ return _Nm; }
+
+      template<typename _Tp>
+	requires __member_size<_Tp> || __adl_size<_Tp> || __sizable<_Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	{
+	  if constexpr (__member_size<_Tp>)
+	    return std::forward<_Tp>(__e).size();
+	  else if constexpr (__adl_size<_Tp>)
+	    return size(std::forward<_Tp>(__e));
+	  else if constexpr (__sizable<_Tp>)
+	    return __detail::__to_unsigned_like(
+		_End{}(std::forward<_Tp>(__e))
+		- _Begin{}(std::forward<_Tp>(__e)));
+	}
+    };
+
+    template<typename _Tp>
+      concept __member_empty = requires(_Tp&& __t)
+	{ bool(std::forward<_Tp>(__t).empty()); };
+
+    template<typename _Tp>
+      concept __size0_empty = requires(_Tp&& __t)
+	{ _Size{}(std::forward<_Tp>(__t)) == 0; };
+
+    template<typename _Tp>
+      concept __eq_iter_empty = requires(_Tp&& __t)
+	{
+	  { _Begin{}(std::forward<_Tp>(__t)) } -> forward_iterator;
+	  bool(_Begin{}(std::forward<_Tp>(__t))
+	      == _End{}(std::forward<_Tp>(__t)));
+	};
+
+    struct _Empty
+    {
+    private:
+      template<typename _Tp>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__member_empty<_Tp>)
+	    return noexcept(std::declval<_Tp>().empty());
+	  else if constexpr (__size0_empty<_Tp>)
+	    return noexcept(_Size{}(std::declval<_Tp>()) == 0);
+	  else
+	    return noexcept(bool(_Begin{}(std::declval<_Tp>())
+		== _End{}(std::declval<_Tp>())));
+	}
+
+    public:
+      template<typename _Tp>
+	requires __member_empty<_Tp> || __size0_empty<_Tp>
+	|| __eq_iter_empty<_Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	{
+	  if constexpr (__member_empty<_Tp>)
+	    return bool(std::forward<_Tp>(__e).empty());
+	  else if constexpr (__size0_empty<_Tp>)
+	    return _Size{}(std::forward<_Tp>(__e)) == 0;
+	  else
+	    return bool(_Begin{}(std::forward<_Tp>(__e))
+		== _End{}(std::forward<_Tp>(__e)));
+	}
+    };
+
+    template<typename _Tp>
+      concept __pointer_to_object = is_pointer_v<_Tp>
+				    && is_object_v<remove_pointer_t<_Tp>>;
+
+    template<typename _Tp>
+      concept __member_data = is_lvalue_reference_v<_Tp>
+	&& requires(_Tp __t) { { __t.data() } -> __pointer_to_object; };
+
+    template<typename _Tp>
+      concept __begin_data = requires(_Tp&& __t)
+	{ { _Begin{}(std::forward<_Tp>(__t)) } -> contiguous_iterator; };
+
+    struct _Data
+    {
+    private:
+      template<typename _Tp>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__member_data<_Tp>)
+	    return noexcept(__decay_copy(std::declval<_Tp>().data()));
+	  else
+	    return noexcept(_Begin{}(std::declval<_Tp>()));
+	}
+
+    public:
+      template<typename _Tp> requires __member_data<_Tp> || __begin_data<_Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	{
+	  if constexpr (__member_data<_Tp>)
+	    return __e.data();
+	  else
+	    return std::to_address(_Begin{}(std::forward<_Tp>(__e)));
+	}
+    };
+
+    struct _CData
+    {
+      template<typename _Tp>
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_Data{}(__cust_access::__as_const((_Tp&&)__e))))
+	requires requires { _Data{}(__cust_access::__as_const((_Tp&&)__e)); }
+	{
+	  return _Data{}(__cust_access::__as_const(std::forward<_Tp>(__e)));
+	}
+    };
+
+  } // namespace __cust_access
+
+  inline namespace __cust
+  {
+    inline constexpr __cust_access::_Begin begin{};
+    inline constexpr __cust_access::_End end{};
+    inline constexpr __cust_access::_CBegin cbegin{};
+    inline constexpr __cust_access::_CEnd cend{};
+    inline constexpr __cust_access::_RBegin rbegin{};
+    inline constexpr __cust_access::_REnd rend{};
+    inline constexpr __cust_access::_CRBegin crbegin{};
+    inline constexpr __cust_access::_CREnd crend{};
+    inline constexpr __cust_access::_Size size{};
+    inline constexpr __cust_access::_Empty empty{};
+    inline constexpr __cust_access::_Data data{};
+    inline constexpr __cust_access::_CData cdata{};
+  }
+
+  namespace __detail
+  {
+    template<typename _Tp>
+      concept __range_impl = requires(_Tp&& __t) {
+	ranges::begin(std::forward<_Tp>(__t));
+	ranges::end(std::forward<_Tp>(__t));
+      };
+
+  } // namespace __detail
+
+  /// [range.range] The range concept.
+  template<typename _Tp>
+    concept range = __detail::__range_impl<_Tp&>;
+
+  /// [range.sized] The sized_range concept.
+  template<typename _Tp>
+    concept sized_range = range<_Tp>
+      && requires(_Tp& __t) { ranges::size(__t); };
+
+    // [range.iter.ops] range iterator operations
+
+  template<input_or_output_iterator _It>
+    constexpr void
+    advance(_It& __it, iter_difference_t<_It> __n)
+    {
+      if constexpr (random_access_iterator<_It>)
+	__it += __n;
+      else if constexpr (bidirectional_iterator<_It>)
+	{
+	  if (__n > 0)
+	    {
+	      do
+		{
+		  ++__it;
+		}
+	      while (--__n);
+	    }
+	  else if (__n < 0)
+	    {
+	      do
+		{
+		  --__it;
+		}
+	      while (++__n);
+	    }
+	}
+      else
+	{
+#ifdef __cpp_lib_is_constant_evaluated
+	  if (std::is_constant_evaluated() && __n < 0)
+	    throw "attempt to decrement a non-bidirectional iterator";
+#endif
+	  __glibcxx_assert(__n >= 0);
+	  while (__n-- > 0)
+	    ++__it;
+	}
+    }
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    constexpr void
+    advance(_It& __it, _Sent __bound)
+    {
+      if constexpr (assignable_from<_It&, _Sent>)
+	__it = std::move(__bound);
+      else if constexpr (sized_sentinel_for<_Sent, _It>)
+	ranges::advance(__it, __bound - __it);
+      else
+	{
+	  while (__it != __bound)
+	    ++__it;
+	}
+    }
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    constexpr iter_difference_t<_It>
+    advance(_It& __it, iter_difference_t<_It> __n, _Sent __bound)
+    {
+      if constexpr (sized_sentinel_for<_Sent, _It>)
+	{
+	  const auto __diff = __bound - __it;
+#ifdef __cpp_lib_is_constant_evaluated
+	  if (std::is_constant_evaluated()
+	      && !(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0)))
+	    throw "inconsistent directions for distance and bound";
+#endif
+	  // n and bound must not lead in opposite directions:
+	  __glibcxx_assert(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0));
+	  const auto __absdiff = __diff < 0 ? -__diff : __diff;
+	  const auto __absn = __n < 0 ? -__n : __n;;
+	  if (__absn >= __absdiff)
+	    {
+	      ranges::advance(__it, __bound);
+	      return __n - __diff;
+	    }
+	  else
+	    {
+	      ranges::advance(__it, __n);
+	      return 0;
+	    }
+	}
+      else if (__it == __bound || __n == 0)
+	return iter_difference_t<_It>(0);
+      else if (__n > 0)
+	{
+	  iter_difference_t<_It> __m = 0;
+	  do
+	    {
+	      ++__it;
+	      ++__m;
+	    }
+	  while (__m != __n && __it != __bound);
+	  return __n - __m;
+	}
+      else if constexpr (bidirectional_iterator<_It> && same_as<_It, _Sent>)
+	{
+	  iter_difference_t<_It> __m = 0;
+	  do
+	    {
+	      --__it;
+	      --__m;
+	    }
+	  while (__m != __n && __it != __bound);
+	  return __n - __m;
+	}
+      else
+	{
+#ifdef __cpp_lib_is_constant_evaluated
+	  if (std::is_constant_evaluated() && __n < 0)
+	    throw "attempt to decrement a non-bidirectional iterator";
+#endif
+	  __glibcxx_assert(__n >= 0);
+	  return __n;
+	}
+    }
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    constexpr iter_difference_t<_It>
+    distance(_It __first, _Sent __last)
+    {
+      if constexpr (sized_sentinel_for<_Sent, _It>)
+	return __last - __first;
+      else
+	{
+	  iter_difference_t<_It> __n = 0;
+	  while (__first != __last)
+	    {
+	      ++__first;
+	      ++__n;
+	    }
+	  return __n;
+	}
+    }
+
+  template<range _Range>
+    using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));
+
+  template<range _Range>
+    using range_difference_t = iter_difference_t<iterator_t<_Range>>;
+
+  template<range _Range>
+    constexpr range_difference_t<_Range>
+    distance(_Range&& __r)
+    {
+      if constexpr (sized_range<_Range>)
+	return static_cast<range_difference_t<_Range>>(ranges::size(__r));
+      else
+	return ranges::distance(ranges::begin(__r), ranges::end(__r));
+    }
+
+  template<input_or_output_iterator _It>
+    constexpr _It
+    next(_It __x)
+    {
+      ++__x;
+      return __x;
+    }
+
+  template<input_or_output_iterator _It>
+    constexpr _It
+    next(_It __x, iter_difference_t<_It> __n)
+    {
+      ranges::advance(__x, __n);
+      return __x;
+    }
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    constexpr _It
+    next(_It __x, _Sent __bound)
+    {
+      ranges::advance(__x, __bound);
+      return __x;
+    }
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    constexpr _It
+    next(_It __x, iter_difference_t<_It> __n, _Sent __bound)
+    {
+      ranges::advance(__x, __n, __bound);
+      return __x;
+    }
+
+  template<bidirectional_iterator _It>
+    constexpr _It
+    prev(_It __x)
+    {
+      --__x;
+      return __x;
+    }
+
+  template<bidirectional_iterator _It>
+    constexpr _It
+    prev(_It __x, iter_difference_t<_It> __n)
+    {
+      ranges::advance(__x, -__n);
+      return __x;
+    }
+
+  template<bidirectional_iterator _It>
+    constexpr _It
+    prev(_It __x, iter_difference_t<_It> __n, _It __bound)
+    {
+      ranges::advance(__x, -__n, __bound);
+      return __x;
+    }
+
+} // namespace ranges
 #endif // C++20
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
