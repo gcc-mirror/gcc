@@ -2604,7 +2604,7 @@ symbol_table::compile (void)
   if (pre_ipa_mem_report)
     {
       fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
+      dump_memory_report ();
     }
   if (!quiet_flag)
     fprintf (stderr, "Performing interprocedural optimizations\n");
@@ -2639,7 +2639,7 @@ symbol_table::compile (void)
   if (post_ipa_mem_report)
     {
       fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
+      dump_memory_report ();
     }
   timevar_pop (TV_CGRAPHOPT);
 

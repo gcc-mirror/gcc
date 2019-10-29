@@ -457,7 +457,7 @@ do_whole_program_analysis (void)
   if (pre_ipa_mem_report)
     {
       fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
+      dump_memory_report ();
     }
 
   symtab->function_flags_ready = true;
@@ -539,14 +539,14 @@ do_whole_program_analysis (void)
   if (post_ipa_mem_report)
     {
       fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
+      dump_memory_report ();
     }
 
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
     print_lto_report_1 ();
   if (mem_report_wpa)
-    dump_memory_report (true);
+    dump_memory_report ();
 }
 
 /* Create artificial pointers for "omp declare target link" vars.  */
