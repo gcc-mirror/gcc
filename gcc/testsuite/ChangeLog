@@ -1,10 +1,15 @@
+2019-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92201
+	* g++.dg/other/pr92201.C: New test.
+
 2019-10-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
 	PR fortran/91926
-	* gfortran.dg/ISO_Fortran_binding_13.f90 : New test.
-	* gfortran.dg/ISO_Fortran_binding_13.c : Additional source.
-	* gfortran.dg/ISO_Fortran_binding_14.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_13.f90: New test.
+	* gfortran.dg/ISO_Fortran_binding_13.c: Additional source.
+	* gfortran.dg/ISO_Fortran_binding_14.f90: New test.
 
 2019-10-28  Jiufu Guo  <guojiufu@linux.ibm.com>
 
@@ -47,8 +52,8 @@
 
 	Backport from mainline
 	PR fortran/86248
-	* gfortran.dg/char_result_19.f90 : New test.
-	* gfortran.dg/char_result_mod_19.f90 : Module for the new test.
+	* gfortran.dg/char_result_19.f90: New test.
+	* gfortran.dg/char_result_mod_19.f90: Module for the new test.
 
 2019-10-25  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -339,7 +344,7 @@
 
 	Backport from mainline
 	PR fortran/91588
-	* gfortran.dg/associate_49.f90 : New test.
+	* gfortran.dg/associate_49.f90: New test.
 
 2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -404,7 +409,7 @@
 
 	Backport from mainline
 	PR fortran/91589
-	* gfortran.dg/pr91589.f90 : New test.
+	* gfortran.dg/pr91589.f90: New test.
 
 2019-09-05  Harald Anlauf  <anlauf@gmx.de>
 
@@ -1354,7 +1359,7 @@
 
 	Backport from mainline
 	PR fortran/91077
-	* gfortran.dg/pointer_array_11.f90 : New test.
+	* gfortran.dg/pointer_array_11.f90: New test.
 
 2019-07-05  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
@@ -1603,7 +1608,7 @@
        * gcc.target/i386/pr82699-6.c: Likewise
        * gcc.target/i386/returninst1.c: Likewise
        * gcc.target/i386/returninst2.c: Likewise
-       * gcc.target/i386/returninst3.c : Likewise
+       * gcc.target/i386/returninst3.c: Likewise
 
 2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
@@ -1765,7 +1770,7 @@
 
 	Backport from trunk
 	PR fortran/90498
-	* gfortran.dg/associate_48.f90 : New test.
+	* gfortran.dg/associate_48.f90: New test.
 
 2019-05-17  Jakub Jelinek  <jakub@redhat.com>
 
@@ -4435,21 +4440,21 @@
 2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88117
-	* gfortran.dg/deferred_character_32.f90 : New test
+	* gfortran.dg/deferred_character_32.f90: New test
 
 2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89385
-	* gfortran.dg/ISO_Fortran_binding_1.f90 : Correct test for
+	* gfortran.dg/ISO_Fortran_binding_1.f90: Correct test for
 	previously incorrect lbound for allocatable expressions. Also
 	correct stop values to avoid repetition.
-	* gfortran.dg/ISO_Fortran_binding_5.f90 : New test
-	* gfortran.dg/ISO_Fortran_binding_5.c : Support previous test.
+	* gfortran.dg/ISO_Fortran_binding_5.f90: New test
+	* gfortran.dg/ISO_Fortran_binding_5.c: Support previous test.
 
 	PR fortran/89366
-	* gfortran.dg/ISO_Fortran_binding_6.f90 : New test
-	* gfortran.dg/ISO_Fortran_binding_6.c : Support previous test.
-	* gfortran.dg/pr32599.f03 : Set standard to F2008.
+	* gfortran.dg/ISO_Fortran_binding_6.f90: New test
+	* gfortran.dg/ISO_Fortran_binding_6.c: Support previous test.
+	* gfortran.dg/pr32599.f03: Set standard to F2008.
 
 2019-02-22  David Malcolm  <dmalcolm@redhat.com>
 
@@ -5078,7 +5083,7 @@
 2019-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89200
-	* gfortran.dg/array_reference_2.f90 : New test.
+	* gfortran.dg/array_reference_2.f90: New test.
 
 2019-02-09  Jakub Jelinek  <jakub@redhat.com>
 
@@ -5338,17 +5343,17 @@
 2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88393
-	* gfortran.dg/alloc_comp_assign_16.f03 : New test.
+	* gfortran.dg/alloc_comp_assign_16.f03: New test.
 
 2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88980
-	* gfortran.dg/realloc_on_assign_32.f90 : New test.
+	* gfortran.dg/realloc_on_assign_32.f90: New test.
 
 2019-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88685
-	* gfortran.dg/pointer_array_component_3.f90 : New test.
+	* gfortran.dg/pointer_array_component_3.f90: New test.
 
 2019-02-02  Jakub Jelinek  <jakub@redhat.com>
 
