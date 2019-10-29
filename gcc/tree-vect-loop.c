@@ -2678,8 +2678,7 @@ pop:
     {
       gimple *use_stmt = USE_STMT (path[i].second);
       tree op = USE_FROM_PTR (path[i].second);
-      if (! has_single_use (op)
-	  || ! is_gimple_assign (use_stmt)
+      if (! is_gimple_assign (use_stmt)
 	  /* The following make sure we can compute the operand index
 	     easily plus it mostly disallows chaining via COND_EXPR condition
 	     operands.  */
@@ -2690,7 +2689,21 @@ pop:
 	  fail = true;
 	  break;
 	}
-      enum tree_code use_code = gimple_assign_rhs_code (use_stmt);
+      /* Check there's only a single stmt the op is used on inside
+         of the loop.  */
+      imm_use_iterator imm_iter;
+      gimple *op_use_stmt;
+      unsigned cnt = 0;
+      FOR_EACH_IMM_USE_STMT (op_use_stmt, imm_iter, op)
+	if (!is_gimple_debug (op_use_stmt)
+	    && flow_bb_inside_loop_p (loop, gimple_bb (op_use_stmt)))
+	  cnt++;
+      if (cnt != 1)
+	{
+	  fail = true;
+	  break;
+	}
+      tree_code use_code = gimple_assign_rhs_code (use_stmt);
       if (use_code == MINUS_EXPR)
 	{
 	  use_code = PLUS_EXPR;
@@ -2922,7 +2935,10 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       for (i = path.length () - 1; i >= 1; --i)
 	{
 	  gimple *stmt = USE_STMT (path[i].second);
-	  if (gimple_assign_rhs_code (stmt) != code)
+	  if (gimple_assign_rhs_code (stmt) != code
+	      /* We can only handle the final value in epilogue
+		 generation for reduction chains.  */
+	      || (i != 1 && !has_single_use (gimple_assign_lhs (stmt))))
 	    is_slp_reduc = false;
 	  stmt_vec_info stmt_info = loop_info->lookup_stmt (stmt);
 	  STMT_VINFO_REDUC_IDX (stmt_info)
@@ -4119,11 +4135,11 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
   stmt_vec_info phi_info;
   gimple_stmt_iterator exit_gsi;
   tree vec_dest;
-  tree new_temp = NULL_TREE, new_dest, new_name, new_scalar_dest;
+  tree new_temp = NULL_TREE, new_name, new_scalar_dest;
   gimple *epilog_stmt = NULL;
   gimple *exit_phi;
   tree bitsize;
-  tree expr, def;
+  tree def;
   tree orig_name, scalar_result;
   imm_use_iterator imm_iter, phi_imm_iter;
   use_operand_p use_p, phi_use_p;
@@ -5048,25 +5064,26 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
   if (adjustment_def)
     {
       gcc_assert (!slp_reduc);
+      gimple_seq stmts = NULL;
       if (nested_in_vect_loop)
 	{
           new_phi = new_phis[0];
-	  gcc_assert (TREE_CODE (TREE_TYPE (adjustment_def)) == VECTOR_TYPE);
-	  expr = build2 (code, vectype, PHI_RESULT (new_phi), adjustment_def);
-	  new_dest = vect_create_destination_var (scalar_dest, vectype);
+	  gcc_assert (VECTOR_TYPE_P (TREE_TYPE (adjustment_def)));
+	  adjustment_def = gimple_convert (&stmts, vectype, adjustment_def);
+	  new_temp = gimple_build (&stmts, code, vectype,
+				   PHI_RESULT (new_phi), adjustment_def);
 	}
       else
 	{
           new_temp = scalar_results[0];
 	  gcc_assert (TREE_CODE (TREE_TYPE (adjustment_def)) != VECTOR_TYPE);
-	  expr = build2 (code, scalar_type, new_temp, adjustment_def);
-	  new_dest = vect_create_destination_var (scalar_dest, scalar_type);
+	  adjustment_def = gimple_convert (&stmts, scalar_type, adjustment_def);
+	  new_temp = gimple_build (&stmts, code, scalar_type,
+				   new_temp, adjustment_def);
 	}
 
-      epilog_stmt = gimple_build_assign (new_dest, expr);
-      new_temp = make_ssa_name (new_dest, epilog_stmt);
-      gimple_assign_set_lhs (epilog_stmt, new_temp);
-      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+      epilog_stmt = gimple_seq_last_stmt (stmts);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
       if (nested_in_vect_loop)
         {
 	  stmt_vec_info epilog_stmt_info = loop_vinfo->add_stmt (epilog_stmt);
@@ -5742,6 +5759,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	}
       if (!REDUC_GROUP_FIRST_ELEMENT (def))
 	only_slp_reduc_chain = false;
+      /* ???  For epilogue generation live members of the chain need
+         to point back to the PHI for info_for_reduction to work.  */
+      if (STMT_VINFO_LIVE_P (def))
+	STMT_VINFO_REDUC_DEF (def) = phi_info;
       reduc_def = gimple_op (def->stmt, 1 + STMT_VINFO_REDUC_IDX (def));
       reduc_chain_length++;
     }
@@ -7443,10 +7464,10 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
 
-  /* The last stmt of a reduction is live and vectorized via
+  /* If a stmt of a reduction is live, vectorize it via
      vect_create_epilog_for_reduction.  vectorizable_reduction assessed
      validity so just trigger the transform here.  */
-  if (STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)))
+  if (STMT_VINFO_REDUC_DEF (stmt_info))
     {
       if (!vec_stmt_p)
 	return true;
