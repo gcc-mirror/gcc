@@ -2513,10 +2513,17 @@ public:
 
   public:
     depset *add_dependency (tree decl, entity_kind);
+
+  private:
     depset *add_partial_redirect (depset *partial);
     bool add_binding (tree ns, tree value);
-    bool add_writables (tree ns, bitmap partitions);
+
+  public:  
+    bool add_namespace_entities (tree ns, bitmap partitions);
     void add_specializations (bool decl_p);
+    void add_class_entities (vec<tree, va_gc> *);
+
+  public:    
     void find_dependencies ();
     bool finalize_dependencies ();
     vec<depset *> connect ();
@@ -2759,7 +2766,7 @@ enum merge_kind
 static char const *const merge_kind_name[MK_hwm] =
   {
     "unique", NULL, "named", "implicit",  /* 0...3  */
-    NULL, NULL, "linkage", "enum",   /* 4...7  */
+    NULL, NULL, NULL, "enum",   /* 4...7  */
     "type spec", "type tmpl spec", NULL, "type partial spec", /* 8...11  */
     "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
   };
@@ -2937,13 +2944,6 @@ public:
   unsigned end (elf_out *sink, unsigned name, unsigned *crc_ptr);
   void end ();
 
-private:
-  void tag (int rt)
-  {
-    records++;
-    i (rt);
-  }
-
 public:
   enum tags 
   {
@@ -3035,17 +3035,17 @@ public:
 
 private:
   /* Tree instrumentation. */
-  static unsigned unique;
-  static unsigned refs;
-  static unsigned nulls;
-  static unsigned records;
+  static unsigned tree_val_count;
+  static unsigned decl_val_count;
+  static unsigned back_ref_count;
+  static unsigned null_count;
 };
 
 /* Instrumentation counters.  */
-unsigned trees_out::unique;
-unsigned trees_out::refs;
-unsigned trees_out::nulls;
-unsigned trees_out::records;
+unsigned trees_out::tree_val_count;
+unsigned trees_out::decl_val_count;
+unsigned trees_out::back_ref_count;
+unsigned trees_out::null_count;
 
 trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps,
 		      unsigned section)
@@ -3650,7 +3650,8 @@ module_state_hash::equal (const value_type existing,
   return false;
 }
 
-/* Some flag values: */
+/********************************************************************/
+/* Global state */
 
 /* Mapper name.  */
 static const char *module_mapper_name;
@@ -3668,7 +3669,7 @@ static size_t cmi_path_alloc;
 static unsigned available_clusters;
 static unsigned loaded_clusters;
 
-/* Global variables.  */
+/* What the current TU is.  */
 unsigned module_kind;
 
 /* Global trees.  */
@@ -3705,6 +3706,20 @@ static GTY(()) vec<module_state *, va_gc> *modules;
 /* Hash of module state, findable by {name, parent}. */
 static GTY(()) hash_table<module_state_hash> *modules_hash;
 
+/* Members entities of imported classes that are defined in this TU.
+   These are where the entity's context is not from the current TU.
+   We need to emit the definition (but not the enclosing class).
+
+   We could find these by walking ALL the imported classes that we
+   could provide a member definition.  But that's expensive,
+   especially when you consider lazy implicit member declarations,
+   which could be ANY imported class.
+
+   Template instantiations are in the template table, so we don't
+   need to record those here.  */
+static GTY(()) vec<tree, va_gc> *class_members;
+
+/********************************************************************/
 /* Mapper to query and inform of modular compilations.  This is a
    singleton.  It contains both FILE and fd entities.  The PEX
    interface provides the former, so we need to keep them around.
@@ -3838,6 +3853,7 @@ private:
 /* Our module mapper (created lazily).  */
 module_mapper *module_mapper::mapper;
 
+/********************************************************************/
 static tree
 get_clone_target (tree decl)
 {
@@ -3915,6 +3931,7 @@ node_template_info (tree decl, int &use)
   return ti;
 }
 
+/********************************************************************/
 /* A dumping machinery.  */
 
 class dumper {
@@ -4359,6 +4376,7 @@ dumper::operator () (const char *format, ...)
   return true;
 }
 
+/********************************************************************/
 static bool
 noisy_p ()
 {
@@ -4500,6 +4518,7 @@ friend_from_decl_list (tree frnd)
   return res;
 }
 
+/********************************************************************/
 /* Instrumentation gathered writing bytes.  */
 
 void
@@ -4521,11 +4540,11 @@ trees_out::instrument ()
   if (dump (""))
     {
       bytes_out::instrument ();
-      dump ("Wrote %u trees", unique + refs + nulls);
-      dump ("  %u unique", unique);
-      dump ("  %u references", refs);
-      dump ("  %u nulls", nulls);
-      dump ("Wrote %u records", records);
+      dump ("Wrote:");
+      dump ("  %u decl trees", decl_val_count);
+      dump ("  %u other trees", tree_val_count);
+      dump ("  %u back references", back_ref_count);
+      dump ("  %u null trees", null_count);
     }
 }
 
@@ -6784,7 +6803,7 @@ trees_out::ref_node (tree t)
       if (streaming_p ())
 	{
 	  /* NULL_TREE -> tt_null.  */
-	  nulls++;
+	  null_count++;
 	  i (tt_null);
 	}
       return WK_none;
@@ -6821,7 +6840,7 @@ trees_out::ref_node (tree t)
 
   if (streaming_p ())
     {
-      refs++;
+      back_ref_count++;
       dump (dumper::TREE)
 	&& dump ("Wrote %s:%d %C:%N%S", kind, val, TREE_CODE (t), t, t);
     }
@@ -7123,7 +7142,7 @@ trees_out::decl_value (tree decl, depset *dep)
   if (streaming_p ())
     {
       /* A new node -> tt_decl.  */
-      unique++;
+      decl_val_count++;
       i (tt_decl);
       u (mk);
       start (decl);
@@ -8475,7 +8494,7 @@ trees_out::tree_value (tree t)
   if (streaming_p ())
     {
       /* A new node -> tt_node.  */
-      unique++;
+      tree_val_count++;
       i (tt_node);
       dump (dumper::TREE)
 	&& dump ("Writing tree:%d %C:%N", tag, TREE_CODE (t), t);
@@ -11199,7 +11218,7 @@ writable_cmp (const void *a_, const void *b_)
    explicitly exported.  */
 
 bool
-depset::hash::add_writables (tree ns, bitmap partitions)
+depset::hash::add_namespace_entities (tree ns, bitmap partitions)
 {
   dump () && dump ("Looking for writables in %N", ns);
   dump.indent ();
@@ -11231,7 +11250,7 @@ depset::hash::add_writables (tree ns, bitmap partitions)
       else if (DECL_NAME (value))
 	{
 	  gcc_checking_assert (TREE_PUBLIC (value));
-	  bool not_empty = add_writables (value, partitions);
+	  bool not_empty = add_namespace_entities (value, partitions);
 	  if (not_empty || DECL_MODULE_EXPORT_P (value))
 	    {
 	      add_dependency (value, depset::EK_NAMESPACE);
@@ -11249,8 +11268,22 @@ depset::hash::add_writables (tree ns, bitmap partitions)
   return count != 0;
 }
 
+/* Add the members of imported classes that we defined in this TU.
+   This will also include lazily created implicit member function
+   declarations.  (All others will be definitions.)  */
+
+void
+depset::hash::add_class_entities (vec<tree, va_gc> *class_members)
+{
+  while (class_members->length ())
+    {
+      tree defn = class_members->pop ();
+      (void)defn; // FIXME: do something
+    }
+}
+
 /* We add the partial & explicit specializations, and the explicit
-   instntiations.  */
+   instantiations.  */
 
 static void
 specialization_add (bool decl_p, spec_entry *entry, void *data_)
@@ -16441,7 +16474,14 @@ module_state::write (elf_out *to, cpp_reader *reader)
      detect injected friend specializations.  */
   table.add_specializations (true);
   table.add_specializations (false);
-  table.add_writables (global_namespace, partitions);
+  table.add_namespace_entities (global_namespace, partitions);
+  if (class_members)
+    {
+      table.add_class_entities (class_members);
+      class_members = NULL;
+    }
+
+  /* Now join everything up.  */
   table.find_dependencies ();
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
   // be nice to have a flag telling us this walk's necessary.  Even
@@ -17123,6 +17163,30 @@ set_instantiating_module (tree decl)
     {
       DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
       DECL_MODULE_ORIGIN (decl) = 0;
+    }
+
+  int use_tpl = -1;
+  tree ti = node_template_info (decl, use_tpl);
+  if (use_tpl <= 0)
+    {
+      tree ctx = CP_DECL_CONTEXT (decl);
+      if (TYPE_P (ctx))
+	ctx = TYPE_NAME (ctx);
+
+      if (TREE_CODE (ctx) != NAMESPACE_DECL
+	  && DECL_LANG_SPECIFIC (ctx)
+	  && DECL_MODULE_ORIGIN (ctx))
+	{
+	  if (ti)
+	    {
+	      gcc_checking_assert (!use_tpl);
+	      /* Get to the TEMPLATE_DECL.  */
+	      decl = TI_TEMPLATE (ti);
+	    }
+
+	  /* Record it on the innner_decls list.  */
+	  vec_safe_push (class_members, decl);
+	}
     }
 }
 

@@ -1,6 +1,16 @@
 2019-10-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out): Clean up dead code, update instrumentation.
+	(class_members): New global.
+	(depset::hash::add_writables): Rename to ...
+	(depset::hash::add_namespace_entities): ... this.
+	(depset::hash::add_class_entities): New, incomplete.
+	(module_state::write): Add class entities.
+	(set_instantiating_module): Record on the class_member list if
+	necessary.
+
+	gcc/cp/
 	* module.cc (trees_out::core_vals): Audit VAR_DECL, removing fixme.
 
 2019-10-28  Nathan Sidwell  <nathan@acm.org>
