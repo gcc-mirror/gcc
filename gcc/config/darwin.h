@@ -127,6 +127,24 @@ extern GTY(()) int darwin_ms_struct;
   "%{fapple-kext|mkernel:-static}",				\
   "%{shared:-Zdynamiclib} %<shared"
 
+#if LD64_HAS_EXPORT_DYNAMIC
+#define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
+#else
+#define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
+#endif
+
+/* FIXME: we should check that the linker supports the -pie and -no_pie.
+   options.  */
+#define DARWIN_PIE_SPEC \
+"%{pie|fpie|fPIE:\
+   %{mdynamic-no-pic: \
+     %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
+     :%:version-compare(>= 10.5 mmacosx-version-min= -pie) }} "
+
+#define DARWIN_NOPIE_SPEC \
+"%{no-pie|fno-pie|fno-PIE: \
+   %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
+
 #define DARWIN_CC1_SPEC							\
   "%{findirect-virtual-calls: -fapple-kext} %<findirect-virtual-calls " \
   "%{fterminated-vtables: -fapple-kext} %<fterminated-vtables "		\
@@ -157,6 +175,16 @@ extern GTY(()) int darwin_ms_struct;
 #define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}" \
 	" %{pthread:-D_REENTRANT}"
 
+/* This is a fix for PR41260 by passing -no_compact_unwind on darwin10 and
+   later until the assembler, linker and libunwind are able to deal with the
+   output from GCC.
+
+   FIXME: we should check that the linker supports the option.
+*/
+
+#define DARWIN_NOCOMPACT_UNWIND \
+" %:version-compare(>= 10.6 mmacosx-version-min= -no_compact_unwind) "
+
 /* This is mostly a clone of the standard LINK_COMMAND_SPEC, plus
    precomp, libtool, and fat build additions.
 
@@ -164,12 +192,6 @@ extern GTY(()) int darwin_ms_struct;
    instead of LINK_COMMAND_SPEC.  The command spec is better for
    specifying the handling of options understood by generic Unix
    linkers, and for positional arguments like libraries.  */
-
-#if LD64_HAS_EXPORT_DYNAMIC
-#define DARWIN_EXPORT_DYNAMIC " %{rdynamic:-export_dynamic}"
-#else
-#define DARWIN_EXPORT_DYNAMIC " %{rdynamic: %nrdynamic is not supported}"
-#endif
 
 #define LINK_COMMAND_SPEC_A \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
@@ -192,10 +214,14 @@ extern GTY(()) int darwin_ms_struct;
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) \
-      " DARWIN_EXPORT_DYNAMIC " %<rdynamic \
       %(link_gcc_c_sequence) \
     }}\
-    %{!nostdlib:%{!nostartfiles:%E}} %{T*} %{F*} }}}}}}}"
+    %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
+    DARWIN_PIE_SPEC \
+    DARWIN_NOPIE_SPEC \
+    DARWIN_RDYNAMIC \
+    DARWIN_NOCOMPACT_UNWIND \
+    "}}}}}}} %<pie %<no-pie %<rdynamic "
 
 #define DSYMUTIL "\ndsymutil"
 
@@ -231,8 +257,6 @@ extern GTY(()) int darwin_ms_struct;
 /* Suppress the addition of extra prefix paths when a sysroot is in use.  */
 #define STANDARD_STARTFILE_PREFIX_1 ""
 #define STANDARD_STARTFILE_PREFIX_2 ""
-
-#define DARWIN_PIE_SPEC "%{fpie|pie|fPIE:}"
 
 /* Please keep the random linker options in alphabetical order (modulo
    'Z' and 'no' prefixes). Note that options taking arguments may appear
@@ -297,7 +321,6 @@ extern GTY(()) int darwin_ms_struct;
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
      %:version-compare(< 10.5 mmacosx-version-min= suppress)}} \
    %{Zmultiplydefinedunused*:-multiply_defined_unused %*} \
-   " DARWIN_PIE_SPEC " \
    %{prebind} %{noprebind} %{nofixprebinding} %{prebind_all_twolevel_modules} \
    %{read_only_relocs} \
    %{sectcreate*} %{sectorder*} %{seg1addr*} %{segprot*} \
