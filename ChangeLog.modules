@@ -1,3 +1,8 @@
+2019-10-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_out::core_vals): Audit VAR_DECL, removing fixme.
+
 2019-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

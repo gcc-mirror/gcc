@@ -5716,8 +5716,6 @@ trees_out::core_vals (tree t)
       break;
 
     case VAR_DECL:
-      // FIXME: This is wrong, statically inited consts should have
-      // their initializers emitted.
       if (DECL_CONTEXT (t)
 	  && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	break;
@@ -7774,7 +7772,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	      // refer to that specific node in some way.  For now
 	      // just clone it.  We should preemptively puth those
 	      // things in the map when we reference their template by
-	      // name.
+	      // name.  See add_indirects.
 	      return true;
 	    dump (dumper::TREE)
 	      && dump ("Wrote %s reference %N",
@@ -9919,7 +9917,6 @@ has_definition (tree decl)
       break;
 
     case VAR_DECL:
-      /* Variables should be written inline.  */
       if (!DECL_INITIAL (decl))
 	/* Nothing to define.  */
 	break;
