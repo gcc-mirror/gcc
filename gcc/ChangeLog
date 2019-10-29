@@ -1,5 +1,8 @@
 2019-10-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/install.texi (--enable-offload-targets): Fix up a typo in the
+	example, use actual names of supported offload targets.
+
 	PR target/92258
 	* config/i386/sse.md (iptr): Revert 2019-10-27 change.
 
