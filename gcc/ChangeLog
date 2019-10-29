@@ -1,5 +1,9 @@
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
+	* ggc-common.c: Move Leak to the first column.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
 	* cgraphunit.c (symbol_table::compile): Remove argument
 	for dump_memory_report.
 	* ggc-common.c (dump_ggc_loc_statistics): Likewise.
