@@ -1,4 +1,12 @@
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: New file.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: New file.
+	* gcc.target/aarch64/sve/acle/asm: New test directory.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/pcs/aarch64-sve-pcs.exp: New file.
 	* gcc.target/aarch64/sve/pcs/annotate_1.c: New test.

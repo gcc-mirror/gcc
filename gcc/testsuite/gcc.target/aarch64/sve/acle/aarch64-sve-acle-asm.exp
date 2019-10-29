@@ -1,0 +1,79 @@
+#  Assembly-based regression-test driver for the SVE ACLE
+#  Copyright (C) 2009-2019 Free Software Foundation, Inc.
+#
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3, or (at your option)
+#  any later version.
+#
+#  GCC is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.  */
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an AArch64 target.
+if {![istarget aarch64*-*-*] } {
+    return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+# Force SVE if we're not testing it already.
+if { [check_effective_target_aarch64_sve] } {
+    set sve_flags ""
+} else {
+    set sve_flags "-march=armv8.2-a+sve"
+}
+
+global gcc_runtest_parallelize_limit_minor
+if { [info exists gcc_runtest_parallelize_limit_minor] } {
+    set old_limit_minor $gcc_runtest_parallelize_limit_minor
+    set gcc_runtest_parallelize_limit_minor 1
+}
+
+torture-init
+set-torture-options {
+    "-std=c90 -O0 -g"
+    "-std=c90 -O1 -g"
+    "-std=c99 -O2 -g"
+    "-std=c11 -O3 -g"
+    "-std=gnu90 -O2 -fno-schedule-insns -DCHECK_ASM --save-temps"
+    "-std=gnu99 -Ofast -g"
+    "-std=gnu11 -Os -g"
+} {
+    "-DTEST_FULL"
+    "-DTEST_OVERLOADS"
+}
+
+# Main loop.
+set files [glob -nocomplain $srcdir/$subdir/asm/*.c]
+set save-dg-do-what-default ${dg-do-what-default}
+if { [check_effective_target_aarch64_asm_sve_ok]
+     && [check_effective_target_aarch64_variant_pcs] } {
+    set dg-do-what-default assemble
+} else {
+    set dg-do-what-default compile
+}
+gcc-dg-runtest [lsort $files] "" "$sve_flags -fno-ipa-icf"
+set dg-do-what-default ${save-dg-do-what-default}
+
+torture-finish
+
+if { [info exists gcc_runtest_parallelize_limit_minor] } {
+    set gcc_runtest_parallelize_limit_minor $old_limit_minor
+}
+
+# All done.
+dg-finish
