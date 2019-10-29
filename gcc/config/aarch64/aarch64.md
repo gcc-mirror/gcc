@@ -85,7 +85,6 @@
     (V29_REGNUM		61)
     (V30_REGNUM		62)
     (V31_REGNUM		63)
-    (LAST_SAVED_REGNUM	63)
     (SFP_REGNUM		64)
     (AP_REGNUM		65)
     (CC_REGNUM		66)
@@ -107,6 +106,7 @@
     (P13_REGNUM		81)
     (P14_REGNUM		82)
     (P15_REGNUM		83)
+    (LAST_SAVED_REGNUM	83)
     (FFR_REGNUM		84)
     ;; "FFR token": a fake register used for representing the scheduling
     ;; restrictions on FFR-related operations.
