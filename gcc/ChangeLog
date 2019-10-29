@@ -1,4 +1,15 @@
-2019-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+2019-10-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-10-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/59888
+	* config/darwin.c (darwin_rodata_section): Add relocation flag,
+	choose const_data section for constants with relocations.
+	(machopic_select_section): Pass relocation flag to
+	darwin_rodata_section ().
+
+2019-10-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
 	2019-09-21  Iain Sandoe  <iain@sandoe.co.uk>
