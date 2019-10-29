@@ -139,38 +139,6 @@ You should have received a copy of the GNU General Public License
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
-;; 64-bit MachO load/store support
-(define_insn "movdi_low"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=r,*!d")
-        (mem:DI (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
-                           (match_operand 2 "" ""))))]
-  "TARGET_MACHO && TARGET_64BIT"
-  "@
-   ld %0,lo16(%2)(%1)
-   lfd %0,lo16(%2)(%1)"
-  [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-(define_insn "movsi_low_st"
-  [(set (mem:SI (lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
-                           (match_operand 2 "" "")))
-	(match_operand:SI 0 "gpc_reg_operand" "r"))]
-  "TARGET_MACHO && ! TARGET_64BIT"
-  "stw %0,lo16(%2)(%1)"
-  [(set_attr "type" "store")
-   (set_attr "length" "4")])
-
-(define_insn "movdi_low_st"
-  [(set (mem:DI (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
-                           (match_operand 2 "" "")))
-	(match_operand:DI 0 "gpc_reg_operand" "r,*!d"))]
-  "TARGET_MACHO && TARGET_64BIT"
-  "@
-   std %0,lo16(%2)(%1)
-   stfd %0,lo16(%2)(%1)"
-  [(set_attr "type" "store")
-   (set_attr "length" "4")])
-
 ;; Mach-O PIC trickery.
 (define_expand "macho_high"
   [(set (match_operand 0 "" "")
