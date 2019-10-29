@@ -1,3 +1,10 @@
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_builtin_function_decl): Declare.
+	* c-decl.c (c_simulate_builtin_function_decl): New function.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL): Define
+	to the above.
+
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c/66970

@@ -4687,6 +4687,19 @@ cxx_builtin_function_ext_scope (tree decl)
   return decl;
 }
 
+/* Implement LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL.  */
+
+tree
+cxx_simulate_builtin_function_decl (tree decl)
+{
+  retrofit_lang_decl (decl);
+
+  DECL_ARTIFICIAL (decl) = 1;
+  SET_DECL_LANGUAGE (decl, lang_cplusplus);
+  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+  return pushdecl (decl);
+}
+
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library
    function.  Not called directly.  */
 

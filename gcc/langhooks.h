@@ -504,6 +504,15 @@ struct lang_hooks
      backend must add all of the builtins at program initialization time.  */
   tree (*builtin_function_ext_scope) (tree decl);
 
+  /* Do language-specific processing for target-specific built-in
+     function DECL, so that it is defined in the global scope (only)
+     and is available without needing to be explicitly declared.
+
+     This is intended for targets that want to inject declarations of
+     built-in functions into the source language (such as in response
+     to a pragma) rather than providing them in the source language itself.  */
+  tree (*simulate_builtin_function_decl) (tree decl);
+
   /* Used to set up the tree_contains_structure array for a frontend. */
   void (*init_ts) (void);
 
@@ -572,6 +581,8 @@ extern tree add_builtin_function_ext_scope (const char *name, tree type,
 					    enum built_in_class cl,
 					    const char *library_name,
 					    tree attrs);
+extern tree simulate_builtin_function_decl (location_t, const char *, tree,
+					    int, const char *, tree);
 extern tree add_builtin_type (const char *name, tree type);
 
 /* Language helper functions.  */

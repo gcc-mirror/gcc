@@ -599,19 +599,16 @@ lhd_omp_mappable_type (tree type)
   return true;
 }
 
-/* Common function for add_builtin_function and
-   add_builtin_function_ext_scope.  */
+/* Common function for add_builtin_function, add_builtin_function_ext_scope
+   and simulate_builtin_function_decl.  */
+
 static tree
-add_builtin_function_common (const char *name,
-			     tree type,
-			     int function_code,
-			     enum built_in_class cl,
-			     const char *library_name,
-			     tree attrs,
-			     tree (*hook) (tree))
+build_builtin_function (location_t location, const char *name, tree type,
+			int function_code, enum built_in_class cl,
+			const char *library_name, tree attrs)
 {
   tree   id = get_identifier (name);
-  tree decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL, id, type);
+  tree decl = build_decl (location, FUNCTION_DECL, id, type);
 
   TREE_PUBLIC (decl)         = 1;
   DECL_EXTERNAL (decl)       = 1;
@@ -632,8 +629,7 @@ add_builtin_function_common (const char *name,
   else
     decl_attributes (&decl, NULL_TREE, 0);
 
-  return hook (decl);
-
+  return decl;
 }
 
 /* Create a builtin function.  */
@@ -646,9 +642,9 @@ add_builtin_function (const char *name,
 		      const char *library_name,
 		      tree attrs)
 {
-  return add_builtin_function_common (name, type, function_code, cl,
-				      library_name, attrs,
-				      lang_hooks.builtin_function);
+  tree decl = build_builtin_function (BUILTINS_LOCATION, name, type,
+				      function_code, cl, library_name, attrs);
+  return lang_hooks.builtin_function (decl);
 }
 
 /* Like add_builtin_function, but make sure the scope is the external scope.
@@ -666,9 +662,40 @@ add_builtin_function_ext_scope (const char *name,
 				const char *library_name,
 				tree attrs)
 {
-  return add_builtin_function_common (name, type, function_code, cl,
-				      library_name, attrs,
-				      lang_hooks.builtin_function_ext_scope);
+  tree decl = build_builtin_function (BUILTINS_LOCATION, name, type,
+				      function_code, cl, library_name, attrs);
+  return lang_hooks.builtin_function_ext_scope (decl);
+}
+
+/* Simulate a declaration of a target-specific built-in function at
+   location LOCATION, as though it had been declared directly in the
+   source language.  NAME is the name of the function, TYPE is its function
+   type, FUNCTION_CODE is the target-specific function code, LIBRARY_NAME
+   is the name of the underlying library function (NULL if none) and
+   ATTRS is a list of function attributes.
+
+   Return the decl of the declared function.  */
+
+tree
+simulate_builtin_function_decl (location_t location, const char *name,
+				tree type, int function_code,
+				const char *library_name, tree attrs)
+{
+  tree decl = build_builtin_function (location, name, type,
+				      function_code, BUILT_IN_MD,
+				      library_name, attrs);
+  tree new_decl = lang_hooks.simulate_builtin_function_decl (decl);
+
+  /* Give the front end a chance to create a new decl if necessary,
+     but if the front end discards the decl in favour of a conflicting
+     (erroneous) previous definition, return the decl that we tried but
+     failed to add.  This allows the caller to process the returned decl
+     normally, even though the source code won't be able to use it.  */
+  if (TREE_CODE (new_decl) == FUNCTION_DECL
+      && fndecl_built_in_p (new_decl, function_code, BUILT_IN_MD))
+    return new_decl;
+
+  return decl;
 }
 
 tree
