@@ -1,6 +1,12 @@
+2019-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92260
+	* tree-vect-slp.c (vect_get_constant_vectors): Special-case
+	lane-reducing ops.
+
 2019-10-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
-	PR 88915
+	PR tree-optimization/88915
 	* tree-ssa-loop-niter.h (simplify_replace_tree): Change declaration.
 	* tree-ssa-loop-niter.c (simplify_replace_tree): Add context parameter
 	and make the valueize function pointer also take a void pointer.
