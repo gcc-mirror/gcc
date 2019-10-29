@@ -1,5 +1,13 @@
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
+	* cgraphunit.c (symbol_table::compile): Pass
+	title as dump_memory_report argument.
+	* toplev.c (dump_memory_report):  New argument.
+	(finalize): Pass new argument.
+	* toplev.h (dump_memory_report): Add argument.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
 	* ggc-common.c: Move Leak to the first column.
 
 2019-10-29  Martin Liska  <mliska@suse.cz>

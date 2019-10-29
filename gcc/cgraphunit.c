@@ -2602,10 +2602,7 @@ symbol_table::compile (void)
 
   timevar_push (TV_CGRAPHOPT);
   if (pre_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report ();
-    }
+    dump_memory_report ("Memory consumption before IPA");
   if (!quiet_flag)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   state = IPA;
@@ -2637,10 +2634,7 @@ symbol_table::compile (void)
       symtab->dump (dump_file);
     }
   if (post_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report ();
-    }
+    dump_memory_report ("Memory consumption after IPA");
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
