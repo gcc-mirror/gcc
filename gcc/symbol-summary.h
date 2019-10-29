@@ -129,7 +129,7 @@ class GTY((user)) function_summary <T *>: public function_summary_base<T>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  function_summary (symbol_table *symtab, bool ggc = false);
+  function_summary (symbol_table *symtab, bool ggc = false CXX_MEM_STAT_INFO);
 
   /* Destructor.  */
   virtual ~function_summary ();
@@ -213,8 +213,11 @@ private:
 };
 
 template <typename T>
-function_summary<T *>::function_summary (symbol_table *symtab, bool ggc):
-  function_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc)
+function_summary<T *>::function_summary (symbol_table *symtab, bool ggc
+					 MEM_STAT_DECL):
+  function_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc, true,
+							 GATHER_STATISTICS
+							 PASS_MEM_STAT)
 {
   this->m_symtab_insertion_hook
     = this->m_symtab->add_cgraph_insertion_hook (function_summary::symtab_insertion,
@@ -325,7 +328,7 @@ class GTY((user)) fast_function_summary <T *, V>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  fast_function_summary (symbol_table *symtab);
+  fast_function_summary (symbol_table *symtab CXX_MEM_STAT_INFO);
 
   /* Destructor.  */
   virtual ~fast_function_summary ();
@@ -407,10 +410,10 @@ private:
 };
 
 template <typename T, typename V>
-fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab):
+fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab MEM_STAT_DECL):
   function_summary_base<T> (symtab), m_vector (NULL)
 {
-  vec_alloc (m_vector, 13);
+  vec_alloc (m_vector, 13 PASS_MEM_STAT);
   this->m_symtab_insertion_hook
     = this->m_symtab->add_cgraph_insertion_hook (fast_function_summary::symtab_insertion,
 						 this);
@@ -602,8 +605,11 @@ class GTY((user)) call_summary <T *>: public call_summary_base<T>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  call_summary (symbol_table *symtab, bool ggc = false)
-  : call_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc)
+  call_summary (symbol_table *symtab, bool ggc = false
+		CXX_MEM_STAT_INFO)
+  : call_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc, true,
+						       GATHER_STATISTICS
+						       PASS_MEM_STAT)
   {
     this->m_symtab_removal_hook
       = this->m_symtab->add_edge_removal_hook (call_summary::symtab_removal,
@@ -768,10 +774,10 @@ class GTY((user)) fast_call_summary <T *, V>: public call_summary_base<T>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  fast_call_summary (symbol_table *symtab)
+  fast_call_summary (symbol_table *symtab CXX_MEM_STAT_INFO)
   : call_summary_base<T> (symtab), m_vector (NULL)
   {
-    vec_alloc (m_vector, 13);
+    vec_alloc (m_vector, 13 PASS_MEM_STAT);
     this->m_symtab_removal_hook
       = this->m_symtab->add_edge_removal_hook (fast_call_summary::symtab_removal,
 					       this);

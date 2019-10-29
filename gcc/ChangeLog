@@ -1,5 +1,11 @@
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
+	* symbol-summary.h (function_summary): Pass memory location
+	to underlaying hash_map (or vec).
+	(V>::fast_function_summary): Likewise.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
 	* ggc.h (ggc_alloc_no_dtor): New function.
 	* ipa-fnsummary.c (ipa_free_fn_summary): Call
 	destructor and ggc_free.
