@@ -1,3 +1,7 @@
+2019-10-29 Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* cp-demangle.c (d_number): Avoid signed int overflow.
+
 2019-10-28  Miguel Saldivar  <saldivarcher@gmail.com>
 
 	* cp-demangle.c (d_print_mod): Add a space before printing `complex`

@@ -1717,7 +1717,7 @@ d_number (struct d_info *di)
 	}
       if (ret > ((INT_MAX - (peek - '0')) / 10))
         return -1;
-      ret = ret * 10 + peek - '0';
+      ret = ret * 10 + (peek - '0');
       d_advance (di, 1);
       peek = d_peek_char (di);
     }
