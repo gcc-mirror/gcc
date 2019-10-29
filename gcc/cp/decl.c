@@ -15433,6 +15433,40 @@ lookup_enumerator (tree enumtype, tree name)
   return e? TREE_VALUE (e) : NULL_TREE;
 }
 
+/* Implement LANG_HOOKS_SIMULATE_ENUM_DECL.  */
+
+tree
+cxx_simulate_enum_decl (location_t loc, const char *name,
+			vec<string_int_pair> values)
+{
+  location_t saved_loc = input_location;
+  input_location = loc;
+
+  tree enumtype = start_enum (get_identifier (name), NULL_TREE, NULL_TREE,
+			      NULL_TREE, false, NULL);
+  if (!OPAQUE_ENUM_P (enumtype))
+    {
+      error_at (loc, "multiple definition of %q#T", enumtype);
+      inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+	      "previous definition here");
+      return enumtype;
+    }
+  SET_OPAQUE_ENUM_P (enumtype, false);
+  DECL_SOURCE_LOCATION (TYPE_NAME (enumtype)) = loc;
+
+  string_int_pair *value;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (values, i, value)
+    build_enumerator (get_identifier (value->first),
+		      build_int_cst (integer_type_node, value->second),
+		      enumtype, NULL_TREE, loc);
+
+  finish_enum_value_list (enumtype);
+  finish_enum (enumtype);
+
+  input_location = saved_loc;
+  return enumtype;
+}
 
 /* We're defining DECL.  Make sure that its type is OK.  */
 

@@ -1,5 +1,12 @@
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* coretypes.h (string_int_pair): New typedef.
+	* langhooks-def.h (LANG_HOOKS_SIMULATE_ENUM_DECL): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Include it.
+	* langhooks.h (lang_hooks_for_types::simulate_enum_decl): New hook.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* langhooks.h (lang_hooks::simulate_builtin_function_decl): New hook.
 	(simulate_builtin_function_decl): Declare.
 	* langhooks-def.h (LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL): Define.
