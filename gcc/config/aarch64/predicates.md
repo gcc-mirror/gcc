@@ -661,11 +661,11 @@
 	    (match_test "aarch64_float_const_representable_p (op)"))))
 
 (define_predicate "aarch64_sve_cmp_vsc_immediate"
-  (and (match_code "const,const_vector")
+  (and (match_code "const_int,const_vector")
        (match_test "aarch64_sve_cmp_immediate_p (op, true)")))
 
 (define_predicate "aarch64_sve_cmp_vsd_immediate"
-  (and (match_code "const,const_vector")
+  (and (match_code "const_int,const_vector")
        (match_test "aarch64_sve_cmp_immediate_p (op, false)")))
 
 (define_predicate "aarch64_sve_index_immediate"
