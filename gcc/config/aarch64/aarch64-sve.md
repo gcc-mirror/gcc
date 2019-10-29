@@ -586,14 +586,14 @@
   }
 )
 
-;; Unpredicated moves (little-endian).  Only allow memory operations
-;; during and after RA; before RA we want the predicated load and
-;; store patterns to be used instead.
+;; Unpredicated moves (bytes or little-endian).  Only allow memory operations
+;; during and after RA; before RA we want the predicated load and store
+;; patterns to be used instead.
 (define_insn "*aarch64_sve_mov<mode>_le"
   [(set (match_operand:SVE_ALL 0 "aarch64_sve_nonimmediate_operand" "=w, Utr, w, w")
 	(match_operand:SVE_ALL 1 "aarch64_sve_general_operand" "Utr, w, w, Dn"))]
   "TARGET_SVE
-   && !BYTES_BIG_ENDIAN
+   && (<MODE>mode == VNx16QImode || !BYTES_BIG_ENDIAN)
    && ((lra_in_progress || reload_completed)
        || (register_operand (operands[0], <MODE>mode)
 	   && nonmemory_operand (operands[1], <MODE>mode)))"
@@ -604,12 +604,12 @@
    * return aarch64_output_sve_mov_immediate (operands[1]);"
 )
 
-;; Unpredicated moves (big-endian).  Memory accesses require secondary
+;; Unpredicated moves (non-byte big-endian).  Memory accesses require secondary
 ;; reloads.
 (define_insn "*aarch64_sve_mov<mode>_be"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w")
 	(match_operand:SVE_ALL 1 "aarch64_nonmemory_operand" "w, Dn"))]
-  "TARGET_SVE && BYTES_BIG_ENDIAN"
+  "TARGET_SVE && BYTES_BIG_ENDIAN && <MODE>mode != VNx16QImode"
   "@
    mov\t%0.d, %1.d
    * return aarch64_output_sve_mov_immediate (operands[1]);"

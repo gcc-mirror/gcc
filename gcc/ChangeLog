@@ -1,4 +1,141 @@
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* calls.c (pass_by_reference): Leave the target to decide whether
+	POLY_INT_CST-sized arguments should be passed by value or reference,
+	rather than forcing them to be passed by reference.
+	(must_pass_in_stack_var_size): Likewise.
+	* config/aarch64/aarch64.md (LAST_SAVED_REGNUM): Redefine from
+	V31_REGNUM to P15_REGNUM.
+	* config/aarch64/aarch64-protos.h (aarch64_init_cumulative_args):
+	Take an extra "silent_p" parameter, defaulting to false.
+	(aarch64_sve::svbool_type_p): Declare.
+	(aarch64_sve::nvectors_if_data_type): Likewise.
+	* config/aarch64/aarch64.h (NUM_PR_ARG_REGS): New macro.
+	(aarch64_frame::reg_offset): Turn into poly_int64s.
+	(aarch64_frame::save_regs_size): Likewise.
+	(aarch64_frame::below_hard_fp_saved_regs_size): New field.
+	(aarch64_frame::sve_callee_adjust): Likewise.
+	(aarch64_frame::spare_reg_reg): Likewise.
+	(ARM_PCS_SVE): New arm_pcs value.
+	(CUMULATIVE_ARGS::aapcs_nprn): New field.
+	(CUMULATIVE_ARGS::aapcs_nextnprn): Likewise.
+	(CUMULATIVE_ARGS::silent_p): Likewise.
+	(BITS_PER_SVE_PRED): New macro.
+	* config/aarch64/aarch64.c (handle_aarch64_vector_pcs_attribute): New
+	function.  Reject aarch64_vector_pcs attributes on SVE functions.
+	(aarch64_attribute_table): Use the above handler.
+	(aarch64_sve_abi): New function.
+	(aarch64_sve_argument_p): Likewise.
+	(aarch64_returns_value_in_sve_regs_p): Likewise.
+	(aarch64_takes_arguments_in_sve_regs_p): Likewise.
+	(aarch64_fntype_abi): Check for SVE functions and return the SVE PCS
+	descriptor for them.
+	(aarch64_simd_decl_p): Delete.
+	(aarch64_emit_cfi_for_reg_p): New function.
+	(aarch64_reg_save_mode): Remove the fndecl argument and instead use
+	crtl->abi to choose the mode for FP registers.  Handle the SVE PCS.
+	(aarch64_hard_regno_call_part_clobbered): Do not treat FP registers
+	as partly clobbered for the SVE PCS.
+	(aarch64_function_ok_for_sibcall): Check whether the two functions
+	use the same ABI, rather than checking specifically for whether
+	they're aarch64_vector_pcs functions.
+	(aarch64_pass_by_reference): Raise an error for attempts to pass
+	SVE arguments when SVE is disabled.  Pass SVE arguments by reference
+	if there are not enough free registers left, or if the argument is
+	variadic.
+	(aarch64_function_value): Handle SVE predicates, vectors and tuples.
+	(aarch64_return_in_memory): Do not return SVE predicates, vectors and
+	tuples in memory.
+	(aarch64_layout_arg): Take a function_arg_info rather than
+	individual properties.  Handle SVE predicates, vectors and tuples.
+	Raise an error if they are passed to unprototyped functions.
+	(aarch64_function_arg): If the silent_p flag is set, suppress the
+	usual error about using float registers without TARGET_FLOAT.
+	(aarch64_init_cumulative_args): Take a silent_p parameter and store
+	it in the cumulative_args structure.  Initialize aapcs_nprn and
+	aapcs_nextnprn.  If the silent_p flag is set, suppress the usual
+	error about using float registers without TARGET_FLOAT.
+	If the silent_p flag is not set, also raise an error about
+	using SVE functions when SVE is disabled.
+	(aarch64_function_arg_advance): Update the call to aarch64_layout_arg,
+	and call it for SVE functions too.  Update aapcs_nprn similarly
+	to the other register counts.
+	(aarch64_layout_frame): If a big-endian function needs to save
+	and restore Z8-Z15, search for a spare predicate that it can use.
+	Store SVE predicates at the bottom of the register save area,
+	followed by SVE vectors, then followed by the normal slots.
+	Keep pointing the hard frame pointer at the base of the normal slots,
+	above the SVE vectors.  Update the various frame creation and
+	tear-down strategies for the new layout, initializing the new
+	sve_callee_adjust field.  Add an additional layout for frames
+	whose saved registers are all SVE registers.
+	(aarch64_register_saved_on_entry): Cope with poly_int64 reg_offsets.
+	(aarch64_return_address_signing_enabled): Likewise.
+	(aarch64_push_regs, aarch64_pop_regs): Update calls to
+	aarch64_reg_save_mode.
+	(aarch64_adjust_sve_callee_save_base): New function.
+	(aarch64_add_cfa_expression): Move earlier in file.  Take the
+	saved register as an rtx rather than a register number and use
+	its mode for the MEM slot.
+	(aarch64_save_callee_saves): Remove the mode argument and instead
+	use aarch64_reg_save_mode to get the mode of each save slot.
+	Add a hard_fp_valid_p parameter.  Cope with poly_int64 register
+	offsets.  Allow GP offsets to be saved at a VL-based offset from
+	the stack, handling this case using the frame pointer if available
+	or a temporary register otherwise.  Use ST1D to save Z8-Z15 for
+	big-endian SVE functions; use normal moves for other SVE saves.
+	Only mark the save as frame-related if aarch64_emit_cfi_for_reg_p
+	returns true.  Add explicit CFA notes when not storing via the
+	stack pointer.  Do not try to pair SVE saves.
+	(aarch64_restore_callee_saves): Cope with poly_int64 register
+	offsets.  Use LD1D to restore Z8-Z15 for big-endian SVE functions;
+	use normal moves for other SVE restores.  Only add CFA restore notes
+	if aarch64_emit_cfi_for_reg_p returns true.  Do not try to pair
+	SVE restores.
+	(aarch64_get_separate_components): Always keep the first SVE save
+	in the prologue if we need to use it as a stack probe.  Don't allow
+	Z8-Z15 saves and loads to be shrink-wrapped for big-endian targets.
+	Likewise the spare predicate register that they need.  Update the
+	offset calculation to account for the SVE save area.  Use the
+	appropriate range check for SVE LDR and STR instructions.
+	(aarch64_components_for_bb): Cope with poly_int64 reg_offsets.
+	(aarch64_process_components): Likewise.  Update the offset
+	calculation to account for the SVE save area.  Only mark the
+	save as frame-related if aarch64_emit_cfi_for_reg_p returns true.
+	Do not try to pair SVE saves.
+	(aarch64_allocate_and_probe_stack_space): Cope with poly_int64
+	reg_offsets.  When handling the final allocation, expect the
+	first SVE register save to be part of the initial allocation
+	and for it to act as a probe at SP.  Account for the SVE callee
+	save area in the dump information.
+	(aarch64_expand_prologue): Update the frame diagram.  Fold the
+	SVE callee allocation into the initial allocation if stack clash
+	protection is enabled.  Use new variables to track the offset
+	of the frame chain (and hard frame pointer) from the current
+	stack pointer, and likewise the offset of the bottom of the
+	register save area.  Update calls to aarch64_save_callee_saves
+	and aarch64_add_cfa_expression.  Apply sve_callee_adjust before
+	saving the FP&SIMD registers.  Save the predicate registers.
+	(aarch64_expand_epilogue): Take below_hard_fp_saved_regs_size
+	into account when setting the stack pointer from the frame pointer,
+	and when deciding whether we can inherit the initial adjustment
+	amount from the prologue.  Restore the predicate registers after
+	the vector registers, then apply sve_callee_adjust, then restore
+	the general registers.
+	(aarch64_secondary_reload): Don't use secondary SVE reloads
+	for VNx16BImode.
+	(aapcs_vfp_sub_candidate): Assert that the type is not an SVE type.
+	(aarch64_short_vector_p): Return false for SVE types.
+	(aarch64_vfp_is_call_or_return_candidate): Initialize *is_ha
+	at the start of the function.  Return false for SVE types.
+	(aarch64_asm_output_variant_pcs): Output .variant_pcs for SVE
+	functions too.
+	(TARGET_STRICT_ARGUMENT_NAMING): Redefine to request strict naming.
+	* config/aarch64/aarch64-sve.md (*aarch64_sve_mov<mode>_le): Extend
+	to big-endian targets for bytewise moves.
+	(*aarch64_sve_mov<mode>_be): Exclude the bytewise case.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 

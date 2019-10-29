@@ -479,9 +479,10 @@ extern unsigned aarch64_architecture_version;
 #define ARG_POINTER_REGNUM		AP_REGNUM
 #define FIRST_PSEUDO_REGISTER		(FFRT_REGNUM + 1)
 
-/* The number of (integer) argument register available.  */
+/* The number of argument registers available for each class.  */
 #define NUM_ARG_REGS			8
 #define NUM_FP_ARG_REGS			8
+#define NUM_PR_ARG_REGS			4
 
 /* A Homogeneous Floating-Point or Short-Vector Aggregate may have at most
    four members.  */
@@ -725,7 +726,7 @@ extern enum aarch64_processor aarch64_tune;
 #ifdef HAVE_POLY_INT_H
 struct GTY (()) aarch64_frame
 {
-  HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
+  poly_int64 reg_offset[LAST_SAVED_REGNUM + 1];
 
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the
@@ -733,9 +734,12 @@ struct GTY (()) aarch64_frame
      STACK_BOUNDARY.  */
   HOST_WIDE_INT saved_varargs_size;
 
-  /* The size of the saved callee-save int/FP registers.  */
+  /* The size of the callee-save registers with a slot in REG_OFFSET.  */
+  poly_int64 saved_regs_size;
 
-  HOST_WIDE_INT saved_regs_size;
+  /* The size of the callee-save registers with a slot in REG_OFFSET that
+     are saved below the hard frame pointer.  */
+  poly_int64 below_hard_fp_saved_regs_size;
 
   /* Offset from the base of the frame (incomming SP) to the
      top of the locals area.  This value is always a multiple of
@@ -763,6 +767,10 @@ struct GTY (()) aarch64_frame
      It may be non-zero if no push is used (ie. callee_adjust == 0).  */
   poly_int64 callee_offset;
 
+  /* The size of the stack adjustment before saving or after restoring
+     SVE registers.  */
+  poly_int64 sve_callee_adjust;
+
   /* The size of the stack adjustment after saving callee-saves.  */
   poly_int64 final_adjust;
 
@@ -771,6 +779,11 @@ struct GTY (()) aarch64_frame
 
   unsigned wb_candidate1;
   unsigned wb_candidate2;
+
+  /* Big-endian SVE frames need a spare predicate register in order
+     to save vector registers in the correct layout for unwinding.
+     This is the register they should use.  */
+  unsigned spare_pred_reg;
 
   bool laid_out;
 };
@@ -800,6 +813,8 @@ enum arm_pcs
 {
   ARM_PCS_AAPCS64,		/* Base standard AAPCS for 64 bit.  */
   ARM_PCS_SIMD,			/* For aarch64_vector_pcs functions.  */
+  ARM_PCS_SVE,			/* For functions that pass or return
+				   values in SVE registers.  */
   ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
   ARM_PCS_UNKNOWN
 };
@@ -827,6 +842,8 @@ typedef struct
   int aapcs_nextncrn;		/* Next next core register number.  */
   int aapcs_nvrn;		/* Next Vector register number.  */
   int aapcs_nextnvrn;		/* Next Next Vector register number.  */
+  int aapcs_nprn;		/* Next Predicate register number.  */
+  int aapcs_nextnprn;		/* Next Next Predicate register number.  */
   rtx aapcs_reg;		/* Register assigned to this argument.  This
 				   is NULL_RTX if this parameter goes on
 				   the stack.  */
@@ -837,6 +854,8 @@ typedef struct
 				   aapcs_reg == NULL_RTX.  */
   int aapcs_stack_size;		/* The total size (in words, per 8 byte) of the
 				   stack arg area so far.  */
+  bool silent_p;		/* True if we should act silently, rather than
+				   raise an error for invalid calls.  */
 } CUMULATIVE_ARGS;
 #endif
 
@@ -1144,7 +1163,8 @@ extern poly_uint16 aarch64_sve_vg;
 #define BITS_PER_SVE_VECTOR (poly_uint16 (aarch64_sve_vg * 64))
 #define BYTES_PER_SVE_VECTOR (poly_uint16 (aarch64_sve_vg * 8))
 
-/* The number of bytes in an SVE predicate.  */
+/* The number of bits and bytes in an SVE predicate.  */
+#define BITS_PER_SVE_PRED BYTES_PER_SVE_VECTOR
 #define BYTES_PER_SVE_PRED aarch64_sve_vg
 
 /* The SVE mode for a vector of bytes.  */

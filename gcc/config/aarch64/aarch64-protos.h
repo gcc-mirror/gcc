@@ -617,7 +617,7 @@ void aarch64_expand_prologue (void);
 void aarch64_expand_vector_init (rtx, rtx);
 void aarch64_sve_expand_vector_init (rtx, rtx);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
-				   const_tree, unsigned);
+				   const_tree, unsigned, bool = false);
 void aarch64_init_expanders (void);
 void aarch64_init_simd_builtins (void);
 void aarch64_emit_call_insn (rtx);
@@ -705,6 +705,8 @@ namespace aarch64_sve {
   void handle_arm_sve_h ();
   tree builtin_decl (unsigned, bool);
   bool builtin_type_p (const_tree);
+  bool svbool_type_p (const_tree);
+  unsigned int nvectors_if_data_type (const_tree);
   const char *mangle_builtin_type (const_tree);
   tree resolve_overloaded_builtin (location_t, unsigned int,
 				   vec<tree, va_gc> *);
