@@ -1,5 +1,10 @@
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
+	* ggc-common.c: One can't subtract unsigned types
+	in compare function.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
 	* cgraphunit.c (symbol_table::compile): Pass
 	title as dump_memory_report argument.
 	* toplev.c (dump_memory_report):  New argument.

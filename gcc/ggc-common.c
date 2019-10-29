@@ -928,10 +928,13 @@ public:
   static int
   compare (const void *first, const void *second)
   {
-    const mem_pair_t f = *(const mem_pair_t *)first;
-    const mem_pair_t s = *(const mem_pair_t *)second;
+    const mem_pair_t mem1 = *(const mem_pair_t *) first;
+    const mem_pair_t mem2 = *(const mem_pair_t *) second;
 
-    return s.second->get_balance () - f.second->get_balance ();
+    size_t balance1 = mem1.second->get_balance ();
+    size_t balance2 = mem2.second->get_balance ();
+
+    return balance1 == balance2 ? 0 : (balance1 < balance2 ? 1 : -1);
   }
 
   /* Dump header with NAME.  */
