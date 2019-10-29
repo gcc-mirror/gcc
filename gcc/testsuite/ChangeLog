@@ -1,4 +1,8 @@
-2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
+2019-10-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.c-torture/compile/pr72802.c: Skip for Darwin.
+
+2019-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
 	PR fortran/86248
