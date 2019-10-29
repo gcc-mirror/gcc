@@ -1,5 +1,12 @@
 2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/alloc_traits.h (__cpp_lib_constexpr_dynamic_alloc):
+	Define.
+	(allocator_traits::_S_construct, allocator_traits::_S_destroy)
+	(__alloc_on_copy, __alloc_on_move, __alloc_on_swap): Use
+	_GLIBCXX14_CONSTEXPR instead of constexpr.
+	* include/bits/stl_construct.h (_Destroy): Likewise.
+
 	* include/Makefile.am: Add new header.
 	* include/Makefile.in: Regenerate.
 	* include/bits/iterator_concepts.h: New header.
