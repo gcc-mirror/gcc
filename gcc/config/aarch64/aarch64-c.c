@@ -243,6 +243,73 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
   return true;
 }
 
+/* Implement "#pragma GCC aarch64".  */
+static void
+aarch64_pragma_aarch64 (cpp_reader *)
+{
+  tree x;
+  if (pragma_lex (&x) != CPP_STRING)
+    {
+      error ("%<#pragma GCC aarch64%> requires a string parameter");
+      return;
+    }
+
+  const char *name = TREE_STRING_POINTER (x);
+  if (strcmp (name, "arm_sve.h") == 0)
+    aarch64_sve::handle_arm_sve_h ();
+  else
+    error ("unknown %<#pragma GCC aarch64%> option %qs", name);
+}
+
+/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
+static tree
+aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
+				    tree fndecl, void *uncast_arglist)
+{
+  vec<tree, va_gc> empty = {};
+  location_t location = (location_t) uncast_location;
+  vec<tree, va_gc> *arglist = (uncast_arglist
+			       ? (vec<tree, va_gc> *) uncast_arglist
+			       : &empty);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  tree new_fndecl;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return NULL_TREE;
+
+    case AARCH64_BUILTIN_SVE:
+      new_fndecl = aarch64_sve::resolve_overloaded_builtin (location, subcode,
+							    arglist);
+      break;
+    }
+  if (new_fndecl == NULL_TREE || new_fndecl == error_mark_node)
+    return new_fndecl;
+  return build_function_call_vec (location, vNULL, new_fndecl, arglist,
+				  NULL, fndecl);
+}
+
+/* Implement TARGET_CHECK_BUILTIN_CALL.  */
+static bool
+aarch64_check_builtin_call (location_t loc, vec<location_t> arg_loc,
+			    tree fndecl, tree orig_fndecl,
+			    unsigned int nargs, tree *args)
+{
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return true;
+
+    case AARCH64_BUILTIN_SVE:
+      return aarch64_sve::check_builtin_call (loc, arg_loc, subcode,
+					      orig_fndecl, nargs, args);
+    }
+  gcc_unreachable ();
+}
+
 /* Implement REGISTER_TARGET_PRAGMAS.  */
 
 void
@@ -250,4 +317,9 @@ aarch64_register_pragmas (void)
 {
   /* Update pragma hook to allow parsing #pragma GCC target.  */
   targetm.target_option.pragma_parse = aarch64_pragma_target_parse;
+
+  targetm.resolve_overloaded_builtin = aarch64_resolve_overloaded_builtin;
+  targetm.check_builtin_call = aarch64_check_builtin_call;
+
+  c_register_pragma ("GCC", "aarch64", aarch64_pragma_aarch64);
 }

@@ -1,3 +1,13 @@
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle.exp: New file.
+	* g++.target/aarch64/sve/acle/general-c++: New test directory.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle.exp: New file.
+	* gcc.target/aarch64/sve/acle/general: New test directory.
+	* gcc.target/aarch64/sve/acle/general-c: Likewise.
+
 2019-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92241

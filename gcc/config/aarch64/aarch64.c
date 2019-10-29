@@ -1744,7 +1744,7 @@ aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
 
 /* Return the SVE vector mode that has NUNITS elements of mode INNER_MODE.  */
 
-static opt_machine_mode
+opt_machine_mode
 aarch64_sve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
 {
   enum mode_class mclass = (is_a <scalar_float_mode> (inner_mode)
@@ -1772,7 +1772,7 @@ aarch64_sve_element_int_mode (machine_mode mode)
    Unlike mode_for_int_vector, this can handle the case in which
    MODE is a predicate (and thus has a different total size).  */
 
-static machine_mode
+machine_mode
 aarch64_sve_int_mode (machine_mode mode)
 {
   scalar_int_mode int_mode = aarch64_sve_element_int_mode (mode);
@@ -2764,6 +2764,27 @@ aarch64_widest_sve_pred_elt_size (rtx_vector_builder &builder)
   return mask & -mask;
 }
 
+/* If VNx16BImode rtx X is a canonical PTRUE for a predicate mode,
+   return that predicate mode, otherwise return opt_machine_mode ().  */
+
+opt_machine_mode
+aarch64_ptrue_all_mode (rtx x)
+{
+  gcc_assert (GET_MODE (x) == VNx16BImode);
+  if (GET_CODE (x) != CONST_VECTOR
+      || !CONST_VECTOR_DUPLICATE_P (x)
+      || !CONST_INT_P (CONST_VECTOR_ENCODED_ELT (x, 0))
+      || INTVAL (CONST_VECTOR_ENCODED_ELT (x, 0)) == 0)
+    return opt_machine_mode ();
+
+  unsigned int nelts = const_vector_encoded_nelts (x);
+  for (unsigned int i = 1; i < nelts; ++i)
+    if (CONST_VECTOR_ENCODED_ELT (x, i) != const0_rtx)
+      return opt_machine_mode ();
+
+  return aarch64_sve_pred_mode (nelts);
+}
+
 /* BUILDER is a predicate constant of mode VNx16BI.  Consider the value
    that the constant would have with predicate element size ELT_SIZE
    (ignoring the upper bits in each element) and return:
@@ -2948,12 +2969,84 @@ aarch64_sve_emit_int_cmp (rtx target, machine_mode pred_mode, rtx_code cmp,
    the corresponding SVE predicate mode.  Use TARGET for the result
    if it's nonnull and convenient.  */
 
-static rtx
+rtx
 aarch64_convert_sve_data_to_pred (rtx target, machine_mode mode, rtx src)
 {
   machine_mode src_mode = GET_MODE (src);
   return aarch64_sve_emit_int_cmp (target, mode, NE, src_mode,
 				   src, CONST0_RTX (src_mode));
+}
+
+/* Return the assembly token for svprfop value PRFOP.  */
+
+static const char *
+svprfop_token (enum aarch64_svprfop prfop)
+{
+  switch (prfop)
+    {
+#define CASE(UPPER, LOWER, VALUE) case AARCH64_SV_##UPPER: return #LOWER;
+    AARCH64_FOR_SVPRFOP (CASE)
+#undef CASE
+    case AARCH64_NUM_SVPRFOPS:
+      break;
+    }
+  gcc_unreachable ();
+}
+
+/* Return the assembly string for an SVE prefetch operation with
+   mnemonic MNEMONIC, given that PRFOP_RTX is the prefetch operation
+   and that SUFFIX is the format for the remaining operands.  */
+
+char *
+aarch64_output_sve_prefetch (const char *mnemonic, rtx prfop_rtx,
+			     const char *suffix)
+{
+  static char buffer[128];
+  aarch64_svprfop prfop = (aarch64_svprfop) INTVAL (prfop_rtx);
+  unsigned int written = snprintf (buffer, sizeof (buffer), "%s\t%s, %s",
+				   mnemonic, svprfop_token (prfop), suffix);
+  gcc_assert (written < sizeof (buffer));
+  return buffer;
+}
+
+/* Check whether we can calculate the number of elements in PATTERN
+   at compile time, given that there are NELTS_PER_VQ elements per
+   128-bit block.  Return the value if so, otherwise return -1.  */
+
+HOST_WIDE_INT
+aarch64_fold_sve_cnt_pat (aarch64_svpattern pattern, unsigned int nelts_per_vq)
+{
+  unsigned int vl, const_vg;
+  if (pattern >= AARCH64_SV_VL1 && pattern <= AARCH64_SV_VL8)
+    vl = 1 + (pattern - AARCH64_SV_VL1);
+  else if (pattern >= AARCH64_SV_VL16 && pattern <= AARCH64_SV_VL256)
+    vl = 16 << (pattern - AARCH64_SV_VL16);
+  else if (aarch64_sve_vg.is_constant (&const_vg))
+    {
+      /* There are two vector granules per quadword.  */
+      unsigned int nelts = (const_vg / 2) * nelts_per_vq;
+      switch (pattern)
+	{
+	case AARCH64_SV_POW2: return 1 << floor_log2 (nelts);
+	case AARCH64_SV_MUL4: return nelts & -4;
+	case AARCH64_SV_MUL3: return (nelts / 3) * 3;
+	case AARCH64_SV_ALL: return nelts;
+	default: gcc_unreachable ();
+	}
+    }
+  else
+    return -1;
+
+  /* There are two vector granules per quadword.  */
+  poly_uint64 nelts_all = exact_div (aarch64_sve_vg, 2) * nelts_per_vq;
+  if (known_le (vl, nelts_all))
+    return vl;
+
+  /* Requesting more elements than are available results in a PFALSE.  */
+  if (known_gt (vl, nelts_all))
+    return 0;
+
+  return -1;
 }
 
 /* Return true if we can move VALUE into a register using a single
@@ -3036,6 +3129,24 @@ aarch64_output_sve_cnt_immediate (const char *prefix, const char *operands,
   gcc_assert (aarch64_sve_cnt_immediate_p (value));
   return aarch64_output_sve_cnt_immediate (prefix, operands, AARCH64_SV_ALL,
 					   value.coeffs[1], 0);
+}
+
+/* Return the asm string for an instruction with a CNT-like vector size
+   operand (a vector pattern followed by a multiplier in the range [1, 16]).
+   PREFIX is the mnemonic without the size suffix and OPERANDS is the
+   first part of the operands template (the part that comes before the
+   vector size itself).  CNT_PAT[0..2] are the operands of the
+   UNSPEC_SVE_CNT_PAT; see aarch64_sve_cnt_pat for details.  */
+
+char *
+aarch64_output_sve_cnt_pat_immediate (const char *prefix,
+				      const char *operands, rtx *cnt_pat)
+{
+  aarch64_svpattern pattern = (aarch64_svpattern) INTVAL (cnt_pat[0]);
+  unsigned int nelts_per_vq = INTVAL (cnt_pat[1]);
+  unsigned int factor = INTVAL (cnt_pat[2]) * nelts_per_vq;
+  return aarch64_output_sve_cnt_immediate (prefix, operands, pattern,
+					   factor, nelts_per_vq);
 }
 
 /* Return true if we can add X using a single SVE INC or DEC instruction.  */
@@ -3904,7 +4015,8 @@ aarch64_sve_move_pred_via_while (rtx target, machine_mode mode,
 {
   rtx limit = force_reg (DImode, gen_int_mode (vl, DImode));
   target = aarch64_target_reg (target, mode);
-  emit_insn (gen_while_ult (DImode, mode, target, const0_rtx, limit));
+  emit_insn (gen_while (UNSPEC_WHILE_LO, DImode, mode,
+			target, const0_rtx, limit));
   return target;
 }
 
@@ -4416,7 +4528,7 @@ aarch64_maybe_expand_sve_subreg_move (rtx dest, rtx src)
    attributes.  Unlike gen_lowpart, this doesn't care whether the
    mode change is valid.  */
 
-static rtx
+rtx
 aarch64_replace_reg_mode (rtx x, machine_mode mode)
 {
   if (GET_MODE (x) == mode)
@@ -11718,6 +11830,7 @@ static void
 aarch64_init_builtins ()
 {
   aarch64_general_init_builtins ();
+  aarch64_sve::init_builtins ();
 }
 
 /* Implement TARGET_FOLD_BUILTIN.  */
@@ -11731,6 +11844,9 @@ aarch64_fold_builtin (tree fndecl, int nargs, tree *args, bool)
     {
     case AARCH64_BUILTIN_GENERAL:
       return aarch64_general_fold_builtin (subcode, type, nargs, args);
+
+    case AARCH64_BUILTIN_SVE:
+      return NULL_TREE;
     }
   gcc_unreachable ();
 }
@@ -11748,6 +11864,10 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     {
     case AARCH64_BUILTIN_GENERAL:
       new_stmt = aarch64_general_gimple_fold_builtin (subcode, stmt);
+      break;
+
+    case AARCH64_BUILTIN_SVE:
+      new_stmt = aarch64_sve::gimple_fold_builtin (subcode, gsi, stmt);
       break;
     }
 
@@ -11769,6 +11889,9 @@ aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int ignore)
     {
     case AARCH64_BUILTIN_GENERAL:
       return aarch64_general_expand_builtin (subcode, exp, target, ignore);
+
+    case AARCH64_BUILTIN_SVE:
+      return aarch64_sve::expand_builtin (subcode, exp, target);
     }
   gcc_unreachable ();
 }
@@ -11782,6 +11905,9 @@ aarch64_builtin_decl (unsigned int code, bool initialize_p)
     {
     case AARCH64_BUILTIN_GENERAL:
       return aarch64_general_builtin_decl (subcode, initialize_p);
+
+    case AARCH64_BUILTIN_SVE:
+      return aarch64_sve::builtin_decl (subcode, initialize_p);
     }
   gcc_unreachable ();
 }
@@ -11815,6 +11941,9 @@ aarch64_builtin_reciprocal (tree fndecl)
     {
     case AARCH64_BUILTIN_GENERAL:
       return aarch64_general_builtin_rsqrt (subcode);
+
+    case AARCH64_BUILTIN_SVE:
+      return NULL_TREE;
     }
   gcc_unreachable ();
 }
@@ -15259,7 +15388,12 @@ aarch64_mangle_type (const_tree type)
   /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
      builtin types.  */
   if (TYPE_NAME (type) != NULL)
-    return aarch64_general_mangle_builtin_type (type);
+    {
+      const char *res;
+      if ((res = aarch64_general_mangle_builtin_type (type))
+	  || (res = aarch64_sve::mangle_builtin_type (type)))
+	return res;
+    }
 
   /* Use the default mangling.  */
   return NULL;
@@ -15415,6 +15549,27 @@ aarch64_sve_arith_immediate_p (rtx x, bool negate_p)
   if (val & 0xff)
     return IN_RANGE (val, 0, 0xff);
   return IN_RANGE (val, 0, 0xff00);
+}
+
+/* Return true if X is a valid immediate for the SVE SQADD and SQSUB
+   instructions.  Negate X first if NEGATE_P is true.  */
+
+bool
+aarch64_sve_sqadd_sqsub_immediate_p (rtx x, bool negate_p)
+{
+  rtx elt;
+
+  if (!const_vec_duplicate_p (x, &elt)
+      || !CONST_INT_P (elt))
+    return false;
+
+  if (!aarch64_sve_arith_immediate_p (x, negate_p))
+    return false;
+
+  /* After the optional negation, the immediate must be nonnegative.
+     E.g. a saturating add of -127 must be done via SQSUB Zn.B, Zn.B, #127
+     instead of SQADD Zn.B, Zn.B, #129.  */
+  return negate_p == (INTVAL (elt) < 0);
 }
 
 /* Return true if X is a valid immediate operand for an SVE logical
@@ -15649,12 +15804,45 @@ aarch64_sve_valid_immediate (unsigned HOST_WIDE_INT val64,
   return false;
 }
 
+/* Return true if X is an UNSPEC_PTRUE constant of the form:
+
+       (const (unspec [PATTERN ZERO] UNSPEC_PTRUE))
+
+   where PATTERN is the svpattern as a CONST_INT and where ZERO
+   is a zero constant of the required PTRUE mode (which can have
+   fewer elements than X's mode, if zero bits are significant).
+
+   If so, and if INFO is nonnull, describe the immediate in INFO.  */
+bool
+aarch64_sve_ptrue_svpattern_p (rtx x, struct simd_immediate_info *info)
+{
+  if (GET_CODE (x) != CONST)
+    return false;
+
+  x = XEXP (x, 0);
+  if (GET_CODE (x) != UNSPEC || XINT (x, 1) != UNSPEC_PTRUE)
+    return false;
+
+  if (info)
+    {
+      aarch64_svpattern pattern
+	= (aarch64_svpattern) INTVAL (XVECEXP (x, 0, 0));
+      machine_mode pred_mode = GET_MODE (XVECEXP (x, 0, 1));
+      scalar_int_mode int_mode = aarch64_sve_element_int_mode (pred_mode);
+      *info = simd_immediate_info (int_mode, pattern);
+    }
+  return true;
+}
+
 /* Return true if X is a valid SVE predicate.  If INFO is nonnull, use
    it to describe valid immediates.  */
 
 static bool
 aarch64_sve_pred_valid_immediate (rtx x, simd_immediate_info *info)
 {
+  if (aarch64_sve_ptrue_svpattern_p (x, info))
+    return true;
+
   if (x == CONST0_RTX (GET_MODE (x)))
     {
       if (info)
@@ -16063,6 +16251,35 @@ aarch64_sve_ld1rq_operand_p (rtx op)
   return false;
 }
 
+/* Return true if OP is a valid MEM operand for an SVE LDFF1 instruction.  */
+bool
+aarch64_sve_ldff1_operand_p (rtx op)
+{
+  if (!MEM_P (op))
+    return false;
+
+  struct aarch64_address_info addr;
+  if (!aarch64_classify_address (&addr, XEXP (op, 0), GET_MODE (op), false))
+    return false;
+
+  if (addr.type == ADDRESS_REG_IMM)
+    return known_eq (addr.const_offset, 0);
+
+  return addr.type == ADDRESS_REG_REG;
+}
+
+/* Return true if OP is a valid MEM operand for an SVE LDNF1 instruction.  */
+bool
+aarch64_sve_ldnf1_operand_p (rtx op)
+{
+  struct aarch64_address_info addr;
+
+  return (MEM_P (op)
+	  && aarch64_classify_address (&addr, XEXP (op, 0),
+				       GET_MODE (op), false)
+	  && addr.type == ADDRESS_REG_IMM);
+}
+
 /* Return true if OP is a valid MEM operand for an SVE LDR instruction.
    The conditions for STR are the same.  */
 bool
@@ -16074,6 +16291,21 @@ aarch64_sve_ldr_operand_p (rtx op)
 	  && aarch64_classify_address (&addr, XEXP (op, 0), GET_MODE (op),
 				       false, ADDR_QUERY_ANY)
 	  && addr.type == ADDRESS_REG_IMM);
+}
+
+/* Return true if OP is a valid address for an SVE PRF[BHWD] instruction,
+   addressing memory of mode MODE.  */
+bool
+aarch64_sve_prefetch_operand_p (rtx op, machine_mode mode)
+{
+  struct aarch64_address_info addr;
+  if (!aarch64_classify_address (&addr, op, mode, false))
+    return false;
+
+  if (addr.type == ADDRESS_REG_IMM)
+    return known_eq (addr.const_offset, 0);
+
+  return addr.type == ADDRESS_REG_REG;
 }
 
 /* Return true if OP is a valid MEM operand for an SVE_STRUCT mode.
@@ -17701,6 +17933,25 @@ aarch64_output_sve_mov_immediate (rtx const_vector)
 
   snprintf (templ, sizeof (templ), "mov\t%%0.%c, #" HOST_WIDE_INT_PRINT_DEC,
 	    element_char, INTVAL (info.u.mov.value));
+  return templ;
+}
+
+/* Return the asm template for a PTRUES.  CONST_UNSPEC is the
+   aarch64_sve_ptrue_svpattern_immediate that describes the predicate
+   pattern.  */
+
+char *
+aarch64_output_sve_ptrues (rtx const_unspec)
+{
+  static char templ[40];
+
+  struct simd_immediate_info info;
+  bool is_valid = aarch64_simd_valid_immediate (const_unspec, &info);
+  gcc_assert (is_valid && info.insn == simd_immediate_info::PTRUE);
+
+  char element_char = sizetochar (GET_MODE_BITSIZE (info.elt_mode));
+  snprintf (templ, sizeof (templ), "ptrues\t%%0.%c, %s", element_char,
+	    svpattern_token (info.u.pattern));
   return templ;
 }
 
