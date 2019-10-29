@@ -3719,7 +3719,7 @@ ipa_check_create_edge_args (void)
 {
   if (!ipa_edge_args_sum)
     ipa_edge_args_sum
-      = (new (ggc_cleared_alloc <ipa_edge_args_sum_t> ())
+      = (new (ggc_alloc_no_dtor<ipa_edge_args_sum_t> ())
 	 ipa_edge_args_sum_t (symtab, true));
   if (!ipa_bits_hash_table)
     ipa_bits_hash_table = hash_table<ipa_bit_ggc_hash_traits>::create_ggc (37);
@@ -3735,7 +3735,8 @@ ipa_free_all_edge_args (void)
   if (!ipa_edge_args_sum)
     return;
 
-  ipa_edge_args_sum->release ();
+  ipa_edge_args_sum->~ipa_edge_args_sum_t ();
+  ggc_free (ipa_edge_args_sum);
   ipa_edge_args_sum = NULL;
 }
 
@@ -3744,7 +3745,8 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_all_node_params (void)
 {
-  ipa_node_params_sum->release ();
+  ipa_node_params_sum->~ipa_node_params_t ();
+  ggc_free (ipa_node_params_sum);
   ipa_node_params_sum = NULL;
 }
 
@@ -3770,7 +3772,8 @@ ipcp_free_transformation_sum (void)
   if (!ipcp_transformation_sum)
     return;
 
-  ipcp_transformation_sum->release ();
+  ipcp_transformation_sum->~function_summary<ipcp_transformation *> ();
+  ggc_free (ipcp_transformation_sum);
   ipcp_transformation_sum = NULL;
 }
 

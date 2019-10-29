@@ -185,6 +185,18 @@ ggc_alloc (ALONE_CXX_MEM_STAT_INFO)
 						 PASS_MEM_STAT));
 }
 
+/* GGC allocation function that does not call finalizer for type
+   that have need_finalization_p equal to true.  User is responsible
+   for calling of the destructor.  */
+
+template<typename T>
+inline T *
+ggc_alloc_no_dtor (ALONE_CXX_MEM_STAT_INFO)
+{
+  return static_cast<T *> (ggc_internal_alloc (sizeof (T), NULL, 0, 1
+					       PASS_MEM_STAT));
+}
+
 template<typename T>
 inline T *
 ggc_cleared_alloc (ALONE_CXX_MEM_STAT_INFO)

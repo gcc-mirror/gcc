@@ -3873,9 +3873,9 @@ ipa_free_fn_summary (void)
 {
   if (!ipa_call_summaries)
     return;
-  ipa_fn_summaries->release ();
+  ipa_fn_summaries->~fast_function_summary <ipa_fn_summary *, va_gc> ();
+  ggc_free (ipa_fn_summaries);
   ipa_fn_summaries = NULL;
-  ipa_call_summaries->release ();
   delete ipa_call_summaries;
   ipa_call_summaries = NULL;
   edge_predicate_pool.release ();
@@ -3891,7 +3891,7 @@ ipa_free_size_summary (void)
 {
   if (!ipa_size_summaries)
     return;
-  ipa_size_summaries->release ();
+  delete ipa_size_summaries;
   ipa_size_summaries = NULL;
 }
 

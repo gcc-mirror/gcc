@@ -1,3 +1,24 @@
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
+	* ggc.h (ggc_alloc_no_dtor): New function.
+	* ipa-fnsummary.c (ipa_free_fn_summary): Call
+	destructor and ggc_free.
+	(ipa_free_size_summary): Call delete instead
+	of release.
+	* ipa-fnsummary.h: Use new function ggc_alloc_no_dtor.
+	* ipa-prop.c (ipa_check_create_edge_args): Likewise.
+	(ipa_free_all_edge_args): Call destructor and ggc_free.
+	(ipa_free_all_node_params): Likewise.
+	(ipcp_free_transformation_sum): Likewise.
+	* ipa-prop.h (ipa_check_create_node_params):
+	Call new ggc_alloc_no_dtor.
+	* ipa-sra.c (ipa_sra_generate_summary): Likewise.
+	(ipa_sra_analysis): Call destructor and ggc_free.
+	Replace release with delete operator.
+	* symbol-summary.h (release): Remove ..
+	(V>::~fast_function_summary): and move logic here.
+	Likewise for other classes.
+
 2019-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92260
