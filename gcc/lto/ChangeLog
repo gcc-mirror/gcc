@@ -1,3 +1,7 @@
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Remove argument.
+
 2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Update.

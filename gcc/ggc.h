@@ -149,7 +149,7 @@ extern void *ggc_realloc (void *, size_t CXX_MEM_STAT_INFO);
 /* Free a block.  To be used when known for certain it's not reachable.  */
 extern void ggc_free (void *);
 
-extern void dump_ggc_loc_statistics (bool);
+extern void dump_ggc_loc_statistics ();
 
 /* Reallocator.  */
 #define GGC_RESIZEVEC(T, P, N) \

@@ -933,21 +933,6 @@ public:
     return s.second->get_balance () - f.second->get_balance ();
   }
 
-  /* Compare rows in final GGC summary dump.  */
-  static int
-  compare_final (const void *first, const void *second)
-  {
-    typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
-
-    const ggc_usage *f = ((const mem_pair_t *)first)->second;
-    const ggc_usage *s = ((const mem_pair_t *)second)->second;
-
-    size_t a = f->m_allocated + f->m_overhead - f->m_freed;
-    size_t b = s->m_allocated + s->m_overhead - s->m_freed;
-
-    return a == b ? 0 : (a < b ? 1 : -1);
-  }
-
   /* Dump header with NAME.  */
   static inline void
   dump_header (const char *name)
@@ -970,7 +955,7 @@ static mem_alloc_description<ggc_usage> ggc_mem_desc;
 /* Dump per-site memory statistics.  */
 
 void
-dump_ggc_loc_statistics (bool final)
+dump_ggc_loc_statistics ()
 {
   if (! GATHER_STATISTICS)
     return;
@@ -978,7 +963,7 @@ dump_ggc_loc_statistics (bool final)
   ggc_force_collect = true;
   ggc_collect ();
 
-  ggc_mem_desc.dump (GGC_ORIGIN, final ? ggc_usage::compare_final : NULL);
+  ggc_mem_desc.dump (GGC_ORIGIN);
 
   ggc_force_collect = false;
 }

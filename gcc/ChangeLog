@@ -1,3 +1,19 @@
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (symbol_table::compile): Remove argument
+	for dump_memory_report.
+	* ggc-common.c (dump_ggc_loc_statistics): Likewise.
+	(compare_final): Remove in order to make report
+	better readable.
+	* ggc.h (dump_ggc_loc_statistics):  Remove argument.
+	* mem-stats.h (mem_alloc_description::get_list):
+	Do not pass cmp.
+	(mem_alloc_description::dump): Likewise here.
+	* toplev.c (dump_memory_report): Remove final
+	argument.
+	(finalize): Likewise.
+	* toplev.h (dump_memory_report): Remove argument.
+
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_sve_cmp_immediate_p)
