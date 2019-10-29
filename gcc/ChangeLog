@@ -1,5 +1,13 @@
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_sve_cmp_immediate_p)
+	(aarch64_simd_shift_imm_p): Accept scalars as well as vectors.
+	* config/aarch64/predicates.md (aarch64_sve_cmp_vsc_immediate)
+	(aarch64_sve_cmp_vsd_immediate): Accept "const_int", but don't
+	accept "const".
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* coretypes.h (string_int_pair): New typedef.
 	* langhooks-def.h (LANG_HOOKS_SIMULATE_ENUM_DECL): Define.
 	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Include it.

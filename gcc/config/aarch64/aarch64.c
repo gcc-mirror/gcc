@@ -15426,13 +15426,11 @@ aarch64_sve_dup_immediate_p (rtx x)
 bool
 aarch64_sve_cmp_immediate_p (rtx x, bool signed_p)
 {
-  rtx elt;
-
-  return (const_vec_duplicate_p (x, &elt)
-	  && CONST_INT_P (elt)
+  x = unwrap_const_vec_duplicate (x);
+  return (CONST_INT_P (x)
 	  && (signed_p
-	      ? IN_RANGE (INTVAL (elt), -16, 15)
-	      : IN_RANGE (INTVAL (elt), 0, 127)));
+	      ? IN_RANGE (INTVAL (x), -16, 15)
+	      : IN_RANGE (INTVAL (x), 0, 127)));
 }
 
 /* Return true if X is a valid immediate operand for an SVE FADD or FSUB
@@ -15784,11 +15782,14 @@ aarch64_check_zero_based_sve_index_immediate (rtx x)
 bool
 aarch64_simd_shift_imm_p (rtx x, machine_mode mode, bool left)
 {
+  x = unwrap_const_vec_duplicate (x);
+  if (!CONST_INT_P (x))
+    return false;
   int bit_width = GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT;
   if (left)
-    return aarch64_const_vec_all_same_in_range_p (x, 0, bit_width - 1);
+    return IN_RANGE (INTVAL (x), 0, bit_width - 1);
   else
-    return aarch64_const_vec_all_same_in_range_p (x, 1, bit_width);
+    return IN_RANGE (INTVAL (x), 1, bit_width);
 }
 
 /* Return the bitmask CONST_INT to select the bits required by a zero extract
