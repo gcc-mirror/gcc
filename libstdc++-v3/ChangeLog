@@ -1,5 +1,12 @@
 2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_iterators.h (BoundsContainer::size()): Add
+	new member function.
+	(WritableObject::operator=): Constrain with enable_if when available.
+	(remove_cv): Use std::remove_if when available.
+	(test_container::it(int)): Use size().
+	(test_container::size()): Use BoundsContainer::size().
+
 	PR libstdc++/92267
 	* include/bits/stl_deque.h (_Deque_iterator(const _Deque_iterator&)):
 	Do not define as defaulted.

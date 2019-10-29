@@ -56,8 +56,11 @@ namespace __gnu_test
     {
       T* first;
       T* last;
+
       BoundsContainer(T* _first, T* _last) : first(_first), last(_last)
       { }
+
+      std::size_t size() const { return last - first; }
     };
 
   // Simple container for holding state of a set of output iterators.
@@ -66,13 +69,11 @@ namespace __gnu_test
     {
       T* incrementedto;
       bool* writtento;
+
       OutputContainer(T* _first, T* _last)
-      : BoundsContainer<T>(_first, _last), incrementedto(_first)
-      {
-	writtento = new bool[this->last - this->first];
-	for(int i = 0; i < this->last - this->first; i++)
-	  writtento[i] = false;
-      }
+      : BoundsContainer<T>(_first, _last), incrementedto(_first),
+	writtento(new bool[this->size()]())
+      { }
 
       ~OutputContainer()
       { delete[] writtento; }
@@ -86,13 +87,14 @@ namespace __gnu_test
 
     public:
       OutputContainer<T>* SharedInfo;
-      WritableObject(T* ptr_in,OutputContainer<T>* SharedInfo_in):
+
+      WritableObject(T* ptr_in, OutputContainer<T>* SharedInfo_in):
 	ptr(ptr_in), SharedInfo(SharedInfo_in)
       { }
 
 #if __cplusplus >= 201103L
       template<class U>
-      void
+      typename std::enable_if<std::is_assignable<T&, U>::value>::type
       operator=(U&& new_val)
       {
 	ITERATOR_VERIFY(SharedInfo->writtento[ptr - SharedInfo->first] == 0);
@@ -182,10 +184,14 @@ namespace __gnu_test
     void operator,(const T&, const output_iterator_wrapper<U>&) = delete;
 #endif
 
+#if __cplusplus >= 2011L
+  using std::remove_cv;
+#else
   template<typename T> struct remove_cv { typedef T type; };
   template<typename T> struct remove_cv<const T> { typedef T type; };
   template<typename T> struct remove_cv<volatile T> { typedef T type; };
   template<typename T> struct remove_cv<const volatile T> { typedef T type; };
+#endif
 
   /**
    * @brief input_iterator wrapper for pointer
@@ -543,6 +549,7 @@ namespace __gnu_test
   struct test_container
   {
     typename ItType<T>::ContainerType bounds;
+
     test_container(T* _first, T* _last) : bounds(_first, _last)
     { }
 
@@ -556,7 +563,7 @@ namespace __gnu_test
     ItType<T>
     it(int pos)
     {
-      ITERATOR_VERIFY(pos >= 0 && pos <= (bounds.last - bounds.first));
+      ITERATOR_VERIFY(pos >= 0 && pos <= size());
       return ItType<T>(bounds.first + pos, &bounds);
     }
 
@@ -581,7 +588,7 @@ namespace __gnu_test
 
     std::size_t
     size() const
-    { return bounds.last - bounds.first; }
+    { return bounds.size(); }
   };
 }
 #endif
