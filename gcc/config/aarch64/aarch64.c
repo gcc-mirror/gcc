@@ -18156,7 +18156,7 @@ aarch64_evpc_rev_global (struct expand_vec_perm_d *d)
 {
   poly_uint64 nelt = d->perm.length ();
 
-  if (!d->one_vector_p || d->vec_flags != VEC_SVE_DATA)
+  if (!d->one_vector_p || d->vec_flags == VEC_ADVSIMD)
     return false;
 
   if (!d->perm.series_p (0, 1, nelt - 1, -1))

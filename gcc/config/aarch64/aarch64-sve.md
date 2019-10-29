@@ -111,6 +111,7 @@
 ;; ---- [INT,FP] General permutes
 ;; ---- [INT,FP] Special-purpose unary permutes
 ;; ---- [INT,FP] Special-purpose binary permutes
+;; ---- [PRED] Special-purpose unary permutes
 ;; ---- [PRED] Special-purpose binary permutes
 ;;
 ;; == Conversions
@@ -4748,6 +4749,20 @@
   }
   [(set_attr "movprfx" "*,yes")]
 )
+
+;; -------------------------------------------------------------------------
+;; ---- [PRED] Special-purpose unary permutes
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - REV
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_rev<mode>"
+  [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
+	(unspec:PRED_ALL [(match_operand:PRED_ALL 1 "register_operand" "Upa")]
+			 UNSPEC_REV))]
+  "TARGET_SVE"
+  "rev\t%0.<Vetype>, %1.<Vetype>")
 
 ;; -------------------------------------------------------------------------
 ;; ---- [PRED] Special-purpose binary permutes
