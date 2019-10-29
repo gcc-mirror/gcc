@@ -107,6 +107,10 @@
     (P13_REGNUM		81)
     (P14_REGNUM		82)
     (P15_REGNUM		83)
+    (FFR_REGNUM		84)
+    ;; "FFR token": a fake register used for representing the scheduling
+    ;; restrictions on FFR-related operations.
+    (FFRT_REGNUM	85)
     ;; Scratch register used by stack clash protection to calculate
     ;; SVE CFA offsets during probing.
     (STACK_CLASH_SVE_CFA_REGNUM 11)

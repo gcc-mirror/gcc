@@ -366,6 +366,9 @@ extern unsigned aarch64_architecture_version;
    P0-P7        Predicate low registers: valid in all predicate contexts
    P8-P15       Predicate high registers: used as scratch space
 
+   FFR		First Fault Register, a fixed-use SVE predicate register
+   FFRT		FFR token: a fake register used for modelling dependencies
+
    VG           Pseudo "vector granules" register
 
    VG is the number of 64-bit elements in an SVE vector.  We define
@@ -386,6 +389,7 @@ extern unsigned aarch64_architecture_version;
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
+    1, 1			/* FFR and FFRT */	\
   }
 
 /* X30 is marked as caller-saved which is in line with regular function call
@@ -408,6 +412,7 @@ extern unsigned aarch64_architecture_version;
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
+    1, 1			/* FFR and FFRT */	\
   }
 
 #define REGISTER_NAMES						\
@@ -423,6 +428,7 @@ extern unsigned aarch64_architecture_version;
     "sfp", "ap",  "cc",  "vg",					\
     "p0",  "p1",  "p2",  "p3",  "p4",  "p5",  "p6",  "p7",	\
     "p8",  "p9",  "p10", "p11", "p12", "p13", "p14", "p15",	\
+    "ffr", "ffrt"						\
   }
 
 /* Generate the register aliases for core register N */
@@ -471,7 +477,7 @@ extern unsigned aarch64_architecture_version;
 #define FRAME_POINTER_REGNUM		SFP_REGNUM
 #define STACK_POINTER_REGNUM		SP_REGNUM
 #define ARG_POINTER_REGNUM		AP_REGNUM
-#define FIRST_PSEUDO_REGISTER		(P15_REGNUM + 1)
+#define FIRST_PSEUDO_REGISTER		(FFRT_REGNUM + 1)
 
 /* The number of (integer) argument register available.  */
 #define NUM_ARG_REGS			8
@@ -601,6 +607,8 @@ enum reg_class
   PR_LO_REGS,
   PR_HI_REGS,
   PR_REGS,
+  FFR_REGS,
+  PR_AND_FFR_REGS,
   ALL_REGS,
   LIM_REG_CLASSES		/* Last */
 };
@@ -621,6 +629,8 @@ enum reg_class
   "PR_LO_REGS",					\
   "PR_HI_REGS",					\
   "PR_REGS",					\
+  "FFR_REGS",					\
+  "PR_AND_FFR_REGS",				\
   "ALL_REGS"					\
 }
 
@@ -638,6 +648,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* PR_LO_REGS */	\
   { 0x00000000, 0x00000000, 0x000ff000 },	/* PR_HI_REGS */	\
   { 0x00000000, 0x00000000, 0x000ffff0 },	/* PR_REGS */		\
+  { 0x00000000, 0x00000000, 0x00300000 },	/* FFR_REGS */		\
+  { 0x00000000, 0x00000000, 0x003ffff0 },	/* PR_AND_FFR_REGS */	\
   { 0xffffffff, 0xffffffff, 0x000fffff }	/* ALL_REGS */		\
 }
 

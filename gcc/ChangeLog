@@ -1,3 +1,19 @@
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (FFR_REGNUM, FFRT_REGNUM): New constants.
+	* config/aarch64/aarch64.h (FIRST_PSEUDO_REGISTER): Bump to
+	FFRT_REGNUM + 1.
+	(FFR_REGS, PR_AND_FFR_REGS): New register classes.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add entries for them.
+	* config/aarch64/aarch64.c (pr_or_ffr_regnum_p): New function.
+	(aarch64_hard_regno_nregs): Handle the new register classes.
+	(aarch64_hard_regno_mode_ok): Likewise.
+	(aarch64_regno_regclass): Likewise.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_register_move_cost): Likewise.
+	(aarch64_conditional_register_usage): Don't treat FFR and FFRT
+	as general register_operands.
+
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
 	* ggc-common.c: One can't subtract unsigned types

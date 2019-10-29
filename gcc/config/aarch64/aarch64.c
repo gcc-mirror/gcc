@@ -1426,6 +1426,14 @@ aarch64_err_no_fpadvsimd (machine_mode mode)
 	     " vector types", "+nofp");
 }
 
+/* Return true if REGNO is P0-P15 or one of the special FFR-related
+   registers.  */
+inline bool
+pr_or_ffr_regnum_p (unsigned int regno)
+{
+  return PR_REGNUM_P (regno) || regno == FFR_REGNUM || regno == FFRT_REGNUM;
+}
+
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
    The register allocator chooses POINTER_AND_FP_REGS if FP_REGS and
    GENERAL_REGS have the same cost - even if POINTER_AND_FP_REGS has a much
@@ -1810,6 +1818,8 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
+    case FFR_REGS:
+    case PR_AND_FFR_REGS:
       return 1;
     default:
       return CEIL (lowest_size, UNITS_PER_WORD);
@@ -1836,10 +1846,10 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     return false;
 
   if (vec_flags & VEC_SVE_PRED)
-    return PR_REGNUM_P (regno);
+    return pr_or_ffr_regnum_p (regno);
 
-  if (PR_REGNUM_P (regno))
-    return 0;
+  if (pr_or_ffr_regnum_p (regno))
+    return false;
 
   if (regno == SP_REGNUM)
     /* The purpose of comparing with ptr_mode is to support the
@@ -9163,6 +9173,9 @@ aarch64_regno_regclass (unsigned regno)
   if (PR_REGNUM_P (regno))
     return PR_LO_REGNUM_P (regno) ? PR_LO_REGS : PR_HI_REGS;
 
+  if (regno == FFR_REGNUM || regno == FFRT_REGNUM)
+    return FFR_REGS;
+
   return NO_REGS;
 }
 
@@ -9461,6 +9474,8 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
+    case FFR_REGS:
+    case PR_AND_FFR_REGS:
       return 1;
 
     case NO_REGS:
@@ -11640,6 +11655,14 @@ aarch64_register_move_cost (machine_mode mode,
 
   if (from == TAILCALL_ADDR_REGS || from == POINTER_REGS)
     from = GENERAL_REGS;
+
+  /* Make RDFFR very expensive.  In particular, if we know that the FFR
+     contains a PTRUE (e.g. after a SETFFR), we must never use RDFFR
+     as a way of obtaining a PTRUE.  */
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+      && hard_reg_set_subset_p (reg_class_contents[from_i],
+				reg_class_contents[FFR_REGS]))
+    return 80;
 
   /* Moving between GPR and stack cost is the same as GP2GP.  */
   if ((from == GENERAL_REGS && to == STACK_REG)
@@ -14801,6 +14824,10 @@ aarch64_conditional_register_usage (void)
 	fixed_regs[i] = 1;
 	call_used_regs[i] = 1;
       }
+
+  /* Only allow the FFR and FFRT to be accessed via special patterns.  */
+  CLEAR_HARD_REG_BIT (operand_reg_set, FFR_REGNUM);
+  CLEAR_HARD_REG_BIT (operand_reg_set, FFRT_REGNUM);
 
   /* When tracking speculation, we need a couple of call-clobbered registers
      to track the speculation state.  It would be nice to just use
