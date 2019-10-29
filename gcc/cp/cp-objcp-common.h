@@ -100,6 +100,9 @@ extern tree cxx_make_type_hook			(tree_code);
 #define LANG_HOOKS_BUILTIN_FUNCTION cxx_builtin_function
 #undef  LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE
 #define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE cxx_builtin_function_ext_scope
+#undef  LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL
+#define LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL \
+  cxx_simulate_builtin_function_decl
 #undef	LANG_HOOKS_TYPE_HASH_EQ
 #define LANG_HOOKS_TYPE_HASH_EQ	cxx_type_hash_eq
 #undef	LANG_HOOKS_COPY_LANG_QUALIFIERS

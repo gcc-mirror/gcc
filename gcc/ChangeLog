@@ -1,3 +1,18 @@
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* langhooks.h (lang_hooks::simulate_builtin_function_decl): New hook.
+	(simulate_builtin_function_decl): Declare.
+	* langhooks-def.h (LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL): Define.
+	(LANG_HOOKS_INITIALIZER): Include it.
+	* langhooks.c (add_builtin_function_common): Rename to...
+	(build_builtin_function): ...this.  Add a location parameter and use
+	it instead of BUILTINS_LOCATION.  Remove the hook parameter and return
+	the decl instead.
+	(add_builtin_function): Update accordingly, passing the returned
+	decl to the lang hook.
+	(add_builtin_function_ext_scope): Likewise
+	(simulate_builtin_function_decl): New function.
+
 2019-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/install.texi (--enable-offload-targets): Fix up a typo in the
