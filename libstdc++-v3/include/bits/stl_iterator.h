@@ -442,7 +442,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_reverse_iterator(_Iterator __i)
     { return reverse_iterator<_Iterator>(__i); }
 
-#  if __cplusplus > 201703L
+#  if __cplusplus > 201703L && defined __cpp_lib_concepts
   template<typename _Iterator1, typename _Iterator2>
     requires (!sized_sentinel_for<_Iterator1, _Iterator2>)
     inline constexpr bool disable_sized_sentinel<reverse_iterator<_Iterator1>,
