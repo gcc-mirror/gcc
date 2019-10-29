@@ -431,7 +431,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_reverse_iterator(_Iterator __i)
     { return reverse_iterator<_Iterator>(__i); }
 
-# if __cplusplus > 201103L
+# if __cplusplus >= 201402L
 #  define __cpp_lib_make_reverse_iterator 201402
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -441,10 +441,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Iterator>
     make_reverse_iterator(_Iterator __i)
     { return reverse_iterator<_Iterator>(__i); }
-# endif
-#endif
 
-#if __cplusplus >= 201103L
+#  if __cplusplus > 201703L
+  template<typename _Iterator1, typename _Iterator2>
+    requires (!sized_sentinel_for<_Iterator1, _Iterator2>)
+    inline constexpr bool disable_sized_sentinel<reverse_iterator<_Iterator1>,
+						 reverse_iterator<_Iterator2>>
+						   = true;
+#  endif // C++20
+# endif // C++14
+
   template<typename _Iterator>
     _GLIBCXX20_CONSTEXPR
     auto
@@ -463,7 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __miter_base(reverse_iterator<_Iterator> __it)
     -> decltype(__make_reverse_iterator(__miter_base(__it.base())))
     { return __make_reverse_iterator(__miter_base(__it.base())); }
-#endif
+#endif // C++11
 
   // 24.4.2.2.1 back_insert_iterator
   /**

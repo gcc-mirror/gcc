@@ -1,8 +1,4 @@
-// { dg-do compile }
-
-// 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
-
-// Copyright (C) 2007-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,19 +15,22 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++2a" }
+// { dg-do compile { target c++2a } }
 
-#include <numeric>
-#include <testsuite_api.h>
+#include <iterator>
 
-namespace std
-{
-  using __gnu_test::NonDefaultConstructible;
+static_assert( std::contiguous_iterator<int*> );
+static_assert( std::contiguous_iterator<const int*> );
+static_assert( std::contiguous_iterator<void**> );
 
-  typedef NonDefaultConstructible 		value_type;
-  typedef value_type* 		input_iterator_type;
-  typedef value_type* 		output_iterator_type;
+static_assert( ! std::contiguous_iterator<void*> );
+static_assert( ! std::contiguous_iterator<const void*> );
+static_assert( ! std::contiguous_iterator<volatile void*> );
 
-  template output_iterator_type
-  adjacent_difference(input_iterator_type, input_iterator_type,
-		      output_iterator_type);
-} 
+static_assert( ! std::contiguous_iterator<void(*)()> );
+static_assert( ! std::contiguous_iterator<void(*)()> );
+
+struct A;
+static_assert( ! std::contiguous_iterator<void(A::*)()> );
+static_assert( ! std::contiguous_iterator<int A::*> );

@@ -31,7 +31,9 @@
 #define _MOVE_H 1
 
 #include <bits/c++config.h>
-#include <bits/concept_check.h>
+#if __cplusplus < 201103L
+# include <bits/concept_check.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -188,9 +190,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOEXCEPT_IF(__and_<is_nothrow_move_constructible<_Tp>,
 				is_nothrow_move_assignable<_Tp>>::value)
     {
+#if __cplusplus < 201103L
       // concept requirements
       __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
-
+#endif
       _Tp __tmp = _GLIBCXX_MOVE(__a);
       __a = _GLIBCXX_MOVE(__b);
       __b = _GLIBCXX_MOVE(__tmp);

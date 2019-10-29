@@ -1,5 +1,85 @@
 2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/iterator_concepts.h: New header.
+	(contiguous_iterator_tag, iter_reference_t, ranges::iter_move)
+	(iter_rvalue_reference_t, incrementable_traits, iter_difference_t)
+	(readable_traits, iter_value_t, readable, iter_common_reference_t)
+	(writable, waekly_incrementable, incrementable)
+	(input_or_output_iterator, sentinel_for, disable_sized_sentinel)
+	(sized_sentinel_for, input_iterator, output_iterator)
+	(forward_iterator, bidirectional_iterator, random_access_iterator)
+	(contiguous_iterator, indirectly_unary_invocable)
+	(indirectly_regular_unary_invocable, indirect_unary_predicate)
+	(indirect_relation, indirect_strict_weak_order, indirect_result_t)
+	(projected, indirectly_movable, indirectly_movable_storable)
+	(indirectly_copyable, indirectly_copyable_storable, ranges::iter_swap)
+	(indirectly_swappable, indirectly_comparable, permutable, mergeable)
+	(sortable, unreachable_sentinel_t, unreachable_sentinel)
+	(default_sentinel_t, default_sentinel): Define.
+	(__detail::__cpp17_iterator, __detail::__cpp17_input_iterator)
+	(__detail::__cpp17_fwd_iterator, __detail::__cpp17_bidi_iterator)
+	(__detail::__cpp17_randacc_iterator): Define.
+	(__iterator_traits): Define constrained specializations.
+	* include/bits/move.h (move): Only use old concept check for C++98.
+	* include/bits/range_access.h (ranges::disable_sized_range)
+	(ranges::begin, ranges::end, ranges::cbegin, ranges::cend)
+	(ranges::rbegin, ranges::rend, ranges::crbegin, ranges::crend)
+	(ranges::size, ranges::empty, ranges::data, ranges::cdata): Define
+	new customization points for C++20.
+	(ranges::range, ranges::sized_range): Define new concepts for C++20.
+	(ranges::advance, ranges::distance, ranges::next, ranges::prev):
+	Define new functions for C++20.
+	(__adl_end, __adl_cdata, __adl_cbegin, __adl_cend, __adl_rbegin)
+	(__adl_rend, __adl_crbegin, __adl_crend, __adl_cdata, __adl_size)
+	(__adl_empty): Remove.
+	* include/bits/stl_iterator.h (disable_sized_sentinel): Specialize
+	for reverse_iterator.
+	* include/bits/stl_iterator_base_types.h (contiguous_iterator_tag):
+	Define new struct for C++20.
+	(iterator_traits<_Tp*>): Constrain partial specialization in C++20.
+	* include/std/concepts (__is_class_or_enum): Move to __detail
+	namespace.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error line number.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+	* testsuite/24_iterators/associated_types/incrementable.traits.cc: New
+	test.
+	* testsuite/24_iterators/associated_types/readable.traits.cc: New test.
+	* testsuite/24_iterators/contiguous/concept.cc: New test.
+	* testsuite/24_iterators/contiguous/tag.cc: New test.
+	* testsuite/24_iterators/customization_points/iter_move.cc: New test.
+	* testsuite/24_iterators/customization_points/iter_swap.cc: New test.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: New test.
+	* testsuite/24_iterators/range_operations/advance.cc: New test.
+	* testsuite/24_iterators/range_operations/distance.cc: New test.
+	* testsuite/24_iterators/range_operations/next.cc: New test.
+	* testsuite/24_iterators/range_operations/prev.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/requirements/
+	explicit_instantiation/2.cc: Rename types that conflict with C++20
+	concepts.
+	* testsuite/26_numerics/adjacent_difference/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/experimental/iterator/requirements.cc: Likewise.
+	* testsuite/std/ranges/access/begin.cc: New test.
+	* testsuite/std/ranges/access/cbegin.cc: New test.
+	* testsuite/std/ranges/access/cdata.cc: New test.
+	* testsuite/std/ranges/access/cend.cc: New test.
+	* testsuite/std/ranges/access/crbegin.cc: New test.
+	* testsuite/std/ranges/access/crend.cc: New test.
+	* testsuite/std/ranges/access/data.cc: New test.
+	* testsuite/std/ranges/access/empty.cc: New test.
+	* testsuite/std/ranges/access/end.cc: New test.
+	* testsuite/std/ranges/access/rbegin.cc: New test.
+	* testsuite/std/ranges/access/rend.cc: New test.
+	* testsuite/std/ranges/access/size.cc: New test.
+	* testsuite/util/testsuite_iterators.h (contiguous_iterator_wrapper)
+	(test_range, test_sized_range): New test utilities.
+
 	* testsuite/util/testsuite_iterators.h (BoundsContainer::size()): Add
 	new member function.
 	(WritableObject::operator=): Constrain with enable_if when available.
