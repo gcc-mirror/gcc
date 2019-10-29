@@ -272,7 +272,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 						    asserts[i].expr,
 						    asserts[i].comp_code,
 						    asserts[i].val);
-	      if (getenv("GORIME"))
+	      if (CHECKING_P && getenv("GORIME"))
 		assert_gori_is_just_as_good (asserts[i].name, pred_e,
 					     vr, &vr_gori, asserts);
 	      vr = merge_gori_and_evrp_results (vr, &vr_gori);

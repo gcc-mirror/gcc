@@ -1509,7 +1509,7 @@ operator_lshift::op1_range (value_range_base &r,
       // rshift (0111) to the arithmetic rshift (1111).
       //
       // Perform a logical rshift by doing the rshift as unsigned.
-      tree unsigned_type = make_unsigned_type (TYPE_PRECISION (type));
+      tree unsigned_type = unsigned_type_for (type);
       value_range_base unsigned_lhs = lhs;
       range_cast (unsigned_lhs, unsigned_type);
       rshift_op = range_op_handler (RSHIFT_EXPR, unsigned_type);
