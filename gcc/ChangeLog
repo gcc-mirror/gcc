@@ -1,3 +1,37 @@
+2019-10-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR 88915
+	* tree-ssa-loop-niter.h (simplify_replace_tree): Change declaration.
+	* tree-ssa-loop-niter.c (simplify_replace_tree): Add context parameter
+	and make the valueize function pointer also take a void pointer.
+	* gcc/tree-ssa-sccvn.c (vn_valueize_wrapper): New function to wrap
+	around vn_valueize, to call it without a context.
+	(process_bb): Use vn_valueize_wrapper instead of vn_valueize.
+	* tree-vect-loop.c (_loop_vec_info): Initialize epilogue_vinfos.
+	(~_loop_vec_info): Release epilogue_vinfos.
+	(vect_analyze_loop_costing): Use knowledge of main VF to estimate
+	number of iterations of epilogue.
+	(vect_analyze_loop_2): Adapt to analyse main loop for all supported
+	vector sizes when vect-epilogues-nomask=1.  Also keep track of lowest
+	versioning threshold needed for main loop.
+	(vect_analyze_loop): Likewise.
+	(find_in_mapping): New helper function.
+	(update_epilogue_loop_vinfo): New function.
+	(vect_transform_loop): When vectorizing epilogues re-use analysis done
+	on main loop and call update_epilogue_loop_vinfo to update it.
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): No longer insert
+	stmts on loop preheader edge.
+	(vect_do_peeling): Enable skip-vectors when doing loop versioning if
+	we decided to vectorize epilogues.  Update epilogues NITERS and
+	construct ADVANCE to update epilogues data references where needed.
+	* tree-vectorizer.h (_loop_vec_info): Add epilogue_vinfos.
+	(vect_do_peeling, vect_update_inits_of_drs,
+	 determine_peel_for_niter, vect_analyze_loop): Add or update
+	declarations.
+	* tree-vectorizer.c (try_vectorize_loop_1): Make sure to use already
+	created loop_vec_info's for epilogues when available.  Otherwise analyse
+	epilogue separately.
+
 2019-10-29  Richard Biener  <rguenther@suse.de>
 
 	* doc/tree-ssa.texi (Immediate Uses): Fix FOR_EACH_IMM_USE_STMT
