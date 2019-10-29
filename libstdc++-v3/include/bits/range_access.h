@@ -349,6 +349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __adl_data(_Container& __cont) noexcept(noexcept(data(__cont)))
     { return data(__cont); }
 
+#ifdef __cpp_lib_concepts
 namespace ranges
 {
   template<typename>
@@ -1061,6 +1062,7 @@ namespace ranges
     }
 
 } // namespace ranges
+#endif // library concepts
 #endif // C++20
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

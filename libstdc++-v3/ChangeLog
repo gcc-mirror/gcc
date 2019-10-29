@@ -1,5 +1,13 @@
 2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/range_access.h (ranges::disable_sized_range)
+	(ranges::begin, ranges::end, ranges::cbegin, ranges::cend)
+	(ranges::rbegin, ranges::rend, ranges::crbegin, ranges::crend)
+	(ranges::size, ranges::empty, ranges::data, ranges::cdata)
+	(ranges::range, ranges::sized_range, ranges::advance, ranges::distance)
+	(ranges::next, ranges::prev): Guard with __cpp_lib_concepts.
+	* include/bits/stl_iterator.h (disable_sized_sentinel): Likewise.
+
 	* include/bits/alloc_traits.h (__cpp_lib_constexpr_dynamic_alloc):
 	Define.
 	(allocator_traits::_S_construct, allocator_traits::_S_destroy)
