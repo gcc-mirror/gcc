@@ -1,3 +1,8 @@
+2019-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92258
+	* gcc.target/i386/pr92258.c: New test.
+
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/strlenopt-89.c: New test.
