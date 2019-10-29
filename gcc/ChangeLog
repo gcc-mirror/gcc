@@ -1,4 +1,445 @@
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config.gcc (aarch64*-*-*): Add arm_sve.h to extra_headers.
+	Add aarch64-sve-builtins.o, aarch64-sve-builtins-shapes.o and
+	aarch64-sve-builtins-base.o to extra_objs.  Add
+	aarch64-sve-builtins.h and aarch64-sve-builtins.cc to target_gtfiles.
+	* config/aarch64/t-aarch64 (aarch64-sve-builtins.o): New rule.
+	(aarch64-sve-builtins-shapes.o): Likewise.
+	(aarch64-sve-builtins-base.o): New rules.
+	* config/aarch64/aarch64-c.c (aarch64_pragma_aarch64): New function.
+	(aarch64_resolve_overloaded_builtin): Likewise.
+	(aarch64_check_builtin_call): Likewise.
+	(aarch64_register_pragmas): Install aarch64_resolve_overloaded_builtin
+	and aarch64_check_builtin_call in targetm.  Register the GCC aarch64
+	pragma.
+	* config/aarch64/aarch64-protos.h (AARCH64_FOR_SVPRFOP): New macro.
+	(aarch64_svprfop): New enum.
+	(AARCH64_BUILTIN_SVE): New aarch64_builtin_class enum value.
+	(aarch64_sve_int_mode, aarch64_sve_data_mode): Declare.
+	(aarch64_fold_sve_cnt_pat, aarch64_output_sve_prefetch): Likewise.
+	(aarch64_output_sve_cnt_pat_immediate): Likewise.
+	(aarch64_output_sve_ptrues, aarch64_sve_ptrue_svpattern_p): Likewise.
+	(aarch64_sve_sqadd_sqsub_immediate_p, aarch64_sve_ldff1_operand_p)
+	(aarch64_sve_ldnf1_operand_p, aarch64_sve_prefetch_operand_p)
+	(aarch64_ptrue_all_mode, aarch64_convert_sve_data_to_pred): Likewise.
+	(aarch64_expand_sve_dupq, aarch64_replace_reg_mode): Likewise.
+	(aarch64_sve::init_builtins, aarch64_sve::handle_arm_sve_h): Likewise.
+	(aarch64_sve::builtin_decl, aarch64_sve::builtin_type_p): Likewise.
+	(aarch64_sve::mangle_builtin_type): Likewise.
+	(aarch64_sve::resolve_overloaded_builtin): Likewise.
+	(aarch64_sve::check_builtin_call, aarch64_sve::gimple_fold_builtin)
+	(aarch64_sve::expand_builtin): Likewise.
+	* config/aarch64/aarch64.c (aarch64_sve_data_mode): Make public.
+	(aarch64_sve_int_mode): Likewise.
+	(aarch64_ptrue_all_mode): New function.
+	(aarch64_convert_sve_data_to_pred): Make public.
+	(svprfop_token): New function.
+	(aarch64_output_sve_prefetch): Likewise.
+	(aarch64_fold_sve_cnt_pat): Likewise.
+	(aarch64_output_sve_cnt_pat_immediate): Likewise.
+	(aarch64_sve_move_pred_via_while): Use gen_while with UNSPEC_WHILE_LO
+	instead of gen_while_ult.
+	(aarch64_replace_reg_mode): Make public.
+	(aarch64_init_builtins): Call aarch64_sve::init_builtins.
+	(aarch64_fold_builtin): Handle AARCH64_BUILTIN_SVE.
+	(aarch64_gimple_fold_builtin, aarch64_expand_builtin): Likewise.
+	(aarch64_builtin_decl, aarch64_builtin_reciprocal): Likewise.
+	(aarch64_mangle_type): Call aarch64_sve::mangle_type.
+	(aarch64_sve_sqadd_sqsub_immediate_p): New function.
+	(aarch64_sve_ptrue_svpattern_p): Likewise.
+	(aarch64_sve_pred_valid_immediate): Check
+	aarch64_sve_ptrue_svpattern_p.
+	(aarch64_sve_ldff1_operand_p, aarch64_sve_ldnf1_operand_p)
+	(aarch64_sve_prefetch_operand_p, aarch64_output_sve_ptrues): New
+	functions.
+	* config/aarch64/aarch64.md (UNSPEC_LDNT1_SVE, UNSPEC_STNT1_SVE)
+	(UNSPEC_LDFF1_GATHER, UNSPEC_PTRUE, UNSPEC_WHILE_LE, UNSPEC_WHILE_LS)
+	(UNSPEC_WHILE_LT, UNSPEC_CLASTA, UNSPEC_UPDATE_FFR)
+	(UNSPEC_UPDATE_FFRT, UNSPEC_RDFFR, UNSPEC_WRFFR)
+	(UNSPEC_SVE_LANE_SELECT, UNSPEC_SVE_CNT_PAT, UNSPEC_SVE_PREFETCH)
+	(UNSPEC_SVE_PREFETCH_GATHER, UNSPEC_SVE_COMPACT, UNSPEC_SVE_SPLICE):
+	New unspecs.
+	* config/aarch64/iterators.md (SI_ONLY, DI_ONLY, VNx8HI_ONLY)
+	(VNx2DI_ONLY, SVE_PARTIAL, VNx8_NARROW, VNx8_WIDE, VNx4_NARROW)
+	(VNx4_WIDE, VNx2_NARROW, VNx2_WIDE, PRED_HSD): New mode iterators.
+	(UNSPEC_ADR, UNSPEC_BRKA, UNSPEC_BRKB, UNSPEC_BRKN, UNSPEC_BRKPA)
+	(UNSPEC_BRKPB, UNSPEC_PFIRST, UNSPEC_PNEXT, UNSPEC_CNTP, UNSPEC_SADDV)
+	(UNSPEC_UADDV, UNSPEC_FMLA, UNSPEC_FMLS, UNSPEC_FEXPA, UNSPEC_FTMAD)
+	(UNSPEC_FTSMUL, UNSPEC_FTSSEL, UNSPEC_COND_CMPEQ_WIDE): New unspecs.
+	(UNSPEC_COND_CMPGE_WIDE, UNSPEC_COND_CMPGT_WIDE): Likewise.
+	(UNSPEC_COND_CMPHI_WIDE, UNSPEC_COND_CMPHS_WIDE): Likewise.
+	(UNSPEC_COND_CMPLE_WIDE, UNSPEC_COND_CMPLO_WIDE): Likewise.
+	(UNSPEC_COND_CMPLS_WIDE, UNSPEC_COND_CMPLT_WIDE): Likewise.
+	(UNSPEC_COND_CMPNE_WIDE, UNSPEC_COND_FCADD90, UNSPEC_COND_FCADD270)
+	(UNSPEC_COND_FCMLA, UNSPEC_COND_FCMLA90, UNSPEC_COND_FCMLA180)
+	(UNSPEC_COND_FCMLA270, UNSPEC_COND_FMAX, UNSPEC_COND_FMIN): Likewise.
+	(UNSPEC_COND_FMULX, UNSPEC_COND_FRECPX, UNSPEC_COND_FSCALE): Likewise.
+	(UNSPEC_LASTA, UNSPEC_ASHIFT_WIDE, UNSPEC_ASHIFTRT_WIDE): Likewise.
+	(UNSPEC_LSHIFTRT_WIDE, UNSPEC_LDFF1, UNSPEC_LDNF1): Likewise.
+	(Vesize): Handle partial vector modes.
+	(self_mask, narrower_mask, sve_lane_con, sve_lane_pair_con): New
+	mode attributes.
+	(UBINQOPS, ANY_PLUS, SAT_PLUS, ANY_MINUS, SAT_MINUS): New code
+	iterators.
+	(s, paired_extend, inc_dec): New code attributes.
+	(SVE_INT_ADDV, CLAST, LAST): New int iterators.
+	(SVE_INT_UNARY): Add UNSPEC_RBIT.
+	(SVE_FP_UNARY, SVE_FP_UNARY_INT): New int iterators.
+	(SVE_FP_BINARY, SVE_FP_BINARY_INT): Likewise.
+	(SVE_COND_FP_UNARY): Add UNSPEC_COND_FRECPX.
+	(SVE_COND_FP_BINARY): Add UNSPEC_COND_FMAX, UNSPEC_COND_FMIN and
+	UNSPEC_COND_FMULX.
+	(SVE_COND_FP_BINARY_INT, SVE_COND_FP_ADD): New int iterators.
+	(SVE_COND_FP_SUB, SVE_COND_FP_MUL): Likewise.
+	(SVE_COND_FP_BINARY_I1): Add UNSPEC_COND_FMAX and UNSPEC_COND_FMIN.
+	(SVE_COND_FP_BINARY_REG): Add UNSPEC_COND_FMULX.
+	(SVE_COND_FCADD, SVE_COND_FP_MAXMIN, SVE_COND_FCMLA)
+	(SVE_COND_INT_CMP_WIDE, SVE_FP_TERNARY_LANE, SVE_CFP_TERNARY_LANE)
+	(SVE_WHILE, SVE_SHIFT_WIDE, SVE_LDFF1_LDNF1, SVE_BRK_UNARY)
+	(SVE_BRK_BINARY, SVE_PITER): New int iterators.
+	(optab): Handle UNSPEC_SADDV, UNSPEC_UADDV, UNSPEC_FRECPE,
+	UNSPEC_FRECPS, UNSPEC_RSQRTE, UNSPEC_RSQRTS, UNSPEC_RBIT,
+	UNSPEC_SMUL_HIGHPART, UNSPEC_UMUL_HIGHPART, UNSPEC_FMLA, UNSPEC_FMLS,
+	UNSPEC_FCMLA, UNSPEC_FCMLA90, UNSPEC_FCMLA180, UNSPEC_FCMLA270,
+	UNSPEC_FEXPA, UNSPEC_FTSMUL, UNSPEC_FTSSEL, UNSPEC_COND_FCADD90,
+	UNSPEC_COND_FCADD270, UNSPEC_COND_FCMLA, UNSPEC_COND_FCMLA90,
+	UNSPEC_COND_FCMLA180, UNSPEC_COND_FCMLA270, UNSPEC_COND_FMAX,
+	UNSPEC_COND_FMIN, UNSPEC_COND_FMULX, UNSPEC_COND_FRECPX and
+	UNSPEC_COND_FSCALE.
+	(maxmin_uns): Handle UNSPEC_COND_FMAX and UNSPEC_COND_FMIN.
+	(binqops_op, binqops_op_rev, last_op): New int attributes.
+	(su): Handle UNSPEC_SADDV and UNSPEC_UADDV.
+	(fn, ab): New int attributes.
+	(cmp_op): Handle UNSPEC_COND_CMP*_WIDE and UNSPEC_WHILE_*.
+	(while_optab_cmp, brk_op, sve_pred_op): New int attributes.
+	(sve_int_op): Handle UNSPEC_SMUL_HIGHPART, UNSPEC_UMUL_HIGHPART,
+	UNSPEC_ASHIFT_WIDE, UNSPEC_ASHIFTRT_WIDE, UNSPEC_LSHIFTRT_WIDE and
+	UNSPEC_RBIT.
+	(sve_fp_op): Handle UNSPEC_FRECPE, UNSPEC_FRECPS, UNSPEC_RSQRTE,
+	UNSPEC_RSQRTS, UNSPEC_FMLA, UNSPEC_FMLS, UNSPEC_FEXPA, UNSPEC_FTSMUL,
+	UNSPEC_FTSSEL, UNSPEC_COND_FMAX, UNSPEC_COND_FMIN, UNSPEC_COND_FMULX,
+	UNSPEC_COND_FRECPX and UNSPEC_COND_FSCALE.
+	(sve_fp_op_rev): Handle UNSPEC_COND_FMAX, UNSPEC_COND_FMIN and
+	UNSPEC_COND_FMULX.
+	(rot): Handle UNSPEC_COND_FCADD* and UNSPEC_COND_FCMLA*.
+	(brk_reg_con, brk_reg_opno): New int attributes.
+	(sve_pred_fp_rhs1_operand, sve_pred_fp_rhs2_operand): Handle
+	UNSPEC_COND_FMAX, UNSPEC_COND_FMIN and UNSPEC_COND_FMULX.
+	(sve_pred_fp_rhs2_immediate): Handle UNSPEC_COND_FMAX and
+	UNSPEC_COND_FMIN.
+	(max_elem_bits): New int attribute.
+	(min_elem_bits): Handle UNSPEC_RBIT.
+	* config/aarch64/predicates.md (subreg_lowpart_operator): Handle
+	TRUNCATE as well as SUBREG.
+	(ascending_int_parallel, aarch64_simd_reg_or_minus_one)
+	(aarch64_sve_ldff1_operand, aarch64_sve_ldnf1_operand)
+	(aarch64_sve_prefetch_operand, aarch64_sve_ptrue_svpattern_immediate)
+	(aarch64_sve_qadd_immediate, aarch64_sve_qsub_immediate)
+	(aarch64_sve_gather_immediate_b, aarch64_sve_gather_immediate_h)
+	(aarch64_sve_gather_immediate_w, aarch64_sve_gather_immediate_d)
+	(aarch64_sve_sqadd_operand, aarch64_sve_gather_offset_b)
+	(aarch64_sve_gather_offset_h, aarch64_sve_gather_offset_w)
+	(aarch64_sve_gather_offset_d, aarch64_gather_scale_operand_b)
+	(aarch64_gather_scale_operand_h): New predicates.
+	* config/aarch64/constraints.md (UPb, UPd, UPh, UPw, Utf, Utn, vgb)
+	(vgd, vgh, vgw, vsQ, vsS): New constraints.
+	* config/aarch64/aarch64-sve.md: Add a note on the FFR handling.
+	(*aarch64_sve_reinterpret<mode>): Allow any source register
+	instead of requiring an exact match.
+	(*aarch64_sve_ptruevnx16bi_cc, *aarch64_sve_ptrue<mode>_cc)
+	(*aarch64_sve_ptruevnx16bi_ptest, *aarch64_sve_ptrue<mode>_ptest)
+	(aarch64_wrffr, aarch64_update_ffr_for_load, aarch64_copy_ffr_to_ffrt)
+	(aarch64_rdffr, aarch64_rdffr_z, *aarch64_rdffr_z_ptest)
+	(*aarch64_rdffr_ptest, *aarch64_rdffr_z_cc, *aarch64_rdffr_cc)
+	(aarch64_update_ffrt): New patterns.
+	(@aarch64_load_<ANY_EXTEND:optab><VNx8_WIDE:mode><VNx8_NARROW:mode>)
+	(@aarch64_load_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
+	(@aarch64_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>)
+	(@aarch64_ld<fn>f1<mode>): New patterns.
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><VNx8_WIDE:mode><VNx8_NARROW:mode>)
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>)
+	(@aarch64_ldnt1<mode>): New patterns.
+	(gather_load<mode>): Use aarch64_sve_gather_offset_<Vesize> for
+	the scalar part of the address.
+	(mask_gather_load<SVE_S:mode>): Use aarch64_sve_gather_offset_w for the
+	scalar part of the addresse and add an alternative for handling
+	nonzero offsets.
+	(mask_gather_load<SVE_D:mode>): Likewise aarch64_sve_gather_offset_d.
+	(*mask_gather_load<mode>_sxtw, *mask_gather_load<mode>_uxtw)
+	(@aarch64_gather_load_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
+	(@aarch64_gather_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>)
+	(*aarch64_gather_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_sxtw)
+	(*aarch64_gather_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_uxtw)
+	(@aarch64_ldff1_gather<SVE_S:mode>, @aarch64_ldff1_gather<SVE_D:mode>)
+	(*aarch64_ldff1_gather<mode>_sxtw, *aarch64_ldff1_gather<mode>_uxtw)
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>)
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_sxtw)
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_uxtw)
+	(@aarch64_sve_prefetch<mode>): New patterns.
+	(@aarch64_sve_gather_prefetch<SVE_I:mode><VNx4SI_ONLY:mode>)
+	(@aarch64_sve_gather_prefetch<SVE_I:mode><VNx2DI_ONLY:mode>)
+	(*aarch64_sve_gather_prefetch<SVE_I:mode><VNx2DI_ONLY:mode>_sxtw)
+	(*aarch64_sve_gather_prefetch<SVE_I:mode><VNx2DI_ONLY:mode>_uxtw)
+	(@aarch64_store_trunc<VNx8_NARROW:mode><VNx8_WIDE:mode>)
+	(@aarch64_store_trunc<VNx4_NARROW:mode><VNx4_WIDE:mode>)
+	(@aarch64_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>)
+	(@aarch64_stnt1<mode>): New patterns.
+	(scatter_store<mode>): Use aarch64_sve_gather_offset_<Vesize> for
+	the scalar part of the address.
+	(mask_scatter_store<SVE_S:mode>): Use aarch64_sve_gather_offset_w for
+	the scalar part of the addresse and add an alternative for handling
+	nonzero offsets.
+	(mask_scatter_store<SVE_D:mode>): Likewise aarch64_sve_gather_offset_d.
+	(*mask_scatter_store<mode>_sxtw, *mask_scatter_store<mode>_uxtw)
+	(@aarch64_scatter_store_trunc<VNx4_NARROW:mode><VNx4_WIDE:mode>)
+	(@aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>)
+	(*aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>_sxtw)
+	(*aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>_uxtw):
+	New patterns.
+	(vec_duplicate<mode>): Use QI as the mode of the input operand.
+	(extract_last_<mode>): Generalize to...
+	(@extract_<LAST:last_op>_<mode>): ...this.
+	(*<SVE_INT_UNARY:optab><mode>2): Rename to...
+	(@aarch64_pred_<SVE_INT_UNARY:optab><mode>): ...this.
+	(@cond_<SVE_INT_UNARY:optab><mode>): New expander.
+	(@aarch64_pred_sxt<SVE_HSDI:mode><SVE_PARTIAL:mode>): New pattern.
+	(@aarch64_cond_sxt<SVE_HSDI:mode><SVE_PARTIAL:mode>): Likewise.
+	(@aarch64_pred_cnot<mode>, @cond_cnot<mode>): New expanders.
+	(@aarch64_sve_<SVE_FP_UNARY_INT:optab><mode>): New pattern.
+	(@aarch64_sve_<SVE_FP_UNARY:optab><mode>): Likewise.
+	(*<SVE_COND_FP_UNARY:optab><mode>2): Rename to...
+	(@aarch64_pred_<SVE_COND_FP_UNARY:optab><mode>): ...this.
+	(@cond_<SVE_COND_FP_UNARY:optab><mode>): New expander.
+	(*<SVE_INT_BINARY_IMM:optab><mode>3): Rename to...
+	(@aarch64_pred_<SVE_INT_BINARY_IMM:optab><mode>): ...this.
+	(@aarch64_adr<mode>, *aarch64_adr_sxtw): New patterns.
+	(*aarch64_adr_uxtw_unspec): Likewise.
+	(*aarch64_adr_uxtw): Rename to...
+	(*aarch64_adr_uxtw_and): ...this.
+	(@aarch64_adr<mode>_shift): New expander.
+	(*aarch64_adr_shift_sxtw): New pattern.
+	(aarch64_<su>abd<mode>_3): Rename to...
+	(@aarch64_pred_<su>abd<mode>): ...this.
+	(<su>abd<mode>_3): Update accordingly.
+	(@aarch64_cond_<su>abd<mode>): New expander.
+	(@aarch64_<SBINQOPS:su_optab><optab><mode>): New pattern.
+	(@aarch64_<UBINQOPS:su_optab><optab><mode>): Likewise.
+	(*<su>mul<mode>3_highpart): Rename to...
+	(@aarch64_pred_<optab><mode>): ...this.
+	(@cond_<MUL_HIGHPART:optab><mode>): New expander.
+	(*cond_<MUL_HIGHPART:optab><mode>_2): New pattern.
+	(*cond_<MUL_HIGHPART:optab><mode>_z): Likewise.
+	(*<SVE_INT_BINARY_SD:optab><mode>3): Rename to...
+	(@aarch64_pred_<SVE_INT_BINARY_SD:optab><mode>): ...this.
+	(cond_<SVE_INT_BINARY_SD:optab><mode>): Add a "@" marker.
+	(@aarch64_bic<mode>, @cond_bic<mode>): New expanders.
+	(*v<ASHIFT:optab><mode>3): Rename to...
+	(@aarch64_pred_<ASHIFT:optab><mode>): ...this.
+	(@aarch64_sve_<SVE_SHIFT_WIDE:sve_int_op><mode>): New pattern.
+	(@cond_<SVE_SHIFT_WIDE:sve_int_op><mode>): New expander.
+	(*cond_<SVE_SHIFT_WIDE:sve_int_op><mode>_m): New pattern.
+	(*cond_<SVE_SHIFT_WIDE:sve_int_op><mode>_z): Likewise.
+	(@cond_asrd<mode>): New expander.
+	(*cond_asrd<mode>_2, *cond_asrd<mode>_z): New patterns.
+	(sdiv_pow2<mode>3): Expand to *cond_asrd<mode>_2.
+	(*sdiv_pow2<mode>3): Delete.
+	(@cond_<SVE_COND_FP_BINARY_INT:optab><mode>): New expander.
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_2): New pattern.
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_any): Likewise.
+	(@aarch64_sve_<SVE_FP_BINARY:optab><mode>): New pattern.
+	(@aarch64_sve_<SVE_FP_BINARY_INT:optab><mode>): Likewise.
+	(*<SVE_COND_FP_BINARY_REG:optab><mode>3): Rename to...
+	(@aarch64_pred_<SVE_COND_FP_BINARY_REG:optab><mode>): ...this.
+	(@aarch64_pred_<SVE_COND_FP_BINARY_INT:optab><mode>): New pattern.
+	(cond_<SVE_COND_FP_BINARY:optab><mode>): Add a "@" marker.
+	(*add<SVE_F:mode>3): Rename to...
+	(@aarch64_pred_add<SVE_F:mode>): ...this and add alternatives
+	for SVE_STRICT_GP.
+	(@aarch64_pred_<SVE_COND_FCADD:optab><mode>): New pattern.
+	(@cond_<SVE_COND_FCADD:optab><mode>): New expander.
+	(*cond_<SVE_COND_FCADD:optab><mode>_2): New pattern.
+	(*cond_<SVE_COND_FCADD:optab><mode>_any): Likewise.
+	(*sub<SVE_F:mode>3): Rename to...
+	(@aarch64_pred_sub<SVE_F:mode>): ...this and add alternatives
+	for SVE_STRICT_GP.
+	(@aarch64_pred_abd<SVE_F:mode>): New expander.
+	(*fabd<SVE_F:mode>3): Rename to...
+	(*aarch64_pred_abd<SVE_F:mode>): ...this.
+	(@aarch64_cond_abd<SVE_F:mode>): New expander.
+	(*mul<SVE_F:mode>3): Rename to...
+	(@aarch64_pred_<SVE_F:optab><mode>): ...this and add alternatives
+	for SVE_STRICT_GP.
+	(@aarch64_mul_lane_<SVE_F:mode>): New pattern.
+	(*<SVE_COND_FP_MAXMIN_PUBLIC:optab><mode>3): Rename and generalize
+	to...
+	(@aarch64_pred_<SVE_COND_FP_MAXMIN:optab><mode>): ...this.
+	(*<LOGICAL:optab><PRED_ALL:mode>3_ptest): New pattern.
+	(*<nlogical><PRED_ALL:mode>3): Rename to...
+	(aarch64_pred_<nlogical><PRED_ALL:mode>_z): ...this.
+	(*<nlogical><PRED_ALL:mode>3_cc): New pattern.
+	(*<nlogical><PRED_ALL:mode>3_ptest): Likewise.
+	(*<logical_nn><PRED_ALL:mode>3): Rename to...
+	(aarch64_pred_<logical_nn><mode>_z): ...this.
+	(*<logical_nn><PRED_ALL:mode>3_cc): New pattern.
+	(*<logical_nn><PRED_ALL:mode>3_ptest): Likewise.
+	(*fma<SVE_I:mode>4): Rename to...
+	(@aarch64_pred_fma<SVE_I:mode>): ...this.
+	(*fnma<SVE_I:mode>4): Rename to...
+	(@aarch64_pred_fnma<SVE_I:mode>): ...this.
+	(@aarch64_<sur>dot_prod_lane<vsi2qi>): New pattern.
+	(*<SVE_FP_TERNARY:optab><mode>4): Rename to...
+	(@aarch64_pred_<SVE_FP_TERNARY:optab><mode>): ...this.
+	(cond_<SVE_FP_TERNARY:optab><mode>): Add a "@" marker.
+	(@aarch64_<SVE_FP_TERNARY_LANE:optab>_lane_<mode>): New pattern.
+	(@aarch64_pred_<SVE_COND_FCMLA:optab><mode>): Likewise.
+	(@cond_<SVE_COND_FCMLA:optab><mode>): New expander.
+	(*cond_<SVE_COND_FCMLA:optab><mode>_4): New pattern.
+	(*cond_<SVE_COND_FCMLA:optab><mode>_any): Likewise.
+	(@aarch64_<FCMLA:optab>_lane_<mode>): Likewise.
+	(@aarch64_sve_tmad<mode>): Likewise.
+	(vcond_mask_<SVE_ALL:mode><vpred>): Add a "@" marker.
+	(*aarch64_sel_dup<mode>): Rename to...
+	(@aarch64_sel_dup<mode>): ...this.
+	(@aarch64_pred_cmp<cmp_op><SVE_I:mode>_wide): New pattern.
+	(*aarch64_pred_cmp<cmp_op><SVE_I:mode>_wide_cc): Likewise.
+	(*aarch64_pred_cmp<cmp_op><SVE_I:mode>_wide_ptest): Likewise.
+	(@while_ult<GPI:mode><PRED_ALL:mode>): Generalize to...
+	(@while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>): ...this.
+	(*while_ult<GPI:mode><PRED_ALL:mode>_cc): Generalize to.
+	(*while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_cc): ...this.
+	(*while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_ptest): New pattern.
+	(*fcm<cmp_op><mode>): Rename to...
+	(@aarch64_pred_fcm<cmp_op><mode>): ...this.  Make operand order
+	match @aarch64_pred_cmp<cmp_op><SVE_I:mode>.
+	(*fcmuo<mode>): Rename to...
+	(@aarch64_pred_fcmuo<mode>): ...this.  Make operand order
+	match @aarch64_pred_cmp<cmp_op><SVE_I:mode>.
+	(@aarch64_pred_fac<cmp_op><mode>): New expander.
+	(@vcond_mask_<PRED_ALL:mode><mode>): New pattern.
+	(fold_extract_last_<mode>): Generalize to...
+	(@fold_extract_<last_op>_<mode>): ...this.
+	(@aarch64_fold_extract_vector_<last_op>_<mode>): New pattern.
+	(*reduc_plus_scal_<SVE_I:mode>): Replace with...
+	(@aarch64_pred_reduc_<optab>_<mode>): ...this pattern, making the
+	DImode result explicit.
+	(reduc_plus_scal_<mode>): Update accordingly.
+	(*reduc_<optab>_scal_<SVE_I:mode>): Rename to...
+	(@aarch64_pred_reduc_<optab>_<SVE_I:mode>): ...this.
+	(*reduc_<optab>_scal_<SVE_F:mode>): Rename to...
+	(@aarch64_pred_reduc_<optab>_<SVE_F:mode>): ...this.
+	(*aarch64_sve_tbl<mode>): Rename to...
+	(@aarch64_sve_tbl<mode>): ...this.
+	(@aarch64_sve_compact<mode>): New pattern.
+	(*aarch64_sve_dup_lane<mode>): Rename to...
+	(@aarch64_sve_dup_lane<mode>): ...this.
+	(@aarch64_sve_dupq_lane<mode>): New pattern.
+	(@aarch64_sve_splice<mode>): Likewise.
+	(aarch64_sve_<perm_insn><mode>): Rename to...
+	(@aarch64_sve_<perm_insn><mode>): ...this.
+	(*aarch64_sve_ext<mode>): Rename to...
+	(@aarch64_sve_ext<mode>): ...this.
+	(aarch64_sve_<su>unpk<perm_hilo>_<SVE_BHSI:mode>): Add a "@" marker.
+	(*aarch64_sve_<optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>): Rename
+	to...
+	(@aarch64_sve_<optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>): ...this.
+	(*aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>):
+	Rename to...
+	(@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>):
+	...this.
+	(@cond_<optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>): New expander.
+	(@cond_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>): Likewise.
+	(*cond_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>): New pattern.
+	(*aarch64_sve_<optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>): Rename
+	to...
+	(@aarch64_sve_<optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>): ...this.
+	(aarch64_sve_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>): Add
+	a "@" marker.
+	(@cond_<optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>): New expander.
+	(@cond_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>): Likewise.
+	(*cond_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>): New
+	pattern.
+	(*aarch64_sve_<optab>_trunc<SVE_SDF:mode><SVE_HSF:mode>): Rename to...
+	(@aarch64_sve_<optab>_trunc<SVE_SDF:mode><SVE_HSF:mode>): ...this.
+	(@cond_<optab>_trunc<SVE_SDF:mode><SVE_HSF:mode>): New expander.
+	(*cond_<optab>_trunc<SVE_SDF:mode><SVE_HSF:mode>): New pattern.
+	(aarch64_sve_<optab>_nontrunc<SVE_HSF:mode><SVE_SDF:mode>): Add a
+	"@" marker.
+	(@cond_<optab>_nontrunc<SVE_HSF:mode><SVE_SDF:mode>): New expander.
+	(*cond_<optab>_nontrunc<SVE_HSF:mode><SVE_SDF:mode>): New pattern.
+	(aarch64_sve_punpk<perm_hilo>_<mode>): Add a "@" marker.
+	(@aarch64_brk<SVE_BRK_UNARY:brk_op>): New pattern.
+	(*aarch64_brk<SVE_BRK_UNARY:brk_op>_cc): Likewise.
+	(*aarch64_brk<SVE_BRK_UNARY:brk_op>_ptest): Likewise.
+	(@aarch64_brk<SVE_BRK_BINARY:brk_op>): Likewise.
+	(*aarch64_brk<SVE_BRK_BINARY:brk_op>_cc): Likewise.
+	(*aarch64_brk<SVE_BRK_BINARY:brk_op>_ptest): Likewise.
+	(@aarch64_sve_<SVE_PITER:sve_pred_op><mode>): Likewise.
+	(*aarch64_sve_<SVE_PITER:sve_pred_op><mode>_cc): Likewise.
+	(*aarch64_sve_<SVE_PITER:sve_pred_op><mode>_ptest): Likewise.
+	(aarch64_sve_cnt_pat): Likewise.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><DI_ONLY:mode>_pat): Likewise.
+	(*aarch64_sve_incsi_pat): Likewise.
+	(@aarch64_sve_<SAT_PLUS:inc_dec><SI_ONLY:mode>_pat): Likewise.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><VNx2DI_ONLY:mode>_pat): Likewise.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><VNx4SI_ONLY:mode>_pat): Likewise.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><VNx8HI_ONLY:mode>_pat): New expander.
+	(*aarch64_sve_<ANY_PLUS:inc_dec><VNx8HI_ONLY:mode>_pat): New pattern.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><DI_ONLY:mode>_pat): Likewise.
+	(*aarch64_sve_decsi_pat): Likewise.
+	(@aarch64_sve_<SAT_MINUS:inc_dec><SI_ONLY:mode>_pat): Likewise.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><VNx2DI_ONLY:mode>_pat): Likewise.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><VNx4SI_ONLY:mode>_pat): Likewise.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><VNx8HI_ONLY:mode>_pat): New expander.
+	(*aarch64_sve_<ANY_MINUS:inc_dec><VNx8HI_ONLY:mode>_pat): New pattern.
+	(@aarch64_pred_cntp<mode>): Likewise.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><DI_ONLY:mode><PRED_ALL:mode>_cntp):
+	New expander.
+	(*aarch64_sve_<ANY_PLUS:inc_dec><DI_ONLY:mode><PRED_ALL:mode>_cntp)
+	(*aarch64_incsi<PRED_ALL:mode>_cntp): New patterns.
+	(@aarch64_sve_<SAT_PLUS:inc_dec><SI_ONLY:mode><PRED_ALL:mode>_cntp):
+	New expander.
+	(*aarch64_sve_<SAT_PLUS:inc_dec><SI_ONLY:mode><PRED_ALL:mode>_cntp):
+	New pattern.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><VNx2DI_ONLY:mode>_cntp): New expander.
+	(*aarch64_sve_<ANY_PLUS:inc_dec><VNx2DI_ONLY:mode>_cntp): New pattern.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><VNx4SI_ONLY:mode>_cntp): New expander.
+	(*aarch64_sve_<ANY_PLUS:inc_dec><VNx4SI_ONLY:mode>_cntp): New pattern.
+	(@aarch64_sve_<ANY_PLUS:inc_dec><VNx8HI_ONLY:mode>_cntp): New expander.
+	(*aarch64_sve_<ANY_PLUS:inc_dec><VNx8HI_ONLY:mode>_cntp): New pattern.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><DI_ONLY:mode><PRED_ALL:mode>_cntp):
+	New expander.
+	(*aarch64_sve_<ANY_MINUS:inc_dec><DI_ONLY:mode><PRED_ALL:mode>_cntp)
+	(*aarch64_incsi<PRED_ALL:mode>_cntp): New patterns.
+	(@aarch64_sve_<SAT_MINUS:inc_dec><SI_ONLY:mode><PRED_ALL:mode>_cntp):
+	New expander.
+	(*aarch64_sve_<SAT_MINUS:inc_dec><SI_ONLY:mode><PRED_ALL:mode>_cntp):
+	New pattern.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><VNx2DI_ONLY:mode>_cntp): New
+	expander.
+	(*aarch64_sve_<ANY_MINUS:inc_dec><VNx2DI_ONLY:mode>_cntp): New pattern.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><VNx4SI_ONLY:mode>_cntp): New
+	expander.
+	(*aarch64_sve_<ANY_MINUS:inc_dec><VNx4SI_ONLY:mode>_cntp): New pattern.
+	(@aarch64_sve_<ANY_MINUS:inc_dec><VNx8HI_ONLY:mode>_cntp): New
+	expander.
+	(*aarch64_sve_<ANY_MINUS:inc_dec><VNx8HI_ONLY:mode>_cntp): New pattern.
+	* config/aarch64/arm_sve.h: New file.
+	* config/aarch64/aarch64-sve-builtins.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins-functions.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc: Likewise.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve.md (@aarch64_sve_rev<PRED_ALL:mode>):
 	New pattern.

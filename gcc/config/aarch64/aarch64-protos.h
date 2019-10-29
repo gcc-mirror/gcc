@@ -426,10 +426,30 @@ extern struct tune_params aarch64_tune_params;
   T (MUL3, mul3, 30) \
   T (ALL, all, 31)
 
+/* The available SVE prefetch operations, known in the ACLE as "svprfop".  */
+#define AARCH64_FOR_SVPRFOP(T) \
+  T (PLDL1KEEP, pldl1keep, 0) \
+  T (PLDL1STRM, pldl1strm, 1) \
+  T (PLDL2KEEP, pldl2keep, 2) \
+  T (PLDL2STRM, pldl2strm, 3) \
+  T (PLDL3KEEP, pldl3keep, 4) \
+  T (PLDL3STRM, pldl3strm, 5) \
+  T (PSTL1KEEP, pstl1keep, 8) \
+  T (PSTL1STRM, pstl1strm, 9) \
+  T (PSTL2KEEP, pstl2keep, 10) \
+  T (PSTL2STRM, pstl2strm, 11) \
+  T (PSTL3KEEP, pstl3keep, 12) \
+  T (PSTL3STRM, pstl3strm, 13)
+
 #define AARCH64_SVENUM(UPPER, LOWER, VALUE) AARCH64_SV_##UPPER = VALUE,
 enum aarch64_svpattern {
   AARCH64_FOR_SVPATTERN (AARCH64_SVENUM)
   AARCH64_NUM_SVPATTERNS
+};
+
+enum aarch64_svprfop {
+  AARCH64_FOR_SVPRFOP (AARCH64_SVENUM)
+  AARCH64_NUM_SVPRFOPS
 };
 #undef AARCH64_SVENUM
 
@@ -438,7 +458,8 @@ enum aarch64_svpattern {
    those groups.  */
 enum aarch64_builtin_class
 {
-  AARCH64_BUILTIN_GENERAL
+  AARCH64_BUILTIN_GENERAL,
+  AARCH64_BUILTIN_SVE
 };
 
 /* Built-in function codes are structured so that the low
@@ -489,8 +510,11 @@ bool aarch64_masks_and_shift_for_bfi_p (scalar_int_mode, unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT);
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
+machine_mode aarch64_sve_int_mode (machine_mode);
 opt_machine_mode aarch64_sve_pred_mode (unsigned int);
+opt_machine_mode aarch64_sve_data_mode (scalar_mode, poly_uint64);
 bool aarch64_sve_mode_p (machine_mode);
+HOST_WIDE_INT aarch64_fold_sve_cnt_pat (aarch64_svpattern, unsigned int);
 bool aarch64_sve_cnt_immediate_p (rtx);
 bool aarch64_sve_scalar_inc_dec_immediate_p (rtx);
 bool aarch64_sve_addvl_addpl_immediate_p (rtx);
@@ -501,7 +525,9 @@ bool aarch64_mov_operand_p (rtx, machine_mode);
 rtx aarch64_reverse_mask (machine_mode, unsigned int);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, poly_int64);
 bool aarch64_offset_9bit_signed_unscaled_p (machine_mode, poly_int64);
+char *aarch64_output_sve_prefetch (const char *, rtx, const char *);
 char *aarch64_output_sve_cnt_immediate (const char *, const char *, rtx);
+char *aarch64_output_sve_cnt_pat_immediate (const char *, const char *, rtx *);
 char *aarch64_output_sve_scalar_inc_dec (rtx);
 char *aarch64_output_sve_addvl_addpl (rtx);
 char *aarch64_output_sve_vector_inc_dec (const char *, rtx);
@@ -509,6 +535,7 @@ char *aarch64_output_scalar_simd_mov_immediate (rtx, scalar_int_mode);
 char *aarch64_output_simd_mov_immediate (rtx, unsigned,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);
 char *aarch64_output_sve_mov_immediate (rtx);
+char *aarch64_output_sve_ptrues (rtx);
 bool aarch64_pad_reg_upward (machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);
 bool aarch64_regno_ok_for_index_p (int, bool);
@@ -517,11 +544,13 @@ bool aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
 					    bool high);
 bool aarch64_simd_scalar_immediate_valid_for_move (rtx, scalar_int_mode);
 bool aarch64_simd_shift_imm_p (rtx, machine_mode, bool);
+bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
 bool aarch64_simd_valid_immediate (rtx, struct simd_immediate_info *,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);
 rtx aarch64_check_zero_based_sve_index_immediate (rtx);
 bool aarch64_sve_index_immediate_p (rtx);
 bool aarch64_sve_arith_immediate_p (rtx, bool);
+bool aarch64_sve_sqadd_sqsub_immediate_p (rtx, bool);
 bool aarch64_sve_bitmask_immediate_p (rtx);
 bool aarch64_sve_dup_immediate_p (rtx);
 bool aarch64_sve_cmp_immediate_p (rtx, bool);
@@ -552,7 +581,10 @@ rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
 bool aarch64_simd_mem_operand_p (rtx);
 bool aarch64_sve_ld1r_operand_p (rtx);
 bool aarch64_sve_ld1rq_operand_p (rtx);
+bool aarch64_sve_ldff1_operand_p (rtx);
+bool aarch64_sve_ldnf1_operand_p (rtx);
 bool aarch64_sve_ldr_operand_p (rtx);
+bool aarch64_sve_prefetch_operand_p (rtx, machine_mode);
 bool aarch64_sve_struct_memory_operand_p (rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_gen_stepped_int_parallel (unsigned int, int, int);
@@ -568,6 +600,9 @@ const char * aarch64_output_probe_sve_stack_clash (rtx, rtx, rtx, rtx);
 void aarch64_err_no_fpadvsimd (machine_mode);
 void aarch64_expand_epilogue (bool);
 rtx aarch64_ptrue_all (unsigned int);
+opt_machine_mode aarch64_ptrue_all_mode (rtx);
+rtx aarch64_convert_sve_data_to_pred (rtx, machine_mode, rtx);
+rtx aarch64_expand_sve_dupq (rtx, machine_mode, rtx);
 void aarch64_expand_mov_immediate (rtx, rtx);
 rtx aarch64_ptrue_reg (machine_mode);
 rtx aarch64_pfalse_reg (machine_mode);
@@ -576,6 +611,7 @@ bool aarch64_sve_same_pred_for_ptest_p (rtx *, rtx *);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);
 void aarch64_expand_sve_mem_move (rtx, rtx, machine_mode);
 bool aarch64_maybe_expand_sve_subreg_move (rtx, rtx);
+rtx aarch64_replace_reg_mode (rtx, machine_mode);
 void aarch64_split_sve_subreg_move (rtx, rtx, rtx);
 void aarch64_expand_prologue (void);
 void aarch64_expand_vector_init (rtx, rtx);
@@ -663,6 +699,20 @@ rtx aarch64_general_expand_builtin (unsigned int, tree, rtx, int);
 tree aarch64_general_builtin_decl (unsigned, bool);
 tree aarch64_general_builtin_rsqrt (unsigned int);
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
+
+namespace aarch64_sve {
+  void init_builtins ();
+  void handle_arm_sve_h ();
+  tree builtin_decl (unsigned, bool);
+  bool builtin_type_p (const_tree);
+  const char *mangle_builtin_type (const_tree);
+  tree resolve_overloaded_builtin (location_t, unsigned int,
+				   vec<tree, va_gc> *);
+  bool check_builtin_call (location_t, vec<location_t>, unsigned int,
+			   tree, unsigned int, tree *);
+  gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
+  rtx expand_builtin (unsigned int, tree, rtx);
+}
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);
 extern void aarch64_expand_vec_perm (rtx, rtx, rtx, rtx, unsigned int);
