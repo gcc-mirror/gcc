@@ -1,5 +1,12 @@
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_rev<PRED_ALL:mode>):
+	New pattern.
+	* config/aarch64/aarch64.c (aarch64_evpc_rev_global): Handle all
+	SVE modes.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.md (FFR_REGNUM, FFRT_REGNUM): New constants.
 	* config/aarch64/aarch64.h (FIRST_PSEUDO_REGISTER): Bump to
 	FFRT_REGNUM + 1.
