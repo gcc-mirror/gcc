@@ -1,3 +1,4 @@
+! { dg-do run }
 function foo ()
   integer :: foo
   logical :: foo_seen

@@ -1,3 +1,4 @@
+! { dg-do run }
 subroutine f1
   integer a(20:50,70:90)
 !$omp parallel workshare

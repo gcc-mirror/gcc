@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR fortran/28390
       program pr28390
       integer i

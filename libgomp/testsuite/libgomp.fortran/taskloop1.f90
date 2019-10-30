@@ -1,3 +1,4 @@
+! { dg-do run }
   common /blk/ q, e
   integer :: q, r
   logical :: e

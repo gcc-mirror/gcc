@@ -1,3 +1,23 @@
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-simd.f90: Use stop not abort.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-1.f90:
+	Ditto; add 'dg-do run' for torture testing.
+	* testsuite/libgomp.fortran/lastprivate1.f90:  Add 'dg-do run'.
+	* testsuite/libgomp.fortran/lastprivate2.f90: Ditto.
+	* testsuite/libgomp.fortran/nestedfn4.f90: Ditto.
+	* testsuite/libgomp.fortran/pr25219.f90: Ditto.
+	* testsuite/libgomp.fortran/pr28390.f: Ditto.
+	* testsuite/libgomp.fortran/pr35130.f90: Ditto.
+	* testsuite/libgomp.fortran/pr90779.f90: Ditto.
+	* testsuite/libgomp.fortran/task2.f90: Ditto.
+	* testsuite/libgomp.fortran/taskgroup1.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: Ditto.
+	* testsuite/libgomp.fortran/workshare1.f90: Ditto.
+	* testsuite/libgomp.fortran/workshare2.f90: Ditto.
+
 2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/abort-1.f90: Add 'dg-do run'.

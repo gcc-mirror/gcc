@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR fortran/25219
 
   implicit none
