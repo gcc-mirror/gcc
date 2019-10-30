@@ -1,5 +1,15 @@
 2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (namespace __gnu_cxx): Remove
+	using-declarations for std::iterator and std::iterator_traits.
+	(__gnu_cxx::__normal_iterator): Qualify iterator_traits.
+	* include/ext/algorithm (namespace __gnu_cxx): Remove
+	using-declarations for std names and qualify those names when used.
+	Also refer to std::min in parentheses to protect against function-like
+	macros.
+	* include/ext/rc_string_base.h: Qualify iterator_traits.
+	* include/ext/sso_string_base.h: Qualify iterator_traits.
+
 	PR libstdc++/92272
 	* include/bits/stl_bvector.h (_Bit_iterator::pointer)
 	(_Bit_const_iterator::pointer): Define as void for C++20.

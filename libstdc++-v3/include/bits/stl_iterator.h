@@ -793,15 +793,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // The _Container parameter exists solely so that different containers
   // using this template can instantiate different types, even if the
   // _Iterator parameter is the same.
-  using std::iterator_traits;
-  using std::iterator;
   template<typename _Iterator, typename _Container>
     class __normal_iterator
     {
     protected:
       _Iterator _M_current;
 
-      typedef iterator_traits<_Iterator>		__traits_type;
+      typedef std::iterator_traits<_Iterator>		__traits_type;
 
     public:
       typedef _Iterator					iterator_type;
