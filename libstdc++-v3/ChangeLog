@@ -1,5 +1,8 @@
 2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator.h (__normal_iterator::iterator_concept):
+	Guard with __cpp_lib_concepts macro.
+
 	* include/std/bit (__cpp_lib_bitops): Define.
 	* include/std/version (__cpp_lib_constexpr): Remove.
 	(__cpp_lib_bitops, __cpp_lib_constexpr_dynamic_alloc): Define.

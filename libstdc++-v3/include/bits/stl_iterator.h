@@ -809,7 +809,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::reference 	reference;
       typedef typename __traits_type::pointer   	pointer;
 
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && __cpp_lib_concepts
       using iterator_concept = std::__detail::__iter_concept<_Iterator>;
 #endif
 
