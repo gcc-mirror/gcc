@@ -404,9 +404,6 @@ private:
   /* Processes function equality comparison.  */
   bool equals_private (sem_item *item);
 
-  /* Returns true if tree T can be compared as a handled component.  */
-  static bool icf_handled_component_p (tree t);
-
   /* Function checker stores binding between functions.   */
   ipa_icf_gimple::func_checker *m_checker;
 

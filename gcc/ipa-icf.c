@@ -1742,17 +1742,6 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
   return true;
 }
 
-/* Returns true if tree T can be compared as a handled component.  */
-
-bool
-sem_function::icf_handled_component_p (tree t)
-{
-  tree_code tc = TREE_CODE (t);
-
-  return (handled_component_p (t)
-	  || tc == ADDR_EXPR || tc == MEM_REF || tc == OBJ_TYPE_REF);
-}
-
 /* Basic blocks dictionary BB_DICT returns true if SOURCE index BB
    corresponds to TARGET.  */
 
