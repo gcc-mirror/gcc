@@ -1,3 +1,10 @@
+2019-10-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/92024
+	* name-lookup.c (check_local_shadow): Shadowing TYPE_DECLs
+	is always a -Wshadow=compatible-local warning, unless
+	-Wshadow is used.
+
 2019-10-30  Jason Merrill  <jason@redhat.com>
 
 	* cxx-pretty-print.c (get_fold_operator): Use OVL_OP_INFO.
