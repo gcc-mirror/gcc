@@ -118,7 +118,7 @@ public:
 
 /* A class aggregating all connections and semantic equivalents
    for a given pair of semantic function candidates.  */
-class func_checker
+class func_checker : operand_compare
 {
 public:
   /* Initialize internal structures for a given SOURCE_FUNC_DECL and
@@ -134,7 +134,7 @@ public:
 		hash_set<symtab_node *> *ignored_target_nodes = NULL);
 
   /* Memory release routine.  */
-  ~func_checker();
+  virtual ~func_checker ();
 
   /* Function visits all gimple labels and creates corresponding
      mapping between basic blocks and labels.  */
@@ -267,6 +267,14 @@ private:
 
   /* Flag if ignore labels in comparison.  */
   bool m_ignore_labels;
+
+  /* Return true if two operands are equal.  The flags fields can be used
+     to specify OEP flags described above.  */
+  virtual bool operand_equal_p (const_tree, const_tree, unsigned int flags);
+
+  /* Generate a hash value for an expression.  This can be used iteratively
+     by passing a previous result as the HSTATE argument.  */
+  virtual void hash_operand (const_tree, inchash::hash &, unsigned flags);
 };
 
 } // ipa_icf_gimple namespace
