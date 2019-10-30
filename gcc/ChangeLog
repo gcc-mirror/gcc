@@ -1,5 +1,17 @@
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.c (func_checker::hash_operand): New.
+	(func_checker::compare_cst_or_decl): Remove handling
+	of FIELD_DECL.
+	(func_checker::compare_operand): Transform to ...
+	(func_checker::operand_equal_p): ... this.
+	* ipa-icf-gimple.h (class func_checker): Add
+	operand_equal_p and hash_operand.
+	* ipa-icf.c (sem_function::equals_private): Fix
+	pushing and popping of cfun.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
 	* fold-const.c (operand_equal_p): Move to ...
 	(operand_compare::operand_equal_p): ... here.
 	(operand_compare::verify_hash_value): New.
