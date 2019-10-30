@@ -1,3 +1,7 @@
+2019-10-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/mlarge-use-430-insn.c: New test.
+
 2019-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92275
