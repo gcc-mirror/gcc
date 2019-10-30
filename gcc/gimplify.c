@@ -8590,6 +8590,17 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    default:
 	      break;
 	    }
+	  /* For Fortran, not only the pointer to the data is mapped but also
+	     the address of the pointer, the array descriptor etc.; for
+	     'exit data' - and in particular for 'delete:' - having an 'alloc:'
+	     does not make sense.  Likewise, for 'update' only transferring the
+	     data itself is needed as the rest has been handled in previous
+	     directives.  */
+	  if ((code == OMP_TARGET_EXIT_DATA || code == OMP_TARGET_UPDATE)
+	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
+		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET))
+	    remove = true;
+
 	  if (remove)
 	    break;
 	  if (DECL_P (decl) && outer_ctx && (region_type & ORT_ACC))

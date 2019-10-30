@@ -1,3 +1,9 @@
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Remove FE-generated
+	GOMP_MAP_TO_PSET and GOMP_MAP_POINTER mapping for 'target update'
+	and 'target exit data'.
+
 2019-10-30  Martin Jambor  <mjambor@suse.cz>
 
 	ipa/92278
