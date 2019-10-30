@@ -7378,6 +7378,14 @@ finish_struct (tree t, tree attributes)
   else
     error ("trying to finish struct, but kicked out due to previous parse errors");
 
+  if (flag_openmp)
+    for (tree decl = TYPE_FIELDS (t); decl; decl = DECL_CHAIN (decl))
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	if (tree attr = lookup_attribute ("omp declare variant base",
+					  DECL_ATTRIBUTES (decl)))
+	  omp_declare_variant_finalize (decl, attr);
+
   if (processing_template_decl && at_function_scope_p ()
       /* Lambdas are defined by the LAMBDA_EXPR.  */
       && !LAMBDA_TYPE_P (t))

@@ -43,7 +43,6 @@ static hashval_t list_hash_pieces (tree, tree, tree);
 static tree build_target_expr (tree, tree, tsubst_flags_t);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
-static tree build_local_temp (tree);
 
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
@@ -525,7 +524,7 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 /* Return an undeclared local temporary of type TYPE for use in building a
    TARGET_EXPR.  */
 
-static tree
+tree
 build_local_temp (tree type)
 {
   tree slot = build_decl (input_location,
