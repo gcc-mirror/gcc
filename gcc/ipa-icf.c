@@ -845,7 +845,6 @@ sem_function::equals_private (sem_item *item)
     return return_false ();
 
   m_checker = new func_checker (decl, m_compared_func->decl,
-				compare_polymorphic_p (),
 				false,
 				&refs_set,
 				&m_compared_func->refs_set);

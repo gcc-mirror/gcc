@@ -1,5 +1,14 @@
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.c (func_checker::func_checker): Do not
+	initialize m_compare_polymorphic.
+	(func_checker::compare_decl): Do not compare polymorphic types.
+	* ipa-icf-gimple.h (m_compare_polymorphic): Remove.
+	* ipa-icf.c (sem_function::equals_private): Do not call
+	compare_polymorphic_p.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Call
 	compare_operand.
 	(func_checker::compare_memory_operand): Remove.
