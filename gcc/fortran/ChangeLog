@@ -1,3 +1,9 @@
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92208
+	* trans-array.c (gfc_conv_array_parameter): Only copy
+	string-length backend_decl if expression is not a function.
+
 2019-10-30  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	* invoke.texi: Add -Wno-overwrite-recursive to list of options. Add
