@@ -3232,10 +3232,37 @@ msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
   msp430_print_operand_raw (file, addr);
 }
 
+/* We can only allow signed 15-bit indexes i.e. +/-32K.  */
+static bool
+msp430_check_index_not_high_mem (rtx op)
+{
+  if (CONST_INT_P (op)
+      && IN_RANGE (INTVAL (op), HOST_WIDE_INT_M1U << 15, (1 << 15) - 1))
+    return true;
+  return false;
+}
+
+/* If this returns true, we don't need a 430X insn.  */
+static bool
+msp430_check_plus_not_high_mem (rtx op)
+{
+  if (GET_CODE (op) != PLUS)
+    return false;
+  rtx op0 = XEXP (op, 0);
+  rtx op1 = XEXP (op, 1);
+  if (SYMBOL_REF_P (op0)
+      && (SYMBOL_REF_FLAGS (op0) & SYMBOL_FLAG_LOW_MEM)
+      && msp430_check_index_not_high_mem (op1))
+    return true;
+  return false;
+}
+
 /* Determine whether an RTX is definitely not a MEM referencing an address in
    the upper memory region.  Returns true if we've decided the address will be
    in the lower memory region, or the RTX is not a MEM.  Returns false
-   otherwise.  */
+   otherwise.
+   The Ys constraint will catch (mem (plus (const/reg)) but we catch cases
+   involving a symbol_ref here.  */
 bool
 msp430_op_not_in_high_mem (rtx op)
 {
@@ -3251,11 +3278,15 @@ msp430_op_not_in_high_mem (rtx op)
        memory.  */
     return true;
 
-  /* Catch (mem (const (plus ((symbol_ref) (const_int))))) e.g. &addr+2.  */
-  if ((GET_CODE (op0) == CONST)
-      && (GET_CODE (XEXP (op0, 0)) == PLUS)
-      && (SYMBOL_REF_P (XEXP (XEXP (op0, 0), 0)))
-      && (SYMBOL_REF_FLAGS (XEXP (XEXP (op0, 0), 0)) & SYMBOL_FLAG_LOW_MEM))
+  /* Check possibilites for (mem (plus)).
+     e.g. (mem (const (plus ((symbol_ref) (const_int))))) : &addr+2.  */
+  if (msp430_check_plus_not_high_mem (op0)
+      || ((GET_CODE (op0) == CONST)
+	  && msp430_check_plus_not_high_mem (XEXP (op0, 0))))
+    return true;
+
+  /* An absolute 16-bit address is allowed.  */
+  if ((CONST_INT_P (op0) && (IN_RANGE (INTVAL (op0), 0, (1 << 16) - 1))))
     return true;
 
   /* Return false when undecided.  */

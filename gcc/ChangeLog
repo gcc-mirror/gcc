@@ -1,3 +1,11 @@
+2019-10-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_check_index_not_high_mem): New.
+	(msp430_check_plus_not_high_mem): New.
+	(msp430_op_not_in_high_mem): Use new functions to check if the operand
+	might be in low memory.
+	Indicate that a 16-bit absolute address is in lower memory.
+
 2019-10-30  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_compute_jump_functions_for_bb): Fix the call to
