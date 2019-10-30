@@ -53,6 +53,7 @@
 
 
 static void msp430_compute_frame_info (void);
+static bool use_32bit_hwmult (void);
 
 
 
@@ -2691,7 +2692,7 @@ void
 msp430_expand_helper (rtx *operands, const char *helper_name,
 		      bool const_variants)
 {
-  rtx c, f;
+  rtx c, fusage, fsym;
   char *helper_const = NULL;
   int arg1 = 12;
   int arg2 = 13;
@@ -2700,8 +2701,14 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
   machine_mode arg1mode = GET_MODE (operands[1]);
   machine_mode arg2mode = GET_MODE (operands[2]);
   int have_430x = msp430x ? 1 : 0;
+  int expand_mpy = strncmp (helper_name, "__mspabi_mpy",
+			    sizeof ("__mspabi_mpy") - 1) == 0;
+  /* This function has been used incorrectly if CONST_VARIANTS is TRUE for a
+     hwmpy function.  */
+  gcc_assert (!(expand_mpy && const_variants));
 
-  if (CONST_INT_P (operands[2]))
+  /* Emit size-optimal insns for small shifts we can easily do inline.  */
+  if (CONST_INT_P (operands[2]) && !expand_mpy)
     {
       int i;
 
@@ -2718,6 +2725,10 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 	}
     }
 
+  if (arg1mode != VOIDmode && arg2mode != VOIDmode)
+    /* Modes of arguments must be equal if not constants.  */
+    gcc_assert (arg1mode == arg2mode);
+
   if (arg1mode == VOIDmode)
     arg1mode = arg0mode;
   if (arg2mode == VOIDmode)
@@ -2730,12 +2741,13 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
     }
   else if (arg1mode == DImode)
     {
-      /* Shift value in R8:R11, shift amount in R12.  */
       arg1 = 8;
       arg1sz = 4;
       arg2 = 12;
     }
 
+  /* Use the "const_variant" of a shift library function if requested.
+     These are faster, but have larger code size.  */
   if (const_variants
       && CONST_INT_P (operands[2])
       && INTVAL (operands[2]) >= 1
@@ -2749,25 +2761,58 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 		(int) INTVAL (operands[2]));
     }
 
+  /* Setup the arguments to the helper function.  */
   emit_move_insn (gen_rtx_REG (arg1mode, arg1),
 		  operands[1]);
   if (!helper_const)
     emit_move_insn (gen_rtx_REG (arg2mode, arg2),
 		    operands[2]);
 
-  c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12),
-			       gen_rtx_SYMBOL_REF (VOIDmode, helper_const
-						   ? helper_const
-						   : helper_name),
-			       GEN_INT (0));
+  if (expand_mpy)
+    {
+      if (msp430_use_f5_series_hwmult ())
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+						     "_f5hw", NULL));
+      else if (use_32bit_hwmult ())
+	{
+	  /* When the arguments are 16-bits, the 16-bit hardware multiplier is
+	     used.  */
+	  if (arg1mode == HImode)
+	    fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+							 "_hw", NULL));
+	  else
+	    fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+							 "_hw32", NULL));
+	}
+      /* 16-bit hardware multiply.  */
+      else if (msp430_has_hwmult ())
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+						     "_hw", NULL));
+      else
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, helper_name);
+    }
+  else
+    fsym = gen_rtx_SYMBOL_REF (VOIDmode,
+			       helper_const ? helper_const : helper_name);
+
+  c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12), fsym, GEN_INT (0));
+
   c = emit_call_insn (c);
   RTL_CONST_CALL_P (c) = 1;
 
-  f = 0;
-  use_regs (&f, arg1, arg1sz);
+  /* Add register usage information for the arguments to the call.  */
+  fusage = NULL;
+  use_regs (&fusage, arg1, arg1sz);
   if (!helper_const)
-    use_regs (&f, arg2, 1);
-  add_function_usage_to (c, f);
+    {
+      /* If we are expanding a shift, we only need to use the low register
+	 for the shift amount.  */
+      if (!expand_mpy)
+	use_regs (&fusage, arg2, 1);
+      else
+	use_regs (&fusage, arg2, arg1sz);
+    }
+  add_function_usage_to (c, fusage);
 
   emit_move_insn (operands[0],
 		  /* Return value will always start in R12.  */

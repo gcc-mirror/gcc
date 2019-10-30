@@ -1,5 +1,14 @@
 2019-10-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.c (msp430_expand_helper): Support expansion of
+	calls to __mspabi_mpy* functions.
+	* config/msp430/msp430.md (mulhisi3): New define_expand.
+	(umulhisi3): New define_expand.
+	(*mulhisi3_inline): Use old mulhisi3 define_insn.
+	(*umulhisi3_inline): Use old umulhisi3 define_insn.
+
+2019-10-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/msp430.c (msp430_check_index_not_high_mem): New.
 	(msp430_check_plus_not_high_mem): New.
 	(msp430_op_not_in_high_mem): Use new functions to check if the operand
