@@ -1,5 +1,16 @@
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
+	* fold-const.c (operand_equal_p): Move to ...
+	(operand_compare::operand_equal_p): ... here.
+	(operand_compare::verify_hash_value): New.
+	(add_expr): Move to ...
+	(operand_compare::hash_operand): ... here.
+	* fold-const.h (operand_equal_p): Move to the class.
+	(class operand_compare): New.
+	* tree.c (add_expr): Remove.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
 	* fold-const.c (operand_equal_p): Support OBJ_TYPE_REF.
 	* tree.c (add_expr): Hash parts of OBJ_TYPE_REF.
 
