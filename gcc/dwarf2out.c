@@ -15461,7 +15461,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
   if (mode != GET_MODE (rtl) && GET_MODE (rtl) != VOIDmode)
     return NULL;
 
-  scalar_int_mode int_mode, inner_mode, op1_mode;
+  scalar_int_mode int_mode = BImode, inner_mode, op1_mode;
   switch (GET_CODE (rtl))
     {
     case POST_INC:

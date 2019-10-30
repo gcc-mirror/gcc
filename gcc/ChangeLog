@@ -1,3 +1,11 @@
+2019-10-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from trunk:
+
+	2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (mem_loc_descriptor): Initialize int_mode.
+
 2019-10-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/92225
