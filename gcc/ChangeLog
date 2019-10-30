@@ -1,3 +1,10 @@
+2019-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92262
+	* tree-ssa-loop-ivopts.c (get_debug_computation_at): Don't unshare
+	ubase or cbase here.
+	(remove_unused_ivs): Unshare comp before using it.
+
 2019-10-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (update_jump_functions_after_inlining):
@@ -9459,24 +9466,24 @@
 	* config/i386/i386-builtins.c (processor_model) :
 	Add M_INTEL_COREI7_TIGERLAKE and M_INTEL_COREI7_COOPERLAKE.
 	(arch_names_table): Add tigerlake and cooperlake.
-	(get_builtin_code_for_version) : Handle PROCESSOR_TIGERLAKE
+	(get_builtin_code_for_version): Handle PROCESSOR_TIGERLAKE
 	and PROCESSOR_COOPERLAKE.
 	* config/i386/i386-c.c
 	(ix86_target_macros_internal): Handle tigerlake and cooperlake.
 	* config/i386/i386-options.c
-	(m_TIGERLAKE)  : Define.
-	(m_COOPERLAKE) : Ditto.
+	(m_TIGERLAKE): Define.
+	(m_COOPERLAKE): Ditto.
 	(m_CORE_AVX512): Ditto.
 	(processor_cost_table): Add cascadelake.
 	(ix86_option_override_internal): Hadle PTA_MOVDIRI, PTA_MOVDIR64B.
 	* config/i386/i386.h
-	(ix86_size_cost) : Define TARGET_TIGERLAKE and TARGET_COOPERLAKE.
-	(processor_type) : Add PROCESSOR_TIGERLAKE and PROCESSOR_COOPERLAKE.
+	(ix86_size_cost): Define TARGET_TIGERLAKE and TARGET_COOPERLAKE.
+	(processor_type): Add PROCESSOR_TIGERLAKE and PROCESSOR_COOPERLAKE.
 	(PTA_MOVDIRI): Ditto.
 	(PTA_MOVDIR64B): Ditto.
-	(PTA_COOPERLAKE) : Ditto.
-	(PTA_TIGERLAKE)  : Ditto.
-	(processor_type) : Add PROCESSOR_TIGERLAKE and PROCESSOR_COOPERLAKE.
+	(PTA_COOPERLAKE): Ditto.
+	(PTA_TIGERLAKE): Ditto.
+	(processor_type): Add PROCESSOR_TIGERLAKE and PROCESSOR_COOPERLAKE.
 	* doc/extend.texi: Add tigerlake and cooperlake.
 	* doc/invoke.texi: Add tigerlake and cooperlake.
 
@@ -23009,7 +23016,7 @@
 2019-04-08  wu yuan  <wuyuan5@huawei.com>
 
 	* config/aarch64/aarch64-cores.def (tsv1100): Change scheduling model.
-	* config/aarch64/aarch64.md : Add "tsv110.md"
+	* config/aarch64/aarch64.md: Add "tsv110.md".
 	* config/aarch64/tsv110.md: New file.
 
 2019-04-08  Richard Biener  <rguenther@suse.de>
