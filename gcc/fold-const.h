@@ -84,7 +84,7 @@ extern bool fold_deferring_overflow_warnings_p (void);
 extern void fold_overflow_warning (const char*, enum warn_strict_overflow_code);
 extern enum tree_code fold_div_compare (enum tree_code, tree, tree,
 					tree *, tree *, bool *);
-extern bool operand_equal_p (const_tree, const_tree, unsigned int);
+extern bool operand_equal_p (const_tree, const_tree, unsigned int flags = 0);
 extern int multiple_of_p (tree, const_tree, const_tree);
 #define omit_one_operand(T1,T2,T3)\
    omit_one_operand_loc (UNKNOWN_LOCATION, T1, T2, T3)
@@ -212,4 +212,27 @@ extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE
 
 #define fold_build_pointer_plus_hwi(p,o) \
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
+
+
+/* Class used to compare gimple operands.  */
+
+class operand_compare
+{
+public:
+  /* Return true if two operands are equal.  The flags fields can be used
+     to specify OEP flags described above.  */
+  virtual bool operand_equal_p (const_tree, const_tree, unsigned int flags);
+
+  /* Generate a hash value for an expression.  This can be used iteratively
+     by passing a previous result as the HSTATE argument.  */
+  virtual void hash_operand (const_tree, inchash::hash &, unsigned flags);
+
+protected:
+  /* Verify that when arguments (ARG0 and ARG1) are equal, then they have
+     an equal hash value.  When the function knowns comparison return,
+     true is returned.  Then RET is set to corresponding comparsion result.  */
+  bool verify_hash_value (const_tree arg0, const_tree arg1, unsigned int flags,
+			  bool *ret);
+};
+
 #endif // GCC_FOLD_CONST_H

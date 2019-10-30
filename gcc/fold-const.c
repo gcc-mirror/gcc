@@ -2942,29 +2942,12 @@ combine_comparisons (location_t loc,
    even if var is volatile.  */
 
 bool
-operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
+operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
+				  unsigned int flags)
 {
-  /* When checking, verify at the outermost operand_equal_p call that
-     if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
-     hash value.  */
-  if (flag_checking && !(flags & OEP_NO_HASH_CHECK))
-    {
-      if (operand_equal_p (arg0, arg1, flags | OEP_NO_HASH_CHECK))
-	{
-	  if (arg0 != arg1)
-	    {
-	      inchash::hash hstate0 (0), hstate1 (0);
-	      inchash::add_expr (arg0, hstate0, flags | OEP_HASH_CHECK);
-	      inchash::add_expr (arg1, hstate1, flags | OEP_HASH_CHECK);
-	      hashval_t h0 = hstate0.end ();
-	      hashval_t h1 = hstate1.end ();
-	      gcc_assert (h0 == h1);
-	    }
-	  return true;
-	}
-      else
-	return false;
-    }
+  bool r;
+  if (verify_hash_value (arg0, arg1, flags, &r))
+    return r;
 
   STRIP_ANY_LOCATION_WRAPPER (arg0);
   STRIP_ANY_LOCATION_WRAPPER (arg1);
@@ -3581,6 +3564,342 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 #undef OP_SAME
 #undef OP_SAME_WITH_NULL
+}
+
+/* Generate a hash value for an expression.  This can be used iteratively
+   by passing a previous result as the HSTATE argument.  */
+
+void
+operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
+			       unsigned int flags)
+{
+  int i;
+  enum tree_code code;
+  enum tree_code_class tclass;
+
+  if (t == NULL_TREE || t == error_mark_node)
+    {
+      hstate.merge_hash (0);
+      return;
+    }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
+  if (!(flags & OEP_ADDRESS_OF))
+    STRIP_NOPS (t);
+
+  code = TREE_CODE (t);
+
+  switch (code)
+    {
+    /* Alas, constants aren't shared, so we can't rely on pointer
+       identity.  */
+    case VOID_CST:
+      hstate.merge_hash (0);
+      return;
+    case INTEGER_CST:
+      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
+      for (i = 0; i < TREE_INT_CST_EXT_NUNITS (t); i++)
+	hstate.add_hwi (TREE_INT_CST_ELT (t, i));
+      return;
+    case REAL_CST:
+      {
+	unsigned int val2;
+	if (!HONOR_SIGNED_ZEROS (t) && real_zerop (t))
+	  val2 = rvc_zero;
+	else
+	  val2 = real_hash (TREE_REAL_CST_PTR (t));
+	hstate.merge_hash (val2);
+	return;
+      }
+    case FIXED_CST:
+      {
+	unsigned int val2 = fixed_hash (TREE_FIXED_CST_PTR (t));
+	hstate.merge_hash (val2);
+	return;
+      }
+    case STRING_CST:
+      hstate.add ((const void *) TREE_STRING_POINTER (t),
+		  TREE_STRING_LENGTH (t));
+      return;
+    case COMPLEX_CST:
+      hash_operand (TREE_REALPART (t), hstate, flags);
+      hash_operand (TREE_IMAGPART (t), hstate, flags);
+      return;
+    case VECTOR_CST:
+      {
+	hstate.add_int (VECTOR_CST_NPATTERNS (t));
+	hstate.add_int (VECTOR_CST_NELTS_PER_PATTERN (t));
+	unsigned int count = vector_cst_encoded_nelts (t);
+	for (unsigned int i = 0; i < count; ++i)
+	  hash_operand (VECTOR_CST_ENCODED_ELT (t, i), hstate, flags);
+	return;
+      }
+    case SSA_NAME:
+      /* We can just compare by pointer.  */
+      hstate.add_hwi (SSA_NAME_VERSION (t));
+      return;
+    case PLACEHOLDER_EXPR:
+      /* The node itself doesn't matter.  */
+      return;
+    case BLOCK:
+    case OMP_CLAUSE:
+      /* Ignore.  */
+      return;
+    case TREE_LIST:
+      /* A list of expressions, for a CALL_EXPR or as the elements of a
+	 VECTOR_CST.  */
+      for (; t; t = TREE_CHAIN (t))
+	hash_operand (TREE_VALUE (t), hstate, flags);
+      return;
+    case CONSTRUCTOR:
+      {
+	unsigned HOST_WIDE_INT idx;
+	tree field, value;
+	flags &= ~OEP_ADDRESS_OF;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
+	  {
+	    hash_operand (field, hstate, flags);
+	    hash_operand (value, hstate, flags);
+	  }
+	return;
+      }
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	for (i = tsi_start (CONST_CAST_TREE (t));
+	     !tsi_end_p (i); tsi_next (&i))
+	  hash_operand (tsi_stmt (i), hstate, flags);
+	return;
+      }
+    case TREE_VEC:
+      for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
+	hash_operand (TREE_VEC_ELT (t, i), hstate, flags);
+      return;
+    case IDENTIFIER_NODE:
+      hstate.add_object (IDENTIFIER_HASH_VALUE (t));
+      return;
+    case FIELD_DECL:
+      inchash::add_expr (DECL_FIELD_OFFSET (t), hstate, flags);
+      inchash::add_expr (DECL_FIELD_BIT_OFFSET (t), hstate, flags);
+      return;
+    case FUNCTION_DECL:
+      /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
+	 Otherwise nodes that compare equal according to operand_equal_p might
+	 get different hash codes.  However, don't do this for machine specific
+	 or front end builtins, since the function code is overloaded in those
+	 cases.  */
+      if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
+	  && builtin_decl_explicit_p (DECL_FUNCTION_CODE (t)))
+	{
+	  t = builtin_decl_explicit (DECL_FUNCTION_CODE (t));
+	  code = TREE_CODE (t);
+	}
+      /* FALL THROUGH */
+    default:
+      if (POLY_INT_CST_P (t))
+	{
+	  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	    hstate.add_wide_int (wi::to_wide (POLY_INT_CST_COEFF (t, i)));
+	  return;
+	}
+      tclass = TREE_CODE_CLASS (code);
+
+      if (tclass == tcc_declaration)
+	{
+	  /* DECL's have a unique ID */
+	  hstate.add_hwi (DECL_UID (t));
+	}
+      else if (tclass == tcc_comparison && !commutative_tree_code (code))
+	{
+	  /* For comparisons that can be swapped, use the lower
+	     tree code.  */
+	  enum tree_code ccode = swap_tree_comparison (code);
+	  if (code < ccode)
+	    ccode = code;
+	  hstate.add_object (ccode);
+	  hash_operand (TREE_OPERAND (t, ccode != code), hstate, flags);
+	  hash_operand (TREE_OPERAND (t, ccode == code), hstate, flags);
+	}
+      else if (CONVERT_EXPR_CODE_P (code))
+	{
+	  /* NOP_EXPR and CONVERT_EXPR are considered equal by
+	     operand_equal_p.  */
+	  enum tree_code ccode = NOP_EXPR;
+	  hstate.add_object (ccode);
+
+	  /* Don't hash the type, that can lead to having nodes which
+	     compare equal according to operand_equal_p, but which
+	     have different hash codes.  Make sure to include signedness
+	     in the hash computation.  */
+	  hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
+	  hash_operand (TREE_OPERAND (t, 0), hstate, flags);
+	}
+      /* For OEP_ADDRESS_OF, hash MEM_EXPR[&decl, 0] the same as decl.  */
+      else if (code == MEM_REF
+	       && (flags & OEP_ADDRESS_OF) != 0
+	       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	       && DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
+	       && integer_zerop (TREE_OPERAND (t, 1)))
+	hash_operand (TREE_OPERAND (TREE_OPERAND (t, 0), 0),
+		      hstate, flags);
+      /* Don't ICE on FE specific trees, or their arguments etc.
+	 during operand_equal_p hash verification.  */
+      else if (!IS_EXPR_CODE_CLASS (tclass))
+	gcc_assert (flags & OEP_HASH_CHECK);
+      else
+	{
+	  unsigned int sflags = flags;
+
+	  hstate.add_object (code);
+
+	  switch (code)
+	    {
+	    case ADDR_EXPR:
+	      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
+	      flags |= OEP_ADDRESS_OF;
+	      sflags = flags;
+	      break;
+
+	    case INDIRECT_REF:
+	    case MEM_REF:
+	    case TARGET_MEM_REF:
+	      flags &= ~OEP_ADDRESS_OF;
+	      sflags = flags;
+	      break;
+
+	    case ARRAY_REF:
+	    case ARRAY_RANGE_REF:
+	    case COMPONENT_REF:
+	    case BIT_FIELD_REF:
+	      sflags &= ~OEP_ADDRESS_OF;
+	      break;
+
+	    case COND_EXPR:
+	      flags &= ~OEP_ADDRESS_OF;
+	      break;
+
+	    case WIDEN_MULT_PLUS_EXPR:
+	    case WIDEN_MULT_MINUS_EXPR:
+	      {
+		/* The multiplication operands are commutative.  */
+		inchash::hash one, two;
+		hash_operand (TREE_OPERAND (t, 0), one, flags);
+		hash_operand (TREE_OPERAND (t, 1), two, flags);
+		hstate.add_commutative (one, two);
+		hash_operand (TREE_OPERAND (t, 2), two, flags);
+		return;
+	      }
+
+	    case CALL_EXPR:
+	      if (CALL_EXPR_FN (t) == NULL_TREE)
+		hstate.add_int (CALL_EXPR_IFN (t));
+	      break;
+
+	    case TARGET_EXPR:
+	      /* For TARGET_EXPR, just hash on the TARGET_EXPR_SLOT.
+		 Usually different TARGET_EXPRs just should use
+		 different temporaries in their slots.  */
+	      hash_operand (TARGET_EXPR_SLOT (t), hstate, flags);
+	      return;
+
+	    /* Virtual table call.  */
+	    case OBJ_TYPE_REF:
+	      inchash::add_expr (OBJ_TYPE_REF_EXPR (t), hstate, flags);
+	      inchash::add_expr (OBJ_TYPE_REF_TOKEN (t), hstate, flags);
+	      inchash::add_expr (OBJ_TYPE_REF_OBJECT (t), hstate, flags);
+	      return;
+	    default:
+	      break;
+	    }
+
+	  /* Don't hash the type, that can lead to having nodes which
+	     compare equal according to operand_equal_p, but which
+	     have different hash codes.  */
+	  if (code == NON_LVALUE_EXPR)
+	    {
+	      /* Make sure to include signness in the hash computation.  */
+	      hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
+	      hash_operand (TREE_OPERAND (t, 0), hstate, flags);
+	    }
+
+	  else if (commutative_tree_code (code))
+	    {
+	      /* It's a commutative expression.  We want to hash it the same
+		 however it appears.  We do this by first hashing both operands
+		 and then rehashing based on the order of their independent
+		 hashes.  */
+	      inchash::hash one, two;
+	      hash_operand (TREE_OPERAND (t, 0), one, flags);
+	      hash_operand (TREE_OPERAND (t, 1), two, flags);
+	      hstate.add_commutative (one, two);
+	    }
+	  else
+	    for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
+	      hash_operand (TREE_OPERAND (t, i), hstate,
+			    i == 0 ? flags : sflags);
+	}
+      return;
+    }
+}
+
+bool
+operand_compare::verify_hash_value (const_tree arg0, const_tree arg1,
+				    unsigned int flags, bool *ret)
+{
+  /* When checking, verify at the outermost operand_equal_p call that
+     if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
+     hash value.  */
+  if (flag_checking && !(flags & OEP_NO_HASH_CHECK))
+    {
+      if (operand_equal_p (arg0, arg1, flags | OEP_NO_HASH_CHECK))
+	{
+	  if (arg0 != arg1)
+	    {
+	      inchash::hash hstate0 (0), hstate1 (0);
+	      hash_operand (arg0, hstate0, flags | OEP_HASH_CHECK);
+	      hash_operand (arg1, hstate1, flags | OEP_HASH_CHECK);
+	      hashval_t h0 = hstate0.end ();
+	      hashval_t h1 = hstate1.end ();
+	      gcc_assert (h0 == h1);
+	    }
+	  *ret = true;
+	}
+      else
+	*ret = false;
+
+      return true;
+    }
+
+  return false;
+}
+
+
+static operand_compare default_compare_instance;
+
+/* Conveinece wrapper around operand_compare class because usually we do
+   not need to play with the valueizer.  */
+
+bool
+operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
+{
+  return default_compare_instance.operand_equal_p (arg0, arg1, flags);
+}
+
+namespace inchash
+{
+
+/* Generate a hash value for an expression.  This can be used iteratively
+   by passing a previous result as the HSTATE argument.
+
+   This function is intended to produce the same hash for expressions which
+   would compare equal using operand_equal_p.  */
+void
+add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
+{
+  default_compare_instance.hash_operand (t, hstate, flags);
+}
+
 }
 
 /* Similar to operand_equal_p, but see if ARG0 might be a variant of ARG1
