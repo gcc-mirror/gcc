@@ -28,5 +28,5 @@ program udr10
     j = j .localadd. dl(i)
     k = k + dl(i * 2)
   end do
-  if (j%x /= 5050 .or. k%x /= 10100) STOP 1
+  if (j%x /= 5050 .or. k%x /= 10100) stop 1
 end

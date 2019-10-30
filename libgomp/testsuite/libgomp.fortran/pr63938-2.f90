@@ -14,5 +14,5 @@ program pr63938_2
     x%x = x%x + 1
   end do
 !$omp end parallel do
-  if (x%x .ne. 1000) STOP 1
+  if (x%x .ne. 1000) stop 1
 end program pr63938_2

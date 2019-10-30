@@ -22,7 +22,7 @@ contains
       !$omp do
 	do i = 0, 999
 	  !$omp cancel do if (x(1))
-	  STOP 1
+	  stop 1
 	end do
       !$omp do
 	do i = 0, 999
@@ -47,7 +47,7 @@ contains
 	end do
       !$omp end do
     !$omp end parallel
-    if (v.ne.3000.or.w.ne.0) STOP 2
+    if (v.ne.3000.or.w.ne.0) stop 2
     !$omp parallel num_threads (32) shared (v, w)
       ! None of these cancel directives should actually cancel anything,
       ! but the compiler shouldn't know that and thus should use cancellable
@@ -56,7 +56,7 @@ contains
       !$omp do
 	do i = 0, 999
 	  !$omp cancel do if (x(1))
-	  STOP 3
+	  stop 3
 	end do
       !$omp cancel parallel if (omp_get_thread_num ().eq.2.and.x(5))
       !$omp do
@@ -85,6 +85,6 @@ contains
       !$omp end do
       !$omp cancel parallel if (omp_get_thread_num ().eq.5.and.x(5))
     !$omp end parallel
-    if (v.ne.6000.or.w.ne.0) STOP 4
+    if (v.ne.6000.or.w.ne.0) stop 4
   end subroutine
 end

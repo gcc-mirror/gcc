@@ -53,16 +53,16 @@ end module threadprivate2
   baz%b = omp_get_thread_num () * 2 + 1
 !$omp end parallel
 
-  if (l) STOP 1
-  if (.not.allocated (foo)) STOP 2
-  if (size (foo).ne.18) STOP 3
-  if (any (foo.ne.1)) STOP 4
+  if (l) stop 1
+  if (.not.allocated (foo)) stop 2
+  if (size (foo).ne.18) stop 3
+  if (any (foo.ne.1)) stop 4
 
-  if (associated (bar1)) STOP 5
-  if (.not.associated (bar3)) STOP 6
-  if (any (bar3 .ne. -2)) STOP 7
+  if (associated (bar1)) stop 5
+  if (.not.associated (bar3)) stop 6
+  if (any (bar3 .ne. -2)) stop 7
   deallocate (bar3)
-  if (associated (bar3)) STOP 8
+  if (associated (bar3)) stop 8
 
 !$omp parallel num_threads (4) reduction (.or.:l)
   l = l.or..not.allocated (foo)
@@ -85,12 +85,12 @@ end module threadprivate2
   l = l.or.(baz%b.ne.(omp_get_thread_num () * 2 + 1))
 !$omp end parallel
 
-  if (l) STOP 9
-  if (.not.allocated (foo)) STOP 10
-  if (size (foo).ne.18) STOP 11
-  if (any (foo.ne.1)) STOP 12
+  if (l) stop 9
+  if (.not.allocated (foo)) stop 10
+  if (size (foo).ne.18) stop 11
+  if (any (foo.ne.1)) stop 12
   deallocate (foo)
-  if (allocated (foo)) STOP 13
+  if (allocated (foo)) stop 13
 end
 
 ! { dg-final { cleanup-modules "threadprivate2" } }

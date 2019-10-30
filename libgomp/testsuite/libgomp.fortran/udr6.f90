@@ -62,8 +62,8 @@ program udr6
     call dp_add (dp(i), 1.0d0)
   end do
 !$omp end parallel
-  if (any (xdt%r .ne. r)) STOP 1
-  if (any (i4.ne.r).or.any(i8.ne.r)) STOP 2
-  if (any(r4.ne.r).or.any(dp.ne.r)) STOP 3
+  if (any (xdt%r .ne. r)) stop 1
+  if (any (i4.ne.r).or.any(i8.ne.r)) stop 2
+  if (any(r4.ne.r).or.any(dp.ne.r)) stop 3
   deallocate (xdt, i4, i8, r4, dp)
 end program udr6

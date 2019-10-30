@@ -57,6 +57,6 @@ program SIMD3
 
   diff = sum - sum_ref
 
-  if (diff > EPS .or. -diff > EPS) STOP 1
+  if (diff > EPS .or. -diff > EPS) stop 1
 
 end program

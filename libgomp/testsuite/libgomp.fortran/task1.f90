@@ -13,7 +13,7 @@ program tasktest
       !$omp end task
     end if
   !$omp end parallel
-  if (j.gt.0) STOP 1
+  if (j.gt.0) stop 1
 contains
   subroutine subr (i)
     use omp_lib

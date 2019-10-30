@@ -22,5 +22,5 @@ program pr27916
     r = r .or. allocated (a)
   end do
  !$omp end parallel do
-  if (r) STOP 1
+  if (r) stop 1
 end program pr27916

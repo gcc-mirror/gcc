@@ -20,20 +20,20 @@ close(99)
 ! Test character kind
 open(99, file="test.dat")
 read (99,*, iostat=stat) cvar
-if (stat /= 0 .or. cvar /= "1") STOP 1
+if (stat /= 0 .or. cvar /= "1") stop 1
 read (99,*, iostat=stat) cvar
-if (stat /= 0 .or. cvar /= "2") STOP 2
+if (stat /= 0 .or. cvar /= "2") stop 2
 read (99,*, iostat=stat) cvar              ! << FAILS: stat /= 0
-if (stat /= 0 .or. cvar /= "3") STOP 3 ! << aborts here
+if (stat /= 0 .or. cvar /= "3") stop 3 ! << aborts here
 
 ! Test real kind
 rewind(99)
 read (99,*, iostat=stat) var
-if (stat /= 0 .or. var /= 1.0) STOP 4
+if (stat /= 0 .or. var /= 1.0) stop 4
 read (99,*, iostat=stat) var
-if (stat /= 0 .or. var /= 2.0) STOP 5
+if (stat /= 0 .or. var /= 2.0) stop 5
 read (99,*, iostat=stat) var ! << FAILS: stat /= 0
-if (stat /= 0 .or. var /= 3.0) STOP 6
+if (stat /= 0 .or. var /= 3.0) stop 6
 close(99, status="delete")
 
 ! Test real kind with exponents
@@ -45,11 +45,11 @@ close(99)
 
 open(99, file="test.dat")
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 7
+if (stat /= 0) stop 7
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 8
+if (stat /= 0) stop 8
 read (99,*) var ! << FAILS: stat /= 0
-if (stat /= 0) STOP 9
+if (stat /= 0) stop 9
 close(99, status="delete")
 
 ! Test logical kind
@@ -61,11 +61,11 @@ close(99)
 
 open(99, file="test.dat")
 read (99,*, iostat=stat) lvar
-if (stat /= 0 .or. (.not.lvar)) STOP 10
+if (stat /= 0 .or. (.not.lvar)) stop 10
 read (99,*, iostat=stat) lvar
-if (stat /= 0 .or. lvar) STOP 11
+if (stat /= 0 .or. lvar) stop 11
 read (99,*) lvar ! << FAILS: stat /= 0
-if (stat /= 0 .or. (.not.lvar)) STOP 12
+if (stat /= 0 .or. (.not.lvar)) stop 12
 close(99, status="delete")
 
 ! Test combinations of Inf and Nan
@@ -77,11 +77,11 @@ close(99)
 
 open(99, file="test.dat")
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 13
+if (stat /= 0) stop 13
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 14
+if (stat /= 0) stop 14
 read (99,*) var          ! << FAILS: stat /= 0
-if (stat /= 0) STOP 1! << aborts here
+if (stat /= 0) stop 1! << aborts here
 close(99, status="delete")
 
 open(99, file="test.dat", access="stream", form="unformatted", status="new")
@@ -92,11 +92,11 @@ close(99)
 
 open(99, file="test.dat")
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 15
+if (stat /= 0) stop 15
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 16
+if (stat /= 0) stop 16
 read (99,*) var          ! << FAILS: stat /= 0
-if (stat /= 0) STOP 2! << aborts here
+if (stat /= 0) stop 2! << aborts here
 close(99, status="delete")
 
 open(99, file="test.dat", access="stream", form="unformatted", status="new")
@@ -107,11 +107,11 @@ close(99)
 
 open(99, file="test.dat")
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 17
+if (stat /= 0) stop 17
 read (99,*, iostat=stat) var
-if (stat /= 0) STOP 18
+if (stat /= 0) stop 18
 read (99,*) var          ! << FAILS: stat /= 0
-if (stat /= 0) STOP 3! << aborts here
+if (stat /= 0) stop 3! << aborts here
 close(99, status="delete")
 
 ! Test complex kind
@@ -123,10 +123,10 @@ close(99)
 
 open(99, file="test.dat")
 read (99,*, iostat=stat) cval
-if (stat /= 0 .or. cval /= cmplx(1,2)) STOP 19
+if (stat /= 0 .or. cval /= cmplx(1,2)) stop 19
 read (99,*, iostat=stat) cval
-if (stat /= 0 .or. cval /= cmplx(2,3)) STOP 20
+if (stat /= 0 .or. cval /= cmplx(2,3)) stop 20
 read (99,*, iostat=stat) cval      ! << FAILS: stat /= 0, value is okay
-if (stat /= 0 .or. cval /= cmplx(4,5)) STOP 21
+if (stat /= 0 .or. cval /= cmplx(4,5)) stop 21
 close(99, status="delete")
 end

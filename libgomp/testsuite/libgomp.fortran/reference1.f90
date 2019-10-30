@@ -8,10 +8,10 @@
   k = 0
   d = 24.5
   call test (i, j, k, d)
-  if (i .ne. 38) STOP 1
-  if (iand (k, 255) .ne. 0) STOP 2
+  if (i .ne. 38) stop 1
+  if (iand (k, 255) .ne. 0) stop 2
   if (iand (k, 65280) .eq. 0) then
-    if (k .ne. 65536 * 4) STOP 3
+    if (k .ne. 65536 * 4) stop 3
   end if
 contains
   subroutine test (i, j, k, d)

@@ -9,10 +9,10 @@ program example
          x = 2
       !$omp end task
       !$omp task shared(x) depend(in: x)
-         if (x .ne. 2) STOP 1
+         if (x .ne. 2) stop 1
       !$omp end task
       !$omp task shared(x) depend(in: x)
-         if (x .ne. 2) STOP 2
+         if (x .ne. 2) stop 2
       !$omp end task
    !$omp end single
    !$omp end parallel

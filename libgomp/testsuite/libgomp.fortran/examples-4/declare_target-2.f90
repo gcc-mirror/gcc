@@ -8,7 +8,7 @@ program e_53_2
     ! Nvidia Titan V.
     x = fib (23)
   !$omp end target
-  if (x /= fib (23)) STOP 1
+  if (x /= fib (23)) stop 1
 end program
 
 integer recursive function fib (n) result (f)

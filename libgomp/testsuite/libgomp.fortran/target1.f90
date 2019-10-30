@@ -13,9 +13,9 @@ contains
         q(i) = p(i)
       end do
     !$omp end target
-    if (any (p /= q)) STOP 1
+    if (any (p /= q)) stop 1
     do i = 1, n
-      if (p(i) /= i * iand (i, 63)) STOP 2
+      if (p(i) /= i * iand (i, 63)) stop 2
     end do
     !$omp target data if (n > 256) map (to: v(1:n), w) map (from: p, q)
     !$omp target if (n > 256)
@@ -38,7 +38,7 @@ contains
       end do
     !$omp end target
     !$omp end target data
-    if (any (p + 2.0 /= q)) STOP 3
+    if (any (p + 2.0 /= q)) stop 3
   end subroutine
 end module target1
   use target1, only : foo
@@ -52,7 +52,7 @@ end module target1
   end do
   call foo (p, v, w, n)
   do i = 1, n
-    if (p(i) /= i * iand (i, 63) + 3) STOP 4
+    if (p(i) /= i * iand (i, 63) + 3) stop 4
   end do
   deallocate (p, v, w)
 end

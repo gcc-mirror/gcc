@@ -12,6 +12,6 @@ program pr42866
       a = a + 2
     !$omp end sections
   !$omp end parallel
-  if (any (a.ne.3)) STOP 1
+  if (any (a.ne.3)) stop 1
   deallocate (a)
 end

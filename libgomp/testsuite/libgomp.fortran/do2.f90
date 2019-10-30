@@ -86,7 +86,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b) .or. k) STOP 1
+  if (any (a .ne. b) .or. k) stop 1
   a = -1
   k = .false.
   j = 8
@@ -155,7 +155,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b) .or. k) STOP 2
+  if (any (a .ne. b) .or. k) stop 2
   a = -1
   k = .false.
   j = 8
@@ -224,7 +224,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b) .or. k) STOP 3
+  if (any (a .ne. b) .or. k) stop 3
   a = -1
   k = .false.
   j = 8
@@ -293,7 +293,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b) .or. k) STOP 4
+  if (any (a .ne. b) .or. k) stop 4
   a = -1
   k = .false.
   j = 8
@@ -362,5 +362,5 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b) .or. k) STOP 5
+  if (any (a .ne. b) .or. k) stop 5
 end

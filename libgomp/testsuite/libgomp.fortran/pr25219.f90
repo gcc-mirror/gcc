@@ -12,5 +12,5 @@
   end do
 !$omp end do
 !$omp end parallel
-  if (k .ne. 100) STOP 1
+  if (k .ne. 100) stop 1
 end
