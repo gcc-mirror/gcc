@@ -1,3 +1,8 @@
+2019-10-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92134 - constinit malfunction in static data member.
+	* decl2.c (grokfield): Set LOOKUP_CONSTINIT.
+
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (omp_declare_variant_finalize, build_local_temp): Declare.
