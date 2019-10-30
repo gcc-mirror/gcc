@@ -13,14 +13,14 @@ template<typename T> void f1()
 template<typename T> void f2(float *f)
 {
   #pragma omp atomic	// { dg-error "invalid" }
-  *f |= 1;		// { dg-error "evaluation" }
+  *f |= 1;             // { dg-message "evaluation" "" { target *-*-* } .-1 }
 }
 
 // Here the rhs is dependent, but not type dependent.
 template<typename T> void f3(float *f)
 {
   #pragma omp atomic	// { dg-error "invalid" }
-  *f |= sizeof (T);	// { dg-error "evaluation" }
+  *f |= sizeof (T);    // { dg-message "evaluation" "" { target *-*-* } .-1 }
 }
 
 // And the converse, no error here because we're never fed a T.

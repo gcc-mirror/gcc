@@ -8358,8 +8358,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	  if (newrhs == error_mark_node)
 	    {
 	      if (complain & tf_error)
-		error ("  in evaluation of %<%Q(%#T, %#T)%>", modifycode,
-		       TREE_TYPE (lhs), TREE_TYPE (rhs));
+		inform (loc, "  in evaluation of %<%Q(%#T, %#T)%>",
+			modifycode, TREE_TYPE (lhs), TREE_TYPE (rhs));
 	      return error_mark_node;
 	    }
 
@@ -8594,7 +8594,7 @@ get_delta_difference_1 (tree from, tree to, bool c_cast_p,
       if (!(complain & tf_error))
 	return error_mark_node;
 
-      error ("   in pointer to member function conversion");
+      inform (input_location, "   in pointer to member function conversion");
       return size_zero_node;
     }
   else if (binfo)
@@ -8655,7 +8655,7 @@ get_delta_difference (tree from, tree to,
 	  return error_mark_node;
 
 	error_not_base_type (from, to);
-	error ("   in pointer to member conversion");
+	inform (input_location, "   in pointer to member conversion");
       	result = size_zero_node;
       }
     else
@@ -8674,7 +8674,7 @@ get_delta_difference (tree from, tree to,
 	      return error_mark_node;
 
 	    error_not_base_type (from, to);
-	    error ("   in pointer to member conversion");
+	    inform (input_location, "   in pointer to member conversion");
 	    result = size_zero_node;
 	  }
       }

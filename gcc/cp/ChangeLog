@@ -1,3 +1,10 @@
+2019-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_modify_expr): Prefer error + inform to
+	error + error in one place.
+	(get_delta_difference_1): Likewise.
+	(get_delta_difference): Likewise, in two places.
+
 2019-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (build_x_unary_op): Use the location_t argument in
