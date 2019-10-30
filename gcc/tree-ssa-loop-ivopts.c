@@ -4152,8 +4152,6 @@ get_debug_computation_at (class loop *loop, gimple *at,
       var = fold_convert (ctype, var);
     }
 
-  ubase = unshare_expr (ubase);
-  cbase = unshare_expr (cbase);
   if (stmt_after_increment (loop, cand, at))
     var = fold_build2 (MINUS_EXPR, TREE_TYPE (var), var,
 		       unshare_expr (cstep));
@@ -7648,6 +7646,7 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 	      if (!best_cand)
 		continue;
 
+	      comp = unshare_expr (comp);
 	      if (count > 1)
 		{
 		  tree vexpr = make_node (DEBUG_EXPR_DECL);
