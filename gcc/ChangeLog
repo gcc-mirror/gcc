@@ -1,3 +1,9 @@
+2019-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	ipa/92278
+	* cgraph.c (cgraph_edge::possibly_call_in_translation_unit_p): Fix
+	availability comparison.
+
 2019-10-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_expand_helper): Support expansion of

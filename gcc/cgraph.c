@@ -3819,7 +3819,7 @@ cgraph_edge::possibly_call_in_translation_unit_p (void)
   if (node->previous_sharing_asm_name)
     node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (callee->decl));
   gcc_assert (TREE_PUBLIC (node->decl));
-  return node->get_availability () >= AVAIL_AVAILABLE;
+  return node->get_availability () >= AVAIL_INTERPOSABLE;
 }
 
 /* A stashed copy of "symtab" for use by selftest::symbol_table_test.
