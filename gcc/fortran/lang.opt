@@ -289,6 +289,10 @@ Wopenmp-simd
 Fortran
 ; Documented in C
 
+Woverwrite-recursive
+Fortran Warning Var(warn_overwrite_recursive) Init(1)
+Warn that -fno-automatic may break recursion.
+
 Wpedantic
 Fortran
 ; Documented in common.opt
