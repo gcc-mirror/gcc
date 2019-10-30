@@ -2750,29 +2750,31 @@ check_local_shadow (tree decl)
 	 parameter, more than often they would use the variable
 	 thinking (mistakenly) it's still the parameter. It would be
 	 rare that users would use the variable in the place that
-	 expects the parameter but thinking it's a new decl.  */
+	 expects the parameter but thinking it's a new decl.
+	 If either object is a TYPE_DECL, '-Wshadow=compatible-local'
+	 warns regardless of whether one of the types involved
+	 is a subclass of the other, since that is never okay.  */
 
       enum opt_code warning_code;
       if (warn_shadow)
 	warning_code = OPT_Wshadow;
-      else if (warn_shadow_local)
-	warning_code = OPT_Wshadow_local;
-      else if (warn_shadow_compatible_local
-	       && (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
-		   || (!dependent_type_p (TREE_TYPE (decl))
-		       && !dependent_type_p (TREE_TYPE (old))
-		       /* If the new decl uses auto, we don't yet know
-			  its type (the old type cannot be using auto
-			  at this point, without also being
-			  dependent).  This is an indication we're
-			  (now) doing the shadow checking too
-			  early.  */
-		       && !type_uses_auto (TREE_TYPE (decl))
-		       && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
-				       tf_none))))
+      else if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
+	       || TREE_CODE (decl) == TYPE_DECL
+	       || TREE_CODE (old) == TYPE_DECL
+	       || (!dependent_type_p (TREE_TYPE (decl))
+		   && !dependent_type_p (TREE_TYPE (old))
+		   /* If the new decl uses auto, we don't yet know
+		      its type (the old type cannot be using auto
+		      at this point, without also being
+		      dependent).  This is an indication we're
+		      (now) doing the shadow checking too
+		      early.  */
+		   && !type_uses_auto (TREE_TYPE (decl))
+		   && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
+				   tf_none)))
 	warning_code = OPT_Wshadow_compatible_local;
       else
-	return;
+	warning_code = OPT_Wshadow_local;
 
       const char *msg;
       if (TREE_CODE (old) == PARM_DECL)

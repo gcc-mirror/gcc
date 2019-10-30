@@ -1,3 +1,8 @@
+2019-10-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi (-Wshadow, -Wshadow=global
+	-Wshadow=local, -Wshadow=compatible-local): Update documentation.
+
 2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Remove FE-generated
