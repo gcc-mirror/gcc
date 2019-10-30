@@ -1,3 +1,4 @@
+! { dg-do run }
 program lastprivate
   integer :: i, k
   common /c/ i, k

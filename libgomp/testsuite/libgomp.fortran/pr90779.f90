@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR middle-end/90779
 
 program pr90779

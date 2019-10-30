@@ -1,3 +1,4 @@
+! { dg-do run }
   integer :: v(16), i
   do i = 1, 16
     v(i) = i

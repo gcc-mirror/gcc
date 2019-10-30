@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR middle-end/35130
 
 program pr35130

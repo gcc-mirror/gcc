@@ -1,3 +1,4 @@
+! { dg-do run }
 ! Comprehensive run-time test for use_device_addr
 !
 ! Differs from use_device_addr-2.f90 by using a 8-byte variable (c_double)

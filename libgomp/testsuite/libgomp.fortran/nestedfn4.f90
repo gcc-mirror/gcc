@@ -1,3 +1,4 @@
+! { dg-do run }
 program foo
   integer :: i, j, k
   integer :: a(10), c(10)

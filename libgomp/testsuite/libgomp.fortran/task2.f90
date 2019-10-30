@@ -1,3 +1,4 @@
+! { dg-do run }
 ! { dg-options "-std=legacy" }
 
   integer :: err
