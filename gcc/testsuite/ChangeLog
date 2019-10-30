@@ -1,3 +1,16 @@
+2019-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Add a test with , before
+	match clause.
+	* c-c++-common/gomp/declare-variant-6.c: Expect diagnostics also from
+	C++ FE and adjust regexp so that it handles C++ pretty printing of
+	function names.
+	* g++.dg/gomp/declare-variant-1.C: New test.
+	* g++.dg/gomp/declare-variant-2.C: New test.
+	* g++.dg/gomp/declare-variant-3.C: New test.
+	* g++.dg/gomp/declare-variant-4.C: New test.
+	* g++.dg/gomp/declare-variant-5.C: New test.
+
 2019-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/conversion/ptrmem2.C: Adjust for error + inform.

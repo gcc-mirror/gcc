@@ -40666,25 +40666,53 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
       return attrs;
     }
 
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-  tree variant;
-  tree name = cp_parser_id_expression (parser, /*template_p=*/false,
-				       /*check_dependency_p=*/true,
-				       /*template_p=*/NULL,
-				       /*declarator_p=*/false,
-				       /*optional_p=*/false);
-  if (identifier_p (name))
-    variant = cp_parser_lookup_name_simple (parser, name, token->location);
-  else
-    variant = name;
-  if (variant == error_mark_node)
-    {
-      cp_parser_name_lookup_error (parser, name, variant, NLE_NULL,
-				   token->location);
-      variant = error_mark_node;
-    }
-
+  bool template_p;
+  cp_id_kind idk = CP_ID_KIND_NONE;
+  cp_token *varid_token = cp_lexer_peek_token (parser->lexer);
+  cp_expr varid
+    = cp_parser_id_expression (parser, /*template_keyword_p=*/false,
+			       /*check_dependency_p=*/true,
+			       /*template_p=*/&template_p,
+			       /*declarator_p=*/false,
+			       /*optional_p=*/false);
   parens.require_close (parser);
+
+  tree variant;
+  if (TREE_CODE (varid) == TEMPLATE_ID_EXPR
+      || TREE_CODE (varid) == TYPE_DECL
+      || varid == error_mark_node)
+    variant = varid;
+  else if (varid_token->type == CPP_NAME && varid_token->error_reported)
+    variant = NULL_TREE;
+  else
+    {
+      tree ambiguous_decls;
+      variant = cp_parser_lookup_name (parser, varid, none_type,
+				       template_p, /*is_namespace=*/false,
+				       /*check_dependency=*/true,
+				       &ambiguous_decls,
+				       varid.get_location ());
+      if (ambiguous_decls)
+	variant = NULL_TREE;
+    }
+  if (variant == NULL_TREE)
+    variant = error_mark_node;
+  else if (TREE_CODE (variant) != SCOPE_REF)
+    {
+      const char *error_msg;
+      variant
+	= finish_id_expression (varid, variant, parser->scope,
+				&idk, false, true,
+				&parser->non_integral_constant_expression_p,
+				template_p, true, false, false, &error_msg,
+				varid.get_location ());
+      if (error_msg)
+	cp_parser_error (parser, error_msg);
+    }
+  location_t caret_loc = get_pure_location (varid.get_location ());
+  location_t start_loc = get_start (varid_token->location);
+  location_t finish_loc = get_finish (varid.get_location ());
+  location_t varid_loc = make_location (caret_loc, start_loc, finish_loc);
 
   const char *clause = "";
   location_t match_loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -40707,8 +40735,14 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
   ctx = c_omp_check_context_selector (match_loc, ctx);
   if (ctx != error_mark_node && variant != error_mark_node)
     {
+      tree match_loc_node = maybe_wrap_with_location (integer_zero_node,
+						      match_loc);
+      tree loc_node = maybe_wrap_with_location (integer_zero_node, varid_loc);
+      loc_node = tree_cons (match_loc_node,
+			    build_int_cst (integer_type_node, idk),
+			    build_tree_list (loc_node, integer_zero_node));
       attrs = tree_cons (get_identifier ("omp declare variant base"),
-			 build_tree_list (variant, ctx), attrs);
+			 tree_cons (variant, ctx, loc_node), attrs);
       if (processing_template_decl)
 	ATTR_IS_DEPENDENT (attrs) = 1;
     }

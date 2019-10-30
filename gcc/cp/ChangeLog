@@ -1,3 +1,19 @@
+2019-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (omp_declare_variant_finalize, build_local_temp): Declare.
+	* decl.c: Include omp-general.h.
+	(declare_simd_adjust_this): Add forward declaration.
+	(omp_declare_variant_finalize_one, omp_declare_variant_finalize): New
+	function.
+	(cp_finish_decl, finish_function): Call omp_declare_variant_finalize.
+	* parser.c (cp_finish_omp_declare_variant): Adjust parsing of the
+	variant id-expression and propagate enough information to
+	omp_declare_variant_finalize_one in the attribute so that it can
+	finalize it.
+	* class.c (finish_struct): Call omp_declare_variant_finalize.
+	* tree.c (build_local_temp): No longer static, remove forward
+	declaration.
+
 2019-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_build_modify_expr): Prefer error + inform to
