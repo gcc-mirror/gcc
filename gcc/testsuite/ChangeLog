@@ -1,3 +1,8 @@
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92208
+	* gfortran.dg/pr92208.f90: New.
+
 2019-10-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92134 - constinit malfunction in static data member.
