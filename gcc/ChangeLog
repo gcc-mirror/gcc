@@ -1,3 +1,13 @@
+2019-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65930
+	* tree-vect-loop.c (vect_is_simple_reduction): For reduction
+	chains also allow a leading and trailing conversion.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Handle
+	intermediate reduction chains.
+	(vect_analyze_slp_instance): Likewise.  Build a SLP
+	node for a trailing conversion manually.
+
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (cgraph_node::local_info): Transform to ...

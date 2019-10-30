@@ -3005,14 +3005,21 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       for (i = path.length () - 1; i >= 1; --i)
 	{
 	  gimple *stmt = USE_STMT (path[i].second);
-	  if (gimple_assign_rhs_code (stmt) != code
+	  stmt_vec_info stmt_info = loop_info->lookup_stmt (stmt);
+	  STMT_VINFO_REDUC_IDX (stmt_info)
+	    = path[i].second->use - gimple_assign_rhs1_ptr (stmt);
+	  enum tree_code stmt_code = gimple_assign_rhs_code (stmt);
+	  bool leading_conversion = (CONVERT_EXPR_CODE_P (stmt_code)
+				     && (i == 1 || i == path.length () - 1));
+	  if ((stmt_code != code && !leading_conversion)
 	      /* We can only handle the final value in epilogue
 		 generation for reduction chains.  */
 	      || (i != 1 && !has_single_use (gimple_assign_lhs (stmt))))
 	    is_slp_reduc = false;
-	  stmt_vec_info stmt_info = loop_info->lookup_stmt (stmt);
-	  STMT_VINFO_REDUC_IDX (stmt_info)
-	    = path[i].second->use - gimple_assign_rhs1_ptr (stmt);
+	  /* For reduction chains we support a trailing/leading
+	     conversions.  We do not store those in the actual chain.  */
+	  if (leading_conversion)
+	    continue;
 	  reduc_chain.safe_push (stmt_info);
 	}
       if (is_slp_reduc && reduc_chain.length () > 1)
