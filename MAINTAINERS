@@ -96,7 +96,7 @@ or1k port		Stafford Horne		<shorne@gmail.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
-riscv port		Palmer Dabbelt		<palmer@sifive.com>
+riscv port		Palmer Dabbelt		<palmer@dabbelt.com>
 riscv port		Andrew Waterman		<andrew@sifive.com>
 riscv port		Jim Wilson		<jimw@sifive.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
