@@ -128,7 +128,6 @@ public:
      Similarly, IGNORE_SOURCE_DECLS and IGNORE_TARGET_DECLS are sets
      of declarations that can be skipped.  */
   func_checker (tree source_func_decl, tree target_func_decl,
-		bool compare_polymorphic,
 		bool ignore_labels = false,
 		hash_set<symtab_node *> *ignored_source_nodes = NULL,
 		hash_set<symtab_node *> *ignored_target_nodes = NULL);
@@ -257,9 +256,6 @@ private:
 
   /* Label to basic block index mapping.  */
   hash_map <tree, int> m_label_bb_map;
-
-  /* Flag if polymorphic comparison should be executed.  */
-  bool m_compare_polymorphic;
 
   /* Flag if ignore labels in comparison.  */
   bool m_ignore_labels;

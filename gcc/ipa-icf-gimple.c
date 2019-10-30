@@ -51,14 +51,12 @@ namespace ipa_icf_gimple {
    of declarations that can be skipped.  */
 
 func_checker::func_checker (tree source_func_decl, tree target_func_decl,
-			    bool compare_polymorphic,
 			    bool ignore_labels,
 			    hash_set<symtab_node *> *ignored_source_nodes,
 			    hash_set<symtab_node *> *ignored_target_nodes)
   : m_source_func_decl (source_func_decl), m_target_func_decl (target_func_decl),
     m_ignored_source_nodes (ignored_source_nodes),
     m_ignored_target_nodes (ignored_target_nodes),
-    m_compare_polymorphic (compare_polymorphic),
     m_ignore_labels (ignore_labels)
 {
   function *source_func = DECL_STRUCT_FUNCTION (source_func_decl);
@@ -156,23 +154,7 @@ func_checker::compare_decl (tree t1, tree t2)
   if (!compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return return_false ();
 
-  /* TODO: we are actually too strict here.  We only need to compare if
-     T1 can be used in polymorphic call.  */
-  if (TREE_ADDRESSABLE (t1)
-      && m_compare_polymorphic
-      && !compatible_polymorphic_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					  false))
-    return return_false ();
-
-  if ((t == VAR_DECL || t == PARM_DECL || t == RESULT_DECL)
-      && DECL_BY_REFERENCE (t1)
-      && m_compare_polymorphic
-      && !compatible_polymorphic_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					  true))
-    return return_false ();
-
   bool existed_p;
-
   tree &slot = m_decl_map.get_or_insert (t1, &existed_p);
   if (existed_p)
     return return_with_debug (slot == t2);
