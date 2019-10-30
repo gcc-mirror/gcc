@@ -1,3 +1,9 @@
+2019-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92275
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_loops):
+	Copy all loop-closed PHIs.
+
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Use
