@@ -182,7 +182,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 
       /* Add all thunks associated with the function.  */
       for (e = cnode->callers; e; e = e->next_caller)
-	if (e->caller->thunk.thunk_p && !e->caller->global.inlined_to)
+	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
 	  add_symbol_to_partition_1 (part, e->caller);
     }
 
@@ -233,8 +233,8 @@ contained_in_symbol (symtab_node *node)
   if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     {
       cnode = cnode->function_symbol ();
-      if (cnode->global.inlined_to)
-	cnode = cnode->global.inlined_to;
+      if (cnode->inlined_to)
+	cnode = cnode->inlined_to;
       return cnode;
     }
   else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))

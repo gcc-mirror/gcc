@@ -392,7 +392,7 @@ cgraph_node::reset (void)
 
   /* Reset our data structures so we can analyze the function again.  */
   memset (&local, 0, sizeof (local));
-  memset (&global, 0, sizeof (global));
+  inlined_to = NULL;
   memset (&rtl, 0, sizeof (rtl));
   analyzed = false;
   definition = false;
@@ -1507,7 +1507,7 @@ mark_functions_to_output (void)
       if (node->analyzed
 	  && !node->thunk.thunk_p
 	  && !node->alias
-	  && !node->global.inlined_to
+	  && !node->inlined_to
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))
 	{
@@ -1532,7 +1532,7 @@ mark_functions_to_output (void)
 	{
 	  /* We should've reclaimed all functions that are not needed.  */
 	  if (flag_checking
-	      && !node->global.inlined_to
+	      && !node->inlined_to
 	      && gimple_has_body_p (decl)
 	      /* FIXME: in ltrans unit when offline copy is outside partition but inline copies
 		 are inside partition, we can end up not removing the body since we no longer
@@ -1545,7 +1545,7 @@ mark_functions_to_output (void)
 	      node->debug ();
 	      internal_error ("failed to reclaim unneeded function");
 	    }
-	  gcc_assert (node->global.inlined_to
+	  gcc_assert (node->inlined_to
 		      || !gimple_has_body_p (decl)
 		      || node->in_other_partition
 		      || node->clones
@@ -1560,7 +1560,7 @@ mark_functions_to_output (void)
       if (node->same_comdat_group && !node->process)
 	{
 	  tree decl = node->decl;
-	  if (!node->global.inlined_to
+	  if (!node->inlined_to
 	      && gimple_has_body_p (decl)
 	      /* FIXME: in an ltrans unit when the offline copy is outside a
 		 partition but inline copies are inside a partition, we can
@@ -2117,7 +2117,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 
   for (e = callers; e;)
     if (e->caller->thunk.thunk_p
-	&& !e->caller->global.inlined_to)
+	&& !e->caller->inlined_to)
       {
 	cgraph_node *thunk = e->caller;
 
@@ -2154,7 +2154,7 @@ cgraph_node::expand (void)
   location_t saved_loc;
 
   /* We ought to not compile any inline clones.  */
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
 
   /* __RTL functions are compiled as soon as they are parsed, so don't
      do it again.  */
@@ -2707,7 +2707,7 @@ symbol_table::compile (void)
       bool error_found = false;
 
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (node->global.inlined_to
+	if (node->inlined_to
 	    || gimple_has_body_p (node->decl))
 	  {
 	    error_found = true;

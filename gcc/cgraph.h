@@ -730,15 +730,6 @@ struct GTY(()) cgraph_local_info {
   unsigned tm_may_enter_irr : 1;
 };
 
-/* Information about the function that needs to be computed globally
-   once compilation is finished.  Available only with -funit-at-a-time.  */
-
-struct GTY(()) cgraph_global_info {
-  /* For inline clones this points to the function they will be
-     inlined into.  */
-  cgraph_node *inlined_to;
-};
-
 /* Represent which DECL tree (or reference to such tree)
    will be replaced by another tree while versioning.  */
 struct GTY(()) ipa_replace_map
@@ -979,7 +970,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
      If the new node is being inlined into another one, NEW_INLINED_TO should be
      the outline function the new one is (even indirectly) inlined to.
-     All hooks will see this in node's global.inlined_to, when invoked.
+     All hooks will see this in node's inlined_to, when invoked.
      Can be NULL if the node is not inlined.  SUFFIX is string that is appended
      to the original name.  */
   cgraph_node *create_clone (tree decl, profile_count count,
@@ -1446,7 +1437,11 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   vec<ipa_opt_pass> GTY((skip)) ipa_transforms_to_apply;
 
   cgraph_local_info local;
-  cgraph_global_info global;
+
+  /* For inline clones this points to the function they will be
+     inlined into.  */
+  cgraph_node *inlined_to;
+
   struct cgraph_rtl_info *rtl;
   cgraph_clone_info clone;
   cgraph_thunk_info thunk;
@@ -2519,7 +2514,7 @@ symtab_node::real_symbol_p (void)
   if (!is_a <cgraph_node *> (this))
     return true;
   cnode = dyn_cast <cgraph_node *> (this);
-  if (cnode->global.inlined_to)
+  if (cnode->inlined_to)
     return false;
   return true;
 }
@@ -2542,13 +2537,13 @@ symtab_node::in_same_comdat_group_p (symtab_node *target)
 
   if (cgraph_node *cn = dyn_cast <cgraph_node *> (target))
     {
-      if (cn->global.inlined_to)
-	source = cn->global.inlined_to;
+      if (cn->inlined_to)
+	source = cn->inlined_to;
     }
   if (cgraph_node *cn = dyn_cast <cgraph_node *> (target))
     {
-      if (cn->global.inlined_to)
-	target = cn->global.inlined_to;
+      if (cn->inlined_to)
+	target = cn->inlined_to;
     }
 
   return source->get_comdat_group () == target->get_comdat_group ();
@@ -2995,7 +2990,7 @@ struct GTY((for_user)) constant_descriptor_tree {
 inline bool
 cgraph_node::only_called_directly_or_aliased_p (void)
 {
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
   return (!force_output && !address_taken
 	  && !ifunc_resolver
 	  && !used_from_other_partition
@@ -3012,7 +3007,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 inline bool
 cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
 {
-  gcc_checking_assert (!global.inlined_to);
+  gcc_checking_assert (!inlined_to);
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
@@ -3183,8 +3178,8 @@ inline bool
 cgraph_edge::recursive_p (void)
 {
   cgraph_node *c = callee->ultimate_alias_target ();
-  if (caller->global.inlined_to)
-    return caller->global.inlined_to->decl == c->decl;
+  if (caller->inlined_to)
+    return caller->inlined_to->decl == c->decl;
   else
     return caller->decl == c->decl;
 }
@@ -3221,8 +3216,8 @@ cgraph_edge::binds_to_current_def_p ()
 inline int
 cgraph_edge::frequency ()
 {
-  return count.to_cgraph_frequency (caller->global.inlined_to
-				    ? caller->global.inlined_to->count
+  return count.to_cgraph_frequency (caller->inlined_to
+				    ? caller->inlined_to->count
 				    : caller->count);
 }
 
@@ -3244,7 +3239,7 @@ inline void
 cgraph_node::mark_force_output (void)
 {
   force_output = 1;
-  gcc_checking_assert (!global.inlined_to);
+  gcc_checking_assert (!inlined_to);
 }
 
 /* Return true if function should be optimized for size.  */

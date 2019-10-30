@@ -166,8 +166,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
   struct cgraph_node *inlining_into;
   struct cgraph_edge *next;
 
-  if (e->caller->global.inlined_to)
-    inlining_into = e->caller->global.inlined_to;
+  if (e->caller->inlined_to)
+    inlining_into = e->caller->inlined_to;
   else
     inlining_into = e->caller;
 
@@ -193,7 +193,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 
 	     For now we keep the ohter functions in the group in program until
 	     cgraph_remove_unreachable_functions gets rid of them.  */
-	  gcc_assert (!e->callee->global.inlined_to);
+	  gcc_assert (!e->callee->inlined_to);
 	  e->callee->remove_from_same_comdat_group ();
 	  if (e->callee->definition
 	      && inline_account_function_p (e->callee))
@@ -226,7 +226,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
   else
     e->callee->remove_from_same_comdat_group ();
 
-  e->callee->global.inlined_to = inlining_into;
+  e->callee->inlined_to = inlining_into;
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = next)
@@ -344,11 +344,11 @@ inline_call (struct cgraph_edge *e, bool update_original,
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
   /* Don't even think of inlining inline clone.  */
-  gcc_assert (!callee->global.inlined_to);
+  gcc_assert (!callee->inlined_to);
 
   to = e->caller;
-  if (to->global.inlined_to)
-    to = to->global.inlined_to;
+  if (to->inlined_to)
+    to = to->inlined_to;
   if (to->thunk.thunk_p)
     {
       struct cgraph_node *target = to->callees->callee;
@@ -478,7 +478,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   clone_inlined_nodes (e, true, update_original, overall_size);
 
-  gcc_assert (curr->callee->global.inlined_to == to);
+  gcc_assert (curr->callee->inlined_to == to);
 
   old_size = ipa_size_summaries->get (to)->size;
   ipa_merge_fn_summary_after_inlining (e);

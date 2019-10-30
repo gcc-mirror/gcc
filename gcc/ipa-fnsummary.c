@@ -470,8 +470,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       class ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
 
-      if (e->caller->global.inlined_to)
-	caller_parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
+      if (e->caller->inlined_to)
+	caller_parms_info = IPA_NODE_REF (e->caller->inlined_to);
       else
 	caller_parms_info = IPA_NODE_REF (e->caller);
       callee_pi = IPA_NODE_REF (e->callee);
@@ -746,7 +746,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	  set_hint_predicate (&info->loop_stride, p);
 	}
     }
-  if (!dst->global.inlined_to)
+  if (!dst->inlined_to)
     ipa_update_overall_fn_summary (dst);
 }
 
@@ -927,7 +927,7 @@ ipa_dump_fn_summaries (FILE *f)
   struct cgraph_node *node;
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (!node->global.inlined_to)
+    if (!node->inlined_to)
       ipa_dump_fn_summary (f, node);
 }
 
@@ -2690,7 +2690,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
   HOST_WIDE_INT self_stack_size;
   struct cgraph_edge *e;
 
-  gcc_assert (!node->global.inlined_to);
+  gcc_assert (!node->inlined_to);
 
   if (!ipa_fn_summaries)
     ipa_fn_summary_alloc ();
@@ -3115,13 +3115,13 @@ HOST_WIDE_INT
 ipa_get_stack_frame_offset (struct cgraph_node *node)
 {
   HOST_WIDE_INT offset = 0;
-  if (!node->global.inlined_to)
+  if (!node->inlined_to)
     return 0;
   node = node->callers->caller;
   while (true)
     {
       offset += ipa_size_summaries->get (node)->estimated_self_stack_size;
-      if (!node->global.inlined_to)
+      if (!node->inlined_to)
 	return offset;
       node = node->callers->caller;
     }
@@ -3292,8 +3292,8 @@ void
 ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 {
   ipa_fn_summary *callee_info = ipa_fn_summaries->get (edge->callee);
-  struct cgraph_node *to = (edge->caller->global.inlined_to
-			    ? edge->caller->global.inlined_to : edge->caller);
+  struct cgraph_node *to = (edge->caller->inlined_to
+			    ? edge->caller->inlined_to : edge->caller);
   class ipa_fn_summary *info = ipa_fn_summaries->get (to);
   clause_t clause = 0;	/* not_inline is known to be false.  */
   size_time_entry *e;

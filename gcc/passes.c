@@ -3033,7 +3033,7 @@ function_called_by_processed_nodes_p (void)
         continue;
       if (TREE_ASM_WRITTEN (e->caller->decl))
         continue;
-      if (!e->caller->process && !e->caller->global.inlined_to)
+      if (!e->caller->process && !e->caller->inlined_to)
       	break;
     }
   if (dump_file && e)

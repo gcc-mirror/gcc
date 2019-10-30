@@ -1645,7 +1645,7 @@ expand_simd_clones (struct cgraph_node *node)
   tree attr = lookup_attribute ("omp declare simd",
 				DECL_ATTRIBUTES (node->decl));
   if (attr == NULL_TREE
-      || node->global.inlined_to
+      || node->inlined_to
       || lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
     return;
 

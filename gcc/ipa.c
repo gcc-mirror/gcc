@@ -71,9 +71,9 @@ update_inlined_to_pointer (struct cgraph_node *node, struct cgraph_node *inlined
 {
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
-    if (e->callee->global.inlined_to)
+    if (e->callee->inlined_to)
       {
-        e->callee->global.inlined_to = inlined_to;
+	e->callee->inlined_to = inlined_to;
 	update_inlined_to_pointer (e->callee, inlined_to);
       }
 }
@@ -335,11 +335,11 @@ symbol_table::remove_unreachable_nodes (FILE *file)
       node->used_as_abstract_origin = false;
       node->indirect_call_target = false;
       if (node->definition
-	  && !node->global.inlined_to
+	  && !node->inlined_to
 	  && !node->in_other_partition
 	  && !node->can_remove_if_no_direct_calls_and_refs_p ())
 	{
-	  gcc_assert (!node->global.inlined_to);
+	  gcc_assert (!node->inlined_to);
 	  reachable.add (node);
 	  enqueue_node (node, &first, &reachable);
 	}
@@ -451,7 +451,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 
 	      /* When inline clone exists, mark body to be preserved so when removing
 		 offline copy of the function we don't kill it.  */
-	      if (cnode->global.inlined_to)
+	      if (cnode->inlined_to)
 	        body_needed_for_clonning.add (cnode->decl);
 
 	      /* For non-inline clones, force their origins to the boundary and ensure
@@ -560,11 +560,11 @@ symbol_table::remove_unreachable_nodes (FILE *file)
      to turn it into normal cone.  */
   FOR_EACH_FUNCTION (node)
     {
-      if (node->global.inlined_to
+      if (node->inlined_to
 	  && !node->callers)
 	{
 	  gcc_assert (node->clones);
-	  node->global.inlined_to = NULL;
+	  node->inlined_to = NULL;
 	  update_inlined_to_pointer (node, node);
 	}
       node->aux = NULL;
@@ -1212,8 +1212,8 @@ propagate_single_user (varpool_node *vnode, cgraph_node *function,
       struct cgraph_node *cnode = dyn_cast <cgraph_node *> (ref->referring);
       if (cnode)
 	{
-	  if (cnode->global.inlined_to)
-	    cnode = cnode->global.inlined_to;
+	  if (cnode->inlined_to)
+	    cnode = cnode->inlined_to;
 	  if (!function)
 	    function = cnode;
 	  else if (function != cnode)

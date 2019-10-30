@@ -309,7 +309,7 @@ dump_callgraph_transformation (const cgraph_node *original,
 
    If the new node is being inlined into another one, NEW_INLINED_TO should be
    the outline function the new one is (even indirectly) inlined to.  All hooks
-   will see this in node's global.inlined_to, when invoked.  Can be NULL if the
+   will see this in node's inlined_to, when invoked.  Can be NULL if the
    node is not inlined.
 
    If PARAM_ADJUSTMENTS is non-NULL, the parameter manipulation information
@@ -357,8 +357,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->externally_visible = false;
   new_node->no_reorder = no_reorder;
   new_node->local.local = true;
-  new_node->global = global;
-  new_node->global.inlined_to = new_inlined_to;
+  new_node->inlined_to = new_inlined_to;
   new_node->rtl = rtl;
   new_node->frequency = frequency;
   new_node->tp_first_run = tp_first_run;
@@ -862,7 +861,7 @@ cgraph_node::create_version_clone (tree new_decl,
    new_version->externally_visible = false;
    new_version->no_reorder = no_reorder;
    new_version->local.local = new_version->definition;
-   new_version->global = global;
+   new_version->inlined_to = inlined_to;
    new_version->rtl = rtl;
    new_version->count = count;
 

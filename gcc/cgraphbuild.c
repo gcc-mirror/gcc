@@ -428,7 +428,7 @@ cgraph_edge::rebuild_edges (void)
 	node->record_stmt_references (gsi_stmt (gsi));
     }
   record_eh_tables (node, cfun);
-  gcc_assert (!node->global.inlined_to);
+  gcc_assert (!node->inlined_to);
   return 0;
 }
 
