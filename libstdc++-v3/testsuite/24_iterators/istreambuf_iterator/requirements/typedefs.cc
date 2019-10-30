@@ -22,7 +22,6 @@
 
 #include <sstream>
 #include <iterator>
-#include <testsuite_hooks.h>
 
 void test01()
 {
@@ -41,3 +40,53 @@ void test01()
   typedef test_iterator::istream_type istream_type;
   typedef test_iterator::streambuf_type streambuf_type;
 }
+
+#if __cplusplus >= 201103L
+void test02()
+{
+  using namespace std;
+
+  using test_type = istreambuf_iterator<char>;
+
+  static_assert(is_same<test_type::value_type, char>::value, "");
+  static_assert(is_same<test_type::difference_type,
+			  char_traits<char>::off_type>::value, "");
+#if __cplusplus <= 201703L
+  static_assert(is_same<test_type::pointer, char*>::value, "");
+#else
+  static_assert(is_same<test_type::pointer, void>::value, "");
+#endif
+  static_assert(is_same<test_type::reference, char>::value, "");
+  static_assert(is_same<test_type::iterator_category, input_iterator_tag>::value, "");
+
+  static_assert(is_same<test_type::char_type, char>::value, "");
+  static_assert(is_same<test_type::traits_type, char_traits<char>>::value, "");
+  static_assert(is_same<test_type::istream_type, istream>::value, "");
+  static_assert(is_same<test_type::streambuf_type, streambuf>::value, "");
+}
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+void test03()
+{
+  using namespace std;
+
+  using test_type = istreambuf_iterator<wchar_t>;
+
+  static_assert(is_same<test_type::value_type, wchar_t>::value, "");
+  static_assert(is_same<test_type::difference_type,
+			  char_traits<wchar_t>::off_type>::value, "");
+#if __cplusplus <= 201703L
+  static_assert(is_same<test_type::pointer, wchar_t*>::value, "");
+#else
+  static_assert(is_same<test_type::pointer, void>::value, "");
+#endif
+  static_assert(is_same<test_type::reference, wchar_t>::value, "");
+  static_assert(is_same<test_type::iterator_category, input_iterator_tag>::value, "");
+
+  static_assert(is_same<test_type::char_type, wchar_t>::value, "");
+  static_assert(is_same<test_type::traits_type, char_traits<wchar_t>>::value, "");
+  static_assert(is_same<test_type::istream_type, wistream>::value, "");
+  static_assert(is_same<test_type::streambuf_type, wstreambuf>::value, "");
+}
+#endif
+#endif

@@ -187,6 +187,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       _GLIBCXX17_CONSTEXPR pointer
       operator->() const
+#if __cplusplus > 201703L && defined __cpp_concepts
+      requires is_pointer_v<_Iterator>
+	|| requires(const _Iterator __i) { __i.operator->(); }
+#endif
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 1052. operator-> should also support smart pointers
@@ -806,6 +810,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::difference_type 	difference_type;
       typedef typename __traits_type::reference 	reference;
       typedef typename __traits_type::pointer   	pointer;
+
+#if __cplusplus > 201703L
+      using iterator_concept = std::__detail::__iter_concept<_Iterator>;
+#endif
 
       _GLIBCXX_CONSTEXPR __normal_iterator() _GLIBCXX_NOEXCEPT
       : _M_current(_Iterator()) { }
