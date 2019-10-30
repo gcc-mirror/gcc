@@ -1,3 +1,9 @@
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91393
+	PR lto/88220
+	* gcc.dg/lto/pr91393_0.c: New test.
+
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92262

@@ -49,9 +49,6 @@ static void input_cgraph_opt_summary (vec<symtab_node *>  nodes);
 /* Number of LDPR values known to GCC.  */
 #define LDPR_NUM_KNOWN (LDPR_PREVAILING_DEF_IRONLY_EXP + 1)
 
-/* All node orders are ofsetted by ORDER_BASE.  */
-static int order_base;
-
 /* Cgraph streaming is organized as set of record whose type
    is indicated by a tag.  */
 enum LTO_symtab_tags
@@ -1218,7 +1215,7 @@ input_node (struct lto_file_decl_data *file_data,
   int i, count;
   tree group;
   const char *section;
-  order = streamer_read_hwi (ib) + order_base;
+  order = streamer_read_hwi (ib) + file_data->order_base;
   clone_ref = streamer_read_hwi (ib);
 
   decl_index = streamer_read_uhwi (ib);
@@ -1337,7 +1334,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   tree group;
   const char *section;
 
-  order = streamer_read_hwi (ib) + order_base;
+  order = streamer_read_hwi (ib) + file_data->order_base;
   decl_index = streamer_read_uhwi (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
 
@@ -1504,7 +1501,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   unsigned i;
 
   tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
-  order_base = symtab->order;
+  file_data->order_base = symtab->order;
   while (tag)
     {
       if (tag == LTO_symtab_edge)
@@ -1529,7 +1526,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
     }
 
-  lto_input_toplevel_asms (file_data, order_base);
+  lto_input_toplevel_asms (file_data, file_data->order_base);
 
   /* AUX pointers should be all non-zero for function nodes read from the stream.  */
   if (flag_checking)
@@ -2037,10 +2034,9 @@ input_cgraph_opt_summary (vec<symtab_node *> nodes)
   while ((file_data = file_data_vec[j++]))
     {
       size_t len;
-      const char *data =
-	lto_get_section_data (file_data, LTO_section_cgraph_opt_sum, NULL,
-			      &len);
-
+      const char *data
+	= lto_get_summary_section_data (file_data, LTO_section_cgraph_opt_sum,
+					&len);
       if (data)
 	input_cgraph_opt_section (file_data, data, len, nodes);
     }
