@@ -144,7 +144,7 @@ public:
   bool compare_bb (sem_bb *bb1, sem_bb *bb2);
 
   /* Verifies that trees T1 and T2 are equivalent from perspective of ICF.  */
-  bool compare_ssa_name (tree t1, tree t2);
+  bool compare_ssa_name (const_tree t1, const_tree t2);
 
   /* Verification function for edges E1 and E2.  */
   bool compare_edge (edge e1, edge e2);
@@ -188,7 +188,7 @@ public:
   bool compare_gimple_asm (const gasm *s1, const gasm *s2);
 
   /* Verification function for declaration trees T1 and T2.  */
-  bool compare_decl (tree t1, tree t2);
+  bool compare_decl (const_tree t1, const_tree t2);
 
   /* Verifies that tree labels T1 and T2 correspond.  */
   bool compare_tree_ssa_label (tree t1, tree t2);
@@ -210,7 +210,7 @@ public:
   bool compare_function_decl (tree t1, tree t2);
 
   /* Verifies that trees T1 and T2 do correspond.  */
-  bool compare_variable_decl (tree t1, tree t2);
+  bool compare_variable_decl (const_tree t1, const_tree t2);
 
   /* Compare loop information for basic blocks BB1 and BB2.  */
   bool compare_loops (basic_block bb1, basic_block bb2);
@@ -252,10 +252,10 @@ private:
   hash_map <edge, edge> m_edge_map;
 
   /* Source to target declaration map.  */
-  hash_map <tree, tree> m_decl_map;
+  hash_map <const_tree, const_tree> m_decl_map;
 
   /* Label to basic block index mapping.  */
-  hash_map <tree, int> m_label_bb_map;
+  hash_map <const_tree, int> m_label_bb_map;
 
   /* Flag if ignore labels in comparison.  */
   bool m_ignore_labels;
