@@ -1,5 +1,42 @@
 2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/92272
+	* include/bits/stl_bvector.h (_Bit_iterator::pointer)
+	(_Bit_const_iterator::pointer): Define as void for C++20.
+	* include/bits/stl_iterator.h (reverse_iterator::operator->()): Add
+	constraints for C++20.
+	(__normal_iterator::iterator_concept): Define for C++20.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::pointer):
+	Define as void for C++20.
+	(ostreambuf_iterator::difference_type): Define as ptrdiff_t for C++20.
+	(ostreambuf_iterator::ostreambuf_iterator()): Add default constructor
+	for C++20.
+	* testsuite/23_containers/vector/bool/iterator_c++20.cc: New test.
+	* testsuite/24_iterators/bidirectional/concept.cc: New test.
+	* testsuite/24_iterators/bidirectional/tag.cc: New test.
+	* testsuite/24_iterators/contiguous/concept.cc: New test.
+	* testsuite/24_iterators/contiguous/tag.cc: New test.
+	* testsuite/24_iterators/forward/concept.cc: New test.
+	* testsuite/24_iterators/forward/tag.cc: New test.
+	* testsuite/24_iterators/input/concept.cc: New test.
+	* testsuite/24_iterators/input/tag.cc: New test.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/typedefs.cc:
+	New test.
+	* testsuite/24_iterators/ostreambuf_iterator/requirements/typedefs.cc:
+	New test.
+	* testsuite/24_iterators/output/concept.cc: New test.
+	* testsuite/24_iterators/output/tag.cc: New test.
+	* testsuite/24_iterators/random_access/concept.cc: New test.
+	* testsuite/24_iterators/random_access/tag.cc: New test.
+	* testsuite/24_iterators/range_operations/advance_debug_neg.cc: New
+	test.
+	* testsuite/24_iterators/random_access_iterator/26020.cc: Move to ...
+	* testsuite/24_iterators/operations/26020.cc: ... here.
+	* testsuite/24_iterators/random_access_iterator/
+	string_vector_iterators.cc: Move to ...
+	* testsuite/24_iterators/random_access/string_vector_iterators.cc: ...
+	here.
+
 	* testsuite/util/testsuite_iterators.h: Fix typo in __cplusplus check.
 
 2019-10-29  Jonathan Wakely  <jwakely@redhat.com>

@@ -15,24 +15,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++11 } }
 
 #include <iterator>
 
-using std::contiguous_iterator_tag;
-using std::random_access_iterator_tag;
+using std::output_iterator_tag;
+using std::input_iterator_tag;
 using std::iterator_traits;
 
-static_assert( std::is_empty_v<std::contiguous_iterator_tag> );
-static_assert( std::is_trivially_copy_constructible_v<std::contiguous_iterator_tag> );
+static_assert( std::is_empty<output_iterator_tag>::value );
+static_assert( std::is_trivially_copy_constructible<output_iterator_tag>::value );
 
-static_assert( std::is_base_of_v<std::random_access_iterator_tag,
-				 std::contiguous_iterator_tag> );
-static_assert( std::is_convertible_v<std::contiguous_iterator_tag*,
-				     std::random_access_iterator_tag*> );
-
-static_assert( ! std::is_same_v<std::iterator_traits<int*>::iterator_category,
-				std::contiguous_iterator_tag> );
-static_assert( std::is_same_v<std::iterator_traits<int*>::iterator_concept,
-			      std::contiguous_iterator_tag> );
+static_assert( ! std::is_base_of<input_iterator_tag,
+				 output_iterator_tag>::value );
+static_assert( ! std::is_convertible<output_iterator_tag*,
+				     input_iterator_tag*>::value );

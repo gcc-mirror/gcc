@@ -220,7 +220,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   struct _Bit_iterator : public _Bit_iterator_base
   {
     typedef _Bit_reference  reference;
+#if __cplusplus > 201703L
+    typedef void	    pointer;
+#else
     typedef _Bit_reference* pointer;
+#endif
     typedef _Bit_iterator   iterator;
 
     _Bit_iterator() : _Bit_iterator_base(0, 0) { }
@@ -309,7 +313,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   {
     typedef bool                 reference;
     typedef bool                 const_reference;
+#if __cplusplus > 201703L
+    typedef void	    pointer;
+#else
     typedef const bool*          pointer;
+#endif
     typedef _Bit_const_iterator  const_iterator;
 
     _Bit_const_iterator() : _Bit_iterator_base(0, 0) { }

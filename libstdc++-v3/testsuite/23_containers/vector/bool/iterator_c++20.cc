@@ -18,21 +18,13 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
-#include <iterator>
+#include <vector>
 
-using std::contiguous_iterator_tag;
-using std::random_access_iterator_tag;
-using std::iterator_traits;
+// C++20 [iterator.traits]: The type iterator_traits<I>::pointer shall be void
+// for an iterator of class type I that does not support operator->.
+template<typename I>
+  concept arrow_or_no_pointer = requires (I i) { i.operator->(); }
+    || std::same_as<typename std::iterator_traits<I>::pointer, void>;
 
-static_assert( std::is_empty_v<std::contiguous_iterator_tag> );
-static_assert( std::is_trivially_copy_constructible_v<std::contiguous_iterator_tag> );
-
-static_assert( std::is_base_of_v<std::random_access_iterator_tag,
-				 std::contiguous_iterator_tag> );
-static_assert( std::is_convertible_v<std::contiguous_iterator_tag*,
-				     std::random_access_iterator_tag*> );
-
-static_assert( ! std::is_same_v<std::iterator_traits<int*>::iterator_category,
-				std::contiguous_iterator_tag> );
-static_assert( std::is_same_v<std::iterator_traits<int*>::iterator_concept,
-			      std::contiguous_iterator_tag> );
+static_assert( arrow_or_no_pointer<std::vector<bool>::iterator> );
+static_assert( arrow_or_no_pointer<std::vector<bool>::const_iterator> );

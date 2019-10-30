@@ -20,17 +20,61 @@
 
 #include <iterator>
 
-static_assert( std::contiguous_iterator<int*> );
-static_assert( std::contiguous_iterator<const int*> );
-static_assert( std::contiguous_iterator<void**> );
+using std::contiguous_iterator;
 
-static_assert( ! std::contiguous_iterator<void*> );
-static_assert( ! std::contiguous_iterator<const void*> );
-static_assert( ! std::contiguous_iterator<volatile void*> );
+static_assert( contiguous_iterator< int*	    > );
+static_assert( contiguous_iterator< const int* > );
+static_assert( contiguous_iterator< void**	    > );
 
-static_assert( ! std::contiguous_iterator<void(*)()> );
-static_assert( ! std::contiguous_iterator<void(*)()> );
+static_assert( ! contiguous_iterator< int* const	> );
+static_assert( ! contiguous_iterator< const int* const	> );
+static_assert( ! contiguous_iterator< void** const	> );
+
+static_assert( ! contiguous_iterator< void*	  > );
+static_assert( ! contiguous_iterator< const void*	  > );
+static_assert( ! contiguous_iterator< volatile void* > );
+
+static_assert( ! contiguous_iterator< void(*)() > );
+static_assert( ! contiguous_iterator< void(&)() > );
+static_assert( contiguous_iterator< void(**)() > );
 
 struct A;
-static_assert( ! std::contiguous_iterator<void(A::*)()> );
-static_assert( ! std::contiguous_iterator<int A::*> );
+static_assert( ! contiguous_iterator< void(A::*)() > );
+static_assert( ! contiguous_iterator< int A::*	> );
+
+#include <array>
+#include <deque>
+#include <list>
+#include <string>
+#include <string_view>
+#include <vector>
+
+using std::array;
+using std::deque;
+using std::list;
+using std::string;
+using std::string_view;
+using std::vector;
+
+struct B { };
+
+static_assert( contiguous_iterator< array<int, 1>::iterator	> );
+static_assert( contiguous_iterator< array<B, 1>::const_iterator > );
+
+static_assert( ! contiguous_iterator< deque<int>::iterator	> );
+static_assert( ! contiguous_iterator< deque<B>::const_iterator	> );
+
+static_assert( ! contiguous_iterator< list<int>::iterator	> );
+static_assert( ! contiguous_iterator< list<B>::const_iterator	> );
+
+static_assert( contiguous_iterator< string::iterator		> );
+static_assert( contiguous_iterator< string::const_iterator	> );
+
+static_assert( contiguous_iterator< string_view::iterator	> );
+static_assert( contiguous_iterator< string_view::const_iterator	> );
+
+static_assert( contiguous_iterator< vector<int>::iterator	> );
+static_assert( contiguous_iterator< vector<B>::const_iterator	> );
+
+static_assert( ! contiguous_iterator< vector<bool>::iterator	    > );
+static_assert( ! contiguous_iterator< vector<bool>::const_iterator  > );
