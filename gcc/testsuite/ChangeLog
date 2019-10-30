@@ -1,3 +1,8 @@
+2019-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92275
+	* gcc.dg/torture/pr92275.c: New testcase.
+
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/declare-variant-6.C: New test.

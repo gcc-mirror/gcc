@@ -2004,6 +2004,29 @@ vect_gen_vector_loop_niters_mult_vf (loop_vec_info loop_vinfo,
   *niters_vector_mult_vf_ptr = niters_vector_mult_vf;
 }
 
+/* LCSSA_PHI is a lcssa phi of EPILOG loop which is copied from LOOP,
+   this function searches for the corresponding lcssa phi node in exit
+   bb of LOOP.  If it is found, return the phi result; otherwise return
+   NULL.  */
+
+static tree
+find_guard_arg (class loop *loop, class loop *epilog ATTRIBUTE_UNUSED,
+		gphi *lcssa_phi)
+{
+  gphi_iterator gsi;
+  edge e = single_exit (loop);
+
+  gcc_assert (single_pred_p (e->dest));
+  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      if (operand_equal_p (PHI_ARG_DEF (phi, 0),
+			   PHI_ARG_DEF (lcssa_phi, 0), 0))
+	return PHI_RESULT (phi);
+    }
+  return NULL_TREE;
+}
+
 /* Function slpeel_tree_duplicate_loop_to_edge_cfg duplciates FIRST/SECOND
    from SECOND/FIRST and puts it at the original loop's preheader/exit
    edge, the two loops are arranged as below:
@@ -2091,6 +2114,29 @@ slpeel_update_phi_nodes_for_loops (loop_vec_info loop_vinfo,
 	 incoming edge.  */
       adjust_phi_and_debug_stmts (update_phi, second_preheader_e, arg);
     }
+
+  /* For epilogue peeling we have to make sure to copy all LC PHIs
+     for correct vectorization of live stmts.  */
+  if (loop == first)
+    {
+      basic_block orig_exit = single_exit (second)->dest;
+      for (gsi_orig = gsi_start_phis (orig_exit);
+	   !gsi_end_p (gsi_orig); gsi_next (&gsi_orig))
+	{
+	  gphi *orig_phi = gsi_orig.phi ();
+	  tree orig_arg = PHI_ARG_DEF (orig_phi, 0);
+	  if (TREE_CODE (orig_arg) != SSA_NAME || virtual_operand_p  (orig_arg))
+	    continue;
+
+	  /* Already created in the above loop.   */
+	  if (find_guard_arg (first, second, orig_phi))
+	    continue;
+
+	  tree new_res = copy_ssa_name (orig_arg);
+	  gphi *lcphi = create_phi_node (new_res, between_bb);
+	  add_phi_arg (lcphi, orig_arg, single_exit (first), UNKNOWN_LOCATION);
+	}
+    }
 }
 
 /* Function slpeel_add_loop_guard adds guard skipping from the beginning
@@ -2173,29 +2219,6 @@ slpeel_update_phi_nodes_for_guard1 (class loop *skip_loop,
       /* Update phi in UPDATE_PHI.  */
       adjust_phi_and_debug_stmts (update_phi, update_e, new_res);
     }
-}
-
-/* LCSSA_PHI is a lcssa phi of EPILOG loop which is copied from LOOP,
-   this function searches for the corresponding lcssa phi node in exit
-   bb of LOOP.  If it is found, return the phi result; otherwise return
-   NULL.  */
-
-static tree
-find_guard_arg (class loop *loop, class loop *epilog ATTRIBUTE_UNUSED,
-		gphi *lcssa_phi)
-{
-  gphi_iterator gsi;
-  edge e = single_exit (loop);
-
-  gcc_assert (single_pred_p (e->dest));
-  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gphi *phi = gsi.phi ();
-      if (operand_equal_p (PHI_ARG_DEF (phi, 0),
-			   PHI_ARG_DEF (lcssa_phi, 0), 0))
-	return PHI_RESULT (phi);
-    }
-  return NULL_TREE;
 }
 
 /* LOOP and EPILOG are two consecutive loops in CFG and EPILOG is copied
