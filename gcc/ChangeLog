@@ -1,5 +1,10 @@
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.c (func_checker::compatible_types_p):
+	Do not compare alias sets.  It's handled by operand_equal_p.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.c (func_checker::func_checker): Do not
 	initialize m_compare_polymorphic.
 	(func_checker::compare_decl): Do not compare polymorphic types.
