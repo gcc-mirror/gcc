@@ -149,10 +149,11 @@ and warnings}.
 -Wc-binding-type -Wcharacter-truncation -Wconversion @gol
 -Wdo-subscript -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only @gol
--Wintrinsics-std -Wline-truncation -Wno-align-commons -Wno-tabs @gol
--Wreal-q-constant -Wsurprising -Wunderflow -Wunused-parameter @gol
--Wrealloc-lhs -Wrealloc-lhs-all -Wfrontend-loop-interchange @gol
--Wtarget-lifetime -fmax-errors=@var{n} -fsyntax-only -pedantic @gol
+-Wintrinsics-std -Wline-truncation -Wno-align-commons @gol
+-Wno-overwrite-recursive -Wno-tabs -Wreal-q-constant -Wsurprising @gol
+-Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all @gol
+-Wfrontend-loop-interchange -Wtarget-lifetime -fmax-errors=@var{n} @gol
+-fsyntax-only -pedantic @gol
 -pedantic-errors @gol
 }
 
@@ -989,7 +990,7 @@ nor has been declared as @code{EXTERNAL}.
 @opindex @code{Winteger-division}
 @cindex warnings, integer division
 @cindex warnings, division of integers
-Warn if a constant integer division truncates it result.
+Warn if a constant integer division truncates its result.
 As an example, 3/5 evaluates to 0.
 
 @item -Wintrinsics-std
@@ -1001,6 +1002,15 @@ available in the currently selected standard (with @option{-std}) and treats
 it as @code{EXTERNAL} procedure because of this.  @option{-fall-intrinsics} can
 be used to never trigger this behavior and always link to the intrinsic
 regardless of the selected standard.
+
+@item -Wno-overwrite-recursive
+@opindex @code{Woverwrite-recursive}
+@cindex  warnings, overwrite recursive
+Do not warn when @option{-fno-automatic} is used with @option{-frecursive}. Recursion
+will be broken if the relevant local variables do not have the attribute
+@code{AUTOMATIC} explicitly declared. This option can be used to suppress the warning
+when it is known that recursion is not broken. Useful for build environments that use
+@option{-Werror}.
 
 @item -Wreal-q-constant
 @opindex @code{Wreal-q-constant}
