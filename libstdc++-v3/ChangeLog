@@ -1,5 +1,13 @@
 2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/bit (__cpp_lib_bitops): Define.
+	* include/std/version (__cpp_lib_constexpr): Remove.
+	(__cpp_lib_bitops, __cpp_lib_constexpr_dynamic_alloc): Define.
+	* testsuite/26_numerics/bit/header.cc: New test.
+	* testsuite/26_numerics/bit/header-2.cc: New test.
+	* testsuite/20_util/allocator_traits/header.cc: New test.
+	* testsuite/20_util/allocator_traits/header-2.cc: New test.
+
 	* include/bits/stl_iterator.h (namespace __gnu_cxx): Remove
 	using-declarations for std::iterator and std::iterator_traits.
 	(__gnu_cxx::__normal_iterator): Qualify iterator_traits.
