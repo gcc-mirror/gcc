@@ -890,7 +890,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_rtti)
 	{
 	  cpp_define (pfile, "__GXX_RTTI");
-	  cpp_define (pfile, "__cpp_rtti=199711");
+	  cpp_define (pfile, "__cpp_rtti=199711L");
 	}
 
       if (cxx_dialect >= cxx11)
@@ -899,11 +899,11 @@ c_cpp_builtins (cpp_reader *pfile)
       /* Binary literals have been allowed in g++ before C++11
 	 and were standardized for C++14.  */
       if (!pedantic || cxx_dialect > cxx11)
-	cpp_define (pfile, "__cpp_binary_literals=201304");
+	cpp_define (pfile, "__cpp_binary_literals=201304L");
 
       /* Similarly for hexadecimal floating point literals and C++17.  */
       if (!pedantic || cpp_get_options (parse_in)->extended_numbers)
-	cpp_define (pfile, "__cpp_hex_float=201603");
+	cpp_define (pfile, "__cpp_hex_float=201603L");
 
       /* Arrays of runtime bound were removed from C++14, but we still
 	 support GNU VLAs.  Let's define this macro to a low number
@@ -911,112 +911,112 @@ c_cpp_builtins (cpp_reader *pfile)
 	 complain about use of VLAs.  */
       if (c_dialect_cxx ()
 	  && (pedantic ? warn_vla == 0 : warn_vla <= 0))
-	cpp_define (pfile, "__cpp_runtime_arrays=198712");
+	cpp_define (pfile, "__cpp_runtime_arrays=198712L");
 
       if (cxx_dialect >= cxx11)
 	{
 	  /* Set feature test macros for C++11.  */
 	  if (cxx_dialect <= cxx14)
-	    cpp_define (pfile, "__cpp_unicode_characters=200704");
-	  cpp_define (pfile, "__cpp_raw_strings=200710");
-	  cpp_define (pfile, "__cpp_unicode_literals=200710");
-	  cpp_define (pfile, "__cpp_user_defined_literals=200809");
-	  cpp_define (pfile, "__cpp_lambdas=200907");
+	    cpp_define (pfile, "__cpp_unicode_characters=200704L");
+	  cpp_define (pfile, "__cpp_raw_strings=200710L");
+	  cpp_define (pfile, "__cpp_unicode_literals=200710L");
+	  cpp_define (pfile, "__cpp_user_defined_literals=200809L");
+	  cpp_define (pfile, "__cpp_lambdas=200907L");
 	  if (cxx_dialect == cxx11)
-	    cpp_define (pfile, "__cpp_constexpr=200704");
+	    cpp_define (pfile, "__cpp_constexpr=200704L");
 	  if (cxx_dialect <= cxx14)
-	    cpp_define (pfile, "__cpp_range_based_for=200907");
+	    cpp_define (pfile, "__cpp_range_based_for=200907L");
 	  if (cxx_dialect <= cxx14)
-	    cpp_define (pfile, "__cpp_static_assert=200410");
-	  cpp_define (pfile, "__cpp_decltype=200707");
-	  cpp_define (pfile, "__cpp_attributes=200809");
-	  cpp_define (pfile, "__cpp_rvalue_reference=200610");
-	  cpp_define (pfile, "__cpp_rvalue_references=200610");
-	  cpp_define (pfile, "__cpp_variadic_templates=200704");
-	  cpp_define (pfile, "__cpp_initializer_lists=200806");
-	  cpp_define (pfile, "__cpp_delegating_constructors=200604");
-	  cpp_define (pfile, "__cpp_nsdmi=200809");
+	    cpp_define (pfile, "__cpp_static_assert=200410L");
+	  cpp_define (pfile, "__cpp_decltype=200707L");
+	  cpp_define (pfile, "__cpp_attributes=200809L");
+	  cpp_define (pfile, "__cpp_rvalue_reference=200610L");
+	  cpp_define (pfile, "__cpp_rvalue_references=200610L");
+	  cpp_define (pfile, "__cpp_variadic_templates=200704L");
+	  cpp_define (pfile, "__cpp_initializer_lists=200806L");
+	  cpp_define (pfile, "__cpp_delegating_constructors=200604L");
+	  cpp_define (pfile, "__cpp_nsdmi=200809L");
 	  if (!flag_new_inheriting_ctors)
-	    cpp_define (pfile, "__cpp_inheriting_constructors=200802");
+	    cpp_define (pfile, "__cpp_inheriting_constructors=200802L");
 	  else
-	    cpp_define (pfile, "__cpp_inheriting_constructors=201511");
-	  cpp_define (pfile, "__cpp_ref_qualifiers=200710");
-	  cpp_define (pfile, "__cpp_alias_templates=200704");
+	    cpp_define (pfile, "__cpp_inheriting_constructors=201511L");
+	  cpp_define (pfile, "__cpp_ref_qualifiers=200710L");
+	  cpp_define (pfile, "__cpp_alias_templates=200704L");
 	}
       if (cxx_dialect > cxx11)
 	{
 	  /* Set feature test macros for C++14.  */
-	  cpp_define (pfile, "__cpp_return_type_deduction=201304");
-	  cpp_define (pfile, "__cpp_init_captures=201304");
-	  cpp_define (pfile, "__cpp_generic_lambdas=201304");
+	  cpp_define (pfile, "__cpp_return_type_deduction=201304L");
+	  cpp_define (pfile, "__cpp_init_captures=201304L");
+	  cpp_define (pfile, "__cpp_generic_lambdas=201304L");
 	  if (cxx_dialect <= cxx14)
-	    cpp_define (pfile, "__cpp_constexpr=201304");
-	  cpp_define (pfile, "__cpp_decltype_auto=201304");
-	  cpp_define (pfile, "__cpp_aggregate_nsdmi=201304");
-	  cpp_define (pfile, "__cpp_variable_templates=201304");
-	  cpp_define (pfile, "__cpp_digit_separators=201309");
+	    cpp_define (pfile, "__cpp_constexpr=201304L");
+	  cpp_define (pfile, "__cpp_decltype_auto=201304L");
+	  cpp_define (pfile, "__cpp_aggregate_nsdmi=201304L");
+	  cpp_define (pfile, "__cpp_variable_templates=201304L");
+	  cpp_define (pfile, "__cpp_digit_separators=201309L");
 	}
       if (cxx_dialect > cxx14)
 	{
 	  /* Set feature test macros for C++17.  */
-	  cpp_define (pfile, "__cpp_unicode_characters=201411");
-	  cpp_define (pfile, "__cpp_static_assert=201411");
-	  cpp_define (pfile, "__cpp_namespace_attributes=201411");
-	  cpp_define (pfile, "__cpp_enumerator_attributes=201411");
-	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411");
-	  cpp_define (pfile, "__cpp_fold_expressions=201603");
-	  cpp_define (pfile, "__cpp_nontype_template_args=201411");
-	  cpp_define (pfile, "__cpp_range_based_for=201603");
-	  cpp_define (pfile, "__cpp_constexpr=201603");
-	  cpp_define (pfile, "__cpp_if_constexpr=201606");
-	  cpp_define (pfile, "__cpp_capture_star_this=201603");
-	  cpp_define (pfile, "__cpp_inline_variables=201606");
-	  cpp_define (pfile, "__cpp_aggregate_bases=201603");
-	  cpp_define (pfile, "__cpp_deduction_guides=201703");
-	  cpp_define (pfile, "__cpp_noexcept_function_type=201510");
+	  cpp_define (pfile, "__cpp_unicode_characters=201411L");
+	  cpp_define (pfile, "__cpp_static_assert=201411L");
+	  cpp_define (pfile, "__cpp_namespace_attributes=201411L");
+	  cpp_define (pfile, "__cpp_enumerator_attributes=201411L");
+	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411L");
+	  cpp_define (pfile, "__cpp_fold_expressions=201603L");
+	  cpp_define (pfile, "__cpp_nontype_template_args=201411L");
+	  cpp_define (pfile, "__cpp_range_based_for=201603L");
+	  cpp_define (pfile, "__cpp_constexpr=201603L");
+	  cpp_define (pfile, "__cpp_if_constexpr=201606L");
+	  cpp_define (pfile, "__cpp_capture_star_this=201603L");
+	  cpp_define (pfile, "__cpp_inline_variables=201606L");
+	  cpp_define (pfile, "__cpp_aggregate_bases=201603L");
+	  cpp_define (pfile, "__cpp_deduction_guides=201703L");
+	  cpp_define (pfile, "__cpp_noexcept_function_type=201510L");
 	  /* Old macro, superseded by
 	     __cpp_nontype_template_parameter_auto.  */
-	  cpp_define (pfile, "__cpp_template_auto=201606");
-	  cpp_define (pfile, "__cpp_structured_bindings=201606");
-	  cpp_define (pfile, "__cpp_variadic_using=201611");
-	  cpp_define (pfile, "__cpp_guaranteed_copy_elision=201606");
-	  cpp_define (pfile, "__cpp_nontype_template_parameter_auto=201606");
+	  cpp_define (pfile, "__cpp_template_auto=201606L");
+	  cpp_define (pfile, "__cpp_structured_bindings=201606L");
+	  cpp_define (pfile, "__cpp_variadic_using=201611L");
+	  cpp_define (pfile, "__cpp_guaranteed_copy_elision=201606L");
+	  cpp_define (pfile, "__cpp_nontype_template_parameter_auto=201606L");
 	}
       if (cxx_dialect > cxx17)
 	{
 	  /* Set feature test macros for C++2a.  */
-	  cpp_define (pfile, "__cpp_conditional_explicit=201806");
-	  cpp_define (pfile, "__cpp_constinit=201907");
-	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806");
-	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806");
-	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907");
+	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
+	  cpp_define (pfile, "__cpp_constinit=201907L");
+	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806L");
+	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806L");
+	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907L");
 	}
       if (flag_concepts)
         {
           if (cxx_dialect >= cxx2a)
             /* FIXME: Update this to the value required by the IS.  */
-            cpp_define (pfile, "__cpp_concepts=201907");
+            cpp_define (pfile, "__cpp_concepts=201907L");
           else
-            cpp_define (pfile, "__cpp_concepts=201507");
+            cpp_define (pfile, "__cpp_concepts=201507L");
         }
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */
-	cpp_define (pfile, "__cpp_transactional_memory=201500");
+	cpp_define (pfile, "__cpp_transactional_memory=201500L");
       if (flag_sized_deallocation)
-	cpp_define (pfile, "__cpp_sized_deallocation=201309");
+	cpp_define (pfile, "__cpp_sized_deallocation=201309L");
       if (aligned_new_threshold)
 	{
-	  cpp_define (pfile, "__cpp_aligned_new=201606");
+	  cpp_define (pfile, "__cpp_aligned_new=201606L");
 	  cpp_define_formatted (pfile, "__STDCPP_DEFAULT_NEW_ALIGNMENT__=%d",
 				aligned_new_threshold);
 	}
       if (flag_new_ttp)
-	cpp_define (pfile, "__cpp_template_template_args=201611");
+	cpp_define (pfile, "__cpp_template_template_args=201611L");
       if (flag_threadsafe_statics)
-	cpp_define (pfile, "__cpp_threadsafe_static_init=200806");
+	cpp_define (pfile, "__cpp_threadsafe_static_init=200806L");
       if (flag_char8_t)
-        cpp_define (pfile, "__cpp_char8_t=201811");
+        cpp_define (pfile, "__cpp_char8_t=201811L");
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */
@@ -1024,7 +1024,7 @@ c_cpp_builtins (cpp_reader *pfile)
     {
       cpp_define (pfile, "__EXCEPTIONS");
       if (c_dialect_cxx ())
-	cpp_define (pfile, "__cpp_exceptions=199711");
+	cpp_define (pfile, "__cpp_exceptions=199711L");
     }
 
   /* Represents the C++ ABI version, always defined so it can be used while

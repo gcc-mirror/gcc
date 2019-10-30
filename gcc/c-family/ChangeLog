@@ -1,3 +1,8 @@
+2019-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add 'L' suffix to feature
+	macros.
+
 2019-10-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c/66970
