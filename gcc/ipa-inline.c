@@ -1757,7 +1757,7 @@ speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
      to an ipa-cp clone (that are seen by having local flag set),
      it is probably pointless to inline it unless hardware is missing
      indirect call predictor.  */
-  if (!anticipate_inlining && !target->local.local)
+  if (!anticipate_inlining && !target->local)
     return false;
   /* For overwritable targets there is not much to do.  */
   if (!can_inline_edge_p (e, false)

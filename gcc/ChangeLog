@@ -1,3 +1,61 @@
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::local_info): Transform to ...
+	(cgraph_node::local_info_node): ... this.
+	(cgraph_node::dump): Remove cgraph_local_info and
+	put its fields directly into cgraph_node.
+	(cgraph_node::get_availability): Likewise.
+	(cgraph_node::make_local): Likewise.
+	(cgraph_node::verify_node): Likewise.
+	* cgraph.h (struct GTY): Likewise.
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Likewise.
+	(duplicate_thunk_for_node): Likewise.
+	(cgraph_node::create_clone): Likewise.
+	(cgraph_node::create_virtual_clone): Likewise.
+	(cgraph_node::create_version_clone): Likewise.
+	* cgraphunit.c (cgraph_node::reset): Likewise.
+	(cgraph_node::finalize_function): Likewise.
+	(cgraph_node::add_new_function): Likewise.
+	(analyze_functions): Likewise.
+	* combine.c (setup_incoming_promotions): Likewise.
+	* config/i386/i386.c (ix86_function_regparm): Likewise.
+	(ix86_function_sseregparm): Likewise.
+	(init_cumulative_args): Likewise.
+	* ipa-cp.c (determine_versionability): Likewise.
+	(count_callers): Likewise.
+	(set_single_call_flag): Likewise.
+	(initialize_node_lattices): Likewise.
+	(estimate_local_effects): Likewise.
+	(create_specialized_node): Likewise.
+	(identify_dead_nodes): Likewise.
+	* ipa-fnsummary.c (compute_fn_summary): Likewise.
+	(ipa_fn_summary_generate): Likewise.
+	* ipa-hsa.c (check_warn_node_versionable): Likewise.
+	(process_hsa_functions): Likewise.
+	* ipa-icf.c (set_local): Likewise.
+	* ipa-inline-analysis.c (initialize_inline_failed): Likewise.
+	* ipa-inline.c (speculation_useful_p): Likewise.
+	* ipa-profile.c (ipa_propagate_frequency): Likewise.
+	(ipa_profile): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	(execute_split_functions): Likewise.
+	* ipa-sra.c (ipa_sra_preliminary_function_checks): Likewise.
+	(ipa_sra_ipa_function_checks): Likewise.
+	* ipa-visibility.c (function_and_variable_visibility): Likewise.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Likewise.
+	* lto-cgraph.c (lto_output_node): Likewise.
+	(input_overwrite_node): Likewise.
+	* multiple_target.c (expand_target_clones): Likewise.
+	* omp-simd-clone.c (simd_clone_create): Likewise.
+	* trans-mem.c (expand_call_tm): Likewise.
+	(ipa_tm_mayenterirr_function): Likewise.
+	(ipa_tm_diagnose_tm_safe): Likewise.
+	(ipa_tm_diagnose_transaction): Likewise.
+	(ipa_tm_create_version): Likewise.
+	(ipa_tm_transform_calls_redirect): Likewise.
+	(ipa_tm_execute): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
 	* symbol-summary.h (function_summary): Pass memory location

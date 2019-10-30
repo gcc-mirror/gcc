@@ -926,7 +926,7 @@ sem_function::equals_private (sem_item *item)
 static bool
 set_local (cgraph_node *node, void *data)
 {
-  node->local.local = data != NULL;
+  node->local = data != NULL;
   return false;
 }
 

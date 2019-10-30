@@ -1834,16 +1834,16 @@ cgraph_node::mark_address_taken (void)
   node->address_taken = 1;
 }
 
-/* Return local info for the compiled function.  */
+/* Return local info node for the compiled function.  */
 
-cgraph_local_info *
-cgraph_node::local_info (tree decl)
+cgraph_node *
+cgraph_node::local_info_node (tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   cgraph_node *node = get (decl);
   if (!node)
     return NULL;
-  return &node->ultimate_alias_target ()->local;
+  return node->ultimate_alias_target ();
 }
 
 /* Return RTL info for the compiled function.  */
@@ -1991,9 +1991,9 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " body");
   if (process)
     fprintf (f, " process");
-  if (local.local)
+  if (local)
     fprintf (f, " local");
-  if (local.redefined_extern_inline)
+  if (redefined_extern_inline)
     fprintf (f, " redefined_extern_inline");
   if (only_called_at_startup)
     fprintf (f, " only_called_at_startup");
@@ -2217,7 +2217,7 @@ cgraph_node::get_availability (symtab_node *ref)
   enum availability avail;
   if (!analyzed)
     avail = AVAIL_NOT_AVAILABLE;
-  else if (local.local)
+  else if (local)
     avail = AVAIL_LOCAL;
   else if (inlined_to)
     avail = AVAIL_AVAILABLE;
@@ -2340,7 +2340,7 @@ cgraph_node::make_local (cgraph_node *node, void *)
       node->set_comdat_group (NULL);
       node->externally_visible = false;
       node->forced_by_abi = false;
-      node->local.local = true;
+      node->local = true;
       node->set_section (NULL);
       node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
 			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
@@ -3090,7 +3090,7 @@ cgraph_node::verify_node (void)
       error ("inline clone in same comdat group list");
       error_found = true;
     }
-  if (!definition && !in_other_partition && local.local)
+  if (!definition && !in_other_partition && local)
     {
       error ("local symbols must be defined");
       error_found = true;

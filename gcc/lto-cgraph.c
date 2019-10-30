@@ -507,13 +507,13 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   streamer_write_hwi_stream (ob->main_stream, node->tp_first_run);
 
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, node->local.local, 1);
+  bp_pack_value (&bp, node->local, 1);
   bp_pack_value (&bp, node->externally_visible, 1);
   bp_pack_value (&bp, node->no_reorder, 1);
   bp_pack_value (&bp, node->definition, 1);
-  bp_pack_value (&bp, node->local.versionable, 1);
-  bp_pack_value (&bp, node->local.can_change_signature, 1);
-  bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
+  bp_pack_value (&bp, node->versionable, 1);
+  bp_pack_value (&bp, node->can_change_signature, 1);
+  bp_pack_value (&bp, node->redefined_extern_inline, 1);
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->forced_by_abi, 1);
   bp_pack_value (&bp, node->unique_name, 1);
@@ -1139,13 +1139,13 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->aux = (void *) tag;
   node->lto_file_data = file_data;
 
-  node->local.local = bp_unpack_value (bp, 1);
+  node->local = bp_unpack_value (bp, 1);
   node->externally_visible = bp_unpack_value (bp, 1);
   node->no_reorder = bp_unpack_value (bp, 1);
   node->definition = bp_unpack_value (bp, 1);
-  node->local.versionable = bp_unpack_value (bp, 1);
-  node->local.can_change_signature = bp_unpack_value (bp, 1);
-  node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
+  node->versionable = bp_unpack_value (bp, 1);
+  node->can_change_signature = bp_unpack_value (bp, 1);
+  node->redefined_extern_inline = bp_unpack_value (bp, 1);
   node->force_output = bp_unpack_value (bp, 1);
   node->forced_by_abi = bp_unpack_value (bp, 1);
   node->unique_name = bp_unpack_value (bp, 1);
