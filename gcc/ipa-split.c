@@ -1204,7 +1204,7 @@ split_function (basic_block return_bb, class split_point *split_point,
       dump_split_point (dump_file, split_point);
     }
 
-  if (cur_node->local.can_change_signature)
+  if (cur_node->can_change_signature)
     args_to_skip = BITMAP_ALLOC (NULL);
   else
     args_to_skip = NULL;
@@ -1757,7 +1757,7 @@ execute_split_functions (void)
      then inlining would still benefit.  */
   if ((!node->callers
        /* Local functions called once will be completely inlined most of time.  */
-       || (!node->callers->next_caller && node->local.local))
+       || (!node->callers->next_caller && node->local))
       && !node->address_taken
       && !node->has_aliases_p ()
       && (!flag_lto || !node->externally_visible))

@@ -594,7 +594,7 @@ determine_versionability (struct cgraph_node *node,
      present.  */
   if (node->alias || node->thunk.thunk_p)
     reason = "alias or thunk";
-  else if (!node->local.versionable)
+  else if (!node->versionable)
     reason = "not a tree_versionable_function";
   else if (node->get_availability () <= AVAIL_INTERPOSABLE)
     reason = "insufficient body availability";
@@ -1150,7 +1150,7 @@ count_callers (cgraph_node *node, void *data)
   for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
     /* Local thunks can be handled transparently, but if the thunk cannot
        be optimized out, count it as a real use.  */
-    if (!cs->caller->thunk.thunk_p || !cs->caller->local.local)
+    if (!cs->caller->thunk.thunk_p || !cs->caller->local)
       ++*caller_count;
   return false;
 }
@@ -1163,7 +1163,7 @@ set_single_call_flag (cgraph_node *node, void *)
 {
   cgraph_edge *cs = node->callers;
   /* Local thunks can be handled transparently, skip them.  */
-  while (cs && cs->caller->thunk.thunk_p && cs->caller->local.local)
+  while (cs && cs->caller->thunk.thunk_p && cs->caller->local)
     cs = cs->next_caller;
   if (cs)
     {
@@ -1187,7 +1187,7 @@ initialize_node_lattices (struct cgraph_node *node)
 
   if (!ipa_get_param_count (info))
     disable = true;
-  else if (node->local.local)
+  else if (node->local)
     {
       int caller_count = 0;
       node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
@@ -2935,7 +2935,7 @@ estimate_local_effects (struct cgraph_node *node)
   int devirt_bonus = devirtualization_time_bonus (node, known_csts,
 					   known_contexts, known_aggs_ptrs);
   if (always_const || devirt_bonus
-      || (removable_params_cost && node->local.can_change_signature))
+      || (removable_params_cost && node->can_change_signature))
     {
       struct caller_statistics stats;
       ipa_hints hints;
@@ -2957,7 +2957,7 @@ estimate_local_effects (struct cgraph_node *node)
 	fprintf (dump_file, " - context independent values, size: %i, "
 		 "time_benefit: %f\n", size, (base_time - time).to_double ());
 
-      if (size <= 0 || node->local.local)
+      if (size <= 0 || node->local)
 	{
 	  info->do_clone_for_all_contexts = true;
 
@@ -3892,7 +3892,7 @@ create_specialized_node (struct cgraph_node *node,
   ipa_param_adjustments *old_adjustments = node->clone.param_adjustments;
   ipa_param_adjustments *new_adjustments;
   gcc_assert (!info->ipcp_orig_node);
-  gcc_assert (node->local.can_change_signature
+  gcc_assert (node->can_change_signature
 	      || !old_adjustments);
 
   if (old_adjustments)
@@ -3907,7 +3907,7 @@ create_specialized_node (struct cgraph_node *node,
       for (i = 0; i < old_adj_count; i++)
 	{
 	  ipa_adjusted_param *old_adj = &(*old_adjustments->m_adj_params)[i];
-	  if (!node->local.can_change_signature
+	  if (!node->can_change_signature
 	      || old_adj->op != IPA_PARAM_OP_COPY
 	      || (!known_csts[old_adj->base_index]
 		  && ipa_is_param_used (info, old_adj->base_index)))
@@ -3924,7 +3924,7 @@ create_specialized_node (struct cgraph_node *node,
 			 ipa_param_adjustments (new_params, count,
 						skip_return));
     }
-  else if (node->local.can_change_signature
+  else if (node->can_change_signature
 	   && want_remove_some_param_p (node, known_csts))
     {
       ipa_adjusted_param adj;
@@ -4990,7 +4990,7 @@ identify_dead_nodes (struct cgraph_node *node)
 {
   struct cgraph_node *v;
   for (v = node; v; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
-    if (v->local.local
+    if (v->local
 	&& !v->call_for_symbol_thunks_and_aliases
 	     (has_undead_caller_from_outside_scc_p, NULL, true))
       IPA_NODE_REF (v)->node_dead = 1;

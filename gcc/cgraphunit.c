@@ -391,7 +391,6 @@ cgraph_node::reset (void)
   gcc_assert (!process);
 
   /* Reset our data structures so we can analyze the function again.  */
-  memset (&local, 0, sizeof (local));
   inlined_to = NULL;
   memset (&rtl, 0, sizeof (rtl));
   analyzed = false;
@@ -445,7 +444,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
       gcc_assert (!DECL_CONTEXT (decl)
 		  || TREE_CODE (DECL_CONTEXT (decl)) !=	FUNCTION_DECL);
       node->reset ();
-      node->local.redefined_extern_inline = true;
+      node->redefined_extern_inline = true;
     }
 
   /* Set definition first before calling notice_global_symbol so that
@@ -553,7 +552,7 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 	/* Bring the function into finalized state and enqueue for later
 	   analyzing and compilation.  */
 	node = cgraph_node::get_create (fndecl);
-	node->local.local = false;
+	node->local = false;
 	node->definition = true;
 	node->force_output = true;
 	if (TREE_PUBLIC (fndecl))
@@ -1121,7 +1120,7 @@ analyze_functions (bool first_time)
 		  && !cnode->dispatcher_function)
 		{
 		  cnode->reset ();
-		  cnode->local.redefined_extern_inline = true;
+		  cnode->redefined_extern_inline = true;
 		  continue;
 		}
 

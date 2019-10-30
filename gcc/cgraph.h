@@ -707,29 +707,6 @@ struct GTY(()) cgraph_thunk_info {
   bool thunk_p;
 };
 
-/* Information about the function collected locally.
-   Available after function is analyzed.  */
-
-struct GTY(()) cgraph_local_info {
-  /* Set when function is visible in current compilation unit only and
-     its address is never taken.  */
-  unsigned local : 1;
-
-  /* False when there is something makes versioning impossible.  */
-  unsigned versionable : 1;
-
-  /* False when function calling convention and signature cannot be changed.
-     This is the case when __builtin_apply_args is used.  */
-  unsigned can_change_signature : 1;
-
-  /* True when the function has been originally extern inline, but it is
-     redefined now.  */
-  unsigned redefined_extern_inline : 1;
-
-  /* True if the function may enter serial irrevocable mode.  */
-  unsigned tm_may_enter_irr : 1;
-};
-
 /* Represent which DECL tree (or reference to such tree)
    will be replaced by another tree while versioning.  */
 struct GTY(()) ipa_replace_map
@@ -1370,7 +1347,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   static cgraph_node * get_create (tree);
 
   /* Return local info for the compiled function.  */
-  static cgraph_local_info *local_info (tree decl);
+  static cgraph_node *local_info_node (tree decl);
 
   /* Return RTL info for the compiled function.  */
   static struct cgraph_rtl_info *rtl_info (const_tree);
@@ -1436,8 +1413,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      per-function in order to allow IPA passes to introduce new functions.  */
   vec<ipa_opt_pass> GTY((skip)) ipa_transforms_to_apply;
 
-  cgraph_local_info local;
-
   /* For inline clones this points to the function they will be
      inlined into.  */
   cgraph_node *inlined_to;
@@ -1495,6 +1470,19 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned split_part : 1;
   /* True if the function appears as possible target of indirect call.  */
   unsigned indirect_call_target : 1;
+  /* Set when function is visible in current compilation unit only and
+     its address is never taken.  */
+  unsigned local : 1;
+  /* False when there is something makes versioning impossible.  */
+  unsigned versionable : 1;
+  /* False when function calling convention and signature cannot be changed.
+     This is the case when __builtin_apply_args is used.  */
+  unsigned can_change_signature : 1;
+  /* True when the function has been originally extern inline, but it is
+     redefined now.  */
+  unsigned redefined_extern_inline : 1;
+  /* True if the function may enter serial irrevocable mode.  */
+  unsigned tm_may_enter_irr : 1;
 
 private:
   /* Unique id of the node.  */

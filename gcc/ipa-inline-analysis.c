@@ -68,7 +68,7 @@ initialize_inline_failed (struct cgraph_edge *e)
     e->inline_failed = CIF_INDIRECT_UNKNOWN_CALL;
   else if (!callee->definition)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
-  else if (callee->local.redefined_extern_inline)
+  else if (callee->redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
   else
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;

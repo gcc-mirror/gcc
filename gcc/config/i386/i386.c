@@ -1119,8 +1119,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       if (target && opt_for_fn (target->decl, optimize)
 	  && !(profile_flag && !flag_fentry))
 	{
-	  cgraph_local_info *i = &target->local;
-	  if (i && i->local && i->can_change_signature)
+	  if (target->local && target->can_change_signature)
 	    {
 	      int local_regparm, globals = 0, regno;
 
@@ -1216,8 +1215,7 @@ ix86_function_sseregparm (const_tree type, const_tree decl, bool warn)
       && opt_for_fn (target->decl, optimize)
       && !(profile_flag && !flag_fentry))
     {
-      cgraph_local_info *i = &target->local;
-      if (i && i->local && i->can_change_signature)
+      if (target->local && target->can_change_signature)
 	{
 	  /* Refuse to produce wrong code when local function with SSE enabled
 	     is called from SSE disabled function.
@@ -1698,7 +1696,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		      tree fndecl,
 		      int caller)
 {
-  struct cgraph_local_info *i = NULL;
+  struct cgraph_node *local_info_node = NULL;
   struct cgraph_node *target = NULL;
 
   memset (cum, 0, sizeof (*cum));
@@ -1709,7 +1707,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
       if (target)
 	{
 	  target = target->function_symbol ();
-	  i = cgraph_node::local_info (target->decl);
+	  local_info_node = cgraph_node::local_info_node (target->decl);
 	  cum->call_abi = ix86_function_abi (target->decl);
 	}
       else
@@ -1751,7 +1749,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
      va_start so for local functions maybe_vaarg can be made aggressive
      helping K&R code.
      FIXME: once typesytem is fixed, we won't need this code anymore.  */
-  if (i && i->local && i->can_change_signature)
+  if (local_info_node && local_info_node->local
+      && local_info_node->can_change_signature)
     fntype = TREE_TYPE (target->decl);
   cum->stdarg = stdarg_p (fntype);
   cum->maybe_vaarg = (fntype

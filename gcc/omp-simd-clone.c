@@ -475,7 +475,7 @@ simd_clone_create (struct cgraph_node *old_node)
   /* The method cgraph_version_clone_with_body () will force the new
      symbol local.  Undo this, and inherit external visibility from
      the old node.  */
-  new_node->local.local = old_node->local.local;
+  new_node->local = old_node->local;
   new_node->externally_visible = old_node->externally_visible;
 
   return new_node;

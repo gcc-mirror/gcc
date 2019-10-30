@@ -552,7 +552,7 @@ struct obstack gensum_obstack;
 static bool
 ipa_sra_preliminary_function_checks (cgraph_node *node)
 {
-  if (!node->local.can_change_signature)
+  if (!node->can_change_signature)
     {
       if (dump_file)
 	fprintf (dump_file, "Function cannot change signature.\n");
@@ -2882,7 +2882,7 @@ ipa_sra_ipa_function_checks (cgraph_node *node)
 		 "made local.\n", node->dump_name ());
       return false;
     }
-  if (!node->local.can_change_signature)
+  if (!node->can_change_signature)
     {
       if (dump_file)
 	fprintf (dump_file, "Function can not change signature.\n");

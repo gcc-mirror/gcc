@@ -544,7 +544,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		= remove_attribute ("always_inline",
 				    DECL_ATTRIBUTES (node->decl));
 	      if (!node->in_other_partition)
-		node->local.local = false;
+		node->local = false;
 	      node->remove_callees ();
 	      node->remove_all_references ();
 	      changed = true;
@@ -655,7 +655,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		    || !node->call_for_symbol_and_aliases
 		       (is_indirect_call_target_p, NULL, true)))
 	      {
-		node->local.local = true;
+		node->local = true;
 		if (file)
 		  fprintf (file, " (local)");
 	      }

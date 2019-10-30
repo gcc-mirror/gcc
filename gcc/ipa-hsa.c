@@ -51,7 +51,7 @@ namespace {
 static bool
 check_warn_node_versionable (cgraph_node *node)
 {
-  if (!node->local.versionable)
+  if (!node->versionable)
     {
       warning_at (EXPR_LOCATION (node->decl), OPT_Whsa,
 		  "could not emit HSAIL for function %s: function cannot be "
@@ -113,7 +113,7 @@ process_hsa_functions (void)
 	  TREE_PUBLIC (clone->decl) = TREE_PUBLIC (node->decl);
 	  clone->externally_visible = node->externally_visible;
 
-	  if (!node->local.local)
+	  if (!node->local)
 	    clone->force_output = true;
 	  hsa_summaries->link_functions (clone, node, HSA_FUNCTION, false);
 

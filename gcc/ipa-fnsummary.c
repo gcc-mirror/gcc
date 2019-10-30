@@ -2712,7 +2712,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       ipa_call_summary *es = ipa_call_summaries->get_create (node->callees);
       predicate t = true;
 
-      node->local.can_change_signature = false;
+      node->can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
       info->account_size_time (ipa_fn_summary::size_scale
@@ -2751,12 +2751,12 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	      with simd attribute.  */
 	   || lookup_attribute ("omp declare simd",
 				DECL_ATTRIBUTES (node->decl)))
-	 node->local.can_change_signature = false;
+	 node->can_change_signature = false;
        else
 	 {
 	   /* Otherwise, inlinable functions always can change signature.  */
 	   if (info->inlinable)
-	     node->local.can_change_signature = true;
+	     node->can_change_signature = true;
 	   else
 	     {
 	       /* Functions calling builtin_apply cannot change signature.  */
@@ -2767,7 +2767,7 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 		       || fndecl_built_in_p (cdecl, BUILT_IN_VA_START))
 		     break;
 		 }
-	       node->local.can_change_signature = !e;
+	       node->can_change_signature = !e;
 	     }
 	 }
        analyze_function_body (node, early);
@@ -3485,7 +3485,7 @@ ipa_fn_summary_generate (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (DECL_STRUCT_FUNCTION (node->decl))
-      node->local.versionable = tree_versionable_function_p (node->decl);
+      node->versionable = tree_versionable_function_p (node->decl);
 
   ipa_fn_summary_alloc ();
 
