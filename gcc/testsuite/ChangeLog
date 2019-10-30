@@ -1,3 +1,9 @@
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/Wstringop-truncation-4.c: Disable IPA ICF.
+	* gcc.dg/tree-ssa/pr64910-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr79352.c: Likewise.
+
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-variant-2.c: Add a test with , before
