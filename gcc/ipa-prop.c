@@ -2660,6 +2660,11 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
   for (i = 0; i < count; i++)
     {
       struct ipa_jump_func *dst = ipa_get_ith_jump_func (args, i);
+      if (!top)
+	{
+	  ipa_set_jf_unknown (dst);
+	  continue;
+	}
       class ipa_polymorphic_call_context *dst_ctx
 	= ipa_get_ith_polymorhic_call_context (args, i);
 

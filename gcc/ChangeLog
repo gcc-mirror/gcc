@@ -1,3 +1,8 @@
+2019-10-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (update_jump_functions_after_inlining):
+	Watch for missing summaries.
+
 2019-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65930
