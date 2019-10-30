@@ -184,7 +184,7 @@ namespace __gnu_test
     void operator,(const T&, const output_iterator_wrapper<U>&) = delete;
 #endif
 
-#if __cplusplus >= 2011L
+#if __cplusplus >= 201103L
   using std::remove_cv;
 #else
   template<typename T> struct remove_cv { typedef T type; };

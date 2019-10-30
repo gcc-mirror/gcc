@@ -1,3 +1,7 @@
+2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h: Fix typo in __cplusplus check.
+
 2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/range_access.h (ranges::disable_sized_range)
