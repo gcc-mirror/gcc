@@ -135,7 +135,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
       if (!snode || !snode->definition)
 	return false;
       node = dyn_cast <cgraph_node *> (snode);
-      return !node || !node->global.inlined_to;
+      return !node || !node->inlined_to;
     }
 
   /* We will later output the initializer, so we can refer to it.
@@ -184,7 +184,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 	      || (!snode->forced_by_abi && !snode->force_output))))
     return false;
   node = dyn_cast <cgraph_node *> (snode);
-  return !node || !node->global.inlined_to;
+  return !node || !node->inlined_to;
 }
 
 /* Create a temporary for TYPE for a statement STMT.  If the current function

@@ -296,7 +296,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
       if (!node->aux
 	  && (pass
 	      || (!node->address_taken
-		  && !node->global.inlined_to
+		  && !node->inlined_to
 		  && !node->alias && !node->thunk.thunk_p
 		  && !node->only_called_directly_p ())))
 	{

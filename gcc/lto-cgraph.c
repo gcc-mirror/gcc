@@ -329,7 +329,7 @@ reachable_from_other_partition_p (struct cgraph_node *node, lto_symtab_encoder_t
   struct cgraph_edge *e;
   if (!node->definition)
     return false;
-  if (node->global.inlined_to)
+  if (node->inlined_to)
     return false;
   for (e = node->callers; e; e = e->next_caller)
     {
@@ -399,7 +399,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   boundary_p = !lto_symtab_encoder_in_partition_p (encoder, node);
 
   if (node->analyzed && (!boundary_p || node->alias
-			 || (node->thunk.thunk_p && !node->global.inlined_to)))
+			 || (node->thunk.thunk_p && !node->inlined_to)))
     tag = LTO_symtab_analyzed_node;
   else
     tag = LTO_symtab_unavail_node;
@@ -422,7 +422,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       && node->get_partitioning_class () == SYMBOL_PARTITION)
     {
       /* Inline clones cannot be part of boundary.  
-         gcc_assert (!node->global.inlined_to);  
+	 gcc_assert (!node->inlined_to);
 
 	 FIXME: At the moment they can be, when partition contains an inline
 	 clone that is clone of inline clone from outside partition.  We can
@@ -468,9 +468,9 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   if (tag == LTO_symtab_analyzed_node)
     {
-      if (node->global.inlined_to)
+      if (node->inlined_to)
 	{
-	  ref = lto_symtab_encoder_lookup (encoder, node->global.inlined_to);
+	  ref = lto_symtab_encoder_lookup (encoder, node->inlined_to);
 	  gcc_assert (ref != LCC_NOT_FOUND);
 	}
       else
@@ -884,7 +884,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	  if (!lto_symtab_encoder_in_partition_p (encoder, callee))
 	    {
 	      /* We should have moved all the inlines.  */
-	      gcc_assert (!callee->global.inlined_to);
+	      gcc_assert (!callee->inlined_to);
 	      add_node_to (encoder, callee, false);
 	    }
 	}
@@ -911,7 +911,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 			  && !lto_symtab_encoder_in_partition_p
 			       (encoder, callee))
 			{
-			  gcc_assert (!callee->global.inlined_to);
+			  gcc_assert (!callee->inlined_to);
 			  add_node_to (encoder, callee, false);
 			}
 		    }
@@ -928,7 +928,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (node->alias && node->analyzed)
 	create_references (encoder, node);
       if (cnode
-	  && cnode->thunk.thunk_p && !cnode->global.inlined_to)
+	  && cnode->thunk.thunk_p && !cnode->inlined_to)
 	add_node_to (encoder, cnode->callees->callee, false);
       while (node->transparent_alias && node->analyzed)
 	{
@@ -984,7 +984,7 @@ output_symtab (void)
     {
       node = dyn_cast <cgraph_node *> (lto_symtab_encoder_deref (encoder, i));
       if (node
-	  && ((node->thunk.thunk_p && !node->global.inlined_to)
+	  && ((node->thunk.thunk_p && !node->inlined_to)
 	      || lto_symtab_encoder_in_partition_p (encoder, node)))
 	{
 	  output_outgoing_cgraph_edges (node->callees, ob, encoder);
@@ -1283,7 +1283,7 @@ input_node (struct lto_file_decl_data *file_data,
   input_overwrite_node (file_data, node, tag, &bp);
 
   /* Store a reference for now, and fix up later to be a pointer.  */
-  node->global.inlined_to = (cgraph_node *) (intptr_t) ref;
+  node->inlined_to = (cgraph_node *) (intptr_t) ref;
 
   if (group)
     {
@@ -1542,7 +1542,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       int ref;
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
 	{
-	  ref = (int) (intptr_t) cnode->global.inlined_to;
+	  ref = (int) (intptr_t) cnode->inlined_to;
 
 	  /* We share declaration of builtins, so we may read same node twice.  */
 	  if (!node->aux)
@@ -1551,10 +1551,10 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 
 	  /* Fixup inlined_to from reference to pointer.  */
 	  if (ref != LCC_NOT_FOUND)
-	    dyn_cast<cgraph_node *> (node)->global.inlined_to
+	    dyn_cast<cgraph_node *> (node)->inlined_to
 	      = dyn_cast<cgraph_node *> (nodes[ref]);
 	  else
-	    cnode->global.inlined_to = NULL;
+	    cnode->inlined_to = NULL;
 	}
 
       ref = (int) (intptr_t) node->same_comdat_group;

@@ -167,7 +167,7 @@ caller_growth_limits (struct cgraph_edge *e)
 	limit = size_info->self_size;
       if (stack_size_limit < size_info->estimated_self_stack_size)
 	stack_size_limit = size_info->estimated_self_stack_size;
-      if (to->global.inlined_to)
+      if (to->inlined_to)
         to = to->callers->caller;
       else
 	break;
@@ -321,8 +321,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 
   bool inlinable = true;
   enum availability avail;
-  cgraph_node *caller = e->caller->global.inlined_to
-		        ? e->caller->global.inlined_to : e->caller;
+  cgraph_node *caller = (e->caller->inlined_to
+			 ? e->caller->inlined_to : e->caller);
   cgraph_node *callee = e->callee->ultimate_alias_target (&avail, caller);
 
   if (!callee->definition)
@@ -458,8 +458,8 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
 
   bool inlinable = true;
   enum availability avail;
-  cgraph_node *caller = e->caller->global.inlined_to
-		        ? e->caller->global.inlined_to : e->caller;
+  cgraph_node *caller = (e->caller->inlined_to
+			 ? e->caller->inlined_to : e->caller);
   cgraph_node *callee = e->callee->ultimate_alias_target (&avail, caller);
   tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller->decl);
   tree callee_tree
@@ -737,8 +737,8 @@ inline sreal
 compute_uninlined_call_time (struct cgraph_edge *edge,
 			     sreal uninlined_call_time)
 {
-  cgraph_node *caller = (edge->caller->global.inlined_to 
-			 ? edge->caller->global.inlined_to
+  cgraph_node *caller = (edge->caller->inlined_to
+			 ? edge->caller->inlined_to
 			 : edge->caller);
 
   sreal freq = edge->sreal_frequency ();
@@ -758,8 +758,8 @@ inline sreal
 compute_inlined_call_time (struct cgraph_edge *edge,
 			   sreal time)
 {
-  cgraph_node *caller = (edge->caller->global.inlined_to 
-			 ? edge->caller->global.inlined_to
+  cgraph_node *caller = (edge->caller->inlined_to
+			 ? edge->caller->inlined_to
 			 : edge->caller);
   sreal caller_time = ipa_fn_summaries->get (caller)->time;
 
@@ -789,9 +789,9 @@ big_speedup_p (struct cgraph_edge *e)
   sreal spec_time = estimate_edge_time (e, &unspec_time);
   sreal time = compute_uninlined_call_time (e, unspec_time);
   sreal inlined_time = compute_inlined_call_time (e, spec_time);
-  cgraph_node *caller = e->caller->global.inlined_to
-		        ? e->caller->global.inlined_to
-		        : e->caller;
+  cgraph_node *caller = (e->caller->inlined_to
+			 ? e->caller->inlined_to
+			 : e->caller);
   int limit = opt_for_fn (caller->decl, optimize) >= 3
 	      ? PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP)
 	      : PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP_O2);
@@ -959,7 +959,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
       reason = "--param max-inline-recursive-depth exceeded.";
       want_inline = false;
     }
-  else if (outer_node->global.inlined_to
+  else if (outer_node->inlined_to
 	   && (caller_freq = outer_node->callers->sreal_frequency ()) == 0)
     {
       reason = "caller frequency is 0";
@@ -1069,7 +1069,7 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
   if (node->alias)
     return false;
   /* Already inlined?  */
-  if (node->global.inlined_to)
+  if (node->inlined_to)
     return false;
   /* Does it have callers?  */
   if (!node->call_for_symbol_and_aliases (has_caller_p, NULL, true))
@@ -1101,8 +1101,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   class ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
   ipa_hints hints;
-  cgraph_node *caller = (edge->caller->global.inlined_to 
-			 ? edge->caller->global.inlined_to
+  cgraph_node *caller = (edge->caller->inlined_to
+			 ? edge->caller->inlined_to
 			 : edge->caller);
 
   growth = estimate_edge_growth (edge);
@@ -1196,7 +1196,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       if (growth > overall_growth
 	  /* ... and having only one caller which is not inlined ... */
 	  && callee_info->single_caller
-	  && !edge->caller->global.inlined_to
+	  && !edge->caller->inlined_to
 	  /* ... and edges executed only conditionally ... */
 	  && edge->sreal_frequency () < 1
 	  /* ... consider case where callee is not inline but caller is ... */
@@ -1365,8 +1365,8 @@ reset_edge_caches (struct cgraph_node *node)
   struct cgraph_node *where = node;
   struct ipa_ref *ref;
 
-  if (where->global.inlined_to)
-    where = where->global.inlined_to;
+  if (where->inlined_to)
+    where = where->inlined_to;
 
   if (edge_growth_cache != NULL)
     for (edge = where->callers; edge; edge = edge->next_caller)
@@ -1416,7 +1416,7 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
   struct ipa_ref *ref;
 
   if ((!node->alias && !ipa_fn_summaries->get (node)->inlinable)
-      || node->global.inlined_to)
+      || node->inlined_to)
     return;
   if (!bitmap_set_bit (updated_nodes, node->get_uid ()))
     return;
@@ -1544,8 +1544,8 @@ recursive_inlining (struct cgraph_edge *edge,
   int n = 0;
 
   node = edge->caller;
-  if (node->global.inlined_to)
-    node = node->global.inlined_to;
+  if (node->inlined_to)
+    node = node->inlined_to;
 
   if (DECL_DECLARED_INLINE_P (node->decl))
     limit = PARAM_VALUE (PARAM_MAX_INLINE_INSNS_RECURSIVE);
@@ -1593,7 +1593,7 @@ recursive_inlining (struct cgraph_edge *edge,
 
       depth = 1;
       for (cnode = curr->caller;
-	   cnode->global.inlined_to; cnode = cnode->callers->caller)
+	   cnode->inlined_to; cnode = cnode->callers->caller)
 	if (node->decl
 	    == curr->callee->ultimate_alias_target ()->decl)
           depth++;
@@ -1658,7 +1658,7 @@ recursive_inlining (struct cgraph_edge *edge,
        node = next)
     {
       next = symtab->next_function (node);
-      if (node->global.inlined_to == master_clone)
+      if (node->inlined_to == master_clone)
 	node->remove ();
     }
   master_clone->remove ();
@@ -1776,8 +1776,8 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
   if (edge->speculative && !speculation_useful_p (edge, false))
     {
       struct cgraph_node *node = edge->caller;
-      struct cgraph_node *where = node->global.inlined_to
-				  ? node->global.inlined_to : node;
+      struct cgraph_node *where = node->inlined_to
+				  ? node->inlined_to : node;
       auto_bitmap updated_nodes;
 
       if (edge->count.ipa ().initialized_p ())
@@ -1859,7 +1859,7 @@ inline_small_functions (void)
   free (order);
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (!node->global.inlined_to)
+    if (!node->inlined_to)
       {
 	if (!node->alias && node->analyzed
 	    && (node->has_gimple_body_p () || node->thunk.thunk_p)
@@ -1888,7 +1888,7 @@ inline_small_functions (void)
 		  if (opt_for_fn (n2->decl, optimize))
 		    {
 		      ipa_fn_summary *info2 = ipa_fn_summaries->get
-			 (n2->global.inlined_to ? n2->global.inlined_to : n2);
+			 (n2->inlined_to ? n2->inlined_to : n2);
 		      if (info2->scc_no)
 			break;
 		      info2->scc_no = id;
@@ -1952,8 +1952,8 @@ inline_small_functions (void)
 	    }
       if (update)
 	{
-	  struct cgraph_node *where = node->global.inlined_to
-				      ? node->global.inlined_to : node;
+	  struct cgraph_node *where = node->inlined_to
+				      ? node->inlined_to : node;
 	  ipa_update_overall_fn_summary (where);
 	  reset_edge_caches (where);
           update_caller_keys (&edge_heap, where,
@@ -2097,8 +2097,8 @@ inline_small_functions (void)
       if (edge->recursive_p ())
 	{
 	  where = edge->caller;
-	  if (where->global.inlined_to)
-	    where = where->global.inlined_to;
+	  if (where->inlined_to)
+	    where = where->inlined_to;
 	  if (!recursive_inlining (edge,
 				   opt_for_fn (edge->caller->decl,
 					       flag_indirect_inlining)
@@ -2128,7 +2128,7 @@ inline_small_functions (void)
 	     selective.  */
 
 	  where = edge->caller;
-	  while (where->global.inlined_to)
+	  while (where->inlined_to)
 	    {
 	      if (where->decl == callee->decl)
 		outer_node = where, depth++;
@@ -2147,7 +2147,7 @@ inline_small_functions (void)
 	  else if (depth && dump_file)
 	    fprintf (dump_file, " Peeling recursion with depth %i\n", depth);
 
-	  gcc_checking_assert (!callee->global.inlined_to);
+	  gcc_checking_assert (!callee->inlined_to);
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
@@ -2156,8 +2156,8 @@ inline_small_functions (void)
 	  update_callee_keys (&edge_heap, where, updated_nodes);
 	}
       where = edge->caller;
-      if (where->global.inlined_to)
-	where = where->global.inlined_to;
+      if (where->inlined_to)
+	where = where->inlined_to;
 
       /* Our profitability metric can depend on local properties
 	 such as number of inlinable calls and size of the function body.
@@ -2290,8 +2290,8 @@ flatten_function (struct cgraph_node *node, bool early, bool update)
 
   node->aux = NULL;
   if (update)
-    ipa_update_overall_fn_summary (node->global.inlined_to
-				   ? node->global.inlined_to : node);
+    ipa_update_overall_fn_summary (node->inlined_to
+				   ? node->inlined_to : node);
 }
 
 /* Inline NODE to all callers.  Worker for cgraph_for_node_and_aliases.
@@ -2305,7 +2305,7 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
   int *num_calls = (int *)data;
   bool callee_removed = false;
 
-  while (node->callers && !node->global.inlined_to)
+  while (node->callers && !node->inlined_to)
     {
       struct cgraph_node *caller = node->callers->caller;
 
@@ -2378,7 +2378,7 @@ dump_overall_stats (void)
   struct cgraph_node *node;
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (!node->global.inlined_to
+    if (!node->inlined_to
 	&& !node->alias)
       {
 	ipa_fn_summary *s = ipa_fn_summaries->get (node);
@@ -2670,8 +2670,8 @@ ipa_inline (void)
 	    }
 	  if (update)
 	    {
-	      struct cgraph_node *where = node->global.inlined_to
-					  ? node->global.inlined_to : node;
+	      struct cgraph_node *where = node->inlined_to
+					  ? node->inlined_to : node;
 	      reset_edge_caches (where);
 	      ipa_update_overall_fn_summary (where);
 	    }

@@ -901,7 +901,7 @@ propagate (void)
       ipa_reference_global_vars_info_t node_g;
 
       /* No need to produce summaries for inline clones.  */
-      if (node->global.inlined_to)
+      if (node->inlined_to)
 	continue;
 
       node_info = get_reference_vars_info (node);
@@ -977,7 +977,7 @@ write_node_summary_p (struct cgraph_node *node,
   ipa_reference_optimization_summary_t info;
 
   /* See if we have (non-empty) info.  */
-  if (!node->definition || node->global.inlined_to)
+  if (!node->definition || node->inlined_to)
     return false;
   info = get_reference_optimization_summary (node);
   if (!info)

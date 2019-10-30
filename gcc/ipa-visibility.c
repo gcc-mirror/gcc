@@ -707,7 +707,7 @@ function_and_variable_visibility (bool whole_program)
 		  || DECL_EXTERNAL (node->decl));
       if (cgraph_externally_visible_p (node, whole_program))
         {
-	  gcc_assert (!node->global.inlined_to);
+	  gcc_assert (!node->inlined_to);
 	  node->externally_visible = true;
 	}
       else

@@ -93,8 +93,8 @@ int
 simple_edge_hints (struct cgraph_edge *edge)
 {
   int hints = 0;
-  struct cgraph_node *to = (edge->caller->global.inlined_to
-			    ? edge->caller->global.inlined_to : edge->caller);
+  struct cgraph_node *to = (edge->caller->inlined_to
+			    ? edge->caller->inlined_to : edge->caller);
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   int to_scc_no = ipa_fn_summaries->get (to)->scc_no;
   int callee_scc_no = ipa_fn_summaries->get (callee)->scc_no;
@@ -147,8 +147,8 @@ do_estimate_edge_time (struct cgraph_edge *edge)
      may hurt optimization of the caller's hot path.  */
   if (edge->count.ipa ().initialized_p () && edge->maybe_hot_p ()
       && (edge->count.ipa ().apply_scale (2, 1)
-          > (edge->caller->global.inlined_to
-	     ? edge->caller->global.inlined_to->count.ipa ()
+	  > (edge->caller->inlined_to
+	     ? edge->caller->inlined_to->count.ipa ()
 	     : edge->caller->count.ipa ())))
     hints |= INLINE_HINT_known_hot;
 

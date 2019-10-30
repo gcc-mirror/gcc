@@ -2892,7 +2892,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 
   /* Because may-edges are not explicitely represented and vtable may be external,
      we may create the first reference to the object in the unit.  */
-  if (!callee || callee->global.inlined_to)
+  if (!callee || callee->inlined_to)
     {
 
       /* We are better to ensure we can refer to it.
@@ -2945,7 +2945,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 
   /* We cannot make edges to inline clones.  It is bug that someone removed
      the cgraph node too early.  */
-  gcc_assert (!callee->global.inlined_to);
+  gcc_assert (!callee->inlined_to);
 
   if (dump_file && !unreachable)
     {
@@ -3412,8 +3412,8 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
   ipa_check_create_edge_args ();
   top = IPA_EDGE_REF (cs);
-  new_root_info = IPA_NODE_REF (cs->caller->global.inlined_to
-				? cs->caller->global.inlined_to
+  new_root_info = IPA_NODE_REF (cs->caller->inlined_to
+				? cs->caller->inlined_to
 				: cs->caller);
   inlined_node_info = IPA_NODE_REF (cs->callee->function_symbol ());
 
@@ -3579,8 +3579,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
   class ipa_edge_args *args = IPA_EDGE_REF (cs);
   if (!args)
     return;
-  struct cgraph_node *new_root = cs->caller->global.inlined_to
-    ? cs->caller->global.inlined_to : cs->caller;
+  struct cgraph_node *new_root = cs->caller->inlined_to
+    ? cs->caller->inlined_to : cs->caller;
   class ipa_node_params *new_root_info = IPA_NODE_REF (new_root);
   class ipa_node_params *old_root_info = IPA_NODE_REF (cs->callee);
   int count, i;
@@ -3645,7 +3645,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 		  gcc_checking_assert (ok);
 
 		  clone = cs->caller;
-		  while (clone->global.inlined_to
+		  while (clone->inlined_to
 			 && clone != rdesc->cs->caller
 			 && IPA_NODE_REF (clone)->ipcp_orig_node)
 		    {
@@ -3870,16 +3870,16 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
 		 We need to find the duplicate that refers to our tree of
 		 inline clones.  */
 
-	      gcc_assert (dst->caller->global.inlined_to);
+	      gcc_assert (dst->caller->inlined_to);
 	      for (dst_rdesc = src_rdesc->next_duplicate;
 		   dst_rdesc;
 		   dst_rdesc = dst_rdesc->next_duplicate)
 		{
 		  struct cgraph_node *top;
-		  top = dst_rdesc->cs->caller->global.inlined_to
-		    ? dst_rdesc->cs->caller->global.inlined_to
+		  top = dst_rdesc->cs->caller->inlined_to
+		    ? dst_rdesc->cs->caller->inlined_to
 		    : dst_rdesc->cs->caller;
-		  if (dst->caller->global.inlined_to == top)
+		  if (dst->caller->inlined_to == top)
 		    break;
 		}
 	      gcc_assert (dst_rdesc);
@@ -3889,8 +3889,8 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
       else if (dst_jf->type == IPA_JF_PASS_THROUGH
 	       && src->caller == dst->caller)
 	{
-	  struct cgraph_node *inline_root = dst->caller->global.inlined_to
-	    ? dst->caller->global.inlined_to : dst->caller;
+	  struct cgraph_node *inline_root = dst->caller->inlined_to
+	    ? dst->caller->inlined_to : dst->caller;
 	  class ipa_node_params *root_info = IPA_NODE_REF (inline_root);
 	  int idx = ipa_get_jf_pass_through_formal_id (dst_jf);
 
