@@ -419,6 +419,13 @@ again:
 
       if (first)
 	{
+	  /* For the swapping logic below force vect_reduction_def
+	     for the reduction op in a SLP reduction group.  */
+	  if (!STMT_VINFO_DATA_REF (stmt_info)
+	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	      && (int)i == STMT_VINFO_REDUC_IDX (stmt_info)
+	      && def_stmt_info)
+	    dt = vect_reduction_def;
 	  oprnd_info->first_dt = dt;
 	  oprnd_info->first_op_type = TREE_TYPE (oprnd);
 	}
@@ -2041,7 +2048,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
       /* Mark the first element of the reduction chain as reduction to properly
 	 transform the node.  In the reduction analysis phase only the last
 	 element of the chain is marked as reduction.  */
-      STMT_VINFO_DEF_TYPE (stmt_info) = vect_reduction_def;
+      STMT_VINFO_DEF_TYPE (stmt_info)
+	= STMT_VINFO_DEF_TYPE (scalar_stmts.last ());
       STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
 	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
     }
@@ -2071,6 +2079,34 @@ vect_analyze_slp_instance (vec_info *vinfo,
   delete bst_map;
   if (node != NULL)
     {
+      /* If this is a reduction chain with a conversion in front
+         amend the SLP tree with a node for that.  */
+      if (!dr
+	  && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def)
+	{
+	  /* Get at the conversion stmt - we know it's the single use
+	     of the last stmt of the reduction chain.  */
+	  gimple *tem = vect_orig_stmt (scalar_stmts[group_size - 1])->stmt;
+	  use_operand_p use_p;
+	  gimple *use_stmt;
+	  bool r = single_imm_use (gimple_assign_lhs (tem), &use_p, &use_stmt);
+	  gcc_assert (r);
+	  next_info = vinfo->lookup_stmt (use_stmt);
+	  next_info = vect_stmt_to_vectorize (next_info);
+	  scalar_stmts = vNULL;
+	  scalar_stmts.create (group_size);
+	  for (unsigned i = 0; i < group_size; ++i)
+	    scalar_stmts.quick_push (next_info);
+	  slp_tree conv = vect_create_new_slp_node (scalar_stmts);
+	  SLP_TREE_CHILDREN (conv).quick_push (node);
+	  node = conv;
+	  /* We also have to fake this conversion stmt as SLP reduction group
+	     so we don't have to mess with too much code elsewhere.  */
+	  REDUC_GROUP_FIRST_ELEMENT (next_info) = next_info;
+	  REDUC_GROUP_NEXT_ELEMENT (next_info) = NULL;
+	}
+
       /* Calculate the unrolling factor based on the smallest type.  */
       poly_uint64 unrolling_factor
 	= calculate_unrolling_factor (max_nunits, group_size);
