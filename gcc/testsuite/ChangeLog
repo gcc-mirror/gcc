@@ -1,3 +1,12 @@
+2019-10-30  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	Backport from mainline
+	2019-07-09  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* gcc.target/mips/cfgcleanup-jalr1.c: New test.
+	* gcc.target/mips/cfgcleanup-jalr2.c: New test.
+	* gcc.target/mips/cfgcleanup-jalr3.c: New test.
+
 2019-10-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.c-torture/compile/pr72802.c: Skip for Darwin.
