@@ -3325,6 +3325,24 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (1) && OP_SAME (2);
 
+	/* Virtual table call.  */
+	case OBJ_TYPE_REF:
+	  {
+	    if (!operand_equal_p (OBJ_TYPE_REF_EXPR (arg0),
+				  OBJ_TYPE_REF_EXPR (arg1), flags))
+	      return false;
+	    if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg0))
+		!= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg1)))
+	      return false;
+	    if (!operand_equal_p (OBJ_TYPE_REF_OBJECT (arg0),
+				  OBJ_TYPE_REF_OBJECT (arg1), flags))
+	      return false;
+	    if (!types_same_for_odr (obj_type_ref_class (arg0),
+				     obj_type_ref_class (arg1)))
+	      return false;
+	    return true;
+	  }
+
 	default:
 	  return false;
 	}

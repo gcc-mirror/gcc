@@ -8027,6 +8027,12 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 	      inchash::add_expr (TARGET_EXPR_SLOT (t), hstate, flags);
 	      return;
 
+	    /* Virtual table call.  */
+	    case OBJ_TYPE_REF:
+	      inchash::add_expr (OBJ_TYPE_REF_EXPR (t), hstate, flags);
+	      inchash::add_expr (OBJ_TYPE_REF_TOKEN (t), hstate, flags);
+	      inchash::add_expr (OBJ_TYPE_REF_OBJECT (t), hstate, flags);
+	      return;
 	    default:
 	      break;
 	    }
