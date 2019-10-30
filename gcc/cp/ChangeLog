@@ -1,5 +1,12 @@
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* constexpr.c (cxx_replaceable_global_alloc_fn): Don't return true
+	for placement new.
+	(cxx_placement_new_fn, is_std_construct_at): New functions.
+	(cxx_eval_call_expression): Allow placement new in std::construct_at.
+	(potential_constant_expression_1): Likewise.
+
 	* typeck.c (decl_in_std_namespace_p): Return true also for decls
 	in inline namespaces inside of std namespace.
 

@@ -1601,7 +1601,41 @@ cxx_replaceable_global_alloc_fn (tree fndecl)
 {
   return (cxx_dialect >= cxx2a
 	  && IDENTIFIER_NEWDEL_OP_P (DECL_NAME (fndecl))
-	  && CP_DECL_CONTEXT (fndecl) == global_namespace);
+	  && CP_DECL_CONTEXT (fndecl) == global_namespace
+	  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+	      || DECL_IS_OPERATOR_DELETE_P (fndecl)));
+}
+
+/* Return true if FNDECL is a placement new function that should be
+   useable during constant expression evaluation of std::construct_at.  */
+
+static inline bool
+cxx_placement_new_fn (tree fndecl)
+{
+  if (cxx_dialect >= cxx2a
+      && IDENTIFIER_NEW_OP_P (DECL_NAME (fndecl))
+      && CP_DECL_CONTEXT (fndecl) == global_namespace
+      && !DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+      && TREE_CODE (TREE_TYPE (fndecl)) == FUNCTION_TYPE)
+    {
+      tree first_arg = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+      if (TREE_VALUE (first_arg) == ptr_type_node
+	  && TREE_CHAIN (first_arg) == void_list_node)
+	return true;
+    }
+  return false;
+}
+
+/* Return true if FNDECL is std::construct_at.  */
+
+static inline bool
+is_std_construct_at (tree fndecl)
+{
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  return name && id_equal (name, "construct_at");
 }
 
 /* Subroutine of cxx_eval_constant_expression.
@@ -1737,6 +1771,27 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      *non_constant_p = true;
 	      return t;
 	    }
+	}
+      /* Allow placement new in std::construct_at, just return the second
+	 argument.  */
+      if (cxx_placement_new_fn (fun)
+	  && ctx->call
+	  && ctx->call->fundef
+	  && is_std_construct_at (ctx->call->fundef->decl))
+	{
+	  const int nargs = call_expr_nargs (t);
+	  tree arg1 = NULL_TREE;
+	  for (int i = 0; i < nargs; ++i)
+	    {
+	      tree arg = CALL_EXPR_ARG (t, i);
+	      arg = cxx_eval_constant_expression (ctx, arg, false,
+						  non_constant_p, overflow_p);
+	      VERIFY_CONSTANT (arg);
+	      if (i == 1)
+		arg1 = arg;
+	    }
+	  gcc_assert (arg1);
+	  return arg1;
 	}
       if (!ctx->quiet)
 	{
@@ -6453,7 +6508,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		    && !fndecl_built_in_p (fun)
 		    /* In C++2a, replaceable global allocation functions
 		       are constant expressions.  */
-		    && !cxx_replaceable_global_alloc_fn (fun))
+		    && !cxx_replaceable_global_alloc_fn (fun)
+		    /* Allow placement new in std::construct_at.  */
+		    && (!cxx_placement_new_fn (fun)
+			|| current_function_decl == NULL_TREE
+			|| !is_std_construct_at (current_function_decl)))
 		  {
 		    if (flags & tf_error)
 		      {
