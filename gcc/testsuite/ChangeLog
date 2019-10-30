@@ -1,3 +1,8 @@
+2019-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/conversion/ptrmem2.C: Adjust for error + inform.
+	* g++.dg/gomp/tpl-atomic-2.C: Likewise.
+
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
 	PR lto/91393
