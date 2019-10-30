@@ -85,7 +85,7 @@ func_checker::~func_checker ()
 /* Verifies that trees T1 and T2 are equivalent from perspective of ICF.  */
 
 bool
-func_checker::compare_ssa_name (tree t1, tree t2)
+func_checker::compare_ssa_name (const_tree t1, const_tree t2)
 {
   gcc_assert (TREE_CODE (t1) == SSA_NAME);
   gcc_assert (TREE_CODE (t2) == SSA_NAME);
@@ -139,7 +139,7 @@ func_checker::compare_edge (edge e1, edge e2)
    come from functions FUNC1 and FUNC2.  */
 
 bool
-func_checker::compare_decl (tree t1, tree t2)
+func_checker::compare_decl (const_tree t1, const_tree t2)
 {
   if (!auto_var_in_fn_p (t1, m_source_func_decl)
       || !auto_var_in_fn_p (t2, m_target_func_decl))
@@ -154,7 +154,7 @@ func_checker::compare_decl (tree t1, tree t2)
     return return_false ();
 
   bool existed_p;
-  tree &slot = m_decl_map.get_or_insert (t1, &existed_p);
+  const_tree &slot = m_decl_map.get_or_insert (t1, &existed_p);
   if (existed_p)
     return return_with_debug (slot == t2);
   else
@@ -258,9 +258,6 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return return_false ();
 
-  tree tree1 = (tree)const_cast<tree> (t1);
-  tree tree2 = (tree)const_cast<tree> (t2);
-
   switch (TREE_CODE (t1))
     {
     case FUNCTION_DECL:
@@ -268,11 +265,11 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
 	 before we start comparing bodies.  */
       return true;
     case VAR_DECL:
-      return return_with_debug (compare_variable_decl (tree1, tree2));
+      return return_with_debug (compare_variable_decl (t1, t2));
     case LABEL_DECL:
       {
-	int *bb1 = m_label_bb_map.get (tree1);
-	int *bb2 = m_label_bb_map.get (tree2);
+	int *bb1 = m_label_bb_map.get (t1);
+	int *bb2 = m_label_bb_map.get (t2);
 	/* Labels can point to another function (non-local GOTOs).  */
 	return return_with_debug (bb1 != NULL && bb2 != NULL && *bb1 == *bb2);
       }
@@ -280,9 +277,9 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
     case PARM_DECL:
     case RESULT_DECL:
     case CONST_DECL:
-      return compare_decl (tree1, tree2);
+      return compare_decl (t1, t2);
     case SSA_NAME:
-      return compare_ssa_name (tree1, tree2);
+      return compare_ssa_name (t1, t2);
     default:
       break;
     }
@@ -342,7 +339,7 @@ func_checker::compare_asm_inputs_outputs (tree t1, tree t2)
 /* Verifies that trees T1 and T2 do correspond.  */
 
 bool
-func_checker::compare_variable_decl (tree t1, tree t2)
+func_checker::compare_variable_decl (const_tree t1, const_tree t2)
 {
   bool ret = false;
 
@@ -356,7 +353,7 @@ func_checker::compare_variable_decl (tree t1, tree t2)
     return return_false_with_msg ("DECL_HARD_REGISTER are different");
 
   if (DECL_HARD_REGISTER (t1)
-      && DECL_ASSEMBLER_NAME (t1) != DECL_ASSEMBLER_NAME (t2))
+      && DECL_ASSEMBLER_NAME_RAW (t1) != DECL_ASSEMBLER_NAME_RAW (t2))
     return return_false_with_msg ("HARD REGISTERS are different");
 
   /* Symbol table variables are known to match before we start comparing
@@ -416,7 +413,7 @@ func_checker::parse_labels (sem_bb *bb)
 
       if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
 	{
-	  tree t = gimple_label_label (label_stmt);
+	  const_tree t = gimple_label_label (label_stmt);
 	  gcc_assert (TREE_CODE (t) == LABEL_DECL);
 
 	  m_label_bb_map.put (t, bb->bb->index);

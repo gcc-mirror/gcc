@@ -1,5 +1,15 @@
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Use
+	const_tree as function argument.
+	(func_checker::compare_decl): Likewise.
+	(func_checker::operand_equal_p): Likewise.
+	(func_checker::compare_variable_decl): Likewise.
+	(func_checker::parse_labels): Likewise.
+	* ipa-icf-gimple.h: Likewise.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.c (func_checker::compatible_types_p):
 	Do not compare alias sets.  It's handled by operand_equal_p.
 
