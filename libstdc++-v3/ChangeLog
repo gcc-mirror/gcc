@@ -1,5 +1,8 @@
 2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/concepts (std::ranges::swap): Use a single overload for
+	the non-array cases, and switch using if-constexpr.
+
 	* include/bits/stl_iterator.h (__normal_iterator::iterator_concept):
 	Guard with __cpp_lib_concepts macro.
 
