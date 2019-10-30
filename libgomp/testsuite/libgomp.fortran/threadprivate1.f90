@@ -15,7 +15,7 @@ end module threadprivate1
 !$omp barrier
   if (d .ne. omp_get_thread_num () + 6.5) l = .true.
 !$omp end parallel
-  if (l) STOP 1
+  if (l) stop 1
 end
 
 ! { dg-final { cleanup-modules "threadprivate1" } }

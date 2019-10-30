@@ -33,7 +33,7 @@ program main
     do concurrent (i = 1:nsplit)
         pi(i) = sum(compute( low(i), high(i) ))
     end do
-    if (abs (sum(pi) - atan(1.0d0)) > 1e-5) STOP 1
+    if (abs (sum(pi) - atan(1.0d0)) > 1e-5) stop 1
     
 contains
     

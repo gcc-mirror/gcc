@@ -17,5 +17,5 @@
 	e = e + 1
       end if
 !$omp end parallel
-      if (e.ne.0) STOP 1
+      if (e.ne.0) stop 1
       end

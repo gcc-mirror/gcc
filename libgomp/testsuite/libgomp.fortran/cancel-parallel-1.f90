@@ -5,6 +5,6 @@
 
   !$omp parallel num_threads(32)
     !$omp cancel parallel
-    if (omp_get_cancellation ()) STOP 1
+    if (omp_get_cancellation ()) stop 1
   !$omp end parallel
 end

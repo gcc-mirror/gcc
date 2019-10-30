@@ -8,5 +8,5 @@
         end do
       end do
     end do
-  if (i .ne. 18 .or. j .ne. 7 .or. k .ne. 6) STOP 1
+  if (i .ne. 18 .or. j .ne. 7 .or. k .ne. 6) stop 1
 end

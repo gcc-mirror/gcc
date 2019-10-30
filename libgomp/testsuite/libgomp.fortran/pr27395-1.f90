@@ -8,7 +8,7 @@ program pr27395_1
   integer, dimension(n) :: sumarray
   call foo(n,m,sumarray)
   do i=1,n
-    if (sumarray(i).ne.m*i) STOP 1
+    if (sumarray(i).ne.m*i) stop 1
   end do
 end program pr27395_1
 

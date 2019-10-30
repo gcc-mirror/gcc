@@ -28,7 +28,7 @@ contains
     double precision :: diff, a(*), b(*)
     do i = 1, n
       diff = a(i) - b(i)
-      if (diff > EPS .or. -diff > EPS) STOP 1
+      if (diff > EPS .or. -diff > EPS) stop 1
     end do
   end subroutine
 

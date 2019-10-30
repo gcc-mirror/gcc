@@ -67,6 +67,6 @@ contains
       l = l .or. f .ne. 'YY' .or. p .ne. 'm3' .or. r .ne. 'M3'
     end if
 !$omp end parallel
-    if (l) STOP 1
+    if (l) stop 1
   end subroutine test
 end

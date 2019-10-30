@@ -16,7 +16,7 @@ contains
     !$omp end target
     !$omp target update if (n > 256) from (p)
     do i = 1, n
-      if (p(i) /= i * iand (i, 63)) STOP 1
+      if (p(i) /= i * iand (i, 63)) stop 1
       v(i) = v(i) + 1
     end do
     !$omp target update if (n > 256) to (v(1:n))
@@ -28,8 +28,8 @@ contains
     !$omp end target
     !$omp end target data
     do i = 1, n
-      if (q(i) /= (v(i) - 1) * w(i)) STOP 2
-      if (p(i) /= q(i) + w(i)) STOP 3
+      if (q(i) /= (v(i) - 1) * w(i)) stop 2
+      if (p(i) /= q(i) + w(i)) stop 3
     end do
   end subroutine
 end module target6
@@ -44,7 +44,7 @@ end module target6
   end do
   call foo (p, v, w, n)
   do i = 1, n
-    if (p(i) /= (i + 1) * iand (i, 63)) STOP 4
+    if (p(i) /= (i + 1) * iand (i, 63)) stop 4
   end do
   deallocate (p, v, w)
 end

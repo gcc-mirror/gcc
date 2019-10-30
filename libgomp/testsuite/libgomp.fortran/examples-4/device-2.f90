@@ -15,10 +15,10 @@ program e_57_2
   end do
 
   do i = 1, num
-    if (offload(i)) STOP 1
+    if (offload(i)) stop 1
   end do
 
   do i = num+1, N
-    if (.not. offload(i)) STOP 2
+    if (.not. offload(i)) stop 2
   end do
 end program

@@ -12,5 +12,5 @@
   deallocate (a)
   l = l .or. allocated (a)
 !$omp end parallel
-  if (l) STOP 1
+  if (l) stop 1
 end

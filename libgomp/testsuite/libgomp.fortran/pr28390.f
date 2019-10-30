@@ -5,5 +5,5 @@
 !$omp parallel do lastprivate(i)
       do i=1,100
       end do
-      if (i.ne.101) STOP 1
+      if (i.ne.101) stop 1
       end
