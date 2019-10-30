@@ -1,5 +1,8 @@
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* g++.dg/cpp2a/constexpr-new5.C: New test.
+
 	* g++.dg/cpp0x/Wpessimizing-move6.C: New test.
 
 2019-10-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
