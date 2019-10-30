@@ -278,7 +278,7 @@ lto_destroy_simple_output_block (struct lto_simple_output_block *ob)
   char *section_name;
   struct lto_simple_header header;
 
-  section_name = lto_get_section_name (ob->section_type, NULL, NULL);
+  section_name = lto_get_section_name (ob->section_type, NULL, 0, NULL);
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 

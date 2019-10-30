@@ -2812,8 +2812,8 @@ ipa_sra_read_summary (void)
   while ((file_data = file_data_vec[j++]))
     {
       size_t len;
-      const char *data = lto_get_section_data (file_data, LTO_section_ipa_sra,
-					       NULL, &len);
+      const char *data
+	= lto_get_summary_section_data (file_data, LTO_section_ipa_sra, &len);
       if (data)
         isra_read_summary_section (file_data, data, len);
     }

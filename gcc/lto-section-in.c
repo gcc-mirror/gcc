@@ -131,10 +131,11 @@ struct lto_data_header
 const char *
 lto_get_section_data (struct lto_file_decl_data *file_data,
 		      enum lto_section_type section_type,
-		      const char *name,
+		      const char *name, int order,
 		      size_t *len, bool decompress)
 {
-  const char *data = (get_section_f) (file_data, section_type, name, len);
+  const char *data = (get_section_f) (file_data, section_type, name, order,
+				      len);
   const size_t header_length = sizeof (struct lto_data_header);
   struct lto_data_header *header;
   struct lto_buffer buffer;
@@ -172,15 +173,27 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
   return data;
 }
 
+/* Return a char pointer to the start of a data stream for an LTO pass.
+   FILE_DATA indicates where to obtain the data.
+   SECTION_TYPE is the type of information to be obtained.
+   LEN is the size of the data returned.  */
+
+const char *
+lto_get_summary_section_data (struct lto_file_decl_data *file_data,
+			      enum lto_section_type section_type, size_t *len)
+{
+  return lto_get_section_data (file_data, section_type, NULL, 0, len);
+}
+
 /* Get the section data without any header parsing or uncompression.  */
 
 const char *
 lto_get_raw_section_data (struct lto_file_decl_data *file_data,
 			  enum lto_section_type section_type,
-			  const char *name,
+			  const char *name, int order,
 			  size_t *len)
 {
-  return (get_section_f) (file_data, section_type, name, len);
+  return (get_section_f) (file_data, section_type, name, order, len);
 }
 
 /* Free the data found from the above call.  The first three
@@ -235,7 +248,8 @@ lto_create_simple_input_block (struct lto_file_decl_data *file_data,
 			       enum lto_section_type section_type,
 			       const char **datar, size_t *len)
 {
-  const char *data = lto_get_section_data (file_data, section_type, NULL, len);
+  const char *data = lto_get_section_data (file_data, section_type, NULL, 0,
+					   len);
   const struct lto_simple_header * header
     = (const struct lto_simple_header *) data;
 

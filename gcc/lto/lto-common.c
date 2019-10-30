@@ -2204,7 +2204,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
 #endif
 
   /* Read and verify LTO section.  */
-  data = lto_get_section_data (file_data, LTO_section_lto, NULL, &len, false);
+  data = lto_get_summary_section_data (file_data, LTO_section_lto, &len);
   if (data == NULL)
     {
       fatal_error (input_location, "bytecode stream in file %qs generated "
@@ -2217,7 +2217,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
 		     file_data->lto_section_header.minor_version,
 		     file_data->file_name);
 
-  data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
+  data = lto_get_summary_section_data (file_data, LTO_section_decls, &len);
   if (data == NULL)
     {
       internal_error ("cannot read %<LTO_section_decls%> from %s",
@@ -2396,15 +2396,15 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
 
 static const char *
 get_section_data (struct lto_file_decl_data *file_data,
-		      enum lto_section_type section_type,
-		      const char *name,
-		      size_t *len)
+		  enum lto_section_type section_type,
+		  const char *name, int order,
+		  size_t *len)
 {
   htab_t section_hash_table = file_data->section_hash_table;
   struct lto_section_slot *f_slot;
   struct lto_section_slot s_slot;
   const char *section_name = lto_get_section_name (section_type, name,
-						   file_data);
+						   order, file_data);
   char *data = NULL;
 
   *len = 0;

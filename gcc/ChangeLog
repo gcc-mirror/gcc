@@ -1,3 +1,53 @@
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91393
+	PR lto/88220
+	* cgraph.c (cgraph_node::get_create): Overwrite node->order
+	from a first_clone in order to get proper LTO section
+	in LTO stream.
+	(cgraph_node::get_untransformed_body):
+	Use lto_get_section_data where symtab_node::order
+	must be provided.
+	* cgraphclones.c (cgraph_node::find_replacement):
+	Update also symbol order.
+	* ipa-fnsummary.c (ipa_fn_summary_read):
+	Use new function lto_get_summary_section_data.
+	* ipa-hsa.c (ipa_hsa_read_summary): Likewise.
+	* ipa-icf.c (sem_item_optimizer::read_summary):
+	Likewise.
+	* ipa-prop.c (ipa_prop_read_jump_functions):
+	Likewise.
+	(ipcp_read_transformation_summaries): Likewise.
+	* ipa-sra.c (ipa_sra_read_summary): Likewise.
+	* lto-cgraph.c (input_node): Add also order_base.
+	(input_varpool_node): Likewise.
+	(input_cgraph_1): Assign the order_base.
+	(input_cgraph_opt_summary): Use new lto_get_summary_section_data.
+	* lto-opts.c (lto_write_options): Pass new argument.
+	* lto-section-in.c (lto_get_section_data): Add new argumente order.
+	(lto_get_summary_section_data): New.
+	(lto_get_raw_section_data): Add order argument.
+	(lto_create_simple_input_block): Likewise.
+	* lto-section-out.c (lto_destroy_simple_output_block):
+	Likewise.
+	* lto-streamer-in.c (lto_input_toplevel_asms):
+	Use lto_get_summary_section_data.
+	(lto_input_mode_table): Likewise.
+	* lto-streamer-out.c (produce_asm): Pass symtab_node::order.
+	(lto_output_toplevel_asms): Pass new argument.
+	(copy_function_or_variable): Likewise.
+	(produce_lto_section):Likewise.
+	(produce_symtab): Likewise.
+	(lto_write_mode_table): Likewise.
+	(produce_asm_for_decls): Likewise.
+	* lto-streamer.c (lto_get_section_name): Concat symbol name
+	and symbol order.
+	* lto-streamer.h (lto_get_section_data): Add order argument.
+	(lto_get_summary_section_data): New.
+	(lto_get_raw_section_data): Add order argument.
+	(lto_get_section_name): Likewise.
+	* varpool.c (varpool_node::get_constructor): Pass order argument.
+
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92262

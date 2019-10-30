@@ -1,3 +1,10 @@
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91393
+	PR lto/88220
+	* lto-common.c (lto_file_finalize): Use lto_get_summary_section_data.
+	(get_section_data): Add order argument.
+
 2019-10-29  Martin Liska  <mliska@suse.cz>
 
 	* lto.c (do_whole_program_analysis): Pass

@@ -1972,10 +1972,12 @@ produce_asm (struct output_block *ob, tree fn)
   if (section_type == LTO_section_function_body)
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fn));
-      section_name = lto_get_section_name (section_type, name, NULL);
+      section_name = lto_get_section_name (section_type, name,
+					   symtab_node::get (fn)->order,
+					   NULL);
     }
   else
-    section_name = lto_get_section_name (section_type, NULL, NULL);
+    section_name = lto_get_section_name (section_type, NULL, 0, NULL);
 
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
@@ -2278,7 +2280,7 @@ lto_output_toplevel_asms (void)
 
   streamer_write_string_cst (ob, ob->main_stream, NULL_TREE);
 
-  section_name = lto_get_section_name (LTO_section_asm, NULL, NULL);
+  section_name = lto_get_section_name (LTO_section_asm, NULL, 0, NULL);
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 
@@ -2311,7 +2313,7 @@ copy_function_or_variable (struct symtab_node *node)
   size_t len;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
   char *section_name =
-    lto_get_section_name (LTO_section_function_body, name, NULL);
+    lto_get_section_name (LTO_section_function_body, name, node->order, NULL);
   size_t i, j;
   struct lto_in_decl_state *in_state;
   struct lto_out_decl_state *out_state = lto_get_out_decl_state ();
@@ -2325,7 +2327,8 @@ copy_function_or_variable (struct symtab_node *node)
   name = lto_get_decl_name_mapping (file_data, name);
 
   data = lto_get_raw_section_data (file_data, LTO_section_function_body,
-                                   name, &len);
+				   name, node->order - file_data->order_base,
+				   &len);
   gcc_assert (data);
 
   /* Do a bit copy of the function body.  */
@@ -2410,7 +2413,7 @@ produce_lto_section ()
   /* Stream LTO meta section.  */
   output_block *ob = create_output_block (LTO_section_lto);
 
-  char * section_name = lto_get_section_name (LTO_section_lto, NULL, NULL);
+  char * section_name = lto_get_section_name (LTO_section_lto, NULL, 0, NULL);
   lto_begin_section (section_name, false);
   free (section_name);
 
@@ -2784,7 +2787,7 @@ static void
 produce_symtab (struct output_block *ob)
 {
   struct streamer_tree_cache_d *cache = ob->writer_cache;
-  char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
+  char *section_name = lto_get_section_name (LTO_section_symtab, NULL, 0, NULL);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   lto_symtab_encoder_iterator lsei;
 
@@ -2884,7 +2887,7 @@ lto_write_mode_table (void)
   streamer_write_bitpack (&bp);
 
   char *section_name
-    = lto_get_section_name (LTO_section_mode_table, NULL, NULL);
+    = lto_get_section_name (LTO_section_mode_table, NULL, 0, NULL);
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 
@@ -2928,7 +2931,7 @@ produce_asm_for_decls (void)
 
   memset (&header, 0, sizeof (struct lto_decl_header));
 
-  section_name = lto_get_section_name (LTO_section_decls, NULL, NULL);
+  section_name = lto_get_section_name (LTO_section_decls, NULL, 0, NULL);
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 

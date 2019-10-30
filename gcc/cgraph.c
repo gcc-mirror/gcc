@@ -547,6 +547,7 @@ cgraph_node::get_create (tree decl)
     {
       first_clone->clone_of = node;
       node->clones = first_clone;
+      node->order = first_clone->order;
       symtab->symtab_prevail_in_asm_name_hash (node);
       node->decl->decl_with_vis.symtab_node = node;
       if (dump_file)
@@ -3546,12 +3547,17 @@ cgraph_node::get_untransformed_body (void)
   struct lto_in_decl_state *decl_state
 	 = lto_get_function_in_decl_state (file_data, decl);
 
+  cgraph_node *origin = this;
+  while (origin->clone_of)
+    origin = origin->clone_of;
+
+  int stream_order = origin->order - file_data->order_base;
   data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len, decl_state->compressed);
+			       name, stream_order, &len,
+			       decl_state->compressed);
   if (!data)
-    fatal_error (input_location, "%s: section %s is missing",
-		 file_data->file_name,
-		 name);
+    fatal_error (input_location, "%s: section %s.%d is missing",
+		 file_data->file_name, name, stream_order);
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 

@@ -672,6 +672,11 @@ cgraph_node::find_replacement (void)
 	  n->clone_of = next_inline_clone;
 	  n = n->next_sibling_clone;
 	}
+
+      /* Update order in order to be able to find a LTO section
+	 with function body.  */
+      replacement->order = order;
+
       return replacement;
     }
   else
