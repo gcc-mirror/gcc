@@ -1,5 +1,19 @@
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Call
+	compare_operand.
+	(func_checker::compare_memory_operand): Remove.
+	(func_checker::compare_cst_or_decl): Remove.
+	(func_checker::operand_equal_valueize): Do not handle
+	FIELD_DECL.
+	(func_checker::compare_gimple_call): Call compare_operand.
+	(func_checker::compare_gimple_assign): Likewise.
+	* ipa-icf-gimple.h: Remove compare_cst_or_decl.
+	* ipa-icf.c (sem_function::icf_handled_component_p): Remove.
+	* ipa-icf.h (icf_handled_component_p): Remove.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.c (func_checker::hash_operand): New.
 	(func_checker::compare_cst_or_decl): Remove handling
 	of FIELD_DECL.
