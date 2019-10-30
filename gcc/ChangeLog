@@ -1,6 +1,19 @@
 2019-10-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (ENDFILE_SPEC): Correct whitespace in the
+	spec.
+
+	Backport from mainline
+	2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (ENDFILE_SPEC): New.
+
+2019-10-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (darwin_emit_unwind_label): New.
