@@ -1,3 +1,10 @@
+2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/range_access*.cc: Move to ...
+	* testsuite/24_iterators/range_access/range_access*.cc: ... here.
+	* testsuite/24_iterators/range_access/range_access_cpp20_neg.cc: New
+	test.
+
 2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/concepts (std::ranges::swap): Use a single overload for
