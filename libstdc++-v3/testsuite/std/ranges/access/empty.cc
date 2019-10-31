@@ -18,7 +18,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
 
-#include <iterator> // N.B. should be <ranges>
+#include <ranges>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 

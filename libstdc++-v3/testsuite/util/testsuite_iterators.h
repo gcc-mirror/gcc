@@ -95,7 +95,7 @@ namespace __gnu_test
 #if __cplusplus >= 201103L
       template<class U>
       typename std::enable_if<std::is_assignable<T&, U>::value>::type
-      operator=(U&& new_val)
+      operator=(U&& new_val) const
       {
 	ITERATOR_VERIFY(SharedInfo->writtento[ptr - SharedInfo->first] == 0);
 	SharedInfo->writtento[ptr - SharedInfo->first] = 1;
@@ -720,6 +720,25 @@ namespace __gnu_test
       typename Iter<T>::ContainerType bounds;
     };
 
+  template<typename T>
+    using test_contiguous_range
+      = test_range<T, contiguous_iterator_wrapper>;
+  template<typename T>
+    using test_random_access_range
+      = test_range<T, random_access_iterator_wrapper>;
+  template<typename T>
+    using test_bidirectional_range
+      = test_range<T, bidirectional_iterator_wrapper>;
+  template<typename T>
+    using test_forward_range
+      = test_range<T, forward_iterator_wrapper>;
+  template<typename T>
+    using test_input_range
+      = test_range<T, input_iterator_wrapper>;
+  template<typename T>
+    using test_output_range
+      = test_range<T, output_iterator_wrapper>;
+
   // A type meeting the minimum std::sized_range requirements
   template<typename T, template<typename> class Iter>
     struct test_sized_range : test_range<T, Iter>
@@ -729,6 +748,25 @@ namespace __gnu_test
       std::size_t size() const noexcept
       { return this->bounds.size(); }
     };
+
+  template<typename T>
+    using test_contiguous_sized_range
+      = test_sized_range<T, contiguous_iterator_wrapper>;
+  template<typename T>
+    using test_random_access_sized_range
+      = test_sized_range<T, random_access_iterator_wrapper>;
+  template<typename T>
+    using test_bidirectional_sized_range
+      = test_sized_range<T, bidirectional_iterator_wrapper>;
+  template<typename T>
+    using test_forward_sized_range
+      = test_sized_range<T, forward_iterator_wrapper>;
+  template<typename T>
+    using test_input_sized_range
+      = test_sized_range<T, input_iterator_wrapper>;
+  template<typename T>
+    using test_output_sized_range
+      = test_sized_range<T, output_iterator_wrapper>;
 #endif // C++20
 } // namespace __gnu_test
 #endif // _TESTSUITE_ITERATORS

@@ -1,5 +1,40 @@
 2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/user.cfg.in: Add new header.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* include/std/ranges: New header.
+	(ranges::sentinel_t, ranges::range_value_t, ranges::range_reference_t)
+	(ranges::range_rvalue_reference_t, ranges::sized_range)
+	(ranges::output_range, ranges::input_ranges, ranges::forward_range)
+	(ranges::bidirectional_range, ranges::random_access_range)
+	(ranges::contiguous_range, ranges::common::range): Define.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Check
+	that disabled_sized_sentinel can be specialized.
+	* testsuite/std/ranges/access/begin.cc: Include <ranges> instead of
+	<iterator>.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/empty.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/end_neg.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/access/size.cc: Likewise.
+	* testsuite/std/ranges/access/size_neg.cc: Likewise.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: New test.
+	* testsuite/std/ranges/range.cc: New test.
+	* testsuite/std/ranges/refinements.cc: New test.
+	* testsuite/std/ranges/sized.cc: New test.
+	* testsuite/util/testsuite_iterators.h: Add aliases for range types.
+	(output_iterator_wrapper::WritableObject::operator=): Add const
+	qualifier so that output_iterator_wrapper satisfies writable.
+
 	* testsuite/20_util/add_pointer/value.cc: Check void types.
 
 	* include/bits/range_access.h (__sizable): Rename to __sentinel_size.
