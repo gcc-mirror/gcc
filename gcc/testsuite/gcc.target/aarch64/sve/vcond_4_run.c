@@ -14,7 +14,7 @@
 
 #define RUN_LOOP(TYPE1, TYPE2, CMP, EXPECT_INVALID)			\
   {									\
-    TYPE1 dest1[N], dest2[N], dest3[N], src[N];				\
+    TYPE1 dest[N], src[N];						\
     TYPE2 a[N], b[N];							\
     for (int i = 0; i < N; ++i)						\
       {									\
@@ -34,31 +34,19 @@
 	asm volatile ("" ::: "memory");					\
       }									\
     feclearexcept (FE_ALL_EXCEPT);					\
-    test_##TYPE1##_##TYPE2##_##CMP##_var (dest1, src, 11, a, b, N);	\
-    test_##TYPE1##_##TYPE2##_##CMP##_zero (dest2, src, 22, a, N);	\
-    test_##TYPE1##_##TYPE2##_##CMP##_sel (dest3, 33, 44, a, 9, N);	\
+    test_##TYPE1##_##TYPE2##_##CMP##_var (dest, src, 11, a, b, N);	\
     if (TEST_EXCEPTIONS							\
 	&& !fetestexcept (FE_INVALID) != !(EXPECT_INVALID))		\
       __builtin_abort ();						\
     for (int i = 0; i < N; ++i)						\
-      {									\
-	if (dest1[i] != (CMP (a[i], b[i]) ? src[i] : 11))		\
-	  __builtin_abort ();						\
-	if (dest2[i] != (CMP (a[i], 0) ? src[i] : 22))			\
-	  __builtin_abort ();						\
-	if (dest3[i] != (CMP (a[i], 9) ? 33 : 44))			\
-	  __builtin_abort ();						\
-      }									\
+      if (dest[i] != (CMP (a[i], b[i]) ? src[i] : 11))			\
+	__builtin_abort ();						\
   }
 
 #define RUN_CMP(CMP, EXPECT_INVALID) \
   RUN_LOOP (int32_t, float, CMP, EXPECT_INVALID) \
   RUN_LOOP (uint32_t, float, CMP, EXPECT_INVALID) \
-  RUN_LOOP (int64_t, float, CMP, EXPECT_INVALID) \
-  RUN_LOOP (uint64_t, float, CMP, EXPECT_INVALID) \
   RUN_LOOP (float, float, CMP, EXPECT_INVALID) \
-  RUN_LOOP (int32_t, double, CMP, EXPECT_INVALID) \
-  RUN_LOOP (uint32_t, double, CMP, EXPECT_INVALID) \
   RUN_LOOP (int64_t, double, CMP, EXPECT_INVALID) \
   RUN_LOOP (uint64_t, double, CMP, EXPECT_INVALID) \
   RUN_LOOP (double, double, CMP, EXPECT_INVALID)
