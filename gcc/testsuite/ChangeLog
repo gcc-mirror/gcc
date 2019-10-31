@@ -1,3 +1,15 @@
+2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_strict_3.c: Split all but the
+	first function out into...
+	* gcc.target/aarch64/sve/reduc_strict_4.c,
+	* gcc.target/aarch64/sve/reduc_strict_5.c,
+	* gcc.target/aarch64/sve/reduc_strict_6.c,
+	* gcc.target/aarch64/sve/reduc_strict_7.c,
+	* gcc.target/aarch64/sve/reduc_strict_8.c,
+	* gcc.target/aarch64/sve/reduc_strict_9.c: ...these new tests.
+	Test for scalable vectors instead of 256-bit vectors.
+
 2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92284
