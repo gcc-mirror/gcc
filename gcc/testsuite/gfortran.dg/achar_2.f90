@@ -1,7 +1,6 @@
 ! { dg-do run }
 ! PR 30389 - we now treat ACHAR equivalent to CHAR (except for
 !            out of range-values) and IACHAR equivalent to ICHAR.
-! { dg-output
 program main
   integer :: i
   character(len=1) :: c

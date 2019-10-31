@@ -1,5 +1,10 @@
 2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/achar_2.f90: Remove bogus line from
+	last commit.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/achar_2.f90: Print 'DONE' and add dg-output.
 
 2019-10-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
