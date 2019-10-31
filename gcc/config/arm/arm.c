@@ -9039,17 +9039,20 @@ arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
       HOST_WIDE_INT mask, base, index;
       rtx base_reg;
 
-      /* ldr and ldrb can use a 12-bit index, ldrsb and the rest can only
-         use a 8-bit index. So let's use a 12-bit index for SImode only and
-         hope that arm_gen_constant will enable ldrb to use more bits. */
+      /* LDR and LDRB can use a 12-bit index, ldrsb and the rest can
+	 only use a 8-bit index. So let's use a 12-bit index for
+	 SImode only and hope that arm_gen_constant will enable LDRB
+	 to use more bits. */
       bits = (mode == SImode) ? 12 : 8;
       mask = (1 << bits) - 1;
       base = INTVAL (x) & ~mask;
       index = INTVAL (x) & mask;
-      if (bit_count (base & 0xffffffff) > (32 - bits)/2)
-        {
-	  /* It'll most probably be more efficient to generate the base
-	     with more bits set and use a negative index instead. */
+      if (TARGET_ARM && bit_count (base & 0xffffffff) > (32 - bits)/2)
+	{
+	  /* It'll most probably be more efficient to generate the
+	     base with more bits set and use a negative index instead.
+	     Don't do this for Thumb as negative offsets are much more
+	     limited.  */
 	  base |= mask;
 	  index -= mask;
 	}
