@@ -1,3 +1,122 @@
+2019-10-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-epilogues.c: New test.
+	* gcc.dg/vect/fast-math-vect-call-1.c: Disable for epilogue
+	vectorization.
+	* gcc.dg/vect/no-fast-math-vect16.c: Likewise.
+	* gcc.dg/vect/no-scevccp-noreassoc-slp-reduc-7.c: Likewise.
+	* gcc.dg/vect/no-scevccp-vect-iv-3.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-31.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-64.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-66.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-68.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-dv-2.c: Likewise.
+	* gcc.dg/vect/pr33804.c: Likewise.
+	* gcc.dg/vect/pr53773.c: Likewise.
+	* gcc.dg/vect/pr65947-1.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr65947-14.c: Likewise.
+	* gcc.dg/vect/pr65947-4.c: Likewise.
+	* gcc.dg/vect/pr80631-1.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/slp-25.c: Likewise.
+	* gcc.dg/vect/slp-reduc-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-5.c: Likewise.
+	* gcc.dg/vect/slp-reduc-6.c: Likewise.
+	* gcc.dg/vect/slp-reduc-sad-2.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Likewise.
+	* gcc.dg/vect/vect-103.c: Likewise.
+	* gcc.dg/vect/vect-109.c: Likewise.
+	* gcc.dg/vect/vect-119.c: Likewise.
+	* gcc.dg/vect/vect-24.c: Likewise.
+	* gcc.dg/vect/vect-26.c: Likewise.
+	* gcc.dg/vect/vect-27.c: Likewise.
+	* gcc.dg/vect/vect-29.c: Likewise.
+	* gcc.dg/vect/vect-42.c: Likewise.
+	* gcc.dg/vect/vect-44.c: Likewise.
+	* gcc.dg/vect/vect-48.c: Likewise.
+	* gcc.dg/vect/vect-50.c: Likewise.
+	* gcc.dg/vect/vect-52.c: Likewise.
+	* gcc.dg/vect/vect-54.c: Likewise.
+	* gcc.dg/vect/vect-56.c: Likewise.
+	* gcc.dg/vect/vect-58.c: Likewise.
+	* gcc.dg/vect/vect-60.c: Likewise.
+	* gcc.dg/vect/vect-72.c: Likewise.
+	* gcc.dg/vect/vect-75-big-array.c: Likewise.
+	* gcc.dg/vect/vect-75.c: Likewise.
+	* gcc.dg/vect/vect-77-alignchecks.c: Likewise.
+	* gcc.dg/vect/vect-77-global.c: Likewise.
+	* gcc.dg/vect/vect-78-alignchecks.c: Likewise.
+	* gcc.dg/vect/vect-78-global.c: Likewise.
+	* gcc.dg/vect/vect-89-big-array.c: Likewise.
+	* gcc.dg/vect/vect-89.c: Likewise.
+	* gcc.dg/vect/vect-91.c: Likewise.
+	* gcc.dg/vect/vect-92.c: Likewise.
+	* gcc.dg/vect/vect-96.c: Likewise.
+	* gcc.dg/vect/vect-cond-reduc-3.c: Likewise.
+	* gcc.dg/vect/vect-cond-reduc-4.c: Likewise.
+	* gcc.dg/vect/vect-live-1.c: Likewise.
+	* gcc.dg/vect/vect-live-2.c: Likewise.
+	* gcc.dg/vect/vect-live-3.c: Likewise.
+	* gcc.dg/vect/vect-live-4.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-1.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-2.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-3.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-3.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-4.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-6.c: Likewise.
+	* gcc.dg/vect/vect-peel-1-epilogue.c: Likewise. New test.
+	* gcc.dg/vect/vect-peel-1-src.c: Likewise. New test.
+	* gcc.dg/vect/vect-peel-1.c: Likewise.
+	* gcc.dg/vect/vect-peel-3-epilogue.c: Likewise. New test.
+	* gcc.dg/vect/vect-peel-3-src.c: Likewise. New test.
+	* gcc.dg/vect/vect-peel-3.c: Likewise.
+	* gcc.dg/vect/vect-peel-4-epilogue.c: Likewise. New test.
+	* gcc.dg/vect/vect-peel-4-src.c: Likewise. New test.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+	* gcc.dg/vect/vect-reduc-6.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s16a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1b-big-array.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1c-big-array.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2b-big-array.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-u16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-u8-s16-s32.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_3.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-19.c: Likewise.
+	* gcc.target/i386/avx2-vect-mask-store-move1.c: Likewise.
+	* gcc.target/i386/avx512f-gather-2.c: Likewise.
+	* gcc.target/i386/avx512f-gather-5.c: Likewise.
+	* gcc.target/i386/l_fma_double_1.c: Likewise.
+	* gcc.target/i386/l_fma_double_2.c: Likewise.
+	* gcc.target/i386/l_fma_double_3.c: Likewise.
+	* gcc.target/i386/l_fma_double_4.c: Likewise.
+	* gcc.target/i386/l_fma_double_5.c: Likewise.
+	* gcc.target/i386/l_fma_double_6.c: Likewise.
+	* gcc.target/i386/l_fma_float_1.c: Likewise.
+	* gcc.target/i386/l_fma_float_2.c: Likewise.
+	* gcc.target/i386/l_fma_float_3.c: Likewise.
+	* gcc.target/i386/l_fma_float_4.c: Likewise.
+	* gcc.target/i386/l_fma_float_5.c: Likewise.
+	* gcc.target/i386/l_fma_float_6.c: Likewise.
+	* gcc.target/i386/mask-pack.c: Likewise.
+	* gcc.target/i386/mask-unpack.c: Likewise.
+	* gfortran.dg/vect/vect-4.f90: Likewise.
+
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91369 - Implement P0784R7: constexpr new

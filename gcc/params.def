@@ -1434,7 +1434,7 @@ DEFPARAM (PARAM_MAX_VRP_SWITCH_ASSERTIONS,
 DEFPARAM (PARAM_VECT_EPILOGUES_NOMASK,
 	  "vect-epilogues-nomask",
 	  "Enable loop epilogue vectorization using smaller vector size.",
-	  0, 0, 1)
+	  1, 0, 1)
 
 DEFPARAM(PARAM_UNROLL_JAM_MIN_PERCENT,
 	 "unroll-jam-min-percent",

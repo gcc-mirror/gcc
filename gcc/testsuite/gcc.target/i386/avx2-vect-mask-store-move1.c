@@ -1,3 +1,5 @@
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-options "-O3 -mavx2 -fdump-tree-vect-details" } */
 /* { dg-require-effective-target avx2 } */
 

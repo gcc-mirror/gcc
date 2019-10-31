@@ -1,3 +1,5 @@
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-do compile } */
 /* { dg-options "-mavx512bw -O3 -fopenmp-simd -fdump-tree-vect-details" } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 10 "vect" } } */
