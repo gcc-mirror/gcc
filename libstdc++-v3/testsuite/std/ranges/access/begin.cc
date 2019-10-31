@@ -35,6 +35,11 @@ test01()
 
   constexpr long b[2] = { };
   static_assert( std::ranges::begin(b) == (b + 0) );
+
+  struct Incomplete;
+  using A = Incomplete[]; // unbounded array of incomplete type
+  extern A& f();
+  static_assert( same_as<decltype(std::ranges::begin(f())), Incomplete*> );
 }
 
 void

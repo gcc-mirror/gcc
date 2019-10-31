@@ -32,6 +32,11 @@ test01()
   int a2[2];
   VERIFY( std::ranges::size(a2) == 2);
   static_assert( noexcept(std::ranges::size(a2)) );
+
+  struct Incomplete;
+  using A = Incomplete[2]; // bounded array of incomplete type
+  extern A& f();
+  static_assert( std::same_as<decltype(std::ranges::size(f())), std::size_t> );
 }
 
 void
@@ -84,8 +89,7 @@ test04()
 {
   int a[] = { 0, 1 };
   __gnu_test::test_range<int, __gnu_test::random_access_iterator_wrapper> r(a);
-  auto& rr = r;
-  VERIFY( std::ranges::size(r) == (std::ranges::end(r) - std::ranges::begin(r)) );
+  VERIFY( std::ranges::size(r) == unsigned(std::ranges::end(r) - std::ranges::begin(r)) );
 }
 
 struct R5
