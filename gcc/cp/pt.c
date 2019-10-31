@@ -383,7 +383,7 @@ template_class_depth (tree type)
 
       if (DECL_P (type))
 	type = CP_DECL_CONTEXT (type);
-      else if (LAMBDA_TYPE_P (type))
+      else if (LAMBDA_TYPE_P (type) && LAMBDA_TYPE_EXTRA_SCOPE (type))
 	type = LAMBDA_TYPE_EXTRA_SCOPE (type);
       else
 	type = CP_TYPE_CONTEXT (type);
