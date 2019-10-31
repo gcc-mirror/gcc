@@ -35,7 +35,8 @@ end program p
 ! the intent(out) implies freeing in the callee (!), hence the "free"
 ! It is the only 'free' as 'a' is part of the main program and, hence, implicitly has the SAVE attribute.
 ! The  'cfi = 0' appears before the call due to the deallocate and when preparing the C descriptor
+! As cfi (i.e. the descriptor itself) is allocated in libgomp, it has to be freed after the call.
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__builtin_free \\(cfi\\.\[0-9\]+\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 2 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free \\(cfi\\.\[0-9\]+\\);" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "cfi\\.\[0-9\]+ = 0B;" 2 "original" } }

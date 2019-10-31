@@ -119,24 +119,25 @@ gfc_desc_to_cfi_desc (CFI_cdesc_t **d_ptr, const gfc_array_void *s)
     d->type = (CFI_type_t)(d->type
 		+ ((CFI_type_t)d->elem_len << CFI_type_kind_shift));
 
-  /* Full pointer or allocatable arrays retain their lower_bounds.  */
-  for (n = 0; n < GFC_DESCRIPTOR_RANK (s); n++)
-    {
-      if (d->attribute != CFI_attribute_other)
-	d->dim[n].lower_bound = (CFI_index_t)GFC_DESCRIPTOR_LBOUND(s, n);
-      else
-	d->dim[n].lower_bound = 0;
+  if (d->base_addr)
+    /* Full pointer or allocatable arrays retain their lower_bounds.  */
+    for (n = 0; n < GFC_DESCRIPTOR_RANK (s); n++)
+      {
+	if (d->attribute != CFI_attribute_other)
+	  d->dim[n].lower_bound = (CFI_index_t)GFC_DESCRIPTOR_LBOUND(s, n);
+	else
+	  d->dim[n].lower_bound = 0;
 
-      /* Assumed size arrays have gfc ubound == 0 and CFI extent = -1.  */
-      if ((n == GFC_DESCRIPTOR_RANK (s) - 1)
-	  && GFC_DESCRIPTOR_LBOUND(s, n) == 1
-	  && GFC_DESCRIPTOR_UBOUND(s, n) == 0)
-	d->dim[n].extent = -1;
-      else
-	d->dim[n].extent = (CFI_index_t)GFC_DESCRIPTOR_UBOUND(s, n)
-			    - (CFI_index_t)GFC_DESCRIPTOR_LBOUND(s, n) + 1;
-      d->dim[n].sm = (CFI_index_t)(GFC_DESCRIPTOR_STRIDE(s, n) * s->span);
-    }
+	/* Assumed size arrays have gfc ubound == 0 and CFI extent = -1.  */
+	if (n == GFC_DESCRIPTOR_RANK (s) - 1
+	    && GFC_DESCRIPTOR_LBOUND(s, n) == 1
+	    && GFC_DESCRIPTOR_UBOUND(s, n) == 0)
+	  d->dim[n].extent = -1;
+	else
+	  d->dim[n].extent = (CFI_index_t)GFC_DESCRIPTOR_UBOUND(s, n)
+			     - (CFI_index_t)GFC_DESCRIPTOR_LBOUND(s, n) + 1;
+	d->dim[n].sm = (CFI_index_t)(GFC_DESCRIPTOR_STRIDE(s, n) * s->span);
+      }
 
   if (*d_ptr == NULL)
     *d_ptr = d;
