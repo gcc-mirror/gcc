@@ -384,11 +384,9 @@ gori_map::dump(FILE *f, basic_block bb)
   unsigned x, y;
   bitmap_iterator bi;
 
+  // BB was not processed.
   if (!m_outgoing[bb->index])
-    {
-      fprintf (f, "bb%d was not processed.\n", bb->index);
-      return;
-    }
+    return;
 
   // Dump the def chain for each SSA_NAME defined in BB.
   for (x = 1; x < num_ssa_names; x++)
