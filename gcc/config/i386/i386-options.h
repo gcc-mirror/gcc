@@ -19,6 +19,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_I386_OPTIONS_H
 #define GCC_I386_OPTIONS_H
 
+extern int ix86_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
+					  const char *name);
+
 char *ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 			  int flags, int flags2,
 			  const char *arch, const char *tune,

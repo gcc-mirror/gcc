@@ -1669,6 +1669,21 @@ int, (void), NULL)
 
 HOOK_VECTOR_END (simt)
 
+/* Functions relating to OpenMP.  */
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_OMP_"
+HOOK_VECTOR (TARGET_OMP, omp)
+
+DEFHOOK
+(device_kind_arch_isa,
+"Return 1 if @var{trait} @var{name} is present in the OpenMP context's\n\
+device trait set, return 0 if not present in any OpenMP context in the\n\
+whole translation unit, or -1 if not present in the current OpenMP context\n\
+but might be present in another OpenMP context in the same TU.",
+int, (enum omp_device_kind_arch_isa trait, const char *name), NULL)
+
+HOOK_VECTOR_END (omp)
+
 /* Functions relating to openacc.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_GOACC_"

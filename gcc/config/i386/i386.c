@@ -23034,12 +23034,13 @@ ix86_run_selftests (void)
   ix86_simd_clone_compute_vecsize_and_simdlen
 
 #undef TARGET_SIMD_CLONE_ADJUST
-#define TARGET_SIMD_CLONE_ADJUST \
-  ix86_simd_clone_adjust
+#define TARGET_SIMD_CLONE_ADJUST ix86_simd_clone_adjust
 
 #undef TARGET_SIMD_CLONE_USABLE
-#define TARGET_SIMD_CLONE_USABLE \
-  ix86_simd_clone_usable
+#define TARGET_SIMD_CLONE_USABLE ix86_simd_clone_usable
+
+#undef TARGET_OMP_DEVICE_KIND_ARCH_ISA
+#define TARGET_OMP_DEVICE_KIND_ARCH_ISA ix86_omp_device_kind_arch_isa
 
 #undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
 #define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \

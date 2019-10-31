@@ -1026,12 +1026,20 @@ AC_SUBST(real_target_noncanonical)
 AC_SUBST(accel_dir_suffix)
 
 for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
+  tgt_dir=`echo $tgt | sed -n 's/.*=//p'`
   tgt=`echo $tgt | sed 's/=.*//'`
 
   if echo "$tgt" | grep "^hsa" > /dev/null ; then
     enable_hsa=1
   else
     enable_offloading=1
+    if test -n "$tgt_dir"; then
+      omp_device_property="${tgt_dir}/lib/gcc/\$(real_target_noncanonical)/\$(version)/accel/${tgt}/omp-device-properties"
+    else
+      omp_device_property="\$(libsubdir)/accel/${tgt}/omp-device-properties"
+    fi
+    omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
+    omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
   fi
 
   if test x"$offload_targets" = x; then
@@ -1040,6 +1048,9 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
     offload_targets="$offload_targets,$tgt"
   fi
 done
+AC_SUBST(omp_device_properties)
+AC_SUBST(omp_device_property_deps)
+
 AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
   [Define to offload targets, separated by commas.])
 if test x"$enable_offloading" != x; then

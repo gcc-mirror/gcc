@@ -211,6 +211,13 @@ typedef vec<poly_uint64> vector_sizes;
    automatically freed.  */
 typedef auto_vec<poly_uint64, 8> auto_vector_sizes;
 
+/* First argument of targetm.omp.device_kind_arch_isa.  */
+enum omp_device_kind_arch_isa {
+  omp_device_kind,
+  omp_device_arch,
+  omp_device_isa
+};
+
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;
 #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME) PARAMS;

@@ -1,3 +1,8 @@
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-9.c: New test.
+	* c-c++-common/gomp/declare-variant-10.c: New test.
+
 2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92277
