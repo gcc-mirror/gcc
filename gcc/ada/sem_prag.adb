@@ -2897,7 +2897,7 @@ package body Sem_Prag is
       --  Verify the legality of a single initialization item followed by a
       --  list of input items.
 
-      procedure Collect_States_And_Objects;
+      procedure Collect_States_And_Objects (Pack_Decl : Node_Id);
       --  Inspect the visible declarations of the related package and gather
       --  the entities of all abstract states and objects in States_And_Objs.
 
@@ -3166,15 +3166,21 @@ package body Sem_Prag is
       -- Collect_States_And_Objects --
       --------------------------------
 
-      procedure Collect_States_And_Objects is
-         Pack_Spec : constant Node_Id := Specification (Pack_Decl);
-         Decl      : Node_Id;
+      procedure Collect_States_And_Objects (Pack_Decl : Node_Id) is
+         Pack_Spec  : constant Node_Id := Specification (Pack_Decl);
+         Pack_Id    : constant Entity_Id := Defining_Entity (Pack_Decl);
+         Decl       : Node_Id;
+         State_Elmt : Elmt_Id;
 
       begin
          --  Collect the abstract states defined in the package (if any)
 
-         if Present (Abstract_States (Pack_Id)) then
-            States_And_Objs := New_Copy_Elist (Abstract_States (Pack_Id));
+         if Has_Non_Null_Abstract_State (Pack_Id) then
+            State_Elmt := First_Elmt (Abstract_States (Pack_Id));
+            while Present (State_Elmt) loop
+               Append_New_Elmt (Node (State_Elmt), States_And_Objs);
+               Next_Elmt (State_Elmt);
+            end loop;
          end if;
 
          --  Collect all objects that appear in the visible declarations of the
@@ -3188,6 +3194,9 @@ package body Sem_Prag is
                                           N_Object_Renaming_Declaration)
                then
                   Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
+
+               elsif Nkind (Decl) = N_Package_Declaration then
+                  Collect_States_And_Objects (Decl);
 
                elsif Is_Single_Concurrent_Type_Declaration (Decl) then
                   Append_New_Elmt
@@ -3228,7 +3237,7 @@ package body Sem_Prag is
 
       --  Initialize the various lists used during analysis
 
-      Collect_States_And_Objects;
+      Collect_States_And_Objects (Pack_Decl);
 
       if Present (Expressions (Inits)) then
          Init := First (Expressions (Inits));
