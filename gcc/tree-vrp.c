@@ -776,10 +776,8 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
     {
       /* For -fstrict-enums we may receive out-of-range ranges so consider
          values < -INF and values > INF as -INF/INF as well.  */
-      bool is_min = (INTEGRAL_TYPE_P (type)
-		     && tree_int_cst_compare (min, TYPE_MIN_VALUE (type)) <= 0);
-      bool is_max = (INTEGRAL_TYPE_P (type)
-		     && tree_int_cst_compare (max, TYPE_MAX_VALUE (type)) >= 0);
+      bool is_min = vrp_val_is_min (min, true);
+      bool is_max = vrp_val_is_max (max, true);
 
       if (is_min && is_max)
 	{
@@ -799,10 +797,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
 	    min = max = vrp_val_min (TREE_TYPE (min));
 	  kind = VR_RANGE;
 	}
-      else if (is_min
-	       /* Allow non-zero pointers to be normalized to [1,MAX].  */
-	       || (POINTER_TYPE_P (TREE_TYPE (min))
-		   && integer_zerop (min)))
+      else if (is_min)
         {
 	  tree one = build_int_cst (TREE_TYPE (max), 1);
 	  min = int_const_binop (PLUS_EXPR, max, one);
@@ -813,7 +808,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
         {
 	  tree one = build_int_cst (TREE_TYPE (min), 1);
 	  max = int_const_binop (MINUS_EXPR, min, one);
-	  min = vrp_val_min (TREE_TYPE (min));
+	  min = vrp_val_min (TREE_TYPE (min), true);
 	  kind = VR_RANGE;
         }
     }
@@ -6225,10 +6220,12 @@ value_range_base::contains_p (tree cst) const
 void
 value_range_base::invert ()
 {
+  /* We can't just invert VR_RANGE and VR_ANTI_RANGE because we may
+     create a non-canonical ranges.  Use the constructors instead.  */
   if (m_kind == VR_RANGE)
-    m_kind = VR_ANTI_RANGE;
+    *this = value_range_base (VR_ANTI_RANGE, m_min, m_max);
   else if (m_kind == VR_ANTI_RANGE)
-    m_kind = VR_RANGE;
+    *this = value_range_base (VR_RANGE, m_min, m_max);
   else
     gcc_unreachable ();
 }
@@ -6280,16 +6277,12 @@ value_range_base::operator== (const value_range_base &r) const
   if (undefined_p ())
     return r.undefined_p ();
 
-  if (num_pairs () != r.num_pairs ()
-      || !range_compatible_p (type (), r.type ()))
+  if (!range_compatible_p (type (), r.type ()))
     return false;
 
-  for (unsigned p = 0; p < num_pairs (); p++)
-    if (wi::ne_p (lower_bound (p), r.lower_bound (p))
-	|| wi::ne_p (upper_bound (p), r.upper_bound (p)))
-      return false;
-
-  return true;
+  return (m_kind == r.m_kind
+	  && operand_equal_p (m_min, r.m_min, 0)
+	  && operand_equal_p (m_max, r.m_max, 0));
 }
 
 /* Visit all arguments for PHI node PHI that flow through executable
