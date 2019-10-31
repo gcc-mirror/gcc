@@ -1,6 +1,16 @@
 2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-08-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/stubify-1.mm: Rename symbol stub option.
+	* obj-c++.dg/stubify-2.mm: Likewise.
+	* objc.dg/stubify-1.m: Likewise.
+	* objc.dg/stubify-2.m: Likewise.
+
+2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/target-supports.exp 
