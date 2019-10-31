@@ -1,5 +1,15 @@
 2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/refwrap.h (reference_wrapper, ref, cref): Add constexpr
+	specifiers for C++20.
+	* include/std/functional (_Mem_fn, mem_fn, _Bind, _Bind_result, bind)
+	(bind_front, _Not_fn, not_fn): Likewise.
+	* testsuite/20_util/bind/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/bind_front/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/mem_fn/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/not_fn/constexpr.cc: New test.
+	* testsuite/20_util/reference_wrapper/constexpr.cc: New test.
+
 	* doc/doxygen/user.cfg.in: Add new header.
 	* include/Makefile.am: Add new header.
 	* include/Makefile.in: Regenerate.
