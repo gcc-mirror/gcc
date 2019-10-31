@@ -1,6 +1,7 @@
 ! { dg-do run }
 ! PR 30389 - we now treat ACHAR equivalent to CHAR (except for
 !            out of range-values) and IACHAR equivalent to ICHAR.
+! { dg-output
 program main
   integer :: i
   character(len=1) :: c
@@ -2023,4 +2024,9 @@ program main
   c = "ÿ"
   if (achar(i) /= "ÿ") STOP 1514
   if (iachar(c) /= iachar("ÿ")) STOP 1515
+  print *, 'DONE'
 end program main
+
+! DejaGNU only checks the exit code but 'STOP 256' has exit code 0. Hence,
+! check output for:
+! { dg-output "DONE" }
