@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#include "ISO_Fortran_binding.h"
+#include "../../../libgfortran/ISO_Fortran_binding.h"
 
 void arr_set_c(CFI_cdesc_t*);
 
@@ -24,4 +24,3 @@ void arr_set_c(CFI_cdesc_t *arr){
   for(i=0; i<ub[0]-lb[0]+1; i++) auxp[i]=i;
   return;
 }
-
