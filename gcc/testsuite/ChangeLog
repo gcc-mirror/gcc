@@ -1,5 +1,14 @@
 2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/vcond_4.c: Split parts out into...
+	* gcc.target/aarch64/sve/vcond_4_costly.c,
+	* gcc.target/aarch64/sve/vcond_4_sel.c,
+	* gcc.target/aarch64/sve/vcond_4_zero.c: ...these new tests.
+	* gcc.target/aarch64/sve/vcond_4_run.c: Adjust accordingly.
+	* gcc.target/aarch64/sve/vcond_5.c: Likewise.
+
+2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/reduc_strict_3.c: Split all but the
 	first function out into...
 	* gcc.target/aarch64/sve/reduc_strict_4.c,
