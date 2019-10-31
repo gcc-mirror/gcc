@@ -5973,9 +5973,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       /* Pointers initialized to strings must be treated as non-zero
 	 even if the string is empty.  */
       tree init_type = TREE_TYPE (elt_init);
-      if ((POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type)))
-	last_nonzero = index;
-      else if (!type_initializer_zero_p (elt_type, elt_init))
+      if (POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type)
+	  || !type_initializer_zero_p (elt_type, elt_init))
 	last_nonzero = index;
 
       /* This can happen with an invalid initializer (c++/54501).  */

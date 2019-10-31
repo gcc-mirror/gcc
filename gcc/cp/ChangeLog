@@ -1,3 +1,12 @@
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90947
+	* cp-tree.h (type_initializer_zero_p): Declare.
+	* decl.c (reshape_init_array_1): Formatting fix.
+	* tree.c (type_initializer_zero_p): New function.  Moved from
+	../tree.c, use next_initializable_field, formatting fix.  Return
+	false for TYPE_NON_AGGREGATE_CLASS types.
+
 2019-10-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92268 - hard error satisfying return-type-requirement

@@ -4690,12 +4690,6 @@ extern tree first_field (const_tree);
 extern bool initializer_zerop (const_tree, bool * = NULL);
 extern bool initializer_each_zero_or_onep (const_tree);
 
-/* Analogous to initializer_zerop but also examines the type for
-   which the initializer is being used.  Unlike initializer_zerop,
-   considers empty strings to be zero initializers for arrays and
-   non-zero for pointers.  */
-extern bool type_initializer_zero_p (tree, tree);
-
 extern wide_int vector_cst_int_elt (const_tree, unsigned int);
 extern tree vector_cst_elt (const_tree, unsigned int);
 
