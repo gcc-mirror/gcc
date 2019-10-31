@@ -5306,13 +5306,13 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   /* Now pass the gfc_descriptor by reference.  */
   parmse->expr = gfc_build_addr_expr (NULL_TREE, parmse->expr);
 
-  /* Variables to point to the gfc and CFI descriptors.  */
+  /* Variables to point to the gfc and CFI descriptors; cfi = NULL implies
+     that the CFI descriptor is allocated by the gfor_fndecl_gfc_to_cfi call.  */
   gfc_desc_ptr = parmse->expr;
   cfi_desc_ptr = gfc_create_var (pvoid_type_node, "cfi");
-  gfc_add_modify (&parmse->pre, cfi_desc_ptr,
-		  build_int_cst (pvoid_type_node, 0));
+  gfc_add_modify (&parmse->pre, cfi_desc_ptr, null_pointer_node);
 
-  /* Allocate the CFI descriptor and fill the fields.  */
+  /* Allocate the CFI descriptor itself and fill the fields.  */
   tmp = gfc_build_addr_expr (NULL_TREE, cfi_desc_ptr);
   tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
@@ -5326,6 +5326,10 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 
   /* The CFI descriptor is passed to the bind_C procedure.  */
   parmse->expr = cfi_desc_ptr;
+
+  /* Free the CFI descriptor.  */
+  tmp = gfc_call_free (cfi_desc_ptr);
+  gfc_prepend_expr_to_block (&parmse->post, tmp);
 
   /* Transfer values back to gfc descriptor.  */
   tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);

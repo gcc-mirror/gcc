@@ -1,3 +1,11 @@
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92284.
+	* gfortran.dg/bind-c-intent-out.f90: Update expected dump;
+	extend comment.
+	* gfortran.dg/bind_c_array_params_3.f90: New.
+	* gfortran.dg/bind_c_array_params_3_aux.c: New.
+
 2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-variant-9.c: New test.

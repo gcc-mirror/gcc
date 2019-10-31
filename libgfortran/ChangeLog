@@ -1,3 +1,8 @@
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92284.
+	* runtime/ISO_Fortran_binding.c (gfc_desc_to_cfi_desc):
+
 2019-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91926
@@ -7,8 +12,7 @@
 2019-10-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR fortran/68401
-        * runtime/minimal.c (os_error_at): New function.
-
+	* runtime/minimal.c (os_error_at): New function.
 	* runtime/minimal.c: Revise.
 
 2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
