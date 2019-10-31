@@ -1,3 +1,9 @@
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90947
+	* tree.h (type_initializer_zero_p): Remove.
+	* tree.c (type_initializer_zero_p): Remove.
+
 2019-10-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* doc/invoke.texi (-Wshadow, -Wshadow=global

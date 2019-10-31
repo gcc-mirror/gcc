@@ -7382,6 +7382,11 @@ extern tree cxx_copy_lang_qualifiers		(const_tree, const_tree);
 
 extern void cxx_print_statistics		(void);
 extern bool maybe_warn_zero_as_null_pointer_constant (tree, location_t);
+/* Analogous to initializer_zerop but also examines the type for
+   which the initializer is being used.  Unlike initializer_zerop,
+   considers empty strings to be zero initializers for arrays and
+   non-zero for pointers.  */
+extern bool type_initializer_zero_p		(tree, tree);
 
 /* in ptree.c */
 extern void cxx_print_xnode			(FILE *, tree, int);
