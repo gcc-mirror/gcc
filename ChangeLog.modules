@@ -1,3 +1,8 @@
+2019-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::read_cluster): Hack around cfun.
+
 2019-10-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

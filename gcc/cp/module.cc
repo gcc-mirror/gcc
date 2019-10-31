@@ -14140,6 +14140,10 @@ module_state::read_cluster (unsigned snum)
 	}
 
     }
+  /* Look, function.c's interface to cfun does too much for us, we
+     just need to restore the old value.  I do not want to go
+     redesigning that if right now.  */
+#undef cfun
   cfun = old_cfun;
   current_function_decl = old_cfd;
 
