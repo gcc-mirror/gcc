@@ -1,3 +1,8 @@
+2019-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (add_not_cin): New insn.
+	(add_not_shift_cin): Likewise.
+
 2019-10-31  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_tree_ssa_label): Remove.
