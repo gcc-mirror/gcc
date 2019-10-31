@@ -281,6 +281,7 @@ extern bool infer_value_range (gimple *, tree, tree_code *, tree *);
 
 extern bool vrp_bitmap_equal_p (const_bitmap, const_bitmap);
 
+extern bool range_has_numeric_bounds_p (const value_range_base *);
 extern bool range_int_cst_p (const value_range_base *);
 extern bool range_int_cst_singleton_p (const value_range_base *);
 

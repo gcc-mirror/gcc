@@ -910,7 +910,7 @@ vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 	      && bitmap_equal_p (b1, b2)));
 }
 
-static bool
+bool
 range_has_numeric_bounds_p (const value_range_base *vr)
 {
   return (vr->min ()
