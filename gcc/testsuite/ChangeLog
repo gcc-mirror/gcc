@@ -1,5 +1,9 @@
 2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* g++.target/aarch64/sve/vcond_1_run.C: Update test name.
+
+2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/vcond_4.c: Split parts out into...
 	* gcc.target/aarch64/sve/vcond_4_costly.c,
 	* gcc.target/aarch64/sve/vcond_4_sel.c,
