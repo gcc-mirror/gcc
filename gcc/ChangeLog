@@ -1,6 +1,20 @@
 2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2019-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (REAL_LIBGCC_SPEC): Adjust for earlier Darwin.
+	(STARTFILE_SPEC): Split crt3 into a separate spec.
+	(DARWIN_EXTRA_SPECS): Add crt2 and crt3 spec.
+	(DARWIN_CRT2_SPEC): New.
+	(DARWIN_CRT3_SPEC): New.
+	(MIN_LD64_OMIT_STUBS): Revise to 62.1.
+	* config/rs6000/darwin.h (DARWIN_CRT2_SPEC): Revise conditions.
+	(DARWIN_CRT3_SPEC): New.
+
+2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (ENDFILE_SPEC): Correct whitespace in the
