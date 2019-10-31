@@ -2993,6 +2993,7 @@ register_builtin_types ()
 				   BITS_PER_SVE_VECTOR));
 	}
       vectype = build_distinct_type_copy (vectype);
+      gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
       SET_TYPE_STRUCTURAL_EQUALITY (vectype);
       TYPE_ARTIFICIAL (vectype) = 1;
       abi_vector_types[i] = vectype;
@@ -3235,8 +3236,7 @@ bool
 svbool_type_p (const_tree type)
 {
   tree abi_type = abi_vector_types[VECTOR_TYPE_svbool_t];
-  return (type != error_mark_node
-	  && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (abi_type));
+  return type != error_mark_node && TYPE_MAIN_VARIANT (type) == abi_type;
 }
 
 /* If TYPE is a built-in type defined by the SVE ABI, return the mangled name,
