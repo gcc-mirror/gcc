@@ -1,3 +1,12 @@
+2019-10-31  Martin Liska  <mliska@suse.cz>
+
+	* config/arm/arm.c (arm_get_pcs_model): Remove usage
+	of cgraph_local_info and use local_info_node instead.
+	* config/bfin/bfin.c (bfin_load_pic_reg): Likewise.
+	(bfin_function_ok_for_sibcall): Likewise.
+	* config/c6x/c6x.c (c6x_function_ok_for_sibcall): Likewise.
+	(must_reload_pic_reg_p): Likewise.
+
 2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90947
