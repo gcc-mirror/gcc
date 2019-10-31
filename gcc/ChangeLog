@@ -1,3 +1,7 @@
+2019-10-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* params.def (PARAM_VECT_EPILOGUES_NOMASK): Enable by default.
+
 2019-10-31  Martin Liska  <mliska@suse.cz>
 
 	* config/arm/arm.c (arm_get_pcs_model): Remove usage

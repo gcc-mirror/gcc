@@ -1,3 +1,5 @@
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -fno-inline -msve-vector-bits=256 -fdump-tree-vect-details" } */
 
