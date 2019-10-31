@@ -1,3 +1,37 @@
+2019-10-31  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/devices-main.c: Move to devices subdirectory.
+	* gcc.target/msp430/devices/bad-devices-1.c: Update #include path to
+	devices-main.c.
+	* gcc.target/msp430/devices/bad-devices-2.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-3.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-4.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-5.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-6.c: Likewise.
+	* gcc.target/msp430/devices/csv-device-order.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_00.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_01.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_02.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_04.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_08.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_10.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_11.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_12.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_14.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_18.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_20.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_21.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_22.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_24.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_28.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430fr5969.c: Likewise.
+	* gcc.target/msp430/devices/hard-cc430f5123.c: Likewise.
+	* gcc.target/msp430/devices/hard-foo.c: Likewise.
+	* gcc.target/msp430/devices/hard-msp430afe253.c: Likewise.
+	* gcc.target/msp430/devices/hard-msp430cg4616.c: Likewise.
+	* gcc.target/msp430/devices/hard-msp430f4783.c: Likewise.
+	* gcc.target/msp430/devices/hard-rf430frl154h_rom.c: Likewise.
+
 2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* g++.target/aarch64/sve/vcond_1_run.C: Update test name.
