@@ -689,19 +689,13 @@ namespace ranges
 	    -> __detail::__is_integer_like;
 	};
 
-    // FIXME: needed due to PR c++/92268
-    template<forward_iterator _It, sized_sentinel_for<_It> _End>
-      requires requires (_It __it, _End __end)
-      { { __end - __it } -> __detail::__is_integer_like; }
-      void
-      __subtractable_fwd_iter(_It, _End)
-      { }
-
     template<typename _Tp>
-      concept __sizable = requires(_Tp&& __t)
+      concept __sentinel_size = requires(_Tp&& __t)
 	{
-	  __subtractable_fwd_iter(_Begin{}(std::forward<_Tp>(__t)),
-				  _End{}(std::forward<_Tp>(__t)));
+	  { _Begin{}(std::forward<_Tp>(__t)) } -> forward_iterator;
+
+	  { _End{}(std::forward<_Tp>(__t)) }
+	    -> sized_sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
 	};
 
     struct _Size
@@ -717,7 +711,7 @@ namespace ranges
 	    return noexcept(__decay_copy(std::declval<_Tp>().size()));
 	  else if constexpr (__adl_size<_Tp>)
 	    return noexcept(__decay_copy(size(std::declval<_Tp>())));
-	  else if constexpr (__sizable<_Tp>)
+	  else if constexpr (__sentinel_size<_Tp>)
 	    return noexcept(_End{}(std::declval<_Tp>())
 			    - _Begin{}(std::declval<_Tp>()));
 	}
@@ -725,7 +719,7 @@ namespace ranges
     public:
       template<typename _Tp>
 	requires is_array_v<remove_reference_t<_Tp>>
-	  || __member_size<_Tp> || __adl_size<_Tp> || __sizable<_Tp>
+	  || __member_size<_Tp> || __adl_size<_Tp> || __sentinel_size<_Tp>
 	constexpr auto
 	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
 	{
@@ -738,7 +732,7 @@ namespace ranges
 	    return std::forward<_Tp>(__e).size();
 	  else if constexpr (__adl_size<_Tp>)
 	    return size(std::forward<_Tp>(__e));
-	  else if constexpr (__sizable<_Tp>)
+	  else if constexpr (__sentinel_size<_Tp>)
 	    return __detail::__to_unsigned_like(
 		_End{}(std::forward<_Tp>(__e))
 		- _Begin{}(std::forward<_Tp>(__e)));

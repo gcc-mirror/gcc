@@ -1,5 +1,11 @@
 2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/range_access.h (__sizable): Rename to __sentinel_size.
+	Remove workaround for PR c++/92268 and remove redundant requirements
+	that are already checked by sized_sentinel_for.
+	* testsuite/std/ranges/access/cend.cc: Fix failures.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+
 	* include/bits/range_access.h (ranges::begin): Combine array and
 	non-array overloads into one function template. Only use ADL for
 	classes and enums.
