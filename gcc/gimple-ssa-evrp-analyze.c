@@ -154,24 +154,132 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
   return true;
 }
 
-void
-evrp_range_analyzer::assert_gori_is_just_as_good
-					(tree name, edge e,
-					 const value_range_base *range_evrp,
-					 const value_range_base *range_gori,
-					 const vec<assert_info> &asserts)
+static bool
+gori_range_is_same (const value_range_base *range_evrp,
+		    const value_range_base *range_gori)
 {
+  // FIXME: We may be able to normalize a symbolic to a [MIN,MAX] plus
+  // or minus the end-points.  Don't count that as a win just yet.
+  // Perhaps even disallow merging these improvements with evrp.
+  // Dunno.
+  if (range_evrp && range_evrp->symbolic_p ())
+    return true;
+
+  // Treat UNDEFINED and VARYING as interchangeable.
+  value_range_base evrp;
+  if (range_evrp)
+    evrp = *range_evrp;
+  else
+    evrp = value_range_base ();
+  if (evrp.undefined_p () && range_gori->varying_p ())
+    return true;
+  if (evrp.varying_p () && range_gori->undefined_p ())
+    return true;
+
+  return evrp == *range_gori;
+}
+
+static bool
+gori_range_is_better (const value_range_base *range_evrp,
+		      const value_range_base *range_gori)
+{
+  if (gori_range_is_same (range_evrp, range_gori))
+    return false;
+
   if (!range_evrp)
-    return;
+    return true;
 
-  if (range_evrp->symbolic_p () && !range_gori->symbolic_p ())
-    return;
+  if (range_evrp->symbolic_p ())
+    {
+      gcc_checking_assert (!range_gori->symbolic_p ());
+      return true;
+    }
 
-  // Return if we're just as good as evrp.
-  if (*range_evrp == *range_gori
-      || range_intersect (*range_evrp, *range_gori) == *range_gori)
-    return;
+  return range_intersect (*range_gori, *range_evrp) == *range_gori;
+}
 
+static bool
+gori_range_is_unrepresentable (const value_range_base *r_evrp,
+			       const value_range_base *r_gori)
+{
+  bool evrp_is_better = range_intersect (*r_evrp, *r_gori) == *r_evrp;
+  return gori_range_is_better (r_evrp, r_gori) && evrp_is_better;
+}
+
+value_range *
+evrp_range_analyzer::merge_gori_and_evrp_results
+					(value_range *vr,
+					 const value_range_base *vr_gori)
+{
+  if (vr)
+    static_cast <value_range_base *> (vr)->intersect (vr_gori);
+  else
+    {
+      if (vr_gori->varying_p () || vr_gori->undefined_p ())
+	return NULL;
+      vr = vr_values->allocate_value_range ();
+      vr->set (vr_gori->kind (), vr_gori->min (), vr_gori->max ());
+    }
+  return vr;
+}
+
+value_range_base
+evrp_range_analyzer::try_find_new_range_with_gori
+				(tree name, edge e,
+				 const vec<assert_info> &asserts)
+{
+  const value_range *known_range = get_value_range (name);
+  // ?? Perhaps it's worth calling normalize_addresses here?
+  if (known_range && !range_has_numeric_bounds_p (known_range))
+    known_range = NULL;
+  equivalence_iterator iter (name, known_range, asserts);
+  vr_values->save_equivalences (&iter);
+
+  value_range_base vr;
+  if (!vr_values->outgoing_edge_range_p (vr, e, name, known_range))
+    vr.set_varying (TREE_TYPE (name));
+  return vr;
+}
+
+static void
+dump_gori_improvements (tree name,
+			const value_range_base *r_evrp,
+			const value_range_base *r_gori)
+{
+  if (gori_range_is_better (r_evrp, r_gori))
+    {
+      fprintf (dump_file, "GORI improved: ");
+      print_generic_expr (dump_file, name);
+      fprintf (dump_file, " from: ");
+      if (r_evrp)
+	r_evrp->dump (dump_file);
+      else
+	fprintf (dump_file, "UNDEFINED");
+      fprintf (dump_file, " to: ");
+      r_gori->dump (dump_file);
+      if (r_evrp)
+	{
+	  fprintf (dump_file, " intersect: ");
+	  if (gori_range_is_unrepresentable (r_evrp, r_gori))
+	    fprintf (dump_file, "UNREPRESENTABLE");
+	  else
+	    {
+	      value_range_base r;
+	      r = *r_evrp;
+	      r.intersect (r_gori);
+	      r.dump (dump_file);
+	    }
+	}
+      fprintf (dump_file, "\n");
+    }
+}
+
+void
+evrp_range_analyzer::debug_gori_ranges (tree name, edge e,
+					const value_range_base *range_evrp,
+					const value_range_base *range_gori,
+					const vec<assert_info> &asserts) const
+{
   fprintf (stderr, "Different ranges on edge (%d -> %d) for SSA: ",
 	   e->src->index, e->dest->index);
   print_generic_stmt (stderr, name, TDF_VOPS|TDF_MEMSYMS);
@@ -194,39 +302,21 @@ evrp_range_analyzer::assert_gori_is_just_as_good
       extern void debug (const vec<assert_info> &);
       debug (asserts);
     }
+}
+
+void
+evrp_range_analyzer::assert_gori_is_as_good
+					(tree name, edge e,
+					 const value_range_base *range_evrp,
+					 const value_range_base *range_gori,
+					 const vec<assert_info> &asserts) const
+{
+  if (gori_range_is_same (range_evrp, range_gori)
+      || gori_range_is_better (range_evrp, range_gori))
+    return;
+
+  debug_gori_ranges (name, e, range_evrp, range_gori, asserts);
   gcc_unreachable ();
-}
-
-value_range_base
-evrp_range_analyzer::try_find_new_range_with_gori
-				(tree name, edge e,
-				 const vec<assert_info> &asserts)
-{
-  const value_range *known_range = get_value_range (name);
-  equivalence_iterator iter (name, known_range, asserts);
-  vr_values->save_equivalences (&iter);
-
-  value_range_base vr;
-  if (!vr_values->outgoing_edge_range_p (vr, e, name, known_range))
-    vr.set_varying (TREE_TYPE (name));
-  return vr;
-}
-
-value_range *
-evrp_range_analyzer::merge_gori_and_evrp_results
-					(value_range *vr,
-					 const value_range_base *vr_gori)
-{
-  if (vr)
-    static_cast <value_range_base *> (vr)->intersect (vr_gori);
-  else
-    {
-      if (vr_gori->varying_p () || vr_gori->undefined_p ())
-	return NULL;
-      vr = vr_values->allocate_value_range ();
-      vr->set (vr_gori->kind (), vr_gori->min (), vr_gori->max ());
-    }
-  return vr;
 }
 
 void
@@ -272,9 +362,15 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 						    asserts[i].expr,
 						    asserts[i].comp_code,
 						    asserts[i].val);
-	      if (CHECKING_P && getenv("GORIME"))
-		assert_gori_is_just_as_good (asserts[i].name, pred_e,
-					     vr, &vr_gori, asserts);
+	      if (CHECKING_P)
+		{
+		  tree name = asserts[i].name;
+		  if (dump_file)
+		    dump_gori_improvements (name, vr, &vr_gori);
+		  if (getenv("GORIME"))
+		    assert_gori_is_as_good (name, pred_e, vr, &vr_gori,
+					    asserts);
+		}
 	      vr = merge_gori_and_evrp_results (vr, &vr_gori);
 	      if (vr)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));

@@ -64,17 +64,22 @@ class evrp_range_analyzer
 
   void pop_value_range ();
   value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
-  value_range_base try_find_new_range_with_gori (tree, edge,
-						 const vec<assert_info> &);
-  void assert_gori_is_just_as_good (tree, edge,
-				    const value_range_base *,
-				    const value_range_base *,
-				    const vec<assert_info> &);
-  value_range *merge_gori_and_evrp_results (value_range *,
-					    const value_range_base *);
   void record_ranges_from_incoming_edge (basic_block);
   void record_ranges_from_phis (basic_block);
   void set_ssa_range_info (tree, value_range *);
+
+  /* GORI support.  */
+  value_range_base try_find_new_range_with_gori (tree, edge,
+						 const vec<assert_info> &);
+  void assert_gori_is_as_good (tree, edge,
+			       const value_range_base *,
+			       const value_range_base *,
+			       const vec<assert_info> &) const;
+  value_range *merge_gori_and_evrp_results (value_range *,
+					    const value_range_base *);
+  void debug_gori_ranges (tree, edge,
+			  const value_range_base *, const value_range_base *,
+			  const vec<assert_info> &) const;
 
   /* STACK holds the old VR.  */
   auto_vec<std::pair <tree, value_range *> > stack;
