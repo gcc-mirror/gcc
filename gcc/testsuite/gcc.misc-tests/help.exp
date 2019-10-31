@@ -146,8 +146,7 @@ check_for_options c "--help=joined,undocumented" "" "" ""
 # find the source a failure.
 
 foreach cls { "ada" "c" "c++" "d" "fortran" "go" \
-		    "optimizers" "param" "target" "warnings" } {
-
+		"common" "optimizers" "param" "target" "warnings" } {
     check_for_options c "--help=$cls" "" "^ +-.*\[^:.\]$" ""
 }
 
