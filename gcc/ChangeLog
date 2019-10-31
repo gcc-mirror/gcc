@@ -1,3 +1,9 @@
+2019-10-31  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::compare_tree_ssa_label): Remove.
+	* ipa-icf-gimple.h: Remove declaration from compare_tree_ssa_label
+	and compare_memory_operand.
+
 2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Compute and substitute omp_device_properties and
