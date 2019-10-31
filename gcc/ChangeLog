@@ -1,3 +1,10 @@
+2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h: Handle GCC target pragma.
+
 2019-10-30  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	Backport from mainline
