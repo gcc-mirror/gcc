@@ -1,5 +1,10 @@
 2019-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.c (arm_legitimize_address): Don't form negative offsets
+	from a CONST_INT address when TARGET_THUMB2.
+
+2019-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.md (add_not_cin): New insn.
 	(add_not_shift_cin): Likewise.
 
