@@ -1,5 +1,44 @@
 2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.ac: Compute and substitute omp_device_properties and
+	omp_device_property_deps.
+	* Makefile.in (generated_files): Add omp-device-properties.h.
+	(omp-general.o): Depend on omp-device-properties.h.
+	(omp_device_properties): New make variable.
+	(omp-device-properties.h, s-omp-device-properties-h,
+	install-omp-device-properties): New goals.
+	(install): Depend on install-omp-device-properties for accelerators.
+	* target.def (TARGET_OMP_DEVICE_KIND_ARCH_ISA): New target hook.
+	* target.h (enum omp_device_kind_arch_isa): New enum.
+	* doc/tm.texi.in: Add placeholder for TARGET_OMP_DEVICE_KIND_ARCH_ISA
+	documentation.
+	* omp-general.c: Include omp-device-properties.h.
+	(omp_max_simt_vf): Expect OFFLOAD_TARGET_NAMES to be separated by
+	colon instead of comma.
+	(omp_offload_device_kind_arch_isa, omp_maybe_offloaded): New
+	functions.
+	(omp_context_selector_matches): Implement device set arch/isa
+	selectors, improve device set kind selector handling.
+	* config/i386/i386-options.h (ix86_omp_device_kind_arch_isa): Declare.
+	* config/i386/i386.c (TARGET_SIMD_CLONE_ADJUST,
+	TARGET_SIMD_CLONE_USABLE): Formatting fix.
+	(TARGET_OMP_DEVICE_KIND_ARCH_ISA): Redefine to
+	ix86_omp_device_kind_arch_isa.
+	* config/i386/i386-options.c (struct ix86_target_opts): Move type
+	definition from ix86_target_string to file scope.
+	(isa2_opts, isa_opts): Moved arrays from ix86_target_string function
+	to file scope.
+	(ix86_omp_device_kind_arch_isa): New function.
+	(ix86_target_string): Moved struct ix86_target_opts, isa2_opts and
+	isa_opts definitions to file scope.
+	* config/i386/t-intelmic (omp-device-properties): New goal.
+	* config/nvptx/t-nvptx (omp-device-properties): Likewise.
+	* config/nvptx/nvptx.c (nvptx_omp_device_kind_arch_isa): New function.
+	(TARGET_OMP_DEVICE_KIND_ARCH_ISA): Redefine to
+	nvptx_omp_device_kind_arch_isa.
+	* configure: Regenerate.
+	* doc/tm.texi: Regenerate.
+
 	PR middle-end/92231
 	* tree.h (fndecl_built_in_p): Use fndecl_built_in_p instead of
 	DECL_BUILT_IN in comment.  Remove redundant ()s around return

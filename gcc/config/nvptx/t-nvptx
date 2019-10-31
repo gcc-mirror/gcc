@@ -10,3 +10,8 @@ mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) 
 	  mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBS)
 
 MULTILIB_OPTIONS = mgomp
+
+omp-device-properties: $(srcdir)/config/nvptx/nvptx.c
+	echo kind: gpu > omp-device-properties
+	echo arch: nvptx >> omp-device-properties
+	echo isa: sm_30 sm_35 >> omp-device-properties

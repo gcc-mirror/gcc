@@ -2645,7 +2645,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        common/common-target-hooks-def.h pass-instances.def \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
        params.list params.options case-cfn-macros.h \
-       cfn-operators.pd
+       cfn-operators.pd omp-device-properties.h
 
 #
 # How to compile object files to run on the build machine.
@@ -2853,6 +2853,30 @@ gengtype$(exeext) : gengtype.o gengtype-lex.o gengtype-parse.o \
 $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
+
+omp-general.o: omp-device-properties.h
+
+omp_device_properties = @omp_device_properties@
+omp-device-properties.h: s-omp-device-properties-h ; @true
+s-omp-device-properties-h: @omp_device_property_deps@
+	-rm -f tmp-omp-device-properties.h; \
+	for kind in kind arch isa; do \
+	  echo 'const char omp_offload_device_'$${kind}'[] = ' \
+	    >> tmp-omp-device-properties.h; \
+	  for prop in none $(omp_device_properties); do \
+	    [ "$$prop" = "none" ] && continue; \
+	    tgt=`echo "$$prop" | sed 's/=.*$$//'`; \
+	    props=`echo "$$prop" | sed 's/.*=//'`; \
+	    echo "\"$$tgt\\0\"" >> tmp-omp-device-properties.h; \
+	    sed -n 's/^'$${kind}': //p' $${props} \
+	      | sed 's/[[:blank:]]/ /g;s/  */ /g;s/^ //;s/ $$//;s/ /\\0/g;s/^/"/;s/$$/\\0\\0"/' \
+	      >> tmp-omp-device-properties.h; \
+	  done; \
+	  echo '"";' >> tmp-omp-device-properties.h; \
+	done; \
+	$(SHELL) $(srcdir)/../move-if-change tmp-omp-device-properties.h \
+	  omp-device-properties.h
+	$(STAMP) s-omp-device-properties-h
 
 # Generated source files for gengtype.  Prepend inclusion of
 # config.h/bconfig.h because AIX requires _LARGE_FILES to be defined before
@@ -3452,6 +3476,10 @@ ifeq ($(enable_plugin),yes)
 install: install-plugin
 endif
 
+ifeq ($(enable_as_accelerator),yes)
+install: install-omp-device-properties
+endif
+
 install-strip: override INSTALL_PROGRAM = $(INSTALL_STRIP_PROGRAM)
 ifneq ($(STRIP),)
 install-strip: STRIPPROG = $(STRIP)
@@ -3636,6 +3664,11 @@ install-driver: installdirs xgcc$(exeext)
 	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi; \
 	fi
+
+# Install omp-device-properties file for accelerator compilers.
+install-omp-device-properties: omp-device-properties installdirs
+	$(INSTALL_DATA) omp-device-properties \
+	  $(DESTDIR)$(libsubdir)/omp-device-properties
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir

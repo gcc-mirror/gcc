@@ -8,3 +8,10 @@ ALL_HOST_OBJS += mkoffload.o
 mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBS)
+
+omp-device-properties: $(srcdir)/config/i386/i386-options.c
+	echo kind: cpu > omp-device-properties
+	echo arch: x86 x86_64 i386 i486 i586 i686 ia32 >> omp-device-properties
+	echo isa: sse4 `sed -n '/^static struct ix86_target_opts isa2\?_opts\[\] =/,/^};/p' \
+	  $(srcdir)/config/i386/i386-options.c | \
+	  sed -n 's/",.*$$//;s/\./_/;s/^  { "-m//p'` >> omp-device-properties

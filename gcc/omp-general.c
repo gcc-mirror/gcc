@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "hsa-common.h"
 #include "tree-pass.h"
+#include "omp-device-properties.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -537,7 +538,7 @@ omp_max_simt_vf (void)
       {
 	if (!strncmp (c, "nvptx", strlen ("nvptx")))
 	  return 32;
-	else if ((c = strchr (c, ',')))
+	else if ((c = strchr (c, ':')))
 	  c++;
       }
   return 0;
@@ -569,6 +570,79 @@ omp_constructor_traits_to_codes (tree ctx, enum tree_code *constructs)
     }
   gcc_assert (i == -1);
   return nconstructs;
+}
+
+/* Return true if PROP is possibly present in one of the offloading target's
+   OpenMP contexts.  The format of PROPS string is always offloading target's
+   name terminated by '\0', followed by properties for that offloading
+   target separated by '\0' and terminated by another '\0'.  The strings
+   are created from omp-device-properties installed files of all configured
+   offloading targets.  */
+
+static bool
+omp_offload_device_kind_arch_isa (const char *props, const char *prop)
+{
+  const char *names = getenv ("OFFLOAD_TARGET_NAMES");
+  if (names == NULL || *names == '\0')
+    return false;
+  while (*props != '\0')
+    {
+      size_t name_len = strlen (props);
+      bool matches = false;
+      for (const char *c = names; c; )
+	{
+	  if (strncmp (props, c, name_len) == 0
+	      && (c[name_len] == '\0'
+		  || c[name_len] == ':'
+		  || c[name_len] == '='))
+	    {
+	      matches = true;
+	      break;
+	    }
+	  else if ((c = strchr (c, ':')))
+	    c++;
+	}
+      props = props + name_len + 1;
+      while (*props != '\0')
+	{
+	  if (matches && strcmp (props, prop) == 0)
+	    return true;
+	  props = strchr (props, '\0') + 1;
+	}
+      props++;
+    }
+  return false;
+}
+
+/* Return true if the current code location is or might be offloaded.
+   Return true in declare target functions, or when nested in a target
+   region or when unsure, return false otherwise.  */
+
+static bool
+omp_maybe_offloaded (void)
+{
+  if (!hsa_gen_requested_p ())
+    {
+      if (!ENABLE_OFFLOADING)
+	return false;
+      const char *names = getenv ("OFFLOAD_TARGET_NAMES");
+      if (names == NULL || *names == '\0')
+	return false;
+    }
+  if (symtab->state == PARSING)
+    /* Maybe.  */
+    return true;
+  if (current_function_decl
+      && lookup_attribute ("omp declare target",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return true;
+  if (cfun && (cfun->curr_properties & PROP_gimple_any) == 0)
+    {
+      enum tree_code construct = OMP_TARGET;
+      if (omp_construct_selector_matches (&construct, 1))
+	return true;
+    }
+  return false;
 }
 
 /* Return 1 if context selector matches the current OpenMP context, 0
@@ -667,8 +741,45 @@ omp_context_selector_matches (tree ctx)
 		    return 0;
 		}
 	      if (set == 'd' && !strcmp (sel, "arch"))
-		/* For now, need a target hook.  */
-		ret = -1;
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *arch = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    int r = 0;
+		    if (targetm.omp.device_kind_arch_isa != NULL)
+		      r = targetm.omp.device_kind_arch_isa (omp_device_arch,
+							    arch);
+		    if (r == 0 || (r == -1 && symtab->state != PARSING))
+		      {
+			/* If we are or might be in a target region or
+			   declare target function, need to take into account
+			   also offloading values.  */
+			if (!omp_maybe_offloaded ())
+			  return 0;
+			if (strcmp (arch, "hsa") == 0
+			    && hsa_gen_requested_p ())
+			  {
+			    ret = -1;
+			    continue;
+			  }
+			if (ENABLE_OFFLOADING)
+			  {
+			    const char *arches = omp_offload_device_arch;
+			    if (omp_offload_device_kind_arch_isa (arches,
+								  arch))
+			      {
+				ret = -1;
+				continue;
+			      }
+			  }
+			return 0;
+		      }
+		    else if (r == -1)
+		      ret = -1;
+		    /* If arch matches on the host, it still might not match
+		       in the offloading region.  */
+		    else if (omp_maybe_offloaded ())
+		      ret = -1;
+		  }
 	      break;
 	    case 'u':
 	      if (set == 'i' && !strcmp (sel, "unified_address"))
@@ -729,57 +840,92 @@ omp_context_selector_matches (tree ctx)
 		    const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
 		    if (!strcmp (prop, "any"))
 		      continue;
-		    if (!strcmp (prop, "fpga"))
-		      return 0;	/* Right now GCC doesn't support any fpgas.  */
 		    if (!strcmp (prop, "host"))
 		      {
-			if (ENABLE_OFFLOADING || hsa_gen_requested_p ())
+			if (omp_maybe_offloaded ())
 			  ret = -1;
 			continue;
 		      }
 		    if (!strcmp (prop, "nohost"))
 		      {
-			if (ENABLE_OFFLOADING || hsa_gen_requested_p ())
+			if (omp_maybe_offloaded ())
 			  ret = -1;
 			else
 			  return 0;
 			continue;
 		      }
-		    if (!strcmp (prop, "cpu") || !strcmp (prop, "gpu"))
+		    int r = 0;
+		    if (targetm.omp.device_kind_arch_isa != NULL)
+		      r = targetm.omp.device_kind_arch_isa (omp_device_kind,
+							    prop);
+		    else
+		      r = strcmp (prop, "cpu") == 0;
+		    if (r == 0 || (r == -1 && symtab->state != PARSING))
 		      {
-			bool maybe_gpu = false;
-			if (hsa_gen_requested_p ())
-			  maybe_gpu = true;
-			else if (ENABLE_OFFLOADING)
-			  for (const char *c = getenv ("OFFLOAD_TARGET_NAMES");
-			       c; )
-			    {
-			      if (!strncmp (c, "nvptx", strlen ("nvptx"))
-				  || !strncmp (c, "amdgcn", strlen ("amdgcn")))
-				{
-				  maybe_gpu = true;
-				  break;
-				}
-			      else if ((c = strchr (c, ',')))
-				c++;
-			    }
-			if (!maybe_gpu)
+			/* If we are or might be in a target region or
+			   declare target function, need to take into account
+			   also offloading values.  */
+			if (!omp_maybe_offloaded ())
+			  return 0;
+			if (strcmp (prop, "gpu") == 0
+			    && hsa_gen_requested_p ())
 			  {
-			    if (prop[0] == 'g')
-			      return 0;
+			    ret = -1;
+			    continue;
 			  }
-			else
-			  ret = -1;
-			continue;
+			if (ENABLE_OFFLOADING)
+			  {
+			    const char *kinds = omp_offload_device_kind;
+			    if (omp_offload_device_kind_arch_isa (kinds, prop))
+			      {
+				ret = -1;
+				continue;
+			      }
+			  }
+			return 0;
 		      }
-		    /* Any other kind doesn't match.  */
-		    return 0;
+		    else if (r == -1)
+		      ret = -1;
+		    /* If kind matches on the host, it still might not match
+		       in the offloading region.  */
+		    else if (omp_maybe_offloaded ())
+		      ret = -1;
 		  }
 	      break;
 	    case 'i':
 	      if (set == 'd' && !strcmp (sel, "isa"))
-		/* For now, need a target hook.  */
-		ret = -1;
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *isa = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    int r = 0;
+		    if (targetm.omp.device_kind_arch_isa != NULL)
+		      r = targetm.omp.device_kind_arch_isa (omp_device_isa,
+							    isa);
+		    if (r == 0 || (r == -1 && symtab->state != PARSING))
+		      {
+			/* If we are or might be in a target region or
+			   declare target function, need to take into account
+			   also offloading values.  */
+			if (!omp_maybe_offloaded ())
+			  return 0;
+			if (ENABLE_OFFLOADING)
+			  {
+			    const char *isas = omp_offload_device_isa;
+			    if (omp_offload_device_kind_arch_isa (isas, isa))
+			      {
+				ret = -1;
+				continue;
+			      }
+			  }
+			return 0;
+		      }
+		    else if (r == -1)
+		      ret = -1;
+		    /* If isa matches on the host, it still might not match
+		       in the offloading region.  */
+		    else if (omp_maybe_offloaded ())
+		      ret = -1;
+		  }
 	      break;
 	    case 'c':
 	      if (set == 'u' && !strcmp (sel, "condition"))
