@@ -1,5 +1,7 @@
 2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/html/*: Regenerate.
+
 	* include/bits/refwrap.h (reference_wrapper, ref, cref): Add constexpr
 	specifiers for C++20.
 	* include/std/functional (_Mem_fn, mem_fn, _Bind, _Bind_result, bind)
