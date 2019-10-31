@@ -1822,10 +1822,7 @@ tsubst_type_requirement (tree t, tree args, subst_info info)
   return finish_type_requirement (EXPR_LOCATION (t), type);
 }
 
-/* True if TYPE can be deduced from EXPR.
-
-   FIXME: C++20 compound requirement constraints should be normalized and then
-   satisfied rather than substituted.  */
+/* True if TYPE can be deduced from EXPR.  */
 
 static bool
 type_deducible_p (tree expr, tree type, tree placeholder, tree args,
@@ -1839,11 +1836,16 @@ type_deducible_p (tree expr, tree type, tree placeholder, tree args,
      substitutes args into any template parameters in the trailing
      result type.  */
   tree saved_constr = PLACEHOLDER_TYPE_CONSTRAINTS (placeholder);
-  PLACEHOLDER_TYPE_CONSTRAINTS (placeholder)
+  tree subst_constr
     = tsubst_constraint (saved_constr,
 			 args,
 			 info.complain | tf_partial,
 			 info.in_decl);
+
+  if (subst_constr == error_mark_node)
+    return false;
+
+  PLACEHOLDER_TYPE_CONSTRAINTS (placeholder) = subst_constr;
 
   /* Temporarily unlink the canonical type.  */
   tree saved_type = TYPE_CANONICAL (placeholder);
@@ -3139,7 +3141,8 @@ diagnose_compound_requirement (tree req, tree args, tree in_decl)
 	  if (!type_deducible_p (expr, type, placeholder, args, quiet))
 	    {
 	      tree orig_expr = TREE_OPERAND (req, 0);
-	      inform (loc, "type deduction from %qE failed", orig_expr);
+	      inform (loc, "%qE does not satisfy return-type-requirement",
+		      orig_expr);
 
 	      /* Further explain the reason for the error.  */
 	      type_deducible_p (expr, type, placeholder, args, noisy);
