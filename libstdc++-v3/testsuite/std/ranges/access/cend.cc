@@ -66,15 +66,18 @@ struct RR
   long l = 0;
   int a[4] = { 0, 1, 2, 3 };
 
-  const void* begin() const { return nullptr; }
-  friend const void* begin(const RR&&) noexcept { return nullptr; }
-
-  short* end() noexcept { return &s; }
-  const long* end() const { return &l; }
+  const void* begin() const; // return type not an iterator
 
   friend int* end(RR&) { throw 1; }
+  short* end() noexcept { return &s; }
+
+  friend const long* begin(const RR&) noexcept;
+  const long* end() const { return &l; }
+
+  friend int* begin(RR&&) noexcept;
   friend int* end(RR&& r) { return r.a + 1; }
-  friend const int* end(const RR&) { throw 1; }
+
+  friend const int* begin(const RR&&) noexcept;
   friend const int* end(const RR&& r) noexcept { return r.a + 3; }
 };
 

@@ -61,11 +61,12 @@ struct R
 {
   int a[4] = { 0, 1, 2, 3 };
 
-  const int* begin() const { return nullptr; }
-  friend const int* begin(const R&& r) noexcept { return nullptr; }
+  const int* begin() const;
+  friend int* begin(R&&) noexcept;
+  friend const int* begin(const R&&) noexcept;
 
   // Should be ignored because it doesn't return a sentinel for int*
-  const long* end() const { return nullptr; }
+  const long* end() const;
 
   friend int* end(R& r) { return r.a + 0; }
   friend int* end(R&& r) { return r.a + 1; }
@@ -105,15 +106,20 @@ struct RR
   long l = 0;
   int a[4] = { 0, 1, 2, 3 };
 
-  const void* begin() const { return nullptr; }
-  friend const void* begin(const RR&&) noexcept { return nullptr; }
+  const void* begin() const; // return type not an iterator
 
+  friend const short* begin(RR&) noexcept;
   short* end() noexcept { return &s; }
+
+  friend const long* begin(const RR&) noexcept;
   const long* end() const { return &l; }
 
-  friend int* end(RR&) { throw 1; }
+  friend const int* begin(RR&&) noexcept;
+  friend int* end(RR&) { throw 1; } // not valid for rvalues
   friend int* end(RR&& r) { return r.a + 1; }
-  friend const int* end(const RR&) { throw 1; }
+
+  friend const int* begin(const RR&&) noexcept;
+  friend const int* end(const RR&) { throw 1; } // not valid for rvalues
   friend const int* end(const RR&& r) noexcept { return r.a + 3; }
 };
 
