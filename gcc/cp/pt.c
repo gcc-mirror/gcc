@@ -28138,7 +28138,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	/* Rebuild the check using the deduced arguments.  */
 	check = build_concept_check (cdecl, cargs, tf_none);
 
-	if (!constraints_satisfied_p (check, cargs))
+	if (!constraints_satisfied_p (check))
           {
             if (complain & tf_warning_or_error)
               {

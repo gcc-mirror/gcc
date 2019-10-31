@@ -1,3 +1,11 @@
+2019-10-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92268 - hard error satisfying return-type-requirement
+	* constraint.cc (type_deducible_p): Check for substitution failure.
+	(diagnose_compound_requirement): Adjust diagnostic.
+	* pt.c (do_auto_deduction): Don't pass cargs to
+	constraints_satisfied_p.
+
 2019-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91369 - Implement P0784R7: constexpr new
