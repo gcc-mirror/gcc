@@ -652,14 +652,6 @@ func_checker::compare_gimple_cond (gimple *s1, gimple *s2)
   return compare_operand (t1, t2);
 }
 
-/* Verifies that tree labels T1 and T2 correspond in FUNC1 and FUNC2.  */
-
-bool
-func_checker::compare_tree_ssa_label (tree t1, tree t2)
-{
-  return compare_operand (t1, t2);
-}
-
 /* Verifies for given GIMPLE_LABEL stmts S1 and S2 that
    label statements are semantically equivalent.  */
 
