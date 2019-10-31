@@ -5239,6 +5239,9 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
 						    parmse->expr);
+      bool is_artificial = (INDIRECT_REF_P (parmse->expr)
+			    ? DECL_ARTIFICIAL (TREE_OPERAND (parmse->expr, 0))
+			    : DECL_ARTIFICIAL (parmse->expr));
 
       /* Unallocated allocatable arrays and unassociated pointer arrays
 	 need their dtype setting if they are argument associated with
@@ -5258,7 +5261,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       type = e->ts.type != BT_ASSUMED ? gfc_typenode_for_spec (&e->ts) :
 					NULL_TREE;
 
-      if (type && DECL_ARTIFICIAL (parmse->expr)
+      if (type && is_artificial
 	  && type != gfc_get_element_type (TREE_TYPE (parmse->expr)))
 	{
 	  /* Obtain the offset to the data.  */
@@ -5271,7 +5274,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 			  gfc_get_dtype_rank_type (e->rank, type));
 	}
       else if (type == NULL_TREE
-	       || (!is_subref_array (e) && !DECL_ARTIFICIAL (parmse->expr)))
+	       || (!is_subref_array (e) && !is_artificial))
 	{
 	  /* Make sure that the span is set for expressions where it
 	     might not have been done already.  */

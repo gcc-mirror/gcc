@@ -1,3 +1,9 @@
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92277
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Fix DECL_ARTIFICIAL
+	checking.
+
 2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92208
