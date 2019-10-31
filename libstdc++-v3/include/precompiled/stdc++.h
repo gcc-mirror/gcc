@@ -138,7 +138,7 @@
 // #include <compare>
 #include <concepts>
 #include <numbers>
-// #include <ranges>
+#include <ranges>
 #include <span>
 // #include <syncstream>
 #include <version>

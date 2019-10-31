@@ -20,23 +20,19 @@
 
 #include <ranges>
 
-extern int unbounded[];
+struct R { };
+template<> constexpr bool std::ranges::disable_sized_range<R> = true;
 
-auto
-test01()
+namespace __gnu_test
 {
-  return std::ranges::end(unbounded); // { dg-error "here" }
+  constexpr const bool* disable_sized_range
+    = &std::ranges::disable_sized_range<void>;
+  constexpr auto* begin = &std::ranges::begin;
+  constexpr auto* end = &std::ranges::end;
+  constexpr auto* cbegin = &std::ranges::cbegin;
+  constexpr auto* cend = &std::ranges::cend;
+  constexpr auto* rbegin = &std::ranges::rbegin;
+  constexpr auto* rend = &std::ranges::rend;
+  constexpr auto* crbegin = &std::ranges::crbegin;
+  constexpr auto* crend = &std::ranges::crend;
 }
-// { dg-error "static assertion failed" "" { target *-*-* } 0 }
-
-struct incomplete;
-extern incomplete array[2];
-
-auto
-test02()
-{
-  return std::ranges::end(array); // { dg-error "here" }
-}
-// { dg-error "incomplete type" "" { target *-*-* } 0 }
-
-

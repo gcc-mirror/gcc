@@ -64,6 +64,7 @@ std_headers = \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
+	${std_srcdir}/ranges \
 	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
 	${std_srcdir}/scoped_allocator \

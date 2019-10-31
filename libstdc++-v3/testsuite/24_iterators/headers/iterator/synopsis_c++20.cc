@@ -78,6 +78,9 @@ namespace std
   struct unreachable_sentinel_t;
 }
 
+struct I { };
+template<> constexpr bool std::disable_sized_sentinel<I, I> = true;
+
 namespace __gnu_test
 {
   // customization points
