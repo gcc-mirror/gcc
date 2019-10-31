@@ -1,6 +1,14 @@
 2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_emit_unwind_label): New default to false.
+	(darwin_override_options): Set darwin_emit_unwind_label as needed.
+
+2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2019-08-13 Iain Sandoe <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_indirect_call_target): Rename symbol stub
