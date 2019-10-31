@@ -245,16 +245,6 @@ value_range_base::zero_p () const
 	  && integer_zerop (m_max));
 }
 
-/* Return TRUE if range is nonzero.  */
-
-inline bool
-value_range_base::nonzero_p () const
-{
-  return (m_kind == VR_ANTI_RANGE
-	  && integer_zerop (m_min)
-	  && integer_zerop (m_max));
-}
-
 extern void dump_value_range (FILE *, const value_range *);
 extern void dump_value_range (FILE *, const value_range_base *);
 
@@ -321,6 +311,23 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
+
+/* Return TRUE if range is nonzero.  */
+
+inline bool
+value_range_base::nonzero_p () const
+{
+  if (m_kind == VR_ANTI_RANGE
+      && !TYPE_UNSIGNED (type ())
+      && integer_zerop (m_min)
+      && integer_zerop (m_max))
+    return true;
+
+  return (m_kind == VR_RANGE
+	  && TYPE_UNSIGNED (type ())
+	  && integer_onep (m_min)
+	  && vrp_val_is_max (m_max, true));
+}
 
 /* Return TRUE if *VR includes the value zero.  */
 
