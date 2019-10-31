@@ -1,3 +1,15 @@
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92231
+	* tree.h (fndecl_built_in_p): Use fndecl_built_in_p instead of
+	DECL_BUILT_IN in comment.  Remove redundant ()s around return
+	argument.
+	* tree.c (free_lang_data_in_decl): Check if var is FUNCTION_DECL
+	before calling fndecl_built_in_p.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Check if
+	TREE_OPERAND (fn, 0) is a FUNCTION_DECL before calling
+	fndecl_built_in_p on it.
+
 2019-10-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* params.def (PARAM_VECT_EPILOGUES_NOMASK): Enable by default.

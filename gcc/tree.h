@@ -6119,12 +6119,12 @@ type_has_mode_precision_p (const_tree t)
 
    Note that it is different from the DECL_IS_BUILTIN accessor.  For
    instance, user declared prototypes of C library functions are not
-   DECL_IS_BUILTIN but may be DECL_BUILT_IN.  */
+   DECL_IS_BUILTIN but may be fndecl_built_in_p.  */
 
 inline bool
 fndecl_built_in_p (const_tree node)
 {
-  return (DECL_BUILT_IN_CLASS (node) != NOT_BUILT_IN);
+  return DECL_BUILT_IN_CLASS (node) != NOT_BUILT_IN;
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function
@@ -6133,7 +6133,7 @@ fndecl_built_in_p (const_tree node)
 inline bool
 fndecl_built_in_p (const_tree node, built_in_class klass)
 {
-  return (fndecl_built_in_p (node) && DECL_BUILT_IN_CLASS (node) == klass);
+  return fndecl_built_in_p (node) && DECL_BUILT_IN_CLASS (node) == klass;
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function

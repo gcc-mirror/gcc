@@ -1,3 +1,8 @@
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92231
+	* gcc.c-torture/compile/pr92231.c: New test.
+
 2019-10-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.dg/vect/vect-epilogues.c: New test.

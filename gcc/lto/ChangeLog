@@ -1,3 +1,9 @@
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92231
+	* lto-lang.c (handle_const_attribute): Don't call fndecl_built_in_p
+	on *node that is not FUNCTION_DECL.
+
 2019-10-30  Martin Liska  <mliska@suse.cz>
 
 	PR lto/91393
