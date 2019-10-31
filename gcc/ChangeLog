@@ -1,3 +1,10 @@
+2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types):
+	Assert that the type we store in abi_vector_types is its own
+	main variant.
+	(svbool_type_p): Don't apply TYPE_MAIN_VARIANT here.
+
 2019-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.c (arm_legitimize_address): Don't form negative offsets
