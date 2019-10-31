@@ -1,6 +1,20 @@
 2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/Wnonnull.c: Provide prototypes for strlen and memcpy.
+	Use __SIZE_TYPE__ instead of size_t.
+
+	Backport from mainline.
+	2019-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/Wnonnull.c: Add attributed function declarations for
+	memcpy and strlen for Darwin.
+
+2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/indirect-thunk-1.c: Allow 'l' or 'L' in
