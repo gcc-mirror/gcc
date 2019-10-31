@@ -1,3 +1,10 @@
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92284
+	* gfortran.dg/bind_c_array_params_3_aux.c: Include
+	../../../libgfortran/ISO_Fortran_binding.h rather than
+	ISO_Fortran_binding.h.
+
 2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/achar_2.f90: Remove bogus line from
@@ -31,7 +38,7 @@
 
 2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
 
-	PR fortran/92284.
+	PR fortran/92284
 	* gfortran.dg/bind-c-intent-out.f90: Update expected dump;
 	extend comment.
 	* gfortran.dg/bind_c_array_params_3.f90: New.
