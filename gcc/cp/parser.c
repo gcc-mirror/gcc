@@ -10835,11 +10835,13 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
    lambda-declarator:
      < template-parameter-list [opt] >
+       requires-clause [opt]
      ( parameter-declaration-clause [opt] )
        attribute-specifier [opt]
        decl-specifier-seq [opt]
        exception-specification [opt]
        lambda-return-type-clause [opt]
+       requires-clause [opt]
 
    LAMBDA_EXPR is the current representation of the lambda expression.  */
 
@@ -10858,6 +10860,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree template_param_list = NULL_TREE;
   tree tx_qual = NULL_TREE;
   tree return_type = NULL_TREE;
+  tree trailing_requires_clause = NULL_TREE;
   cp_decl_specifier_seq lambda_specs;
   clear_decl_specs (&lambda_specs);
 
@@ -10877,8 +10880,19 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       cp_lexer_consume_token (parser->lexer);
 
       template_param_list = cp_parser_template_parameter_list (parser);
-
       cp_parser_skip_to_end_of_template_parameter_list (parser);
+
+      /* We may have a constrained generic lambda; parse the requires-clause
+	 immediately after the template-parameter-list and combine with any
+	 shorthand constraints present.  */
+      tree dreqs = cp_parser_requires_clause_opt (parser);
+      if (flag_concepts)
+	{
+	  tree reqs = get_shorthand_constraints (current_template_parms);
+	  if (dreqs)
+	    reqs = combine_constraint_expressions (reqs, dreqs);
+	  TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+	}
 
       /* We just processed one more parameter list.  */
       ++parser->num_template_parameter_lists;
@@ -10943,6 +10957,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (cp_next_tokens_can_be_gnu_attribute_p (parser))
 	gnu_attrs = cp_parser_gnu_attributes_opt (parser);
 
+      /* Parse optional trailing requires clause.  */
+      trailing_requires_clause = cp_parser_requires_clause_opt (parser);
+
       /* The function parameters must be in scope all the way until after the
          trailing-return-type in case of decltype.  */
       pop_bindings_and_leave_scope ();
@@ -10989,7 +11006,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       tx_qual,
 				       exception_spec,
                                        return_type,
-                                       /*requires_clause*/NULL_TREE);
+				       trailing_requires_clause);
     declarator->std_attributes = std_attrs;
 
     fco = grokmethod (&return_type_specs,

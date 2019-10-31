@@ -1046,6 +1046,12 @@ maybe_add_lambda_conv_op (tree type)
       return;
     }
 
+  /* Non-generic non-capturing lambdas only have a conversion function to
+     pointer to function when the trailing requires-clause's constraints are
+     satisfied.  */
+  if (!generic_lambda_p && !constraints_satisfied_p (callop))
+    return;
+
   /* Non-template conversion operators are defined directly with build_call_a
      and using DIRECT_ARGVEC for arguments (including 'this').  Templates are
      deferred and the CALL is built in-place.  In the case of a deduced return
