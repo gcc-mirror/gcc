@@ -1,5 +1,7 @@
 2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/add_pointer/value.cc: Check void types.
+
 	* include/bits/range_access.h (__sizable): Rename to __sentinel_size.
 	Remove workaround for PR c++/92268 and remove redundant requirements
 	that are already checked by sized_sentinel_for.
