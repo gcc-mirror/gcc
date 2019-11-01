@@ -1,3 +1,8 @@
+2019-11-01  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Declare test functions
+	with noipa attribute.
+
 2019-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/template/fn.C: New.
