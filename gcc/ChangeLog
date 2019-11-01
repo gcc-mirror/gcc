@@ -1,3 +1,10 @@
+2019-11-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2019-10-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (MAX_PCREL17F_OFFSET): Adjust.
+
 2019-10-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
