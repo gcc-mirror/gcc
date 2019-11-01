@@ -1,5 +1,70 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88335 - Implement P1073R3: Immediate functions
+	* cp-tree.h (struct lang_decl_fn): Add immediate_fn_p bit.
+	(DECL_IMMEDIATE_FUNCTION_P, SET_DECL_IMMEDIATE_FUNCTION_P): Define.
+	(enum cp_decl_spec): Add ds_consteval.
+	(fold_non_dependent_expr): Add another tree argument defaulted to
+	NULL_TREE.
+	* name-lookup.h (struct cp_binding_level): Add immediate_fn_ctx_p
+	member.
+	* parser.c (cp_keyword_starts_decl_specifier_p): Adjust comments
+	for C++11 and C++20 specifiers.  Handle RID_CONSTEVAL.
+	(CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR): Adjust comment.
+	(CP_PARSER_FLAGS_CONSTEVAL): New.
+	(cp_parser_skip_balanced_tokens): New forward declaration.
+	(cp_parser_lambda_declarator_opt): Handle ds_consteval.  Set
+	current_binding_level->immediate_fn_ctx_p before parsing parameter
+	list if decl-specifier-seq contains consteval specifier.
+	(cp_parser_decl_specifier_seq): Handle RID_CONSTEVAL.
+	(cp_parser_explicit_instantiation): Diagnose explicit instantiation
+	with consteval specifier.
+	(cp_parser_init_declarator): For consteval or into flags
+	CP_PARSER_FLAGS_CONSTEVAL.
+	(cp_parser_direct_declarator): If CP_PARSER_FLAGS_CONSTEVAL, set
+	current_binding_level->immediate_fn_ctx_p in the sk_function_parms
+	scope.
+	(set_and_check_decl_spec_loc): Add consteval entry, formatting fix.
+	* call.c (build_addr_func): For direct calls to immediate functions
+	use build_address rather than decay_conversion.
+	(build_over_call): Evaluate immediate function invocations.
+	* error.c (dump_function_decl): Handle DECL_IMMEDIATE_FUNCTION_P.
+	* semantics.c (expand_or_defer_fn_1): Use tentative linkage and don't
+	call mark_needed for immediate functions.
+	* typeck.c (cxx_sizeof_or_alignof_expr): Likewise.  Formatting fix.
+	(cp_build_addr_expr_1): Reject taking address of immediate function
+	outside of immediate function.
+	* decl.c (validate_constexpr_redeclaration): Diagnose consteval
+	vs. non-consteval or vice versa redeclaration.  Use
+	SET_DECL_IMMEDIATE_FUNCTION_P if new_decl is immediate function.
+	(check_tag_decl): Use %qs with keyword string to simplify translation.
+	Handle ds_consteval.
+	(start_decl): Adjust diagnostics for static or thread_local variables
+	in immediate functions.
+	(grokfndecl): Call sorry_at on virtual consteval.  Use %qs with keyword
+	to string to simplify translation.  Diagnose consteval main.  Use
+	SET_DECL_IMMEDIATE_FUNCTION_P for consteval.
+	(grokdeclarator): Handle consteval.  Use %qs with keyword strings to
+	simplify translation.  Use separate ifs instead of chained else if
+	for invalid specifiers.  For constinit clear constinit_p rather than
+	constexpr_p.
+	* constexpr.c (find_immediate_fndecl): New function.
+	(cxx_eval_outermost_constant_expr): Allow consteval calls returning
+	void.  Diagnose returning address of immediate function from consteval
+	evaluation.
+	(fold_non_dependent_expr_template): Add OBJECT argument, pass it
+	through to cxx_eval_outermost_constant_expr.
+	(fold_non_dependent_expr): Add OBJECT argument, pass it through to
+	fold_non_dependent_expr_template.
+	(fold_non_dependent_init): Adjust fold_non_dependent_expr_template
+	caller.
+	* method.c (defaulted_late_check): Adjust diagnostics for consteval.
+	* lambda.c (maybe_add_lambda_conv_op): Copy over
+	DECL_DECLARED_CONSTEXPR_P and DECL_IMMEDIATE_FUNCTION_P bits from
+	callop to both artificial functions.
+	* init.c (build_value_init): Don't do further processing if
+	build_special_member_call returned a TREE_CONSTANT.  Formatting fix.
+
 	PR c++/91369 - Implement P0784R7: constexpr new
 	* cp-tree.h (CALL_FROM_NEW_OR_DELETE_P): Define.
 	* init.c (build_new_1, build_vec_delete_1, build_delete): Set

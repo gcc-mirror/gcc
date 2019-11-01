@@ -1225,7 +1225,13 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
     return true;
   if (DECL_DECLARED_CONSTEXPR_P (old_decl)
       == DECL_DECLARED_CONSTEXPR_P (new_decl))
-    return true;
+    {
+      if (TREE_CODE (old_decl) != FUNCTION_DECL)
+	return true;
+      if (DECL_IMMEDIATE_FUNCTION_P (old_decl)
+	  == DECL_IMMEDIATE_FUNCTION_P (new_decl))
+	return true;
+    }
   if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
       if (fndecl_built_in_p (old_decl))
@@ -1233,6 +1239,8 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
 	  /* Hide a built-in declaration.  */
 	  DECL_DECLARED_CONSTEXPR_P (old_decl)
 	    = DECL_DECLARED_CONSTEXPR_P (new_decl);
+	  if (DECL_IMMEDIATE_FUNCTION_P (new_decl))
+	    SET_DECL_IMMEDIATE_FUNCTION_P (old_decl);
 	  return true;
 	}
       /* 7.1.5 [dcl.constexpr]
@@ -1242,9 +1250,14 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
 	  && DECL_TEMPLATE_SPECIALIZATION (new_decl))
 	return true;
 
+      const char *kind = "constexpr";
+      if (DECL_IMMEDIATE_FUNCTION_P (old_decl)
+	  || DECL_IMMEDIATE_FUNCTION_P (new_decl))
+	kind = "consteval";
       error_at (DECL_SOURCE_LOCATION (new_decl),
-		"redeclaration %qD differs in %<constexpr%> "
-		"from previous declaration", new_decl);
+		"redeclaration %qD differs in %qs "
+		"from previous declaration", new_decl,
+		kind);
       inform (DECL_SOURCE_LOCATION (old_decl),
 	      "previous declaration %qD", old_decl);
       return false;
@@ -5024,12 +5037,15 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
       else if (saw_typedef)
 	warning_at (declspecs->locations[ds_typedef], 0,
 		    "%<typedef%> was ignored in this declaration");
-      else if (decl_spec_seq_has_spec_p (declspecs,  ds_constexpr))
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_constexpr))
         error_at (declspecs->locations[ds_constexpr],
-		  "%<constexpr%> cannot be used for type declarations");
-      else if (decl_spec_seq_has_spec_p (declspecs,  ds_constinit))
+		  "%qs cannot be used for type declarations", "constexpr");
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_constinit))
 	error_at (declspecs->locations[ds_constinit],
-		  "%<constinit%> cannot be used for type declarations");
+		  "%qs cannot be used for type declarations", "constinit");
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_consteval))
+	error_at (declspecs->locations[ds_consteval],
+		  "%qs cannot be used for type declarations", "consteval");
     }
 
   if (declspecs->attributes && warn_attributes && declared_type)
@@ -5387,11 +5403,14 @@ start_decl (const cp_declarator *declarator,
       bool ok = false;
       if (CP_DECL_THREAD_LOCAL_P (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD declared %<thread_local%> in %<constexpr%> function",
-		  decl);
+		  "%qD declared %<thread_local%> in %qs function", decl,
+		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
+		  ? "consteval" : "constexpr");
       else if (TREE_STATIC (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD declared %<static%> in %<constexpr%> function", decl);
+		  "%qD declared %<static%> in %qs function", decl,
+		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
+		  ? "consteval" : "constexpr");
       else
 	ok = true;
       if (!ok)
@@ -9342,6 +9361,15 @@ grokfndecl (tree ctype,
 	  }
     }
 
+  /* FIXME: For now.  */
+  if (virtualp && (inlinep & 8) != 0)
+    {
+      sorry_at (DECL_SOURCE_LOCATION (decl),
+		"%<virtual%> %<consteval%> method %qD not supported yet",
+		decl);
+      inlinep &= ~8;
+    }
+
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
     set_decl_namespace (decl, in_namespace, friendp);
@@ -9389,7 +9417,10 @@ grokfndecl (tree ctype,
 		  "cannot declare %<::main%> to be inline");
       if (inlinep & 2)
 	error_at (declspecs->locations[ds_constexpr],
-		  "cannot declare %<::main%> to be %<constexpr%>");
+		  "cannot declare %<::main%> to be %qs", "constexpr");
+      if (inlinep & 8)
+	error_at (declspecs->locations[ds_consteval],
+		  "cannot declare %<::main%> to be %qs", "consteval");
       if (!publicp)
 	error_at (location, "cannot declare %<::main%> to be static");
       inlinep = 0;
@@ -9428,6 +9459,11 @@ grokfndecl (tree ctype,
     }
   if (inlinep & 2)
     DECL_DECLARED_CONSTEXPR_P (decl) = true;
+  else if (inlinep & 8)
+    {
+      DECL_DECLARED_CONSTEXPR_P (decl) = true;
+      SET_DECL_IMMEDIATE_FUNCTION_P (decl);
+    }
 
   // If the concept declaration specifier was found, check
   // that the declaration satisfies the necessary requirements.
@@ -10786,6 +10822,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool typedef_p = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
   bool constinit_p = decl_spec_seq_has_spec_p (declspecs, ds_constinit);
+  bool consteval_p = decl_spec_seq_has_spec_p (declspecs, ds_consteval);
   bool late_return_type_p = false;
   bool array_parameter_p = false;
   tree reqs = NULL_TREE;
@@ -11058,17 +11095,31 @@ grokdeclarator (const cp_declarator *declarator,
   if (name == NULL)
     name = decl_context == PARM ? "parameter" : "type name";
 
+  if (consteval_p && constexpr_p)
+    {
+      error_at (declspecs->locations[ds_consteval],
+		"both %qs and %qs specified", "constexpr", "consteval");
+      return error_mark_node;
+    }
+
   if (concept_p && typedef_p)
     {
       error_at (declspecs->locations[ds_concept],
-		"%<concept%> cannot appear in a typedef declaration");
+		"%qs cannot appear in a typedef declaration", "concept");
       return error_mark_node;
     }
 
   if (constexpr_p && typedef_p)
     {
       error_at (declspecs->locations[ds_constexpr],
-		"%<constexpr%> cannot appear in a typedef declaration");
+		"%qs cannot appear in a typedef declaration", "constexpr");
+      return error_mark_node;
+    }
+
+  if (consteval_p && typedef_p)
+    {
+      error_at (declspecs->locations[ds_consteval],
+		"%qs cannot appear in a typedef declaration", "consteval");
       return error_mark_node;
     }
 
@@ -11474,21 +11525,31 @@ grokdeclarator (const cp_declarator *declarator,
 
       /* Function parameters cannot be concept. */
       if (concept_p)
-	error_at (declspecs->locations[ds_concept],
-		  "a parameter cannot be declared %<concept%>");
+	{
+	  error_at (declspecs->locations[ds_concept],
+		    "a parameter cannot be declared %qs", "concept");
+	  concept_p = 0;
+	  constexpr_p = 0;
+	}
       /* Function parameters cannot be constexpr.  If we saw one, moan
          and pretend it wasn't there.  */
       else if (constexpr_p)
         {
           error_at (declspecs->locations[ds_constexpr],
-		    "a parameter cannot be declared %<constexpr%>");
+		    "a parameter cannot be declared %qs", "constexpr");
           constexpr_p = 0;
         }
-      else if (constinit_p)
+      if (constinit_p)
 	{
 	  error_at (declspecs->locations[ds_constinit],
-		    "a parameter cannot be declared %<constinit%>");
-	  constexpr_p = 0;
+		    "a parameter cannot be declared %qs", "constinit");
+	  constinit_p = 0;
+	}
+      if (consteval_p)
+	{
+	  error_at (declspecs->locations[ds_consteval],
+		    "a parameter cannot be declared %qs", "consteval");
+	  consteval_p = 0;
 	}
     }
 
@@ -11511,9 +11572,12 @@ grokdeclarator (const cp_declarator *declarator,
       if (typedef_p)
 	error_at (declspecs->locations[ds_typedef],
 		  "structured binding declaration cannot be %qs", "typedef");
-      if (constexpr_p)
+      if (constexpr_p && !concept_p)
 	error_at (declspecs->locations[ds_constexpr], "structured "
 		  "binding declaration cannot be %qs", "constexpr");
+      if (consteval_p)
+	error_at (declspecs->locations[ds_consteval], "structured "
+		  "binding declaration cannot be %qs", "consteval");
       if (thread_p && cxx_dialect < cxx2a)
 	pedwarn (declspecs->locations[ds_thread], 0,
 		 "structured binding declaration can be %qs only in "
@@ -11573,6 +11637,7 @@ grokdeclarator (const cp_declarator *declarator,
       inlinep = 0;
       typedef_p = 0;
       constexpr_p = 0;
+      consteval_p = 0;
       concept_p = 0;
       if (storage_class != sc_static)
 	{
@@ -12967,7 +13032,7 @@ grokdeclarator (const cp_declarator *declarator,
                 if (concept_p)
                   {
                     error_at (declspecs->locations[ds_concept],
-			      "a destructor cannot be %<concept%>");
+			      "a destructor cannot be %qs", "concept");
                     return error_mark_node;
                   }
 		if (constexpr_p && cxx_dialect < cxx2a)
@@ -12975,6 +13040,12 @@ grokdeclarator (const cp_declarator *declarator,
 		    error_at (declspecs->locations[ds_constexpr],
 			      "%<constexpr%> destructors only available"
 			      " with %<-std=c++2a%> or %<-std=gnu++2a%>");
+		    return error_mark_node;
+		  }
+		if (consteval_p)
+		  {
+		    error_at (declspecs->locations[ds_consteval],
+			      "a destructor cannot be %qs", "consteval");
 		    return error_mark_node;
 		  }
 	      }
@@ -12997,6 +13068,14 @@ grokdeclarator (const cp_declarator *declarator,
 		error_at (declspecs->locations[ds_concept],
 			  "a concept cannot be a member function");
 		concept_p = false;
+	      }
+	    else if (consteval_p
+		     && identifier_p (unqualified_id)
+		     && IDENTIFIER_NEWDEL_OP_P (unqualified_id))
+	      {
+		error_at (declspecs->locations[ds_consteval],
+			  "%qD cannot be %qs", unqualified_id, "consteval");
+		consteval_p = false;
 	      }
 
 	    if (TREE_CODE (unqualified_id) == TEMPLATE_ID_EXPR)
@@ -13028,7 +13107,8 @@ grokdeclarator (const cp_declarator *declarator,
 			       reqs,
 			       virtualp, flags, memfn_quals, rqual, raises,
 			       friendp ? -1 : 0, friendp, publicp,
-                               inlinep | (2 * constexpr_p) | (4 * concept_p),
+			       inlinep | (2 * constexpr_p) | (4 * concept_p)
+				       | (8 * consteval_p),
 			       initialized == SD_DELETED, sfk,
 			       funcdef_flag, late_return_type_p,
 			       template_count, in_namespace,
@@ -13130,8 +13210,8 @@ grokdeclarator (const cp_declarator *declarator,
 		set_linkage_for_static_data_member (decl);
 		if (concept_p)
 		  error_at (declspecs->locations[ds_concept],
-			    "static data member %qE declared %<concept%>",
-			    unqualified_id);
+			    "static data member %qE declared %qs",
+			    unqualified_id, "concept");
 		else if (constexpr_p && !initialized)
 		  {
 		    error_at (DECL_SOURCE_LOCATION (decl),
@@ -13139,6 +13219,10 @@ grokdeclarator (const cp_declarator *declarator,
 			      "have an initializer", decl);
 		    constexpr_p = false;
 		  }
+		if (consteval_p)
+		  error_at (declspecs->locations[ds_consteval],
+			    "static data member %qE declared %qs",
+			    unqualified_id, "consteval");
 
 		if (inlinep)
 		  mark_inline_variable (decl, declspecs->locations[ds_inline]);
@@ -13163,22 +13247,33 @@ grokdeclarator (const cp_declarator *declarator,
 	    else
 	      {
 		if (concept_p)
-		  error_at (declspecs->locations[ds_concept],
-			    "non-static data member %qE declared %<concept%>",
-			    unqualified_id);
-                else if (constexpr_p)
 		  {
-		    error_at (declspecs->locations[ds_constexpr],
-			      "non-static data member %qE declared "
-			      "%<constexpr%>", unqualified_id);
+		    error_at (declspecs->locations[ds_concept],
+			      "non-static data member %qE declared %qs",
+			      unqualified_id, "concept");
+		    concept_p = false;
 		    constexpr_p = false;
 		  }
-		else if (constinit_p)
+		else if (constexpr_p)
+		  {
+		    error_at (declspecs->locations[ds_constexpr],
+			      "non-static data member %qE declared %qs",
+			      unqualified_id, "constexpr");
+		    constexpr_p = false;
+		  }
+		if (constinit_p)
 		  {
 		    error_at (declspecs->locations[ds_constinit],
-			      "non-static data member %qE declared "
-			      "%<constinit%>", unqualified_id);
+			      "non-static data member %qE declared %qs",
+			      unqualified_id, "constinit");
 		    constinit_p = false;
+		  }
+		if (consteval_p)
+		  {
+		    error_at (declspecs->locations[ds_consteval],
+			      "non-static data member %qE declared %qs",
+			      unqualified_id, "consteval");
+		    consteval_p = false;
 		  }
 		decl = build_decl (id_loc, FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
@@ -13285,6 +13380,14 @@ grokdeclarator (const cp_declarator *declarator,
 		sfk = sfk_none;
 	      }
 	  }
+	if (consteval_p
+	    && identifier_p (unqualified_id)
+	    && IDENTIFIER_NEWDEL_OP_P (unqualified_id))
+	  {
+	    error_at (declspecs->locations[ds_consteval],
+		      "%qD cannot be %qs", unqualified_id, "consteval");
+	    consteval_p = false;
+	  }
 
 	/* Record whether the function is public.  */
 	publicp = (ctype != NULL_TREE
@@ -13295,7 +13398,8 @@ grokdeclarator (const cp_declarator *declarator,
                            reqs, virtualp, flags, memfn_quals, rqual, raises,
 			   1, friendp,
 			   publicp,
-                           inlinep | (2 * constexpr_p) | (4 * concept_p),
+			   inlinep | (2 * constexpr_p) | (4 * concept_p)
+				   | (8 * consteval_p),
 			   initialized == SD_DELETED,
                            sfk,
                            funcdef_flag,
@@ -13387,6 +13491,12 @@ grokdeclarator (const cp_declarator *declarator,
 		      "declaration of %<constexpr%> variable %qD "
 		      "is not a definition", decl);
 	    constexpr_p = false;
+	  }
+	if (consteval_p)
+	  {
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "a variable cannot be declared %<consteval%>");
+	    consteval_p = false;
 	  }
 
 	if (inlinep)
@@ -16696,7 +16806,7 @@ finish_function (bool inline_p)
     invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
 
   /* Perform delayed folding before NRV transformation.  */
-  if (!processing_template_decl)
+  if (!processing_template_decl && !DECL_IMMEDIATE_FUNCTION_P (fndecl))
     cp_fold_function (fndecl);
 
   /* Set up the named return value optimization, if we can.  Candidate
@@ -16813,7 +16923,7 @@ finish_function (bool inline_p)
     do_warn_unused_parameter (fndecl);
 
   /* Genericize before inlining.  */
-  if (!processing_template_decl)
+  if (!processing_template_decl && !DECL_IMMEDIATE_FUNCTION_P (fndecl))
     cp_genericize (fndecl);
 
   /* We're leaving the context of this function, so zap cfun.  It's still in

@@ -348,14 +348,12 @@ build_value_init (tree type, tsubst_flags_t complain)
   gcc_assert (!processing_template_decl
 	      || (SCALAR_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE));
 
-  if (CLASS_TYPE_P (type)
-      && type_build_ctor_call (type))
+  if (CLASS_TYPE_P (type) && type_build_ctor_call (type))
     {
-      tree ctor =
-	 build_special_member_call (NULL_TREE, complete_ctor_identifier,
-				    NULL, type, LOOKUP_NORMAL,
-				    complain);
-      if (ctor == error_mark_node)
+      tree ctor
+	= build_special_member_call (NULL_TREE, complete_ctor_identifier,
+				     NULL, type, LOOKUP_NORMAL, complain);
+      if (ctor == error_mark_node || TREE_CONSTANT (ctor))
 	return ctor;
       tree fn = NULL_TREE;
       if (TREE_CODE (ctor) == CALL_EXPR)

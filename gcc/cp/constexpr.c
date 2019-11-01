@@ -5739,6 +5739,16 @@ find_heap_var_refs (tree *tp, int *walk_subtrees, void */*data*/)
   return NULL_TREE;
 }
 
+/* Find immediate function decls in *TP if any.  */
+
+static tree
+find_immediate_fndecl (tree *tp, int */*walk_subtrees*/, void */*data*/)
+{
+  if (TREE_CODE (*tp) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (*tp))
+    return *tp;
+  return NULL_TREE;
+}
+
 /* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
    STRICT has the same sense as for constant_value_1: true if we only allow
    conforming C++ constant expressions, or false if we want a constant value
@@ -5767,13 +5777,38 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   tree type = initialized_type (t);
   tree r = t;
+  bool is_consteval = false;
   if (VOID_TYPE_P (type))
     {
       if (constexpr_dtor)
 	/* Used for destructors of array elements.  */
 	type = TREE_TYPE (object);
       else
-	return t;
+	{
+	  if (cxx_dialect < cxx2a)
+	    return t;
+	  if (TREE_CODE (t) != CALL_EXPR && TREE_CODE (t) != AGGR_INIT_EXPR)
+	    return t;
+	  /* Calls to immediate functions returning void need to be
+	     evaluated.  */
+	  tree fndecl = cp_get_callee_fndecl_nofold (t);
+	  if (fndecl == NULL_TREE || !DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	    return t;
+	  else
+	    is_consteval = true;
+	}
+    }
+  else if (cxx_dialect >= cxx2a
+	   && (TREE_CODE (t) == CALL_EXPR
+	       || TREE_CODE (t) == AGGR_INIT_EXPR
+	       || TREE_CODE (t) == TARGET_EXPR))
+    {
+      tree x = t;
+      if (TREE_CODE (x) == TARGET_EXPR)
+	x = TARGET_EXPR_INITIAL (x);
+      tree fndecl = cp_get_callee_fndecl_nofold (x);
+      if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	is_consteval = true;
     }
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
     {
@@ -5872,6 +5907,25 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	    r = t;
 	    non_constant_p = true;
 	  }
+    }
+
+  /* Check that immediate invocation does not return an expression referencing
+     any immediate function decls.  They need to be allowed while parsing
+     immediate functions, but can't leak outside of them.  */
+  if (is_consteval
+      && t != r
+      && (current_function_decl == NULL_TREE
+	  || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
+    if (tree immediate_fndecl
+	= cp_walk_tree_without_duplicates (&r, find_immediate_fndecl,
+					   NULL))
+    {
+      if (!allow_non_constant && !non_constant_p)
+	error_at (cp_expr_loc_or_input_loc (t),
+		  "immediate evaluation returns address of immediate "
+		  "function %qD", immediate_fndecl);
+      r = t;
+      non_constant_p = true;
     }
 
   /* Technically we should check this for all subexpressions, but that
@@ -6114,7 +6168,8 @@ clear_cv_and_fold_caches (bool sat /*= true*/)
 
 static tree
 fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
-				  bool manifestly_const_eval)
+				  bool manifestly_const_eval,
+				  tree object)
 {
   gcc_assert (processing_template_decl);
 
@@ -6135,7 +6190,7 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 
       tree r = cxx_eval_outermost_constant_expr (t, true, true,
 						 manifestly_const_eval,
-						 false, NULL_TREE);
+						 false, object);
       /* cp_tree_equal looks through NOPs, so allow them.  */
       gcc_checking_assert (r == t
 			   || CONVERT_EXPR_P (t)
@@ -6171,16 +6226,17 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 tree
 fold_non_dependent_expr (tree t,
 			 tsubst_flags_t complain /* = tf_warning_or_error */,
-			 bool manifestly_const_eval /* = false */)
+			 bool manifestly_const_eval /* = false */,
+			 tree object /* = NULL_TREE */)
 {
   if (t == NULL_TREE)
     return NULL_TREE;
 
   if (processing_template_decl)
     return fold_non_dependent_expr_template (t, complain,
-					     manifestly_const_eval);
+					     manifestly_const_eval, object);
 
-  return maybe_constant_value (t, NULL_TREE, manifestly_const_eval);
+  return maybe_constant_value (t, object, manifestly_const_eval);
 }
 
 
@@ -6197,7 +6253,7 @@ fold_non_dependent_init (tree t,
   if (processing_template_decl)
     {
       t = fold_non_dependent_expr_template (t, complain,
-					    manifestly_const_eval);
+					    manifestly_const_eval, NULL_TREE);
       /* maybe_constant_init does this stripping, so do it here too.  */
       if (TREE_CODE (t) == TARGET_EXPR)
 	{

@@ -6177,6 +6177,16 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     {
       tree stripped_arg = tree_strip_any_location_wrapper (arg);
       if (TREE_CODE (stripped_arg) == FUNCTION_DECL
+	  && DECL_IMMEDIATE_FUNCTION_P (stripped_arg)
+	  && (current_function_decl == NULL_TREE
+	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
+	{
+	  if (complain & tf_error)
+	    error ("taking address of an immediate function %qD",
+		   stripped_arg);
+	  return error_mark_node;
+	}
+      if (TREE_CODE (stripped_arg) == FUNCTION_DECL
 	  && !mark_used (stripped_arg, complain) && !(complain & tf_error))
 	return error_mark_node;
       val = build_address (arg);

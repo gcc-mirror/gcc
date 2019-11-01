@@ -998,11 +998,13 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
       /* GNU extensions.  */
     case RID_ATTRIBUTE:
     case RID_TYPEOF:
-      /* C++0x extensions.  */
+      /* C++11 extensions.  */
     case RID_DECLTYPE:
     case RID_UNDERLYING_TYPE:
     case RID_CONSTEXPR:
+      /* C++20 extensions.  */
     case RID_CONSTINIT:
+    case RID_CONSTEVAL:
       return true;
 
     default:
@@ -1807,12 +1809,15 @@ enum
   /* When parsing a decl-specifier-seq, only allow type-specifier or
      constexpr.  */
   CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR = 0x8,
-  /* When parsing a decl-specifier-seq, only allow mutable or constexpr.  */
+  /* When parsing a decl-specifier-seq, only allow mutable, constexpr or
+     for C++2A consteval.  */
   CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR = 0x10,
   /* When parsing a decl-specifier-seq, allow missing typename.  */
   CP_PARSER_FLAGS_TYPENAME_OPTIONAL = 0x20,
   /* When parsing of the noexcept-specifier should be delayed.  */
-  CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40
+  CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40,
+  /* When parsing a consteval declarator.  */
+  CP_PARSER_FLAGS_CONSTEVAL = 0x80
 };
 
 /* This type is used for parameters and variables which hold
@@ -2671,6 +2676,7 @@ static bool cp_parser_init_statement_p
   (cp_parser *);
 static bool cp_parser_skip_to_closing_square_bracket
   (cp_parser *);
+static size_t cp_parser_skip_balanced_tokens (cp_parser *, size_t);
 
 // -------------------------------------------------------------------------- //
 // Unevaluated Operand Guard
@@ -10903,10 +10909,30 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      opening parenthesis if present.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
+      bool is_consteval = false;
+      /* For C++20, before parsing the parameter list check if there is
+	 a consteval specifier in the corresponding decl-specifier-seq.  */
+      if (cxx_dialect >= cxx2a)
+	{
+	  for (size_t n = cp_parser_skip_balanced_tokens (parser, 1);
+	       cp_lexer_nth_token_is (parser->lexer, n, CPP_KEYWORD); n++)
+	    {
+	      if (cp_lexer_peek_nth_token (parser->lexer, n)->keyword
+		  == RID_CONSTEVAL)
+		{
+		  is_consteval = true;
+		  break;
+		}
+	    }
+	}
+
       matching_parens parens;
       parens.consume_open (parser);
 
       begin_scope (sk_function_parms, /*entity=*/NULL_TREE);
+
+      if (is_consteval)
+	current_binding_level->immediate_fn_ctx_p = true;
 
       /* Parse parameters.  */
       param_list
@@ -10992,6 +11018,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 		    "lambda only available with %<-std=c++17%> or "
 		    "%<-std=gnu++17%>");
       }
+    if (lambda_specs.locations[ds_consteval])
+      return_type_specs.locations[ds_consteval]
+	= lambda_specs.locations[ds_consteval];
 
     p = obstack_alloc (&declarator_obstack, 0);
 
@@ -14052,6 +14081,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  cp_lexer_consume_token (parser->lexer);
 	  break;
 
+	case RID_CONSTEVAL:
+	  ds = ds_consteval;
+	  cp_lexer_consume_token (parser->lexer);
+	  break;
+
         case RID_CONCEPT:
           ds = ds_concept;
           cp_lexer_consume_token (parser->lexer);
@@ -14169,7 +14203,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (found_decl_spec
 	  && (flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR)
 	  && token->keyword != RID_MUTABLE
-	  && token->keyword != RID_CONSTEXPR)
+	  && token->keyword != RID_CONSTEXPR
+	  && token->keyword != RID_CONSTEVAL)
 	error_at (token->location, "%qD invalid in lambda",
 		  ridpointers[token->keyword]);
 
@@ -17310,6 +17345,10 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 	    permerror (decl_specifiers.locations[ds_constexpr],
 		       "explicit instantiation shall not use"
 		       " %<constexpr%> specifier");
+	  if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_consteval))
+	    permerror (decl_specifiers.locations[ds_consteval],
+		       "explicit instantiation shall not use"
+		       " %<consteval%> specifier");
 
 	  decl = grokdeclarator (declarator, &decl_specifiers,
 				 NORMAL, 0, &decl_specifiers.attributes);
@@ -20295,6 +20334,9 @@ cp_parser_init_declarator (cp_parser* parser,
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
   location_t tmp_init_loc = UNKNOWN_LOCATION;
 
+  if (decl_spec_seq_has_spec_p (decl_specifiers, ds_consteval))
+    flags |= CP_PARSER_FLAGS_CONSTEVAL;
+
   /* Gather the attributes that were provided with the
      decl-specifiers.  */
   prefix_attributes = decl_specifiers->attributes;
@@ -20938,6 +20980,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 		}
 
 	      begin_scope (sk_function_parms, NULL_TREE);
+
+	      /* Signal we are in the immediate function context.  */
+	      if (flags & CP_PARSER_FLAGS_CONSTEVAL)
+		current_binding_level->immediate_fn_ctx_p = true;
 
 	      /* Parse the parameter-declaration-clause.  */
 	      params
@@ -29960,9 +30006,10 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    "friend",
 	    "typedef",
 	    "using",
-            "constexpr",
+	    "constexpr",
 	    "__complex",
-	    "constinit"
+	    "constinit",
+	    "consteval"
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();

@@ -2228,8 +2228,9 @@ defaulted_late_check (tree fn)
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
 	  error ("explicitly defaulted function %q+D cannot be declared "
-		 "%qs because the implicit declaration is not %qs:",
-		 fn, "constexpr", "constexpr");
+		 "%qs because the implicit declaration is not %qs:", fn,
+		 DECL_IMMEDIATE_FUNCTION_P (fn) ? "consteval" : "constexpr",
+		 "constexpr");
 	  explain_implicit_non_constexpr (fn);
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;

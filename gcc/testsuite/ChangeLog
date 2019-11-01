@@ -1,5 +1,22 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88335 - Implement P1073R3: Immediate functions
+	* g++.dg/cpp2a/consteval1.C: New test.
+	* g++.dg/cpp2a/consteval2.C: New test.
+	* g++.dg/cpp2a/consteval3.C: New test.
+	* g++.dg/cpp2a/consteval4.C: New test.
+	* g++.dg/cpp2a/consteval5.C: New test.
+	* g++.dg/cpp2a/consteval6.C: New test.
+	* g++.dg/cpp2a/consteval7.C: New test.
+	* g++.dg/cpp2a/consteval8.C: New test.
+	* g++.dg/cpp2a/consteval9.C: New test.
+	* g++.dg/cpp2a/consteval10.C: New test.
+	* g++.dg/cpp2a/consteval11.C: New test.
+	* g++.dg/cpp2a/consteval12.C: New test.
+	* g++.dg/cpp2a/consteval13.C: New test.
+	* g++.dg/cpp2a/consteval14.C: New test.
+	* g++.dg/ext/consteval1.C: New test.
+
 	PR c++/91369 - Implement P0784R7: constexpr new
 	* g++.dg/cpp2a/constexpr-new6.C: New test.
 	* g++.dg/cpp2a/constexpr-new7.C: New test.
