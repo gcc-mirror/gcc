@@ -10182,6 +10182,11 @@ member_owned_by_class (tree member)
   return member;
 }
 
+// FIXME: Handle DECL_ACCESS of members.  They will have USING_DECLS
+// on the TYPE_FIELDS chain, from whence we can find the right
+// DECL_ACCESS.  Also the used decls will be in the member_vector.
+// Stream out and reconstruct on readin.
+
 void
 trees_out::write_class_def (tree defn)
 {
@@ -10396,7 +10401,8 @@ trees_out::mark_class_def (tree defn)
 		   && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
 		/* A templated friend declaration that we own.  */
 		mark_declaration (frnd, has_definition (frnd));
-	      else if (DECL_TEMPLATE_INFO (frnd)
+	      else if (DECL_LANG_SPECIFIC (frnd)
+		       && DECL_TEMPLATE_INFO (frnd)
 		       && TREE_CODE (DECL_TI_TEMPLATE (frnd)) != TEMPLATE_DECL)
 		/* A friend declared with a template-id.  */
 		mark_declaration (frnd, false);
@@ -11086,10 +11092,10 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	{
 	  /* The dependency is reachable now.  */
 	  reached_unreached = true;
+	  dep->clear_flag_bit<DB_UNREACHED_BIT> ();
 	  dump (dumper::DEPEND)
 	    && dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
 		     TREE_CODE (dep->get_entity ()), dep->get_entity ());
-	  dep->clear_flag_bit<DB_UNREACHED_BIT> ();
 	}
     }
 
@@ -11464,7 +11470,7 @@ depset::hash::add_specializations (bool decl_p)
 	needs_reaching = true;
       else if (!DECL_LANG_SPECIFIC (spec)
 	       || !DECL_MODULE_PURVIEW_P (spec))
-	/* Likewise, GMF entities.  */
+	/* Likewise, GMF explicit or partial specializations.  */
 	needs_reaching = true;
 
 #if 0 && CHECKING_P
@@ -11562,6 +11568,36 @@ depset::hash::find_dependencies ()
 		    walker.write_definition (decl);
 		}
 	      walker.end ();
+
+	      /* Mark all the explicit & partial specializations as
+		 reachable.  */
+	      if (TREE_CODE (decl) == TEMPLATE_DECL)
+		for (tree cons = DECL_TEMPLATE_INSTANTIATIONS (decl);
+		     cons; cons = TREE_CHAIN (cons))
+		  {
+		    tree spec = TREE_VALUE (cons);
+		    if (TYPE_P (spec))
+		      spec = TYPE_NAME (spec);
+		    int use_tpl;
+		    node_template_info (spec, use_tpl);
+		    if (use_tpl & 2)
+		      {
+			depset *spec_dep = find_entity (spec);
+			if (spec_dep->get_entity_kind () == EK_REDIRECT)
+			  spec_dep = spec_dep->deps[0];
+			gcc_checking_assert (spec_dep->get_entity_kind ()
+					     == EK_SPECIALIZATION);
+			if (spec_dep->is_unreached ())
+			  {
+			    reached_unreached = true;
+			    spec_dep->clear_flag_bit<DB_UNREACHED_BIT> ();
+			    dump (dumper::DEPEND)
+			      && dump ("Reaching unreached specialization %C:%N",
+				       TREE_CODE (spec), spec);
+			  }
+		      }
+		  }
+
 	      dump.outdent ();
 	      current = NULL;
 	    }
@@ -17149,7 +17185,10 @@ module_may_redeclare (tree inst)
   return me && get_primary (them) == get_primary (me);
 }
 
-/* DECL is being created by this TU.  Record it came from here.  */
+/* DECL is being created by this TU.  Record it came from here.  We
+   record module purview, so we can see if partial or explicit
+   specialization needs to be written out, even though its purviewness
+   comes from the most general template.  */
 
 void
 set_instantiating_module (tree decl)
