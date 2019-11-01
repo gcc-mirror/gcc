@@ -9059,7 +9059,6 @@ match
 gfc_match_private (gfc_statement *st)
 {
   gfc_state_data *prev;
-  char c;
 
   if (gfc_match ("private") != MATCH_YES)
     return MATCH_NO;
@@ -9083,10 +9082,14 @@ gfc_match_private (gfc_statement *st)
       return MATCH_YES;
     }
 
-  /* At this point, PRIVATE must be followed by whitespace or ::.  */
-  c = gfc_peek_ascii_char ();
-  if (!gfc_is_whitespace (c) && c != ':')
-    return MATCH_NO;
+  /* At this point in free-form source code, PRIVATE must be followed
+     by whitespace or ::.  */
+  if (gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != ':')
+	return MATCH_NO;
+    }
 
   prev = gfc_state_stack->previous;
   if (gfc_current_state () != COMP_MODULE
@@ -9108,8 +9111,6 @@ gfc_match_private (gfc_statement *st)
 match
 gfc_match_public (gfc_statement *st)
 {
-  char c;
-
   if (gfc_match ("public") != MATCH_YES)
     return MATCH_NO;
 
@@ -9127,10 +9128,14 @@ gfc_match_public (gfc_statement *st)
       return MATCH_YES;
     }
 
-  /* At this point, PUBLIC must be followed by whitespace or ::.  */
-  c = gfc_peek_ascii_char ();
-  if (!gfc_is_whitespace (c) && c != ':')
-    return MATCH_NO;
+  /* At this point in free-form source code, PUBLIC must be followed
+     by whitespace or ::.  */
+  if (gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != ':')
+	return MATCH_NO;
+    }
 
   if (gfc_current_state () != COMP_MODULE)
     {

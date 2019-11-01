@@ -1,3 +1,9 @@
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90988
+	* decl.c (gfc_match_private, gfc_match_public): Fixed-form source code
+	does not require whitespace between PRIVATE (or PUBLIC) and an entity.
+
 2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* f95-lang.c (LANG_HOOKS_OMP_ARRAY_DATA): Set to gfc_omp_array_data.
