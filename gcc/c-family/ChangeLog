@@ -1,5 +1,8 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-omp.c (c_omp_mark_declare_variant): Use
+	omp_context_selector_set_compare.
+
 	PR c++/88335 - Implement P1073R3: Immediate functions
 	* c-common.h (enum rid): Add RID_CONSTEVAL.
 	* c-common.c (c_common_reswords): Add consteval.

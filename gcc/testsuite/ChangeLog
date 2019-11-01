@@ -1,5 +1,10 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/declare-variant-6.c: Expect construct rather than
+	constructor in diagnostic messages.
+	* c-c++-common/gomp/declare-variant-7.c: Likewise.
+	* c-c++-common/gomp/declare-variant-11.c: New test.
+
 	PR c++/88335 - Implement P1073R3: Immediate functions
 	* g++.dg/cpp2a/consteval1.C: New test.
 	* g++.dg/cpp2a/consteval2.C: New test.

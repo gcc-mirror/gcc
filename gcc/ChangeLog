@@ -1,3 +1,12 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (omp_context_selector_set_compare): Declare.
+	* omp-general.c (omp_construct_simd_compare,
+	omp_context_selector_props_compare, omp_context_selector_set_compare,
+	omp_context_selector_compare): New functions.
+	(omp_resolve_declare_variant): Prune variants that are strict subset
+	of another variant.
+
 2019-11-01  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91679
