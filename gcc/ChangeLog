@@ -1,3 +1,12 @@
+2019-11-1  Delia Burduv  <Delia.Burduv@arm.com>
+
+         Backport from trunk
+         2019-02-20  Andre Vieira <andre.simoesdiasvieira@arm.com>
+
+         PR target/86487
+         * lra-constraints.c(uses_hard_regs_p): Fix handling of
+         paradoxical SUBREGS.
+
 2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
