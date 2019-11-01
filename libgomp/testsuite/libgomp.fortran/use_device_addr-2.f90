@@ -884,8 +884,10 @@ contains
      real(c_float), pointer :: aa, bb
      real(c_float), pointer :: ee, ff
 
-     type(c_ptr) :: c_aptr, c_bptr, c_eptr, c_fptr
-     real(c_float), pointer :: aptr, bptr, eptr, fptr
+     real(c_float), allocatable, target :: gg, hh
+
+     type(c_ptr) :: c_aptr, c_bptr, c_eptr, c_fptr, c_gptr, c_hptr
+     real(c_float), pointer :: aptr, bptr, eptr, fptr, gptr, hptr
 
      aa => null()
      bb => null()
@@ -905,15 +907,29 @@ contains
      if (c_associated(c_aptr) .or. c_associated(c_bptr)) stop 1
      if (associated(aptr) .or. associated(bptr, bb)) stop 1
 
-     call test_dummy_opt_nullptr_callee_1(ee, ff, c_eptr, c_fptr, eptr, fptr)
+     if (allocated(gg)) stop 1
+     !$omp target data map(tofrom:gg) use_device_addr(gg)
+     if (c_associated(c_loc(gg))) stop 1
+     c_gptr = c_loc(gg)
+     gptr => gg
+     if (c_associated(c_gptr)) stop 1
+     if (associated(gptr)) stop 1
+     if (allocated(gg)) stop 1
+     !$omp end target data
+     if (c_associated(c_gptr)) stop 1
+     if (associated(gptr)) stop 1
+     if (allocated(gg)) stop 1
+
+     call test_dummy_opt_nullptr_callee_1(ee, ff, hh, c_eptr, c_fptr, c_hptr, eptr, fptr, hptr)
   end subroutine test_nullptr_1
 
-  subroutine test_dummy_opt_nullptr_callee_1(ee, ff, c_eptr, c_fptr, eptr, fptr)
+  subroutine test_dummy_opt_nullptr_callee_1(ee, ff, hh, c_eptr, c_fptr, c_hptr, eptr, fptr, hptr)
      ! scalars
      real(c_float), optional, pointer :: ee, ff
+     real(c_float), optional, allocatable, target :: hh
 
-     type(c_ptr), optional :: c_eptr, c_fptr
-     real(c_float), optional, pointer :: eptr, fptr
+     type(c_ptr), optional :: c_eptr, c_fptr, c_hptr
+     real(c_float), optional, pointer :: eptr, fptr, hptr
 
      if (.not.present(ee) .or. .not.present(ff)) stop 1
      if (associated(ee) .or. associated(ff)) stop 1
@@ -932,6 +948,26 @@ contains
 
      if (c_associated(c_eptr) .or. c_associated(c_fptr)) stop 1
      if (associated(eptr) .or. associated(fptr)) stop 1
+     if (associated(ee) .or. associated(ff)) stop 1
+
+
+     if (.not.present(hh)) stop 1
+     if (allocated(hh)) stop 1
+
+     !$omp target data map(tofrom:hh) use_device_addr(hh)
+     if (.not.present(hh)) stop 1
+     if (allocated(hh)) stop 1
+     if (c_associated(c_loc(hh))) stop 1
+     c_hptr = c_loc(hh)
+     hptr => hh
+     if (c_associated(c_hptr)) stop 1
+     if (associated(hptr)) stop 1
+     if (allocated(hh)) stop 1
+     !$omp end target data
+
+     if (c_associated(c_hptr)) stop 1
+     if (associated(hptr)) stop 1
+     if (allocated(hh)) stop 1
   end subroutine test_dummy_opt_nullptr_callee_1
 end module test_nullptr
 

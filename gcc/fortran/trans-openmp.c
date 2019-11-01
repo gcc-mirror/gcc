@@ -71,6 +71,33 @@ gfc_omp_is_optional_argument (const_tree decl)
 	  && GFC_DECL_OPTIONAL_ARGUMENT (decl));
 }
 
+
+/* Returns tree with NULL if it is not an array descriptor and with the tree to
+   access the 'data' component otherwise.  With type_only = true, it returns the
+   TREE_TYPE without creating a new tree.  */
+
+tree
+gfc_omp_array_data (tree decl, bool type_only)
+{
+  tree type = TREE_TYPE (decl);
+
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  if (!GFC_DESCRIPTOR_TYPE_P (type))
+    return NULL_TREE;
+
+  if (type_only)
+    return GFC_TYPE_ARRAY_DATAPTR_TYPE (type);
+
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref (decl);
+
+  decl = gfc_conv_descriptor_data_get (decl);
+  STRIP_NOPS (decl);
+  return decl;
+}
+
 /* True if OpenMP should privatize what this DECL points to rather
    than the DECL itself.  */
 
