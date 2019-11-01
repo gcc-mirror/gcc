@@ -590,7 +590,7 @@ extern tree x86_mfence;
 /* Replace MACH-O, ifdefs by in-line tests, where possible. 
    (a) Macros defined in config/i386/darwin.h  */
 #define TARGET_MACHO 0
-#define TARGET_MACHO_BRANCH_ISLANDS 0
+#define TARGET_MACHO_SYMBOL_STUBS 0
 #define MACHOPIC_ATT_STUB 0
 /* (b) Macros defined in config/darwin.h  */
 #define MACHO_DYNAMIC_NO_PIC_P 0
