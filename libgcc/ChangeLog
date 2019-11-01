@@ -1,6 +1,19 @@
 2019-11-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host (powerpc-*-darwin*,powerpc64-*-darwin*): Revise crt
+	list.
+	* config/rs6000/t-darwin: Build crt3_2 for older systems.  Revise
+	mmacosx-version-min for crts to run across all system versions.
+	* config/rs6000/t-darwin64 (LIB2ADD): Remove.
+	* config/t-darwin: Revise mmacosx-version-min for crts to run across
+	system versions >= 10.4.
+
+2019-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.host: Add libef_ppc.a to the extra files for powerpc-darwin.
