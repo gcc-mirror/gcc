@@ -1,5 +1,10 @@
 2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* gfortran.dg/byte_3.f: New test.
+	* gfortran.dg/byte_4.f90: Ditto.
+
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/90988
 	* gfortran.dg/pr90988_4.f: New test.
 
