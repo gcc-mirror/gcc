@@ -1,3 +1,8 @@
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90988
+	* gfortran.dg/pr90988_4.f: New test.
+
 2019-11-01  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Declare test functions
