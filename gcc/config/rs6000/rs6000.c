@@ -26079,8 +26079,8 @@ rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
   rtx_tmp2 = gen_reg_rtx (V4SFmode);
   rtx_tmp3 = gen_reg_rtx (V4SFmode);
 
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp2, rtx_tmp0));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp3, rtx_tmp1));
 
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));

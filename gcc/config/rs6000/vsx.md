@@ -301,7 +301,6 @@
    UNSPEC_VSX_XVCVSXDDP
    UNSPEC_VSX_XVCVUXDDP
    UNSPEC_VSX_XVCVDPSXDS
-   UNSPEC_VSX_XVCDPSP
    UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
    UNSPEC_VSX_XVCVSPSXWS
@@ -2373,14 +2372,6 @@
 		     UNSPEC_VSX_CVUXDSP))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvuxdsp %x0,%x1"
-  [(set_attr "type" "vecdouble")])
-
-(define_insn "vsx_xvcdpsp"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
-	(unspec:V4SF [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
-		     UNSPEC_VSX_XVCDPSP))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvdpsp %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
 ;; Convert from 32-bit to 64-bit types

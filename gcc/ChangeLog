@@ -1,3 +1,10 @@
+2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/vsx.md (vsx_xvcdpsp): Remove define_insn.
+	(UNSPEC_VSX_XVCDPSP): Remove.
+	* config/rs6000/rs6000.c (rs6000_generate_float2_double_code):
+	Replace gen_vsx_xvcdpsp by gen_vsx_xvcvdpsp.
+
 2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* hooks.c (hook_tree_tree_bool_null): New.
