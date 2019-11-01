@@ -1,5 +1,20 @@
 2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
 
+	* config/rs6000/rs6000-modes.def (V2SF, V2SI): New modes.
+	* config/rs6000/vsx.md (UNSPEC_VSX_CVSPSXDS,
+	UNSPEC_VSX_CVSPUXDS): Remove.
+	(vsx_xvcvspdp): New define_expand, old define_insn split to...
+	(vsx_xvcvspdp_be): ... this.  New.  And...
+	(vsx_xvcvspdp_le): ... this.  New.
+	(vsx_xvcv<su>xwdp): New define_expand, old define_insn split to...
+	(vsx_xvcv<su>xwdp_be): ... this.  New.  And...
+	(vsx_xvcv<su>xwdp_le): ... this.  New.
+	(vsx_xvcvsp<su>xds): New define_expand, old define_insn split to...
+	(vsx_xvcvsp<su>xds_be): ... this.  New.  And...
+	(vsx_xvcvsp<su>xds_le): ... this.  New.
+
+2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
+
 	* config/rs6000/vsx.md (UNSPEC_VSX_CVSXWSP, UNSPEC_VSX_CVUXWSP,
 	UNSPEC_VSX_XVCVSXDDP, UNSPEC_VSX_XVCVUXDDP,
 	UNSPEC_VSX_XVCVDPSXDS, UNSPEC_VSX_XVCVDPUXDS,
