@@ -1194,6 +1194,9 @@ maybe_add_lambda_conv_op (tree type)
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
+  DECL_DECLARED_CONSTEXPR_P (fn) = DECL_DECLARED_CONSTEXPR_P (callop);
+  if (DECL_IMMEDIATE_FUNCTION_P (callop))
+    SET_DECL_IMMEDIATE_FUNCTION_P (fn);
   DECL_ARGUMENTS (fn) = build_this_parm (fn, fntype, TYPE_QUAL_CONST);
 
   if (nested_def)
@@ -1226,6 +1229,9 @@ maybe_add_lambda_conv_op (tree type)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_STATIC_FUNCTION_P (fn) = 1;
+  DECL_DECLARED_CONSTEXPR_P (fn) = DECL_DECLARED_CONSTEXPR_P (callop);
+  if (DECL_IMMEDIATE_FUNCTION_P (callop))
+    SET_DECL_IMMEDIATE_FUNCTION_P (fn);
   DECL_ARGUMENTS (fn) = fn_args;
   for (tree arg = fn_args; arg; arg = DECL_CHAIN (arg))
     {

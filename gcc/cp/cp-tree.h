@@ -2697,7 +2697,8 @@ struct GTY(()) lang_decl_fn {
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
   unsigned has_dependent_explicit_spec_p : 1;
-  unsigned spare : 12;
+  unsigned immediate_fn_p : 1;
+  unsigned spare : 11;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3210,6 +3211,15 @@ struct GTY(()) lang_decl {
 /* True if DECL is declared 'constexpr'.  */
 #define DECL_DECLARED_CONSTEXPR_P(DECL) \
   DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (STRIP_TEMPLATE (DECL)))
+
+/* True if FNDECL is an immediate function.  */
+#define DECL_IMMEDIATE_FUNCTION_P(NODE) \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (STRIP_TEMPLATE (NODE)))	\
+   ? LANG_DECL_FN_CHECK (NODE)->immediate_fn_p				\
+   : false)
+#define SET_DECL_IMMEDIATE_FUNCTION_P(NODE) \
+  (retrofit_lang_decl (FUNCTION_DECL_CHECK (NODE)),			\
+   LANG_DECL_FN_CHECK (NODE)->immediate_fn_p = true)
 
 // True if NODE was declared as 'concept'.  The flag implies that the
 // declaration is constexpr, that the declaration cannot be specialized or
@@ -5879,6 +5889,7 @@ enum cp_decl_spec {
   ds_constexpr,
   ds_complex,
   ds_constinit,
+  ds_consteval,
   ds_thread,
   ds_type_spec,
   ds_redefined_builtin_type_spec,
@@ -7824,7 +7835,7 @@ extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
-						 bool = false);
+						 bool = false, tree = NULL_TREE);
 extern tree fold_non_dependent_init		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
 						 bool = false);
