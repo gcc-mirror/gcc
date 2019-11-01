@@ -947,6 +947,320 @@ omp_context_selector_matches (tree ctx)
   return ret;
 }
 
+/* Compare construct={simd} CLAUSES1 with CLAUSES2, return 0/-1/1/2 as
+   in omp_context_selector_set_compare.  */
+
+static int
+omp_construct_simd_compare (tree clauses1, tree clauses2)
+{
+  if (clauses1 == NULL_TREE)
+    return clauses2 == NULL_TREE ? 0 : -1;
+  if (clauses2 == NULL_TREE)
+    return 1;
+
+  int r = 0;
+  struct declare_variant_simd_data {
+    bool inbranch, notinbranch;
+    tree simdlen;
+    auto_vec<tree,16> data_sharing;
+    auto_vec<tree,16> aligned;
+    declare_variant_simd_data ()
+      : inbranch(false), notinbranch(false), simdlen(NULL_TREE) {}
+  } data[2];
+  unsigned int i;
+  for (i = 0; i < 2; i++)
+    for (tree c = i ? clauses2 : clauses1; c; c = OMP_CLAUSE_CHAIN (c))
+      {
+	vec<tree> *v;
+	switch (OMP_CLAUSE_CODE (c))
+	  {
+	  case OMP_CLAUSE_INBRANCH:
+	    data[i].inbranch = true;
+	    continue;
+	  case OMP_CLAUSE_NOTINBRANCH:
+	    data[i].notinbranch = true;
+	    continue;
+	  case OMP_CLAUSE_SIMDLEN:
+	    data[i].simdlen = OMP_CLAUSE_SIMDLEN_EXPR (c);
+	    continue;
+	  case OMP_CLAUSE_UNIFORM:
+	  case OMP_CLAUSE_LINEAR:
+	    v = &data[i].data_sharing;
+	    break;
+	  case OMP_CLAUSE_ALIGNED:
+	    v = &data[i].aligned;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	unsigned HOST_WIDE_INT argno = tree_to_uhwi (OMP_CLAUSE_DECL (c));
+	if (argno >= v->length ())
+	  v->safe_grow_cleared (argno + 1);
+	(*v)[argno] = c;
+      }
+  /* Here, r is used as a bitmask, 2 is set if CLAUSES1 has something
+     CLAUSES2 doesn't, 1 is set if CLAUSES2 has something CLAUSES1
+     doesn't.  Thus, r == 3 implies return value 2, r == 1 implies
+     -1, r == 2 implies 1 and r == 0 implies 0.  */
+  if (data[0].inbranch != data[1].inbranch)
+    r |= data[0].inbranch ? 2 : 1;
+  if (data[0].notinbranch != data[1].notinbranch)
+    r |= data[0].notinbranch ? 2 : 1;
+  if (!simple_cst_equal (data[0].simdlen, data[1].simdlen))
+    {
+      if (data[0].simdlen && data[1].simdlen)
+	return 2;
+      r |= data[0].simdlen ? 2 : 1;
+    }
+  if (data[0].data_sharing.length () < data[1].data_sharing.length ()
+      || data[0].aligned.length () < data[1].aligned.length ())
+    r |= 1;
+  tree c1, c2;
+  FOR_EACH_VEC_ELT (data[0].data_sharing, i, c1)
+    {
+      c2 = (i < data[1].data_sharing.length ()
+	    ? data[1].data_sharing[i] : NULL_TREE);
+      if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
+	{
+	  r |= c1 != NULL_TREE ? 2 : 1;
+	  continue;
+	}
+      if (c1 == NULL_TREE)
+	continue;
+      if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_CODE (c2))
+	return 2;
+      if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_LINEAR)
+	continue;
+      if (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c1)
+	  != OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c2))
+	return 2;
+      if (OMP_CLAUSE_LINEAR_KIND (c1) != OMP_CLAUSE_LINEAR_KIND (c2))
+	return 2;
+      if (!simple_cst_equal (OMP_CLAUSE_LINEAR_STEP (c1),
+			     OMP_CLAUSE_LINEAR_STEP (c2)))
+	return 2;
+    }
+  FOR_EACH_VEC_ELT (data[0].aligned, i, c1)
+    {
+      c2 = i < data[1].aligned.length () ? data[1].aligned[i] : NULL_TREE;
+      if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
+	{
+	  r |= c1 != NULL_TREE ? 2 : 1;
+	  continue;
+	}
+      if (c1 == NULL_TREE)
+	continue;
+      if (!simple_cst_equal (OMP_CLAUSE_ALIGNED_ALIGNMENT (c1),
+			     OMP_CLAUSE_ALIGNED_ALIGNMENT (c2)))
+	return 2;
+    }
+  switch (r)
+    {
+    case 0: return 0;
+    case 1: return -1;
+    case 2: return 1;
+    case 3: return 2;
+    default: gcc_unreachable ();
+    }
+}
+
+/* Compare properties of selectors SEL from SET other than construct.
+   Return 0/-1/1/2 as in omp_context_selector_set_compare.
+   Unlike set names or selector names, properties can have duplicates.  */
+
+static int
+omp_context_selector_props_compare (const char *set, const char *sel,
+				    tree ctx1, tree ctx2)
+{
+  int ret = 0;
+  for (int pass = 0; pass < 2; pass++)
+    for (tree t1 = pass ? ctx2 : ctx1; t1; t1 = TREE_CHAIN (t1))
+      {
+	tree t2;
+	for (t2 = pass ? ctx1 : ctx2; t2; t2 = TREE_CHAIN (t2))
+	  if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	    {
+	      if (TREE_PURPOSE (t1) == NULL_TREE)
+		{
+		  if (set[0] == 'u' && strcmp (sel, "condition") == 0)
+		    {
+		      if (integer_zerop (TREE_VALUE (t1))
+			  != integer_zerop (TREE_VALUE (t2)))
+			return 2;
+		      break;
+		    }
+		  if (simple_cst_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
+		    break;
+		}
+	      else if (strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			       " score") == 0)
+		{
+		  if (!simple_cst_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
+		    return 2;
+		  break;
+		}
+	      else
+		break;
+	    }
+	if (t2 == NULL_TREE)
+	  {
+	    int r = pass ? -1 : 1;
+	    if (ret && ret != r)
+	      return 2;
+	    else if (pass)
+	      return r;
+	    else
+	      {
+		ret = r;
+		break;
+	      }
+	  }
+      }
+  return ret;
+}
+
+/* Compare single context selector sets CTX1 and CTX2 with SET name.
+   Return 0 if CTX1 is equal to CTX2,
+   -1 if CTX1 is a strict subset of CTX2,
+   1 if CTX2 is a strict subset of CTX1, or
+   2 if neither context is a subset of another one.  */
+
+int
+omp_context_selector_set_compare (const char *set, tree ctx1, tree ctx2)
+{
+  bool swapped = false;
+  int ret = 0;
+  int len1 = list_length (ctx1);
+  int len2 = list_length (ctx2);
+  int cnt = 0;
+  if (len1 < len2)
+    {
+      swapped = true;
+      std::swap (ctx1, ctx2);
+      std::swap (len1, len2);
+    }
+  if (set[0] == 'c')
+    {
+      tree t1;
+      tree t2 = ctx2;
+      tree simd = get_identifier ("simd");
+      /* Handle construct set specially.  In this case the order
+	 of the selector matters too.  */
+      for (t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	  {
+	    int r = 0;
+	    if (TREE_PURPOSE (t1) == simd)
+	      r = omp_construct_simd_compare (TREE_VALUE (t1),
+					      TREE_VALUE (t2));
+	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
+	      return 2;
+	    if (ret == 0)
+	      ret = r;
+	    t2 = TREE_CHAIN (t2);
+	    if (t2 == NULL_TREE)
+	      {
+		t1 = TREE_CHAIN (t1);
+		break;
+	      }
+	  }
+	else if (ret < 0)
+	  return 2;
+	else
+	  ret = 1;
+      if (t2 != NULL_TREE)
+	return 2;
+      if (t1 != NULL_TREE)
+	{
+	  if (ret < 0)
+	    return 2;
+	  ret = 1;
+	}
+      if (ret == 0)
+	return 0;
+      return swapped ? -ret : ret;
+    }
+  for (tree t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+    {
+      tree t2;
+      for (t2 = ctx2; t2; t2 = TREE_CHAIN (t2))
+	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	  {
+	    const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
+	    int r = omp_context_selector_props_compare (set, sel,
+							TREE_VALUE (t1),
+							TREE_VALUE (t2));
+	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
+	      return 2;
+	    if (ret == 0)
+	      ret = r;
+	    cnt++;
+	    break;
+	  }
+      if (t2 == NULL_TREE)
+	{
+	  if (ret == -1)
+	    return 2;
+	  ret = 1;
+	}
+    }
+  if (cnt < len2)
+    return 2;
+  if (ret == 0)
+    return 0;
+  return swapped ? -ret : ret;
+}
+
+/* Compare whole context selector specification CTX1 and CTX2.
+   Return 0 if CTX1 is equal to CTX2,
+   -1 if CTX1 is a strict subset of CTX2,
+   1 if CTX2 is a strict subset of CTX1, or
+   2 if neither context is a subset of another one.  */
+
+static int
+omp_context_selector_compare (tree ctx1, tree ctx2)
+{
+  bool swapped = false;
+  int ret = 0;
+  int len1 = list_length (ctx1);
+  int len2 = list_length (ctx2);
+  int cnt = 0;
+  if (len1 < len2)
+    {
+      swapped = true;
+      std::swap (ctx1, ctx2);
+      std::swap (len1, len2);
+    }
+  for (tree t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+    {
+      tree t2;
+      for (t2 = ctx2; t2; t2 = TREE_CHAIN (t2))
+	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	  {
+	    const char *set = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
+	    int r = omp_context_selector_set_compare (set, TREE_VALUE (t1),
+						      TREE_VALUE (t2));
+	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
+	      return 2;
+	    if (ret == 0)
+	      ret = r;
+	    cnt++;
+	    break;
+	  }
+      if (t2 == NULL_TREE)
+	{
+	  if (ret == -1)
+	    return 2;
+	  ret = 1;
+	}
+    }
+  if (cnt < len2)
+    return 2;
+  if (ret == 0)
+    return 0;
+  return swapped ? -ret : ret;
+}
+
 /* Try to resolve declare variant, return the variant decl if it should
    be used instead of base, or base otherwise.  */
 
@@ -954,11 +1268,14 @@ tree
 omp_resolve_declare_variant (tree base)
 {
   tree variant = NULL_TREE;
+  auto_vec <tree, 16> variants;
   for (tree attr = DECL_ATTRIBUTES (base); attr; attr = TREE_CHAIN (attr))
     {
       attr = lookup_attribute ("omp declare variant base", attr);
       if (attr == NULL_TREE)
 	break;
+      if (TREE_CODE (TREE_PURPOSE (TREE_VALUE (attr))) != FUNCTION_DECL)
+	continue;
       switch (omp_context_selector_matches (TREE_VALUE (TREE_VALUE (attr))))
 	{
 	case 0:
@@ -968,16 +1285,49 @@ omp_resolve_declare_variant (tree base)
 	  /* Needs to be deferred.  */
 	  return base;
 	default:
-	  /* FIXME: Scoring not implemented yet, so just resolve it
-	     if there is a single variant only.  */
-	  if (variant)
-	    return base;
-	  if (TREE_CODE (TREE_PURPOSE (TREE_VALUE (attr))) == FUNCTION_DECL)
-	    variant = TREE_PURPOSE (TREE_VALUE (attr));
-	  else
-	    return base;
+	  variants.safe_push (attr);
 	}
     }
+  if (variants.length () == 0)
+    return base;
+  if (variants.length () == 1)
+    return TREE_PURPOSE (TREE_VALUE (variants[0]));
+
+  /* A context selector that is a strict subset of another context selector has a score
+     of zero.  */
+  tree attr1, attr2;
+  unsigned int i, j;
+  FOR_EACH_VEC_ELT (variants, i, attr1)
+    if (attr1)
+      {
+	tree ctx1 = TREE_VALUE (TREE_VALUE (attr1));
+	FOR_EACH_VEC_ELT_FROM (variants, j, attr2, i + 1)
+	  if (attr2)
+	    {
+	      tree ctx2 = TREE_VALUE (TREE_VALUE (attr2));
+	      int r = omp_context_selector_compare (ctx1, ctx2);
+	      if (r == -1)
+		{
+		  /* ctx1 is a strict subset of ctx2, remove
+		     attr1 from the vector.  */
+		  variants[i] = NULL_TREE;
+		  break;
+		}
+	      else if (r == 1)
+		/* ctx2 is a strict subset of ctx1, remove attr2
+		   from the vector.  */
+		variants[j] = NULL_TREE;
+	    }
+      }
+  /* FIXME: Scoring not implemented yet, so just resolve it
+     if there is a single variant left.  */
+  FOR_EACH_VEC_ELT (variants, i, attr1)
+    if (attr1)
+      {
+	if (variant)
+	  return base;
+	variant = TREE_PURPOSE (TREE_VALUE (attr1));
+      }
   return variant ? variant : base;
 }
 
