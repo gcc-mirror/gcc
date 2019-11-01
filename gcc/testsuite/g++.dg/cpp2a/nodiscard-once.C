@@ -7,6 +7,6 @@
 void
 test (void)
 {
-  check1 ();
+  check1 ();			// { dg-warning "nodiscard" }
   (void) check1 ();
 }
