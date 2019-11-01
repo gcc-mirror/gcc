@@ -1,0 +1,4 @@
+omp-device-properties-nvptx: $(srcdir)/config/nvptx/nvptx.c
+	echo kind: gpu > $@
+	echo arch: nvptx >> $@
+	echo isa: sm_30 sm_35 >> $@
