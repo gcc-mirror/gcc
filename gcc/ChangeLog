@@ -1,5 +1,18 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/92314
+	* configure.ac: Don't look for omp-device-properties files from
+	installed offloading compilers.  Instead add tmake_file snippets
+	for configured offloading targets and use files they generate.
+	* Makefile.in (install): Don't depend on
+	install-omp-device-properties.
+	(install-omp-device-properties): Remove goal.
+	* config/i386/t-omp-device: New file.
+	* config/i386/t-intelmic (omp-device-properties): Remove goal.
+	* config/nvptx/t-omp-device: New file.
+	* config/nvptx/t-nvptx (omp-device-properties): Remove goal.
+	* configure: Regenerated.
+
 	* omp-general.h (omp_context_selector_set_compare): Declare.
 	* omp-general.c (omp_construct_simd_compare,
 	omp_context_selector_props_compare, omp_context_selector_set_compare,

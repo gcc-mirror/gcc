@@ -3476,10 +3476,6 @@ ifeq ($(enable_plugin),yes)
 install: install-plugin
 endif
 
-ifeq ($(enable_as_accelerator),yes)
-install: install-omp-device-properties
-endif
-
 install-strip: override INSTALL_PROGRAM = $(INSTALL_STRIP_PROGRAM)
 ifneq ($(STRIP),)
 install-strip: STRIPPROG = $(STRIP)
@@ -3664,11 +3660,6 @@ install-driver: installdirs xgcc$(exeext)
 	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi; \
 	fi
-
-# Install omp-device-properties file for accelerator compilers.
-install-omp-device-properties: omp-device-properties installdirs
-	$(INSTALL_DATA) omp-device-properties \
-	  $(DESTDIR)$(libsubdir)/omp-device-properties
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir

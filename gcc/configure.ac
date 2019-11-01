@@ -1026,18 +1026,22 @@ AC_SUBST(real_target_noncanonical)
 AC_SUBST(accel_dir_suffix)
 
 for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
-  tgt_dir=`echo $tgt | sed -n 's/.*=//p'`
   tgt=`echo $tgt | sed 's/=.*//'`
 
   if echo "$tgt" | grep "^hsa" > /dev/null ; then
     enable_hsa=1
   else
     enable_offloading=1
-    if test -n "$tgt_dir"; then
-      omp_device_property="${tgt_dir}/lib/gcc/\$(real_target_noncanonical)/\$(version)/accel/${tgt}/omp-device-properties"
-    else
-      omp_device_property="\$(libsubdir)/accel/${tgt}/omp-device-properties"
-    fi
+    case "$tgt" in
+      *-intelmicemul-*)
+	omp_device_property=omp-device-properties-i386
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
+	;;
+      nvptx*-*)
+	omp_device_property=omp-device-properties-nvptx
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+	;;
+    esac
     omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
     omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
   fi
@@ -2065,7 +2069,7 @@ do
 		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
 	fi
 done
-tmake_file="${tmake_file_}"
+tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
 out_object_file=`basename $out_file .c`.o
 common_out_object_file=`basename $common_out_file .c`.o
