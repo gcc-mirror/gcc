@@ -89,14 +89,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-/* Generate branch islands stubs if this is true.  */
-extern int darwin_emit_branch_islands;
-
-#undef TARGET_MACHO_BRANCH_ISLANDS
-#define TARGET_MACHO_BRANCH_ISLANDS darwin_emit_branch_islands
+/* Generate pic symbol indirection stubs if this is true.  */
+#undef TARGET_MACHO_SYMBOL_STUBS
+#define TARGET_MACHO_SYMBOL_STUBS (darwin_symbol_stubs)
 
 /* For compatibility with OSX system tools, use the new style of pic stub
-   if this is set.  */
+   if this is set (default).  */
 #undef  MACHOPIC_ATT_STUB
 #define MACHOPIC_ATT_STUB (darwin_macho_att_stub)
 
@@ -241,16 +239,16 @@ extern int darwin_emit_branch_islands;
 /* Darwin profiling -- call mcount.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
-    do {								\
-      if (TARGET_MACHO_BRANCH_ISLANDS 					\
-	   && MACHOPIC_INDIRECT && !TARGET_64BIT)			\
-	{								\
-	  const char *name = machopic_mcount_stub_name ();		\
-	  fprintf (FILE, "\tcall %s\n", name+1);  /*  skip '&'  */	\
-	  machopic_validate_stub_or_non_lazy_ptr (name);		\
-	}								\
-      else fprintf (FILE, "\tcall mcount\n");				\
-    } while (0)
+  do {									\
+    if (TARGET_MACHO_SYMBOL_STUBS 					\
+	&& MACHOPIC_INDIRECT && !TARGET_64BIT)				\
+      {									\
+	const char *name = machopic_mcount_stub_name ();		\
+	fprintf (FILE, "\tcall %s\n", name+1);  /*  skip '&'  */	\
+	machopic_validate_stub_or_non_lazy_ptr (name);			\
+      }									\
+    else fprintf (FILE, "\tcall mcount\n");				\
+  } while (0)
 
 #define C_COMMON_OVERRIDE_OPTIONS					\
   do {									\
