@@ -275,8 +275,6 @@
    UNSPEC_VSX_CVUXWDP
    UNSPEC_VSX_CVSXDSP
    UNSPEC_VSX_CVUXDSP
-   UNSPEC_VSX_CVSPSXDS
-   UNSPEC_VSX_CVSPUXDS
    UNSPEC_VSX_FLOAT2
    UNSPEC_VSX_UNS_FLOAT2
    UNSPEC_VSX_FLOATE
@@ -2114,13 +2112,35 @@
   "xscvdpsp %x0,%x1"
   [(set_attr "type" "fp")])
 
-(define_insn "vsx_xvcvspdp"
+(define_insn "vsx_xvcvspdp_be"
   [(set (match_operand:V2DF 0 "vsx_register_operand" "=v,?wa")
-	(unspec:V2DF [(match_operand:V4SF 1 "vsx_register_operand" "wa,wa")]
-			      UNSPEC_VSX_CVSPDP))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
+     (float_extend:V2DF
+       (vec_select:V2SF (match_operand:V4SF 1 "vsx_register_operand" "wa,wa")
+	 (parallel [(const_int 0) (const_int 2)]))))]
+  "VECTOR_UNIT_VSX_P (V4SFmode) && BYTES_BIG_ENDIAN"
   "xvcvspdp %x0,%x1"
   [(set_attr "type" "vecdouble")])
+
+(define_insn "vsx_xvcvspdp_le"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=v,?wa")
+     (float_extend:V2DF
+       (vec_select:V2SF (match_operand:V4SF 1 "vsx_register_operand" "wa,wa")
+	 (parallel [(const_int 1) (const_int 3)]))))]
+  "VECTOR_UNIT_VSX_P (V4SFmode) && !BYTES_BIG_ENDIAN"
+  "xvcvspdp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvspdp"
+  [(match_operand:V2DF 0 "vsx_register_operand")
+   (match_operand:V4SF 1 "vsx_register_operand")]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vsx_xvcvspdp_be (operands[0], operands[1]));
+  else
+    emit_insn (gen_vsx_xvcvspdp_le (operands[0], operands[1]));
+  DONE;
+})
 
 (define_insn "vsx_xvcvdpsp"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,?wa")
@@ -2341,15 +2361,38 @@
   "xvcvuxdsp %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
-;; Convert from 32-bit to 64-bit types
-;; Provide both vector and scalar targets
-(define_insn "vsx_xvcvsxwdp"
+;; Convert vector of 32-bit signed/unsigned integers to vector of
+;; 64-bit floating point numbers.
+(define_insn "vsx_xvcv<su>xwdp_be"
   [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
-	(unspec:V2DF [(match_operand:V4SI 1 "vsx_register_operand" "wa")]
-		     UNSPEC_VSX_CVSXWDP))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvsxwdp %x0,%x1"
+     (any_float:V2DF
+       (vec_select:V2SI (match_operand:V4SI 1 "vsx_register_operand" "wa")
+	 (parallel [(const_int 0) (const_int 2)]))))]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && BYTES_BIG_ENDIAN"
+  "xvcv<su>xwdp %x0,%x1"
   [(set_attr "type" "vecdouble")])
+
+(define_insn "vsx_xvcv<su>xwdp_le"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
+     (any_float:V2DF
+       (vec_select:V2SI (match_operand:V4SI 1 "vsx_register_operand" "wa")
+	 (parallel [(const_int 1) (const_int 3)]))))]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && !BYTES_BIG_ENDIAN"
+  "xvcv<su>xwdp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcv<su>xwdp"
+  [(match_operand:V2DF 0 "vsx_register_operand")
+   (match_operand:V4SI 1 "vsx_register_operand")
+   (any_float (pc))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vsx_xvcv<su>xwdp_be (operands[0], operands[1]));
+  else
+    emit_insn (gen_vsx_xvcv<su>xwdp_le (operands[0], operands[1]));
+  DONE;
+})
 
 (define_insn "vsx_xvcvsxwdp_df"
   [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
@@ -2357,14 +2400,6 @@
 		   UNSPEC_VSX_CVSXWDP))]
   "TARGET_VSX"
   "xvcvsxwdp %x0,%x1"
-  [(set_attr "type" "vecdouble")])
-
-(define_insn "vsx_xvcvuxwdp"
-  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
-	(unspec:V2DF [(match_operand:V4SI 1 "vsx_register_operand" "wa")]
-		     UNSPEC_VSX_CVUXWDP))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvuxwdp %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvuxwdp_df"
@@ -2375,21 +2410,38 @@
   "xvcvuxwdp %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
-(define_insn "vsx_xvcvspsxds"
+;; Convert vector of 32-bit floating point numbers to vector of
+;; 64-bit signed/unsigned integers.
+(define_insn "vsx_xvcvsp<su>xds_be"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=v,?wa")
-	(unspec:V2DI [(match_operand:V4SF 1 "vsx_register_operand" "wa,wa")]
-		     UNSPEC_VSX_CVSPSXDS))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvspsxds %x0,%x1"
+     (any_fix:V2DI
+       (vec_select:V2SF (match_operand:V4SF 1 "vsx_register_operand" "wa,wa")
+	 (parallel [(const_int 0) (const_int 2)]))))]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && BYTES_BIG_ENDIAN"
+  "xvcvsp<su>xds %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
-(define_insn "vsx_xvcvspuxds"
+(define_insn "vsx_xvcvsp<su>xds_le"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=v,?wa")
-	(unspec:V2DI [(match_operand:V4SF 1 "vsx_register_operand" "wa,wa")]
-		     UNSPEC_VSX_CVSPUXDS))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvspuxds %x0,%x1"
+     (any_fix:V2DI
+       (vec_select:V2SF (match_operand:V4SF 1 "vsx_register_operand" "wa,wa")
+	 (parallel [(const_int 1) (const_int 3)]))))]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && !BYTES_BIG_ENDIAN"
+  "xvcvsp<su>xds %x0,%x1"
   [(set_attr "type" "vecdouble")])
+
+(define_expand "vsx_xvcvsp<su>xds"
+  [(match_operand:V2DI 0 "vsx_register_operand")
+   (match_operand:V4SF 1 "vsx_register_operand")
+   (any_fix (pc))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vsx_xvcvsp<su>xds_be (operands[0], operands[1]));
+  else
+    emit_insn (gen_vsx_xvcvsp<su>xds_le (operands[0], operands[1]));
+  DONE;
+})
 
 ;; Generate float2 double
 ;; convert two double to float
