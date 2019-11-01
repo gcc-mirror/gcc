@@ -1,3 +1,7 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr36902.c: Terminate dg-warning regexp string.
+
 2019-11-01  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91679
