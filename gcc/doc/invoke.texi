@@ -325,6 +325,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winaccessible-base @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
+-Wzero-length-bounds @gol
 -Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
@@ -4438,6 +4439,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Winit-self @r{(only for C++)} @gol
+-Wzero-length-bounds @gol
 -Wlogical-not-parentheses @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
@@ -6329,6 +6331,33 @@ Do not warn about incompatible integer to pointer and pointer to integer
 conversions.  This warning is about implicit conversions; for explicit
 conversions the warnings @option{-Wno-int-to-pointer-cast} and
 @option{-Wno-pointer-to-int-cast} may be used.
+
+@item -Wzero-length-bounds
+@opindex Wzero-length-bounds
+@opindex Wzero-length-bounds
+Warn about accesses to elements of zero-length array members that might
+overlap other members of the same object.  Declaring interior zero-length
+arrays is discouraged because accesses to them are undefined.  See
+@xref{Zero Length}.
+
+For example, the first two stores in function @code{bad} are diagnosed
+because the array elements overlap the subsequent members @code{b} and
+@code{c}.  The third store is diagnosed by @option{-Warray-bounds}
+because it is beyond the bounds of the enclosing object.
+
+@smallexample
+struct X @{ int a[0]; int b, c; @};
+struct X x;
+
+void bad (void)
+@{
+  x.a[0] = 0;   // -Wzero-length-bounds
+  x.a[1] = 1;   // -Wzero-length-bounds
+  x.a[2] = 2;   // -Warray-bounds
+@}
+@end smallexample
+
+Option @option{-Wzero-length-bounds} is enabled by @option{-Warray-bounds}.
 
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero

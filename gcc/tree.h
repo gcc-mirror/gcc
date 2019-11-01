@@ -5262,7 +5262,7 @@ extern tree component_ref_field_offset (tree);
    of an initialized flexible array member.  The size might be zero for
    an object with an uninitialized flexible array member or null if it
    cannot be determined.  */
-extern tree component_ref_size (tree);
+extern tree component_ref_size (tree, bool * = NULL);
 
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
