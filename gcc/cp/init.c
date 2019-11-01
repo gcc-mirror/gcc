@@ -3404,6 +3404,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
     }
 
+  tree alloc_call_expr = extract_call_expr (alloc_call);
+  if (TREE_CODE (alloc_call_expr) == CALL_EXPR)
+    CALL_FROM_NEW_OR_DELETE_P (alloc_call_expr) = 1;
+
   if (cookie_size)
     alloc_call = maybe_wrap_new_for_constexpr (alloc_call, elt_type,
 					       cookie_size);
@@ -4046,6 +4050,10 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 					      /*placement=*/NULL_TREE,
 					      /*alloc_fn=*/NULL_TREE,
 					      complain);
+
+      tree deallocate_call_expr = extract_call_expr (deallocate_expr);
+      if (TREE_CODE (deallocate_call_expr) == CALL_EXPR)
+	CALL_FROM_NEW_OR_DELETE_P (deallocate_call_expr) = 1;
     }
 
   body = loop;
@@ -4954,6 +4962,13 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 
   if (!deleting)
     return expr;
+
+  if (do_delete)
+    {
+      tree do_delete_call_expr = extract_call_expr (do_delete);
+      if (TREE_CODE (do_delete_call_expr) == CALL_EXPR)
+	CALL_FROM_NEW_OR_DELETE_P (do_delete_call_expr) = 1;
+    }
 
   if (do_delete && !TREE_SIDE_EFFECTS (expr))
     expr = do_delete;
