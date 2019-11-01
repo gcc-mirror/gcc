@@ -1,3 +1,10 @@
+2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR testsuite/92127
+	* gcc.dg/vect/costmodel/ppc/costmodel-pr37194.c: Disable unroll.
+	* gcc.dg/vect/costmodel/ppc/costmodel-fast-math-vect-pr29925.c:
+	Likewise.
+
 2019-10-31  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.misc-tests/help.exp: Test --help=common for full sentences.
