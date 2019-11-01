@@ -1,3 +1,19 @@
+2019-11-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91679
+	PR middle-end/91647
+	PR middle-end/91463
+	PR middle-end/92312
+	* c-c++-common/Warray-bounds-2.c: Disable VRP.  Adjust expected messages.
+	* g++.dg/warn/Warray-bounds-8.C: Remove xfails.
+	* gcc.dg/Warray-bounds-48.c: New test.
+	* gcc.dg/Warray-bounds-49.c: New test.
+	* gcc.dg/Wstringop-overflow-16.c: Adjust text of expected messages.
+	* gcc.dg/Wstringop-overflow-21.c: New test.
+	* gcc.dg/Wzero-length-array-bounds.c: New test.
+	* gcc.dg/pr36902.c: Remove xfail.
+	* gcc.dg/strlenopt-57.c: Add an expected warning.
+
 2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/byte_3.f: New test.

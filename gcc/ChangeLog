@@ -1,3 +1,26 @@
+2019-11-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91679
+	PR middle-end/91647
+	PR middle-end/91463
+	PR middle-end/92312
+	* c-family/c-pretty-print.c (direct_abstract_declarator): Print
+	bound in zero-length arrays.
+	* gcc/c-family/c.opt (-Wzero-length-bounds): New option.
+	* gcc/doc/invoke.texi (-Wzero-length-bounds): Document.
+	* gimple-match-head.c (try_conditional_simplification): Use memcpy
+	instead of a hand-rolled loop to avoid PR 92323.
+	* tree-vrp.c (vrp_prop::check_array_ref): Handle trailing arrays
+	with initializers.
+	(vrp_prop::check_mem_ref): Handle declared struct objects.
+	* tree.c (last_field): New function.
+	(array_at_struct_end_p): Handle MEM_REF.
+	(get_initializer_for): New helper.
+	(component_ref_size): Add argument.  Rename locals.  Call
+	get_initializer_for instead of fold_ctor_reference.  Correct handling
+	of flexible array members.
+	* wide-int.h (generic_wide_int <storage>::sign_mask): Assert invariant.
+
 2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* config/rs6000/rs6000-modes.def (V2SF, V2SI): New modes.
