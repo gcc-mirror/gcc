@@ -1,3 +1,12 @@
+2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_addr-1.f90 (test_nullptr_1,
+	test_dummy_opt_nullptr_callee_1): Add present but unallocated test.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: Likewise.
+	* testsuite/libgomp.fortran/use_device_addr-3.f90: New.
+	* testsuite/libgomp.fortran/use_device_addr-4.f90: New.
+	* testsuite/testsuite/libgomp.fortran/use_device_ptr-1.f90: New.
+
 2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/target9.f90: New.

@@ -1,3 +1,11 @@
+2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_ARRAY_DATA): Set to gfc_omp_array_data.
+	* trans-array.c (gfc_conv_descriptor_data_get): Handle also
+	REFERENCE_TYPE.
+	* trans-openmp.c (gfc_omp_array_data): New.
+	* trans.h (gfc_omp_array_data): New prototype.
+
 2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92284.

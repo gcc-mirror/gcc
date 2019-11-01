@@ -1,3 +1,14 @@
+2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* hooks.c (hook_tree_tree_bool_null): New.
+	* hooks.h (hook_tree_tree_bool_null): Declare.
+	* langhooks-def.h (LANG_HOOKS_OMP_ARRAY_DATA): Define.
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.h (lang_hooks_for_decls): Add omp_array_data.
+	* omp-low.c (install_var_field): New mode for Fortran descriptor arrays.
+	(lower_omp_target): Handle Fortran array with descriptor in
+	OMP_CLAUSE_USE_DEVICE_ADDR/OMP_CLAUSE_USE_DEVICE_PTR.
+
 2019-10-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types):
