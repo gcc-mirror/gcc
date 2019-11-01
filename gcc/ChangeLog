@@ -1,6 +1,21 @@
 2019-11-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2019-10-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): Make the check for
+	Objective-C ABI version more specific for 64bit code.
+
+	Backport from mainline
+	2019-10-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): Adjust objective-c
+	ABI version error messages to avoid punctuation and contracted
+	negations.
+
+2019-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2019-07-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (REAL_LIBGCC_SPEC): Adjust for earlier Darwin.
