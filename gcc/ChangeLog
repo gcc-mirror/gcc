@@ -1,5 +1,14 @@
 2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
 
+	* config/rs6000/vsx.md (UNSPEC_VSX_CVSXWSP, UNSPEC_VSX_CVUXWSP,
+	UNSPEC_VSX_XVCVSXDDP, UNSPEC_VSX_XVCVUXDDP,
+	UNSPEC_VSX_XVCVDPSXDS, UNSPEC_VSX_XVCVDPUXDS,
+	UNSPEC_VSX_XVCVSPSXWS): Remove.
+	(vsx_xvcv<su>xddp, vsx_xvcvdp<su>xds, vsx_xvcvsp<su>xws,
+	vsx_xvcv<su>xwsp): Update define_insn RTL patterns.
+
+2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
+
 	* config/rs6000/vsx.md (vsx_xvcdpsp): Remove define_insn.
 	(UNSPEC_VSX_XVCDPSP): Remove.
 	* config/rs6000/rs6000.c (rs6000_generate_float2_double_code):
