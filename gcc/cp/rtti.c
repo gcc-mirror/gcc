@@ -143,16 +143,20 @@ static bool typeinfo_in_lib_p (tree);
 
 static int doing_runtime = 0;
 
-static void
+static unsigned
 push_abi_namespace (void)
 {
   push_nested_namespace (abi_node);
   push_visibility ("default", 2);
+  unsigned flags = module_kind;
+  module_kind = 0;
+  return flags;
 }
 
 static void
-pop_abi_namespace (void)
+pop_abi_namespace (unsigned flags)
 {
+  module_kind = flags;
   pop_visibility (2);
   pop_nested_namespace (abi_node);
 }
@@ -766,26 +770,23 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  dcast_fn = dynamic_cast_node;
 	  if (!dcast_fn)
 	    {
-	      tree tmp;
-	      tree tinfo_ptr;
-	      const char *name;
+	      unsigned flags = push_abi_namespace ();
+	      tree tinfo_ptr = xref_tag (class_type,
+					 get_identifier ("__class_type_info"),
+					 /*tag_scope=*/ts_current, false);
+	      tinfo_ptr = cp_build_qualified_type (tinfo_ptr, TYPE_QUAL_CONST);
+	      tinfo_ptr = build_pointer_type (tinfo_ptr);
 
-	      push_abi_namespace ();
-	      tinfo_ptr = xref_tag (class_type,
-				    get_identifier ("__class_type_info"),
-				    /*tag_scope=*/ts_current, false);
-
-	      tinfo_ptr = build_pointer_type
-		(cp_build_qualified_type
-		 (tinfo_ptr, TYPE_QUAL_CONST));
-	      name = "__dynamic_cast";
-	      tmp = build_function_type_list (ptr_type_node,
-					      const_ptr_type_node,
-					      tinfo_ptr, tinfo_ptr,
-					      ptrdiff_type_node, NULL_TREE);
-	      dcast_fn = build_library_fn_ptr (name, tmp,
-					       ECF_LEAF | ECF_PURE | ECF_NOTHROW);
-	      pop_abi_namespace ();
+	      const char *fn_name = "__dynamic_cast";
+	      /* void *() (void const *, __class_type_info const *,
+		           __class_type_info const *, ptrdiff_t)  */
+	      tree fn_type = (build_function_type_list
+			      (ptr_type_node, const_ptr_type_node,
+			       tinfo_ptr, tinfo_ptr, ptrdiff_type_node,
+			       NULL_TREE));
+	      dcast_fn = (build_library_fn_ptr
+			  (fn_name, fn_type, ECF_LEAF | ECF_PURE | ECF_NOTHROW));
+	      pop_abi_namespace (flags);
 	      dynamic_cast_node = dcast_fn;
 	    }
 	  result = build_cxx_call (dcast_fn, 4, elems, complain);
@@ -952,17 +953,12 @@ tinfo_base_init (tinfo_s *ti, tree target)
   vtable_ptr = ti->vtable;
   if (!vtable_ptr)
     {
-      // FIXME: we need to not modularize the abi namespace.  Need to audit
-      push_abi_namespace ();
+      int flags = push_abi_namespace ();
       tree real_type = xref_tag (class_type, ti->name,
 				 /*tag_scope=*/ts_current, false);
       tree real_decl = TYPE_NAME (real_type);
-      // FIXME: set_instantiating_module should key off BUILTINS_LOCATION
       DECL_SOURCE_LOCATION (real_decl) = BUILTINS_LOCATION;
-      DECL_MODULE_EXPORT_P (real_decl) = false;
-      if (DECL_LANG_SPECIFIC (real_decl))
-	DECL_MODULE_PURVIEW_P (real_decl) = false;
-      pop_abi_namespace ();
+      pop_abi_namespace (flags);
 
       if (!COMPLETE_TYPE_P (real_type))
 	{

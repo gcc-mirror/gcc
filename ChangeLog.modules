@@ -1,6 +1,11 @@
 2019-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* rtti.c ({push,pop}_abi_namespace): Save and restore module
+	state.
+	(build_dynamic_cast_1, tinfo_base_init): Adjust.
+
+	gcc/cp/
 	* module.cc (depset::hash::find_dependencies): Reach unreached
 	specializations.
 
