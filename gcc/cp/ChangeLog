@@ -1,3 +1,7 @@
+2019-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (check_field_decls): Refactor.
+
 2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90947

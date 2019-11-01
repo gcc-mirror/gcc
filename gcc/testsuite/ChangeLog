@@ -1,3 +1,7 @@
+2019-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/fn.C: New.
+
 2019-11-01  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR testsuite/92127
