@@ -277,8 +277,6 @@
    UNSPEC_VSX_CVUXDSP
    UNSPEC_VSX_CVSPSXDS
    UNSPEC_VSX_CVSPUXDS
-   UNSPEC_VSX_CVSXWSP
-   UNSPEC_VSX_CVUXWSP
    UNSPEC_VSX_FLOAT2
    UNSPEC_VSX_UNS_FLOAT2
    UNSPEC_VSX_FLOATE
@@ -298,12 +296,7 @@
    UNSPEC_VSX_DIVSD
    UNSPEC_VSX_DIVUD
    UNSPEC_VSX_MULSD
-   UNSPEC_VSX_XVCVSXDDP
-   UNSPEC_VSX_XVCVUXDDP
-   UNSPEC_VSX_XVCVDPSXDS
-   UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
-   UNSPEC_VSX_XVCVSPSXWS
    UNSPEC_VSX_XVCVSPSXDS
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
@@ -2210,6 +2203,34 @@
 
 ;; Convert and scale (used by vec_ctf, vec_cts, vec_ctu for double/long long)
 
+(define_insn "vsx_xvcv<su>xwsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
+     (any_float:V4SF (match_operand:V4SI 1 "vsx_register_operand" "wa")))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xvcv<su>xwsp %x0,%x1"
+  [(set_attr "type" "vecfloat")])
+
+(define_insn "vsx_xvcv<su>xddp"
+  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
+        (any_float:V2DF (match_operand:V2DI 1 "vsx_register_operand" "wa")))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcv<su>xddp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
+(define_insn "vsx_xvcvsp<su>xws"
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa")
+        (any_fix:V4SI (match_operand:V4SF 1 "vsx_register_operand" "wa")))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xvcvsp<su>xws %x0,%x1"
+  [(set_attr "type" "vecfloat")])
+
+(define_insn "vsx_xvcvdp<su>xds"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+        (any_fix:V2DI (match_operand:V2DF 1 "vsx_register_operand" "wa")))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdp<su>xds %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
 (define_expand "vsx_xvcvsxddp_scale"
   [(match_operand:V2DF 0 "vsx_register_operand")
    (match_operand:V2DI 1 "vsx_register_operand")
@@ -2225,14 +2246,6 @@
   DONE;
 })
 
-(define_insn "vsx_xvcvsxddp"
-  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
-        (unspec:V2DF [(match_operand:V2DI 1 "vsx_register_operand" "wa")]
-                     UNSPEC_VSX_XVCVSXDDP))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvsxddp %x0,%x1"
-  [(set_attr "type" "vecdouble")])
-
 (define_expand "vsx_xvcvuxddp_scale"
   [(match_operand:V2DF 0 "vsx_register_operand")
    (match_operand:V2DI 1 "vsx_register_operand")
@@ -2247,14 +2260,6 @@
     rs6000_scale_v2df (op0, op0, -scale);
   DONE;
 })
-
-(define_insn "vsx_xvcvuxddp"
-  [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
-        (unspec:V2DF [(match_operand:V2DI 1 "vsx_register_operand" "wa")]
-                     UNSPEC_VSX_XVCVUXDDP))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvuxddp %x0,%x1"
-  [(set_attr "type" "vecdouble")])
 
 (define_expand "vsx_xvcvdpsxds_scale"
   [(match_operand:V2DI 0 "vsx_register_operand")
@@ -2278,26 +2283,6 @@
 })
 
 ;; convert vector of 64-bit floating point numbers to vector of
-;; 64-bit signed integer
-(define_insn "vsx_xvcvdpsxds"
-  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
-        (unspec:V2DI [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
-                     UNSPEC_VSX_XVCVDPSXDS))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvdpsxds %x0,%x1"
-  [(set_attr "type" "vecdouble")])
-
-;; convert vector of 32-bit floating point numbers to vector of
-;; 32-bit signed integer
-(define_insn "vsx_xvcvspsxws"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa")
-	(unspec:V4SI [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
-		     UNSPEC_VSX_XVCVSPSXWS))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
-  "xvcvspsxws %x0,%x1"
-  [(set_attr "type" "vecfloat")])
-
-;; convert vector of 64-bit floating point numbers to vector of
 ;; 64-bit unsigned integer
 (define_expand "vsx_xvcvdpuxds_scale"
   [(match_operand:V2DI 0 "vsx_register_operand")
@@ -2319,24 +2304,6 @@
   emit_insn (gen_vsx_xvcvdpuxds (op0, tmp));
   DONE;
 })
-
-;; convert vector of 32-bit floating point numbers to vector of
-;; 32-bit unsigned integer
-(define_insn "vsx_xvcvspuxws"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa")
-	(unspec:V4SI [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
-		     UNSPEC_VSX_XVCVSPSXWS))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
-  "xvcvspuxws %x0,%x1"
-  [(set_attr "type" "vecfloat")])
-
-(define_insn "vsx_xvcvdpuxds"
-  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
-        (unspec:V2DI [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
-                     UNSPEC_VSX_XVCVDPUXDS))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvdpuxds %x0,%x1"
-  [(set_attr "type" "vecdouble")])
 
 ;; Convert from 64-bit to 32-bit types
 ;; Note, favor the Altivec registers since the usual use of these instructions
@@ -2423,22 +2390,6 @@
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvspuxds %x0,%x1"
   [(set_attr "type" "vecdouble")])
-
-(define_insn "vsx_xvcvsxwsp"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
-	(unspec:V4SF [(match_operand:V4SI 1 "vsx_register_operand" "wa")]
-		     UNSPEC_VSX_CVSXWSP))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
-  "xvcvsxwsp %x0,%x1"
-  [(set_attr "type" "vecfloat")])
-
-(define_insn "vsx_xvcvuxwsp"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
-	(unspec:V4SF[(match_operand:V4SI 1 "vsx_register_operand" "wa")]
-		    UNSPEC_VSX_CVUXWSP))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
-  "xvcvuxwsp %x0,%x1"
-  [(set_attr "type" "vecfloat")])
 
 ;; Generate float2 double
 ;; convert two double to float
