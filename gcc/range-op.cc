@@ -1692,48 +1692,41 @@ operator_cast::op1_range (value_range_base &r, tree type,
   // so we can tell nothing about it.
   if (TYPE_PRECISION (lhs_type) < TYPE_PRECISION (type))
     {
-      // If we've been passed an actual value for the RHS rather than
-      // the type, see if it fits the LHS, and if so, then we can allow
-      // it.
-      r = op2;
-      r = fold_range (lhs_type, r, value_range_base (lhs_type));
-      r = fold_range (type, r, value_range_base (type));
-      if (r == op2)
-        {
-	  // We know the value of the RHS fits in the LHS type, so
-	  // convert the LHS and remove any values that arent in OP2.
-	  r = lhs;
-	  r = fold_range (type, r, value_range_base (type));
-	  r.intersect (op2);
-	  return true;
-	}
-      // Special case if the LHS is a boolean.  A 0 means the RHS is
-      // zero, and a 1 means the RHS is non-zero.
-      if (TREE_CODE (lhs_type) == BOOLEAN_TYPE)
-	{
-	  // If the LHS is unknown, the result is whatever op2 already is.
-	  if (!lhs.singleton_p ())
-	    {
-	      r = op2;
-	      return true;
-	    }
-	  // Boolean casts are weird in GCC. It's actually an implied
-	  // mask with 0x01, so all that is known is whether the
-	  // rightmost bit is 0 or 1, which implies the only value
-	  // *not* in the RHS is 0 or -1.
-	  unsigned prec = TYPE_PRECISION (type);
-	  if (lhs.zero_p ())
-	    r = value_range_base (VR_ANTI_RANGE, type,
-			wi::minus_one (prec), wi::minus_one (prec));
-	  else
-	    r = value_range_base (VR_ANTI_RANGE, type,
-			wi::zero (prec), wi::zero (prec));
-	  // And intersect it with what we know about op2.
-	  r.intersect (op2);
-	}
+      if (lhs.varying_p ())
+	r = value_range_base (type);
       else
-	// Otherwise we'll have to assume it's whatever we know about op2.
-	r = op2;
+        {
+	  // we want to insert the LHS as an unsigned value since it would not
+	  // trigger the signed bit of the larger type..
+	  value_range_base converted_lhs = lhs;
+	  range_cast (converted_lhs, unsigned_type_for (lhs_type));
+	  range_cast (converted_lhs, type);
+	  // Start by building the positive signed outer range for the type.
+	  wide_int lim = wi::set_bit_in_zero (TYPE_PRECISION (lhs_type),
+					      TYPE_PRECISION (type));
+	  r = value_range_base (type, lim, wi::max_value (TYPE_PRECISION (type),
+							  SIGNED));
+	  // For the signed part, we need to simply union the 2 ranges now.
+	  r.union_ (converted_lhs);
+
+	  // Create maximal negative number outside of LHS bits.
+	  lim = wi::mask (TYPE_PRECISION (lhs_type), true,
+			  TYPE_PRECISION (type));
+	  // Add this to the unsigned LHS range(s).
+	  value_range_base lim_range (type, lim, lim);
+	  value_range_base lhs_neg = range_op_handler (PLUS_EXPR, type)->
+			      fold_range (type, converted_lhs, lim_range);
+	  // And union this with the entire outer types negative range.
+	  value_range_base neg (type,
+				wi::min_value (TYPE_PRECISION (type),
+					       SIGNED),
+				lim - 1);
+	  neg.union_ (lhs_neg);
+	  // And finally, munge the signed and unsigned portions.
+	  r.union_ (neg);
+	}
+      // And intersect with any known value passed in the extra operand.
+      r.intersect (op2);
       return true;
     }
 
