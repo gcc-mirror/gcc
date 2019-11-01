@@ -1638,6 +1638,28 @@ is_std_construct_at (tree fndecl)
   return name && id_equal (name, "construct_at");
 }
 
+/* Return true if FNDECL is std::allocator<T>::{,de}allocate.  */
+
+static inline bool
+is_std_allocator_allocate (tree fndecl)
+{
+  tree name = DECL_NAME (fndecl);
+  if (name == NULL_TREE
+      || !(id_equal (name, "allocate") || id_equal (name, "deallocate")))
+    return false;
+
+  tree ctx = DECL_CONTEXT (fndecl);
+  if (ctx == NULL_TREE || !CLASS_TYPE_P (ctx) || !TYPE_MAIN_DECL (ctx))
+    return false;
+
+  tree decl = TYPE_MAIN_DECL (ctx);
+  name = DECL_NAME (decl);
+  if (name == NULL_TREE || !id_equal (name, "allocator"))
+    return false;
+
+  return decl_in_std_namespace_p (decl);
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -1716,7 +1738,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 					   lval, non_constant_p, overflow_p);
   if (!DECL_DECLARED_CONSTEXPR_P (fun))
     {
-      if (cxx_replaceable_global_alloc_fn (fun))
+      if (TREE_CODE (t) == CALL_EXPR
+	  && cxx_replaceable_global_alloc_fn (fun)
+	  && (CALL_FROM_NEW_OR_DELETE_P (t)
+	      || (ctx->call
+		  && ctx->call->fundef
+		  && is_std_allocator_allocate (ctx->call->fundef->decl))))
 	{
 	  const int nargs = call_expr_nargs (t);
 	  tree arg0 = NULL_TREE;
@@ -1774,7 +1801,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	}
       /* Allow placement new in std::construct_at, just return the second
 	 argument.  */
-      if (cxx_placement_new_fn (fun)
+      if (TREE_CODE (t) == CALL_EXPR
+	  && cxx_placement_new_fn (fun)
 	  && ctx->call
 	  && ctx->call->fundef
 	  && is_std_construct_at (ctx->call->fundef->decl))
@@ -6508,9 +6536,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		    && !fndecl_built_in_p (fun)
 		    /* In C++2a, replaceable global allocation functions
 		       are constant expressions.  */
-		    && !cxx_replaceable_global_alloc_fn (fun)
+		    && (!cxx_replaceable_global_alloc_fn (fun)
+			|| TREE_CODE (t) != CALL_EXPR
+			|| (!CALL_FROM_NEW_OR_DELETE_P (t)
+			    && (current_function_decl == NULL_TREE
+				|| !is_std_allocator_allocate
+						(current_function_decl))))
 		    /* Allow placement new in std::construct_at.  */
 		    && (!cxx_placement_new_fn (fun)
+			|| TREE_CODE (t) != CALL_EXPR
 			|| current_function_decl == NULL_TREE
 			|| !is_std_construct_at (current_function_decl)))
 		  {

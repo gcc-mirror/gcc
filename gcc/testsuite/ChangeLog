@@ -1,5 +1,9 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* g++.dg/cpp2a/constexpr-new6.C: New test.
+	* g++.dg/cpp2a/constexpr-new7.C: New test.
+
 	* gcc.dg/pr36902.c: Terminate dg-warning regexp string.
 
 2019-11-01  Martin Sebor  <msebor@redhat.com>

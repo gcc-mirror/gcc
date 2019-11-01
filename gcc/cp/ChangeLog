@@ -1,3 +1,14 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* cp-tree.h (CALL_FROM_NEW_OR_DELETE_P): Define.
+	* init.c (build_new_1, build_vec_delete_1, build_delete): Set
+	CALL_FROM_NEW_OR_DELETE_P on the CALL_EXPR to allocator functions.
+	* constexpr.c (is_std_allocator_allocate): Only allow
+	global replaceable allocator functions if CALL_FROM_NEW_OR_DELETE_P
+	or in std::allocate<T>::{,de}allocate.
+	(potential_constant_expression_1): Likewise.
+
 2019-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (check_field_decls): Refactor.
