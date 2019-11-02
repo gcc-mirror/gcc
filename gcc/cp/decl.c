@@ -7103,7 +7103,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	       DECL_ARGUMENTS (decl), NULL);
 
   tree ctx = TREE_VALUE (TREE_VALUE (attr));
-  tree simd = c_omp_get_context_selector (ctx, "construct", "simd");
+  tree simd = omp_get_context_selector (ctx, "construct", "simd");
   if (simd)
     {
       TREE_VALUE (simd)
@@ -7202,7 +7202,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	}
       else
 	{
-	  tree construct = c_omp_get_context_selector (ctx, "construct", NULL);
+	  tree construct = omp_get_context_selector (ctx, "construct", NULL);
 	  c_omp_mark_declare_variant (match_loc, variant, construct);
 	  if (!omp_context_selector_matches (ctx))
 	    return true;

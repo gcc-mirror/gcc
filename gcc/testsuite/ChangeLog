@@ -1,5 +1,7 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/declare-variant-12.c: New test.
+
 	PR c++/89640
 	* g++.dg/cpp1z/attr-lambda1.C: New test.
 	* g++.dg/ext/attr-lambda2.C: New test.

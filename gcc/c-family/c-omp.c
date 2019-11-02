@@ -2237,27 +2237,6 @@ c_omp_check_context_selector (location_t loc, tree ctx)
   return ctx;
 }
 
-/* From context selector CTX, return trait-selector with name SEL in
-   trait-selector-set with name SET if any, or NULL_TREE if not found.
-   If SEL is NULL, return the list of trait-selectors in SET.  */
-
-tree
-c_omp_get_context_selector (tree ctx, const char *set, const char *sel)
-{
-  tree setid = get_identifier (set);
-  tree selid = sel ? get_identifier (sel) : NULL_TREE;
-  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
-    if (TREE_PURPOSE (t1) == setid)
-      {
-	if (sel == NULL)
-	  return TREE_VALUE (t1);
-	for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
-	  if (TREE_PURPOSE (t2) == selid)
-	    return t2;
-      }
-  return NULL_TREE;
-}
-
 /* Register VARIANT as variant of some base function marked with
    #pragma omp declare variant.  CONSTRUCT is corresponding construct
    selector set.  */

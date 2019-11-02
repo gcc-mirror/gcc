@@ -1,5 +1,9 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-common.h (c_omp_get_context_selector): Remove.
+	* c-omp.c (c_omp_get_context_selector): Moved to omp-general.c
+	and renamed to omp_get_context_selector.
+
 	* c-omp.c (c_omp_mark_declare_variant): Use
 	omp_context_selector_set_compare.
 
