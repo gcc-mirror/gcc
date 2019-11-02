@@ -1,3 +1,18 @@
+2019-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/conversion/ptrmem9.C: Check location.
+	* g++.dg/expr/cond2.C: Likewise.
+	* g++.dg/warn/Waddress-1.C: Check locations.
+	* g++.old-deja/g++.bugs/900324_02.C: Check location.
+	* g++.old-deja/g++.jason/rfg20.C: Likewise.
+	* g++.old-deja/g++.law/typeck1.C: Likewise.
+	* g++.old-deja/g++.rfg/00321_01-.C: Likewise.
+	* g++.old-deja/g++.rfg/00324_02-.C: Likewise.
+
+	* g++.dg/diagnostic/alignof1.C: New.
+	* g++.dg/expr/sizeof1.C: Check location.
+	* g++.dg/cpp0x/rv-lvalue-req.C: Check locations.
+
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-variant-12.c: New test.

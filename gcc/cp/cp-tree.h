@@ -7526,7 +7526,8 @@ extern tree build_ptrmemfunc1			(tree, tree, tree);
 extern void expand_ptrmemfunc_cst		(tree, tree *, tree *);
 extern tree type_after_usual_arithmetic_conversions (tree, tree);
 extern tree common_pointer_type                 (tree, tree);
-extern tree composite_pointer_type		(tree, tree, tree, tree,
+extern tree composite_pointer_type		(const op_location_t &,
+						 tree, tree, tree, tree,
 						 composite_pointer_operation,
 						 tsubst_flags_t);
 extern tree merge_types				(tree, tree);

@@ -22,5 +22,5 @@ void f ()
 
   pd == pb;
   pd == pbv;  // { dg-error "" }
-  pd == pc;   // { dg-error "comparison between distinct pointer-to-member types" }
+  pd == pc;   // { dg-error "6:comparison between distinct pointer-to-member types" }
 }
