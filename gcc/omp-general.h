@@ -87,6 +87,7 @@ extern int omp_max_simt_vf (void);
 extern int omp_constructor_traits_to_codes (tree, enum tree_code *);
 extern int omp_context_selector_matches (tree);
 extern int omp_context_selector_set_compare (const char *, tree, tree);
+extern tree omp_get_context_selector (tree, const char *, const char *);
 extern tree omp_resolve_declare_variant (tree);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);

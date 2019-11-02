@@ -1,3 +1,8 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_finish_omp_declare_variant): Use
+	omp_get_context_selector instead of c_omp_get_context_selector.
+
 2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-tree.h (c_simulate_enum_decl): Declare.

@@ -639,7 +639,7 @@ omp_maybe_offloaded (void)
   if (cfun && (cfun->curr_properties & PROP_gimple_any) == 0)
     {
       enum tree_code construct = OMP_TARGET;
-      if (omp_construct_selector_matches (&construct, 1))
+      if (omp_construct_selector_matches (&construct, 1, NULL))
 	return true;
     }
   return false;
@@ -677,8 +677,8 @@ omp_context_selector_matches (tree ctx)
 	  enum tree_code constructs[5];
 	  int nconstructs
 	    = omp_constructor_traits_to_codes (TREE_VALUE (t1), constructs);
-	  HOST_WIDE_INT r
-	    = omp_construct_selector_matches (constructs, nconstructs);
+	  int r = omp_construct_selector_matches (constructs, nconstructs,
+						  NULL);
 	  if (r == 0)
 	    return 0;
 	  if (r == -1)
@@ -1261,13 +1261,93 @@ omp_context_selector_compare (tree ctx1, tree ctx2)
   return swapped ? -ret : ret;
 }
 
+/* From context selector CTX, return trait-selector with name SEL in
+   trait-selector-set with name SET if any, or NULL_TREE if not found.
+   If SEL is NULL, return the list of trait-selectors in SET.  */
+
+tree
+omp_get_context_selector (tree ctx, const char *set, const char *sel)
+{
+  tree setid = get_identifier (set);
+  tree selid = sel ? get_identifier (sel) : NULL_TREE;
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    if (TREE_PURPOSE (t1) == setid)
+      {
+	if (sel == NULL)
+	  return TREE_VALUE (t1);
+	for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	  if (TREE_PURPOSE (t2) == selid)
+	    return t2;
+      }
+  return NULL_TREE;
+}
+
+/* Compute *SCORE for context selector CTX.  Return true if the score
+   would be different depending on whether it is a declare simd clone or
+   not.  DECLARE_SIMD should be true for the case when it would be
+   a declare simd clone.  */
+
+static bool
+omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
+{
+  tree construct = omp_get_context_selector (ctx, "construct", NULL);
+  bool has_kind = omp_get_context_selector (ctx, "device", "kind");
+  bool has_arch = omp_get_context_selector (ctx, "device", "arch");
+  bool has_isa = omp_get_context_selector (ctx, "device", "isa");
+  bool ret = false;
+  *score = 1;
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+      if (tree t3 = TREE_VALUE (t2))
+	if (TREE_PURPOSE (t3)
+	    && strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)), " score") == 0
+	    && TREE_CODE (TREE_VALUE (t3)) == INTEGER_CST)
+	  *score += wi::to_widest (TREE_VALUE (t3));
+  if (construct || has_kind || has_arch || has_isa)
+    {
+      int scores[12];
+      enum tree_code constructs[5];
+      int nconstructs = 0;
+      if (construct)
+	nconstructs = omp_constructor_traits_to_codes (construct, constructs);
+      if (omp_construct_selector_matches (constructs, nconstructs, scores)
+	  == 2)
+	ret = true;
+      int b = declare_simd ? nconstructs + 1 : 0;
+      if (scores[b + nconstructs] + 4U < score->get_precision ())
+	{
+	  for (int n = 0; n < nconstructs; ++n)
+	    {
+	      if (scores[b + n] < 0)
+		{
+		  *score = 0;
+		  return ret;
+		}
+	      *score += wi::shifted_mask <widest_int> (scores[b + n], 1, false);
+	    }
+	  if (has_kind)
+	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs],
+						     1, false);
+	  if (has_arch)
+	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs] + 1,
+						     1, false);
+	  if (has_isa)
+	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs] + 2,
+						     1, false);
+	}
+      else /* FIXME: Implement this.  */
+	gcc_unreachable ();
+    }
+  return ret;
+}
+
 /* Try to resolve declare variant, return the variant decl if it should
    be used instead of base, or base otherwise.  */
 
 tree
 omp_resolve_declare_variant (tree base)
 {
-  tree variant = NULL_TREE;
+  tree variant1 = NULL_TREE, variant2 = NULL_TREE;
   auto_vec <tree, 16> variants;
   for (tree attr = DECL_ATTRIBUTES (base); attr; attr = TREE_CHAIN (attr))
     {
@@ -1319,16 +1399,56 @@ omp_resolve_declare_variant (tree base)
 		variants[j] = NULL_TREE;
 	    }
       }
-  /* FIXME: Scoring not implemented yet, so just resolve it
-     if there is a single variant left.  */
+  widest_int max_score1 = 0;
+  widest_int max_score2 = 0;
+  bool first = true;
   FOR_EACH_VEC_ELT (variants, i, attr1)
     if (attr1)
       {
-	if (variant)
-	  return base;
-	variant = TREE_PURPOSE (TREE_VALUE (attr1));
+	if (variant1)
+	  {
+	    widest_int score1;
+	    widest_int score2;
+	    bool need_two;
+	    tree ctx;
+	    if (first)
+	      {
+		first = false;
+		ctx = TREE_VALUE (TREE_VALUE (variant1));
+		need_two = omp_context_compute_score (ctx, &max_score1, false);
+		if (need_two)
+		  omp_context_compute_score (ctx, &max_score2, true);
+		else
+		  max_score2 = max_score1;
+	      }
+	    ctx = TREE_VALUE (TREE_VALUE (attr1));
+	    need_two = omp_context_compute_score (ctx, &score1, false);
+	    if (need_two)
+	      omp_context_compute_score (ctx, &score2, true);
+	    else
+	      score2 = score1;
+	    if (score1 > max_score1)
+	      {
+		max_score1 = score1;
+		variant1 = attr1;
+	      }
+	    if (score2 > max_score2)
+	      {
+		max_score2 = score2;
+		variant2 = attr1;
+	      }
+	  }
+	else
+	  {
+	    variant1 = attr1;
+	    variant2 = attr1;
+	  }
       }
-  return variant ? variant : base;
+  /* If there is a disagreement on which variant has the highest score
+     depending on whether it will be in a declare simd clone or not,
+     punt for now and defer until after IPA where we will know that.  */
+  return ((variant1 && variant1 == variant2)
+	  ? TREE_PURPOSE (TREE_VALUE (variant1)) : base);
 }
 
 

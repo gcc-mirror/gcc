@@ -10381,14 +10381,24 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 
 /* Return 0 if CONSTRUCTS selectors don't match the OpenMP context,
    -1 if unknown yet (simd is involved, won't be known until vectorization)
-   and positive number if they do, the number is then the number of constructs
-   in the OpenMP context.  */
+   and 1 if they do.  If SCORES is non-NULL, it should point to an array
+   of at least 2*NCONSTRUCTS+2 ints, and will be filled with the positions
+   of the CONSTRUCTS (position -1 if it will never match) followed by
+   number of constructs in the OpenMP context construct trait.  If the
+   score depends on whether it will be in a declare simd clone or not,
+   the function returns 2 and there will be two sets of the scores, the first
+   one for the case that it is not in a declare simd clone, the other
+   that it is in a declare simd clone.  */
 
-HOST_WIDE_INT
-omp_construct_selector_matches (enum tree_code *constructs, int nconstructs)
+int
+omp_construct_selector_matches (enum tree_code *constructs, int nconstructs,
+				int *scores)
 {
   int matched = 0, cnt = 0;
   bool simd_seen = false;
+  bool target_seen = false;
+  int declare_simd_cnt = -1;
+  auto_vec<enum tree_code, 16> codes;
   for (struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp; ctx;)
     {
       if (((ctx->region_type & ORT_PARALLEL) && ctx->code == OMP_PARALLEL)
@@ -10401,7 +10411,9 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs)
 	      && !omp_find_clause (ctx->clauses, OMP_CLAUSE_BIND)))
 	{
 	  ++cnt;
-	  if (matched < nconstructs && ctx->code == constructs[matched])
+	  if (scores)
+	    codes.safe_push (ctx->code);
+	  else if (matched < nconstructs && ctx->code == constructs[matched])
 	    {
 	      if (ctx->code == OMP_SIMD)
 		{
@@ -10412,7 +10424,12 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs)
 	      ++matched;
 	    }
 	  if (ctx->code == OMP_TARGET)
-	    return matched < nconstructs ? 0 : simd_seen ? -1 : cnt;
+	    {
+	      if (scores == NULL)
+		return matched < nconstructs ? 0 : simd_seen ? -1 : 1;
+	      target_seen = true;
+	      break;
+	    }
 	}
       else if (ctx->region_type == ORT_WORKSHARE
 	       && ctx->code == OMP_LOOP
@@ -10424,31 +10441,40 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs)
 	ctx = ctx->outer_context->outer_context;
       ctx = ctx->outer_context;
     }
-  if (cnt == 0
-      && constructs[0] == OMP_SIMD
+  if (!target_seen
       && lookup_attribute ("omp declare simd",
 			   DECL_ATTRIBUTES (current_function_decl)))
     {
       /* Declare simd is a maybe case, it is supposed to be added only to the
 	 omp-simd-clone.c added clones and not to the base function.  */
-      gcc_assert (matched == 0);
-      ++cnt;
-      simd_seen = true;
-      if (++matched == nconstructs)
-	return -1;
+      declare_simd_cnt = cnt++;
+      if (scores)
+	codes.safe_push (OMP_SIMD);
+      else if (cnt == 0
+	       && constructs[0] == OMP_SIMD)
+	{
+	  gcc_assert (matched == 0);
+	  simd_seen = true;
+	  if (++matched == nconstructs)
+	    return -1;
+	}
     }
   if (tree attr = lookup_attribute ("omp declare variant variant",
 				    DECL_ATTRIBUTES (current_function_decl)))
     {
       enum tree_code variant_constructs[5];
-      int variant_nconstructs
-	= omp_constructor_traits_to_codes (TREE_VALUE (attr),
-					   variant_constructs);
+      int variant_nconstructs = 0;
+      if (!target_seen)
+	variant_nconstructs
+	  = omp_constructor_traits_to_codes (TREE_VALUE (attr),
+					     variant_constructs);
       for (int i = 0; i < variant_nconstructs; i++)
 	{
 	  ++cnt;
-	  if (matched < nconstructs
-	      && variant_constructs[i] == constructs[matched])
+	  if (scores)
+	    codes.safe_push (variant_constructs[i]);
+	  else if (matched < nconstructs
+		   && variant_constructs[i] == constructs[matched])
 	    {
 	      if (variant_constructs[i] == OMP_SIMD)
 		{
@@ -10460,15 +10486,38 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs)
 	    }
 	}
     }
-  if (lookup_attribute ("omp declare target block",
-			DECL_ATTRIBUTES (current_function_decl)))
+  if (!target_seen
+      && lookup_attribute ("omp declare target block",
+			   DECL_ATTRIBUTES (current_function_decl)))
     {
-      ++cnt;
-      if (matched < nconstructs && constructs[matched] == OMP_TARGET)
+      if (scores)
+	codes.safe_push (OMP_TARGET);
+      else if (matched < nconstructs && constructs[matched] == OMP_TARGET)
 	++matched;
     }
+  if (scores)
+    {
+      for (int pass = 0; pass < (declare_simd_cnt == -1 ? 1 : 2); pass++)
+	{
+	  int j = codes.length () - 1;
+	  for (int i = nconstructs - 1; i >= 0; i--)
+	    {
+	      while (j >= 0
+		     && (pass != 0 || declare_simd_cnt != j)
+		     && constructs[i] != codes[j])
+		--j;
+	      if (pass == 0 && declare_simd_cnt != -1 && j > declare_simd_cnt)
+		*scores++ = j - 1;
+	      else
+		*scores++ = j;
+	    }
+	  *scores++ = ((pass == 0 && declare_simd_cnt != -1)
+		       ? codes.length () - 1 : codes.length ());
+	}
+      return declare_simd_cnt == -1 ? 1 : 2;
+    }
   if (matched == nconstructs)
-    return simd_seen ? -1 : cnt;
+    return simd_seen ? -1 : 1;
   return 0;
 }
 

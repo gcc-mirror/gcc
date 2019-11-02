@@ -1,5 +1,17 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimplify.h (omp_construct_selector_matches): Change return
+	type to int, add a new SCORES argument.
+	* gimplify.c (omp_construct_selector_matches): Likewise.  If
+	SCORES is non-NULL, compute scores of each construct.
+	* omp-general.h (omp_get_context_selector): Declare.
+	* omp-general.c (omp_maybe_offloaded, omp_context_selector_matches):
+	Adjust omp_construct_selector_matches callers.
+	(omp_get_context_selector): New function, moved from c-family/c-omp.c.
+	(omp_context_compute_score): New function.
+	(omp_resolve_declare_variant): Compute scores and decide based on
+	that.
+
 	PR bootstrap/92314
 	* configure.ac: Don't look for omp-device-properties files from
 	installed offloading compilers.  Instead add tmake_file snippets
