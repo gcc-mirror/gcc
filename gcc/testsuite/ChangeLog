@@ -1,5 +1,9 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89640
+	* g++.dg/cpp1z/attr-lambda1.C: New test.
+	* g++.dg/ext/attr-lambda2.C: New test.
+
 	* c-c++-common/gomp/declare-variant-6.c: Expect construct rather than
 	constructor in diagnostic messages.
 	* c-c++-common/gomp/declare-variant-7.c: Likewise.

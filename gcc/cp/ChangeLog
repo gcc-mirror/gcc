@@ -1,5 +1,9 @@
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89640
+	* parser.c (cp_parser_decl_specifier_seq): Don't parse attributes
+	if CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR.
+
 	PR c++/88335 - Implement P1073R3: Immediate functions
 	* cp-tree.h (struct lang_decl_fn): Add immediate_fn_p bit.
 	(DECL_IMMEDIATE_FUNCTION_P, SET_DECL_IMMEDIATE_FUNCTION_P): Define.
