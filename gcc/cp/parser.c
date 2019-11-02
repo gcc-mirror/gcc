@@ -13994,7 +13994,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (!start_token)
 	start_token = token;
       /* Handle attributes.  */
-      if (cp_next_tokens_can_be_attribute_p (parser))
+      if ((flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR) == 0
+	  && cp_next_tokens_can_be_attribute_p (parser))
 	{
 	  /* Parse the attributes.  */
 	  tree attrs = cp_parser_attributes_opt (parser);
