@@ -1,3 +1,9 @@
+2019-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92133
+	* trans-decl.c (gfc_get_symbol_decl): If __def_init actually
+	contains a value, put it into  the read-only section.
+
 2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* decl.c (match_byte_typespec): New function.  Match BYTE type-spec.

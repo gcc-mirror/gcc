@@ -1904,13 +1904,20 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->attr.associate_var)
     GFC_DECL_ASSOCIATE_VAR_P (decl) = 1;
 
-  /* We no longer mark __def_init as read-only so it does not take up
-     space in the read-only section and dan go into the BSS instead,
-     see PR 84487.  Marking this as artificial means that OpenMP will
-     treat this as predetermined shared.  */
-  if (sym->attr.vtab
-      || (sym->name[0] == '_' && gfc_str_startswith (sym->name, "__def_init")))
-    DECL_ARTIFICIAL (decl) = 1;
+  /* We only longer mark __def_init as read-only if it actually has an
+     initializer, it does not needlessly take up space in the
+     read-only section and can go into the BSS instead, see PR 84487.
+     Marking this as artificial means that OpenMP will treat this as
+     predetermined shared.  */
+
+  bool def_init = gfc_str_startswith (sym->name, "__def_init");
+
+  if (sym->attr.vtab || def_init)
+    {
+      DECL_ARTIFICIAL (decl) = 1;
+      if (def_init && sym->value)
+	TREE_READONLY (decl) = 1;
+    }
 
   return decl;
 }
