@@ -1,3 +1,17 @@
+2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for mallinfo.
+	* ggc-common.c: Include malloc.h if available;
+	include options.h
+	(report_heap_memory_use): New functoin.
+	* ggc-page.c (ggc_grow): Do not print "start".
+	* ggc.h (report_heap_memory_use): Declare.
+	* pases.c (execute_one_pass): Report memory after IPA passes.
+	(ipa_read_summaries_1): Likewise.
+	(ipa_read_optimization_summaries_1): Likewise.
+
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.h (omp_construct_selector_matches): Change return
