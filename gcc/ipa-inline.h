@@ -48,6 +48,8 @@ bool growth_likely_positive (struct cgraph_node *, int);
 int do_estimate_edge_size (struct cgraph_edge *edge);
 sreal do_estimate_edge_time (struct cgraph_edge *edge);
 ipa_hints do_estimate_edge_hints (struct cgraph_edge *edge);
+void reset_node_cache (struct cgraph_node *node);
+void initialize_growth_caches ();
 void free_growth_caches (void);
 
 /* In ipa-inline.c  */

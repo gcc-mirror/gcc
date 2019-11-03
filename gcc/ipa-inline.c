@@ -1368,6 +1368,8 @@ reset_edge_caches (struct cgraph_node *node)
   if (where->inlined_to)
     where = where->inlined_to;
 
+  reset_node_cache (where);
+
   if (edge_growth_cache != NULL)
     for (edge = where->callers; edge; edge = edge->next_caller)
       if (edge->inline_failed)
@@ -1900,8 +1902,7 @@ inline_small_functions (void)
 	  max_count = max_count.max (edge->count.ipa ());
       }
   ipa_free_postorder_info ();
-  edge_growth_cache
-    = new call_summary<edge_growth_cache_entry *> (symtab, false);
+  initialize_growth_caches ();
 
   if (dump_file)
     fprintf (dump_file,

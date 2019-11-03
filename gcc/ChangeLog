@@ -1,5 +1,31 @@
 2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (ipa_call_context::duplicate_from): New
+	member function.
+	(ipa_call_context::release): Add ALL parameter.
+	(ipa_call_context::equal_to): New member function.
+	* ipa-fnsummary.h (ipa_call_context): Add empty constructor;
+	duplicate_form, release, equal_to and exists_p member functoins.
+	* ipa-inline-analysis.c (node_context_cache_entry): New
+	class.
+	(node_context_summary): Likewise.
+	(node_context_cache, node_context_cache_hit, node_context_cache_miss,
+	node_context_clear): New static vars.
+	(initialize_growth_caches): New function.
+	(free_growth_caches): Also delete node_context_cache; output stats.
+	(do_estimate_edge_time): Cache contexts.
+	(reset_node_cache): New function.
+	* ipa-inline.c (reset_edge_caches): Reset also node cache.
+	(inline_small_functions): Initialize growth caches.
+	* ipa-inline.h (reset_node_cache, initialize_growth_caches):
+	Declare.
+	* ipa-predicate.h (inline_param_summary::equal_to): New.
+	* ipa-prop.c (ipa_agg_jf_item::equal_to): New.
+	* ipa-prop.h (ipa_agg_jf_item): Declare equal_to member function.
+	(ipa_agg_jump_function): Implement equal_to member function.
+
+2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (inline_read_section): Set vector size
 	ahead of time.
 

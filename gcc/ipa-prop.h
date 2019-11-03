@@ -127,6 +127,9 @@ struct GTY(()) ipa_agg_jf_item
 
   /* The known constant or type if this is a clobber.  */
   tree value;
+
+  /* Return true if OTHER describes same agg item.  */
+  bool equal_to (const ipa_agg_jf_item &other);
 };
 
 
@@ -139,6 +142,23 @@ struct GTY(()) ipa_agg_jump_function
   vec<ipa_agg_jf_item, va_gc> *items;
   /* True if the data was passed by reference (as opposed to by value). */
   bool by_ref;
+
+  /* Return true if OTHER describes same agg items.  */
+  bool equal_to (const ipa_agg_jump_function &other)
+  {
+    if (by_ref != other.by_ref)
+      return false;
+    if (items != NULL && other.items == NULL)
+      return false;
+    if (!items)
+      return other.items == NULL;
+    if (items->length () != other.items->length ())
+      return false;
+    for (unsigned int i = 0; i < items->length (); i++)
+      if (!(*items)[i].equal_to ((*other.items)[i]))
+	return false;
+    return true;
+  }
 };
 
 typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;

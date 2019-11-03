@@ -295,11 +295,21 @@ public:
 		    vec<ipa_polymorphic_call_context> known_contexts,
 		    vec<ipa_agg_jump_function_p> known_aggs,
 		    vec<inline_param_summary> m_inline_param_summary);
+  ipa_call_context ()
+  : m_node(NULL)
+  {
+  }
   void estimate_size_and_time (int *ret_size, int *ret_min_size,
 			       sreal *ret_time,
 			       sreal *ret_nonspecialized_time,
 			       ipa_hints *ret_hints);
-  void release ();
+  void duplicate_from (const ipa_call_context &ctx);
+  void release (bool all = false);
+  bool equal_to (const ipa_call_context &);
+  bool exists_p ()
+  {
+    return m_node != NULL;
+  }
 private:
   /* Called function.  */
   cgraph_node *m_node;
