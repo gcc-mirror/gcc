@@ -77,9 +77,13 @@ struct inline_param_summary
 
      Value 0 is reserved for compile time invariants. */
   int change_prob;
-  bool equal_to (const inline_param_summary &other)
+  bool equal_to (const inline_param_summary &other) const
   {
     return change_prob == other.change_prob;
+  }
+  bool useless_p (void) const
+  {
+    return change_prob == REG_BR_PROB_BASE;
   }
 };
 
@@ -233,6 +237,7 @@ public:
 
   /* Return predicate equal to THIS after inlining.  */
   predicate remap_after_inlining (class ipa_fn_summary *,
+		  		  class ipa_node_params *params_summary,
 			          class ipa_fn_summary *,
 			          vec<int>, vec<int>, clause_t, const predicate &);
 
@@ -254,7 +259,9 @@ private:
 };
 
 void dump_condition (FILE *f, conditions conditions, int cond);
-predicate add_condition (class ipa_fn_summary *summary, int operand_num,
+predicate add_condition (class ipa_fn_summary *summary,
+			 class ipa_node_params *params_summary,
+	       		 int operand_num,
 			 tree type, struct agg_position_info *aggpos,
 			 enum tree_code code, tree val,
 			 expr_eval_ops param_ops = NULL);

@@ -333,9 +333,12 @@ struct GTY(()) ipa_param_descriptor
      says how many there are.  If any use could not be described by means of
      ipa-prop structures, this is IPA_UNDESCRIBED_USE.  */
   int controlled_uses;
-  unsigned int move_cost : 31;
+  unsigned int move_cost : 28;
   /* The parameter is used.  */
   unsigned used : 1;
+  unsigned used_by_ipa_predicates : 1;
+  unsigned used_by_indirect_call : 1;
+  unsigned used_by_polymorphic_call : 1;
 };
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -519,6 +522,36 @@ ipa_set_param_used (class ipa_node_params *info, int i, bool val)
   (*info->descriptors)[i].used = val;
 }
 
+/* Set the used_by_ipa_predicates flag corresponding to the Ith formal
+   parameter of the function associated with INFO to VAL.  */
+
+static inline void
+ipa_set_param_used_by_ipa_predicates (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].used_by_ipa_predicates = val;
+}
+
+/* Set the used_by_indirect_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO to VAL.  */
+
+static inline void
+ipa_set_param_used_by_indirect_call (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].used_by_indirect_call = val;
+}
+
+/* Set the .used_by_polymorphic_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO to VAL.  */
+
+static inline void
+ipa_set_param_used_by_polymorphic_call (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].used_by_polymorphic_call = val;
+}
+
 /* Return how many uses described by ipa-prop a parameter has or
    IPA_UNDESCRIBED_USE if there is a use that is not described by these
    structures.  */
@@ -548,6 +581,36 @@ ipa_is_param_used (class ipa_node_params *info, int i)
 {
   gcc_checking_assert (info->descriptors);
   return (*info->descriptors)[i].used;
+}
+
+/* Return the used_by_ipa_predicates flag corresponding to the Ith formal
+   parameter of the function associated with INFO.  */
+
+static inline bool
+ipa_is_param_used_by_ipa_predicates (class ipa_node_params *info, int i)
+{
+  gcc_checking_assert (info->descriptors);
+  return (*info->descriptors)[i].used_by_ipa_predicates;
+}
+
+/* Return the used_by_indirect_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO.  */
+
+static inline bool
+ipa_is_param_used_by_indirect_call (class ipa_node_params *info, int i)
+{
+  gcc_checking_assert (info->descriptors);
+  return (*info->descriptors)[i].used_by_indirect_call;
+}
+
+/* Return the used_by_polymorphic_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO.  */
+
+static inline bool
+ipa_is_param_used_by_polymorphic_call (class ipa_node_params *info, int i)
+{
+  gcc_checking_assert (info->descriptors);
+  return (*info->descriptors)[i].used_by_polymorphic_call;
 }
 
 /* Information about replacements done in aggregates for a given node (each
