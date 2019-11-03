@@ -316,12 +316,7 @@ pack_d (const fp_number_type *src)
   /* We previously used bitfields to store the number, but this doesn't
      handle little/big endian systems conveniently, so use shifts and
      masks */
-#ifdef FLOAT_BIT_ORDER_MISMATCH
-  dst.bits.fraction = fraction;
-  dst.bits.exp = exp;
-  dst.bits.sign = sign;
-#else
-# if defined TFLOAT && defined HALFFRACBITS
+#if defined TFLOAT && defined HALFFRACBITS
  {
    halffractype high, low, unity;
    int lowsign, lowexp;
@@ -394,11 +389,10 @@ pack_d (const fp_number_type *src)
      }
    dst.value_raw = ((fractype) high << HALFSHIFT) | low;
  }
-# else
+#else
   dst.value_raw = fraction & ((((fractype)1) << FRACBITS) - (fractype)1);
   dst.value_raw |= ((fractype) (exp & ((1 << EXPBITS) - 1))) << FRACBITS;
   dst.value_raw |= ((fractype) (sign & 1)) << (FRACBITS | EXPBITS);
-# endif
 #endif
 
 #if defined(FLOAT_WORD_ORDER_MISMATCH) && !defined(FLOAT)
@@ -450,12 +444,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
   src = &swapped;
 #endif
   
-#ifdef FLOAT_BIT_ORDER_MISMATCH
-  fraction = src->bits.fraction;
-  exp = src->bits.exp;
-  sign = src->bits.sign;
-#else
-# if defined TFLOAT && defined HALFFRACBITS
+#if defined TFLOAT && defined HALFFRACBITS
  {
    halffractype high, low;
    
@@ -498,11 +487,10 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	 }
      }
  }
-# else
+#else
   fraction = src->value_raw & ((((fractype)1) << FRACBITS) - 1);
   exp = ((int)(src->value_raw >> FRACBITS)) & ((1 << EXPBITS) - 1);
   sign = ((int)(src->value_raw >> (FRACBITS + EXPBITS))) & 1;
-# endif
 #endif
 
   dst->sign = sign;
