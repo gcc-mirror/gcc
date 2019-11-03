@@ -281,6 +281,47 @@ public:
 			  ipa_call_summary *dst_data);
 };
 
+/* This object describe a context of call.  That is a summary of known
+   information about its parameters.  Main purpose of this context is
+   to give more realistic esitmations of function runtime, size and
+   inline hints.  */
+class ipa_call_context
+{
+public:
+  ipa_call_context (cgraph_node *node,
+      		    clause_t possible_truths,
+		    clause_t nonspec_possible_truths,
+		    vec<tree> known_vals,
+		    vec<ipa_polymorphic_call_context> known_contexts,
+		    vec<ipa_agg_jump_function_p> known_aggs,
+		    vec<inline_param_summary> m_inline_param_summary);
+  void estimate_size_and_time (int *ret_size, int *ret_min_size,
+			       sreal *ret_time,
+			       sreal *ret_nonspecialized_time,
+			       ipa_hints *ret_hints);
+  void release ();
+private:
+  /* Called function.  */
+  cgraph_node *m_node;
+  /* Clause describing what predicate conditionals can be satisfied
+     in this context if function is inlined/specialised.  */
+  clause_t m_possible_truths;
+  /* Clause describing what predicate conditionals can be satisfied
+     in this context if function is kept offline.  */
+  clause_t m_nonspec_possible_truths;
+  /* Inline summary maintains info about change probabilities.  */
+  vec<inline_param_summary> m_inline_param_summary;
+
+  /* The following is used only to resolve indirect calls.  */
+
+  /* Vector describing known values of parameters.  */
+  vec<tree> m_known_vals;
+  /* Vector describing known polymorphic call contexts.  */
+  vec<ipa_polymorphic_call_context> m_known_contexts;
+  /* Vector describing known aggregate values.  */
+  vec<ipa_agg_jump_function_p> m_known_aggs;
+};
+
 extern fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
 
 /* In ipa-fnsummary.c  */
@@ -302,25 +343,14 @@ void ipa_update_overall_fn_summary (struct cgraph_node *node);
 void compute_fn_summary (struct cgraph_node *, bool);
 
 
-void evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
+void evaluate_properties_for_edge (struct cgraph_edge *e,
+	       		           bool inline_p,
 				   clause_t *clause_ptr,
 				   clause_t *nonspec_clause_ptr,
 				   vec<tree> *known_vals_ptr,
 				   vec<ipa_polymorphic_call_context>
 				   *known_contexts_ptr,
 				   vec<ipa_agg_jump_function_p> *);
-void estimate_node_size_and_time (struct cgraph_node *node,
-				  clause_t possible_truths,
-				  clause_t nonspec_possible_truths,
-				  vec<tree> known_vals,
-				  vec<ipa_polymorphic_call_context>,
-				  vec<ipa_agg_jump_function_p> known_aggs,
-				  int *ret_size, int *ret_min_size,
-				  sreal *ret_time,
-				  sreal *ret_nonspecialized_time,
-				  ipa_hints *ret_hints,
-				  vec<inline_param_summary>
-				  inline_param_summary);
 
 void ipa_fnsummary_c_finalize (void);
 HOST_WIDE_INT ipa_get_stack_frame_offset (struct cgraph_node *node);

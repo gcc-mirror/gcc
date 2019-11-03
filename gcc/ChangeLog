@@ -1,5 +1,16 @@
 2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (ipa_call_context): New constructor.
+	(estimate_node_size_and_time): Turn to ...
+	(ipa_call_context::estimate_size_and_time): ... this one.
+	(ipa_call_context::release): New.
+	* ipa-fnsummary.h (ipa_call_context): New class.
+	(estimate_node_size_and_time): Remove.
+	* ipa-inline-analysis.c (do_estimate_edge_time, do_estimate_edge_size,
+	do_estimate_edge_hints): Update.
+
+2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* config.in: Regenerate.
 	* configure: Regenerate.
 	* configure.ac: Check for mallinfo.

@@ -2940,31 +2940,54 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
     }
 }
 
+/* Default constructor for ipa call context.
+   Memory alloction of known_vals, known_contexts
+   and known_aggs vectors is owned by the caller, but can
+   be release by ipa_call_context::release.  
+   
+   inline_param_summary is owned by the caller.  */
+ipa_call_context::ipa_call_context (cgraph_node *node,
+				    clause_t possible_truths,
+				    clause_t nonspec_possible_truths,
+				    vec<tree> known_vals,
+				    vec<ipa_polymorphic_call_context>
+				   	 known_contexts,
+				    vec<ipa_agg_jump_function_p> known_aggs,
+				    vec<inline_param_summary>
+				   	 inline_param_summary)
+: m_node (node), m_possible_truths (possible_truths),
+  m_nonspec_possible_truths (nonspec_possible_truths),
+  m_inline_param_summary (inline_param_summary),
+  m_known_vals (known_vals),
+  m_known_contexts (known_contexts),
+  m_known_aggs (known_aggs)
+{
+}
 
-/* Estimate size and time needed to execute NODE assuming
-   POSSIBLE_TRUTHS clause, and KNOWN_VALS, KNOWN_AGGS and KNOWN_CONTEXTS
-   information about NODE's arguments.  If non-NULL use also probability
-   information present in INLINE_PARAM_SUMMARY vector.
+/* Release memory used by known_vals/contexts/aggs vectors.  */
+
+void
+ipa_call_context::release ()
+{
+  m_known_vals.release ();
+  m_known_contexts.release ();
+  m_known_aggs.release ();
+}
+
+/* Estimate size and time needed to execute call in the given context.
    Additionally detemine hints determined by the context.  Finally compute
    minimal size needed for the call that is independent on the call context and
    can be used for fast estimates.  Return the values in RET_SIZE,
    RET_MIN_SIZE, RET_TIME and RET_HINTS.  */
 
 void
-estimate_node_size_and_time (struct cgraph_node *node,
-			     clause_t possible_truths,
-			     clause_t nonspec_possible_truths,
-			     vec<tree> known_vals,
-			     vec<ipa_polymorphic_call_context> known_contexts,
-			     vec<ipa_agg_jump_function_p> known_aggs,
-			     int *ret_size, int *ret_min_size,
-			     sreal *ret_time,
-			     sreal *ret_nonspecialized_time,
-			     ipa_hints *ret_hints,
-			     vec<inline_param_summary>
-			     inline_param_summary)
+ipa_call_context::estimate_size_and_time (int *ret_size,
+					  int *ret_min_size,
+					  sreal *ret_time,
+					  sreal *ret_nonspecialized_time,
+					  ipa_hints *ret_hints)
 {
-  class ipa_fn_summary *info = ipa_fn_summaries->get_create (node);
+  class ipa_fn_summary *info = ipa_fn_summaries->get_create (m_node);
   size_time_entry *e;
   int size = 0;
   sreal time = 0;
@@ -2976,13 +2999,13 @@ estimate_node_size_and_time (struct cgraph_node *node,
     {
       bool found = false;
       fprintf (dump_file, "   Estimating body: %s/%i\n"
-	       "   Known to be false: ", node->name (),
-	       node->order);
+	       "   Known to be false: ", m_node->name (),
+	       m_node->order);
 
       for (i = predicate::not_inlined_condition;
 	   i < (predicate::first_dynamic_condition
 		+ (int) vec_safe_length (info->conds)); i++)
-	if (!(possible_truths & (1 << i)))
+	if (!(m_possible_truths & (1 << i)))
 	  {
 	    if (found)
 	      fprintf (dump_file, ", ");
@@ -2991,19 +3014,19 @@ estimate_node_size_and_time (struct cgraph_node *node,
 	  }
     }
 
-  estimate_calls_size_and_time (node, &size, &min_size, &time, &hints, possible_truths,
-				known_vals, known_contexts, known_aggs);
+  estimate_calls_size_and_time (m_node, &size, &min_size, &time, &hints, m_possible_truths,
+				m_known_vals, m_known_contexts, m_known_aggs);
   sreal nonspecialized_time = time;
 
   for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
     {
-      bool exec = e->exec_predicate.evaluate (nonspec_possible_truths);
+      bool exec = e->exec_predicate.evaluate (m_nonspec_possible_truths);
 
       /* Because predicates are conservative, it can happen that nonconst is 1
 	 but exec is 0.  */
       if (exec)
         {
-          bool nonconst = e->nonconst_predicate.evaluate (possible_truths);
+          bool nonconst = e->nonconst_predicate.evaluate (m_possible_truths);
 
 	  gcc_checking_assert (e->time >= 0);
 	  gcc_checking_assert (time >= 0);
@@ -3019,7 +3042,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
 	  nonspecialized_time += e->time;
 	  if (!nonconst)
 	    ;
-	  else if (!inline_param_summary.exists ())
+	  else if (!m_inline_param_summary.exists ())
 	    {
 	      if (nonconst)
 	        time += e->time;
@@ -3027,8 +3050,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
 	  else
 	    {
 	      int prob = e->nonconst_predicate.probability 
-					       (info->conds, possible_truths,
-					        inline_param_summary);
+					       (info->conds, m_possible_truths,
+					        m_inline_param_summary);
 	      gcc_checking_assert (prob >= 0);
 	      gcc_checking_assert (prob <= REG_BR_PROB_BASE);
 	      time += e->time * prob / REG_BR_PROB_BASE;
@@ -3052,14 +3075,14 @@ estimate_node_size_and_time (struct cgraph_node *node,
     time = nonspecialized_time;
 
   if (info->loop_iterations
-      && !info->loop_iterations->evaluate (possible_truths))
+      && !info->loop_iterations->evaluate (m_possible_truths))
     hints |= INLINE_HINT_loop_iterations;
   if (info->loop_stride
-      && !info->loop_stride->evaluate (possible_truths))
+      && !info->loop_stride->evaluate (m_possible_truths))
     hints |= INLINE_HINT_loop_stride;
   if (info->scc_no)
     hints |= INLINE_HINT_in_scc;
-  if (DECL_DECLARED_INLINE_P (node->decl))
+  if (DECL_DECLARED_INLINE_P (m_node->decl))
     hints |= INLINE_HINT_declared_inline;
 
   size = RDIV (size, ipa_fn_summary::size_scale);
@@ -3101,10 +3124,11 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 
   evaluate_conditions_for_known_args (node, false, known_vals, known_aggs,
 				      &clause, &nonspec_clause);
-  estimate_node_size_and_time (node, clause, nonspec_clause,
-			       known_vals, known_contexts,
-			       known_aggs, ret_size, NULL, ret_time,
-			       ret_nonspec_time, hints, vNULL);
+  ipa_call_context ctx (node, clause, nonspec_clause,
+		        known_vals, known_contexts,
+		        known_aggs, vNULL);
+  ctx.estimate_size_and_time (ret_size, NULL, ret_time,
+			      ret_nonspec_time, hints);
 }
 
 /* Return stack frame offset where frame of NODE is supposed to start inside

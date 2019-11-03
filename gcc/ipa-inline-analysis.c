@@ -137,9 +137,10 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   evaluate_properties_for_edge (edge, true,
 				&clause, &nonspec_clause, &known_vals,
 				&known_contexts, &known_aggs);
-  estimate_node_size_and_time (callee, clause, nonspec_clause, known_vals,
-			       known_contexts, known_aggs, &size, &min_size,
-			       &time, &nonspec_time, &hints, es->param);
+  ipa_call_context ctx (callee, clause, nonspec_clause, known_vals,
+		  	known_contexts, known_aggs, es->param);
+  ctx.estimate_size_and_time (&size, &min_size,
+			      &time, &nonspec_time, &hints);
 
   /* When we have profile feedback, we can quite safely identify hot
      edges and for those we disable size limits.  Don't do that when
@@ -152,9 +153,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 	     : edge->caller->count.ipa ())))
     hints |= INLINE_HINT_known_hot;
 
-  known_vals.release ();
-  known_contexts.release ();
-  known_aggs.release ();
+  ctx.release ();
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
 
@@ -207,12 +206,10 @@ do_estimate_edge_size (struct cgraph_edge *edge)
 				&clause, &nonspec_clause,
 				&known_vals, &known_contexts,
 				&known_aggs);
-  estimate_node_size_and_time (callee, clause, nonspec_clause, known_vals,
-			       known_contexts, known_aggs, &size, NULL, NULL,
-			       NULL, NULL, vNULL);
-  known_vals.release ();
-  known_contexts.release ();
-  known_aggs.release ();
+  ipa_call_context ctx (callee, clause, nonspec_clause, known_vals,
+		  	known_contexts, known_aggs, vNULL);
+  ctx.estimate_size_and_time (&size, NULL, NULL, NULL, NULL);
+  ctx.release ();
   return size;
 }
 
@@ -248,12 +245,10 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
 				&clause, &nonspec_clause,
 				&known_vals, &known_contexts,
 				&known_aggs);
-  estimate_node_size_and_time (callee, clause, nonspec_clause, known_vals,
-			       known_contexts, known_aggs, NULL, NULL,
-			       NULL, NULL, &hints, vNULL);
-  known_vals.release ();
-  known_contexts.release ();
-  known_aggs.release ();
+  ipa_call_context ctx (callee, clause, nonspec_clause, known_vals,
+		  	known_contexts, known_aggs, vNULL);
+  ctx.estimate_size_and_time (NULL, NULL, NULL, NULL, &hints);
+  ctx.release ();
   hints |= simple_edge_hints (edge);
   return hints;
 }
