@@ -5293,4 +5293,12 @@ ipcp_transform_function (struct cgraph_node *node)
   return TODO_update_ssa_only_virtuals;
 }
 
+
+/* Return true if OTHER describes same agg item.  */
+bool
+ipa_agg_jf_item::equal_to (const ipa_agg_jf_item &other)
+{
+  return offset == other.offset
+	 && operand_equal_p (value, other.value, 0);
+}
 #include "gt-ipa-prop.h"

@@ -77,6 +77,10 @@ struct inline_param_summary
 
      Value 0 is reserved for compile time invariants. */
   int change_prob;
+  bool equal_to (const inline_param_summary &other)
+  {
+    return change_prob == other.change_prob;
+  }
 };
 
 typedef vec<condition, va_gc> *conditions;

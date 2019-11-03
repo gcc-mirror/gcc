@@ -2964,14 +2964,103 @@ ipa_call_context::ipa_call_context (cgraph_node *node,
 {
 }
 
-/* Release memory used by known_vals/contexts/aggs vectors.  */
+void
+ipa_call_context::duplicate_from (const ipa_call_context &ctx)
+{
+  m_node = ctx.m_node;
+  m_possible_truths = ctx.m_possible_truths;
+  m_nonspec_possible_truths = ctx.m_nonspec_possible_truths;
+
+  if (ctx.m_inline_param_summary.exists ())
+    m_inline_param_summary = ctx.m_inline_param_summary.copy ();
+  else
+    m_inline_param_summary = vNULL;
+  if (ctx.m_known_vals.exists ())
+    m_known_vals = ctx.m_known_vals.copy ();
+  else
+    m_known_vals = vNULL;
+  if (ctx.m_known_contexts.exists ())
+    m_known_contexts = ctx.m_known_contexts.copy ();
+  else
+    m_known_contexts = vNULL;
+  if (ctx.m_known_aggs.exists ())
+    m_known_aggs = ctx.m_known_aggs.copy ();
+  else
+    m_known_aggs = vNULL;
+}
+
+/* Release memory used by known_vals/contexts/aggs vectors.
+   If ALL is true release also inline_param_summary.
+   This happens when context was previously duplciated to be stored
+   into cache.  */
 
 void
-ipa_call_context::release ()
+ipa_call_context::release (bool all)
 {
+  /* See if context is initialized at first place.  */
+  if (!m_node)
+    return;
   m_known_vals.release ();
   m_known_contexts.release ();
   m_known_aggs.release ();
+  if (all)
+    m_inline_param_summary.release ();
+}
+
+/* Return true if CTX describes the same call context as THIS.  */
+
+bool
+ipa_call_context::equal_to (const ipa_call_context &ctx)
+{
+  if (m_node != ctx.m_node
+      || m_possible_truths != ctx.m_possible_truths
+      || m_nonspec_possible_truths != ctx.m_nonspec_possible_truths)
+    return false;
+  if (m_inline_param_summary.exists () != ctx.m_inline_param_summary.exists ()
+      || m_known_vals.exists () != ctx.m_known_vals.exists()
+      || m_known_contexts.exists () != ctx.m_known_contexts.exists ()
+      || m_known_aggs.exists () != ctx.m_known_aggs.exists ())
+    return false;
+  if (m_inline_param_summary.exists ())
+    {
+      if (m_inline_param_summary.length () != ctx.m_inline_param_summary.length ())
+	return false;
+      for (unsigned int i = 0; i < m_inline_param_summary.length (); i++)
+	if (!m_inline_param_summary[i].equal_to (ctx.m_inline_param_summary[i]))
+	  return false;
+    }
+  if (m_known_vals.exists ())
+    {
+      if (m_known_vals.length () != ctx.m_known_vals.length ())
+	return false;
+      for (unsigned int i = 0; i < m_known_vals.length (); i++)
+	{
+	  tree t1 = m_known_vals[i];
+	  tree t2 = ctx.m_known_vals[i];
+
+	  if (t1 != t2
+	      && (!t1 || !t2 || !operand_equal_p (m_known_vals[i],
+						  ctx.m_known_vals[i], 0)))
+	    return false;
+	}
+    }
+  if (m_known_contexts.exists ())
+    {
+      if (m_known_contexts.length () != ctx.m_known_contexts.length ())
+	return false;
+      for (unsigned int i = 0; i < m_known_contexts.length (); i++)
+	if (!m_known_contexts[i].equal_to (ctx.m_known_contexts[i]))
+	  return false;
+    }
+  if (m_known_aggs.exists ())
+    {
+      if (m_known_aggs.length () != ctx.m_known_aggs.length ())
+	return false;
+      for (unsigned int i = 0; i < m_known_aggs.length (); i++)
+	if (!m_known_aggs[i]->equal_to (*ctx.m_known_aggs[i]))
+	  return false;
+    }
+  return true;
 }
 
 /* Estimate size and time needed to execute call in the given context.
