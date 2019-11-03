@@ -1,3 +1,8 @@
+2019-11-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/88565
+	* g++.dg/warn/Warray-bounds-9.C: New test.
+
 2019-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/conversion/ptrmem9.C: Check location.
