@@ -278,6 +278,9 @@ extern void stringpool_statistics (void);
 /* Heuristics.  */
 extern void init_ggc_heuristics (void);
 
+/* Report current heap memory use to stderr.  */
+extern void report_heap_memory_use (void);
+
 #define ggc_alloc_rtvec_sized(NELT)				\
   (rtvec_def *) ggc_internal_alloc (sizeof (struct rtvec_def)		\
 		       + ((NELT) - 1) * sizeof (rtx))		\

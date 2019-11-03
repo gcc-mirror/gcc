@@ -2564,6 +2564,8 @@ execute_one_pass (opt_pass *pass)
   if (!((todo_after | pass->todo_flags_finish) & TODO_do_not_ggc_collect))
     ggc_collect ();
 
+  if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
+    report_heap_memory_use ();
   return true;
 }
 
@@ -2818,6 +2820,8 @@ ipa_read_summaries_1 (opt_pass *pass)
 	      /* If a timevar is present, start it.  */
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
+	      if (!quiet_flag)
+		fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 
 	      pass_init_dump_file (pass);
 
@@ -2829,6 +2833,8 @@ ipa_read_summaries_1 (opt_pass *pass)
 	      /* Stop timevar.  */
 	      if (pass->tv_id)
 		timevar_pop (pass->tv_id);
+	      ggc_grow ();
+	      report_heap_memory_use ();
 	    }
 
 	  if (pass->sub && pass->sub->type != GIMPLE_PASS)
@@ -2869,6 +2875,8 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
 	      /* If a timevar is present, start it.  */
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
+	      if (!quiet_flag)
+		fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 
 	      pass_init_dump_file (pass);
 
@@ -2884,6 +2892,8 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
 
 	  if (pass->sub && pass->sub->type != GIMPLE_PASS)
 	    ipa_read_optimization_summaries_1 (pass->sub);
+	  ggc_grow ();
+	  report_heap_memory_use ();
 	}
       pass = pass->next;
     }
