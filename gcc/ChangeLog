@@ -1,5 +1,44 @@
 2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (set_cond_stmt_execution_predicate,
+	set_switch_stmt_execution_predicate, compute_bb_predicates,
+	will_be_nonconstant_expr_predicate,
+	phi_result_unknown_predicate,
+	analyze_function_body): Pass arround params summary.
+	(ipa_call_context::duplicate_from): New comment;
+	only duplicate useful values.
+	(ipa_call_context::equal_to): Only compare useful values.
+	(remap_edge_summaries): Pass params_summary.
+	(remap_hint_predicate): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	(inline_read_section): Initialize params summary used flags.
+	* ipa-predicate.c (predicate::remap_after_inlining): Pass
+	around param_summary.
+	(add_condition): Initialized used params summary flags.
+	* ipa-predicate.h (inline_param_summary::equals_to): Make const.
+	(inline_param_summary::useless_p): New predicate.
+	(remap_after_inlining, add_condition): Update prototype
+	* ipa-prop.c (ipa_populate_param_decls): Watch overflow in
+	move_cost.
+	(ipa_note_param_call): Add parameter POLYMORPHIC; update params
+	summaries.
+	(ipa_analyze_indirect_call_uses): Update use of ipa_note_param_call.
+	(ipa_analyze_virtual_call_uses): Likewise.
+	(update_indirect_edges_after_inlining): Update param summaries.
+	(ipa_print_node_params): Print used flags.
+	(ipa_read_indirect_edge_info): Update param summareis.
+	* ipa-prop.h (ipa_param_descriptor): Add
+	used_by_ipa_predicates, used_by_indirect_call
+	and used_by_polymorphic_call.
+	(ipa_set_param_used_by_ipa_predicates,
+	ipa_set_param_used_by_indirect_call,
+	ipa_set_param_used_by_polymorphic_call,
+	ipa_is_param_used_by_ipa_predicates,
+	ipa_is_param_used_by_indirect_call,
+	ipa_is_param_used_by_polymorphic_call): New inline functions.
+
+2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (ipa_call_context::duplicate_from): New
 	member function.
 	(ipa_call_context::release): Add ALL parameter.

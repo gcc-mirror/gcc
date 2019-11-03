@@ -1312,6 +1312,7 @@ fail:
 static void
 set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				   class ipa_fn_summary *summary,
+				   class ipa_node_params *params_summary,
 				   basic_block bb)
 {
   gimple *last;
@@ -1354,7 +1355,8 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	      && !dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
 	    {
 	      predicate p
-		= add_condition (summary, index, param_type, &aggpos,
+		= add_condition (summary, params_summary, index,
+			       	 param_type, &aggpos,
 				 this_code, gimple_cond_rhs (last), param_ops);
 	      e->aux = edge_predicate_pool.allocate ();
 	      *(predicate *) e->aux = p;
@@ -1387,7 +1389,8 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
     return;
   FOR_EACH_EDGE (e, ei, bb->succs) if (e->flags & EDGE_FALSE_VALUE)
     {
-      predicate p = add_condition (summary, index, param_type, &aggpos,
+      predicate p = add_condition (summary, params_summary, index,
+		     		   param_type, &aggpos,
 				   predicate::is_not_constant, NULL_TREE);
       e->aux = edge_predicate_pool.allocate ();
       *(predicate *) e->aux = p;
@@ -1401,6 +1404,7 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 static void
 set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				     class ipa_fn_summary *summary,
+				     class ipa_node_params *params_summary,
 				     basic_block bb)
 {
   gimple *lastg;
@@ -1470,15 +1474,15 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       if (dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
 	p = true;
       else if (min == max)
-	p = add_condition (summary, index, param_type, &aggpos, EQ_EXPR,
-			   min, param_ops);
+	p = add_condition (summary, params_summary, index, param_type,
+		           &aggpos, EQ_EXPR, min, param_ops);
       else
 	{
 	  predicate p1, p2;
-	  p1 = add_condition (summary, index, param_type, &aggpos, GE_EXPR,
-			      min, param_ops);
-	  p2 = add_condition (summary, index, param_type, &aggpos, LE_EXPR,
-			      max, param_ops);
+	  p1 = add_condition (summary, params_summary, index, param_type,
+			      &aggpos, GE_EXPR, min, param_ops);
+	  p2 = add_condition (summary,  params_summary,index, param_type,
+			      &aggpos, LE_EXPR, max, param_ops);
 	  p = p1 & p2;
 	}
       *(class predicate *) e->aux
@@ -1559,7 +1563,8 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       tree max = ranges[i].second;
 
       if (min == max)
-	p_seg &= add_condition (summary, index, param_type, &aggpos, NE_EXPR,
+	p_seg &= add_condition (summary, params_summary, index,
+		       		param_type, &aggpos, NE_EXPR,
 				min, param_ops);
       else
 	{
@@ -1567,7 +1572,8 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	     of switch index.  */
 	  if (wi::lt_p (vr_wmin, wi::to_wide (min), TYPE_SIGN (type)))
 	    {
-	      p_seg &= add_condition (summary, index, param_type, &aggpos,
+	      p_seg &= add_condition (summary, params_summary, index,
+			     	      param_type, &aggpos,
 				      LT_EXPR, min, param_ops);
 	      p_all = p_all.or_with (summary->conds, p_seg);
 	    }
@@ -1580,7 +1586,8 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	      break;
 	    }
 
-	  p_seg = add_condition (summary, index, param_type, &aggpos, GT_EXPR,
+	  p_seg = add_condition (summary, params_summary, index,
+			 	 param_type, &aggpos, GT_EXPR,
 				 max, param_ops);
 	}
     }
@@ -1599,7 +1606,8 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 static void
 compute_bb_predicates (struct ipa_func_body_info *fbi,
 		       struct cgraph_node *node,
-		       class ipa_fn_summary *summary)
+		       class ipa_fn_summary *summary,
+		       class ipa_node_params *params_summary)
 {
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
   bool done = false;
@@ -1607,8 +1615,8 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
 
   FOR_EACH_BB_FN (bb, my_function)
     {
-      set_cond_stmt_execution_predicate (fbi, summary, bb);
-      set_switch_stmt_execution_predicate (fbi, summary, bb);
+      set_cond_stmt_execution_predicate (fbi, summary, params_summary, bb);
+      set_switch_stmt_execution_predicate (fbi, summary, params_summary, bb);
     }
 
   /* Entry block is always executable.  */
@@ -1701,6 +1709,7 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
 static predicate
 will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 				    class ipa_fn_summary *summary,
+				    class ipa_node_params *params_summary,
 				    tree expr,
 				    vec<predicate> nonconstant_names)
 {
@@ -1712,7 +1721,7 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 
   parm = unmodified_parm (fbi, NULL, expr, NULL);
   if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
-    return add_condition (summary, index, TREE_TYPE (parm), NULL,
+    return add_condition (summary, params_summary, index, TREE_TYPE (parm), NULL,
 			  predicate::changed, NULL_TREE);
   if (is_gimple_min_invariant (expr))
     return false;
@@ -1722,6 +1731,7 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
     {
       predicate p1
 	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      params_summary,
 					      TREE_OPERAND (expr, 0),
 					      nonconstant_names);
       if (p1 == true)
@@ -1729,6 +1739,7 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 
       predicate p2
 	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      params_summary,
 					      TREE_OPERAND (expr, 1),
 					      nonconstant_names);
       return p1.or_with (summary->conds, p2);
@@ -1737,6 +1748,7 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
     {
       predicate p1
 	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      params_summary,
 					      TREE_OPERAND (expr, 0),
 					      nonconstant_names);
       if (p1 == true)
@@ -1744,12 +1756,14 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 
       predicate p2
 	= will_be_nonconstant_expr_predicate (fbi, summary,
+					      params_summary,
 					      TREE_OPERAND (expr, 1),
 					      nonconstant_names);
       if (p2 == true)
 	return p2;
       p1 = p1.or_with (summary->conds, p2);
       p2 = will_be_nonconstant_expr_predicate (fbi, summary,
+					       params_summary,
 					       TREE_OPERAND (expr, 2),
 					       nonconstant_names);
       return p2.or_with (summary->conds, p1);
@@ -1771,6 +1785,7 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 static predicate
 will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 			       class ipa_fn_summary *summary,
+			       class ipa_node_params *params_summary,
 			       gimple *stmt,
 			       vec<predicate> nonconstant_names)
 {
@@ -1828,7 +1843,8 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 
   if (is_load)
     op_non_const =
-      add_condition (summary, base_index, param_type, &aggpos,
+      add_condition (summary, params_summary,
+		     base_index, param_type, &aggpos,
 		     predicate::changed, NULL_TREE);
   else
     op_non_const = false;
@@ -1840,7 +1856,8 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
       if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
 	{
 	  if (index != base_index)
-	    p = add_condition (summary, index, TREE_TYPE (parm), NULL,
+	    p = add_condition (summary, params_summary, index,
+			       TREE_TYPE (parm), NULL,
 			       predicate::changed, NULL_TREE);
 	  else
 	    continue;
@@ -2027,7 +2044,9 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
 
 static bool
 phi_result_unknown_predicate (ipa_func_body_info *fbi,
-			      ipa_fn_summary *summary, basic_block bb,
+			      ipa_fn_summary *summary,
+			      class ipa_node_params *params_summary,
+			      basic_block bb,
 			      predicate *p,
 			      vec<predicate> nonconstant_names)
 {
@@ -2071,7 +2090,7 @@ phi_result_unknown_predicate (ipa_func_body_info *fbi,
       || !is_gimple_ip_invariant (gimple_cond_rhs (stmt)))
     return false;
 
-  *p = will_be_nonconstant_expr_predicate (fbi, summary,
+  *p = will_be_nonconstant_expr_predicate (fbi, summary, params_summary,
 					   gimple_cond_lhs (stmt),
 					   nonconstant_names);
   if (*p == true)
@@ -2264,6 +2283,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
   sreal freq;
   class ipa_fn_summary *info = ipa_fn_summaries->get_create (node);
+  class ipa_node_params *params_summary = early ? NULL : IPA_NODE_REF (node);
   predicate bb_predicate;
   struct ipa_func_body_info fbi;
   vec<predicate> nonconstant_names = vNULL;
@@ -2329,7 +2349,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		           bb_predicate);
 
   if (fbi.info)
-    compute_bb_predicates (&fbi, node, info);
+    compute_bb_predicates (&fbi, node, info, params_summary);
   order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   nblocks = pre_and_rev_post_order_compute (NULL, order, false);
   for (n = 0; n < nblocks; n++)
@@ -2371,7 +2391,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	       gsi_next (&bsi))
 	    {
 	      if (first_phi
-		  && !phi_result_unknown_predicate (&fbi, info, bb,
+		  && !phi_result_unknown_predicate (&fbi, info,
+			  			    params_summary,
+			 			    bb,
 						    &phi_predicate,
 						    nonconstant_names))
 		break;
@@ -2469,7 +2491,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	     just maximum of the possible paths.  */
 	  if (fbi.info)
 	    will_be_nonconstant
-	      = will_be_nonconstant_predicate (&fbi, info,
+	      = will_be_nonconstant_predicate (&fbi, info, params_summary,
 					       stmt, nonconstant_names);
 	  else
 	    will_be_nonconstant = true;
@@ -2536,7 +2558,8 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    predicate p = bb_predicate;
 		    if (fbi.info)
 		      p = p & will_be_nonconstant_expr_predicate
-				 (&fbi, info, TREE_OPERAND (op, 1),
+				 (&fbi, info, params_summary,
+				  TREE_OPERAND (op, 1),
 			          nonconstant_names);
 		    if (p != false)
 		      {
@@ -2581,6 +2604,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	    {
 	      predicate will_be_nonconstant
 		= will_be_nonconstant_expr_predicate (&fbi, info,
+						      params_summary,
 						      niter_desc.niter,
 						      nonconstant_names);
 	      if (will_be_nonconstant != true)
@@ -2625,7 +2649,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    continue;
 
 		  predicate will_be_nonconstant
-		    = will_be_nonconstant_expr_predicate (&fbi, info, iv.step,
+		    = will_be_nonconstant_expr_predicate (&fbi, info,
+				    			  params_summary,
+				   			  iv.step,
 							  nonconstant_names);
 		  if (will_be_nonconstant != true)
 		    will_be_nonconstant = bb_predicate & will_be_nonconstant;
@@ -2964,29 +2990,73 @@ ipa_call_context::ipa_call_context (cgraph_node *node,
 {
 }
 
+/* Set THIS to be a duplicate of CTX.  Copy all relevant info.  */
+
 void
 ipa_call_context::duplicate_from (const ipa_call_context &ctx)
 {
   m_node = ctx.m_node;
   m_possible_truths = ctx.m_possible_truths;
   m_nonspec_possible_truths = ctx.m_nonspec_possible_truths;
+  class ipa_node_params *params_summary = IPA_NODE_REF (m_node);
+  unsigned int nargs = ipa_get_param_count (params_summary);
 
+  m_inline_param_summary = vNULL;
+  /* Copy the info only if there is at least one useful entry.  */
   if (ctx.m_inline_param_summary.exists ())
-    m_inline_param_summary = ctx.m_inline_param_summary.copy ();
-  else
-    m_inline_param_summary = vNULL;
+    {
+      unsigned int n = MIN (ctx.m_inline_param_summary.length (), nargs);
+
+      for (unsigned int i = 0; i < n; i++)
+	if (ipa_is_param_used_by_ipa_predicates (params_summary, i)
+	    && !ctx.m_inline_param_summary[i].useless_p ())
+	  {
+            m_inline_param_summary
+		    = ctx.m_inline_param_summary.copy ();
+	    break;
+	  }
+    }
+  m_known_vals = vNULL;
   if (ctx.m_known_vals.exists ())
-    m_known_vals = ctx.m_known_vals.copy ();
-  else
-    m_known_vals = vNULL;
+    {
+      unsigned int n = MIN (ctx.m_known_vals.length (), nargs);
+
+      for (unsigned int i = 0; i < n; i++)
+	if (ipa_is_param_used_by_indirect_call (params_summary, i)
+	    && ctx.m_known_vals[i])
+	  {
+	    m_known_vals = ctx.m_known_vals.copy ();
+	    break;
+	  }
+    }
+
+  m_known_contexts = vNULL;
   if (ctx.m_known_contexts.exists ())
-    m_known_contexts = ctx.m_known_contexts.copy ();
-  else
-    m_known_contexts = vNULL;
+    {
+      unsigned int n = MIN (ctx.m_known_contexts.length (), nargs);
+
+      for (unsigned int i = 0; i < n; i++)
+	if (ipa_is_param_used_by_polymorphic_call (params_summary, i)
+	    && !ctx.m_known_contexts[i].useless_p ())
+	  {
+	    m_known_contexts = ctx.m_known_contexts.copy ();
+	    break;
+	  }
+    }
+
+  m_known_aggs = vNULL;
   if (ctx.m_known_aggs.exists ())
-    m_known_aggs = ctx.m_known_aggs.copy ();
-  else
-    m_known_aggs = vNULL;
+    {
+      unsigned int n = MIN (ctx.m_known_aggs.length (), nargs);
+
+      for (unsigned int i = 0; i < n; i++)
+	if (ipa_is_param_used_by_indirect_call (params_summary, i)
+	    && ctx.m_known_aggs[i])
+	  {
+	    m_known_aggs = ctx.m_known_aggs.copy ();
+	    break;
+	  }
+    }
 }
 
 /* Release memory used by known_vals/contexts/aggs vectors.
@@ -3016,49 +3086,107 @@ ipa_call_context::equal_to (const ipa_call_context &ctx)
       || m_possible_truths != ctx.m_possible_truths
       || m_nonspec_possible_truths != ctx.m_nonspec_possible_truths)
     return false;
-  if (m_inline_param_summary.exists () != ctx.m_inline_param_summary.exists ()
-      || m_known_vals.exists () != ctx.m_known_vals.exists()
-      || m_known_contexts.exists () != ctx.m_known_contexts.exists ()
-      || m_known_aggs.exists () != ctx.m_known_aggs.exists ())
-    return false;
-  if (m_inline_param_summary.exists ())
-    {
-      if (m_inline_param_summary.length () != ctx.m_inline_param_summary.length ())
-	return false;
-      for (unsigned int i = 0; i < m_inline_param_summary.length (); i++)
-	if (!m_inline_param_summary[i].equal_to (ctx.m_inline_param_summary[i]))
-	  return false;
-    }
-  if (m_known_vals.exists ())
-    {
-      if (m_known_vals.length () != ctx.m_known_vals.length ())
-	return false;
-      for (unsigned int i = 0; i < m_known_vals.length (); i++)
-	{
-	  tree t1 = m_known_vals[i];
-	  tree t2 = ctx.m_known_vals[i];
 
-	  if (t1 != t2
-	      && (!t1 || !t2 || !operand_equal_p (m_known_vals[i],
-						  ctx.m_known_vals[i], 0)))
+  class ipa_node_params *params_summary = IPA_NODE_REF (m_node);
+  unsigned int nargs = ipa_get_param_count (params_summary);
+
+  if (m_inline_param_summary.exists () || ctx.m_inline_param_summary.exists ())
+    {
+      for (unsigned int i = 0; i < nargs; i++)
+	{
+	  if (!ipa_is_param_used_by_ipa_predicates (params_summary, i))
+	    continue;
+	  if (i >= m_inline_param_summary.length ()
+	      || m_inline_param_summary[i].useless_p ())
+	    {
+	      if (i < ctx.m_inline_param_summary.length ()
+		  && !ctx.m_inline_param_summary[i].useless_p ())
+		return false;
+	      continue;
+	    }
+	  if (i >= ctx.m_inline_param_summary.length ()
+	      || ctx.m_inline_param_summary[i].useless_p ())
+	    {
+	      if (i < m_inline_param_summary.length ()
+		  && !m_inline_param_summary[i].useless_p ())
+		return false;
+	      continue;
+	    }
+	  if (!m_inline_param_summary[i].equal_to
+	     	 (ctx.m_inline_param_summary[i]))
 	    return false;
 	}
     }
-  if (m_known_contexts.exists ())
+  if (m_known_vals.exists () || ctx.m_known_vals.exists ())
     {
-      if (m_known_contexts.length () != ctx.m_known_contexts.length ())
-	return false;
-      for (unsigned int i = 0; i < m_known_contexts.length (); i++)
-	if (!m_known_contexts[i].equal_to (ctx.m_known_contexts[i]))
-	  return false;
+      for (unsigned int i = 0; i < nargs; i++)
+	{
+	  if (!ipa_is_param_used_by_indirect_call (params_summary, i))
+	    continue;
+	  if (i >= m_known_vals.length () || !m_known_vals[i])
+	    {
+	      if (i < ctx.m_known_vals.length () && ctx.m_known_vals[i])
+		return false;
+	      continue;
+	    }
+	  if (i >= ctx.m_known_vals.length () || !ctx.m_known_vals[i])
+	    {
+	      if (i < m_known_vals.length () && m_known_vals[i])
+		return false;
+	      continue;
+	    }
+	  if (m_known_vals[i] != ctx.m_known_vals[i])
+	    return false;
+	}
     }
-  if (m_known_aggs.exists ())
+  if (m_known_contexts.exists () || ctx.m_known_contexts.exists ())
     {
-      if (m_known_aggs.length () != ctx.m_known_aggs.length ())
-	return false;
-      for (unsigned int i = 0; i < m_known_aggs.length (); i++)
-	if (!m_known_aggs[i]->equal_to (*ctx.m_known_aggs[i]))
-	  return false;
+      for (unsigned int i = 0; i < nargs; i++)
+	{
+	  if (!ipa_is_param_used_by_polymorphic_call (params_summary, i))
+	    continue;
+	  if (i >= m_known_contexts.length ()
+	      || m_known_contexts[i].useless_p ())
+	    {
+	      if (i < ctx.m_known_contexts.length ()
+		  && !ctx.m_known_contexts[i].useless_p ())
+		return false;
+	      continue;
+	    }
+	  if (i >= ctx.m_known_contexts.length ()
+	      || ctx.m_known_contexts[i].useless_p ())
+	    {
+	      if (i < m_known_contexts.length ()
+		  && !m_known_contexts[i].useless_p ())
+		return false;
+	      continue;
+	    }
+	  if (!m_known_contexts[i].equal_to
+	     	 (ctx.m_known_contexts[i]))
+	    return false;
+	}
+    }
+  if (m_known_aggs.exists () || ctx.m_known_aggs.exists ())
+    {
+      for (unsigned int i = 0; i < nargs; i++)
+	{
+	  if (!ipa_is_param_used_by_indirect_call (params_summary, i))
+	    continue;
+	  if (i >= m_known_aggs.length () || !m_known_aggs[i])
+	    {
+	      if (i < ctx.m_known_aggs.length () && ctx.m_known_aggs[i])
+		return false;
+	      continue;
+	    }
+	  if (i >= ctx.m_known_aggs.length () || !ctx.m_known_aggs[i])
+	    {
+	      if (i < m_known_aggs.length () && m_known_aggs[i])
+		return false;
+	      continue;
+	    }
+	  if (m_known_aggs[i] != ctx.m_known_aggs[i])
+	    return false;
+	}
     }
   return true;
 }
@@ -3319,6 +3447,7 @@ static void
 remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      struct cgraph_node *node,
 		      class ipa_fn_summary *info,
+		      class ipa_node_params *params_summary,
 		      class ipa_fn_summary *callee_info,
 		      vec<int> operand_map,
 		      vec<int> offset_map,
@@ -3339,7 +3468,8 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 	  if (es->predicate)
 	    {
 	      p = es->predicate->remap_after_inlining
-				     (info, callee_info, operand_map,
+				     (info, params_summary,
+				      callee_info, operand_map,
 				      offset_map, possible_truths,
 				      *toplev_predicate);
 	      edge_set_predicate (e, &p);
@@ -3348,7 +3478,8 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 	    edge_set_predicate (e, toplev_predicate);
 	}
       else
-	remap_edge_summaries (inlined_edge, e->callee, info, callee_info,
+	remap_edge_summaries (inlined_edge, e->callee, info,
+		              params_summary, callee_info,
 			      operand_map, offset_map, possible_truths,
 			      toplev_predicate);
     }
@@ -3362,7 +3493,8 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
       if (es->predicate)
 	{
 	  p = es->predicate->remap_after_inlining
-				 (info, callee_info, operand_map, offset_map,
+				 (info, params_summary,
+				  callee_info, operand_map, offset_map,
 			          possible_truths, *toplev_predicate);
 	  edge_set_predicate (e, &p);
 	}
@@ -3375,6 +3507,7 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 
 static void
 remap_hint_predicate (class ipa_fn_summary *info,
+		      class ipa_node_params *params_summary,
 		      class ipa_fn_summary *callee_info,
 		      predicate **hint,
 		      vec<int> operand_map,
@@ -3387,7 +3520,7 @@ remap_hint_predicate (class ipa_fn_summary *info,
   if (!*hint)
     return;
   p = (*hint)->remap_after_inlining
-			 (info, callee_info,
+			 (info, params_summary, callee_info,
 			  operand_map, offset_map,
 			  possible_truths, *toplev_predicate);
   if (p != false && p != true)
@@ -3415,6 +3548,8 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   int i;
   predicate toplev_predicate;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
+  class ipa_node_params *params_summary = (ipa_node_params_sum
+		 			   ? IPA_NODE_REF (to) : NULL);
 
   if (es->predicate)
     toplev_predicate = *es->predicate;
@@ -3461,19 +3596,21 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 		}
 	    }
 	  operand_map[i] = map;
-	  gcc_assert (map < ipa_get_param_count (IPA_NODE_REF (to)));
+	  gcc_assert (map < ipa_get_param_count (params_summary));
 	}
     }
   for (i = 0; vec_safe_iterate (callee_info->size_time_table, i, &e); i++)
     {
       predicate p;
       p = e->exec_predicate.remap_after_inlining
-			     (info, callee_info, operand_map,
+			     (info, params_summary,
+			      callee_info, operand_map,
 			      offset_map, clause,
 			      toplev_predicate);
       predicate nonconstp;
       nonconstp = e->nonconst_predicate.remap_after_inlining
-				     (info, callee_info, operand_map,
+				     (info, params_summary,
+				      callee_info, operand_map,
 				      offset_map, clause,
 				      toplev_predicate);
       if (p != false && nonconstp != false)
@@ -3491,12 +3628,13 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 	  info->account_size_time (e->size, add_time, p, nonconstp);
 	}
     }
-  remap_edge_summaries (edge, edge->callee, info, callee_info, operand_map,
+  remap_edge_summaries (edge, edge->callee, info, params_summary,
+		 	callee_info, operand_map,
 			offset_map, clause, &toplev_predicate);
-  remap_hint_predicate (info, callee_info,
+  remap_hint_predicate (info, params_summary, callee_info,
 			&callee_info->loop_iterations,
 			operand_map, offset_map, clause, &toplev_predicate);
-  remap_hint_predicate (info, callee_info,
+  remap_hint_predicate (info, params_summary, callee_info,
 			&callee_info->loop_stride,
 			operand_map, offset_map, clause, &toplev_predicate);
 
@@ -3687,6 +3825,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       unsigned int index;
       struct cgraph_node *node;
       class ipa_fn_summary *info;
+      class ipa_node_params *params_summary;
       class ipa_size_summary *size_info;
       lto_symtab_encoder_t encoder;
       struct bitpack_d bp;
@@ -3698,6 +3837,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
       info = node->prevailing_p () ? ipa_fn_summaries->get_create (node) : NULL;
+      params_summary = node->prevailing_p () ? IPA_NODE_REF (node) : NULL;
       size_info = node->prevailing_p ()
 		  ? ipa_size_summaries->get_create (node) : NULL;
 
@@ -3746,6 +3886,9 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  c.param_ops = NULL;
 	  if (info)
 	    vec_safe_reserve_exact (c.param_ops, count3);
+	  if (params_summary)
+	    ipa_set_param_used_by_ipa_predicates
+		    (params_summary, c.operand_num, true);
 	  for (k = 0; k < count3; k++)
 	    {
 	      struct expr_eval_op op;
