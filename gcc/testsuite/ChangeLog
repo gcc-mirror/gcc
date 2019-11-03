@@ -1,3 +1,8 @@
+2019-11-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/79274
+	* g++.dg/tls/pr77285-2.C: XFAIL test for Darwin.
+
 2019-11-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline

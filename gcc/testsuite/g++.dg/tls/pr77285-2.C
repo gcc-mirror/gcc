@@ -3,7 +3,7 @@
 // { dg-require-effective-target tls }
 // { dg-final { scan-assembler "_Z4var1B3tag" } }
 // { dg-final { scan-assembler "_Z4var2B3tag" } }
-// { dg-final { scan-assembler "_ZTH4var1B3tag" } }
+// { dg-final { scan-assembler "_ZTH4var1B3tag" { xfail *-*-darwin* } } }
 // { dg-final { scan-assembler "_ZTW4var1B3tag" } }
 
 struct __attribute__((abi_tag("tag"))) X { ~X () {} int i = 0; };
