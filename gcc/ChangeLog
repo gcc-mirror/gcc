@@ -1,5 +1,10 @@
 2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (inline_read_section): Set vector size
+	ahead of time.
+
+2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (ipa_call_context): New constructor.
 	(estimate_node_size_and_time): Turn to ...
 	(ipa_call_context::estimate_size_and_time): ... this one.
