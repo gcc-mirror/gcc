@@ -1,3 +1,11 @@
+2019-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR libgcc/78804
+	* fp-bit.h: Remove FLOAT_BIT_ORDER_MISMATCH.
+	* fp-bit.c (pack_d, unpack_d): Remove special cases for
+	FLOAT_BIT_ORDER_MISMATCH.
+	* config/arc/t-arc: Remove FLOAT_BIT_ORDER_MISMATCH.
+
 2019-11-01  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/t-softfp32 (softfp_extra): Add FP divide routines
