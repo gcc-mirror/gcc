@@ -3638,6 +3638,8 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 
       count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info || !info->conds);
+      if (info)
+        vec_safe_reserve_exact (info->conds, count2);
       for (j = 0; j < count2; j++)
 	{
 	  struct condition c;
@@ -3651,8 +3653,10 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  c.by_ref = bp_unpack_value (&bp, 1);
 	  if (c.agg_contents)
 	    c.offset = streamer_read_uhwi (&ib);
-	  c.param_ops = NULL;
 	  count3 = streamer_read_uhwi (&ib);
+	  c.param_ops = NULL;
+	  if (info)
+	    vec_safe_reserve_exact (c.param_ops, count3);
 	  for (k = 0; k < count3; k++)
 	    {
 	      struct expr_eval_op op;
@@ -3682,13 +3686,16 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 		  fatal_error (UNKNOWN_LOCATION,
 			       "invalid fnsummary in LTO stream");
 		}
-	      vec_safe_push (c.param_ops, op);
+	      if (info)
+	        c.param_ops->quick_push (op);
 	    }
 	  if (info)
-	    vec_safe_push (info->conds, c);
+	    info->conds->quick_push (c);
 	}
       count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info || !info->size_time_table);
+      if (info && count2)
+        vec_safe_reserve_exact (info->size_time_table, count2);
       for (j = 0; j < count2; j++)
 	{
 	  class size_time_entry e;
@@ -3699,7 +3706,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  e.nonconst_predicate.stream_in (&ib);
 
 	  if (info)
-	    vec_safe_push (info->size_time_table, e);
+	    info->size_time_table->quick_push (e);
 	}
 
       p.stream_in (&ib);
