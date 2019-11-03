@@ -312,6 +312,8 @@ lto_wpa_write_files (void)
       lto_prepare_function_for_streaming (node);
 
   ggc_trim ();
+  report_heap_memory_use ();
+
   /* Generate a prefix for the LTRANS unit files.  */
   blen = strlen (ltrans_output_list);
   temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));

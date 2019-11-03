@@ -2784,6 +2784,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* At this stage we know that majority of GGC memory is reachable.
      Growing the limits prevents unnecesary invocation of GGC.  */
   ggc_grow ();
+  report_heap_memory_use ();
 
   /* Set the hooks so that all of the ipa passes can read in their data.  */
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
@@ -2791,7 +2792,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_pop (TV_IPA_LTO_DECL_IN);
 
   if (!quiet_flag)
-    fprintf (stderr, "\nReading the callgraph\n");
+    fprintf (stderr, "\nReading the symbol table:");
 
   timevar_push (TV_IPA_LTO_CGRAPH_IO);
   /* Read the symtab.  */
@@ -2831,7 +2832,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_pop (TV_IPA_LTO_CGRAPH_IO);
 
   if (!quiet_flag)
-    fprintf (stderr, "Merging declarations\n");
+    fprintf (stderr, "\nMerging declarations:");
 
   timevar_push (TV_IPA_LTO_DECL_MERGE);
   /* Merge global decls.  In ltrans mode we read merged cgraph, we do not
@@ -2859,12 +2860,13 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
      is explcitly managed by ggc_free and ggc collect is not useful.
      Exception are the merged declarations.  */
   ggc_grow ();
+  report_heap_memory_use ();
 
   timevar_pop (TV_IPA_LTO_DECL_MERGE);
   /* Each pass will set the appropriate timer.  */
 
   if (!quiet_flag)
-    fprintf (stderr, "Reading summaries\n");
+    fprintf (stderr, "\nReading summaries:");
 
   /* Read the IPA summary data.  */
   if (flag_ltrans)
@@ -2891,6 +2893,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       /* Finally merge the cgraph according to the decl merging decisions.  */
       timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
 
+      if (!quiet_flag)
+	fprintf (stderr, "\nMerging symbols:");
+
       gcc_assert (!dump_file);
       dump_file = dump_begin (lto_link_dump_id, NULL);
 
@@ -2905,6 +2910,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 	 We could also just remove them while merging.  */
       symtab->remove_unreachable_nodes (dump_file);
       ggc_collect ();
+      report_heap_memory_use ();
 
       if (dump_file)
 	dump_end (lto_link_dump_id, dump_file);

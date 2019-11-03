@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
    any particular GC implementation.  */
 
 #include "config.h"
+#ifdef HAVE_MALLINFO
+#include <malloc.h>
+#endif
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
@@ -29,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "hosthooks.h"
 #include "plugin.h"
+#include "options.h"
 
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;
@@ -1005,4 +1009,15 @@ ggc_prune_overhead_list (void)
 
   delete ggc_mem_desc.m_reverse_object_map;
   ggc_mem_desc.m_reverse_object_map = new map_t (13, false, false, false);
+}
+
+/* Return memory used by heap in kb, 0 if this info is not available.  */
+
+void
+report_heap_memory_use ()
+{
+#ifdef HAVE_MALLINFO
+  if (!quiet_flag)
+    fprintf (stderr," {heap %luk}", (unsigned long)(mallinfo().arena / 1024));
+#endif
 }
