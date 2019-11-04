@@ -222,19 +222,26 @@ GSYM($$dyncall)
 	.proc
 	.callinfo	millicode
 	.entry
-	bb,>=,n %r22,30,LREF(1)		; branch if not plabel address
-	depi	0,31,2,%r22		; clear the two least significant bits
-	ldw	4(%r22),%r19		; load new LTP value
-	ldw	0(%r22),%r22		; load address of target
-LSYM(1)
 #ifdef LINUX
-	bv	%r0(%r22)		; branch to the real target
+	extru,<>	%r22,30,1,%r0	; nullify if plabel bit set
+	bv,n	%r0(%r22)		; branch to target
+	ldw	-2(%r22),%r21		; load address of target
+	bv	%r0(%r21)		; branch to the real target
+	ldw	2(%r22),%r19		; load new LTP value
 #else
+	bb,>=,n %r22,30,LREF(1)		; branch if not plabel address
+	ldw	-2(%r22),%r21		; load address of target to r21
+	ldsid	(%sr0,%r21),%r1		; get the "space ident" selected by r21
+	ldw	2(%r22),%r19		; load new LTP value
+	mtsp	%r1,%sr0		; move that space identifier into sr0
+	be	0(%sr0,%r21)		; branch to the real target
+	stw	%r2,-24(%r30)		; save return address into frame marker
+LSYM(1)
 	ldsid	(%sr0,%r22),%r1		; get the "space ident" selected by r22
 	mtsp	%r1,%sr0		; move that space identifier into sr0
-	be	0(%sr0,%r22)		; branch to the real target
-#endif
+	be	0(%sr0,%r22)		; branch to the target
 	stw	%r2,-24(%r30)		; save return address into frame marker
+#endif
 	.exit
 	.procend
 #endif
