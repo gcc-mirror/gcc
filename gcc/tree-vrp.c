@@ -793,10 +793,8 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
     {
       /* For -fstrict-enums we may receive out-of-range ranges so consider
          values < -INF and values > INF as -INF/INF as well.  */
-      bool is_min = (INTEGRAL_TYPE_P (type)
-		     && tree_int_cst_compare (min, TYPE_MIN_VALUE (type)) <= 0);
-      bool is_max = (INTEGRAL_TYPE_P (type)
-		     && tree_int_cst_compare (max, TYPE_MAX_VALUE (type)) >= 0);
+      bool is_min = vrp_val_is_min (min);
+      bool is_max = vrp_val_is_max (max);
 
       if (is_min && is_max)
 	{
@@ -816,10 +814,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
 	    min = max = vrp_val_min (TREE_TYPE (min));
 	  kind = VR_RANGE;
 	}
-      else if (is_min
-	       /* Allow non-zero pointers to be normalized to [1,MAX].  */
-	       || (POINTER_TYPE_P (TREE_TYPE (min))
-		   && integer_zerop (min)))
+      else if (is_min)
         {
 	  tree one = build_int_cst (TREE_TYPE (max), 1);
 	  min = int_const_binop (PLUS_EXPR, max, one);
