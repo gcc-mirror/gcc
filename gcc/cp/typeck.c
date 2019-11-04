@@ -9729,7 +9729,7 @@ check_return_expr (tree retval, bool *no_warning)
 	   type.  In that case, we have to evaluate the expression for
 	   its side-effects.  */
 	finish_expr_stmt (retval);
-      else
+      else if (retval != error_mark_node)
 	permerror (input_location,
 		   "return-statement with a value, in function "
 		   "returning %qT", valtype);
