@@ -1,5 +1,14 @@
 2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.fortran/pr66199-1.f90: Remove
+	'dg-do run' (implies torture test) as 'dg-options "O2"' is used.
+	* testsuite/libgomp.fortran/pr66199-2.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop2.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop3.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop4.f90: Ditto.
+
+2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR fortran/92305
 	* testsuite/libgomp.fortran/allocatable2.f90: Use
 	unique numbers with 'stop'.
