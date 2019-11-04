@@ -850,7 +850,8 @@
    (V16QI "b") (V8HI "w") (V4SI "k") (V2DI "q")
    (V16SF "k") (V8DF "q")
    (V8SF "k") (V4DF "q")
-   (V4SF "k") (V2DF "q")])
+   (V4SF "k") (V2DF "q")
+   (SF "k") (DF "q")])
 
 ;; Mapping of vector modes to VPTERNLOG suffix
 (define_mode_attr ternlogsuffix
@@ -2825,7 +2826,7 @@
 ;; Modes handled by reduc_sm{in,ax}* patterns.
 (define_mode_iterator REDUC_SSE_SMINMAX_MODE
   [(V4SF "TARGET_SSE") (V2DF "TARGET_SSE")
-   (V2DI "TARGET_SSE") (V4SI "TARGET_SSE") (V8HI "TARGET_SSE")
+   (V2DI "TARGET_SSE4_2") (V4SI "TARGET_SSE") (V8HI "TARGET_SSE")
    (V16QI "TARGET_SSE")])
 
 (define_expand "reduc_<code>_scal_<mode>"
@@ -5324,7 +5325,7 @@
 	(unspec:SWI48 [(match_operand:SF 1 "nonimmediate_operand" "v,m")]
 		      UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE"
-  "%vcvtss2si<rex64suffix>\t{%1, %0|%0, %k1}"
+  "%vcvtss2si<rex64suffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
@@ -10147,7 +10148,7 @@
   "!TARGET_SSE2 && TARGET_SSE
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
-   movhps\t{%1, %0|%q0, %1}
+   movhps\t{%1, %0|%0, %1}
    movhlps\t{%1, %0|%0, %1}
    movlps\t{%H1, %0|%0, %H1}"
   [(set_attr "type" "ssemov")

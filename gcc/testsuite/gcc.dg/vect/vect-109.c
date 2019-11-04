@@ -1,3 +1,5 @@
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-skip-if "" { vect_no_align } } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-add-options bind_pic_locally } */

@@ -29,7 +29,7 @@ class function_summary_base
 public:
   /* Default construction takes SYMTAB as an argument.  */
   function_summary_base (symbol_table *symtab): m_symtab (symtab),
-  m_insertion_enabled (true), m_released (false)
+  m_insertion_enabled (true)
   {}
 
   /* Basic implementation of insert operation.  */
@@ -88,8 +88,6 @@ protected:
 
   /* Indicates if insertion hook is enabled.  */
   bool m_insertion_enabled;
-  /* Indicates if the summary is released.  */
-  bool m_released;
 
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
@@ -131,17 +129,10 @@ class GTY((user)) function_summary <T *>: public function_summary_base<T>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  function_summary (symbol_table *symtab, bool ggc = false);
+  function_summary (symbol_table *symtab, bool ggc = false CXX_MEM_STAT_INFO);
 
   /* Destructor.  */
-  virtual ~function_summary ()
-  {
-    release ();
-  }
-
-  /* Destruction method that can be called for GGC purpose.  */
-  using function_summary_base<T>::release;
-  void release ();
+  virtual ~function_summary ();
 
   /* Traverses all summarys with a function F called with
      ARG as argument.  */
@@ -222,8 +213,11 @@ private:
 };
 
 template <typename T>
-function_summary<T *>::function_summary (symbol_table *symtab, bool ggc):
-  function_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc)
+function_summary<T *>::function_summary (symbol_table *symtab, bool ggc
+					 MEM_STAT_DECL):
+  function_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc, true,
+							 GATHER_STATISTICS
+							 PASS_MEM_STAT)
 {
   this->m_symtab_insertion_hook
     = this->m_symtab->add_cgraph_insertion_hook (function_summary::symtab_insertion,
@@ -237,20 +231,14 @@ function_summary<T *>::function_summary (symbol_table *symtab, bool ggc):
 }
 
 template <typename T>
-void
-function_summary<T *>::release ()
+function_summary<T *>::~function_summary ()
 {
-  if (this->m_released)
-    return;
-
   this->unregister_hooks ();
 
   /* Release all summaries.  */
   typedef typename hash_map <map_hash, T *>::iterator map_iterator;
   for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
     this->release ((*it).second);
-
-  this->m_released = true;
 }
 
 template <typename T>
@@ -340,17 +328,10 @@ class GTY((user)) fast_function_summary <T *, V>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  fast_function_summary (symbol_table *symtab);
+  fast_function_summary (symbol_table *symtab CXX_MEM_STAT_INFO);
 
   /* Destructor.  */
-  virtual ~fast_function_summary ()
-  {
-    release ();
-  }
-
-  /* Destruction method that can be called for GGC purpose.  */
-  using function_summary_base<T>::release;
-  void release ();
+  virtual ~fast_function_summary ();
 
   /* Traverses all summarys with a function F called with
      ARG as argument.  */
@@ -429,10 +410,10 @@ private:
 };
 
 template <typename T, typename V>
-fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab):
+fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab MEM_STAT_DECL):
   function_summary_base<T> (symtab), m_vector (NULL)
 {
-  vec_alloc (m_vector, 13);
+  vec_alloc (m_vector, 13 PASS_MEM_STAT);
   this->m_symtab_insertion_hook
     = this->m_symtab->add_cgraph_insertion_hook (fast_function_summary::symtab_insertion,
 						 this);
@@ -445,22 +426,15 @@ fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab):
 }
 
 template <typename T, typename V>
-void
-fast_function_summary<T *, V>::release ()
+fast_function_summary<T *, V>::~fast_function_summary ()
 {
-  if (this->m_released)
-    return;
-
   this->unregister_hooks ();
 
   /* Release all summaries.  */
   for (unsigned i = 0; i < m_vector->length (); i++)
     if ((*m_vector)[i] != NULL)
       this->release ((*m_vector)[i]);
-
   vec_free (m_vector);
- 
-  this->m_released = true;
 }
 
 template <typename T, typename V>
@@ -558,7 +532,7 @@ class call_summary_base
 public:
   /* Default construction takes SYMTAB as an argument.  */
   call_summary_base (symbol_table *symtab): m_symtab (symtab),
-  m_initialize_when_cloning (true), m_released (false)
+  m_initialize_when_cloning (true)
   {}
 
   /* Basic implementation of removal operation.  */
@@ -600,8 +574,6 @@ protected:
   cgraph_2edge_hook_list *m_symtab_duplication_hook;
   /* Initialize summary for an edge that is cloned.  */
   bool m_initialize_when_cloning;
-  /* Indicates if the summary is released.  */
-  bool m_released;
 
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
@@ -633,8 +605,11 @@ class GTY((user)) call_summary <T *>: public call_summary_base<T>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  call_summary (symbol_table *symtab, bool ggc = false)
-  : call_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc)
+  call_summary (symbol_table *symtab, bool ggc = false
+		CXX_MEM_STAT_INFO)
+  : call_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc, true,
+						       GATHER_STATISTICS
+						       PASS_MEM_STAT)
   {
     this->m_symtab_removal_hook
       = this->m_symtab->add_edge_removal_hook (call_summary::symtab_removal,
@@ -645,14 +620,7 @@ public:
   }
 
   /* Destructor.  */
-  virtual ~call_summary ()
-  {
-    release ();
-  }
-
-  /* Destruction method that can be called for GGC purpose.  */
-  using call_summary_base<T>::release;
-  void release ();
+  virtual ~call_summary ();
 
   /* Traverses all summarys with an edge E called with
      ARG as argument.  */
@@ -730,20 +698,14 @@ private:
 };
 
 template <typename T>
-void
-call_summary<T *>::release ()
+call_summary<T *>::~call_summary ()
 {
-  if (this->m_released)
-    return;
-
   this->unregister_hooks ();
 
   /* Release all summaries.  */
   typedef typename hash_map <map_hash, T *>::iterator map_iterator;
   for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
     this->release ((*it).second);
-
-  this->m_released = true;
 }
 
 template <typename T>
@@ -812,10 +774,10 @@ class GTY((user)) fast_call_summary <T *, V>: public call_summary_base<T>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  fast_call_summary (symbol_table *symtab)
+  fast_call_summary (symbol_table *symtab CXX_MEM_STAT_INFO)
   : call_summary_base<T> (symtab), m_vector (NULL)
   {
-    vec_alloc (m_vector, 13);
+    vec_alloc (m_vector, 13 PASS_MEM_STAT);
     this->m_symtab_removal_hook
       = this->m_symtab->add_edge_removal_hook (fast_call_summary::symtab_removal,
 					       this);
@@ -825,14 +787,7 @@ public:
   }
 
   /* Destructor.  */
-  virtual ~fast_call_summary ()
-  {
-    release ();
-  }
-
-  /* Destruction method that can be called for GGC purpose.  */
-  using call_summary_base<T>::release;
-  void release ();
+  virtual ~fast_call_summary ();
 
   /* Traverses all summarys with an edge F called with
      ARG as argument.  */
@@ -908,22 +863,15 @@ private:
 };
 
 template <typename T, typename V>
-void
-fast_call_summary<T *, V>::release ()
+fast_call_summary<T *, V>::~fast_call_summary ()
 {
-  if (this->m_released)
-    return;
-
   this->unregister_hooks ();
 
   /* Release all summaries.  */
   for (unsigned i = 0; i < m_vector->length (); i++)
     if ((*m_vector)[i] != NULL)
       this->release ((*m_vector)[i]);
-
   vec_free (m_vector);
-
-  this->m_released = true;
 }
 
 template <typename T, typename V>

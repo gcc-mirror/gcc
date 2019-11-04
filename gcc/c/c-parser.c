@@ -19465,8 +19465,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  error_at (token->location, "variant %qD is not a function", variant);
 	  variant = error_mark_node;
 	}
-      else if (c_omp_get_context_selector (ctx, "construct", "simd")
-	       == NULL_TREE
+      else if (omp_get_context_selector (ctx, "construct", "simd") == NULL_TREE
 	       && !comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
 	{
 	  error_at (token->location, "variant %qD and base %qD have "
@@ -19487,7 +19486,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
       if (variant != error_mark_node)
 	{
 	  C_DECL_USED (variant) = 1;
-	  tree construct = c_omp_get_context_selector (ctx, "construct", NULL);
+	  tree construct = omp_get_context_selector (ctx, "construct", NULL);
 	  c_omp_mark_declare_variant (match_loc, variant, construct);
 	  if (omp_context_selector_matches (ctx))
 	    {

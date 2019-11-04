@@ -7,7 +7,7 @@
   logical :: k, l
   b(:, :) = 16
   l = .false.
-  if (allocated (a)) STOP 1
+  if (allocated (a)) stop 1
 !$omp parallel private (a, b) reduction (.or.:l)
   l = l.or.allocated (a)
   allocate (a(3, 6))
@@ -18,18 +18,18 @@
   deallocate (a)
   l = l.or.allocated (a)
 !$omp end parallel
-  if (allocated (a).or.l) STOP 2
+  if (allocated (a).or.l) stop 2
   allocate (a(6, 3))
   a(:, :) = 3
-  if (.not.allocated (a)) STOP 3
+  if (.not.allocated (a)) stop 3
   l = l.or.size(a).ne.18.or.size(a,1).ne.6.or.size(a,2).ne.3
-  if (l) STOP 4
+  if (l) stop 4
 !$omp parallel private (a, b) reduction (.or.:l)
   l = l.or..not.allocated (a)
   a(3, 2) = 1
   b(3, 2) = 1
 !$omp end parallel
-  if (l.or..not.allocated (a)) STOP 5
+  if (l.or..not.allocated (a)) stop 5
 !$omp parallel firstprivate (a, b) reduction (.or.:l)
   l = l.or..not.allocated (a)
   l = l.or.size(a).ne.18.or.size(a,1).ne.6.or.size(a,2).ne.3
@@ -41,7 +41,7 @@
   a(:, :) = omp_get_thread_num ()
   b(:, :) = omp_get_thread_num ()
 !$omp end parallel
-  if (any (a.ne.3).or.any (b.ne.16).or.l) STOP 6
+  if (any (a.ne.3).or.any (b.ne.16).or.l) stop 6
   k = .true.
 !$omp parallel do firstprivate (a, b, k) lastprivate (a, b) &
 !$omp & reduction (.or.:l)
@@ -59,9 +59,9 @@
     a(:, :) = i + 2
     b(:, :) = i
   end do
-  if (any (a.ne.38).or.any (b.ne.36).or.l) STOP 7
+  if (any (a.ne.38).or.any (b.ne.36).or.l) stop 7
   deallocate (a)
-  if (allocated (a)) STOP 8
+  if (allocated (a)) stop 8
   allocate (a (0:1, 0:3))
   a(:, :) = 0
 !$omp parallel do reduction (+:a) reduction (.or.:l) &
@@ -72,10 +72,10 @@
     a(modulo (i, 2), i / 2) = a(modulo (i, 2), i / 2) + i
     a(i / 4, modulo (i, 4)) = a(i / 4, modulo (i, 4)) + i
   end do
-  if (l) STOP 9
+  if (l) stop 9
   do i = 0, 1
     do j = 0, 3
-      if (a(i, j) .ne. (5*i + 3*j)) STOP 10
+      if (a(i, j) .ne. (5*i + 3*j)) stop 10
     end do
   end do
 end

@@ -149,3 +149,5 @@ void f72 (void);
 void f73 (void);
 #pragma omp declare variant (f1) match(construct={requires})	/* { dg-error "selector 'requires' not allowed for context selector set 'construct'" } */
 void f74 (void);
+#pragma omp declare variant (f1),match(construct={parallel})	/* { dg-error "expected 'match' before ','" } */
+void f75 (void);

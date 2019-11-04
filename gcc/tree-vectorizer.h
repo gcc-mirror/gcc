@@ -26,6 +26,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
+#include <utility>
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
@@ -456,6 +457,8 @@ struct rgroup_masks {
 
 typedef auto_vec<rgroup_masks> vec_loop_masks;
 
+typedef auto_vec<std::pair<data_reference*, tree> > drs_init_vec;
+
 /*-----------------------------------------------------------------*/
 /* Info on vectorized loops.                                       */
 /*-----------------------------------------------------------------*/
@@ -638,6 +641,10 @@ public:
   /* For loops being epilogues of already vectorized loops
      this points to the original vectorized loop.  Otherwise NULL.  */
   _loop_vec_info *orig_loop_info;
+
+  /* Used to store loop_vec_infos of epilogues of this loop during
+     analysis.  */
+  vec<_loop_vec_info *> epilogue_vinfos;
 
 } *loop_vec_info;
 
@@ -1589,10 +1596,12 @@ class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *,
 						     class loop *, edge);
 class loop *vect_loop_versioning (loop_vec_info);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
-				     tree *, tree *, tree *, int, bool, bool);
+				    tree *, tree *, tree *, int, bool, bool,
+				    tree *, drs_init_vec &);
 extern void vect_prepare_for_masked_peels (loop_vec_info);
 extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
+extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
 
 /* In tree-vect-stmts.c.  */
 extern tree get_vectype_for_scalar_type (vec_info *, tree);
@@ -1700,6 +1709,8 @@ extern tree vect_create_addr_base_for_vector_ref (stmt_vec_info, gimple_seq *,
 
 /* In tree-vect-loop.c.  */
 extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
+/* Used in tree-vect-loop-manip.c */
+extern void determine_peel_for_niter (loop_vec_info);
 /* Used in gimple-loop-interchange.c and tree-parloops.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);

@@ -4,4 +4,4 @@
 /* { dg-warning "supports 32-bit .5xx. hardware multiply" "" { target msp430_hwmul_not_f5 } 0 } */
 
 /* revision=2, hwmpy=8 */
-#include "../devices-main.c"
+#include "devices-main.c"

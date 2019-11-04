@@ -3,7 +3,7 @@
   integer :: r
   r = 0
   call foo (r)
-  if (r /= 11) STOP 1
+  if (r /= 11) stop 1
 contains
   subroutine foo (r)
     integer :: i, r

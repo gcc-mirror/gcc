@@ -289,6 +289,9 @@ build_addr_func (tree function, tsubst_flags_t complain)
 	}
       function = build_address (function);
     }
+  else if (TREE_CODE (function) == FUNCTION_DECL
+	   && DECL_IMMEDIATE_FUNCTION_P (function))
+    function = build_address (function);
   else
     function = decay_conversion (function, complain, /*reject_builtin=*/false);
 
@@ -3029,7 +3032,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     {
       if (TYPE_PTR_OR_PTRMEM_P (type1))
 	{
-	  tree cptype = composite_pointer_type (type1, type2,
+	  tree cptype = composite_pointer_type (input_location,
+						type1, type2,
 						error_mark_node,
 						error_mark_node,
 						CPO_CONVERSION,
@@ -5564,7 +5568,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 	   || (TYPE_PTRDATAMEM_P (arg2_type) && TYPE_PTRDATAMEM_P (arg3_type))
 	   || (TYPE_PTRMEMFUNC_P (arg2_type) && TYPE_PTRMEMFUNC_P (arg3_type)))
     {
-      result_type = composite_pointer_type (arg2_type, arg3_type, arg2,
+      result_type = composite_pointer_type (loc,
+					    arg2_type, arg3_type, arg2,
 					    arg3, CPO_CONDITIONAL_EXPR,
 					    complain);
       if (result_type == error_mark_node)
@@ -8158,6 +8163,40 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 				   addr, nargs, argarray);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
+      if (TREE_CODE (fn) == FUNCTION_DECL
+	  && DECL_IMMEDIATE_FUNCTION_P (fn)
+	  && (current_function_decl == NULL_TREE
+	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
+	  && (current_binding_level->kind != sk_function_parms
+	      || !current_binding_level->immediate_fn_ctx_p))
+	{
+	  tree obj_arg = NULL_TREE, exprimm = expr;
+	  if (DECL_CONSTRUCTOR_P (fn))
+	    obj_arg = first_arg;
+	  if (obj_arg
+	      && is_dummy_object (obj_arg)
+	      && !type_dependent_expression_p (obj_arg))
+	    {
+	      exprimm = build_cplus_new (DECL_CONTEXT (fn), expr, complain);
+	      obj_arg = NULL_TREE;
+	    }
+	  /* Look through *(const T *)&obj.  */
+	  else if (obj_arg && TREE_CODE (obj_arg) == INDIRECT_REF)
+	    {
+	      tree addr = TREE_OPERAND (obj_arg, 0);
+	      STRIP_NOPS (addr);
+	      if (TREE_CODE (addr) == ADDR_EXPR)
+		{
+		  tree typeo = TREE_TYPE (obj_arg);
+		  tree typei = TREE_TYPE (TREE_OPERAND (addr, 0));
+		  if (same_type_ignoring_top_level_qualifiers_p (typeo, typei))
+		    obj_arg = TREE_OPERAND (addr, 0);
+		}
+	    }
+	  fold_non_dependent_expr (exprimm, complain,
+				   /*manifestly_const_eval=*/true,
+				   obj_arg);
+	}
       return convert_from_reference (expr);
     }
 
@@ -8756,6 +8795,40 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree c = extract_call_expr (call);
       if (TREE_CODE (c) == CALL_EXPR)
 	TREE_NO_WARNING (c) = 1;
+    }
+  if (TREE_CODE (fn) == ADDR_EXPR)
+    {
+      tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
+      if (TREE_CODE (fndecl) == FUNCTION_DECL
+	  && DECL_IMMEDIATE_FUNCTION_P (fndecl)
+	  && (current_function_decl == NULL_TREE
+	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
+	  && (current_binding_level->kind != sk_function_parms
+	      || !current_binding_level->immediate_fn_ctx_p))
+	{
+	  tree obj_arg = NULL_TREE;
+	  if (DECL_CONSTRUCTOR_P (fndecl))
+	    obj_arg = cand->first_arg ? cand->first_arg : (*args)[0];
+	  if (obj_arg && is_dummy_object (obj_arg))
+	    {
+	      call = build_cplus_new (DECL_CONTEXT (fndecl), call, complain);
+	      obj_arg = NULL_TREE;
+	    }
+	  /* Look through *(const T *)&obj.  */
+	  else if (obj_arg && TREE_CODE (obj_arg) == INDIRECT_REF)
+	    {
+	      tree addr = TREE_OPERAND (obj_arg, 0);
+	      STRIP_NOPS (addr);
+	      if (TREE_CODE (addr) == ADDR_EXPR)
+		{
+		  tree typeo = TREE_TYPE (obj_arg);
+		  tree typei = TREE_TYPE (TREE_OPERAND (addr, 0));
+		  if (same_type_ignoring_top_level_qualifiers_p (typeo, typei))
+		    obj_arg = TREE_OPERAND (addr, 0);
+		}
+	    }
+	  call = cxx_constant_value (call, obj_arg);
+	}
     }
   return call;
 }
@@ -10883,7 +10956,9 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
      either between a constructor and a conversion op, or between two
      conversion ops.  */
   if ((complain & tf_warning)
-      && winner && warn_conversion && cand1->second_conv
+      /* In C++17, the constructor might have been elided, which means that
+	 an originally null ->second_conv could become non-null.  */
+      && winner && warn_conversion && cand1->second_conv && cand2->second_conv
       && (!DECL_CONSTRUCTOR_P (cand1->fn) || !DECL_CONSTRUCTOR_P (cand2->fn))
       && winner != compare_ics (cand1->second_conv, cand2->second_conv))
     {

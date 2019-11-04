@@ -25,10 +25,10 @@
     else if (i .gt. 1 .and. i .lt. 9) then
       j = 7
     end if
-    if (c(i) .ne. j) STOP 1
+    if (c(i) .ne. j) stop 1
     j = 179 - modulo (i, 11)
     if (i .gt. 1 .and. i .lt. 9) j = i
-    if (d(i) .ne. j) STOP 2
+    if (d(i) .ne. j) stop 2
   end do
   deallocate (a, b, c, d)
 end

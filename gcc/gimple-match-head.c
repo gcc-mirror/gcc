@@ -837,8 +837,8 @@ try_conditional_simplification (internal_fn ifn, gimple_match_op *res_op,
   gimple_match_op cond_op (gimple_match_cond (res_op->ops[0],
 					      res_op->ops[num_ops - 1]),
 			   op, res_op->type, num_ops - 2);
-  for (unsigned int i = 1; i < num_ops - 1; ++i)
-    cond_op.ops[i - 1] = res_op->ops[i];
+
+  memcpy (cond_op.ops, res_op->ops + 1, (num_ops - 1) * sizeof *cond_op.ops);
   switch (num_ops - 2)
     {
     case 2:

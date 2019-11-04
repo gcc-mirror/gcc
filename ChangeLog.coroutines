@@ -1,3 +1,8 @@
+2019-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Merge trunk r277764.
+	* gcc/configure: Regenerate.
+
 2019-10-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	libstdc++-v3/

@@ -383,7 +383,7 @@ template_class_depth (tree type)
 
       if (DECL_P (type))
 	type = CP_DECL_CONTEXT (type);
-      else if (LAMBDA_TYPE_P (type))
+      else if (LAMBDA_TYPE_P (type) && LAMBDA_TYPE_EXTRA_SCOPE (type))
 	type = LAMBDA_TYPE_EXTRA_SCOPE (type);
       else
 	type = CP_TYPE_CONTEXT (type);
@@ -28159,7 +28159,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	/* Rebuild the check using the deduced arguments.  */
 	check = build_concept_check (cdecl, cargs, tf_none);
 
-	if (!constraints_satisfied_p (check, cargs))
+	if (!constraints_satisfied_p (check))
           {
             if (complain & tf_warning_or_error)
               {

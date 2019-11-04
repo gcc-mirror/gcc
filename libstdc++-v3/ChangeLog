@@ -1,3 +1,251 @@
+2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/*: Regenerate.
+
+	* include/bits/refwrap.h (reference_wrapper, ref, cref): Add constexpr
+	specifiers for C++20.
+	* include/std/functional (_Mem_fn, mem_fn, _Bind, _Bind_result, bind)
+	(bind_front, _Not_fn, not_fn): Likewise.
+	* testsuite/20_util/bind/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/bind_front/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/mem_fn/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/not_fn/constexpr.cc: New test.
+	* testsuite/20_util/reference_wrapper/constexpr.cc: New test.
+
+	* doc/doxygen/user.cfg.in: Add new header.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* include/std/ranges: New header.
+	(ranges::sentinel_t, ranges::range_value_t, ranges::range_reference_t)
+	(ranges::range_rvalue_reference_t, ranges::sized_range)
+	(ranges::output_range, ranges::input_ranges, ranges::forward_range)
+	(ranges::bidirectional_range, ranges::random_access_range)
+	(ranges::contiguous_range, ranges::common::range): Define.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Check
+	that disabled_sized_sentinel can be specialized.
+	* testsuite/std/ranges/access/begin.cc: Include <ranges> instead of
+	<iterator>.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/empty.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/end_neg.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/access/size.cc: Likewise.
+	* testsuite/std/ranges/access/size_neg.cc: Likewise.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: New test.
+	* testsuite/std/ranges/range.cc: New test.
+	* testsuite/std/ranges/refinements.cc: New test.
+	* testsuite/std/ranges/sized.cc: New test.
+	* testsuite/util/testsuite_iterators.h: Add aliases for range types.
+	(output_iterator_wrapper::WritableObject::operator=): Add const
+	qualifier so that output_iterator_wrapper satisfies writable.
+
+	* testsuite/20_util/add_pointer/value.cc: Check void types.
+
+	* include/bits/range_access.h (__sizable): Rename to __sentinel_size.
+	Remove workaround for PR c++/92268 and remove redundant requirements
+	that are already checked by sized_sentinel_for.
+	* testsuite/std/ranges/access/cend.cc: Fix failures.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+
+	* include/bits/range_access.h (ranges::begin): Combine array and
+	non-array overloads into one function template. Only use ADL for
+	classes and enums.
+	(ranges::end, ranges::size): Likewise. Make unbounded arrays
+	ill-formed.
+	(ranges::rbegin, ranges::rend): Only use ADL for classes and enums.
+	Reformat _S_noexcept() functions to mirror operator() structure.
+	* testsuite/std/ranges/access/begin.cc: Check incomplete array.
+	* testsuite/std/ranges/access/end_neg.cc: New test.
+	* testsuite/std/ranges/access/size.cc: Check array of incomplete type.
+	* testsuite/std/ranges/access/size_neg.cc: New test.
+
+	* testsuite/24_iterators/range_access*.cc: Move to ...
+	* testsuite/24_iterators/range_access/range_access*.cc: ... here.
+	* testsuite/24_iterators/range_access/range_access_cpp20_neg.cc: New
+	test.
+
+2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/concepts (std::ranges::swap): Use a single overload for
+	the non-array cases, and switch using if-constexpr.
+
+	* include/bits/stl_iterator.h (__normal_iterator::iterator_concept):
+	Guard with __cpp_lib_concepts macro.
+
+	* include/std/bit (__cpp_lib_bitops): Define.
+	* include/std/version (__cpp_lib_constexpr): Remove.
+	(__cpp_lib_bitops, __cpp_lib_constexpr_dynamic_alloc): Define.
+	* testsuite/26_numerics/bit/header.cc: New test.
+	* testsuite/26_numerics/bit/header-2.cc: New test.
+	* testsuite/20_util/allocator_traits/header.cc: New test.
+	* testsuite/20_util/allocator_traits/header-2.cc: New test.
+
+	* include/bits/stl_iterator.h (namespace __gnu_cxx): Remove
+	using-declarations for std::iterator and std::iterator_traits.
+	(__gnu_cxx::__normal_iterator): Qualify iterator_traits.
+	* include/ext/algorithm (namespace __gnu_cxx): Remove
+	using-declarations for std names and qualify those names when used.
+	Also refer to std::min in parentheses to protect against function-like
+	macros.
+	* include/ext/rc_string_base.h: Qualify iterator_traits.
+	* include/ext/sso_string_base.h: Qualify iterator_traits.
+
+	PR libstdc++/92272
+	* include/bits/stl_bvector.h (_Bit_iterator::pointer)
+	(_Bit_const_iterator::pointer): Define as void for C++20.
+	* include/bits/stl_iterator.h (reverse_iterator::operator->()): Add
+	constraints for C++20.
+	(__normal_iterator::iterator_concept): Define for C++20.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::pointer):
+	Define as void for C++20.
+	(ostreambuf_iterator::difference_type): Define as ptrdiff_t for C++20.
+	(ostreambuf_iterator::ostreambuf_iterator()): Add default constructor
+	for C++20.
+	* testsuite/23_containers/vector/bool/iterator_c++20.cc: New test.
+	* testsuite/24_iterators/bidirectional/concept.cc: New test.
+	* testsuite/24_iterators/bidirectional/tag.cc: New test.
+	* testsuite/24_iterators/contiguous/concept.cc: New test.
+	* testsuite/24_iterators/contiguous/tag.cc: New test.
+	* testsuite/24_iterators/forward/concept.cc: New test.
+	* testsuite/24_iterators/forward/tag.cc: New test.
+	* testsuite/24_iterators/input/concept.cc: New test.
+	* testsuite/24_iterators/input/tag.cc: New test.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/typedefs.cc:
+	New test.
+	* testsuite/24_iterators/ostreambuf_iterator/requirements/typedefs.cc:
+	New test.
+	* testsuite/24_iterators/output/concept.cc: New test.
+	* testsuite/24_iterators/output/tag.cc: New test.
+	* testsuite/24_iterators/random_access/concept.cc: New test.
+	* testsuite/24_iterators/random_access/tag.cc: New test.
+	* testsuite/24_iterators/range_operations/advance_debug_neg.cc: New
+	test.
+	* testsuite/24_iterators/random_access_iterator/26020.cc: Move to ...
+	* testsuite/24_iterators/operations/26020.cc: ... here.
+	* testsuite/24_iterators/random_access_iterator/
+	string_vector_iterators.cc: Move to ...
+	* testsuite/24_iterators/random_access/string_vector_iterators.cc: ...
+	here.
+
+	* testsuite/util/testsuite_iterators.h: Fix typo in __cplusplus check.
+
+2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (ranges::disable_sized_range)
+	(ranges::begin, ranges::end, ranges::cbegin, ranges::cend)
+	(ranges::rbegin, ranges::rend, ranges::crbegin, ranges::crend)
+	(ranges::size, ranges::empty, ranges::data, ranges::cdata)
+	(ranges::range, ranges::sized_range, ranges::advance, ranges::distance)
+	(ranges::next, ranges::prev): Guard with __cpp_lib_concepts.
+	* include/bits/stl_iterator.h (disable_sized_sentinel): Likewise.
+
+	* include/bits/alloc_traits.h (__cpp_lib_constexpr_dynamic_alloc):
+	Define.
+	(allocator_traits::_S_construct, allocator_traits::_S_destroy)
+	(__alloc_on_copy, __alloc_on_move, __alloc_on_swap): Use
+	_GLIBCXX14_CONSTEXPR instead of constexpr.
+	* include/bits/stl_construct.h (_Destroy): Likewise.
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/iterator_concepts.h: New header.
+	(contiguous_iterator_tag, iter_reference_t, ranges::iter_move)
+	(iter_rvalue_reference_t, incrementable_traits, iter_difference_t)
+	(readable_traits, iter_value_t, readable, iter_common_reference_t)
+	(writable, waekly_incrementable, incrementable)
+	(input_or_output_iterator, sentinel_for, disable_sized_sentinel)
+	(sized_sentinel_for, input_iterator, output_iterator)
+	(forward_iterator, bidirectional_iterator, random_access_iterator)
+	(contiguous_iterator, indirectly_unary_invocable)
+	(indirectly_regular_unary_invocable, indirect_unary_predicate)
+	(indirect_relation, indirect_strict_weak_order, indirect_result_t)
+	(projected, indirectly_movable, indirectly_movable_storable)
+	(indirectly_copyable, indirectly_copyable_storable, ranges::iter_swap)
+	(indirectly_swappable, indirectly_comparable, permutable, mergeable)
+	(sortable, unreachable_sentinel_t, unreachable_sentinel)
+	(default_sentinel_t, default_sentinel): Define.
+	(__detail::__cpp17_iterator, __detail::__cpp17_input_iterator)
+	(__detail::__cpp17_fwd_iterator, __detail::__cpp17_bidi_iterator)
+	(__detail::__cpp17_randacc_iterator): Define.
+	(__iterator_traits): Define constrained specializations.
+	* include/bits/move.h (move): Only use old concept check for C++98.
+	* include/bits/range_access.h (ranges::disable_sized_range)
+	(ranges::begin, ranges::end, ranges::cbegin, ranges::cend)
+	(ranges::rbegin, ranges::rend, ranges::crbegin, ranges::crend)
+	(ranges::size, ranges::empty, ranges::data, ranges::cdata): Define
+	new customization points for C++20.
+	(ranges::range, ranges::sized_range): Define new concepts for C++20.
+	(ranges::advance, ranges::distance, ranges::next, ranges::prev):
+	Define new functions for C++20.
+	(__adl_end, __adl_cdata, __adl_cbegin, __adl_cend, __adl_rbegin)
+	(__adl_rend, __adl_crbegin, __adl_crend, __adl_cdata, __adl_size)
+	(__adl_empty): Remove.
+	* include/bits/stl_iterator.h (disable_sized_sentinel): Specialize
+	for reverse_iterator.
+	* include/bits/stl_iterator_base_types.h (contiguous_iterator_tag):
+	Define new struct for C++20.
+	(iterator_traits<_Tp*>): Constrain partial specialization in C++20.
+	* include/std/concepts (__is_class_or_enum): Move to __detail
+	namespace.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error line number.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+	* testsuite/24_iterators/associated_types/incrementable.traits.cc: New
+	test.
+	* testsuite/24_iterators/associated_types/readable.traits.cc: New test.
+	* testsuite/24_iterators/contiguous/concept.cc: New test.
+	* testsuite/24_iterators/contiguous/tag.cc: New test.
+	* testsuite/24_iterators/customization_points/iter_move.cc: New test.
+	* testsuite/24_iterators/customization_points/iter_swap.cc: New test.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: New test.
+	* testsuite/24_iterators/range_operations/advance.cc: New test.
+	* testsuite/24_iterators/range_operations/distance.cc: New test.
+	* testsuite/24_iterators/range_operations/next.cc: New test.
+	* testsuite/24_iterators/range_operations/prev.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/requirements/
+	explicit_instantiation/2.cc: Rename types that conflict with C++20
+	concepts.
+	* testsuite/26_numerics/adjacent_difference/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/experimental/iterator/requirements.cc: Likewise.
+	* testsuite/std/ranges/access/begin.cc: New test.
+	* testsuite/std/ranges/access/cbegin.cc: New test.
+	* testsuite/std/ranges/access/cdata.cc: New test.
+	* testsuite/std/ranges/access/cend.cc: New test.
+	* testsuite/std/ranges/access/crbegin.cc: New test.
+	* testsuite/std/ranges/access/crend.cc: New test.
+	* testsuite/std/ranges/access/data.cc: New test.
+	* testsuite/std/ranges/access/empty.cc: New test.
+	* testsuite/std/ranges/access/end.cc: New test.
+	* testsuite/std/ranges/access/rbegin.cc: New test.
+	* testsuite/std/ranges/access/rend.cc: New test.
+	* testsuite/std/ranges/access/size.cc: New test.
+	* testsuite/util/testsuite_iterators.h (contiguous_iterator_wrapper)
+	(test_range, test_sized_range): New test utilities.
+
+	* testsuite/util/testsuite_iterators.h (BoundsContainer::size()): Add
+	new member function.
+	(WritableObject::operator=): Constrain with enable_if when available.
+	(remove_cv): Use std::remove_if when available.
+	(test_container::it(int)): Use size().
+	(test_container::size()): Use BoundsContainer::size().
+
+	PR libstdc++/92267
+	* include/bits/stl_deque.h (_Deque_iterator(const _Deque_iterator&)):
+	Do not define as defaulted.
+	* testsuite/23_containers/deque/types/92267.cc: New test.
+
 2019-10-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/codecvt.xml: Switch pubs.opengroup.org to https.

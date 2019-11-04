@@ -29,7 +29,7 @@ contains
       r = r .or. (j /= 16)
       r = r .or. (any (k /= 17)) .or. (lbound (k, 1) /= 4) .or. (ubound (k, 1) /= n)
     !$omp end target
-    if (r) STOP 1
+    if (r) stop 1
     !$omp target map (to: b(3:n), c(5:n+4), d(2:n+1), e(1:,:2), g(3:n), i(3:n), k(4:n), n) map (from: r)
       r = (any (b /= 8)) .or. (lbound (b, 1) /= 3) .or. (ubound (b, 1) /= n)
       r = r .or. (any (c /= 9)) .or. (lbound (c, 1) /= 5) .or. (ubound (c, 1) /= n + 4)
@@ -40,7 +40,7 @@ contains
       r = r .or. (any (i /= 15)) .or. (lbound (i, 1) /= 3) .or. (ubound (i, 1) /= n)
       r = r .or. (any (k /= 17)) .or. (lbound (k, 1) /= 4) .or. (ubound (k, 1) /= n)
     !$omp end target
-    if (r) STOP 2
+    if (r) stop 2
     !$omp target map (to: b(5:n-2), c(7:n), d(4:n-2), e(1:,2:), g(5:n-3), i(6:n-4), k(5:n-5), n) map (from: r)
       r = (any (b(5:n-2) /= 8)) .or. (lbound (b, 1) /= 3) .or. (ubound (b, 1) /= n)
       r = r .or. (any (c(7:n) /= 9)) .or. (lbound (c, 1) /= 5) .or. (ubound (c, 1) /= n + 4)
@@ -62,7 +62,7 @@ contains
       r = r .or. (any (i(6:n-4) /= 15)) .or. (lbound (i, 1) /= 3) .or. (ubound (i, 1) /= n)
       r = r .or. (any (k(5:n-5) /= 17)) .or. (lbound (k, 1) /= 4) .or. (ubound (k, 1) /= n)
     !$omp end target
-    if (r) STOP 3
+    if (r) stop 3
     !$omp target map (to: d(2:n+1), n)
       r = a /= 7
       r = r .or. (any (b /= 8)) .or. (lbound (b, 1) /= 3) .or. (ubound (b, 1) /= n)
@@ -77,7 +77,7 @@ contains
       r = r .or. (j /= 16)
       r = r .or. (any (k /= 17)) .or. (lbound (k, 1) /= 4) .or. (ubound (k, 1) /= n)
     !$omp end target
-    if (r) STOP 4
+    if (r) stop 4
   end subroutine foo
 end module target2
   use target2, only : foo

@@ -403,6 +403,7 @@ static const struct builtin_macro builtin_array[] =
   B("__COUNTER__",	 BT_COUNTER,       true),
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
+  B("__has_builtin",	 BT_HAS_BUILTIN,   true),
   /* Keep builtins not used for -traditional-cpp at the end, and
      update init_builtins() if any more are added.  */
   B("_Pragma",		 BT_PRAGMA,        true),
@@ -483,7 +484,8 @@ cpp_init_special_builtins (cpp_reader *pfile)
 
   for (b = builtin_array; b < builtin_array + n; b++)
     {
-      if (b->value == BT_HAS_ATTRIBUTE
+      if ((b->value == BT_HAS_ATTRIBUTE
+	   || b->value == BT_HAS_BUILTIN)
 	  && (CPP_OPTION (pfile, lang) == CLK_ASM
 	      || pfile->cb.has_attribute == NULL))
 	continue;
@@ -493,6 +495,25 @@ cpp_init_special_builtins (cpp_reader *pfile)
 	hp->flags |= NODE_WARN;
       hp->value.builtin = (enum cpp_builtin_type) b->value;
     }
+}
+
+/* Restore macro C to builtin macro definition.  */
+
+void
+_cpp_restore_special_builtin (cpp_reader *pfile, struct def_pragma_macro *c)
+{
+  size_t len = strlen (c->name);
+
+  for (const struct builtin_macro *b = builtin_array;
+       b < builtin_array + ARRAY_SIZE (builtin_array); b++)
+    if (b->len == len && memcmp (c->name, b->name, len + 1) == 0)
+      {
+	cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
+	hp->type = NT_BUILTIN_MACRO;
+	if (b->always_warn_if_redefined)
+	  hp->flags |= NODE_WARN;
+	hp->value.builtin = (enum cpp_builtin_type) b->value;
+      }
 }
 
 /* Read the builtins table above and enter them, and language-specific

@@ -42,12 +42,12 @@
   end do
   call foo (p, q, c_loc (r(1)), s)
   do i = 1, 1024
-    if (p(i) /= i * i + 3 * i + 2) STOP 1
+    if (p(i) /= i * i + 3 * i + 2) stop 1
     p(i) = i
   end do
   call bar (p, q, c_loc (r(1)), s)
   do i = 1, 1024
-    if (p(i) /= i * i + 3 * i + 2) STOP 2
+    if (p(i) /= i * i + 3 * i + 2) stop 2
   end do
   ! Attempt to create 64-byte aligned allocatable
   do i = 1, 64
@@ -65,7 +65,7 @@
     end do
     call baz (p, c)
     do i = 1, 1024
-      if (p(i) /= i * i + 5 * i + 2) STOP 3
+      if (p(i) /= i * i + 5 * i + 2) stop 3
     end do
   end if
 end

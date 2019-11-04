@@ -7959,7 +7959,7 @@ associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
   if ((node->alias
        || (node->thunk.thunk_p
-	   && ! node->global.inlined_to))
+	   && ! node->inlined_to))
       && node->analyzed
       && !node->ifunc_resolver)
     insert_vi_for_tree (node->decl, (varinfo_t)data);
@@ -8129,7 +8129,7 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!node->has_gimple_body_p () || node->global.inlined_to)
+      if (!node->has_gimple_body_p () || node->inlined_to)
 	continue;
       node->get_body ();
 

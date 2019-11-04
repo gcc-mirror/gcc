@@ -1601,7 +1601,63 @@ cxx_replaceable_global_alloc_fn (tree fndecl)
 {
   return (cxx_dialect >= cxx2a
 	  && IDENTIFIER_NEWDEL_OP_P (DECL_NAME (fndecl))
-	  && CP_DECL_CONTEXT (fndecl) == global_namespace);
+	  && CP_DECL_CONTEXT (fndecl) == global_namespace
+	  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+	      || DECL_IS_OPERATOR_DELETE_P (fndecl)));
+}
+
+/* Return true if FNDECL is a placement new function that should be
+   useable during constant expression evaluation of std::construct_at.  */
+
+static inline bool
+cxx_placement_new_fn (tree fndecl)
+{
+  if (cxx_dialect >= cxx2a
+      && IDENTIFIER_NEW_OP_P (DECL_NAME (fndecl))
+      && CP_DECL_CONTEXT (fndecl) == global_namespace
+      && !DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+      && TREE_CODE (TREE_TYPE (fndecl)) == FUNCTION_TYPE)
+    {
+      tree first_arg = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+      if (TREE_VALUE (first_arg) == ptr_type_node
+	  && TREE_CHAIN (first_arg) == void_list_node)
+	return true;
+    }
+  return false;
+}
+
+/* Return true if FNDECL is std::construct_at.  */
+
+static inline bool
+is_std_construct_at (tree fndecl)
+{
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  return name && id_equal (name, "construct_at");
+}
+
+/* Return true if FNDECL is std::allocator<T>::{,de}allocate.  */
+
+static inline bool
+is_std_allocator_allocate (tree fndecl)
+{
+  tree name = DECL_NAME (fndecl);
+  if (name == NULL_TREE
+      || !(id_equal (name, "allocate") || id_equal (name, "deallocate")))
+    return false;
+
+  tree ctx = DECL_CONTEXT (fndecl);
+  if (ctx == NULL_TREE || !CLASS_TYPE_P (ctx) || !TYPE_MAIN_DECL (ctx))
+    return false;
+
+  tree decl = TYPE_MAIN_DECL (ctx);
+  name = DECL_NAME (decl);
+  if (name == NULL_TREE || !id_equal (name, "allocator"))
+    return false;
+
+  return decl_in_std_namespace_p (decl);
 }
 
 /* Subroutine of cxx_eval_constant_expression.
@@ -1682,7 +1738,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 					   lval, non_constant_p, overflow_p);
   if (!DECL_DECLARED_CONSTEXPR_P (fun))
     {
-      if (cxx_replaceable_global_alloc_fn (fun))
+      if (TREE_CODE (t) == CALL_EXPR
+	  && cxx_replaceable_global_alloc_fn (fun)
+	  && (CALL_FROM_NEW_OR_DELETE_P (t)
+	      || (ctx->call
+		  && ctx->call->fundef
+		  && is_std_allocator_allocate (ctx->call->fundef->decl))))
 	{
 	  const int nargs = call_expr_nargs (t);
 	  tree arg0 = NULL_TREE;
@@ -1737,6 +1798,28 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      *non_constant_p = true;
 	      return t;
 	    }
+	}
+      /* Allow placement new in std::construct_at, just return the second
+	 argument.  */
+      if (TREE_CODE (t) == CALL_EXPR
+	  && cxx_placement_new_fn (fun)
+	  && ctx->call
+	  && ctx->call->fundef
+	  && is_std_construct_at (ctx->call->fundef->decl))
+	{
+	  const int nargs = call_expr_nargs (t);
+	  tree arg1 = NULL_TREE;
+	  for (int i = 0; i < nargs; ++i)
+	    {
+	      tree arg = CALL_EXPR_ARG (t, i);
+	      arg = cxx_eval_constant_expression (ctx, arg, false,
+						  non_constant_p, overflow_p);
+	      VERIFY_CONSTANT (arg);
+	      if (i == 1)
+		arg1 = arg;
+	    }
+	  gcc_assert (arg1);
+	  return arg1;
 	}
       if (!ctx->quiet)
 	{
@@ -3910,10 +3993,6 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	    tree elt = TREE_OPERAND (probe, 1);
 	    if (TREE_CODE (elt) == FIELD_DECL && DECL_MUTABLE_P (elt))
 	      mutable_p = true;
-	    if (evaluated
-		&& modifying_const_object_p (TREE_CODE (t), probe, mutable_p)
-		&& const_object_being_modified == NULL_TREE)
-	      const_object_being_modified = probe;
 	    if (TREE_CODE (probe) == ARRAY_REF)
 	      {
 		elt = eval_and_check_array_index (ctx, probe, false,
@@ -3921,6 +4000,15 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 		if (*non_constant_p)
 		  return t;
 	      }
+	    /* We don't check modifying_const_object_p for ARRAY_REFs.  Given
+	       "int a[10]", an ARRAY_REF "a[2]" can be "const int", even though
+	       the array isn't const.  Instead, check "a" in the next iteration;
+	       that will detect modifying "const int a[10]".  */
+	    else if (evaluated
+		     && modifying_const_object_p (TREE_CODE (t), probe,
+						  mutable_p)
+		     && const_object_being_modified == NULL_TREE)
+	      const_object_being_modified = probe;
 	    vec_safe_push (refs, elt);
 	    vec_safe_push (refs, TREE_TYPE (probe));
 	    probe = ob;
@@ -5651,6 +5739,16 @@ find_heap_var_refs (tree *tp, int *walk_subtrees, void */*data*/)
   return NULL_TREE;
 }
 
+/* Find immediate function decls in *TP if any.  */
+
+static tree
+find_immediate_fndecl (tree *tp, int */*walk_subtrees*/, void */*data*/)
+{
+  if (TREE_CODE (*tp) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (*tp))
+    return *tp;
+  return NULL_TREE;
+}
+
 /* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
    STRICT has the same sense as for constant_value_1: true if we only allow
    conforming C++ constant expressions, or false if we want a constant value
@@ -5679,13 +5777,38 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   tree type = initialized_type (t);
   tree r = t;
+  bool is_consteval = false;
   if (VOID_TYPE_P (type))
     {
       if (constexpr_dtor)
 	/* Used for destructors of array elements.  */
 	type = TREE_TYPE (object);
       else
-	return t;
+	{
+	  if (cxx_dialect < cxx2a)
+	    return t;
+	  if (TREE_CODE (t) != CALL_EXPR && TREE_CODE (t) != AGGR_INIT_EXPR)
+	    return t;
+	  /* Calls to immediate functions returning void need to be
+	     evaluated.  */
+	  tree fndecl = cp_get_callee_fndecl_nofold (t);
+	  if (fndecl == NULL_TREE || !DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	    return t;
+	  else
+	    is_consteval = true;
+	}
+    }
+  else if (cxx_dialect >= cxx2a
+	   && (TREE_CODE (t) == CALL_EXPR
+	       || TREE_CODE (t) == AGGR_INIT_EXPR
+	       || TREE_CODE (t) == TARGET_EXPR))
+    {
+      tree x = t;
+      if (TREE_CODE (x) == TARGET_EXPR)
+	x = TARGET_EXPR_INITIAL (x);
+      tree fndecl = cp_get_callee_fndecl_nofold (x);
+      if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	is_consteval = true;
     }
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
     {
@@ -5784,6 +5907,25 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	    r = t;
 	    non_constant_p = true;
 	  }
+    }
+
+  /* Check that immediate invocation does not return an expression referencing
+     any immediate function decls.  They need to be allowed while parsing
+     immediate functions, but can't leak outside of them.  */
+  if (is_consteval
+      && t != r
+      && (current_function_decl == NULL_TREE
+	  || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
+    if (tree immediate_fndecl
+	= cp_walk_tree_without_duplicates (&r, find_immediate_fndecl,
+					   NULL))
+    {
+      if (!allow_non_constant && !non_constant_p)
+	error_at (cp_expr_loc_or_input_loc (t),
+		  "immediate evaluation returns address of immediate "
+		  "function %qD", immediate_fndecl);
+      r = t;
+      non_constant_p = true;
     }
 
   /* Technically we should check this for all subexpressions, but that
@@ -6026,7 +6168,8 @@ clear_cv_and_fold_caches (bool sat /*= true*/)
 
 static tree
 fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
-				  bool manifestly_const_eval)
+				  bool manifestly_const_eval,
+				  tree object)
 {
   gcc_assert (processing_template_decl);
 
@@ -6047,7 +6190,7 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 
       tree r = cxx_eval_outermost_constant_expr (t, true, true,
 						 manifestly_const_eval,
-						 false, NULL_TREE);
+						 false, object);
       /* cp_tree_equal looks through NOPs, so allow them.  */
       gcc_checking_assert (r == t
 			   || CONVERT_EXPR_P (t)
@@ -6083,16 +6226,17 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 tree
 fold_non_dependent_expr (tree t,
 			 tsubst_flags_t complain /* = tf_warning_or_error */,
-			 bool manifestly_const_eval /* = false */)
+			 bool manifestly_const_eval /* = false */,
+			 tree object /* = NULL_TREE */)
 {
   if (t == NULL_TREE)
     return NULL_TREE;
 
   if (processing_template_decl)
     return fold_non_dependent_expr_template (t, complain,
-					     manifestly_const_eval);
+					     manifestly_const_eval, object);
 
-  return maybe_constant_value (t, NULL_TREE, manifestly_const_eval);
+  return maybe_constant_value (t, object, manifestly_const_eval);
 }
 
 
@@ -6109,7 +6253,7 @@ fold_non_dependent_init (tree t,
   if (processing_template_decl)
     {
       t = fold_non_dependent_expr_template (t, complain,
-					    manifestly_const_eval);
+					    manifestly_const_eval, NULL_TREE);
       /* maybe_constant_init does this stripping, so do it here too.  */
       if (TREE_CODE (t) == TARGET_EXPR)
 	{
@@ -6448,7 +6592,17 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		    && !fndecl_built_in_p (fun)
 		    /* In C++2a, replaceable global allocation functions
 		       are constant expressions.  */
-		    && !cxx_replaceable_global_alloc_fn (fun))
+		    && (!cxx_replaceable_global_alloc_fn (fun)
+			|| TREE_CODE (t) != CALL_EXPR
+			|| (!CALL_FROM_NEW_OR_DELETE_P (t)
+			    && (current_function_decl == NULL_TREE
+				|| !is_std_allocator_allocate
+						(current_function_decl))))
+		    /* Allow placement new in std::construct_at.  */
+		    && (!cxx_placement_new_fn (fun)
+			|| TREE_CODE (t) != CALL_EXPR
+			|| current_function_decl == NULL_TREE
+			|| !is_std_construct_at (current_function_decl)))
 		  {
 		    if (flags & tf_error)
 		      {

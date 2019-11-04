@@ -3089,6 +3089,25 @@ first_field (const_tree type)
   return t;
 }
 
+/* Returns the last FIELD_DECL in the TYPE_FIELDS of the RECORD_TYPE or
+   UNION_TYPE TYPE, or NULL_TREE if none.  */
+
+tree
+last_field (const_tree type)
+{
+  tree last = NULL_TREE;
+
+  for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+    {
+      if (TREE_CODE (fld) != FIELD_DECL)
+	continue;
+
+      last = fld;
+    }
+
+  return last;
+}
+
 /* Concatenate two chains of nodes (chained through TREE_CHAIN)
    by modifying the last node in chain 1 to point to chain 2.
    This is the Lisp primitive `nconc'.  */
@@ -5805,7 +5824,8 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
       while (*nextp)
 	{
 	  tree var = *nextp;
-	  if (fndecl_built_in_p (var))
+	  if (TREE_CODE (var) == FUNCTION_DECL
+	      && fndecl_built_in_p (var))
 	    *nextp = TREE_CHAIN (var);
 	  else
 	    nextp = &TREE_CHAIN (var);
@@ -7788,279 +7808,6 @@ operation_no_trapping_overflow (tree type, enum tree_code code)
       /* These operators cannot overflow.  */
       return true;
     }
-}
-
-namespace inchash
-{
-
-/* Generate a hash value for an expression.  This can be used iteratively
-   by passing a previous result as the HSTATE argument.
-
-   This function is intended to produce the same hash for expressions which
-   would compare equal using operand_equal_p.  */
-void
-add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
-{
-  int i;
-  enum tree_code code;
-  enum tree_code_class tclass;
-
-  if (t == NULL_TREE || t == error_mark_node)
-    {
-      hstate.merge_hash (0);
-      return;
-    }
-
-  STRIP_ANY_LOCATION_WRAPPER (t);
-
-  if (!(flags & OEP_ADDRESS_OF))
-    STRIP_NOPS (t);
-
-  code = TREE_CODE (t);
-
-  switch (code)
-    {
-    /* Alas, constants aren't shared, so we can't rely on pointer
-       identity.  */
-    case VOID_CST:
-      hstate.merge_hash (0);
-      return;
-    case INTEGER_CST:
-      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
-      for (i = 0; i < TREE_INT_CST_EXT_NUNITS (t); i++)
-	hstate.add_hwi (TREE_INT_CST_ELT (t, i));
-      return;
-    case REAL_CST:
-      {
-	unsigned int val2;
-	if (!HONOR_SIGNED_ZEROS (t) && real_zerop (t))
-	  val2 = rvc_zero;
-	else
-	  val2 = real_hash (TREE_REAL_CST_PTR (t));
-	hstate.merge_hash (val2);
-	return;
-      }
-    case FIXED_CST:
-      {
-	unsigned int val2 = fixed_hash (TREE_FIXED_CST_PTR (t));
-	hstate.merge_hash (val2);
-	return;
-      }
-    case STRING_CST:
-      hstate.add ((const void *) TREE_STRING_POINTER (t),
-		  TREE_STRING_LENGTH (t));
-      return;
-    case COMPLEX_CST:
-      inchash::add_expr (TREE_REALPART (t), hstate, flags);
-      inchash::add_expr (TREE_IMAGPART (t), hstate, flags);
-      return;
-    case VECTOR_CST:
-      {
-	hstate.add_int (VECTOR_CST_NPATTERNS (t));
-	hstate.add_int (VECTOR_CST_NELTS_PER_PATTERN (t));
-	unsigned int count = vector_cst_encoded_nelts (t);
-	for (unsigned int i = 0; i < count; ++i)
-	  inchash::add_expr (VECTOR_CST_ENCODED_ELT (t, i), hstate, flags);
-	return;
-      }
-    case SSA_NAME:
-      /* We can just compare by pointer.  */
-      hstate.add_hwi (SSA_NAME_VERSION (t));
-      return;
-    case PLACEHOLDER_EXPR:
-      /* The node itself doesn't matter.  */
-      return;
-    case BLOCK:
-    case OMP_CLAUSE:
-      /* Ignore.  */
-      return;
-    case TREE_LIST:
-      /* A list of expressions, for a CALL_EXPR or as the elements of a
-	 VECTOR_CST.  */
-      for (; t; t = TREE_CHAIN (t))
-	inchash::add_expr (TREE_VALUE (t), hstate, flags);
-      return;
-    case CONSTRUCTOR:
-      {
-	unsigned HOST_WIDE_INT idx;
-	tree field, value;
-	flags &= ~OEP_ADDRESS_OF;
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
-	  {
-	    inchash::add_expr (field, hstate, flags);
-	    inchash::add_expr (value, hstate, flags);
-	  }
-	return;
-      }
-    case STATEMENT_LIST:
-      {
-	tree_stmt_iterator i;
-	for (i = tsi_start (CONST_CAST_TREE (t));
-	     !tsi_end_p (i); tsi_next (&i))
-	  inchash::add_expr (tsi_stmt (i), hstate, flags);
-	return;
-      }
-    case TREE_VEC:
-      for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
-	inchash::add_expr (TREE_VEC_ELT (t, i), hstate, flags);
-      return;
-    case IDENTIFIER_NODE:
-      hstate.add_object (IDENTIFIER_HASH_VALUE (t));
-      return;
-    case FUNCTION_DECL:
-      /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
-	 Otherwise nodes that compare equal according to operand_equal_p might
-	 get different hash codes.  However, don't do this for machine specific
-	 or front end builtins, since the function code is overloaded in those
-	 cases.  */
-      if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
-	  && builtin_decl_explicit_p (DECL_FUNCTION_CODE (t)))
-	{
-	  t = builtin_decl_explicit (DECL_FUNCTION_CODE (t));
-	  code = TREE_CODE (t);
-	}
-      /* FALL THROUGH */
-    default:
-      if (POLY_INT_CST_P (t))
-	{
-	  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
-	    hstate.add_wide_int (wi::to_wide (POLY_INT_CST_COEFF (t, i)));
-	  return;
-	}
-      tclass = TREE_CODE_CLASS (code);
-
-      if (tclass == tcc_declaration)
-	{
-	  /* DECL's have a unique ID */
-	  hstate.add_hwi (DECL_UID (t));
-	}
-      else if (tclass == tcc_comparison && !commutative_tree_code (code))
-	{
-	  /* For comparisons that can be swapped, use the lower
-	     tree code.  */
-	  enum tree_code ccode = swap_tree_comparison (code);
-	  if (code < ccode)
-	    ccode = code;
-	  hstate.add_object (ccode);
-	  inchash::add_expr (TREE_OPERAND (t, ccode != code), hstate, flags);
-	  inchash::add_expr (TREE_OPERAND (t, ccode == code), hstate, flags);
-	}
-      else if (CONVERT_EXPR_CODE_P (code))
-	{
-	  /* NOP_EXPR and CONVERT_EXPR are considered equal by
-	     operand_equal_p.  */
-	  enum tree_code ccode = NOP_EXPR;
-	  hstate.add_object (ccode);
-
-	  /* Don't hash the type, that can lead to having nodes which
-	     compare equal according to operand_equal_p, but which
-	     have different hash codes.  Make sure to include signedness
-	     in the hash computation.  */
-	  hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
-	  inchash::add_expr (TREE_OPERAND (t, 0), hstate, flags);
-	}
-      /* For OEP_ADDRESS_OF, hash MEM_EXPR[&decl, 0] the same as decl.  */
-      else if (code == MEM_REF
-	       && (flags & OEP_ADDRESS_OF) != 0
-	       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
-	       && DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
-	       && integer_zerop (TREE_OPERAND (t, 1)))
-	inchash::add_expr (TREE_OPERAND (TREE_OPERAND (t, 0), 0),
-			   hstate, flags);
-      /* Don't ICE on FE specific trees, or their arguments etc.
-	 during operand_equal_p hash verification.  */
-      else if (!IS_EXPR_CODE_CLASS (tclass))
-	gcc_assert (flags & OEP_HASH_CHECK);
-      else
-	{
-	  unsigned int sflags = flags;
-
-	  hstate.add_object (code);
-
-	  switch (code)
-	    {
-	    case ADDR_EXPR:
-	      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
-	      flags |= OEP_ADDRESS_OF;
-	      sflags = flags;
-	      break;
-
-	    case INDIRECT_REF:
-	    case MEM_REF:
-	    case TARGET_MEM_REF:
-	      flags &= ~OEP_ADDRESS_OF;
-	      sflags = flags;
-	      break;
-
-	    case ARRAY_REF:
-	    case ARRAY_RANGE_REF:
-	    case COMPONENT_REF:
-	    case BIT_FIELD_REF:
-	      sflags &= ~OEP_ADDRESS_OF;
-	      break;
-
-	    case COND_EXPR:
-	      flags &= ~OEP_ADDRESS_OF;
-	      break;
-
-	    case WIDEN_MULT_PLUS_EXPR:
-	    case WIDEN_MULT_MINUS_EXPR:
-	      {
-		/* The multiplication operands are commutative.  */
-		inchash::hash one, two;
-		inchash::add_expr (TREE_OPERAND (t, 0), one, flags);
-		inchash::add_expr (TREE_OPERAND (t, 1), two, flags);
-		hstate.add_commutative (one, two);
-		inchash::add_expr (TREE_OPERAND (t, 2), two, flags);
-		return;
-	      }
-
-	    case CALL_EXPR:
-	      if (CALL_EXPR_FN (t) == NULL_TREE)
-		hstate.add_int (CALL_EXPR_IFN (t));
-	      break;
-
-	    case TARGET_EXPR:
-	      /* For TARGET_EXPR, just hash on the TARGET_EXPR_SLOT.
-		 Usually different TARGET_EXPRs just should use
-		 different temporaries in their slots.  */
-	      inchash::add_expr (TARGET_EXPR_SLOT (t), hstate, flags);
-	      return;
-
-	    default:
-	      break;
-	    }
-
-	  /* Don't hash the type, that can lead to having nodes which
-	     compare equal according to operand_equal_p, but which
-	     have different hash codes.  */
-	  if (code == NON_LVALUE_EXPR)
-	    {
-	      /* Make sure to include signness in the hash computation.  */
-	      hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
-	      inchash::add_expr (TREE_OPERAND (t, 0), hstate, flags);
-	    }
-
-	  else if (commutative_tree_code (code))
-	    {
-	      /* It's a commutative expression.  We want to hash it the same
-		 however it appears.  We do this by first hashing both operands
-		 and then rehashing based on the order of their independent
-		 hashes.  */
-	      inchash::hash one, two;
-	      inchash::add_expr (TREE_OPERAND (t, 0), one, flags);
-	      inchash::add_expr (TREE_OPERAND (t, 1), two, flags);
-	      hstate.add_commutative (one, two);
-	    }
-	  else
-	    for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
-	      inchash::add_expr (TREE_OPERAND (t, i), hstate,
-				 i == 0 ? flags : sflags);
-	}
-      return;
-    }
-}
-
 }
 
 /* Constructors for pointer, array and function types.
@@ -11396,73 +11143,6 @@ initializer_each_zero_or_onep (const_tree expr)
     }
 }
 
-/* Given an initializer INIT for a TYPE, return true if INIT is zero
-   so that it can be replaced by value initialization.  This function
-   distinguishes betwen empty strings as initializers for arrays and
-   for pointers (which make it return false).  */
-
-bool
-type_initializer_zero_p (tree type, tree init)
-{
-  if (type  == error_mark_node || init == error_mark_node)
-    return false;
-
-  STRIP_NOPS (init);
-
-  if (POINTER_TYPE_P (type))
-    return TREE_CODE (init) != STRING_CST && initializer_zerop (init);
-
-  if (TREE_CODE (init) != CONSTRUCTOR)
-    return initializer_zerop (init);
-
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      tree elt_type = TREE_TYPE (type);
-      elt_type = TYPE_MAIN_VARIANT (elt_type);
-      if (elt_type == char_type_node)
-	return initializer_zerop (init);
-
-      tree elt_init;
-      unsigned HOST_WIDE_INT i;
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, elt_init)
-	if (!type_initializer_zero_p (elt_type, elt_init))
-	  return false;
-      return true;
-    }
-
-  if (TREE_CODE (type) != RECORD_TYPE)
-    return initializer_zerop (init);
-
-  tree fld = TYPE_FIELDS (type);
-
-  tree fld_init;
-  unsigned HOST_WIDE_INT i;
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, fld_init)
-    {
-      /* Advance to the next member, skipping over everything that
-	 canot be initialized (including unnamed bit-fields).  */
-      while (TREE_CODE (fld) != FIELD_DECL
-	     || DECL_ARTIFICIAL (fld)
-	     || (DECL_BIT_FIELD (fld) && !DECL_NAME (fld)))
-	{
-	  fld = DECL_CHAIN (fld);
-	  if (!fld)
-	    return true;
-	  continue;
-	}
-
-      tree fldtype = TREE_TYPE (fld);
-      if (!type_initializer_zero_p (fldtype, fld_init))
-	return false;
-
-      fld = DECL_CHAIN (fld);
-      if (!fld)
-	break;
-    }
-
-  return true;
-}
-
 /* Check if vector VEC consists of all the equal elements and
    that the number of elements corresponds to the type of VEC.
    The function returns first element of the vector
@@ -13702,8 +13382,8 @@ array_ref_up_bound (tree exp)
   return NULL_TREE;
 }
 
-/* Returns true if REF is an array reference or a component reference
-   to an array at the end of a structure.
+/* Returns true if REF is an array reference, component reference,
+   or memory reference to an array at the end of a structure.
    If this is the case, the array may be allocated larger
    than its upper bound implies.  */
 
@@ -13721,6 +13401,28 @@ array_at_struct_end_p (tree ref)
   else if (TREE_CODE (ref) == COMPONENT_REF
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE)
     atype = TREE_TYPE (TREE_OPERAND (ref, 1));
+  else if (TREE_CODE (ref) == MEM_REF)
+    {
+      tree arg = TREE_OPERAND (ref, 0);
+      if (TREE_CODE (arg) == ADDR_EXPR)
+	arg = TREE_OPERAND (arg, 0);
+      tree argtype = TREE_TYPE (arg);
+      if (TREE_CODE (argtype) == RECORD_TYPE)
+	{
+	  if (tree fld = last_field (argtype))
+	    {
+	      atype = TREE_TYPE (fld);
+	      if (TREE_CODE (atype) != ARRAY_TYPE)
+		return false;
+	      if (VAR_P (arg) && DECL_SIZE (fld))
+		return false;
+	    }
+	  else
+	    return false;
+	}
+      else
+	return false;
+    }
   else
     return false;
 
@@ -13837,33 +13539,72 @@ component_ref_field_offset (tree exp)
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (DECL_FIELD_OFFSET (field), exp);
 }
 
+/* Given the initializer INIT, return the initializer for the field
+   DECL if it exists, otherwise null.  Used to obtain the initializer
+   for a flexible array member and determine its size.  */
+
+static tree
+get_initializer_for (tree init, tree decl)
+{
+  STRIP_NOPS (init);
+
+  tree fld, fld_init;
+  unsigned HOST_WIDE_INT i;
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), i, fld, fld_init)
+    {
+      if (decl == fld)
+	return fld_init;
+
+      if (TREE_CODE (fld) == CONSTRUCTOR)
+	{
+	  fld_init = get_initializer_for (fld_init, decl);
+	  if (fld_init)
+	    return fld_init;
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Determines the size of the member referenced by the COMPONENT_REF
    REF, using its initializer expression if necessary in order to
    determine the size of an initialized flexible array member.
+   If non-null, *INTERIOR_ZERO_LENGTH is set when REF refers to
+   an interior zero-length array.
    Returns the size (which might be zero for an object with
    an uninitialized flexible array member) or null if the size
    cannot be determined.  */
 
 tree
-component_ref_size (tree ref)
+component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 {
   gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
 
+  bool int_0_len = false;
+  if (!interior_zero_length)
+    interior_zero_length = &int_0_len;
+
   tree member = TREE_OPERAND (ref, 1);
 
-  /* If the member is not an array, or is not last, or is an array with
-     more than one element, return its size.  Otherwise it's either
-     a bona fide flexible array member, or a zero-length array member,
-     or an array of length one treated as such.  */
-  tree size = DECL_SIZE_UNIT (member);
-  if (size)
+  tree memsize = DECL_SIZE_UNIT (member);
+  if (memsize)
     {
       tree memtype = TREE_TYPE (member);
-      if (TREE_CODE (memtype) != ARRAY_TYPE
-	  || !array_at_struct_end_p (ref))
-	return size;
+      if (TREE_CODE (memtype) != ARRAY_TYPE)
+	return memsize;
 
-      if (!integer_zerop (size))
+      bool trailing = array_at_struct_end_p (ref);
+      bool zero_length = integer_zerop (memsize);
+      if (!trailing && (!interior_zero_length || !zero_length))
+	/* MEMBER is either an interior array or is an array with
+	   more than one element.  */
+	return memsize;
+
+      *interior_zero_length = zero_length && !trailing;
+      if (*interior_zero_length)
+	memsize = NULL_TREE;
+
+      if (!zero_length)
 	if (tree dom = TYPE_DOMAIN (memtype))
 	  if (tree min = TYPE_MIN_VALUE (dom))
 	    if (tree max = TYPE_MAX_VALUE (dom))
@@ -13872,37 +13613,120 @@ component_ref_size (tree ref)
 		{
 		  offset_int minidx = wi::to_offset (min);
 		  offset_int maxidx = wi::to_offset (max);
-		  if (maxidx - minidx > 1)
-		    return size;
+		  if (maxidx - minidx > 0)
+		    /* MEMBER is an array with more than 1 element.  */
+		    return memsize;
 		}
     }
 
+  /* MEMBER is either a bona fide flexible array member, or a zero-length
+     array member, or an array of length one treated as such.  */
+
   /* If the reference is to a declared object and the member a true
      flexible array, try to determine its size from its initializer.  */
-  poly_int64 off = 0;
-  tree base = get_addr_base_and_unit_offset (ref, &off);
+  poly_int64 baseoff = 0;
+  tree base = get_addr_base_and_unit_offset (ref, &baseoff);
   if (!base || !VAR_P (base))
-    return NULL_TREE;
+    {
+      if (!*interior_zero_length)
+	return NULL_TREE;
 
-  /* The size of any member of a declared object other than a flexible
-     array member is that obtained above.  */
-  if (size)
-    return size;
+      if (TREE_CODE (TREE_OPERAND (ref, 0)) != COMPONENT_REF)
+	return NULL_TREE;
 
-  if (tree init = DECL_INITIAL (base))
-    if (TREE_CODE (init) == CONSTRUCTOR)
-      {
-	off <<= LOG2_BITS_PER_UNIT;
-	init = fold_ctor_reference (NULL_TREE, init, off, 0, base);
-	if (init)
-	  return TYPE_SIZE_UNIT (TREE_TYPE (init));
-      }
+      base = TREE_OPERAND (ref, 0);
+      baseoff = tree_to_poly_int64 (byte_position (TREE_OPERAND (ref, 1)));
+    }
+
+  /* BASE is the declared object of which MEMBER is either a member
+     or that is is cast to REFTYPE (e.g., a char buffer used to store
+     a REFTYPE object).  */
+  tree reftype = TREE_TYPE (TREE_OPERAND (ref, 0));
+  tree basetype = TREE_TYPE (base);
+
+  /* Determine the base type of the referenced object.  If it's
+     the same as REFTYPE and MEMBER has a known size, return it.  */
+  tree bt = basetype;
+  if (!*interior_zero_length)
+    while (TREE_CODE (bt) == ARRAY_TYPE)
+      bt = TREE_TYPE (bt);
+  bool typematch = useless_type_conversion_p (reftype, bt);
+  if (memsize && typematch)
+    return memsize;
+
+  memsize = NULL_TREE;
+
+  /* MEMBER is a true flexible array member.  Compute its size from
+     the initializer of the BASE object if it has one.  */
+  if (tree init = DECL_P (base) ? DECL_INITIAL (base) : NULL_TREE)
+    {
+      init = get_initializer_for (init, member);
+      if (init)
+	{
+	  memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
+	  if (tree refsize = TYPE_SIZE_UNIT (reftype))
+	    {
+	      /* Use the larger of the initializer size and the tail
+		 padding in the enclosing struct.  */
+	      poly_int64 rsz = tree_to_poly_int64 (refsize);
+	      rsz -= baseoff;
+	      if (known_lt (tree_to_poly_int64 (memsize), rsz))
+		memsize = wide_int_to_tree (TREE_TYPE (memsize), rsz);
+	    }
+
+	  baseoff = 0;
+	}
+    }
+
+  if (!memsize)
+    {
+      if (typematch)
+	{
+	  if (DECL_P (base)
+	      && DECL_EXTERNAL (base)
+	      && bt == basetype
+	      && !*interior_zero_length)
+	    /* The size of a flexible array member of an extern struct
+	       with no initializer cannot be determined (it's defined
+	       in another translation unit and can have an initializer
+	       witth an arbitrary number of elements).  */
+	    return NULL_TREE;
+
+	  /* Use the size of the base struct or, for interior zero-length
+	     arrays, the size of the enclosing type.  */
+	  memsize = TYPE_SIZE_UNIT (bt);
+	}
+      else
+	/* Use the size of the BASE object (possibly an array of some
+	   other type such as char used to store the struct).  */
+	memsize = DECL_SIZE_UNIT (base);
+    }
+
+  /* If the flexible array member has a known size use the greater
+     of it and the tail padding in the enclosing struct.
+     Otherwise, when the size of the flexible array member is unknown
+     and the referenced object is not a struct, use the size of its
+     type when known.  This detects sizes of array buffers when cast
+     to struct types with flexible array members.  */
+  if (memsize)
+    {
+      poly_int64 memsz64 = memsize ? tree_to_poly_int64 (memsize) : 0;
+      if (known_lt (baseoff, memsz64))
+	{
+	  memsz64 -= baseoff;
+	  return wide_int_to_tree (TREE_TYPE (memsize), memsz64);
+	}
+      return integer_zero_node;
+    }
 
   /* Return "don't know" for an external non-array object since its
      flexible array member can be initialized to have any number of
      elements.  Otherwise, return zero because the flexible array
      member has no elements.  */
-  return (DECL_EXTERNAL (base) && TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
+  return (DECL_P (base)
+	  && DECL_EXTERNAL (base)
+	  && (!typematch
+	      || TREE_CODE (basetype) != ARRAY_TYPE)
 	  ? NULL_TREE : integer_zero_node);
 }
 

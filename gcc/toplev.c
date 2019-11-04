@@ -1994,8 +1994,17 @@ target_reinit (void)
 }
 
 void
-dump_memory_report (bool final)
+dump_memory_report (const char *header)
 {
+  /* Print significant header.  */
+  fputc ('\n', stderr);
+  for (unsigned i = 0; i < 80; i++)
+    fputc ('#', stderr);
+  fprintf (stderr, "\n# %-77s#\n", header);
+  for (unsigned i = 0; i < 80; i++)
+    fputc ('#', stderr);
+  fputs ("\n\n", stderr);
+
   dump_line_table_statistics ();
   ggc_print_statistics ();
   stringpool_statistics ();
@@ -2006,7 +2015,7 @@ dump_memory_report (bool final)
   dump_bitmap_statistics ();
   dump_hash_table_loc_statistics ();
   dump_vec_loc_statistics ();
-  dump_ggc_loc_statistics (final);
+  dump_ggc_loc_statistics ();
   dump_alias_stats (stderr);
   dump_pta_stats (stderr);
 }
@@ -2058,7 +2067,7 @@ finalize (bool no_backend)
     }
 
   if (mem_report)
-    dump_memory_report (true);
+    dump_memory_report ("Final");
 
   if (profile_report)
     dump_profile_report ();

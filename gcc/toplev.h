@@ -66,7 +66,8 @@ extern bool wrapup_global_declarations (tree *, int);
 
 extern void global_decl_processing (void);
 
-extern void dump_memory_report (bool);
+extern void
+dump_memory_report (const char *);
 extern void dump_profile_report (void);
 
 extern void target_reinit (void);

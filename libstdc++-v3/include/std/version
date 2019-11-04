@@ -107,7 +107,7 @@
 # define __cpp_lib_has_unique_object_representations 201606
 #endif
 #define __cpp_lib_hypot 201603
-#define __cpp_lib_invoke 201411
+#define __cpp_lib_invoke 201411L
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 # define __cpp_lib_is_aggregate 201703
 #endif
@@ -152,12 +152,13 @@
 // c++2a
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_bind_front 201907L
+#define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
 #if __cpp_concepts
 # define __cpp_lib_concepts 201806L
 #endif
-#define __cpp_lib_constexpr 201711L
 #define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_dynamic_alloc 201907L
 #define __cpp_lib_constexpr_invoke 201907L
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L

@@ -187,6 +187,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       _GLIBCXX17_CONSTEXPR pointer
       operator->() const
+#if __cplusplus > 201703L && defined __cpp_concepts
+      requires is_pointer_v<_Iterator>
+	|| requires(const _Iterator __i) { __i.operator->(); }
+#endif
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 1052. operator-> should also support smart pointers
@@ -431,7 +435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_reverse_iterator(_Iterator __i)
     { return reverse_iterator<_Iterator>(__i); }
 
-# if __cplusplus > 201103L
+# if __cplusplus >= 201402L
 #  define __cpp_lib_make_reverse_iterator 201402
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -441,10 +445,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Iterator>
     make_reverse_iterator(_Iterator __i)
     { return reverse_iterator<_Iterator>(__i); }
-# endif
-#endif
 
-#if __cplusplus >= 201103L
+#  if __cplusplus > 201703L && defined __cpp_lib_concepts
+  template<typename _Iterator1, typename _Iterator2>
+    requires (!sized_sentinel_for<_Iterator1, _Iterator2>)
+    inline constexpr bool disable_sized_sentinel<reverse_iterator<_Iterator1>,
+						 reverse_iterator<_Iterator2>>
+						   = true;
+#  endif // C++20
+# endif // C++14
+
   template<typename _Iterator>
     _GLIBCXX20_CONSTEXPR
     auto
@@ -463,7 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __miter_base(reverse_iterator<_Iterator> __it)
     -> decltype(__make_reverse_iterator(__miter_base(__it.base())))
     { return __make_reverse_iterator(__miter_base(__it.base())); }
-#endif
+#endif // C++11
 
   // 24.4.2.2.1 back_insert_iterator
   /**
@@ -783,15 +793,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // The _Container parameter exists solely so that different containers
   // using this template can instantiate different types, even if the
   // _Iterator parameter is the same.
-  using std::iterator_traits;
-  using std::iterator;
   template<typename _Iterator, typename _Container>
     class __normal_iterator
     {
     protected:
       _Iterator _M_current;
 
-      typedef iterator_traits<_Iterator>		__traits_type;
+      typedef std::iterator_traits<_Iterator>		__traits_type;
 
     public:
       typedef _Iterator					iterator_type;
@@ -800,6 +808,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::difference_type 	difference_type;
       typedef typename __traits_type::reference 	reference;
       typedef typename __traits_type::pointer   	pointer;
+
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      using iterator_concept = std::__detail::__iter_concept<_Iterator>;
+#endif
 
       _GLIBCXX_CONSTEXPR __normal_iterator() _GLIBCXX_NOEXCEPT
       : _M_current(_Iterator()) { }

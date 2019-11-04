@@ -811,6 +811,8 @@ LN
 LN_S
 AWK
 SET_MAKE
+omp_device_property_deps
+omp_device_properties
 accel_dir_suffix
 real_target_noncanonical
 enable_as_accelerator
@@ -7887,6 +7889,18 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
     enable_hsa=1
   else
     enable_offloading=1
+    case "$tgt" in
+      *-intelmicemul-*)
+	omp_device_property=omp-device-properties-i386
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
+	;;
+      nvptx*-*)
+	omp_device_property=omp-device-properties-nvptx
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+	;;
+    esac
+    omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
+    omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
   fi
 
   if test x"$offload_targets" = x; then
@@ -7895,6 +7909,9 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
     offload_targets="$offload_targets,$tgt"
   fi
 done
+
+
+
 
 cat >>confdefs.h <<_ACEOF
 #define OFFLOAD_TARGETS "$offload_targets"
@@ -10036,7 +10053,7 @@ LIBS="$save_LIBS"
 for ac_func in times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap setlocale \
-	clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked madvise
+	clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked madvise mallinfo
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_cxx_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -11450,6 +11467,61 @@ fi
 done
 
 
+for ac_func in mallinfo
+do
+  ac_tr_decl=`$as_echo "HAVE_DECL_$ac_func" | $as_tr_cpp`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ac_func is declared" >&5
+$as_echo_n "checking whether $ac_func is declared... " >&6; }
+if eval \${gcc_cv_have_decl_$ac_func+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#undef $ac_tr_decl
+#define $ac_tr_decl 1
+
+#include "ansidecl.h"
+#include "system.h"
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+
+
+int
+main ()
+{
+#ifndef $ac_func
+char *(*pfn) = (char *(*)) $ac_func ;
+#endif
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  eval "gcc_cv_have_decl_$ac_func=yes"
+else
+  eval "gcc_cv_have_decl_$ac_func=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+if eval "test \"`echo '$gcc_cv_have_decl_'$ac_func`\" = yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; } ; cat >>confdefs.h <<_ACEOF
+#define $ac_tr_decl 1
+_ACEOF
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; } ; cat >>confdefs.h <<_ACEOF
+#define $ac_tr_decl 0
+_ACEOF
+
+fi
+
+done
+
+
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12525,7 +12597,7 @@ do
 		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
 	fi
 done
-tmake_file="${tmake_file_}"
+tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
 out_object_file=`basename $out_file .c`.o
 common_out_object_file=`basename $common_out_file .c`.o
@@ -18853,7 +18925,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18856 "configure"
+#line 18928 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18959,7 +19031,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18962 "configure"
+#line 19034 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

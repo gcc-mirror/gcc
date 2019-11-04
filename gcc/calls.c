@@ -911,7 +911,7 @@ pass_by_reference (CUMULATIVE_ARGS *ca, function_arg_info arg)
 	return true;
 
       /* GCC post 3.4 passes *all* variable sized types by reference.  */
-      if (!TYPE_SIZE (type) || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+      if (!TYPE_SIZE (type) || !poly_int_tree_p (TYPE_SIZE (type)))
 	return true;
 
       /* If a record type should be passed the same as its first (and only)
@@ -5878,7 +5878,7 @@ must_pass_in_stack_var_size (const function_arg_info &arg)
     return false;
 
   /* If the type has variable size...  */
-  if (TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST)
+  if (!poly_int_tree_p (TYPE_SIZE (arg.type)))
     return true;
 
   /* If the type is marked as addressable (it is required

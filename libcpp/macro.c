@@ -568,6 +568,10 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
     case BT_HAS_ATTRIBUTE:
       number = pfile->cb.has_attribute (pfile);
       break;
+
+    case BT_HAS_BUILTIN:
+      number = pfile->cb.has_builtin (pfile);
+      break;
     }
 
   if (result == NULL)

@@ -299,11 +299,12 @@ varpool_node::get_constructor (void)
 	 = lto_get_function_in_decl_state (file_data, decl);
 
   data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len, decl_state->compressed);
+			       name, order - file_data->order_base,
+			       &len, decl_state->compressed);
   if (!data)
-    fatal_error (input_location, "%s: section %s is missing",
+    fatal_error (input_location, "%s: section %s.%d is missing",
 		 file_data->file_name,
-		 name);
+		 name, order - file_data->order_base);
 
   if (!quiet_flag)
     fprintf (stderr, " in:%s", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));

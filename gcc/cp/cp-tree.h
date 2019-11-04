@@ -448,6 +448,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
       TINFO_VAR_DECLARED_CONSTINIT (in TEMPLATE_INFO)
+      CALL_FROM_NEW_OR_DELETE_P (in CALL_EXPR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -2696,9 +2697,10 @@ struct GTY(()) lang_decl_fn {
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
   unsigned has_dependent_explicit_spec_p : 1;
+  unsigned immediate_fn_p : 1;
   unsigned coroutine_p : 1;
 
-  unsigned spare : 11;
+  unsigned spare : 10;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3226,6 +3228,15 @@ struct GTY(()) lang_decl {
 /* True if DECL is declared 'constexpr'.  */
 #define DECL_DECLARED_CONSTEXPR_P(DECL) \
   DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (STRIP_TEMPLATE (DECL)))
+
+/* True if FNDECL is an immediate function.  */
+#define DECL_IMMEDIATE_FUNCTION_P(NODE) \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (STRIP_TEMPLATE (NODE)))	\
+   ? LANG_DECL_FN_CHECK (NODE)->immediate_fn_p				\
+   : false)
+#define SET_DECL_IMMEDIATE_FUNCTION_P(NODE) \
+  (retrofit_lang_decl (FUNCTION_DECL_CHECK (NODE)),			\
+   LANG_DECL_FN_CHECK (NODE)->immediate_fn_p = true)
 
 // True if NODE was declared as 'concept'.  The flag implies that the
 // declaration is constexpr, that the declaration cannot be specialized or
@@ -3807,6 +3818,11 @@ struct GTY(()) lang_decl {
 /* In a CALL_EXPR appearing in a template, true if Koenig lookup
    should be performed at instantiation time.  */
 #define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0 (CALL_EXPR_CHECK (NODE))
+
+/* In a CALL_EXPR, true for allocator calls from new or delete
+   expressions.  */
+#define CALL_FROM_NEW_OR_DELETE_P(NODE) \
+  TREE_LANG_FLAG_2 (CALL_EXPR_CHECK (NODE))
 
 /* True if the arguments to NODE should be evaluated in left-to-right
    order regardless of PUSH_ARGS_REVERSED.  */
@@ -5915,6 +5931,7 @@ enum cp_decl_spec {
   ds_constexpr,
   ds_complex,
   ds_constinit,
+  ds_consteval,
   ds_thread,
   ds_type_spec,
   ds_redefined_builtin_type_spec,
@@ -6477,6 +6494,7 @@ extern tree groktypename			(cp_decl_specifier_seq *, const cp_declarator *, bool
 extern tree start_decl				(const cp_declarator *, cp_decl_specifier_seq *, int, tree, tree, tree *);
 extern void start_decl_1			(tree, bool);
 extern bool check_array_initializer		(tree, tree, tree);
+extern void omp_declare_variant_finalize	(tree, tree);
 extern void cp_finish_decl			(tree, tree, bool, tree, int);
 extern tree lookup_decomp_type			(tree);
 extern void cp_maybe_mangle_decomp		(tree, tree, unsigned int);
@@ -6527,6 +6545,7 @@ extern tmpl_spec_kind current_tmpl_spec_kind	(int);
 extern tree cp_fname_init			(const char *, tree *);
 extern tree cxx_builtin_function		(tree decl);
 extern tree cxx_builtin_function_ext_scope	(tree decl);
+extern tree cxx_simulate_builtin_function_decl	(tree);
 extern tree check_elaborated_type_specifier	(enum tag_types, tree, bool);
 extern void warn_extern_redeclared_static	(tree, tree);
 extern tree cxx_comdat_group			(tree);
@@ -7334,6 +7353,7 @@ extern tree build_min_nt_call_vec (tree, vec<tree, va_gc> *);
 extern tree build_min_non_dep_call_vec		(tree, tree, vec<tree, va_gc> *);
 extern vec<tree, va_gc>* vec_copy_and_insert    (vec<tree, va_gc>*, tree, unsigned);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
+extern tree build_local_temp			(tree);
 extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);
@@ -7421,6 +7441,11 @@ extern tree cxx_copy_lang_qualifiers		(const_tree, const_tree);
 
 extern void cxx_print_statistics		(void);
 extern bool maybe_warn_zero_as_null_pointer_constant (tree, location_t);
+/* Analogous to initializer_zerop but also examines the type for
+   which the initializer is being used.  Unlike initializer_zerop,
+   considers empty strings to be zero initializers for arrays and
+   non-zero for pointers.  */
+extern bool type_initializer_zero_p		(tree, tree);
 
 /* in ptree.c */
 extern void cxx_print_xnode			(FILE *, tree, int);
@@ -7543,7 +7568,8 @@ extern tree build_ptrmemfunc1			(tree, tree, tree);
 extern void expand_ptrmemfunc_cst		(tree, tree *, tree *);
 extern tree type_after_usual_arithmetic_conversions (tree, tree);
 extern tree common_pointer_type                 (tree, tree);
-extern tree composite_pointer_type		(tree, tree, tree, tree,
+extern tree composite_pointer_type		(const op_location_t &,
+						 tree, tree, tree, tree,
 						 composite_pointer_operation,
 						 tsubst_flags_t);
 extern tree merge_types				(tree, tree);
@@ -7852,7 +7878,7 @@ extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
-						 bool = false);
+						 bool = false, tree = NULL_TREE);
 extern tree fold_non_dependent_init		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
 						 bool = false);

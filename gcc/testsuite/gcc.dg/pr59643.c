@@ -1,6 +1,9 @@
 /* PR tree-optimization/59643 */
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-pcom-details" } */
+/* { dg-additional-options "--param max-unrolled-insns=400" { target { powerpc*-*-* } } } */
+/* Implicit threashold of max-unrolled-insn on ppc at O3 is too small for the
+   loop of this case.  */
 
 void
 foo (double *a, double *b, double *c, double d, double e, int n)

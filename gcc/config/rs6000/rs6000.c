@@ -4540,6 +4540,26 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
+      /* unroll very small loops 2 time if no -funroll-loops.  */
+      if (!global_options_set.x_flag_unroll_loops
+	  && !global_options_set.x_flag_unroll_all_loops)
+	{
+	  maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 2,
+				 global_options.x_param_values,
+				 global_options_set.x_param_values);
+
+	  maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 20,
+				 global_options.x_param_values,
+				 global_options_set.x_param_values);
+
+	  /* If fweb or frename-registers are not specificed in command-line,
+	     do not turn them on implicitly.  */
+	  if (!global_options_set.x_flag_web)
+	    global_options.x_flag_web = 0;
+	  if (!global_options_set.x_flag_rename_registers)
+	    global_options.x_flag_rename_registers = 0;
+	}
+
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
 	 ap = __builtin_next_arg (0).  */
@@ -26059,8 +26079,8 @@ rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
   rtx_tmp2 = gen_reg_rtx (V4SFmode);
   rtx_tmp3 = gen_reg_rtx (V4SFmode);
 
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp2, rtx_tmp0));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp3, rtx_tmp1));
 
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));

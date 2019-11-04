@@ -65,7 +65,7 @@ lto_write_options (void)
   char *args;
   bool first_p = true;
 
-  section_name = lto_get_section_name (LTO_section_opts, NULL, NULL);
+  section_name = lto_get_section_name (LTO_section_opts, NULL, 0, NULL);
   lto_begin_section (section_name, false);
 
   obstack_init (&temporary_obstack);

@@ -79,7 +79,7 @@
       real*4 :: a(n), b(n)
 
       do i = 1, N
-         if (abs(a(i) - b(i)) > 0.0001) call abort
+         if (abs(a(i) - b(i)) > 0.0001) stop 1
       end do
       end subroutine validate_results
 

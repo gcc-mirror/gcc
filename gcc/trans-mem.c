@@ -2541,12 +2541,12 @@ expand_call_tm (struct tm_region *region,
 	  gimple_call_set_fndecl (stmt, repl);
 	  update_stmt (stmt);
 	  node = cgraph_node::create (repl);
-	  node->local.tm_may_enter_irr = false;
+	  node->tm_may_enter_irr = false;
 	  return expand_call_tm (region, gsi);
 	}
       gcc_unreachable ();
     }
-  if (node->local.tm_may_enter_irr)
+  if (node->tm_may_enter_irr)
     transaction_subcode_ior (region, GTMA_MAY_ENTER_IRREVOCABLE);
 
   if (is_tm_abort (fn_decl))
@@ -4722,7 +4722,7 @@ ipa_tm_mayenterirr_function (struct cgraph_node *node)
 
   /* We may have previously marked this function as tm_may_enter_irr;
      see pass_diagnose_tm_blocks.  */
-  if (node->local.tm_may_enter_irr)
+  if (node->tm_may_enter_irr)
     return true;
 
   /* Recurse on the main body for aliases.  In general, this will
@@ -4746,7 +4746,7 @@ ipa_tm_diagnose_tm_safe (struct cgraph_node *node)
 
   for (e = node->callees; e ; e = e->next_callee)
     if (!is_tm_callable (e->callee->decl)
-	&& e->callee->local.tm_may_enter_irr)
+	&& e->callee->tm_may_enter_irr)
       error_at (gimple_location (e->call_stmt),
 		"unsafe function call %qD within "
 		"%<transaction_safe%> function", e->callee->decl);
@@ -4814,7 +4814,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
 	      if (is_tm_callable (fndecl))
 		continue;
 
-	      if (cgraph_node::local_info (fndecl)->tm_may_enter_irr)
+	      if (cgraph_node::local_info_node (fndecl)->tm_may_enter_irr)
 		error_at (gimple_location (stmt),
 			  "unsafe function call %qD within "
 			  "atomic transaction", fndecl);
@@ -4989,7 +4989,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 
   gcc_assert (!old_node->ipa_transforms_to_apply.exists ());
   new_node = old_node->create_version_clone (new_decl, vNULL, NULL);
-  new_node->local.local = false;
+  new_node->local = false;
   new_node->externally_visible = old_node->externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
@@ -5209,7 +5209,7 @@ ipa_tm_transform_calls_redirect (struct cgraph_node *node,
 	 CALLER.  Also note that find_tm_replacement_function also
 	 contains mappings into the TM runtime, e.g. memcpy.  These
 	 we know won't go irrevocable.  */
-      new_node->local.tm_may_enter_irr = 1;
+      new_node->tm_may_enter_irr = 1;
     }
   else
     {
@@ -5417,7 +5417,7 @@ ipa_tm_execute (void)
 	   No need to do this if the function's address can't be taken.  */
 	if (is_tm_pure (node->decl))
 	  {
-	    if (!node->local.local)
+	    if (!node->local)
 	      record_tm_clone_pair (node->decl, node->decl);
 	    continue;
 	  }
@@ -5544,14 +5544,14 @@ ipa_tm_execute (void)
       node = irr_worklist[i];
       d = get_cg_data (&node, true);
       d->in_worklist = false;
-      node->local.tm_may_enter_irr = true;
+      node->tm_may_enter_irr = true;
 
       /* Propagate back to normal callers.  */
       for (e = node->callers; e ; e = e->next_caller)
 	{
 	  caller = e->caller;
 	  if (!is_tm_safe_or_pure (caller->decl)
-	      && !caller->local.tm_may_enter_irr)
+	      && !caller->tm_may_enter_irr)
 	    {
 	      d = get_cg_data (&caller, true);
 	      maybe_push_queue (caller, &irr_worklist, &d->in_worklist);
@@ -5562,7 +5562,7 @@ ipa_tm_execute (void)
       FOR_EACH_ALIAS (node, ref)
 	{
 	  caller = dyn_cast<cgraph_node *> (ref->referring);
-	  if (!caller->local.tm_may_enter_irr)
+	  if (!caller->tm_may_enter_irr)
 	    {
 	      /* ?? Do not traverse aliases here.  */
 	      d = get_cg_data (&caller, false);

@@ -127,6 +127,9 @@ struct GTY(()) ipa_agg_jf_item
 
   /* The known constant or type if this is a clobber.  */
   tree value;
+
+  /* Return true if OTHER describes same agg item.  */
+  bool equal_to (const ipa_agg_jf_item &other);
 };
 
 
@@ -139,6 +142,23 @@ struct GTY(()) ipa_agg_jump_function
   vec<ipa_agg_jf_item, va_gc> *items;
   /* True if the data was passed by reference (as opposed to by value). */
   bool by_ref;
+
+  /* Return true if OTHER describes same agg items.  */
+  bool equal_to (const ipa_agg_jump_function &other)
+  {
+    if (by_ref != other.by_ref)
+      return false;
+    if (items != NULL && other.items == NULL)
+      return false;
+    if (!items)
+      return other.items == NULL;
+    if (items->length () != other.items->length ())
+      return false;
+    for (unsigned int i = 0; i < items->length (); i++)
+      if (!(*items)[i].equal_to ((*other.items)[i]))
+	return false;
+    return true;
+  }
 };
 
 typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;
@@ -313,9 +333,12 @@ struct GTY(()) ipa_param_descriptor
      says how many there are.  If any use could not be described by means of
      ipa-prop structures, this is IPA_UNDESCRIBED_USE.  */
   int controlled_uses;
-  unsigned int move_cost : 31;
+  unsigned int move_cost : 28;
   /* The parameter is used.  */
   unsigned used : 1;
+  unsigned used_by_ipa_predicates : 1;
+  unsigned used_by_indirect_call : 1;
+  unsigned used_by_polymorphic_call : 1;
 };
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -499,6 +522,36 @@ ipa_set_param_used (class ipa_node_params *info, int i, bool val)
   (*info->descriptors)[i].used = val;
 }
 
+/* Set the used_by_ipa_predicates flag corresponding to the Ith formal
+   parameter of the function associated with INFO to VAL.  */
+
+static inline void
+ipa_set_param_used_by_ipa_predicates (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].used_by_ipa_predicates = val;
+}
+
+/* Set the used_by_indirect_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO to VAL.  */
+
+static inline void
+ipa_set_param_used_by_indirect_call (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].used_by_indirect_call = val;
+}
+
+/* Set the .used_by_polymorphic_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO to VAL.  */
+
+static inline void
+ipa_set_param_used_by_polymorphic_call (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].used_by_polymorphic_call = val;
+}
+
 /* Return how many uses described by ipa-prop a parameter has or
    IPA_UNDESCRIBED_USE if there is a use that is not described by these
    structures.  */
@@ -528,6 +581,36 @@ ipa_is_param_used (class ipa_node_params *info, int i)
 {
   gcc_checking_assert (info->descriptors);
   return (*info->descriptors)[i].used;
+}
+
+/* Return the used_by_ipa_predicates flag corresponding to the Ith formal
+   parameter of the function associated with INFO.  */
+
+static inline bool
+ipa_is_param_used_by_ipa_predicates (class ipa_node_params *info, int i)
+{
+  gcc_checking_assert (info->descriptors);
+  return (*info->descriptors)[i].used_by_ipa_predicates;
+}
+
+/* Return the used_by_indirect_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO.  */
+
+static inline bool
+ipa_is_param_used_by_indirect_call (class ipa_node_params *info, int i)
+{
+  gcc_checking_assert (info->descriptors);
+  return (*info->descriptors)[i].used_by_indirect_call;
+}
+
+/* Return the used_by_polymorphic_call flag corresponding to the Ith formal
+   parameter of the function associated with INFO.  */
+
+static inline bool
+ipa_is_param_used_by_polymorphic_call (class ipa_node_params *info, int i)
+{
+  gcc_checking_assert (info->descriptors);
+  return (*info->descriptors)[i].used_by_polymorphic_call;
 }
 
 /* Information about replacements done in aggregates for a given node (each
@@ -672,7 +755,7 @@ public:
   static ipcp_transformation_t *create_ggc (symbol_table *symtab)
   {
     ipcp_transformation_t *summary
-      = new (ggc_cleared_alloc <ipcp_transformation_t> ())
+      = new (ggc_alloc_no_dtor <ipcp_transformation_t> ())
       ipcp_transformation_t (symtab, true);
     return summary;
   }
@@ -710,7 +793,7 @@ ipa_check_create_node_params (void)
 {
   if (!ipa_node_params_sum)
     ipa_node_params_sum
-      = (new (ggc_cleared_alloc <ipa_node_params_t> ())
+      = (new (ggc_alloc_no_dtor <ipa_node_params_t> ())
 	 ipa_node_params_t (symtab, true));
 }
 

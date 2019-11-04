@@ -56,8 +56,11 @@ namespace __gnu_test
     {
       T* first;
       T* last;
+
       BoundsContainer(T* _first, T* _last) : first(_first), last(_last)
       { }
+
+      std::size_t size() const { return last - first; }
     };
 
   // Simple container for holding state of a set of output iterators.
@@ -66,13 +69,11 @@ namespace __gnu_test
     {
       T* incrementedto;
       bool* writtento;
+
       OutputContainer(T* _first, T* _last)
-      : BoundsContainer<T>(_first, _last), incrementedto(_first)
-      {
-	writtento = new bool[this->last - this->first];
-	for(int i = 0; i < this->last - this->first; i++)
-	  writtento[i] = false;
-      }
+      : BoundsContainer<T>(_first, _last), incrementedto(_first),
+	writtento(new bool[this->size()]())
+      { }
 
       ~OutputContainer()
       { delete[] writtento; }
@@ -86,14 +87,15 @@ namespace __gnu_test
 
     public:
       OutputContainer<T>* SharedInfo;
-      WritableObject(T* ptr_in,OutputContainer<T>* SharedInfo_in):
+
+      WritableObject(T* ptr_in, OutputContainer<T>* SharedInfo_in):
 	ptr(ptr_in), SharedInfo(SharedInfo_in)
       { }
 
 #if __cplusplus >= 201103L
       template<class U>
-      void
-      operator=(U&& new_val)
+      typename std::enable_if<std::is_assignable<T&, U>::value>::type
+      operator=(U&& new_val) const
       {
 	ITERATOR_VERIFY(SharedInfo->writtento[ptr - SharedInfo->first] == 0);
 	SharedInfo->writtento[ptr - SharedInfo->first] = 1;
@@ -182,10 +184,14 @@ namespace __gnu_test
     void operator,(const T&, const output_iterator_wrapper<U>&) = delete;
 #endif
 
+#if __cplusplus >= 201103L
+  using std::remove_cv;
+#else
   template<typename T> struct remove_cv { typedef T type; };
   template<typename T> struct remove_cv<const T> { typedef T type; };
   template<typename T> struct remove_cv<volatile T> { typedef T type; };
   template<typename T> struct remove_cv<const volatile T> { typedef T type; };
+#endif
 
   /**
    * @brief input_iterator wrapper for pointer
@@ -543,6 +549,7 @@ namespace __gnu_test
   struct test_container
   {
     typename ItType<T>::ContainerType bounds;
+
     test_container(T* _first, T* _last) : bounds(_first, _last)
     { }
 
@@ -556,7 +563,7 @@ namespace __gnu_test
     ItType<T>
     it(int pos)
     {
-      ITERATOR_VERIFY(pos >= 0 && pos <= (bounds.last - bounds.first));
+      ITERATOR_VERIFY(pos >= 0 && pos <= size());
       return ItType<T>(bounds.first + pos, &bounds);
     }
 
@@ -581,7 +588,185 @@ namespace __gnu_test
 
     std::size_t
     size() const
-    { return bounds.last - bounds.first; }
+    { return bounds.size(); }
   };
-}
-#endif
+
+#if __cplusplus > 201703L
+  template<typename T>
+    struct contiguous_iterator_wrapper
+    : random_access_iterator_wrapper<T>
+    {
+      using random_access_iterator_wrapper<T>::random_access_iterator_wrapper;
+
+      using iterator_concept = std::contiguous_iterator_tag;
+
+      contiguous_iterator_wrapper&
+      operator++()
+      {
+	random_access_iterator_wrapper<T>::operator++();
+	return *this;
+      }
+
+      contiguous_iterator_wrapper&
+      operator--()
+      {
+	random_access_iterator_wrapper<T>::operator--();
+	return *this;
+      }
+
+      contiguous_iterator_wrapper
+      operator++(int)
+      {
+	auto tmp = *this;
+	++*this;
+	return tmp;
+      }
+
+      contiguous_iterator_wrapper
+      operator--(int)
+      {
+	auto tmp = *this;
+	--*this;
+	return tmp;
+      }
+
+      contiguous_iterator_wrapper&
+      operator+=(std::ptrdiff_t n)
+      {
+	random_access_iterator_wrapper<T>::operator+=(n);
+	return *this;
+      }
+
+      friend contiguous_iterator_wrapper
+      operator+(contiguous_iterator_wrapper iter, std::ptrdiff_t n)
+      { return iter += n; }
+
+      friend contiguous_iterator_wrapper
+      operator+(std::ptrdiff_t n, contiguous_iterator_wrapper iter)
+      { return iter += n; }
+
+      contiguous_iterator_wrapper&
+      operator-=(std::ptrdiff_t n)
+      { return *this += -n; }
+
+      friend contiguous_iterator_wrapper
+      operator-(contiguous_iterator_wrapper iter, std::ptrdiff_t n)
+      { return iter -= n; }
+    };
+
+  // A type meeting the minimum std::range requirements
+  template<typename T, template<typename> class Iter>
+    class test_range
+    {
+      // Adds default constructor to Iter<T> if needed
+      struct iterator : Iter<T>
+      {
+	using Iter<T>::Iter;
+
+	iterator() : Iter<T>(nullptr, nullptr) { }
+
+	using Iter<T>::operator++;
+
+	iterator& operator++() { Iter<T>::operator++(); return *this; }
+      };
+
+      template<typename I>
+	struct sentinel
+	{
+	  T* end;
+
+	  friend bool operator==(const sentinel& s, const I& i)
+	  { return s.end == i.ptr; }
+
+	  friend bool operator!=(const sentinel& s, const I& i)
+	  { return !(s == i); }
+
+	  friend bool operator==(const I& i, const sentinel& s)
+	  { return s == i; }
+
+	  friend bool operator!=(const I& i, const sentinel& s)
+	  { return !(s == i); }
+	};
+
+      auto
+      get_iterator(T* p)
+      {
+	if constexpr (std::default_constructible<Iter<T>>)
+	  return Iter<T>(p, &bounds);
+	else
+	  return iterator(p, &bounds);
+      }
+
+    public:
+      test_range(T* first, T* last) : bounds(first, last)
+      { }
+
+      template<std::size_t N>
+	explicit
+	test_range(T (&arr)[N]) : test_range(arr, arr+N)
+	{ }
+
+      auto begin() & { return get_iterator(bounds.first); }
+
+      auto end() &
+      {
+	using I = decltype(get_iterator(bounds.last));
+	if constexpr (std::sentinel_for<I, I>)
+	  return get_iterator(bounds.last);
+	else
+	  return sentinel<I>{bounds.last};
+      }
+
+      typename Iter<T>::ContainerType bounds;
+    };
+
+  template<typename T>
+    using test_contiguous_range
+      = test_range<T, contiguous_iterator_wrapper>;
+  template<typename T>
+    using test_random_access_range
+      = test_range<T, random_access_iterator_wrapper>;
+  template<typename T>
+    using test_bidirectional_range
+      = test_range<T, bidirectional_iterator_wrapper>;
+  template<typename T>
+    using test_forward_range
+      = test_range<T, forward_iterator_wrapper>;
+  template<typename T>
+    using test_input_range
+      = test_range<T, input_iterator_wrapper>;
+  template<typename T>
+    using test_output_range
+      = test_range<T, output_iterator_wrapper>;
+
+  // A type meeting the minimum std::sized_range requirements
+  template<typename T, template<typename> class Iter>
+    struct test_sized_range : test_range<T, Iter>
+    {
+      using test_range<T, Iter>::test_range;
+
+      std::size_t size() const noexcept
+      { return this->bounds.size(); }
+    };
+
+  template<typename T>
+    using test_contiguous_sized_range
+      = test_sized_range<T, contiguous_iterator_wrapper>;
+  template<typename T>
+    using test_random_access_sized_range
+      = test_sized_range<T, random_access_iterator_wrapper>;
+  template<typename T>
+    using test_bidirectional_sized_range
+      = test_sized_range<T, bidirectional_iterator_wrapper>;
+  template<typename T>
+    using test_forward_sized_range
+      = test_sized_range<T, forward_iterator_wrapper>;
+  template<typename T>
+    using test_input_sized_range
+      = test_sized_range<T, input_iterator_wrapper>;
+  template<typename T>
+    using test_output_sized_range
+      = test_sized_range<T, output_iterator_wrapper>;
+#endif // C++20
+} // namespace __gnu_test
+#endif // _TESTSUITE_ITERATORS

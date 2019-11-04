@@ -8,12 +8,12 @@ concept bool SameAs = __is_same_as(T, U);
 template <class T>
 concept bool R1 = requires (T& t) { // { dg-message "in requirements" }
   { t.begin() } -> T;		// { dg-error "no match" }
-  { t.end() } -> SameAs<T*>;	// { dg-error "does not satisfy" }
+  { t.end() } -> SameAs<T*>;	// { dg-message "does not satisfy" }
 };
 
 template <class T>
 concept bool R2 = requires (T& t) { // { dg-message "in requirements" }
-  { t.end() } -> SameAs<T*>;	// { dg-error "does not satisfy" }
+  { t.end() } -> SameAs<T*>;	// { dg-message "does not satisfy" }
 };
 
 struct foo {

@@ -1,3 +1,30 @@
+2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (read_cgraph_and_symbols): Improve -Q reporting.
+	* lto.c (lto_wpa_write_files): Likewise.
+
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92231
+	* lto-lang.c (handle_const_attribute): Don't call fndecl_built_in_p
+	on *node that is not FUNCTION_DECL.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91393
+	PR lto/88220
+	* lto-common.c (lto_file_finalize): Use lto_get_summary_section_data.
+	(get_section_data): Add order argument.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Pass
+	title as dump_memory_report argument.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Remove argument.
+
 2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Update.

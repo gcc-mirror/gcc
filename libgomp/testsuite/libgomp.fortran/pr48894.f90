@@ -19,5 +19,5 @@
       endif
     !$omp end parallel
   !$omp end parallel
-  if (err .ne. 0) STOP 1
+  if (err .ne. 0) stop 1
 end

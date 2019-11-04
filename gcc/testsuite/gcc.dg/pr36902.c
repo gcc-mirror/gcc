@@ -44,7 +44,7 @@ foo2(unsigned char * to, const unsigned char * from, int n)
       *to = *from;
       break;
     case 5:
-      to[4] = from [4]; /* { dg-warning "array subscript is above array bounds" "" { xfail *-*-* } } */
+      to[4] = from [4]; /* { dg-warning "\\\[-Warray-bounds" } */
       break;
     }
   return to;

@@ -73,7 +73,7 @@ program main
 
   do i = 1, m
      do j = 1, n
-        if (d(i,j) /= e(i,j)) call abort
+        if (d(i,j) /= e(i,j)) stop 1
      end do
   end do
 end program main

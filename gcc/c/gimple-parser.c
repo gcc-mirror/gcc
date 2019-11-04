@@ -235,6 +235,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       /* We have at least cdil_gimple_cfg.  */
       gimple_register_cfg_hooks ();
       init_empty_tree_cfg ();
+      parser.current_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
       /* Initialize the bare loop structure - we are going to only
          mark headers and leave the rest to fixup.  */
       set_loops_for_fn (cfun, ggc_cleared_alloc<struct loops> ());
@@ -594,7 +595,7 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 	      if (last_basic_block_for_fn (cfun) <= index)
 		last_basic_block_for_fn (cfun) = index + 1;
 	      n_basic_blocks_for_fn (cfun)++;
-	      if (!parser.current_bb)
+	      if (parser.current_bb->index == ENTRY_BLOCK)
 		parser.push_edge (ENTRY_BLOCK, bb->index, EDGE_FALLTHRU,
 				  profile_probability::always ());
 

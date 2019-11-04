@@ -5110,6 +5110,9 @@ vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
     for (gimple_stmt_iterator si = gsi_start (def_seq);
 	 !gsi_end_p (si); gsi_next (&si))
       {
+	if (dump_enabled_p ())
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "extra pattern stmt: %G", gsi_stmt (si));
 	stmt_vec_info pattern_stmt_info
 	  = vect_init_pattern_stmt (gsi_stmt (si),
 				    orig_stmt_info, pattern_vectype);
@@ -5169,10 +5172,13 @@ vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
 		found = true;
 		break;
 	      }
-	  if (found && s == pattern_stmt)
-	    break;
 	  if (s == pattern_stmt)
-	    gcc_unreachable ();
+	    {
+	      if (!found && dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "failed to update reduction index.\n");
+	      break;
+	    }
 	  if (gsi_end_p (si))
 	    s = pattern_stmt;
 	  else

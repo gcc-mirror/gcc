@@ -1036,14 +1036,14 @@ expand_interrupt_handler_epilogue (rtx spreg, e_funkind fkind, bool all)
 static rtx
 bfin_load_pic_reg (rtx dest)
 {
-  struct cgraph_local_info *i = NULL;
   rtx addr;
- 
-  i = cgraph_node::local_info (current_function_decl);
- 
+
+  cgraph_node *local_info_node
+    = cgraph_node::local_info_node (current_function_decl);
+
   /* Functions local to the translation unit don't need to reload the
      pic reg, since the caller always passes a usable one.  */
-  if (i && i->local)
+  if (local_info_node && local_info_node->local)
     return pic_offset_table_rtx;
       
   if (global_options_set.x_bfin_library_id)
@@ -1806,7 +1806,7 @@ static bool
 bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 			      tree exp ATTRIBUTE_UNUSED)
 {
-  struct cgraph_local_info *this_func, *called_func;
+  cgraph_node *this_func, *called_func;
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
   if (fkind != SUBROUTINE)
     return false;
@@ -1821,9 +1821,9 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   if (!decl)
     /* Not enough information.  */
     return false;
- 
-  this_func = cgraph_node::local_info (current_function_decl);
-  called_func = cgraph_node::local_info (decl);
+
+  this_func = cgraph_node::local_info_node (current_function_decl);
+  called_func = cgraph_node::local_info_node (decl);
   if (!called_func)
     return false;
   return !called_func->local || this_func->local;

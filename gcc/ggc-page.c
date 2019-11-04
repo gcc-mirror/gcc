@@ -2267,7 +2267,7 @@ ggc_grow (void)
   else
     ggc_collect ();
   if (!quiet_flag)
-    fprintf (stderr, " {GC start %luk} ", (unsigned long) G.allocated / 1024);
+    fprintf (stderr, " {GC %luk} ", (unsigned long) G.allocated / 1024);
 }
 
 void

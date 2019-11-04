@@ -2158,7 +2158,7 @@ specifying paths @var{path1}, @dots{}, @var{pathN}.
 
 @smallexample
 % @var{srcdir}/configure \
-    --enable-offload-target=i686-unknown-linux-gnu=/path/to/i686/compiler,x86_64-pc-linux-gnu
+    --enable-offload-targets=x86_64-intelmicemul-linux-gnu=/path/to/x86_64/compiler,nvptx-none,hsa
 @end smallexample
 
 If @samp{hsa} is specified as one of the targets, the compiler will be

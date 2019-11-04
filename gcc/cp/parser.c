@@ -52,11 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 /* The cp_lexer_* routines mediate between the lexer proper (in libcpp
    and c-lex.c) and the C++ parser.  */
 
-static cp_token eof_token =
-{
-  CPP_EOF, RID_MAX, 0, false, false, false, 0, { NULL }
-};
-
 /* The various kinds of non integral constant we encounter. */
 enum non_integral_constant {
   NIC_NONE,
@@ -662,12 +657,10 @@ cp_lexer_new_main (void)
       vec_safe_push (lexer->buffer, token);
     }
 
-  lexer->last_token = lexer->buffer->address ()
+  lexer->next_token = lexer->buffer->address ();
+  lexer->last_token = lexer->next_token
                       + lexer->buffer->length ()
 		      - 1;
-  lexer->next_token = lexer->buffer->length ()
-		      ? lexer->buffer->address ()
-		      : &eof_token;
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -689,7 +682,14 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 
   /* We do not own the buffer.  */
   lexer->buffer = NULL;
-  lexer->next_token = first == last ? &eof_token : first;
+
+  /* Insert an EOF token.  */
+  lexer->saved_type = last->type;
+  lexer->saved_keyword = last->keyword;
+  last->type = CPP_EOF;
+  last->keyword = RID_MAX;
+
+  lexer->next_token = first;
   lexer->last_token = last;
 
   lexer->saved_tokens.create (CP_SAVED_TOKEN_STACK);
@@ -706,7 +706,14 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 static void
 cp_lexer_destroy (cp_lexer *lexer)
 {
-  vec_free (lexer->buffer);
+  if (lexer->buffer)
+    vec_free (lexer->buffer);
+  else
+    {
+      /* Restore the token we overwrite with EOF.  */
+      lexer->last_token->type = lexer->saved_type;
+      lexer->last_token->keyword = lexer->saved_keyword;
+    }
   lexer->saved_tokens.release ();
   ggc_free (lexer);
 }
@@ -733,8 +740,6 @@ cp_lexer_debugging_p (cp_lexer *lexer)
 static inline cp_token_position
 cp_lexer_token_position (cp_lexer *lexer, bool previous_p)
 {
-  gcc_assert (!previous_p || lexer->next_token != &eof_token);
-
   return lexer->next_token - previous_p;
 }
 
@@ -753,10 +758,7 @@ cp_lexer_set_token_position (cp_lexer *lexer, cp_token_position pos)
 static inline cp_token_position
 cp_lexer_previous_token_position (cp_lexer *lexer)
 {
-  if (lexer->next_token == &eof_token)
-    return lexer->last_token - 1;
-  else
-    return cp_lexer_token_position (lexer, true);
+  return cp_lexer_token_position (lexer, true);
 }
 
 static inline cp_token *
@@ -809,6 +811,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
   token->keyword = RID_MAX;
   token->purged_p = false;
   token->error_reported = false;
+  token->tree_check_p = false;
 
   /* On some systems, some header files are surrounded by an
      implicit extern "C" block.  Set a flag in the token if it
@@ -997,11 +1000,13 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
       /* GNU extensions.  */
     case RID_ATTRIBUTE:
     case RID_TYPEOF:
-      /* C++0x extensions.  */
+      /* C++11 extensions.  */
     case RID_DECLTYPE:
     case RID_UNDERLYING_TYPE:
     case RID_CONSTEXPR:
+      /* C++20 extensions.  */
     case RID_CONSTINIT:
+    case RID_CONSTEVAL:
       return true;
 
     default:
@@ -1084,16 +1089,9 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
 
   --n;
   token = lexer->next_token;
-  gcc_assert (!n || token != &eof_token);
-  while (n != 0)
+  while (n && token->type != CPP_EOF)
     {
       ++token;
-      if (token == lexer->last_token)
-	{
-	  token = &eof_token;
-	  break;
-	}
-
       if (!token->purged_p)
 	--n;
     }
@@ -1115,18 +1113,12 @@ cp_lexer_consume_token (cp_lexer* lexer)
 {
   cp_token *token = lexer->next_token;
 
-  gcc_assert (token != &eof_token);
   gcc_assert (!lexer->in_pragma || token->type != CPP_PRAGMA_EOL);
 
   do
     {
+      gcc_assert (token->type != CPP_EOF);
       lexer->next_token++;
-      if (lexer->next_token == lexer->last_token)
-	{
-	  lexer->next_token = &eof_token;
-	  break;
-	}
-
     }
   while (lexer->next_token->purged_p);
 
@@ -1152,21 +1144,14 @@ cp_lexer_purge_token (cp_lexer *lexer)
 {
   cp_token *tok = lexer->next_token;
 
-  gcc_assert (tok != &eof_token);
+  gcc_assert (tok->type != CPP_EOF);
   tok->purged_p = true;
   tok->location = UNKNOWN_LOCATION;
   tok->u.value = NULL_TREE;
   tok->keyword = RID_MAX;
 
   do
-    {
-      tok++;
-      if (tok == lexer->last_token)
-	{
-	  tok = &eof_token;
-	  break;
-	}
-    }
+    tok++;
   while (tok->purged_p);
   lexer->next_token = tok;
 }
@@ -1180,12 +1165,9 @@ cp_lexer_purge_tokens_after (cp_lexer *lexer, cp_token *tok)
 {
   cp_token *peek = lexer->next_token;
 
-  if (peek == &eof_token)
-    peek = lexer->last_token;
-
   gcc_assert (tok < peek);
 
-  for ( tok += 1; tok != peek; tok += 1)
+  for (tok++; tok != peek; tok++)
     {
       tok->purged_p = true;
       tok->location = UNKNOWN_LOCATION;
@@ -1829,12 +1811,15 @@ enum
   /* When parsing a decl-specifier-seq, only allow type-specifier or
      constexpr.  */
   CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR = 0x8,
-  /* When parsing a decl-specifier-seq, only allow mutable or constexpr.  */
+  /* When parsing a decl-specifier-seq, only allow mutable, constexpr or
+     for C++2A consteval.  */
   CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR = 0x10,
   /* When parsing a decl-specifier-seq, allow missing typename.  */
   CP_PARSER_FLAGS_TYPENAME_OPTIONAL = 0x20,
   /* When parsing of the noexcept-specifier should be delayed.  */
-  CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40
+  CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40,
+  /* When parsing a consteval declarator.  */
+  CP_PARSER_FLAGS_CONSTEVAL = 0x80
 };
 
 /* This type is used for parameters and variables which hold
@@ -2699,6 +2684,7 @@ static bool cp_parser_init_statement_p
   (cp_parser *);
 static bool cp_parser_skip_to_closing_square_bracket
   (cp_parser *);
+static size_t cp_parser_skip_balanced_tokens (cp_parser *, size_t);
 
 // -------------------------------------------------------------------------- //
 // Unevaluated Operand Guard
@@ -6624,6 +6610,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
       token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
+      token->tree_check_p = true;
       token->u.tree_check_value->value = parser->scope;
       token->u.tree_check_value->checks = get_deferred_access_checks ();
       token->u.tree_check_value->qualifying_scope =
@@ -10884,11 +10871,13 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
    lambda-declarator:
      < template-parameter-list [opt] >
+       requires-clause [opt]
      ( parameter-declaration-clause [opt] )
        attribute-specifier [opt]
        decl-specifier-seq [opt]
        exception-specification [opt]
        lambda-return-type-clause [opt]
+       requires-clause [opt]
 
    LAMBDA_EXPR is the current representation of the lambda expression.  */
 
@@ -10907,6 +10896,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree template_param_list = NULL_TREE;
   tree tx_qual = NULL_TREE;
   tree return_type = NULL_TREE;
+  tree trailing_requires_clause = NULL_TREE;
   cp_decl_specifier_seq lambda_specs;
   clear_decl_specs (&lambda_specs);
 
@@ -10926,8 +10916,19 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       cp_lexer_consume_token (parser->lexer);
 
       template_param_list = cp_parser_template_parameter_list (parser);
-
       cp_parser_skip_to_end_of_template_parameter_list (parser);
+
+      /* We may have a constrained generic lambda; parse the requires-clause
+	 immediately after the template-parameter-list and combine with any
+	 shorthand constraints present.  */
+      tree dreqs = cp_parser_requires_clause_opt (parser);
+      if (flag_concepts)
+	{
+	  tree reqs = get_shorthand_constraints (current_template_parms);
+	  if (dreqs)
+	    reqs = combine_constraint_expressions (reqs, dreqs);
+	  TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
+	}
 
       /* We just processed one more parameter list.  */
       ++parser->num_template_parameter_lists;
@@ -10938,10 +10939,30 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      opening parenthesis if present.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
+      bool is_consteval = false;
+      /* For C++20, before parsing the parameter list check if there is
+	 a consteval specifier in the corresponding decl-specifier-seq.  */
+      if (cxx_dialect >= cxx2a)
+	{
+	  for (size_t n = cp_parser_skip_balanced_tokens (parser, 1);
+	       cp_lexer_nth_token_is (parser->lexer, n, CPP_KEYWORD); n++)
+	    {
+	      if (cp_lexer_peek_nth_token (parser->lexer, n)->keyword
+		  == RID_CONSTEVAL)
+		{
+		  is_consteval = true;
+		  break;
+		}
+	    }
+	}
+
       matching_parens parens;
       parens.consume_open (parser);
 
       begin_scope (sk_function_parms, /*entity=*/NULL_TREE);
+
+      if (is_consteval)
+	current_binding_level->immediate_fn_ctx_p = true;
 
       /* Parse parameters.  */
       param_list
@@ -10992,6 +11013,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (cp_next_tokens_can_be_gnu_attribute_p (parser))
 	gnu_attrs = cp_parser_gnu_attributes_opt (parser);
 
+      /* Parse optional trailing requires clause.  */
+      trailing_requires_clause = cp_parser_requires_clause_opt (parser);
+
       /* The function parameters must be in scope all the way until after the
          trailing-return-type in case of decltype.  */
       pop_bindings_and_leave_scope ();
@@ -11024,6 +11048,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 		    "lambda only available with %<-std=c++17%> or "
 		    "%<-std=gnu++17%>");
       }
+    if (lambda_specs.locations[ds_consteval])
+      return_type_specs.locations[ds_consteval]
+	= lambda_specs.locations[ds_consteval];
 
     p = obstack_alloc (&declarator_obstack, 0);
 
@@ -11038,7 +11065,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       tx_qual,
 				       exception_spec,
                                        return_type,
-                                       /*requires_clause*/NULL_TREE);
+				       trailing_requires_clause);
     declarator->std_attributes = std_attrs;
 
     fco = grokmethod (&return_type_specs,
@@ -14002,7 +14029,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (!start_token)
 	start_token = token;
       /* Handle attributes.  */
-      if (cp_next_tokens_can_be_attribute_p (parser))
+      if ((flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR) == 0
+	  && cp_next_tokens_can_be_attribute_p (parser))
 	{
 	  /* Parse the attributes.  */
 	  tree attrs = cp_parser_attributes_opt (parser);
@@ -14086,6 +14114,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 
 	case RID_CONSTINIT:
 	  ds = ds_constinit;
+	  cp_lexer_consume_token (parser->lexer);
+	  break;
+
+	case RID_CONSTEVAL:
+	  ds = ds_consteval;
 	  cp_lexer_consume_token (parser->lexer);
 	  break;
 
@@ -14206,7 +14239,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (found_decl_spec
 	  && (flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR)
 	  && token->keyword != RID_MUTABLE
-	  && token->keyword != RID_CONSTEXPR)
+	  && token->keyword != RID_CONSTEXPR
+	  && token->keyword != RID_CONSTEVAL)
 	error_at (token->location, "%qD invalid in lambda",
 		  ridpointers[token->keyword]);
 
@@ -14836,6 +14870,7 @@ cp_parser_decltype (cp_parser *parser)
      it again.  */
   start_token->type = CPP_DECLTYPE;
   start_token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
+  start_token->tree_check_p = true;
   start_token->u.tree_check_value->value = expr;
   start_token->u.tree_check_value->checks = get_deferred_access_checks ();
   start_token->keyword = RID_MAX;
@@ -16626,6 +16661,7 @@ cp_parser_template_id (cp_parser *parser,
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
       token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
+      token->tree_check_p = true;
       token->u.tree_check_value->value = template_id;
       token->u.tree_check_value->checks = get_deferred_access_checks ();
       token->keyword = RID_MAX;
@@ -17348,6 +17384,10 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 	    permerror (decl_specifiers.locations[ds_constexpr],
 		       "explicit instantiation shall not use"
 		       " %<constexpr%> specifier");
+	  if (decl_spec_seq_has_spec_p (&decl_specifiers, ds_consteval))
+	    permerror (decl_specifiers.locations[ds_consteval],
+		       "explicit instantiation shall not use"
+		       " %<consteval%> specifier");
 
 	  decl = grokdeclarator (declarator, &decl_specifiers,
 				 NORMAL, 0, &decl_specifiers.attributes);
@@ -20333,6 +20373,9 @@ cp_parser_init_declarator (cp_parser* parser,
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
   location_t tmp_init_loc = UNKNOWN_LOCATION;
 
+  if (decl_spec_seq_has_spec_p (decl_specifiers, ds_consteval))
+    flags |= CP_PARSER_FLAGS_CONSTEVAL;
+
   /* Gather the attributes that were provided with the
      decl-specifiers.  */
   prefix_attributes = decl_specifiers->attributes;
@@ -20976,6 +21019,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 		}
 
 	      begin_scope (sk_function_parms, NULL_TREE);
+
+	      /* Signal we are in the immediate function context.  */
+	      if (flags & CP_PARSER_FLAGS_CONSTEVAL)
+		current_binding_level->immediate_fn_ctx_p = true;
 
 	      /* Parse the parameter-declaration-clause.  */
 	      params
@@ -30033,9 +30080,10 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    "friend",
 	    "typedef",
 	    "using",
-            "constexpr",
+	    "constexpr",
 	    "__complex",
-	    "constinit"
+	    "constinit",
+	    "consteval"
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();
@@ -40759,25 +40807,53 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
       return attrs;
     }
 
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-  tree variant;
-  tree name = cp_parser_id_expression (parser, /*template_p=*/false,
-				       /*check_dependency_p=*/true,
-				       /*template_p=*/NULL,
-				       /*declarator_p=*/false,
-				       /*optional_p=*/false);
-  if (identifier_p (name))
-    variant = cp_parser_lookup_name_simple (parser, name, token->location);
-  else
-    variant = name;
-  if (variant == error_mark_node)
-    {
-      cp_parser_name_lookup_error (parser, name, variant, NLE_NULL,
-				   token->location);
-      variant = error_mark_node;
-    }
-
+  bool template_p;
+  cp_id_kind idk = CP_ID_KIND_NONE;
+  cp_token *varid_token = cp_lexer_peek_token (parser->lexer);
+  cp_expr varid
+    = cp_parser_id_expression (parser, /*template_keyword_p=*/false,
+			       /*check_dependency_p=*/true,
+			       /*template_p=*/&template_p,
+			       /*declarator_p=*/false,
+			       /*optional_p=*/false);
   parens.require_close (parser);
+
+  tree variant;
+  if (TREE_CODE (varid) == TEMPLATE_ID_EXPR
+      || TREE_CODE (varid) == TYPE_DECL
+      || varid == error_mark_node)
+    variant = varid;
+  else if (varid_token->type == CPP_NAME && varid_token->error_reported)
+    variant = NULL_TREE;
+  else
+    {
+      tree ambiguous_decls;
+      variant = cp_parser_lookup_name (parser, varid, none_type,
+				       template_p, /*is_namespace=*/false,
+				       /*check_dependency=*/true,
+				       &ambiguous_decls,
+				       varid.get_location ());
+      if (ambiguous_decls)
+	variant = NULL_TREE;
+    }
+  if (variant == NULL_TREE)
+    variant = error_mark_node;
+  else if (TREE_CODE (variant) != SCOPE_REF)
+    {
+      const char *error_msg;
+      variant
+	= finish_id_expression (varid, variant, parser->scope,
+				&idk, false, true,
+				&parser->non_integral_constant_expression_p,
+				template_p, true, false, false, &error_msg,
+				varid.get_location ());
+      if (error_msg)
+	cp_parser_error (parser, error_msg);
+    }
+  location_t caret_loc = get_pure_location (varid.get_location ());
+  location_t start_loc = get_start (varid_token->location);
+  location_t finish_loc = get_finish (varid.get_location ());
+  location_t varid_loc = make_location (caret_loc, start_loc, finish_loc);
 
   const char *clause = "";
   location_t match_loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -40800,8 +40876,14 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
   ctx = c_omp_check_context_selector (match_loc, ctx);
   if (ctx != error_mark_node && variant != error_mark_node)
     {
+      tree match_loc_node = maybe_wrap_with_location (integer_zero_node,
+						      match_loc);
+      tree loc_node = maybe_wrap_with_location (integer_zero_node, varid_loc);
+      loc_node = tree_cons (match_loc_node,
+			    build_int_cst (integer_type_node, idk),
+			    build_tree_list (loc_node, integer_zero_node));
       attrs = tree_cons (get_identifier ("omp declare variant base"),
-			 build_tree_list (variant, ctx), attrs);
+			 tree_cons (variant, ctx, loc_node), attrs);
       if (processing_template_decl)
 	ATTR_IS_DEPENDENT (attrs) = 1;
     }

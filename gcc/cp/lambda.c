@@ -1046,6 +1046,12 @@ maybe_add_lambda_conv_op (tree type)
       return;
     }
 
+  /* Non-generic non-capturing lambdas only have a conversion function to
+     pointer to function when the trailing requires-clause's constraints are
+     satisfied.  */
+  if (!generic_lambda_p && !constraints_satisfied_p (callop))
+    return;
+
   /* Non-template conversion operators are defined directly with build_call_a
      and using DIRECT_ARGVEC for arguments (including 'this').  Templates are
      deferred and the CALL is built in-place.  In the case of a deduced return
@@ -1188,6 +1194,9 @@ maybe_add_lambda_conv_op (tree type)
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
+  DECL_DECLARED_CONSTEXPR_P (fn) = DECL_DECLARED_CONSTEXPR_P (callop);
+  if (DECL_IMMEDIATE_FUNCTION_P (callop))
+    SET_DECL_IMMEDIATE_FUNCTION_P (fn);
   DECL_ARGUMENTS (fn) = build_this_parm (fn, fntype, TYPE_QUAL_CONST);
 
   if (nested_def)
@@ -1220,6 +1229,9 @@ maybe_add_lambda_conv_op (tree type)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_STATIC_FUNCTION_P (fn) = 1;
+  DECL_DECLARED_CONSTEXPR_P (fn) = DECL_DECLARED_CONSTEXPR_P (callop);
+  if (DECL_IMMEDIATE_FUNCTION_P (callop))
+    SET_DECL_IMMEDIATE_FUNCTION_P (fn);
   DECL_ARGUMENTS (fn) = fn_args;
   for (tree arg = fn_args; arg; arg = DECL_CHAIN (arg))
     {

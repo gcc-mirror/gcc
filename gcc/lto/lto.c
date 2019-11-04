@@ -312,6 +312,8 @@ lto_wpa_write_files (void)
       lto_prepare_function_for_streaming (node);
 
   ggc_trim ();
+  report_heap_memory_use ();
+
   /* Generate a prefix for the LTRANS unit files.  */
   blen = strlen (ltrans_output_list);
   temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));
@@ -455,10 +457,7 @@ do_whole_program_analysis (void)
   timevar_push (TV_WHOPR_WPA);
 
   if (pre_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption before IPA");
 
   symtab->function_flags_ready = true;
 
@@ -537,16 +536,13 @@ do_whole_program_analysis (void)
   timevar_stop (TV_PHASE_STREAM_OUT);
 
   if (post_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption after IPA");
 
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
     print_lto_report_1 ();
   if (mem_report_wpa)
-    dump_memory_report (true);
+    dump_memory_report ("Final");
 }
 
 /* Create artificial pointers for "omp declare target link" vars.  */

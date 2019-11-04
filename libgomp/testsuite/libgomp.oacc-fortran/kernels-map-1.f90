@@ -37,7 +37,7 @@ program map
   !$acc end kernels
 
   do i = 1, n
-     if (a(i) .ne. b(i)) call abort
+     if (a(i) .ne. b(i)) stop 1
   end do
   call check (a, b, n)
 
@@ -111,6 +111,6 @@ subroutine check (a, b, n)
   integer :: i
 
   do i = 1, n
-     if (a(i) .ne. b(i)) call abort
+     if (a(i) .ne. b(i)) stop 2
   end do
 end subroutine check

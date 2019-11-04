@@ -1,3 +1,34 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_finish_omp_declare_variant): Use
+	omp_get_context_selector instead of c_omp_get_context_selector.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_enum_decl): Declare.
+	* c-decl.c (c_simulate_enum_decl): New function.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_ENUM_DECL): Define to the above.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_builtin_function_decl): Declare.
+	* c-decl.c (c_simulate_builtin_function_decl): New function.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL): Define
+	to the above.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66970
+	* c-decl.c (names_builtin_p): Define a new function.
+
+2019-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR c/92249
+	* gimple-parser.c (c_parser_parse_gimple_body): Make
+	current_bb the entry block initially to easier recover
+	from errors.
+	(c_parser_gimple_compound_statement): Adjust.
+
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_finish_omp_declare_variant): Use

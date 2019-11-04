@@ -17,14 +17,14 @@
       if (i.gt.1) then
         !$omp atomic read
         l = a(i - 1)
-        if (l.lt.2) STOP 1
+        if (l.lt.2) stop 1
       end if
       !$omp atomic write
       a(i) = 2
       if (i.lt.N) then
         !$omp atomic read
         l = a(i + 1)
-        if (l.eq.3) STOP 2
+        if (l.eq.3) stop 2
       end if
       !$omp ordered depend(source)
       !$omp atomic write
@@ -43,19 +43,19 @@
           if (j.gt.2.and.k.gt.2) then
             !$omp atomic read
             l = b(i,j-2,k-1)
-            if (l.lt.2) STOP 3
+            if (l.lt.2) stop 3
           end if
           !$omp atomic write
           b(i,j,k) = 2
           if (i.gt.4.and.j.gt.2.and.k.lt.4) then
             !$omp atomic read
             l = b(i-2,j-2, k+1)
-            if (l.lt.2) STOP 4
+            if (l.lt.2) stop 4
           end if
           if (i.gt.5.and.j.le.N/16-3.and.k.eq.4) then
             !$omp atomic read
             l = b( i - 3, j+2, k-2)
-            if (l.lt.2) STOP 5
+            if (l.lt.2) stop 5
           end if
           !$omp ordered depend(source)
           !$omp atomic write
@@ -94,19 +94,19 @@
             if (k.le.5) then
               !$omp atomic read
               l = c(i, j, k + 2)
-              if (l.lt.2) STOP 6
+              if (l.lt.2) stop 6
             end if
             !$omp atomic write
             c(i, j, k) = 2
             if (i.ge.3.and.j.lt.8.and.k.ge.5) then
               !$omp atomic read
               l = c(i - 2, j + 1, k - 4)
-              if (l.lt.2) STOP 7
+              if (l.lt.2) stop 7
             end if
             if (i.ge.2.and.j.ge.5.and.k.ge.3) then
               !$omp atomic read
               l = c(i - 1, j - 2, k - 2)
-              if (l.lt.2) STOP 8
+              if (l.lt.2) stop 8
             end if
             !$omp ordered depend ( source )
             !$omp atomic write
@@ -137,13 +137,13 @@
           do l = 0, d + 1
             !$omp ordered depend(source)
             !$omp ordered depend(sink: i-2,j+2,k-2,l)
-            if (e.eq.0) STOP 9
+            if (e.eq.0) stop 9
           end do
         end do
       end do
     end do
     !$omp single
-    if (i.ne.1.or.j.ne.-1.or.k.ne.0) STOP 10
+    if (i.ne.1.or.j.ne.-1.or.k.ne.0) stop 10
     i = 8; j = 9; k = 10
     !$omp end single
     !$omp do ordered(4) collapse(2) lastprivate (i, j, k, m)
@@ -153,13 +153,13 @@
           do m = 0, d-1
             !$omp ordered depend(source)
             !$omp ordered depend(sink: i - 2, j + 2, k - 2, m)
-            STOP 11
+            stop 11
           end do
         end do
       end do
     end do
     !$omp single
-    if (i.ne.1.or.j.ne.-1.or.k.ne.2.or.m.ne.0) STOP 12
+    if (i.ne.1.or.j.ne.-1.or.k.ne.2.or.m.ne.0) stop 12
     !$omp end single
     !$omp do collapse(2) ordered(4) lastprivate (i,j,k)
     do i = 0, d
@@ -168,7 +168,7 @@
           do l = 0, d + 3
             !$omp ordered depend(source)
             !$omp ordered depend(sink: i-2,j+2,k-2,l)
-            if (e.eq.0) STOP 13
+            if (e.eq.0) stop 13
           end do
         end do
       end do
@@ -176,7 +176,7 @@
     !$omp end do nowait
     !$omp do
     do i = 1, N
-      if (a(i) .ne. 3) STOP 14
+      if (a(i) .ne. 3) stop 14
     end do
     !$omp end do nowait
     !$omp do collapse(2) private(k)
@@ -184,9 +184,9 @@
       do j = 1, 8
         do k = 1, 4
           if (i.ge.3.and.i.lt.N/16.and.iand(j,1).ne.0.and.k.ge.2) then
-            if (b(i,j,k).ne.3) STOP 15
+            if (b(i,j,k).ne.3) stop 15
           else
-            if (b(i,j,k).ne.0) STOP 16
+            if (b(i,j,k).ne.0) stop 16
           end if
         end do
       end do
@@ -197,9 +197,9 @@
       do j = 1, 8
         do k = 1, 4
           if (j.ge.3.and.iand(k,1).ne.0) then
-            if (c(i,j,k).ne.3) STOP 17
+            if (c(i,j,k).ne.3) stop 17
           else
-            if (c(i,j,k).ne.0) STOP 18
+            if (c(i,j,k).ne.0) stop 18
           end if
         end do
       end do

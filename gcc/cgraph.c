@@ -539,7 +539,7 @@ cgraph_node::get_create (tree decl)
 {
   cgraph_node *first_clone = cgraph_node::get (decl);
 
-  if (first_clone && !first_clone->global.inlined_to)
+  if (first_clone && !first_clone->inlined_to)
     return first_clone;
 
   cgraph_node *node = cgraph_node::create (decl);
@@ -547,6 +547,7 @@ cgraph_node::get_create (tree decl)
     {
       first_clone->clone_of = node;
       node->clones = first_clone;
+      node->order = first_clone->order;
       symtab->symtab_prevail_in_asm_name_hash (node);
       node->decl->decl_with_vis.symtab_node = node;
       if (dump_file)
@@ -659,7 +660,7 @@ cgraph_node::get_for_asmname (tree asmname)
        node = node->next_sharing_asm_name)
     {
       cgraph_node *cn = dyn_cast <cgraph_node *> (node);
-      if (cn && !cn->global.inlined_to)
+      if (cn && !cn->inlined_to)
 	return cn;
     }
   return NULL;
@@ -1786,7 +1787,7 @@ cgraph_node::remove (void)
     {
       cgraph_node *n = cgraph_node::get (decl);
       if (!n
-	  || (!n->clones && !n->clone_of && !n->global.inlined_to
+	  || (!n->clones && !n->clone_of && !n->inlined_to
 	      && ((symtab->global_info_ready || in_lto_p)
 		  && (TREE_ASM_WRITTEN (n->decl)
 		      || DECL_EXTERNAL (n->decl)
@@ -1817,7 +1818,7 @@ cgraph_node::mark_address_taken (void)
 {
   /* Indirect inlining can figure out that all uses of the address are
      inlined.  */
-  if (global.inlined_to)
+  if (inlined_to)
     {
       gcc_assert (cfun->after_inlining);
       gcc_assert (callers->indirect_inlining_edge);
@@ -1834,16 +1835,16 @@ cgraph_node::mark_address_taken (void)
   node->address_taken = 1;
 }
 
-/* Return local info for the compiled function.  */
+/* Return local info node for the compiled function.  */
 
-cgraph_local_info *
-cgraph_node::local_info (tree decl)
+cgraph_node *
+cgraph_node::local_info_node (tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   cgraph_node *node = get (decl);
   if (!node)
     return NULL;
-  return &node->ultimate_alias_target ()->local;
+  return node->ultimate_alias_target ();
 }
 
 /* Return RTL info for the compiled function.  */
@@ -1944,10 +1945,10 @@ cgraph_node::dump (FILE *f)
 
   dump_base (f);
 
-  if (global.inlined_to)
+  if (inlined_to)
     fprintf (f, "  Function %s is inline copy in %s\n",
 	     dump_name (),
-	     global.inlined_to->dump_name ());
+	     inlined_to->dump_name ());
   if (clone_of)
     fprintf (f, "  Clone of %s\n", clone_of->dump_asm_name ());
   if (symtab->function_flags_ready)
@@ -1991,9 +1992,9 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " body");
   if (process)
     fprintf (f, " process");
-  if (local.local)
+  if (local)
     fprintf (f, " local");
-  if (local.redefined_extern_inline)
+  if (redefined_extern_inline)
     fprintf (f, " redefined_extern_inline");
   if (only_called_at_startup)
     fprintf (f, " only_called_at_startup");
@@ -2096,7 +2097,7 @@ cgraph_node::dump (FILE *f)
 	if (dyn_cast <cgraph_node *> (ref->referring)->count.initialized_p ())
 	  sum += dyn_cast <cgraph_node *> (ref->referring)->count.ipa ();
   
-      if (global.inlined_to
+      if (inlined_to
 	  || (symtab->state < EXPANSION
 	      && ultimate_alias_target () == this && only_called_directly_p ()))
 	ok = !count.ipa ().differs_from_p (sum);
@@ -2212,14 +2213,14 @@ cgraph_node::get_availability (symtab_node *ref)
     {
       cgraph_node *cref = dyn_cast <cgraph_node *> (ref);
       if (cref)
-	ref = cref->global.inlined_to;
+	ref = cref->inlined_to;
     }
   enum availability avail;
   if (!analyzed)
     avail = AVAIL_NOT_AVAILABLE;
-  else if (local.local)
+  else if (local)
     avail = AVAIL_LOCAL;
-  else if (global.inlined_to)
+  else if (inlined_to)
     avail = AVAIL_AVAILABLE;
   else if (transparent_alias)
     ultimate_alias_target (&avail, ref);
@@ -2340,7 +2341,7 @@ cgraph_node::make_local (cgraph_node *node, void *)
       node->set_comdat_group (NULL);
       node->externally_visible = false;
       node->forced_by_abi = false;
-      node->local.local = true;
+      node->local = true;
       node->set_section (NULL);
       node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
 			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
@@ -2828,7 +2829,7 @@ bool
 cgraph_node::will_be_removed_from_program_if_no_direct_calls_p
 	 (bool will_inline)
 {
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
   if (DECL_EXTERNAL (decl))
     return true;
 
@@ -3015,7 +3016,7 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
 {
   cgraph_node *node;
 
-  if (!decl || callee->global.inlined_to)
+  if (!decl || callee->inlined_to)
     return false;
   if (symtab->state == LTO_STREAMING)
     return false;
@@ -3085,27 +3086,27 @@ cgraph_node::verify_node (void)
       error ("cgraph count invalid");
       error_found = true;
     }
-  if (global.inlined_to && same_comdat_group)
+  if (inlined_to && same_comdat_group)
     {
       error ("inline clone in same comdat group list");
       error_found = true;
     }
-  if (!definition && !in_other_partition && local.local)
+  if (!definition && !in_other_partition && local)
     {
       error ("local symbols must be defined");
       error_found = true;
     }
-  if (global.inlined_to && externally_visible)
+  if (inlined_to && externally_visible)
     {
       error ("externally visible inline clone");
       error_found = true;
     }
-  if (global.inlined_to && address_taken)
+  if (inlined_to && address_taken)
     {
       error ("inline clone with address taken");
       error_found = true;
     }
-  if (global.inlined_to && force_output)
+  if (inlined_to && force_output)
     {
       error ("inline clone is forced to output");
       error_found = true;
@@ -3142,9 +3143,9 @@ cgraph_node::verify_node (void)
 	}
       if (!e->inline_failed)
 	{
-	  if (global.inlined_to
-	      != (e->caller->global.inlined_to
-		  ? e->caller->global.inlined_to : e->caller))
+	  if (inlined_to
+	      != (e->caller->inlined_to
+		  ? e->caller->inlined_to : e->caller))
 	    {
 	      error ("inlined_to pointer is wrong");
 	      error_found = true;
@@ -3156,7 +3157,7 @@ cgraph_node::verify_node (void)
 	    }
 	}
       else
-	if (global.inlined_to)
+	if (inlined_to)
 	  {
 	    error ("inlined_to pointer set for noninline callers");
 	    error_found = true;
@@ -3167,7 +3168,7 @@ cgraph_node::verify_node (void)
       if (e->verify_count ())
 	error_found = true;
       if (gimple_has_body_p (e->caller->decl)
-	  && !e->caller->global.inlined_to
+	  && !e->caller->inlined_to
 	  && !e->speculative
 	  /* Optimized out calls are redirected to __builtin_unreachable.  */
 	  && (e->count.nonzero_p ()
@@ -3192,7 +3193,7 @@ cgraph_node::verify_node (void)
       if (e->verify_count ())
 	error_found = true;
       if (gimple_has_body_p (e->caller->decl)
-	  && !e->caller->global.inlined_to
+	  && !e->caller->inlined_to
 	  && !e->speculative
 	  && e->count.ipa_p ()
 	  && count
@@ -3209,12 +3210,12 @@ cgraph_node::verify_node (void)
 	  error_found = true;
 	}
     }
-  if (!callers && global.inlined_to)
+  if (!callers && inlined_to)
     {
       error ("inlined_to pointer is set but no predecessors found");
       error_found = true;
     }
-  if (global.inlined_to == this)
+  if (inlined_to == this)
     {
       error ("inlined_to pointer refers to itself");
       error_found = true;
@@ -3303,7 +3304,7 @@ cgraph_node::verify_node (void)
 	  error ("More than one edge out of thunk node");
           error_found = true;
 	}
-      if (gimple_has_body_p (decl) && !global.inlined_to)
+      if (gimple_has_body_p (decl) && !inlined_to)
         {
 	  error ("Thunk is not supposed to have body");
           error_found = true;
@@ -3311,7 +3312,7 @@ cgraph_node::verify_node (void)
     }
   else if (analyzed && gimple_has_body_p (decl)
 	   && !TREE_ASM_WRITTEN (decl)
-	   && (!DECL_EXTERNAL (decl) || global.inlined_to)
+	   && (!DECL_EXTERNAL (decl) || inlined_to)
 	   && !flag_wpa)
     {
       if (this_cfun->cfg)
@@ -3546,12 +3547,17 @@ cgraph_node::get_untransformed_body (void)
   struct lto_in_decl_state *decl_state
 	 = lto_get_function_in_decl_state (file_data, decl);
 
+  cgraph_node *origin = this;
+  while (origin->clone_of)
+    origin = origin->clone_of;
+
+  int stream_order = origin->order - file_data->order_base;
   data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len, decl_state->compressed);
+			       name, stream_order, &len,
+			       decl_state->compressed);
   if (!data)
-    fatal_error (input_location, "%s: section %s is missing",
-		 file_data->file_name,
-		 name);
+    fatal_error (input_location, "%s: section %s.%d is missing",
+		 file_data->file_name, name, stream_order);
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
@@ -3586,7 +3592,7 @@ cgraph_node::get_body (void)
      early.
      TODO: Materializing clones here will likely lead to smaller LTRANS
      footprint. */
-  gcc_assert (!global.inlined_to && !clone_of);
+  gcc_assert (!inlined_to && !clone_of);
   if (ipa_transforms_to_apply.exists ())
     {
       opt_pass *saved_current_pass = current_pass;
@@ -3776,8 +3782,8 @@ cgraph_node::has_thunk_p (cgraph_node *node, void *)
 sreal
 cgraph_edge::sreal_frequency ()
 {
-  return count.to_sreal_scale (caller->global.inlined_to
-			       ? caller->global.inlined_to->count
+  return count.to_sreal_scale (caller->inlined_to
+			       ? caller->inlined_to->count
 			       : caller->count);
 }
 
@@ -3813,7 +3819,7 @@ cgraph_edge::possibly_call_in_translation_unit_p (void)
   if (node->previous_sharing_asm_name)
     node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (callee->decl));
   gcc_assert (TREE_PUBLIC (node->decl));
-  return node->get_availability () >= AVAIL_AVAILABLE;
+  return node->get_availability () >= AVAIL_INTERPOSABLE;
 }
 
 /* A stashed copy of "symtab" for use by selftest::symbol_table_test.

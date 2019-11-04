@@ -53,6 +53,48 @@ along with GCC; see the file COPYING3.  If not see
 /* Cached node/edge growths.  */
 call_summary<edge_growth_cache_entry *> *edge_growth_cache = NULL;
 
+/* The context cache remembers estimated time/size and hints for given
+   ipa_call_context of a call.  */
+class node_context_cache_entry
+{
+public:
+  ipa_call_context ctx;
+  sreal time, nonspec_time;
+  int size;
+  ipa_hints hints;
+
+  node_context_cache_entry ()
+  : ctx ()
+  {
+  }
+  ~node_context_cache_entry ()
+  {
+    ctx.release ();
+  }
+};
+
+/* At the moment we implement primitive single entry LRU cache.  */
+class node_context_summary
+{
+public:
+  node_context_cache_entry entry;
+
+  node_context_summary ()
+  : entry ()
+  {
+  }
+  ~node_context_summary ()
+  {
+  }
+};
+
+/* Summary holding the context cache.  */
+static fast_function_summary <node_context_summary *, va_heap>
+	*node_context_cache = NULL;
+/* Statistics about the context cache effectivity.  */
+static long node_context_cache_hit, node_context_cache_miss,
+	    node_context_cache_clear;
+
 /* Give initial reasons why inlining would fail on EDGE.  This gets either
    nullified or usually overwritten by more precise reasons later.  */
 
@@ -68,7 +110,7 @@ initialize_inline_failed (struct cgraph_edge *e)
     e->inline_failed = CIF_INDIRECT_UNKNOWN_CALL;
   else if (!callee->definition)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
-  else if (callee->local.redefined_extern_inline)
+  else if (callee->redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
   else
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
@@ -77,6 +119,16 @@ initialize_inline_failed (struct cgraph_edge *e)
 			    == CIF_FINAL_ERROR);
 }
 
+/* Allocate edge growth caches.  */
+
+void
+initialize_growth_caches ()
+{
+  edge_growth_cache
+    = new call_summary<edge_growth_cache_entry *> (symtab, false);
+  node_context_cache
+    = new fast_function_summary<node_context_summary *, va_heap> (symtab);
+}
 
 /* Free growth caches.  */
 
@@ -84,7 +136,17 @@ void
 free_growth_caches (void)
 {
   delete edge_growth_cache;
+  delete node_context_cache;
   edge_growth_cache = NULL;
+  node_context_cache = NULL;
+  if (dump_file)
+    fprintf (dump_file, "node context cache: %li hits, %li misses,"
+		   	" %li initializations\n",
+	     node_context_cache_hit, node_context_cache_miss,
+	     node_context_cache_clear);
+  node_context_cache_hit = 0;
+  node_context_cache_miss = 0;
+  node_context_cache_clear = 0;
 }
 
 /* Return hints derrived from EDGE.   */
@@ -93,8 +155,8 @@ int
 simple_edge_hints (struct cgraph_edge *edge)
 {
   int hints = 0;
-  struct cgraph_node *to = (edge->caller->global.inlined_to
-			    ? edge->caller->global.inlined_to : edge->caller);
+  struct cgraph_node *to = (edge->caller->inlined_to
+			    ? edge->caller->inlined_to : edge->caller);
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   int to_scc_no = ipa_fn_summaries->get (to)->scc_no;
   int callee_scc_no = ipa_fn_summaries->get (callee)->scc_no;
@@ -129,7 +191,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   vec<ipa_polymorphic_call_context> known_contexts;
   vec<ipa_agg_jump_function_p> known_aggs;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
-  int min_size;
+  int min_size = -1;
 
   callee = edge->callee->ultimate_alias_target ();
 
@@ -137,9 +199,39 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   evaluate_properties_for_edge (edge, true,
 				&clause, &nonspec_clause, &known_vals,
 				&known_contexts, &known_aggs);
-  estimate_node_size_and_time (callee, clause, nonspec_clause, known_vals,
-			       known_contexts, known_aggs, &size, &min_size,
-			       &time, &nonspec_time, &hints, es->param);
+  ipa_call_context ctx (callee, clause, nonspec_clause, known_vals,
+		  	known_contexts, known_aggs, es->param);
+  if (node_context_cache != NULL)
+    {
+      node_context_summary *e = node_context_cache->get_create (callee);
+      if (e->entry.ctx.equal_to (ctx))
+	{
+	  node_context_cache_hit++;
+	  size = e->entry.size;
+	  time = e->entry.time;
+	  nonspec_time = e->entry.nonspec_time;
+	  hints = e->entry.hints;
+	}
+      else
+	{
+	  if (e->entry.ctx.exists_p ())
+	    node_context_cache_miss++;
+	  else
+	    node_context_cache_clear++;
+	  e->entry.ctx.release (true);
+	  e->entry.ctx = ctx;
+	  ctx.estimate_size_and_time (&size, &min_size,
+				      &time, &nonspec_time, &hints);
+	  e->entry.size = size;
+	  e->entry.time = time;
+	  e->entry.nonspec_time = nonspec_time;
+	  e->entry.hints = hints;
+	  e->entry.ctx.duplicate_from (ctx);
+	}
+    }
+  else
+    ctx.estimate_size_and_time (&size, &min_size,
+				&time, &nonspec_time, &hints);
 
   /* When we have profile feedback, we can quite safely identify hot
      edges and for those we disable size limits.  Don't do that when
@@ -147,22 +239,21 @@ do_estimate_edge_time (struct cgraph_edge *edge)
      may hurt optimization of the caller's hot path.  */
   if (edge->count.ipa ().initialized_p () && edge->maybe_hot_p ()
       && (edge->count.ipa ().apply_scale (2, 1)
-          > (edge->caller->global.inlined_to
-	     ? edge->caller->global.inlined_to->count.ipa ()
+	  > (edge->caller->inlined_to
+	     ? edge->caller->inlined_to->count.ipa ()
 	     : edge->caller->count.ipa ())))
     hints |= INLINE_HINT_known_hot;
 
-  known_vals.release ();
-  known_contexts.release ();
-  known_aggs.release ();
+  ctx.release ();
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
 
   /* When caching, update the cache entry.  */
   if (edge_growth_cache != NULL)
     {
-      ipa_fn_summaries->get (edge->callee->function_symbol ())->min_size
-	 = min_size;
+      if (min_size >= 0)
+        ipa_fn_summaries->get (edge->callee->function_symbol ())->min_size
+	   = min_size;
       edge_growth_cache_entry *entry
 	= edge_growth_cache->get_create (edge);
       entry->time = time;
@@ -175,6 +266,14 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   return time;
 }
 
+/* Reset cache for NODE.
+   This must be done each time NODE body is modified.  */
+void
+reset_node_cache (struct cgraph_node *node)
+{
+  if (node_context_cache)
+    node_context_cache->remove (node);
+}
 
 /* Return estimated callee growth after inlining EDGE.
    Only to be called via estimate_edge_size.  */
@@ -207,12 +306,10 @@ do_estimate_edge_size (struct cgraph_edge *edge)
 				&clause, &nonspec_clause,
 				&known_vals, &known_contexts,
 				&known_aggs);
-  estimate_node_size_and_time (callee, clause, nonspec_clause, known_vals,
-			       known_contexts, known_aggs, &size, NULL, NULL,
-			       NULL, NULL, vNULL);
-  known_vals.release ();
-  known_contexts.release ();
-  known_aggs.release ();
+  ipa_call_context ctx (callee, clause, nonspec_clause, known_vals,
+		  	known_contexts, known_aggs, vNULL);
+  ctx.estimate_size_and_time (&size, NULL, NULL, NULL, NULL);
+  ctx.release ();
   return size;
 }
 
@@ -248,12 +345,10 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
 				&clause, &nonspec_clause,
 				&known_vals, &known_contexts,
 				&known_aggs);
-  estimate_node_size_and_time (callee, clause, nonspec_clause, known_vals,
-			       known_contexts, known_aggs, NULL, NULL,
-			       NULL, NULL, &hints, vNULL);
-  known_vals.release ();
-  known_contexts.release ();
-  known_aggs.release ();
+  ipa_call_context ctx (callee, clause, nonspec_clause, known_vals,
+		  	known_contexts, known_aggs, vNULL);
+  ctx.estimate_size_and_time (NULL, NULL, NULL, NULL, &hints);
+  ctx.release ();
   hints |= simple_edge_hints (edge);
   return hints;
 }

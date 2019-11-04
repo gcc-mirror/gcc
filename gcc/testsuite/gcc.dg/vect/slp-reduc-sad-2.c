@@ -1,3 +1,5 @@
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_usad_char } */
 /* With AVX256 or more we do not pull off the trick eliding the epilogue.  */

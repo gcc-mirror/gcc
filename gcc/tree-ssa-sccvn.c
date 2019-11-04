@@ -309,6 +309,10 @@ static vn_tables_t valid_info;
 /* Valueization hook.  Valueize NAME if it is an SSA name, otherwise
    just return it.  */
 tree (*vn_valueize) (tree);
+tree vn_valueize_wrapper (tree t, void* context ATTRIBUTE_UNUSED)
+{
+  return vn_valueize (t);
+}
 
 
 /* This represents the top of the VN lattice, which is the universal
@@ -6412,7 +6416,7 @@ process_bb (rpo_elim &avail, basic_block bb,
       if (bb->loop_father->nb_iterations)
 	bb->loop_father->nb_iterations
 	  = simplify_replace_tree (bb->loop_father->nb_iterations,
-				   NULL_TREE, NULL_TREE, vn_valueize);
+				   NULL_TREE, NULL_TREE, &vn_valueize_wrapper);
     }
 
   /* Value-number all defs in the basic-block.  */

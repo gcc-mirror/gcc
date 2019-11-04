@@ -505,6 +505,7 @@ predicate::remap_after_duplication (clause_t possible_truths)
 
 predicate
 predicate::remap_after_inlining (class ipa_fn_summary *info,
+				 class ipa_node_params *params_summary,
 				 class ipa_fn_summary *callee_info,
 				 vec<int> operand_map,
 				 vec<int> offset_map,
@@ -566,7 +567,7 @@ predicate::remap_after_inlining (class ipa_fn_summary *info,
 		    ap.offset = c->offset + offset_delta;
 		    ap.agg_contents = c->agg_contents;
 		    ap.by_ref = c->by_ref;
-		    cond_predicate = add_condition (info,
+		    cond_predicate = add_condition (info, params_summary,
 						    operand_map[c->operand_num],
 						    c->type, &ap, c->code,
 						    c->val, c->param_ops);
@@ -629,7 +630,9 @@ predicate::stream_out (struct output_block *ob)
    aggregate.  */
 
 predicate
-add_condition (class ipa_fn_summary *summary, int operand_num,
+add_condition (class ipa_fn_summary *summary,
+	       class ipa_node_params *params_summary,
+	       int operand_num,
 	       tree type, struct agg_position_info *aggpos,
 	       enum tree_code code, tree val, expr_eval_ops param_ops)
 {
@@ -639,6 +642,9 @@ add_condition (class ipa_fn_summary *summary, int operand_num,
   HOST_WIDE_INT offset;
   bool agg_contents, by_ref;
   expr_eval_op *op;
+
+  if (params_summary)
+    ipa_set_param_used_by_ipa_predicates (params_summary, operand_num, true);
 
   if (aggpos)
     {

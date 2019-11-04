@@ -21,7 +21,7 @@ contains
           x = 2
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 1
+          if (x.ne.2) stop 1
         !$omp end task
       !$omp end single
     !$omp end parallel
@@ -36,7 +36,7 @@ contains
           x = 2
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 2
+          if (x.ne.2) stop 2
         !$omp end task
         !$omp taskwait
       !$omp end single
@@ -52,7 +52,7 @@ contains
           x = 2
         !$omp endtask
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 3
+          if (x.ne.2) stop 3
         !$omp endtask
       !$omp endsingle
     !$omp endparallel
@@ -67,7 +67,7 @@ contains
           x = 2
         !$omp end task
         !$omp task depend(in: x)
-          if (x.ne.1) STOP 4
+          if (x.ne.1) stop 4
         !$omp end task
       !$omp end single
     !$omp end parallel
@@ -79,7 +79,7 @@ contains
     !$omp parallel
       !$omp single
         !$omp task shared(x) depend(in: x)
-          if (x.ne.1) STOP 5
+          if (x.ne.1) stop 5
         !$omp end task
         !$omp task shared(x) depend(out: x)
           x = 2
@@ -95,7 +95,7 @@ contains
         x = 1
         !$omp taskgroup
           !$omp task shared(x) depend(in: x)
-            if (x.ne.1) STOP 6
+            if (x.ne.1) stop 6
           !$omp end task
           !$omp task shared(x) depend(out: x)
             x = 2
@@ -111,7 +111,7 @@ contains
       x = 1
       !$omp single
         !$omp task shared(x) depend(in: x)
-          if (x.ne.1) STOP 7
+          if (x.ne.1) stop 7
         !$omp end task
         !$omp task shared(x) depend(out: x)
           x = 2
@@ -132,7 +132,7 @@ contains
           x = 2
         !$omp end task
         !$omp taskwait
-        if (x.ne.2) STOP 8
+        if (x.ne.2) stop 8
       !$omp end single
     !$omp end parallel
   end subroutine outdep
@@ -146,13 +146,13 @@ contains
           x = 2
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 9
+          if (x.ne.2) stop 9
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 10
+          if (x.ne.2) stop 10
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 11
+          if (x.ne.2) stop 11
         !$omp end task
       !$omp end single
     !$omp end parallel
@@ -167,13 +167,13 @@ contains
           x = 2;
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 12
+          if (x.ne.2) stop 12
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 13
+          if (x.ne.2) stop 13
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 14
+          if (x.ne.2) stop 14
         !$omp end task
         !$omp taskwait
       !$omp end single
@@ -189,13 +189,13 @@ contains
           x = 2
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 15
+          if (x.ne.2) stop 15
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 16
+          if (x.ne.2) stop 16
         !$omp end task
         !$omp task shared (x) depend(in: x)
-          if (x.ne.2) STOP 17
+          if (x.ne.2) stop 17
         !$omp end task
       !$omp end single
     !$omp end parallel

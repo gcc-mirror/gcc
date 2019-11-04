@@ -1662,6 +1662,41 @@
    (set_attr "type" "adc_imm")]
 )
 
+;; SBC performs Rn - Rm - ~C, but -Rm = ~Rm + 1 => Rn + ~Rm + 1 - ~C
+;; => Rn + ~Rm + C, which is essentially ADC Rd, Rn, ~Rm
+(define_insn "*add_not_cin"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(plus:SI
+	 (plus:SI (not:SI (match_operand:SI 1 "s_register_operand" "r,r"))
+		  (match_operand:SI 3 "arm_carry_operation" ""))
+	 (match_operand:SI 2 "arm_rhs_operand" "r,I")))]
+  "TARGET_ARM || (TARGET_THUMB2 && !CONST_INT_P (operands[2]))"
+  "@
+   sbc%?\\t%0, %2, %1
+   rsc%?\\t%0, %1, %2"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "*,a")
+   (set_attr "type" "adc_reg,adc_imm")]
+)
+
+;; On Arm we can also use the same trick when the non-inverted operand is
+;; shifted, using RSC.
+(define_insn "add_not_shift_cin"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(plus:SI
+	 (plus:SI (match_operator:SI 3 "shift_operator"
+		   [(match_operand:SI 1 "s_register_operand" "r,r")
+		    (match_operand:SI 2 "shift_amount_operand" "M,r")])
+		  (not:SI (match_operand:SI 4 "s_register_operand" "r,r")))
+	 (match_operand:SI 5 "arm_carry_operation" "")))]
+  "TARGET_ARM"
+  "rsc%?\\t%0, %4, %1%S3"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
+)
+
 (define_insn "cmpsi3_carryin_<CC_EXTEND>out"
   [(set (reg:<CC_EXTEND> CC_REGNUM)
 	(compare:<CC_EXTEND>

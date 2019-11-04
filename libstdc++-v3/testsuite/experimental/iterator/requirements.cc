@@ -64,4 +64,6 @@ std::move_iterator<int*> mi;
 std::istream_iterator<int> isi;
 std::ostream_iterator<int> osi(os());
 std::istreambuf_iterator<char> isbi;
+
+#include <ostream>
 std::ostreambuf_iterator<char> osbi(os());

@@ -2414,7 +2414,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	       || target_node->definition)
 	   && target_node->real_symbol_p ())
     {
-      gcc_assert (!target_node->global.inlined_to);
+      gcc_assert (!target_node->inlined_to);
       gcc_assert (target_node->real_symbol_p ());
       /* When sanitizing, do not assume that __cxa_pure_virtual is not called
 	 by valid program.  */

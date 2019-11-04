@@ -457,7 +457,6 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
 	     bool force)
 {
   stmt_vec_info dstmt_vinfo;
-  basic_block bb, def_bb;
   enum vect_def_type dt;
 
   /* case 1: we are only interested in uses that need to be vectorized.  Uses
@@ -473,28 +472,8 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
   if (!dstmt_vinfo)
     return opt_result::success ();
 
-  def_bb = gimple_bb (dstmt_vinfo->stmt);
-
-  /* case 2: A reduction phi (STMT) defined by a reduction stmt (DSTMT_VINFO).
-     DSTMT_VINFO must have already been processed, because this should be the
-     only way that STMT, which is a reduction-phi, was put in the worklist,
-     as there should be no other uses for DSTMT_VINFO in the loop.  So we just
-     check that everything is as expected, and we are done.  */
-  bb = gimple_bb (stmt_vinfo->stmt);
-  if (gimple_code (stmt_vinfo->stmt) == GIMPLE_PHI
-      && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
-      && gimple_code (dstmt_vinfo->stmt) != GIMPLE_PHI
-      && STMT_VINFO_DEF_TYPE (dstmt_vinfo) == vect_reduction_def
-      && bb->loop_father == def_bb->loop_father)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "reduc-stmt defining reduc-phi in the same nest.\n");
-      gcc_assert (STMT_VINFO_RELEVANT (dstmt_vinfo) < vect_used_by_reduction);
-      gcc_assert (STMT_VINFO_LIVE_P (dstmt_vinfo)
-		  || STMT_VINFO_RELEVANT (dstmt_vinfo) > vect_unused_in_scope);
-      return opt_result::success ();
-    }
+  basic_block def_bb = gimple_bb (dstmt_vinfo->stmt);
+  basic_block bb = gimple_bb (stmt_vinfo->stmt);
 
   /* case 3a: outer-loop stmt defining an inner-loop stmt:
 	outer-loop-header-bb:
@@ -9903,7 +9882,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	return false;
       reduc_info = info_for_reduction (stmt_info);
       reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
-      reduc_index = STMT_VINFO_REDUC_IDX (reduc_info);
+      reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
       gcc_assert (reduction_type != EXTRACT_LAST_REDUCTION
 		  || reduc_index != -1);
     }
@@ -10050,16 +10029,6 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		return false;
 	    }
 	}
-      if (loop_vinfo
-	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
-	  && reduction_type == EXTRACT_LAST_REDUCTION)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't yet use a fully-masked loop for"
-			     " EXTRACT_LAST_REDUCTION.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
-	}
       if (expand_vec_cond_expr_p (vectype, comp_vectype,
 				     cond_code))
 	{
@@ -10089,31 +10058,31 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* Handle cond expr.  */
   for (j = 0; j < ncopies; j++)
     {
-      tree loop_mask = NULL_TREE;
       bool swap_cond_operands = false;
 
       /* See whether another part of the vectorized code applies a loop
 	 mask to the condition, or to its inverse.  */
 
+      vec_loop_masks *masks = NULL;
       if (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
 	{
-	  scalar_cond_masked_key cond (cond_expr, ncopies);
-	  if (loop_vinfo->scalar_cond_masked_set.contains (cond))
-	    {
-	      vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
-	      loop_mask = vect_get_loop_mask (gsi, masks, ncopies, vectype, j);
-	    }
+	  if (reduction_type == EXTRACT_LAST_REDUCTION)
+	    masks = &LOOP_VINFO_MASKS (loop_vinfo);
 	  else
 	    {
-	      bool honor_nans = HONOR_NANS (TREE_TYPE (cond.op0));
-	      cond.code = invert_tree_comparison (cond.code, honor_nans);
+	      scalar_cond_masked_key cond (cond_expr, ncopies);
 	      if (loop_vinfo->scalar_cond_masked_set.contains (cond))
+		masks = &LOOP_VINFO_MASKS (loop_vinfo);
+	      else
 		{
-		  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
-		  loop_mask = vect_get_loop_mask (gsi, masks, ncopies,
-						  vectype, j);
-		  cond_code = cond.code;
-		  swap_cond_operands = true;
+		  bool honor_nans = HONOR_NANS (TREE_TYPE (cond.op0));
+		  cond.code = invert_tree_comparison (cond.code, honor_nans);
+		  if (loop_vinfo->scalar_cond_masked_set.contains (cond))
+		    {
+		      masks = &LOOP_VINFO_MASKS (loop_vinfo);
+		      cond_code = cond.code;
+		      swap_cond_operands = true;
+		    }
 		}
 	    }
 	}
@@ -10248,28 +10217,10 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	     vec != { 0, ... } (masked in the MASK_LOAD,
 	     unmasked in the VEC_COND_EXPR).  */
 
-	  if (loop_mask)
-	    {
-	      if (COMPARISON_CLASS_P (vec_compare))
-		{
-		  tree tmp = make_ssa_name (vec_cmp_type);
-		  tree op0 = TREE_OPERAND (vec_compare, 0);
-		  tree op1 = TREE_OPERAND (vec_compare, 1);
-		  gassign *g = gimple_build_assign (tmp,
-						    TREE_CODE (vec_compare),
-						    op0, op1);
-		  vect_finish_stmt_generation (stmt_info, g, gsi);
-		  vec_compare = tmp;
-		}
+	  /* Force vec_compare to be an SSA_NAME rather than a comparison,
+	     in cases where that's necessary.  */
 
-	      tree tmp2 = make_ssa_name (vec_cmp_type);
-	      gassign *g = gimple_build_assign (tmp2, BIT_AND_EXPR,
-						vec_compare, loop_mask);
-	      vect_finish_stmt_generation (stmt_info, g, gsi);
-	      vec_compare = tmp2;
-	    }
-
-	  if (reduction_type == EXTRACT_LAST_REDUCTION)
+	  if (masks || reduction_type == EXTRACT_LAST_REDUCTION)
 	    {
 	      if (!is_gimple_val (vec_compare))
 		{
@@ -10279,6 +10230,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 		  vec_compare = vec_compare_name;
 		}
+
 	      if (must_invert_cmp_result)
 		{
 		  tree vec_compare_name = make_ssa_name (vec_cmp_type);
@@ -10288,6 +10240,24 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 		  vec_compare = vec_compare_name;
 		}
+
+	      if (masks)
+		{
+		  unsigned vec_num = vec_oprnds0.length ();
+		  tree loop_mask
+		    = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
+					  vectype, vec_num * j + i);
+		  tree tmp2 = make_ssa_name (vec_cmp_type);
+		  gassign *g
+		    = gimple_build_assign (tmp2, BIT_AND_EXPR, vec_compare,
+					   loop_mask);
+		  vect_finish_stmt_generation (stmt_info, g, gsi);
+		  vec_compare = tmp2;
+		}
+	    }
+
+	  if (reduction_type == EXTRACT_LAST_REDUCTION)
+	    {
 	      gcall *new_stmt = gimple_build_call_internal
 		(IFN_FOLD_EXTRACT_LAST, 3, else_clause, vec_compare,
 		 vec_then_clause);

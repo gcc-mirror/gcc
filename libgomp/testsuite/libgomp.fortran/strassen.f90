@@ -19,7 +19,7 @@ program strassen_matmul
   call strassen (A, B, D, N)
   end = omp_get_wtime ()
   write(*,'(a, f10.6)') ' Time for Strassen    = ', end - start
-  if (sqrt (sum ((C - D) ** 2)) / N .gt. 0.1) STOP 1
+  if (sqrt (sum ((C - D) ** 2)) / N .gt. 0.1) stop 1
   D = 0
   start = omp_get_wtime ()
 !$omp parallel
@@ -29,7 +29,7 @@ program strassen_matmul
 !$omp end parallel
   end = omp_get_wtime ()
   write(*,'(a, f10.6)') ' Time for Strassen MP = ', end - start
-  if (sqrt (sum ((C - D) ** 2)) / N .gt. 0.1) STOP 2
+  if (sqrt (sum ((C - D) ** 2)) / N .gt. 0.1) stop 2
 
 contains
 

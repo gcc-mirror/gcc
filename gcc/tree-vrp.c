@@ -4122,7 +4122,6 @@ bool
 vrp_prop::check_array_ref (location_t location, tree ref,
 			   bool ignore_off_by_one)
 {
-  const value_range *vr = NULL;
   tree low_sub, up_sub;
   tree low_bound, up_bound, up_bound_p1;
 
@@ -4131,6 +4130,9 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 
   low_sub = up_sub = TREE_OPERAND (ref, 1);
   up_bound = array_ref_up_bound (ref);
+
+  /* Set for accesses to interior zero-length arrays.  */
+  bool interior_zero_len = false;
 
   if (!up_bound
       || TREE_CODE (up_bound) != INTEGER_CST
@@ -4152,11 +4154,22 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	}
       else
 	{
-	  tree maxbound = TYPE_MAX_VALUE (ptrdiff_type_node);
+	  tree ptrdiff_max = TYPE_MAX_VALUE (ptrdiff_type_node);
+	  tree maxbound = ptrdiff_max;
 	  tree arg = TREE_OPERAND (ref, 0);
 	  poly_int64 off;
 
-	  if (get_addr_base_and_unit_offset (arg, &off) && known_gt (off, 0))
+	  if (TREE_CODE (arg) == COMPONENT_REF)
+	    {
+	      /* Try to determine the size of the trailing array from
+		 its initializer (if it has one).  */
+	      if (tree refsize = component_ref_size (arg, &interior_zero_len))
+		maxbound = refsize;
+	    }
+
+	  if (maxbound == ptrdiff_max
+	      && get_addr_base_and_unit_offset (arg, &off)
+	      && known_gt (off, 0))
 	    maxbound = wide_int_to_tree (sizetype,
 					 wi::sub (wi::to_wide (maxbound),
 						  off));
@@ -4185,6 +4198,7 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 			 "array subscript %E is above array bounds of %qT",
 			 low_bound, artype);
 
+  const value_range *vr = NULL;
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
       vr = get_value_range (low_sub);
@@ -4195,7 +4209,9 @@ vrp_prop::check_array_ref (location_t location, tree ref,
         }
     }
 
-  if (vr && vr->kind () == VR_ANTI_RANGE)
+  if (warned)
+    ; /* Do nothing.  */
+  else if (vr && vr->kind () == VR_ANTI_RANGE)
     {
       if (up_bound
 	  && TREE_CODE (up_sub) == INTEGER_CST
@@ -4214,39 +4230,51 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	   && (ignore_off_by_one
 	       ? !tree_int_cst_le (up_sub, up_bound_p1)
 	       : !tree_int_cst_le (up_sub, up_bound)))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Array bound warning for ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
-	  fprintf (dump_file, "\n");
-	}
-      warned = warning_at (location, OPT_Warray_bounds,
-			   "array subscript %E is above array bounds of %qT",
-			   up_sub, artype);
-    }
+    warned = warning_at (location, OPT_Warray_bounds,
+			 "array subscript %E is above array bounds of %qT",
+			 up_sub, artype);
   else if (TREE_CODE (low_sub) == INTEGER_CST
            && tree_int_cst_lt (low_sub, low_bound))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Array bound warning for ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
-	  fprintf (dump_file, "\n");
-	}
-      warned = warning_at (location, OPT_Warray_bounds,
-			   "array subscript %E is below array bounds of %qT",
-			   low_sub, artype);
-    }
+    warned = warning_at (location, OPT_Warray_bounds,
+			 "array subscript %E is below array bounds of %qT",
+			 low_sub, artype);
+
+  if (!warned && interior_zero_len)
+    warned = warning_at (location, OPT_Wzero_length_bounds,
+			 (TREE_CODE (low_sub) == INTEGER_CST
+			  ? G_("array subscript %E is outside the bounds "
+			       "of an interior zero-length array %qT")
+			  : G_("array subscript %qE is outside the bounds "
+			       "of an interior zero-length array %qT")),
+			 low_sub, artype);
 
   if (warned)
     {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Array bound warning for ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
+	  fprintf (dump_file, "\n");
+	}
+
       ref = TREE_OPERAND (ref, 0);
+
+      tree rec = NULL_TREE;
       if (TREE_CODE (ref) == COMPONENT_REF)
-	ref = TREE_OPERAND (ref, 1);
+	{
+	  /* For a reference to a member of a struct object also mention
+	     the object if it's known.  It may be defined in a different
+	     function than the out-of-bounds access.  */
+	  rec = TREE_OPERAND (ref, 0);
+	  if (!VAR_P (rec))
+	    rec = NULL_TREE;
+	  ref = TREE_OPERAND (ref, 1);
+	}
 
       if (DECL_P (ref))
 	inform (DECL_SOURCE_LOCATION (ref), "while referencing %qD", ref);
+      if (rec && DECL_P (rec))
+	inform (DECL_SOURCE_LOCATION (rec), "defined here %qD", rec);
 
       TREE_NO_WARNING (ref) = 1;
     }
@@ -4391,16 +4419,21 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   /* The type of the object being referred to.  It can be an array,
      string literal, or a non-array type when the MEM_REF represents
      a reference/subscript via a pointer to an object that is not
-     an element of an array.  References to members of structs and
-     unions are excluded because MEM_REF doesn't make it possible
-     to identify the member where the reference originated.
-     Incomplete types are excluded as well because their size is
-     not known.  */
+     an element of an array.  Incomplete types are excluded as well
+     because their size is not known.  */
   tree reftype = TREE_TYPE (arg);
   if (POINTER_TYPE_P (reftype)
       || !COMPLETE_TYPE_P (reftype)
-      || TREE_CODE (TYPE_SIZE_UNIT (reftype)) != INTEGER_CST
-      || RECORD_OR_UNION_TYPE_P (reftype))
+      || TREE_CODE (TYPE_SIZE_UNIT (reftype)) != INTEGER_CST)
+    return false;
+
+  /* Except in declared objects, references to trailing array members
+     of structs and union objects are excluded because MEM_REF doesn't
+     make it possible to identify the member where the reference
+     originated.  */
+  if (RECORD_OR_UNION_TYPE_P (reftype)
+      && (!VAR_P (arg)
+	  || (DECL_EXTERNAL (arg) && array_at_struct_end_p (ref))))
     return false;
 
   arrbounds[0] = 0;
@@ -4412,7 +4445,14 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       if (tree dom = TYPE_DOMAIN (reftype))
 	{
 	  tree bnds[] = { TYPE_MIN_VALUE (dom), TYPE_MAX_VALUE (dom) };
-	  if (array_at_struct_end_p (arg) || !bnds[0] || !bnds[1])
+	  if (TREE_CODE (arg) == COMPONENT_REF)
+	    {
+	      offset_int size = maxobjsize;
+	      if (tree fldsize = component_ref_size (arg))
+		size = wi::to_offset (fldsize);
+	      arrbounds[1] = wi::lrshift (size, wi::floor_log2 (eltsize));
+	    }
+	  else if (array_at_struct_end_p (arg) || !bnds[0] || !bnds[1])
 	    arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
 	  else
 	    arrbounds[1] = (wi::to_offset (bnds[1]) - wi::to_offset (bnds[0])
@@ -4434,7 +4474,13 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   else
     {
       eltsize = 1;
-      arrbounds[1] = wi::to_offset (TYPE_SIZE_UNIT (reftype));
+      tree size = TYPE_SIZE_UNIT (reftype);
+      if (VAR_P (arg))
+	if (tree initsize = DECL_SIZE_UNIT (arg))
+	  if (tree_int_cst_lt (size, initsize))
+	    size = initsize;
+
+      arrbounds[1] = wi::to_offset (size);
     }
 
   offrange[0] += ioff;

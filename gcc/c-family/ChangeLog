@@ -1,3 +1,31 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_get_context_selector): Remove.
+	* c-omp.c (c_omp_get_context_selector): Moved to omp-general.c
+	and renamed to omp_get_context_selector.
+
+	* c-omp.c (c_omp_mark_declare_variant): Use
+	omp_context_selector_set_compare.
+
+	PR c++/88335 - Implement P1073R3: Immediate functions
+	* c-common.h (enum rid): Add RID_CONSTEVAL.
+	* c-common.c (c_common_reswords): Add consteval.
+
+2019-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add 'L' suffix to feature
+	macros.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66970
+	* c-common.c (c_common_nodes_and_builtins): Call c_define_builtins
+	even when only preprocessing.
+	* c-common.h (names_builtin_p): Declare new function.
+	* c-lex.c (init_c_lex): Set has_builtin.
+	(c_common_has_builtin): Define a new function.
+	* c-ppoutput.c (init_pp_output): Set has_builtin.
+
 2019-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_omp_context_selector_matches): Remove.

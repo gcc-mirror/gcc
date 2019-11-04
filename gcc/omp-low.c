@@ -715,6 +715,11 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
   tree field, type, sfield = NULL_TREE;
   splay_tree_key key = (splay_tree_key) var;
 
+  if ((mask & 16) != 0)
+    {
+      key = (splay_tree_key) &DECL_NAME (var);
+      gcc_checking_assert (key != (splay_tree_key) var);
+    }
   if ((mask & 8) != 0)
     {
       key = (splay_tree_key) &DECL_UID (var);
@@ -728,6 +733,9 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
 	      || !is_gimple_omp_oacc (ctx->stmt));
 
   type = TREE_TYPE (var);
+  if ((mask & 16) != 0)
+    type = lang_hooks.decls.omp_array_data (var, true);
+
   /* Prevent redeclaring the var in the split-off function with a restrict
      pointer type.  Note that we only clear type itself, restrict qualifiers in
      the pointed-to type will be ignored by points-to analysis.  */
@@ -752,7 +760,7 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
      side effect of making dwarf2out ignore this member, so for helpful
      debugging we clear it later in delete_omp_context.  */
   DECL_ABSTRACT_ORIGIN (field) = var;
-  if (type == TREE_TYPE (var))
+  if ((mask & 16) == 0 && type == TREE_TYPE (var))
     {
       SET_DECL_ALIGN (field, DECL_ALIGN (var));
       DECL_USER_ALIGN (field) = DECL_USER_ALIGN (var);
@@ -1240,10 +1248,14 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  decl = OMP_CLAUSE_DECL (c);
-	  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
-	       && !omp_is_reference (decl)
-	       && !omp_is_allocatable_or_ptr (decl))
-	      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+
+	  /* Fortran array descriptors.  */
+	  if (lang_hooks.decls.omp_array_data (decl, true))
+	    install_var_field (decl, false, 19, ctx);
+	  else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		    && !omp_is_reference (decl)
+		    && !omp_is_allocatable_or_ptr (decl))
+		   || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	    install_var_field (decl, true, 11, ctx);
 	  else
 	    install_var_field (decl, false, 11, ctx);
@@ -11485,7 +11497,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  }
 	else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 		  && !omp_is_reference (var)
-		  && !omp_is_allocatable_or_ptr (var))
+		  && !omp_is_allocatable_or_ptr (var)
+		  && !lang_hooks.decls.omp_array_data (var, true))
 		 || TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
 	  {
 	    tree new_var = lookup_decl (var, ctx);
@@ -11866,7 +11879,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
-	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
+
+	    if (lang_hooks.decls.omp_array_data (ovar, true))
+	      {
+		tkind = (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR
+			 ? GOMP_MAP_USE_DEVICE_PTR : GOMP_MAP_FIRSTPRIVATE_INT);
+		x = build_sender_ref ((splay_tree_key) &DECL_NAME (ovar), ctx);
+	      }
+	    else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
 	      {
 		tkind = GOMP_MAP_USE_DEVICE_PTR;
 		x = build_sender_ref ((splay_tree_key) &DECL_UID (ovar), ctx);
@@ -11877,10 +11897,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		x = build_sender_ref (ovar, ctx);
 	      }
 	    type = TREE_TYPE (ovar);
-	    if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
-		 && !omp_is_reference (ovar)
-		 && !omp_is_allocatable_or_ptr (ovar))
-		|| TREE_CODE (type) == ARRAY_TYPE)
+	    if (lang_hooks.decls.omp_array_data (ovar, true))
+	      var = lang_hooks.decls.omp_array_data (ovar, false);
+	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		      && !omp_is_reference (ovar)
+		      && !omp_is_allocatable_or_ptr (ovar))
+		     || TREE_CODE (type) == ARRAY_TYPE)
 	      var = build_fold_addr_expr (var);
 	    else
 	      {
@@ -12048,11 +12070,50 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    var = OMP_CLAUSE_DECL (c);
+	    bool is_array_data;
+	    is_array_data = lang_hooks.decls.omp_array_data (var, true) != NULL;
+
 	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
-	      x = build_sender_ref ((splay_tree_key) &DECL_UID (var), ctx);
+	      x = build_sender_ref (is_array_data
+				    ? (splay_tree_key) &DECL_NAME (var)
+				    : (splay_tree_key) &DECL_UID (var), ctx);
 	    else
 	      x = build_receiver_ref (var, false, ctx);
-	    if (is_variable_sized (var))
+
+	    if (is_array_data)
+	      {
+		bool is_ref = omp_is_reference (var);
+		/* First, we copy the descriptor data from the host; then
+		   we update its data to point to the target address.  */
+		tree new_var = lookup_decl (var, ctx);
+		new_var = DECL_VALUE_EXPR (new_var);
+		tree v = new_var;
+
+		if (is_ref)
+		  {
+		    var = build_fold_indirect_ref (var);
+		    gimplify_expr (&var, &new_body, NULL, is_gimple_val,
+				   fb_rvalue);
+		    v = create_tmp_var_raw (TREE_TYPE (var), get_name (var));
+		    gimple_add_tmp_var (v);
+		    TREE_ADDRESSABLE (v) = 1;
+		    gimple_seq_add_stmt (&new_body,
+					 gimple_build_assign (v, var));
+		    tree rhs = build_fold_addr_expr (v);
+		    gimple_seq_add_stmt (&new_body,
+					 gimple_build_assign (new_var, rhs));
+		  }
+		else
+		  gimple_seq_add_stmt (&new_body,
+				       gimple_build_assign (new_var, var));
+
+		tree v2 = lang_hooks.decls.omp_array_data (unshare_expr (v), false);
+		gcc_assert (v2);
+		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
+		gimple_seq_add_stmt (&new_body,
+				     gimple_build_assign (v2, x));
+	      }
+	    else if (is_variable_sized (var))
 	      {
 		tree pvar = DECL_VALUE_EXPR (var);
 		gcc_assert (TREE_CODE (pvar) == INDIRECT_REF);

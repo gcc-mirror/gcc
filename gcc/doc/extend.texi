@@ -10912,7 +10912,7 @@ executed.
 If no fixup is needed, this function simply passes through @var{addr}.
 @end deftypefn
 
-@deftypefn {Built-in Function} {void *} __builtin_frob_return_address (void *@var{addr})
+@deftypefn {Built-in Function} {void *} __builtin_frob_return_addr (void *@var{addr})
 This function does the reverse of @code{__builtin_extract_return_addr}.
 @end deftypefn
 

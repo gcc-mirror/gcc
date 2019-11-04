@@ -1652,7 +1652,9 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
         {
           if (DECL_DECLARED_CONCEPT_P (t))
             pp_cxx_ws_string (pp, "concept");
-          else
+	  else if (DECL_IMMEDIATE_FUNCTION_P (t))
+	    pp_cxx_ws_string (pp, "consteval");
+	  else
 	    pp_cxx_ws_string (pp, "constexpr");
 	}
     }

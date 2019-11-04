@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -floop-unroll-and-jam --param unroll-jam-min-percent=0 -fdump-tree-unrolljam-details" } */
+/* { dg-options "-O3 -floop-unroll-and-jam -fno-tree-loop-im --param unroll-jam-min-percent=0 -fdump-tree-unrolljam-details" } */
 /* { dg-require-effective-target int32plus } */
 
 #include <stdio.h>
@@ -31,10 +31,10 @@ void checkb(void)
   //printf("  %d\n", sum);
 }
 
-unsigned i, j;
 #define TEST(name, body, test) \
 static void __attribute__((noinline,noclone)) name (unsigned long n, unsigned long m) \
 { \
+  unsigned i, j; \
   for (i = 1; i < m; i++) { \
       for (j = 1; j < n; j++) { \
 	  body; \

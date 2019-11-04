@@ -2,7 +2,7 @@
 /* { dg-options "-O" } */
 /* { dg-options "-O -msve-vector-bits=256" { target aarch64_sve256_hw } } */
 
-#include "sve_vcond_1.c"
+#include "vcond_1.C"
 
 #define NUM_ELEMS(X) (sizeof (X) / sizeof (X[0]))
 

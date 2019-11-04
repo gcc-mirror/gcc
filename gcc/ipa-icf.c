@@ -845,7 +845,6 @@ sem_function::equals_private (sem_item *item)
     return return_false ();
 
   m_checker = new func_checker (decl, m_compared_func->decl,
-				compare_polymorphic_p (),
 				false,
 				&refs_set,
 				&m_compared_func->refs_set);
@@ -878,9 +877,14 @@ sem_function::equals_private (sem_item *item)
     }
 
   /* Checking all basic blocks.  */
+  push_cfun (DECL_STRUCT_FUNCTION (decl));
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
     if(!m_checker->compare_bb (bb_sorted[i], m_compared_func->bb_sorted[i]))
-      return return_false();
+      {
+	pop_cfun ();
+	return return_false ();
+      }
+  pop_cfun ();
 
   auto_vec <int> bb_dict;
 
@@ -926,7 +930,7 @@ sem_function::equals_private (sem_item *item)
 static bool
 set_local (cgraph_node *node, void *data)
 {
-  node->local.local = data != NULL;
+  node->local = data != NULL;
   return false;
 }
 
@@ -1737,17 +1741,6 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
   return true;
 }
 
-/* Returns true if tree T can be compared as a handled component.  */
-
-bool
-sem_function::icf_handled_component_p (tree t)
-{
-  tree_code tc = TREE_CODE (t);
-
-  return (handled_component_p (t)
-	  || tc == ADDR_EXPR || tc == MEM_REF || tc == OBJ_TYPE_REF);
-}
-
 /* Basic blocks dictionary BB_DICT returns true if SOURCE index BB
    corresponds to TARGET.  */
 
@@ -2386,9 +2379,8 @@ sem_item_optimizer::read_summary (void)
   while ((file_data = file_data_vec[j++]))
     {
       size_t len;
-      const char *data = lto_get_section_data (file_data,
-			 LTO_section_ipa_icf, NULL, &len);
-
+      const char *data
+	= lto_get_summary_section_data (file_data, LTO_section_ipa_icf, &len);
       if (data)
 	read_section (file_data, data, len);
     }

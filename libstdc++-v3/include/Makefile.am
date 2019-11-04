@@ -64,6 +64,7 @@ std_headers = \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
+	${std_srcdir}/ranges \
 	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
 	${std_srcdir}/scoped_allocator \
@@ -129,6 +130,7 @@ bits_headers = \
 	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
+	${bits_srcdir}/iterator_concepts.h \
 	${bits_srcdir}/list.tcc \
 	${bits_srcdir}/locale_classes.h \
 	${bits_srcdir}/locale_classes.tcc \

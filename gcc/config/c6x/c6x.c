@@ -1158,13 +1158,13 @@ c6x_function_ok_for_sibcall (tree decl, tree exp)
       /* When compiling for DSBT, the calling function must be local,
 	 so that when we reload B14 in the sibcall epilogue, it will
 	 not change its value.  */
-      struct cgraph_local_info *this_func;
 
       if (!decl)
 	/* Not enough information.  */
 	return false;
 
-      this_func = cgraph_node::local_info (current_function_decl);
+      cgraph_node *this_func
+	= cgraph_node::local_info_node (current_function_decl);
       return this_func->local;
     }
 
@@ -2516,14 +2516,13 @@ struct c6x_frame
 static bool
 must_reload_pic_reg_p (void)
 {
-  struct cgraph_local_info *i = NULL;
-
   if (!TARGET_DSBT)
     return false;
 
-  i = cgraph_node::local_info (current_function_decl);
-
-  if ((crtl->uses_pic_offset_table || !crtl->is_leaf) && !i->local)
+  cgraph_node *local_info_node
+    = cgraph_node::local_info_node (current_function_decl);
+  if ((crtl->uses_pic_offset_table || !crtl->is_leaf)
+      && !local_info_node->local)
     return true;
   return false;
 }

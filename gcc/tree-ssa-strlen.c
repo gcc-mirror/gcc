@@ -193,10 +193,11 @@ static void handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *);
 
    *  +1  if SI is known to start with more than OFF nonzero characters.
 
-   *   0  if SI is known to start with OFF nonzero characters,
-	  but is not known to start with more.
+   *   0  if SI is known to start with exactly OFF nonzero characters.
 
-   *  -1  if SI might not start with OFF nonzero characters.  */
+   *  -1  if SI either does not start with OFF nonzero characters
+	  or the relationship between the number of leading nonzero
+	  characters in SI and OFF is unknown.  */
 
 static inline int
 compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off)
@@ -221,7 +222,7 @@ compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off,
   if (TREE_CODE (si->nonzero_chars) == INTEGER_CST)
     return compare_tree_int (si->nonzero_chars, off);
 
-  if (TREE_CODE (si->nonzero_chars) != SSA_NAME)
+  if (!rvals || TREE_CODE (si->nonzero_chars) != SSA_NAME)
     return -1;
 
   const value_range *vr
@@ -232,7 +233,15 @@ compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off,
   if (rng != VR_RANGE || !range_int_cst_p (vr))
     return -1;
 
-  return compare_tree_int (vr->min (), off);
+  /* If the offset is less than the minimum length or if the bounds
+     of the length range are equal return the result of the comparison
+     same as in the constant case.  Otherwise return a conservative
+     result.  */
+  int cmpmin = compare_tree_int (vr->min (), off);
+  if (cmpmin > 0 || tree_int_cst_equal (vr->min (), vr->max ()))
+    return cmpmin;
+
+  return -1;
 }
 
 /* Return true if SI is known to be a zero-length string.  */
@@ -272,7 +281,8 @@ get_next_strinfo (strinfo *si)
    *OFFSET_OUT.  */
 
 static int
-get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out)
+get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out,
+		 const vr_values *rvals = NULL)
 {
   HOST_WIDE_INT off;
   struct stridxlist *list, *last = NULL;
@@ -310,7 +320,7 @@ get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out)
       unsigned HOST_WIDE_INT rel_off
 	= (unsigned HOST_WIDE_INT) off - last->offset;
       strinfo *si = get_strinfo (last->idx);
-      if (si && compare_nonzero_chars (si, rel_off) >= 0)
+      if (si && compare_nonzero_chars (si, rel_off, rvals) >= 0)
 	{
 	  if (offset_out)
 	    {
@@ -4319,7 +4329,7 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rval
     }
   else
     {
-      idx = get_addr_stridx (lhs, NULL_TREE, &offset);
+      idx = get_addr_stridx (lhs, NULL_TREE, &offset, rvals);
       if (idx > 0)
 	si = get_strinfo (idx);
     }

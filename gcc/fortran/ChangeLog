@@ -1,3 +1,62 @@
+2019-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92133
+	* trans-decl.c (gfc_get_symbol_decl): If __def_init actually
+	contains a value, put it into  the read-only section.
+
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (match_byte_typespec): New function.  Match BYTE type-spec.
+	(gfc_match_decl_type_spec): Use it.
+
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90988
+	* decl.c (gfc_match_private, gfc_match_public): Fixed-form source code
+	does not require whitespace between PRIVATE (or PUBLIC) and an entity.
+
+2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_ARRAY_DATA): Set to gfc_omp_array_data.
+	* trans-array.c (gfc_conv_descriptor_data_get): Handle also
+	REFERENCE_TYPE.
+	* trans-openmp.c (gfc_omp_array_data): New.
+	* trans.h (gfc_omp_array_data): New prototype.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92284.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Free CFI descriptor
+	at the end; partial revised revert of Rev. 277502.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92277
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Fix DECL_ARTIFICIAL
+	checking.
+
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92208
+	* trans-array.c (gfc_conv_array_parameter): Only copy
+	string-length backend_decl if expression is not a function.
+
+2019-10-30  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* invoke.texi: Add -Wno-overwrite-recursive to list of options. Add
+	description of -Wno-overwrite-recursive. Fix typo in description
+	of -Winteger-division.
+	* lang.opt: Add option -Woverwrite-recursive initialised as on.
+	* option.c (gfc_post_options): Output warning only if it is enabled.
+
+2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91863
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Don't free data
+	memory as that's done on the Fortran side.
+	(gfc_conv_procedure_call): Handle void* pointers from
+	gfc_conv_gfc_desc_to_cfi_desc.
+
 2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86248
