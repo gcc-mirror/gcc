@@ -1,3 +1,26 @@
+2019-11-04 John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2019-10-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_call): Load descriptor address to register
+	%r22.  Load function address before global pointer.
+	(pa_attr_length_indirect_call): Adjust length of inline versions of
+	$$dyncall.
+	(pa_output_indirect_call): Remove fast inline version of $$dyncall
+	before normal cases.  Update inline $$dyncall sequences to preserve
+	function descriptor address in register %r22.
+	(TRAMPOLINE_CODE_SIZE): Adjust.
+	(pa_asm_trampoline_template): Revise 32-bit trampoline.  Don't assume
+	register %r22 contains trampoline address.
+	(pa_trampoline_init): Adjust offsets.
+	(pa_trampoline_adjust_address): Likewise.
+	* config/pa/pa.h (TRAMPOLINE_SIZE): Adjust 32-bit size.
+
+	2019-10-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_indirect_call): Fix typos in last change.
+
 2019-11-1  Delia Burduv  <Delia.Burduv@arm.com>
 
          Backport from trunk
