@@ -3359,6 +3359,18 @@ gcc_GAS_CHECK_FEATURE([line table discriminator support],
 [AC_DEFINE(HAVE_GAS_DISCRIMINATOR, 1,
   [Define if your assembler supports the .loc discriminator sub-directive.])])
 
+# Catch the newlib flag of the same name so we can gate GCC features on it.
+AC_ARG_ENABLE(newlib-nano-formatted-io,
+[AS_HELP_STRING([--enable-newlib-nano-formatted-io], [Use nano version
+ formatted IO])],
+[case "${enableval}" in
+  yes|no)
+    ;;
+  *)
+    AC_MSG_ERROR([unknown newlib-nano-formatted-io setting $enableval])
+    ;;
+esac], [])
+
 # Thread-local storage - the check is heavily parameterized.
 conftest_s=
 tls_first_major=
@@ -4999,6 +5011,10 @@ pointers into PC-relative form.])
       [.mspabi_attribute 4,1],,
       [AC_DEFINE(HAVE_AS_MSPABI_ATTRIBUTE, 1,
 	  [Define if your assembler supports .mspabi_attribute.])])
+    if test x$enable_newlib_nano_formatted_io = xyes; then
+      AC_DEFINE(HAVE_NEWLIB_NANO_FORMATTED_IO, 1, [Define if GCC has been
+configured with --enable-newlib-nano-formatted-io.])
+      fi
     ;;
     riscv*-*-*)
     gcc_GAS_CHECK_FEATURE([.attribute support],
