@@ -1,6 +1,15 @@
 2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92208
+	* trans-array.c (gfc_conv_array_parameter): Only copy
+	string-length backend_decl if expression is not a function.
+
+2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92284.
