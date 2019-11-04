@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 
 /* Cached node/edge growths.  */
-call_summary<edge_growth_cache_entry *> *edge_growth_cache = NULL;
+fast_call_summary<edge_growth_cache_entry *, va_heap> *edge_growth_cache = NULL;
 
 /* The context cache remembers estimated time/size and hints for given
    ipa_call_context of a call.  */
@@ -125,7 +125,7 @@ void
 initialize_growth_caches ()
 {
   edge_growth_cache
-    = new call_summary<edge_growth_cache_entry *> (symtab, false);
+    = new fast_call_summary<edge_growth_cache_entry *, va_heap> (symtab);
   node_context_cache
     = new fast_function_summary<node_context_summary *, va_heap> (symtab);
 }
@@ -219,7 +219,6 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 	  else
 	    node_context_cache_clear++;
 	  e->entry.ctx.release (true);
-	  e->entry.ctx = ctx;
 	  ctx.estimate_size_and_time (&size, &min_size,
 				      &time, &nonspec_time, &hints);
 	  e->entry.size = size;
@@ -273,6 +272,16 @@ reset_node_cache (struct cgraph_node *node)
 {
   if (node_context_cache)
     node_context_cache->remove (node);
+}
+
+/* Remove EDGE from caches once it was inlined.  */
+void
+ipa_remove_from_growth_caches (struct cgraph_edge *edge)
+{
+  if (node_context_cache)
+    node_context_cache->remove (edge->callee);
+  if (edge_growth_cache)
+    edge_growth_cache->remove (edge);
 }
 
 /* Return estimated callee growth after inlining EDGE.

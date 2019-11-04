@@ -892,8 +892,6 @@ cgraph_node::create_version_clone (tree new_decl,
        e->redirect_callee (new_version);
      }
 
-   symtab->call_cgraph_duplication_hooks (this, new_version);
-
    dump_callgraph_transformation (this, new_version, suffix);
 
    return new_version;

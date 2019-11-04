@@ -1,3 +1,38 @@
+2019-11-04  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphclones.c (cgraph_node::create_version_clone): Do not
+	duplicate summaries.
+	* ipa-fnsummary.c (ipa_fn_summary_alloc): Allocate size summary
+	first.
+	(ipa_fn_summary_t::duplicate): Use get instead of get_create to
+	access call summaries.
+	(dump_ipa_call_summary): Be ready for missing edge summaries.
+	(analyze_function_body): Use get instead of get_create to access
+	edge summary.
+	(estimate_calls_size_and_time): Do not access summaries of
+	inlined edges; sanity check they are missing.
+	(ipa_call_context::estimate_size_and_time): Use get instead
+	of get_create to access node summary.
+	(inline_update_callee_summaries): Do not update depth of
+	inlined edge.
+	(ipa_merge_fn_summary_after_inlining): Remove inline edge from
+	growth caches.
+	(ipa_merge_fn_summary_after_inlining): Use get instead
+	of get_create.
+	* ipa-fnsummary.h (ipa_remove_from_growth_caches): Declare.
+	* ipa-inline-analyssi.c (edge_growth_cache): Turn to
+	fast summary.
+	(initialize_growth_caches): Update.
+	(do_estimate_edge_time): Remove redundant copy of context.
+	(ipa_remove_from_growth_caches): New function.
+	* ipa-inline.c (flatten_function): Update overall summary
+	only when optimizing.
+	(inline_to_all_callers): Update overall summary of function
+	inlined to.
+	* ipa-inline.h (edge_growth_cache): Turn to fast summary.
+	* symbol-summary.h (call_summary_base): Set m_initialize_when_cloning
+	to false.
+
 2019-11-04  Richard Biener  <rguenther@suse.de>
 
 	* system.h: Include malloc.h if INCLUDE_MALLOC_H and HAVE_MALLINFO.

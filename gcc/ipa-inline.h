@@ -39,7 +39,7 @@ public:
       hints (hints) {}
 };
 
-extern call_summary<edge_growth_cache_entry *> *edge_growth_cache;
+extern fast_call_summary<edge_growth_cache_entry *, va_heap> *edge_growth_cache;
 
 /* In ipa-inline-analysis.c  */
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);

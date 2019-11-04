@@ -532,7 +532,7 @@ class call_summary_base
 public:
   /* Default construction takes SYMTAB as an argument.  */
   call_summary_base (symbol_table *symtab): m_symtab (symtab),
-  m_initialize_when_cloning (true)
+  m_initialize_when_cloning (false)
   {}
 
   /* Basic implementation of removal operation.  */

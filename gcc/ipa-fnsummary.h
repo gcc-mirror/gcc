@@ -364,5 +364,6 @@ void evaluate_properties_for_edge (struct cgraph_edge *e,
 
 void ipa_fnsummary_c_finalize (void);
 HOST_WIDE_INT ipa_get_stack_frame_offset (struct cgraph_node *node);
+void ipa_remove_from_growth_caches (struct cgraph_edge *edge);
 
 #endif /* GCC_IPA_FNSUMMARY_H */
