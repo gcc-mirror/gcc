@@ -2290,9 +2290,9 @@ flatten_function (struct cgraph_node *node, bool early, bool update)
     }
 
   node->aux = NULL;
-  if (update)
-    ipa_update_overall_fn_summary (node->inlined_to
-				   ? node->inlined_to : node);
+  cgraph_node *where = node->inlined_to ? node->inlined_to : node;
+  if (update && opt_for_fn (where->decl, optimize))
+    ipa_update_overall_fn_summary (where);
 }
 
 /* Inline NODE to all callers.  Worker for cgraph_for_node_and_aliases.
@@ -2367,7 +2367,7 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
      we have a lot of calls to the same function.  */
   for (hash_set<cgraph_node *>::iterator i = callers.begin ();
        i != callers.end (); ++i)
-    ipa_update_overall_fn_summary (*i);
+    ipa_update_overall_fn_summary ((*i)->inlined_to ? (*i)->inlined_to : *i);
   return res;
 }
 
