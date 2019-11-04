@@ -865,8 +865,7 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 
 static unsigned
 try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
-		      unsigned *num_vectorized_loops,
-		      loop_p loop, loop_vec_info orig_loop_vinfo,
+		      unsigned *num_vectorized_loops, loop_p loop,
 		      gimple *loop_vectorized_call,
 		      gimple *loop_dist_alias_call)
 {
@@ -890,7 +889,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
   else
     {
       /* Try to analyze the loop, retaining an opt_problem if dump_enabled_p.  */
-      loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
+      loop_vinfo = vect_analyze_loop (loop, &shared);
       loop->aux = loop_vinfo;
     }
 
@@ -1025,7 +1024,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
        */
       unsigned dont_count = *num_vectorized_loops;
       ret |= try_vectorize_loop_1 (simduid_to_vf_htab, &dont_count,
-				   new_loop, loop_vinfo, NULL, NULL);
+				   new_loop, NULL, NULL);
     }
 
   return ret;
@@ -1042,8 +1041,7 @@ try_vectorize_loop (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	|| loop->force_vectorize))
     return 0;
 
-  return try_vectorize_loop_1 (simduid_to_vf_htab, num_vectorized_loops,
-			       loop, NULL,
+  return try_vectorize_loop_1 (simduid_to_vf_htab, num_vectorized_loops, loop,
 			       vect_loop_vectorized_call (loop),
 			       vect_loop_dist_alias_call (loop));
 }

@@ -2350,11 +2350,9 @@ again:
 
    Apply a set of analyses on LOOP, and create a loop_vec_info struct
    for it.  The different analyses will record information in the
-   loop_vec_info struct.  If ORIG_LOOP_VINFO is not NULL epilogue must
-   be vectorized.  */
+   loop_vec_info struct.  */
 opt_loop_vec_info
-vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
-		   vec_info_shared *shared)
+vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 {
   auto_vector_sizes vector_sizes;
 
@@ -2406,9 +2404,7 @@ vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 
       bool fatal = false;
 
-      if (orig_loop_vinfo)
-	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = orig_loop_vinfo;
-      else if (vect_epilogues && first_loop_vinfo)
+      if (vect_epilogues && first_loop_vinfo)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
       opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
