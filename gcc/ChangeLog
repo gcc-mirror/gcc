@@ -1,3 +1,8 @@
+2019-11-04  Richard Biener  <rguenther@suse.de>
+
+	* system.h: Include malloc.h if INCLUDE_MALLOC_H and HAVE_MALLINFO.
+	* ggc-common.c: Remove inclusion of malloc.h, define INCLUDE_MALLOC_H.
+
 2019-11-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* ggc-common.c: Include system.h before malloc.h.

@@ -21,10 +21,8 @@ along with GCC; see the file COPYING3.  If not see
    any particular GC implementation.  */
 
 #include "config.h"
+#define INCLUDE_MALLOC_H
 #include "system.h"
-#ifdef HAVE_MALLINFO
-#include <malloc.h>
-#endif
 #include "coretypes.h"
 #include "timevar.h"
 #include "diagnostic-core.h"
