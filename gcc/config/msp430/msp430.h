@@ -75,7 +75,8 @@ extern bool msp430x;
     "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
   "%{mdata-region=*:--data-region=%:" \
     "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
-  "%:msp430_get_linker_devices_include_path()"
+  "%:msp430_get_linker_devices_include_path() " \
+  "%{mtiny-printf:--wrap puts --wrap printf} "
 
 #define DRIVER_SELF_SPECS \
   " %{!mlarge:%{mcode-region=*:%{mdata-region=*:%e-mcode-region and "	\

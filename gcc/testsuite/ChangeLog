@@ -1,5 +1,9 @@
 2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* gcc.target/msp430/tiny-printf.c: New test.
+
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* gcc.target/msp430/devices/csv-using-env-var.c: New test.
 	* gcc.target/msp430/devices/csv-using-installed.c: New test.
 	* gcc.target/msp430/devices/csv-using-option.c: New test.

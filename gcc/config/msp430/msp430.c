@@ -287,6 +287,12 @@ msp430_option_override (void)
      possible to build newlib with -Os enabled.  Until now...  */
   if (TARGET_OPT_SPACE && optimize < 3)
     optimize_size = 1;
+
+#ifndef HAVE_NEWLIB_NANO_FORMATTED_IO
+  if (TARGET_TINY_PRINTF)
+    error ("GCC must be configured with %<--enable-newlib-nano-formatted-io%> "
+	   "to use %<-mtiny-printf%>");
+#endif
 }
 
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
