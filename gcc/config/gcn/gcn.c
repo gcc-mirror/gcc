@@ -2516,6 +2516,36 @@ gcn_gimplify_va_arg_expr (tree valist, tree type,
   return t;
 }
 
+/* Return 1 if TRAIT NAME is present in the OpenMP context's
+   device trait set, return 0 if not present in any OpenMP context in the
+   whole translation unit, or -1 if not present in the current OpenMP context
+   but might be present in another OpenMP context in the same TU.  */
+
+int
+gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
+			      const char *name)
+{
+  switch (trait)
+    {
+    case omp_device_kind:
+      return strcmp (name, "gpu") == 0;
+    case omp_device_arch:
+      return strcmp (name, "gcn") == 0;
+    case omp_device_isa:
+      if (strcmp (name, "carrizo") == 0)
+	return gcn_arch == PROCESSOR_CARRIZO;
+      if (strcmp (name, "fiji") == 0)
+	return gcn_arch == PROCESSOR_FIJI;
+      if (strcmp (name, "gfx900") == 0)
+	return gcn_arch == PROCESSOR_VEGA;
+      if (strcmp (name, "gfx906") == 0)
+	return gcn_arch == PROCESSOR_VEGA;
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Calculate stack offsets needed to create prologues and epilogues.  */
 
 static struct machine_function *
@@ -6030,6 +6060,8 @@ print_operand (FILE *file, rtx x, int code)
 #define TARGET_FUNCTION_VALUE_REGNO_P gcn_function_value_regno_p
 #undef  TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR gcn_gimplify_va_arg_expr
+#undef TARGET_OMP_DEVICE_KIND_ARCH_ISA
+#define TARGET_OMP_DEVICE_KIND_ARCH_ISA gcn_omp_device_kind_arch_isa
 #undef  TARGET_GOACC_ADJUST_PROPAGATION_RECORD
 #define TARGET_GOACC_ADJUST_PROPAGATION_RECORD \
   gcn_goacc_adjust_propagation_record
