@@ -3659,6 +3659,9 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	flags &= ~OEP_ADDRESS_OF;
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
 	  {
+	    /* In GIMPLE the indexes can be either NULL or matching i.  */
+	    if (field == NULL_TREE)
+	      field = bitsize_int (idx);
 	    hash_operand (field, hstate, flags);
 	    hash_operand (value, hstate, flags);
 	  }

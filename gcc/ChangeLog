@@ -1,5 +1,11 @@
 2019-11-04  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/92304
+	* fold-const.c (operand_compare::hash_operand): Fix field
+	hashing of CONSTRUCTOR.
+
+2019-11-04  Martin Liska  <mliska@suse.cz>
+
 	* ggc.h (ggc_delete): New function.
 	* ipa-fnsummary.c (ipa_free_fn_summary): Use it.
 	* ipa-prop.c (ipa_free_all_edge_args): Likewise.
