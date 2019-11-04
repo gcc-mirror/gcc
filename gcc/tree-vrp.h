@@ -286,11 +286,11 @@ extern bool range_int_cst_p (const value_range_base *);
 extern int compare_values (tree, tree);
 extern int compare_values_warnv (tree, tree, bool *);
 extern int operand_less_p (tree, tree);
-extern bool vrp_val_is_min (const_tree, bool handle_pointers = false);
-extern bool vrp_val_is_max (const_tree, bool handle_pointers = false);
+extern bool vrp_val_is_min (const_tree);
+extern bool vrp_val_is_max (const_tree);
 
-extern tree vrp_val_min (const_tree, bool handle_pointers = false);
-extern tree vrp_val_max (const_tree, bool handle_pointers = false);
+extern tree vrp_val_min (const_tree);
+extern tree vrp_val_max (const_tree);
 
 void range_fold_unary_expr (value_range_base *, enum tree_code, tree type,
 			    const value_range_base *, tree op0_type);
@@ -325,7 +325,7 @@ value_range_base::nonzero_p () const
   return (m_kind == VR_RANGE
 	  && TYPE_UNSIGNED (type ())
 	  && integer_onep (m_min)
-	  && vrp_val_is_max (m_max, true));
+	  && vrp_val_is_max (m_max));
 }
 
 /* Return TRUE if *VR includes the value zero.  */
