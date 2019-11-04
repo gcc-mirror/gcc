@@ -172,6 +172,11 @@ struct default_hash_traits <type_pair>
     }
 };
 
+/* HACK alert: this is used to communicate with ipa-inline-transform that
+   thunk is being expanded and there is no need to clear the polymorphic
+   call target cache.  */
+bool thunk_expansion;
+
 static bool odr_types_equivalent_p (tree, tree, bool, bool *,
 				    hash_set<type_pair> *,
 				    location_t, location_t);
@@ -2747,6 +2752,7 @@ static void
 devirt_node_removal_hook (struct cgraph_node *n, void *d ATTRIBUTE_UNUSED)
 {
   if (cached_polymorphic_call_targets
+      && !thunk_expansion
       && cached_polymorphic_call_targets->contains (n))
     free_polymorphic_call_targets_hash ();
 }
