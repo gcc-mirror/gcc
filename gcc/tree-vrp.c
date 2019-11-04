@@ -4164,7 +4164,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	      /* Try to determine the size of the trailing array from
 		 its initializer (if it has one).  */
 	      if (tree refsize = component_ref_size (arg, &interior_zero_len))
-		maxbound = refsize;
+		if (TREE_CODE (refsize) == INTEGER_CST)
+		  maxbound = refsize;
 	    }
 
 	  if (maxbound == ptrdiff_max
