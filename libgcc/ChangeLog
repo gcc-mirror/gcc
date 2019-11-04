@@ -1,3 +1,14 @@
+2019-11-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2019-10-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (_dl_read_access_allowed): Change argument to
+	unsigned int.  Adjust callers.
+	(__canonicalize_funcptr_for_compare): Change plabel type to volatile
+	unsigned int *.  Load relocation offset before function pointer.
+	Add barrier to ensure ordering.
+
 2019-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
