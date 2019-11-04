@@ -75,6 +75,7 @@ extern bool msp430x;
     "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
   "%{mdata-region=*:--data-region=%:" \
     "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
+  "%:msp430_get_linker_devices_include_path()"
 
 #define DRIVER_SELF_SPECS \
   " %{!mlarge:%{mcode-region=*:%{mdata-region=*:%e-mcode-region and "	\
@@ -94,6 +95,7 @@ extern const char * msp430_select_cpu (int, const char **);
 extern const char * msp430_set_driver_var (int, const char **);
 extern const char * msp430_check_path_for_devices (int, const char **);
 extern const char *msp430_propagate_region_opt (int, const char **);
+extern const char *msp430_get_linker_devices_include_path (int, const char **);
 
 /* There must be a trailing comma after the last item, see gcc.c
    "static_spec_functions".  */
@@ -102,7 +104,9 @@ extern const char *msp430_propagate_region_opt (int, const char **);
   { "msp430_select_cpu", msp430_select_cpu },		\
   { "msp430_set_driver_var", msp430_set_driver_var },		\
   { "msp430_check_path_for_devices", msp430_check_path_for_devices }, \
-  { "msp430_propagate_region_opt", msp430_propagate_region_opt },
+  { "msp430_propagate_region_opt", msp430_propagate_region_opt }, \
+  { "msp430_get_linker_devices_include_path", \
+    msp430_get_linker_devices_include_path },
 
 /* Specify the libraries to include on the linker command line.
 
@@ -495,6 +499,12 @@ typedef struct
   msp430_start_function ((FILE), (NAME), (DECL))
 
 #define TARGET_HAS_NO_HW_DIVIDE (! TARGET_HWMULT)
+
+void msp430_register_pre_includes (const char *sysroot ATTRIBUTE_UNUSED,
+				   const char *iprefix ATTRIBUTE_UNUSED,
+				   int stdinc ATTRIBUTE_UNUSED);
+#undef TARGET_EXTRA_PRE_INCLUDES
+#define TARGET_EXTRA_PRE_INCLUDES msp430_register_pre_includes
 
 #undef  USE_SELECT_SECTION_FOR_FUNCTIONS
 #define USE_SELECT_SECTION_FOR_FUNCTIONS 1

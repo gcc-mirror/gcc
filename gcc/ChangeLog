@@ -1,3 +1,23 @@
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/driver-msp430.c
+	(msp430_get_linker_devices_include_path): New spec function.
+	* config/msp430/msp430-devices.c (msp430_dirname): New function.
+	(extract_devices_dir_from_exec_prefix): New function.
+	(extract_devices_dir_from_collect_gcc): New function.
+	(msp430_check_env_var_for_devices): New function.
+	(msp430_check_path_for_devices): Use xstrdup instead of ASTRDUP.
+	(parse_devices_csv): Call msp430_check_env_var_for_devices if
+	devices.csv was not found using other methods.
+	* config/msp430/msp430-devices.h (msp430_check_env_var_for_devices):
+	New prototype.
+	(msp430_dirname): Likewise.
+	* config/msp430/msp430.c (msp430_register_pre_includes): New function.
+	* config/msp430/msp430.h (EXTRA_SPEC_FUNCTIONS): Add
+	msp430_get_linker_devices_include_path.
+	(TARGET_EXTRA_PRE_INCLUDES): Define.
+	* doc/invoke.texi: Document new ways of searching for support files.
+
 2019-11-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92301

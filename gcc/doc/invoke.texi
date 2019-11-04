@@ -23231,8 +23231,33 @@ The ISA and hardware multiply supported for the different MCUs is hard-coded
 into GCC.  However, an external @samp{devices.csv} file can be used to
 extend device support beyond those that have been hard-coded.
 
-GCC searches for the @samp{devices.csv} file on the paths specified
-with the @code{-I} and @code{-L} options.
+GCC searches for the @samp{devices.csv} file using the following methods in the
+given precedence order, where the first method takes precendence over the
+second which takes precedence over the third.
+
+@table @asis
+@item Include path specified with @code{-I} and @code{-L}
+@samp{devices.csv} will be searched for in each of the directories specified by
+include paths and linker library search paths.
+@item Path specified by the environment variable @samp{MSP430_GCC_INCLUDE_DIR}
+Define the value of the global environment variable
+@samp{MSP430_GCC_INCLUDE_DIR}
+to the full path to the directory containing devices.csv, and GCC will search
+this directory for devices.csv.  If devices.csv is found, this directory will
+also be registered as an include path, and linker library path.  Header files
+and linker scripts in this directory can therefore be used without manually
+specifying @code{-I} and @code{-L} on the command line.
+@item The @samp{msp430-elf/include/devices} directory
+Finally, GCC will examine @samp{msp430-elf/include/devices} from the
+toolchain root directory.  This directory does not exist in a default
+installation, but if the user has created it and copied @samp{devices.csv}
+there, then the MCU data will be read.  As above, this directory will
+also be registered as an include path, and linker library path.
+
+@end table
+If none of the above search methods find @samp{devices.csv}, then the
+hard-coded MCU data is used.
+
 
 @item -mwarn-mcu
 @itemx -mno-warn-mcu

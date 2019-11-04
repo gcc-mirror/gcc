@@ -29,3 +29,5 @@ struct t_msp430_mcu_data
 extern struct t_msp430_mcu_data extracted_mcu_data;
 
 void msp430_extract_mcu_data (const char * mcu_name);
+int msp430_check_env_var_for_devices (char **local_devices_csv_loc);
+char *msp430_dirname (char *path);

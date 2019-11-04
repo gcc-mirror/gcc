@@ -47,6 +47,8 @@
 #include "builtins.h"
 #include "intl.h"
 #include "msp430-devices.h"
+#include "incpath.h"
+#include "prefix.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -3633,6 +3635,27 @@ rtx
 msp430_incoming_return_addr_rtx (void)
 {
   return gen_rtx_MEM (Pmode, stack_pointer_rtx);
+}
+
+/* If the path to the MSP430-GCC support files has been found by examining
+   an environment variable (see msp430_check_env_var_for_devices in
+   msp430-devices.c), or -mdevices-csv-loc=, register this path as an include
+   directory so the user can #include msp430.h without needing to specify the
+   path to the support files with -I.  */
+void
+msp430_register_pre_includes (const char *sysroot ATTRIBUTE_UNUSED,
+			      const char *iprefix ATTRIBUTE_UNUSED,
+			      int stdinc ATTRIBUTE_UNUSED)
+{
+  char *include_dir;
+  if (msp430_devices_csv_loc)
+    include_dir = xstrdup (msp430_devices_csv_loc);
+  else if (msp430_check_env_var_for_devices (&include_dir))
+    return;
+  include_dir = msp430_dirname (include_dir);
+
+  include_dir = update_path (include_dir, "");
+  add_path (include_dir, INC_SYSTEM, false, false);
 }
 
 /* Instruction generation stuff.  */
