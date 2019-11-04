@@ -1,3 +1,12 @@
+2019-11-04  Alexandre Oliva <oliva@adacore.com>
+
+	* configure.ac: Pass --enable-obsolete=* and
+	--enable-option-checking=* down to build configure, and fail
+	if it fails.  AC_SUBST HAVE_AUTO_BUILD.
+	* configure: Rebuild.
+	* Makefile.in [HAVE_AUTO_BUILD] (auto-build.h): New rule.
+	[HAVE_AUTO_BUILD] (config.status): Depend on auto-build.h.
+
 2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config.in: Regenerate.
