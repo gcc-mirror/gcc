@@ -1,3 +1,8 @@
+2019-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (dump_assert_info): New.
+	(dump_asserts_info): New.
+
 2019-11-04  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c: Include ipa-utils.h

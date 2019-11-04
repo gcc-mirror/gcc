@@ -2114,6 +2114,45 @@ debug_all_asserts (void)
   dump_all_asserts (stderr);
 }
 
+/* Dump assert_info structure.  */
+
+void
+dump_assert_info (FILE *file, const assert_info &assert)
+{
+  fprintf (file, "Assert for: ");
+  print_generic_expr (file, assert.name);
+  fprintf (file, "\n\tPREDICATE: expr=[");
+  print_generic_expr (file, assert.expr);
+  fprintf (file, "] %s ", get_tree_code_name (assert.comp_code));
+  fprintf (file, "val=[");
+  print_generic_expr (file, assert.val);
+  fprintf (file, "]\n\n");
+}
+
+DEBUG_FUNCTION void
+debug (const assert_info &assert)
+{
+  dump_assert_info (stderr, assert);
+}
+
+/* Dump a vector of assert_info's.  */
+
+void
+dump_asserts_info (FILE *file, const vec<assert_info> &asserts)
+{
+  for (unsigned i = 0; i < asserts.length (); ++i)
+    {
+      dump_assert_info (file, asserts[i]);
+      fprintf (file, "\n");
+    }
+}
+
+DEBUG_FUNCTION void
+debug (const vec<assert_info> &asserts)
+{
+  dump_asserts_info (stderr, asserts);
+}
+
 /* Push the assert info for NAME, EXPR, COMP_CODE and VAL to ASSERTS.  */
 
 static void
