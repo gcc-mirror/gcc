@@ -1037,6 +1037,10 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
 	omp_device_property=omp-device-properties-i386
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
 	;;
+      gcn*-*)
+	omp_device_property=omp-device-properties-gcn
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
+	;;
       nvptx*-*)
 	omp_device_property=omp-device-properties-nvptx
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"

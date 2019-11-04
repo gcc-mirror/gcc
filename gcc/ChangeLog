@@ -1,3 +1,12 @@
+2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_omp_device_kind_arch_isa): New function.
+	(TARGET_OMP_DEVICE_KIND_ARCH_ISA): Redefine to
+	gcn_omp_device_kind_arch_isa.
+	* config/gcn/t-omp-device: New file.
+	* configure.ac: Support gcn for omp_device_property.
+	* configure: Regenerate.
+
 2019-11-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.h (vrp_val_min): Remove handle_pointers argument.
