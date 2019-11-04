@@ -1,3 +1,8 @@
+2019-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92345
+	* gcc.dg/torture/pr92345.c: New testcase.
+
 2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/tiny-printf.c: New test.
