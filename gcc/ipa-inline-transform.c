@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "cfg.h"
 #include "basic-block.h"
+#include "ipa-utils.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -352,6 +353,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (to->thunk.thunk_p)
     {
       struct cgraph_node *target = to->callees->callee;
+      thunk_expansion = true;
       symtab->call_cgraph_removal_hooks (to);
       if (in_lto_p)
 	to->get_untransformed_body ();
@@ -360,6 +362,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
       for (e = to->callees; e && e->callee != target; e = e->next_callee)
 	;
       symtab->call_cgraph_insertion_hooks (to);
+      thunk_expansion = false;
       gcc_assert (e);
     }
 

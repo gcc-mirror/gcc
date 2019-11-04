@@ -1,3 +1,12 @@
+2019-11-04  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c: Include ipa-utils.h
+	(inline_call): Set thunk_expansion flag.
+	* ipa-utils.h (thunk_expansion): Declare.
+	* ipa-devirt.c (thunk_expansion): New global var.
+	(devirt_node_removal_hook): Do not invalidate cache while
+	doing thunk expansion.
+
 2019-11-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* tree-vect-slp.c (vectorize_slp_instance_root_stmt): Initialize rstmt.
