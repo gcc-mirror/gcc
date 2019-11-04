@@ -1,5 +1,9 @@
 2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* configure: Regenerate.
+
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/driver-msp430.c
 	(msp430_get_linker_devices_include_path): New spec function.
 	* config/msp430/msp430-devices.c (msp430_dirname): New function.
