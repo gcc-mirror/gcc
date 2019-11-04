@@ -1,3 +1,9 @@
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c: Define USE_TM_CLONE_REGISTRY to 0 if it's undefined and
+	the target output object format is not ELF.
+	s/defined(USE_TM_CLONE_REGISTRY)/USE_TM_CLONE_REGISTRY.
+
 2019-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR libgcc/78804
