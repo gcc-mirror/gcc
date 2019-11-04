@@ -152,6 +152,10 @@ public:
   /* The root of SLP tree.  */
   slp_tree root;
 
+  /* For vector constructors, the constructor stmt that the SLP tree is built
+     from, NULL otherwise.  */
+  stmt_vec_info root_stmt;
+
   /* Size of groups of scalar stmts that will be replaced by SIMD stmt/s.  */
   unsigned int group_size;
 
@@ -171,6 +175,7 @@ public:
 #define SLP_INSTANCE_GROUP_SIZE(S)               (S)->group_size
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
+#define SLP_INSTANCE_ROOT_STMT(S)                (S)->root_stmt
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
