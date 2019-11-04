@@ -1,3 +1,14 @@
+2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92305
+	* testsuite/libgomp.fortran/allocatable2.f90: Use
+	unique numbers with 'stop'.
+	* testsuite/libgomp.fortran/use_device_addr-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/lib-15.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/pset-1.f90: Ditto.
+
 2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/use_device_addr-1.f90 (test_nullptr_1,

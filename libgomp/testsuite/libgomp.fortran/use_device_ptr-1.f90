@@ -121,23 +121,23 @@ contains
     !$omp end target data
 
     if (any(abs(AA - 11.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 2
 
     ! allocatable array to use_device_ptr
     !$omp target data map(to:CC) map(from:DD) use_device_ptr(CC,DD)
     call copy3_array(c_loc(CC), c_loc(DD), N)
     !$omp end target data
 
-    if (any(abs(CC - 33.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+    if (any(abs(CC - 33.0_c_double) > 10.0_c_double * epsilon(CC))) stop 3
+    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 4
 
     ! fixed-size decriptorless array to use_device_ptr
     !$omp target data map(to:EE) map(from:FF) use_device_ptr(EE,FF)
     call copy3_array(c_loc(EE), c_loc(FF), N)
     !$omp end target data
 
-    if (any(abs(EE - 55.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+    if (any(abs(EE - 55.0_c_double) > 10.0_c_double * epsilon(EE))) stop 5
+    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 6
 
 
 
@@ -159,44 +159,44 @@ contains
 
     call copy3_array(tgt_aptr, tgt_bptr, N)
     !$omp target update from(BB)
-    if (any(abs(AA - 111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 7
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 8
 
     AA = 1111.0_c_double
     !$omp target update to(AA)
     call copy3_array(tgt_aptr, tgt_bptr, N)
     !$omp target update from(BB)
-    if (any(abs(AA - 1111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 1111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 9
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 10
 
     ! AprtA tests
     AA = 7.0_c_double
     !$omp target update to(AA)
     call copy3_array(c_loc(AptrA), c_loc(BptrB), N)
     !$omp target update from(BB)
-    if (any(abs(AA - 7.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 7.0_c_double) > 10.0_c_double * epsilon(AA))) stop 11
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 12
 
     AA = 77.0_c_double
     !$omp target update to(AA)
     call copy3_array1(AptrA, BptrB)
     !$omp target update from(BB)
-    if (any(abs(AA - 77.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 77.0_c_double) > 10.0_c_double * epsilon(AA))) stop 13
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 14
 
 !    AA = 777.0_c_double
 !    !$omp target update to(AA)
 !    call copy3_array2(AptrA, BptrB)
 !    !$omp target update from(BB)
-!    if (any(abs(AA - 777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+!    if (any(abs(AA - 777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 15
+!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 16
 
     AA = 7777.0_c_double
     !$omp target update to(AA)
     call copy3_array3(AptrA, BptrB)
     !$omp target update from(BB)
-    if (any(abs(AA - 7777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 7777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 17
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 18
 
 !    AA = 77777.0_c_double
 !    !$omp target update to(AA)
@@ -204,8 +204,8 @@ contains
 !    !$omp target update from(BB)
     !$omp end target data
 !
-!    if (any(abs(AA - 77777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+!    if (any(abs(AA - 77777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 19
+!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 20
 
 
 
@@ -218,8 +218,8 @@ contains
 
     call copy3_array(tgt_cptr, tgt_dptr, N)
     !$omp target update from(DD)
-    if (any(abs(CC - 333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+    if (any(abs(CC - 333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 21
+    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 22
 
     CC = 3333.0_c_double
     !$omp target update to(CC)
@@ -227,8 +227,8 @@ contains
     !$omp target update from(DD)
     !$omp end target data
 
-    if (any(abs(CC - 3333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+    if (any(abs(CC - 3333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 23
+    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 24
 
 
 
@@ -241,8 +241,8 @@ contains
 
     call copy3_array(tgt_eptr, tgt_fptr, N)
     !$omp target update from(FF)
-    if (any(abs(EE - 555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+    if (any(abs(EE - 555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 25
+    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 26
 
     EE = 5555.0_c_double
     !$omp target update to(EE)
@@ -250,8 +250,8 @@ contains
     !$omp target update from(FF)
     !$omp end target data
 
-    if (any(abs(EE - 5555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+    if (any(abs(EE - 5555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 27
+    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 28
   end subroutine use_device_ptr_sub
 
 
@@ -280,24 +280,24 @@ contains
     call copy3_array(c_loc(AA), c_loc(BB), N)
     !$omp end target data
 
-    if (any(abs(AA - 11.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 11.0_c_double) > 10.0_c_double * epsilon(AA))) stop 29
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 30
 
     ! allocatable array to use_device_ptr
     !$omp target data map(to:CC) map(from:DD) use_device_ptr(CC,DD)
     call copy3_array(c_loc(CC), c_loc(DD), N)
     !$omp end target data
 
-    if (any(abs(CC - 33.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+    if (any(abs(CC - 33.0_c_double) > 10.0_c_double * epsilon(CC))) stop 31
+    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 32
 
     ! fixed-size decriptorless array to use_device_ptr
     !$omp target data map(to:EE) map(from:FF) use_device_ptr(EE,FF)
     call copy3_array(c_loc(EE), c_loc(FF), N)
     !$omp end target data
 
-    if (any(abs(EE - 55.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+    if (any(abs(EE - 55.0_c_double) > 10.0_c_double * epsilon(EE))) stop 33
+    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 34
 
 
 
@@ -319,44 +319,44 @@ contains
 
     call copy3_array(tgt_aptr, tgt_bptr, N)
     !$omp target update from(BB)
-    if (any(abs(AA - 111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 35
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 36
 
     AA = 1111.0_c_double
     !$omp target update to(AA)
     call copy3_array(tgt_aptr, tgt_bptr, N)
     !$omp target update from(BB)
-    if (any(abs(AA - 1111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 1111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 37
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 38
 
     ! AprtA tests
     AA = 7.0_c_double
     !$omp target update to(AA)
     call copy3_array(c_loc(AptrA), c_loc(BptrB), N)
     !$omp target update from(BB)
-    if (any(abs(AA - 7.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 7.0_c_double) > 10.0_c_double * epsilon(AA))) stop 39
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 40
 
     AA = 77.0_c_double
     !$omp target update to(AA)
     call copy3_array1(AptrA, BptrB)
     !$omp target update from(BB)
-    if (any(abs(AA - 77.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 77.0_c_double) > 10.0_c_double * epsilon(AA))) stop 41
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 42
 
 !    AA = 777.0_c_double
 !    !$omp target update to(AA)
 !    call copy3_array2(AptrA, BptrB)
 !    !$omp target update from(BB)
-!    if (any(abs(AA - 777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+!    if (any(abs(AA - 777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 43
+!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 44
 
     AA = 7777.0_c_double
     !$omp target update to(AA)
     call copy3_array3(AptrA, BptrB)
     !$omp target update from(BB)
-    if (any(abs(AA - 7777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+    if (any(abs(AA - 7777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 45
+    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 46
 
 !    AA = 77777.0_c_double
 !    !$omp target update to(AA)
@@ -364,8 +364,8 @@ contains
 !    !$omp target update from(BB)
     !$omp end target data
 !
-!    if (any(abs(AA - 77777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+!    if (any(abs(AA - 77777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 47
+!    if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 48
 
 
 
@@ -378,8 +378,8 @@ contains
 
     call copy3_array(tgt_cptr, tgt_dptr, N)
     !$omp target update from(DD)
-    if (any(abs(CC - 333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+    if (any(abs(CC - 333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 49
+    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 50
 
     CC = 3333.0_c_double
     !$omp target update to(CC)
@@ -387,8 +387,8 @@ contains
     !$omp target update from(DD)
     !$omp end target data
 
-    if (any(abs(CC - 3333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+    if (any(abs(CC - 3333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 51
+    if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 52
 
 
 
@@ -401,16 +401,16 @@ contains
 
     call copy3_array(tgt_eptr, tgt_fptr, N)
     !$omp target update from(FF)
-    if (any(abs(EE - 555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+    if (any(abs(EE - 555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 53
+    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 54
 
     EE = 5555.0_c_double
     !$omp target update to(EE)
     call copy3_array(tgt_eptr, tgt_fptr, N)
     !$omp end target data
 
-    if (any(abs(EE - 5555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+    if (any(abs(EE - 5555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 55
+    if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 56
   end subroutine use_device_ptr_sub2
 end module offloading2
 
@@ -444,24 +444,24 @@ program omp_device_ptr
   call copy3_array(c_loc(AA), c_loc(BB), N)
   !$omp end target data
 
-  if (any(abs(AA - 11.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+  if (any(abs(AA - 11.0_c_double) > 10.0_c_double * epsilon(AA))) stop 57
+  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 58
 
   ! allocatable array to use_device_ptr
   !$omp target data map(to:CC) map(from:DD) use_device_ptr(CC,DD)
   call copy3_array(c_loc(CC), c_loc(DD), N)
   !$omp end target data
 
-  if (any(abs(CC - 33.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-  if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+  if (any(abs(CC - 33.0_c_double) > 10.0_c_double * epsilon(CC))) stop 59
+  if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 60
 
   ! fixed-size decriptorless array to use_device_ptr
   !$omp target data map(to:EE) map(from:FF) use_device_ptr(EE,FF)
   call copy3_array(c_loc(EE), c_loc(FF), N)
   !$omp end target data
 
-  if (any(abs(EE - 55.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-  if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+  if (any(abs(EE - 55.0_c_double) > 10.0_c_double * epsilon(EE))) stop 61
+  if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 62
 
 
 
@@ -483,44 +483,44 @@ program omp_device_ptr
 
   call copy3_array(tgt_aptr, tgt_bptr, N)
   !$omp target update from(BB)
-  if (any(abs(AA - 111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+  if (any(abs(AA - 111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 63
+  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 64
 
   AA = 1111.0_c_double
   !$omp target update to(AA)
   call copy3_array(tgt_aptr, tgt_bptr, N)
   !$omp target update from(BB)
-  if (any(abs(AA - 1111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+  if (any(abs(AA - 1111.0_c_double) > 10.0_c_double * epsilon(AA))) stop 65
+  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 66
 
   ! AprtA tests
   AA = 7.0_c_double
   !$omp target update to(AA)
   call copy3_array(c_loc(AptrA), c_loc(BptrB), N)
   !$omp target update from(BB)
-  if (any(abs(AA - 7.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+  if (any(abs(AA - 7.0_c_double) > 10.0_c_double * epsilon(AA))) stop 67
+  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 68
 
   AA = 77.0_c_double
   !$omp target update to(AA)
   call copy3_array1(AptrA, BptrB)
   !$omp target update from(BB)
-  if (any(abs(AA - 77.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+  if (any(abs(AA - 77.0_c_double) > 10.0_c_double * epsilon(AA))) stop 69
+  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 70
 
 !  AA = 777.0_c_double
 !  !$omp target update to(AA)
 !  call copy3_array2(AptrA, BptrB)
 !  !$omp target update from(BB)
-!  if (any(abs(AA - 777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-!  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+!  if (any(abs(AA - 777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 71
+!  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 72
 
   AA = 7777.0_c_double
   !$omp target update to(AA)
   call copy3_array3(AptrA, BptrB)
   !$omp target update from(BB)
-  if (any(abs(AA - 7777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+  if (any(abs(AA - 7777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 73
+  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 74
 
 !  AA = 77777.0_c_double
 !  !$omp target update to(AA)
@@ -528,8 +528,8 @@ program omp_device_ptr
 !  !$omp target update from(BB)
   !$omp end target data
 !
-!  if (any(abs(AA - 77777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 1
-!  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 1
+!  if (any(abs(AA - 77777.0_c_double) > 10.0_c_double * epsilon(AA))) stop 75
+!  if (any(abs(3.0_c_double * AA - BB) > 10.0_c_double * epsilon(AA))) stop 76
 
 
 
@@ -542,8 +542,8 @@ program omp_device_ptr
 
   call copy3_array(tgt_cptr, tgt_dptr, N)
   !$omp target update from(DD)
-  if (any(abs(CC - 333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-  if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+  if (any(abs(CC - 333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 77
+  if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 78
 
   CC = 3333.0_c_double
   !$omp target update to(CC)
@@ -551,8 +551,8 @@ program omp_device_ptr
   !$omp target update from(DD)
   !$omp end target data
 
-  if (any(abs(CC - 3333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 1
-  if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 1
+  if (any(abs(CC - 3333.0_c_double) > 10.0_c_double * epsilon(CC))) stop 79
+  if (any(abs(3.0_c_double * CC - DD) > 10.0_c_double * epsilon(CC))) stop 80
 
 
 
@@ -565,8 +565,8 @@ program omp_device_ptr
 
   call copy3_array(tgt_eptr, tgt_fptr, N)
   !$omp target update from(FF)
-  if (any(abs(EE - 555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-  if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+  if (any(abs(EE - 555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 81
+  if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 82
 
   EE = 5555.0_c_double
   !$omp target update to(EE)
@@ -574,8 +574,8 @@ program omp_device_ptr
   !$omp target update from(FF)
   !$omp end target data
 
-  if (any(abs(EE - 5555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 1
-  if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 1
+  if (any(abs(EE - 5555.0_c_double) > 10.0_c_double * epsilon(EE))) stop 83
+  if (any(abs(3.0_c_double * EE - FF) > 10.0_c_double * epsilon(EE))) stop 84
 
 
 
