@@ -1,3 +1,20 @@
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/devices/csv-using-env-var.c: New test.
+	* gcc.target/msp430/devices/csv-using-installed.c: New test.
+	* gcc.target/msp430/devices/csv-using-option.c: New test.
+	* gcc.target/msp430/devices/devices-main.c: New test source file.
+	* gcc.target/msp430/devices/msp430-devices.h: New test.
+	* gcc.target/msp430/msp430.exp (msp430_device_permutations_runtest):
+	Add special cases for csv-using* tests.
+	Define TESTING_HARD_DATA when running tests that use hard-coded device
+	data.
+	(get_installed_device_data_path): New.
+	(msp430_hide_installed_devices_data): New.
+	(msp430_restore_installed_devices_data): New.
+	(msp430_test_installed_device_data): New.
+	(msp430_install_device_data): New.
+
 2019-11-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92301
