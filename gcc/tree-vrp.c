@@ -945,15 +945,6 @@ range_int_cst_p (const value_range_base *vr)
   return (vr->kind () == VR_RANGE && range_has_numeric_bounds_p (vr));
 }
 
-/* Return true if VR is a INTEGER_CST singleton.  */
-
-bool
-range_int_cst_singleton_p (const value_range_base *vr)
-{
-  return (range_int_cst_p (vr)
-	  && tree_int_cst_equal (vr->min (), vr->max ()));
-}
-
 /* Return the single symbol (an SSA_NAME) contained in T if any, or NULL_TREE
    otherwise.  We only handle additive operations and set NEG to true if the
    symbol is negated and INV to the invariant part, if any.  */
