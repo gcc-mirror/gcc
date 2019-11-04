@@ -1,3 +1,11 @@
+2019-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92345
+	* tree-vect-loop.c (vect_is_simple_reduction): Return whether
+	we produced a reduction chain.
+	(vect_analyze_scalar_cycles_1): Do not add reduction chains to
+	LOOP_VINFO_REDUCTIONS.
+
 2019-11-04  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphclones.c (cgraph_node::create_version_clone): Do not

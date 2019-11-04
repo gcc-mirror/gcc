@@ -155,7 +155,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *);
 static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
-					       bool *);
+					       bool *, bool *);
 
 /* Subroutine of vect_determine_vf_for_stmt that handles only one
    statement.  VECTYPE_MAYBE_SET_P is true if STMT_VINFO_VECTYPE
@@ -489,7 +489,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop)
   tree init, step;
   auto_vec<stmt_vec_info, 64> worklist;
   gphi_iterator gsi;
-  bool double_reduc;
+  bool double_reduc, reduc_chain;
 
   DUMP_VECT_SCOPE ("vect_analyze_scalar_cycles");
 
@@ -561,7 +561,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop)
 		  && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
       stmt_vec_info reduc_stmt_info
-	= vect_is_simple_reduction (loop_vinfo, stmt_vinfo, &double_reduc);
+	= vect_is_simple_reduction (loop_vinfo, stmt_vinfo, &double_reduc,
+				    &reduc_chain);
       if (reduc_stmt_info)
         {
 	  STMT_VINFO_REDUC_DEF (stmt_vinfo) = reduc_stmt_info;
@@ -596,7 +597,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop)
                   /* Store the reduction cycles for possible vectorization in
                      loop-aware SLP if it was not detected as reduction
 		     chain.  */
-		  if (! REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info))
+		  if (! reduc_chain)
 		    LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push
 		      (reduc_stmt_info);
                 }
@@ -2854,7 +2855,7 @@ check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
 
 static stmt_vec_info
 vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
-			  bool *double_reduc)
+			  bool *double_reduc, bool *reduc_chain_p)
 {
   gphi *phi = as_a <gphi *> (phi_info->stmt);
   gimple *phi_use_stmt = NULL;
@@ -2862,6 +2863,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   use_operand_p use_p;
 
   *double_reduc = false;
+  *reduc_chain_p = false;
   STMT_VINFO_REDUC_TYPE (phi_info) = TREE_CODE_REDUCTION;
 
   tree phi_name = PHI_RESULT (phi);
@@ -3036,6 +3038,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (reduc_chain[0]);
 	  REDUC_GROUP_SIZE (reduc_chain[0]) = reduc_chain.length ();
 
+	  *reduc_chain_p = true;
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			    "reduction: detected reduction chain\n");
