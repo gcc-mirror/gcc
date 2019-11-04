@@ -1,3 +1,9 @@
+2019-11-04  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	PR c++/91979 - mangling nullptr expression
+	* cp/mangle.c (write_template_arg_literal): Handle nullptr
+	mangling.
+
 2019-11-04  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (check_return_expr): Avoid redundant error.

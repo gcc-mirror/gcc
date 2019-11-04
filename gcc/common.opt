@@ -951,6 +951,8 @@ Driver Undocumented
 ; 13: Fixes the accidental change in 12 to the calling convention for classes
 ;     with deleted copy constructor and trivial move constructor.
 ;     Default in G++ 8.2.
+; 14: Corrects the mangling of nullptr expression.
+;     Default in G++ 10.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.

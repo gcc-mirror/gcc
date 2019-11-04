@@ -1,3 +1,8 @@
+2019-11-04  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	* c-opts.c (c_common_post_options): Update
+	latest_abi_version.
+
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_omp_get_context_selector): Remove.
