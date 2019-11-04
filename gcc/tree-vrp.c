@@ -6130,6 +6130,9 @@ value_range::union_ (const value_range *other)
 value_range_base
 value_range_base::normalize_addresses () const
 {
+  if (undefined_p ())
+    return *this;
+
   if (!POINTER_TYPE_P (type ()) || range_has_numeric_bounds_p (this))
     return *this;
 
