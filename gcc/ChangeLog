@@ -1,3 +1,26 @@
+2019-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.h (vrp_val_min): Remove handle_pointers argument.
+	(vrp_val_max): Same.
+	(vrp_val_is_min): Same.
+	(vrp_val_is_max): Same.
+	(value_range_base::nonzero_p): Remove last argument to
+	vrp_val_is_max.
+	* tree-vrp.c (vrp_val_min): Remove handle_pointers argument.
+	(vrp_val_max): Same.
+	(vrp_val_is_min): Same.
+	(vrp_val_is_max): Same.
+	(value_range_base::set_varying): Remove last argument to vrp_val*.
+	(value_range_base::dump): Same.
+	(value_range_base::set): Same.
+	(value_range_base::normalize_symbolics): Same.
+	(value_range_base::num_pairs): Same.
+	(value_range_base::lower_bound): Same.
+	(value_range_base::upper_bound): Same.
+	(ranges_from_anti_range): Remove handle_pointers argument.
+	(value_range_base::singleton_p): Remove last argument to
+	ranges_from_anti_range.
+
 2019-11-04  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-reference.c (init_function_info): Initialize

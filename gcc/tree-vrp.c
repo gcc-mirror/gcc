@@ -71,8 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool
 ranges_from_anti_range (const value_range_base *ar,
-			value_range_base *vr0, value_range_base *vr1,
-			bool handle_pointers = false);
+			value_range_base *vr0, value_range_base *vr1);
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -310,8 +309,8 @@ value_range_base::set_varying (tree type)
   m_kind = VR_VARYING;
   if (supports_type_p (type))
     {
-      m_min = vrp_val_min (type, true);
-      m_max = vrp_val_max (type, true);
+      m_min = vrp_val_min (type);
+      m_max = vrp_val_max (type);
     }
   else
     /* We can't do anything range-wise with these types.  */
@@ -382,7 +381,7 @@ value_range_base::singleton_p (tree *result) const
       if (num_pairs () == 1)
 	{
 	  value_range_base vr0, vr1;
-	  ranges_from_anti_range (this, &vr0, &vr1, true);
+	  ranges_from_anti_range (this, &vr0, &vr1);
 	  return vr0.singleton_p (result);
 	}
     }
@@ -429,7 +428,7 @@ value_range_base::dump (FILE *file) const
       fprintf (file, ", ");
 
       if (supports_type_p (ttype)
-	  && vrp_val_is_max (max (), true)
+	  && vrp_val_is_max (max ())
 	  && TYPE_PRECISION (ttype) != 1)
 	fprintf (file, "+INF");
       else
@@ -574,11 +573,11 @@ static assert_locus **asserts_for;
 /* Return the maximum value for TYPE.  */
 
 tree
-vrp_val_max (const_tree type, bool handle_pointers)
+vrp_val_max (const_tree type)
 {
   if (INTEGRAL_TYPE_P (type))
     return TYPE_MAX_VALUE (type);
-  if (POINTER_TYPE_P (type) && handle_pointers)
+  if (POINTER_TYPE_P (type))
     {
       wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
       return wide_int_to_tree (const_cast<tree> (type), max);
@@ -589,11 +588,11 @@ vrp_val_max (const_tree type, bool handle_pointers)
 /* Return the minimum value for TYPE.  */
 
 tree
-vrp_val_min (const_tree type, bool handle_pointers)
+vrp_val_min (const_tree type)
 {
   if (INTEGRAL_TYPE_P (type))
     return TYPE_MIN_VALUE (type);
-  if (POINTER_TYPE_P (type) && handle_pointers)
+  if (POINTER_TYPE_P (type))
     return build_zero_cst (const_cast<tree> (type));
   return NULL_TREE;
 }
@@ -604,9 +603,9 @@ vrp_val_min (const_tree type, bool handle_pointers)
    is not == to the integer constant with the same value in the type.  */
 
 bool
-vrp_val_is_max (const_tree val, bool handle_pointers)
+vrp_val_is_max (const_tree val)
 {
-  tree type_max = vrp_val_max (TREE_TYPE (val), handle_pointers);
+  tree type_max = vrp_val_max (TREE_TYPE (val));
   return (val == type_max
 	  || (type_max != NULL_TREE
 	      && operand_equal_p (val, type_max, 0)));
@@ -615,9 +614,9 @@ vrp_val_is_max (const_tree val, bool handle_pointers)
 /* Return whether VAL is equal to the minimum value of its type.  */
 
 bool
-vrp_val_is_min (const_tree val, bool handle_pointers)
+vrp_val_is_min (const_tree val)
 {
-  tree type_min = vrp_val_min (TREE_TYPE (val), handle_pointers);
+  tree type_min = vrp_val_min (TREE_TYPE (val));
   return (val == type_min
 	  || (type_min != NULL_TREE
 	      && operand_equal_p (val, type_min, 0)));
@@ -720,8 +719,8 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
       tree typ = TREE_TYPE (min);
       if (supports_type_p (typ))
 	{
-	  gcc_assert (vrp_val_min (typ, true));
-	  gcc_assert (vrp_val_max (typ, true));
+	  gcc_assert (vrp_val_min (typ));
+	  gcc_assert (vrp_val_max (typ));
 	}
       set_varying (typ);
       return;
@@ -730,7 +729,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
   /* Convert POLY_INT_CST bounds into worst-case INTEGER_CST bounds.  */
   if (POLY_INT_CST_P (min))
     {
-      tree type_min = vrp_val_min (TREE_TYPE (min), true);
+      tree type_min = vrp_val_min (TREE_TYPE (min));
       widest_int lb
 	= constant_lower_bound_with_limit (wi::to_poly_widest (min),
 					   wi::to_widest (type_min));
@@ -738,7 +737,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
     }
   if (POLY_INT_CST_P (max))
     {
-      tree type_max = vrp_val_max (TREE_TYPE (max), true);
+      tree type_max = vrp_val_max (TREE_TYPE (max));
       widest_int ub
 	= constant_upper_bound_with_limit (wi::to_poly_widest (max),
 					   wi::to_widest (type_max));
@@ -824,7 +823,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
         {
 	  tree one = build_int_cst (TREE_TYPE (max), 1);
 	  min = int_const_binop (PLUS_EXPR, max, one);
-	  max = vrp_val_max (TREE_TYPE (max), true);
+	  max = vrp_val_max (TREE_TYPE (max));
 	  kind = VR_RANGE;
         }
       else if (is_max)
@@ -1336,8 +1335,7 @@ vrp_set_zero_nonzero_bits (const tree expr_type,
 
 static bool
 ranges_from_anti_range (const value_range_base *ar,
-			value_range_base *vr0, value_range_base *vr1,
-			bool handle_pointers)
+			value_range_base *vr0, value_range_base *vr1)
 {
   tree type = ar->type ();
 
@@ -1350,18 +1348,18 @@ ranges_from_anti_range (const value_range_base *ar,
   if (ar->kind () != VR_ANTI_RANGE
       || TREE_CODE (ar->min ()) != INTEGER_CST
       || TREE_CODE (ar->max ()) != INTEGER_CST
-      || !vrp_val_min (type, handle_pointers)
-      || !vrp_val_max (type, handle_pointers))
+      || !vrp_val_min (type)
+      || !vrp_val_max (type))
     return false;
 
-  if (tree_int_cst_lt (vrp_val_min (type, handle_pointers), ar->min ()))
+  if (tree_int_cst_lt (vrp_val_min (type), ar->min ()))
     vr0->set (VR_RANGE,
-	      vrp_val_min (type, handle_pointers),
+	      vrp_val_min (type),
 	      wide_int_to_tree (type, wi::to_wide (ar->min ()) - 1));
-  if (tree_int_cst_lt (ar->max (), vrp_val_max (type, handle_pointers)))
+  if (tree_int_cst_lt (ar->max (), vrp_val_max (type)))
     vr1->set (VR_RANGE,
 	      wide_int_to_tree (type, wi::to_wide (ar->max ()) + 1),
-	      vrp_val_max (type, handle_pointers));
+	      vrp_val_max (type));
   if (vr0->undefined_p ())
     {
       *vr0 = *vr1;
@@ -6160,9 +6158,9 @@ value_range_base::normalize_symbolics () const
     {
       // [SYM, NUM] -> [-MIN, NUM]
       if (min_symbolic)
-	return value_range_base (VR_RANGE, vrp_val_min (ttype, true), max ());
+	return value_range_base (VR_RANGE, vrp_val_min (ttype), max ());
       // [NUM, SYM] -> [NUM, +MAX]
-      return value_range_base (VR_RANGE, min (), vrp_val_max (ttype, true));
+      return value_range_base (VR_RANGE, min (), vrp_val_max (ttype));
     }
   gcc_checking_assert (kind () == VR_ANTI_RANGE);
   // ~[SYM, NUM] -> [NUM + 1, +MAX]
@@ -6171,7 +6169,7 @@ value_range_base::normalize_symbolics () const
       if (!vrp_val_is_max (max ()))
 	{
 	  tree n = wide_int_to_tree (ttype, wi::to_wide (max ()) + 1);
-	  return value_range_base (VR_RANGE, n, vrp_val_max (ttype, true));
+	  return value_range_base (VR_RANGE, n, vrp_val_max (ttype));
 	}
       value_range_base var;
       var.set_varying (ttype);
@@ -6181,7 +6179,7 @@ value_range_base::normalize_symbolics () const
   if (!vrp_val_is_min (min ()))
     {
       tree n = wide_int_to_tree (ttype, wi::to_wide (min ()) - 1);
-      return value_range_base (VR_RANGE, vrp_val_min (ttype, true), n);
+      return value_range_base (VR_RANGE, vrp_val_min (ttype), n);
     }
   value_range_base var;
   var.set_varying (ttype);
@@ -6203,7 +6201,7 @@ value_range_base::num_pairs () const
     {
       // ~[MIN, X] has one sub-range of [X+1, MAX], and
       // ~[X, MAX] has one sub-range of [MIN, X-1].
-      if (vrp_val_is_min (m_min, true) || vrp_val_is_max (m_max, true))
+      if (vrp_val_is_min (m_min) || vrp_val_is_max (m_max))
 	return 1;
       return 2;
     }
@@ -6225,10 +6223,10 @@ value_range_base::lower_bound (unsigned pair) const
   if (m_kind == VR_ANTI_RANGE)
     {
       tree typ = type ();
-      if (pair == 1 || vrp_val_is_min (m_min, true))
+      if (pair == 1 || vrp_val_is_min (m_min))
 	t = wide_int_to_tree (typ, wi::to_wide (m_max) + 1);
       else
-	t = vrp_val_min (typ, true);
+	t = vrp_val_min (typ);
     }
   else
     t = m_min;
@@ -6250,8 +6248,8 @@ value_range_base::upper_bound (unsigned pair) const
   if (m_kind == VR_ANTI_RANGE)
     {
       tree typ = type ();
-      if (pair == 1 || vrp_val_is_min (m_min, true))
-	t = vrp_val_max (typ, true);
+      if (pair == 1 || vrp_val_is_min (m_min))
+	t = vrp_val_max (typ);
       else
 	t = wide_int_to_tree (typ, wi::to_wide (m_min) - 1);
     }
