@@ -6809,6 +6809,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    && n_elts.is_constant (&const_n_elts))
 	  {
 	    machine_mode emode = eltmode;
+	    bool vector_typed_elts_p = false;
 
 	    if (CONSTRUCTOR_NELTS (exp)
 		&& (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value))
@@ -6819,13 +6820,14 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 				      * TYPE_VECTOR_SUBPARTS (etype),
 				      n_elts));
 		emode = TYPE_MODE (etype);
+		vector_typed_elts_p = true;
 	      }
 	    icode = convert_optab_handler (vec_init_optab, mode, emode);
 	    if (icode != CODE_FOR_nothing)
 	      {
 		unsigned int n = const_n_elts;
 
-		if (emode != eltmode)
+		if (vector_typed_elts_p)
 		  {
 		    n = CONSTRUCTOR_NELTS (exp);
 		    vec_vec_init_p = true;

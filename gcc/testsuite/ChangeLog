@@ -1,3 +1,8 @@
+2019-11-04  Joel Hutton  <Joel.Hutton@arm.com>
+
+	* gcc.dg/vect/bb-slp-40.c: New test.
+	* gcc.dg/vect/bb-slp-41.c: New test.
+
 2019-11-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92345

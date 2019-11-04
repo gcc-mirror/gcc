@@ -1993,6 +1993,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
   unsigned int i;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   vec<stmt_vec_info> scalar_stmts;
+  bool constructor = false;
 
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
@@ -2005,6 +2006,13 @@ vect_analyze_slp_instance (vec_info *vinfo,
       gcc_assert (is_a <loop_vec_info> (vinfo));
       vectype = STMT_VINFO_VECTYPE (stmt_info);
       group_size = REDUC_GROUP_SIZE (stmt_info);
+    }
+  else if (is_gimple_assign (stmt_info->stmt)
+	    && gimple_assign_rhs_code (stmt_info->stmt) == CONSTRUCTOR)
+    {
+      vectype = TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt));
+      group_size = CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt_info->stmt));
+      constructor = true;
     }
   else
     {
@@ -2052,6 +2060,25 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	= STMT_VINFO_DEF_TYPE (scalar_stmts.last ());
       STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
 	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
+    }
+  else if (constructor)
+    {
+      tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
+      tree val;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
+	{
+	  if (TREE_CODE (val) == SSA_NAME)
+	    {
+	      gimple* def = SSA_NAME_DEF_STMT (val);
+	      stmt_vec_info def_info = vinfo->lookup_stmt (def);
+	      /* Value is defined in another basic block.  */
+	      if (!def_info)
+		return false;
+	      scalar_stmts.safe_push (def_info);
+	    }
+	  else
+	    return false;
+	}
     }
   else
     {
@@ -2138,6 +2165,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
+	  SLP_INSTANCE_ROOT_STMT (new_instance) = constructor ? stmt_info : NULL;
+
 	  vect_gather_slp_loads (new_instance, node);
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -2955,6 +2984,43 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   return true;
 }
 
+/* Find any vectorizable constructors and add them to the grouped_store
+   array.  */
+
+static void
+vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
+{
+  gimple_stmt_iterator gsi;
+
+  for (gsi = bb_vinfo->region_begin;
+      gsi_stmt (gsi) != gsi_stmt (bb_vinfo->region_end); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+
+      if (is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == CONSTRUCTOR
+	  && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
+	  && TREE_CODE (TREE_TYPE (gimple_assign_lhs (stmt))) == VECTOR_TYPE)
+	{
+	  tree rhs = gimple_assign_rhs1 (stmt);
+
+	  if (CONSTRUCTOR_NELTS (rhs) == 0)
+	    continue;
+
+	  poly_uint64 subparts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
+
+	  if (maybe_ne (subparts, CONSTRUCTOR_NELTS (rhs)))
+	    continue;
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Found vectorizable constructor: %G\n", stmt);
+	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (stmt);
+	  BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
+	}
+    }
+}
+
 /* Check if the region described by BB_VINFO can be vectorized, returning
    true if so.  When returning false, set FATAL to true if the same failure
    would prevent vectorization at other vector sizes, false if it is still
@@ -3001,6 +3067,8 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
 			"basic block.\n");
       return false;
     }
+
+  vect_slp_check_for_constructors (bb_vinfo);
 
   /* If there are no grouped stores in the region there is no need
      to continue with pattern recog as vect_analyze_slp will fail
@@ -3058,6 +3126,8 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
 	 relevant.  */
       vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance));
       vect_mark_slp_stmts_relevant (SLP_INSTANCE_TREE (instance));
+      if (SLP_INSTANCE_ROOT_STMT (instance))
+	STMT_SLP_TYPE (SLP_INSTANCE_ROOT_STMT (instance)) = pure_slp;
 
       i++;
     }
@@ -4074,6 +4144,49 @@ vect_remove_slp_scalar_calls (slp_tree node)
   vect_remove_slp_scalar_calls (node, visited);
 }
 
+/* Vectorize the instance root.  */
+
+void
+vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
+{
+  gassign *rstmt;
+
+  if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) == 1)
+    {
+      stmt_vec_info child_stmt_info;
+      int j;
+
+      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt_info)
+	{
+	  tree vect_lhs = gimple_get_lhs (child_stmt_info->stmt);
+	  tree root_lhs = gimple_get_lhs (instance->root_stmt->stmt);
+	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
+	  break;
+	}
+    }
+  else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)
+    {
+      int nelts = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+      stmt_vec_info child_stmt_info;
+      int j;
+      vec<constructor_elt, va_gc> *v;
+      vec_alloc (v, nelts);
+
+      FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt_info)
+	{
+	  CONSTRUCTOR_APPEND_ELT (v,
+				  NULL_TREE,
+				  gimple_get_lhs (child_stmt_info->stmt));
+	}
+      tree lhs = gimple_get_lhs (instance->root_stmt->stmt);
+      tree rtype = TREE_TYPE (gimple_assign_rhs1 (instance->root_stmt->stmt));
+      tree r_constructor = build_constructor (rtype, v);
+      rstmt = gimple_build_assign (lhs, r_constructor);
+    }
+    gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmt->stmt);
+    gsi_replace (&rgsi, rstmt, true);
+}
+
 /* Generate vector code for all SLP instances in the loop/basic block.  */
 
 void
@@ -4088,9 +4201,13 @@ vect_schedule_slp (vec_info *vinfo)
   slp_instances = vinfo->slp_instances;
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
+      slp_tree node = SLP_INSTANCE_TREE (instance);
       /* Schedule the tree of INSTANCE.  */
-      vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
-				  instance, bst_map);
+      vect_schedule_slp_instance (node, instance, bst_map);
+
+      if (SLP_INSTANCE_ROOT_STMT (instance))
+	vectorize_slp_instance_root_stmt (node, instance);
+
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.\n");
@@ -4118,6 +4235,9 @@ vect_schedule_slp (vec_info *vinfo)
         {
 	  if (!STMT_VINFO_DATA_REF (store_info))
 	    break;
+
+	  if (SLP_INSTANCE_ROOT_STMT (instance))
+	    continue;
 
 	  store_info = vect_orig_stmt (store_info);
 	  /* Free the attached stmt_vec_info and remove the stmt.  */
