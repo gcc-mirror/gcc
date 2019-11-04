@@ -3989,8 +3989,7 @@ ipa_sra_analysis (void)
     process_isra_node_results (node, clone_num_suffixes);
 
   delete clone_num_suffixes;
-  func_sums->~ipa_sra_function_summaries ();
-  ggc_free (func_sums);
+  ggc_delete (func_sums);
   func_sums = NULL;
   delete call_sums;
   call_sums = NULL;
