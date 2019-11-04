@@ -475,6 +475,22 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
   basic_block def_bb = gimple_bb (dstmt_vinfo->stmt);
   basic_block bb = gimple_bb (stmt_vinfo->stmt);
 
+  /* case 2: A reduction phi (STMT) defined by a reduction stmt (DSTMT_VINFO).
+     We have to force the stmt live since the epilogue loop needs it to
+     continue computing the reduction.  */
+  if (gimple_code (stmt_vinfo->stmt) == GIMPLE_PHI
+      && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
+      && gimple_code (dstmt_vinfo->stmt) != GIMPLE_PHI
+      && STMT_VINFO_DEF_TYPE (dstmt_vinfo) == vect_reduction_def
+      && bb->loop_father == def_bb->loop_father)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "reduc-stmt defining reduc-phi in the same nest.\n");
+      vect_mark_relevant (worklist, dstmt_vinfo, relevant, true);
+      return opt_result::success ();
+    }
+
   /* case 3a: outer-loop stmt defining an inner-loop stmt:
 	outer-loop-header-bb:
 		d = dstmt_vinfo

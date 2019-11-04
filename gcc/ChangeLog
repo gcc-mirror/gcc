@@ -1,3 +1,9 @@
+2019-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92301
+	* tree-vect-stmts.c (process_use): Force reduction PHI defs live
+	as required by epilogue generation
+
 2019-11-04  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/92304
