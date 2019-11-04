@@ -4136,8 +4136,7 @@ ipa_free_fn_summary (void)
 {
   if (!ipa_call_summaries)
     return;
-  ipa_fn_summaries->~fast_function_summary <ipa_fn_summary *, va_gc> ();
-  ggc_free (ipa_fn_summaries);
+  ggc_delete (ipa_fn_summaries);
   ipa_fn_summaries = NULL;
   delete ipa_call_summaries;
   ipa_call_summaries = NULL;
