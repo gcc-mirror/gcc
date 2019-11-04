@@ -1899,6 +1899,14 @@ cstamp-h: config.in config.status
 	CONFIG_FILES= \
 	LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status
 
+# On configurations that require auto-build.h, it is created while
+# running configure, so make config.status depend on it, so that
+# config.status --recheck runs and updates or creates it.
+@HAVE_AUTO_BUILD@auto-build.h: $(srcdir)/configure $(srcdir)/config.gcc
+@HAVE_AUTO_BUILD@	@if test -f $@; then echo rerunning config.status to update $@; \
+@HAVE_AUTO_BUILD@	else echo rerunning config.status to update $@; fi
+@HAVE_AUTO_BUILD@config.status: auto-build.h
+
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
