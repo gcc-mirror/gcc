@@ -283,6 +283,7 @@ lto_file_decl_data_num_ ## name ## s (struct lto_file_decl_data *data) \
 typedef const char* (lto_get_section_data_f) (struct lto_file_decl_data *,
 					      enum lto_section_type,
 					      const char *,
+					      int,
 					      size_t *);
 
 /* Return the data found from the above call.  The first three
@@ -603,6 +604,9 @@ struct GTY(()) lto_file_decl_data
   /* Linked list used temporarily in reader */
   struct lto_file_decl_data *next;
 
+  /* Order in which the file appears on the command line.  */
+  int order;
+
   /* Sub ID for merged objects. */
   unsigned HOST_WIDE_INT id;
 
@@ -620,6 +624,8 @@ struct GTY(()) lto_file_decl_data
 
   /* Read LTO section.  */
   lto_section lto_section_header;
+
+  int order_base;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
@@ -786,11 +792,14 @@ extern void lto_set_in_hooks (struct lto_file_decl_data **,
 extern struct lto_file_decl_data **lto_get_file_decl_data (void);
 extern const char *lto_get_section_data (struct lto_file_decl_data *,
 					 enum lto_section_type,
-					 const char *, size_t *,
+					 const char *, int, size_t *,
 					 bool decompress = false);
+extern const char *lto_get_summary_section_data (struct lto_file_decl_data *,
+						 enum lto_section_type,
+						 size_t *);
 extern const char *lto_get_raw_section_data (struct lto_file_decl_data *,
 					     enum lto_section_type,
-					     const char *, size_t *);
+					     const char *, int, size_t *);
 extern void lto_free_section_data (struct lto_file_decl_data *,
 			           enum lto_section_type,
 				   const char *, const char *, size_t,
@@ -854,7 +863,8 @@ extern void lto_append_block (struct lto_output_stream *);
 extern bool lto_stream_offload_p;
 
 extern const char *lto_tag_name (enum LTO_tags);
-extern char *lto_get_section_name (int, const char *, struct lto_file_decl_data *);
+extern char *lto_get_section_name (int, const char *, int,
+				   struct lto_file_decl_data *);
 extern void print_lto_report (const char *);
 extern void lto_streamer_init (void);
 extern bool gate_lto_out (void);
@@ -909,6 +919,7 @@ void lto_output_decl_state_refs (struct output_block *,
 			         struct lto_out_decl_state *);
 void lto_output_location (struct output_block *, struct bitpack_d *, location_t);
 void lto_output_init_mode_table (void);
+void lto_prepare_function_for_streaming (cgraph_node *);
 
 
 /* In lto-cgraph.c  */

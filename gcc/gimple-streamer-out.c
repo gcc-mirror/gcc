@@ -57,7 +57,7 @@ output_phi (struct output_block *ob, gphi *phi)
 /* Emit statement STMT on the main stream of output block OB.  */
 
 static void
-output_gimple_stmt (struct output_block *ob, gimple *stmt)
+output_gimple_stmt (struct output_block *ob, struct function *fn, gimple *stmt)
 {
   unsigned i;
   enum gimple_code code;
@@ -80,7 +80,7 @@ output_gimple_stmt (struct output_block *ob, gimple *stmt)
 		     as_a <gassign *> (stmt)),
 		   1);
   bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
-  hist = gimple_histogram_value (cfun, stmt);
+  hist = gimple_histogram_value (fn, stmt);
   bp_pack_value (&bp, hist != NULL, 1);
   bp_pack_var_len_unsigned (&bp, stmt->subcode);
 
@@ -139,7 +139,7 @@ output_gimple_stmt (struct output_block *ob, gimple *stmt)
 	     so that we do not have to deal with type mismatches on
 	     merged symbols during IL read in.  The first operand
 	     of GIMPLE_DEBUG must be a decl, not MEM_REF, though.  */
-	  if (op && (i || !is_gimple_debug (stmt)))
+	  if (!flag_wpa && op && (i || !is_gimple_debug (stmt)))
 	    {
 	      basep = &op;
 	      if (TREE_CODE (*basep) == ADDR_EXPR)
@@ -147,7 +147,7 @@ output_gimple_stmt (struct output_block *ob, gimple *stmt)
 	      while (handled_component_p (*basep))
 		basep = &TREE_OPERAND (*basep, 0);
 	      if (VAR_P (*basep)
-		  && !auto_var_in_fn_p (*basep, current_function_decl)
+		  && !auto_var_in_fn_p (*basep, fn->decl)
 		  && !DECL_REGISTER (*basep))
 		{
 		  bool volatilep = TREE_THIS_VOLATILE (*basep);
@@ -228,7 +228,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 	      print_gimple_stmt (streamer_dump_file, stmt, 0, TDF_SLIM);
 	    }
 
-	  output_gimple_stmt (ob, stmt);
+	  output_gimple_stmt (ob, fn, stmt);
 
 	  /* Emit the EH region holding STMT.  */
 	  region = lookup_stmt_eh_lp_fn (fn, stmt);

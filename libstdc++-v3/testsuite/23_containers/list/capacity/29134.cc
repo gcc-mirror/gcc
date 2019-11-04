@@ -19,6 +19,7 @@
 
 #include <list>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
@@ -32,7 +33,8 @@ void test01()
   using std::_List_node;
 #endif
 
-  VERIFY( l.max_size() == std::allocator<_List_node<int> >().max_size() );
+  std::allocator<_List_node<int> > a;
+  VERIFY( l.max_size() == __gnu_test::max_size(a) );
 }
 
 int main()

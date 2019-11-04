@@ -1828,8 +1828,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  {
 	    // The rvalue's allocator cannot be moved and is not equal,
 	    // so we need to individually move each element.
-	    this->assign(std::__make_move_if_noexcept_iterator(__x.begin()),
-			 std::__make_move_if_noexcept_iterator(__x.end()));
+	    this->_M_assign_aux(std::make_move_iterator(__x.begin()),
+			        std::make_move_iterator(__x.end()),
+				std::random_access_iterator_tag());
 	    __x.clear();
 	  }
       }

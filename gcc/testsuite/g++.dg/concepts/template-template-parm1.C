@@ -1,5 +1,5 @@
 // PR c++/66937
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 #include <tuple>

@@ -139,7 +139,7 @@ private
    Still_Active : constant Integer := -1;
 
    type TTY_Process_Descriptor is new Process_Descriptor with record
-      Process     : System.Address;
+      Process     : System.Address := System.Null_Address;
       --  Underlying structure used in C
       Exit_Status : Integer := Still_Active;
       --  Hold the exit status of the process.

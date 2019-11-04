@@ -697,8 +697,7 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
       /* Warn about deprecated implicit capture of this via [=].  */
       if (cxx_dialect >= cxx2a
 	  && this_capture_p
-	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY
-	  && !in_system_header_at (LAMBDA_EXPR_LOCATION (lambda)))
+	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY)
 	{
 	  if (warning_at (LAMBDA_EXPR_LOCATION (lambda), OPT_Wdeprecated,
 			  "implicit capture of %qE via %<[=]%> is deprecated "
@@ -1040,12 +1039,18 @@ maybe_add_lambda_conv_op (tree type)
 
   bool const generic_lambda_p = generic_lambda_fn_p (callop);
 
-  if (!generic_lambda_p && DECL_INITIAL (callop) == NULL_TREE)
+  if (!generic_lambda_p && undeduced_auto_decl (callop))
     {
-      /* If the op() wasn't instantiated due to errors, give up.  */
+      /* If the op() wasn't deduced due to errors, give up.  */
       gcc_assert (errorcount || sorrycount);
       return;
     }
+
+  /* Non-generic non-capturing lambdas only have a conversion function to
+     pointer to function when the trailing requires-clause's constraints are
+     satisfied.  */
+  if (!generic_lambda_p && !constraints_satisfied_p (callop))
+    return;
 
   /* Non-template conversion operators are defined directly with build_call_a
      and using DIRECT_ARGVEC for arguments (including 'this').  Templates are
@@ -1189,6 +1194,9 @@ maybe_add_lambda_conv_op (tree type)
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
+  DECL_DECLARED_CONSTEXPR_P (fn) = DECL_DECLARED_CONSTEXPR_P (callop);
+  if (DECL_IMMEDIATE_FUNCTION_P (callop))
+    SET_DECL_IMMEDIATE_FUNCTION_P (fn);
   DECL_ARGUMENTS (fn) = build_this_parm (fn, fntype, TYPE_QUAL_CONST);
 
   if (nested_def)
@@ -1221,6 +1229,9 @@ maybe_add_lambda_conv_op (tree type)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_STATIC_FUNCTION_P (fn) = 1;
+  DECL_DECLARED_CONSTEXPR_P (fn) = DECL_DECLARED_CONSTEXPR_P (callop);
+  if (DECL_IMMEDIATE_FUNCTION_P (callop))
+    SET_DECL_IMMEDIATE_FUNCTION_P (fn);
   DECL_ARGUMENTS (fn) = fn_args;
   for (tree arg = fn_args; arg; arg = DECL_CHAIN (arg))
     {

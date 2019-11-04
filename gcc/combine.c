@@ -1600,7 +1600,8 @@ setup_incoming_promotions (rtx_insn *first)
          function lie within the current compilation unit.  (This does
 	 take into account the exporting of a function via taking its
 	 address, and so forth.)  */
-      strictly_local = cgraph_node::local_info (current_function_decl)->local;
+      strictly_local
+	= cgraph_node::local_info_node (current_function_decl)->local;
 
       /* The mode and signedness of the argument before any promotions happen
          (equal to the mode of the pseudo holding it at that stage).  */
@@ -5680,6 +5681,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		}
 	      else if (CONST_SCALAR_INT_P (new_rtx)
 		       && (GET_CODE (x) == ZERO_EXTEND
+			   || GET_CODE (x) == SIGN_EXTEND
 			   || GET_CODE (x) == FLOAT
 			   || GET_CODE (x) == UNSIGNED_FLOAT))
 		{

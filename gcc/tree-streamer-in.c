@@ -378,6 +378,7 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_LANG_FLAG_0 (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (RECORD_OR_UNION_TYPE_P (expr))
     {
       TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);

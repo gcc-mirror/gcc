@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "--param allow-store-data-races=0 -O2" } */
+/* { dg-options "-fno-allow-store-data-races -O2" } */
 /* { dg-final { simulate-thread } } */
 
 #include <stdio.h>

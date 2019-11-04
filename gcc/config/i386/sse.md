@@ -1851,8 +1851,8 @@
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
-   <plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
+   <plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %2}
+   v<plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
    (set_attr "prefix" "orig,vex")
@@ -1863,7 +1863,7 @@
 	(vec_merge:VF_128
 	  (plusminus:VF_128
 	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "vector_operand" "xBm,<round_scalar_constraint>"))
+	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_SSE"
@@ -1927,8 +1927,8 @@
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
-   <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
+   <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %2}
+   v<multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse<multdiv_mnemonic>")
    (set_attr "prefix" "orig,vex")
@@ -1940,7 +1940,7 @@
 	(vec_merge:VF_128
 	  (multdiv:VF_128
 	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "vector_operand" "xBm,<round_scalar_constraint>"))
+	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_SSE"
@@ -2035,6 +2035,25 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "SF")])
 
+(define_insn "*sse_vmrcpv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,x")
+	(vec_merge:V4SF
+	  (vec_duplicate:V4SF
+	    (unspec:SF [(match_operand:SF 1 "nonimmediate_operand" "xm,xm")]
+		         UNSPEC_RCP))
+	  (match_operand:V4SF 2 "register_operand" "0,x")
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   rcpss\t{%1, %0|%0, %1}
+   vrcpss\t{%1, %2, %0|%0, %2, %1}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "atom_sse_attr" "rcp")
+   (set_attr "btver2_sse_attr" "rcp")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "SF")])
+
 (define_insn "<mask_codefor>rcp14<mode><mask_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v")
 	(unspec:VF_AVX512VL
@@ -2116,13 +2135,32 @@
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
 	  (sqrt:VF_128
-	    (match_operand:VF_128 1 "vector_operand" "xBm,<round_scalar_constraint>"))
+	    (match_operand:VF_128 1 "nonimmediate_operand" "xm,<round_scalar_constraint>"))
 	  (match_operand:VF_128 2 "register_operand" "0,v")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
    sqrt<ssescalarmodesuffix>\t{%1, %0|%0, %<iptr>1}
    vsqrt<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %<iptr>1<round_scalar_mask_op3>}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "atom_sse_attr" "sqrt")
+   (set_attr "prefix" "<round_scalar_prefix>")
+   (set_attr "btver2_sse_attr" "sqrt")
+   (set_attr "mode" "<ssescalarmode>")])
+
+(define_insn "*<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (sqrt:<ssescalarmode>
+	      (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "xm,<round_scalar_constraint>")))
+	  (match_operand:VF_128 2 "register_operand" "0,v")
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   sqrt<ssescalarmodesuffix>\t{%1, %0|%0, %1}
+   vsqrt<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %1<round_scalar_mask_op3>}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "atom_sse_attr" "sqrt")
@@ -2214,6 +2252,23 @@
   "@
    rsqrtss\t{%1, %0|%0, %k1}
    vrsqrtss\t{%1, %2, %0|%0, %2, %k1}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "SF")])
+
+(define_insn "*sse_vmrsqrtv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "=x,x")
+	(vec_merge:V4SF
+	  (vec_duplicate:V4SF
+	    (unspec:SF [(match_operand:SF 1 "nonimmediate_operand" "xm,xm")]
+		         UNSPEC_RSQRT))
+	  (match_operand:V4SF 2 "register_operand" "0,x")
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   rsqrtss\t{%1, %0|%0, %1}
+   vrsqrtss\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "prefix" "orig,vex")
@@ -2313,7 +2368,7 @@
 	(vec_merge:VF_128
 	  (smaxmin:VF_128
 	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "vector_operand" "xBm,<round_saeonly_scalar_constraint>"))
+	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,<round_saeonly_scalar_constraint>"))
 	 (match_dup 1)
 	 (const_int 1)))]
   "TARGET_SSE"
@@ -2771,7 +2826,7 @@
 ;; Modes handled by reduc_sm{in,ax}* patterns.
 (define_mode_iterator REDUC_SSE_SMINMAX_MODE
   [(V4SF "TARGET_SSE") (V2DF "TARGET_SSE")
-   (V2DI "TARGET_SSE") (V4SI "TARGET_SSE") (V8HI "TARGET_SSE")
+   (V2DI "TARGET_SSE4_2") (V4SI "TARGET_SSE") (V8HI "TARGET_SSE")
    (V16QI "TARGET_SSE")])
 
 (define_expand "reduc_<code>_scal_<mode>"
@@ -2957,7 +3012,7 @@
 	(vec_merge:VF_128
 	 (match_operator:VF_128 3 "sse_comparison_operator"
 	   [(match_operand:VF_128 1 "register_operand" "0,x")
-	    (match_operand:VF_128 2 "vector_operand" "xBm,xm")])
+	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,xm")])
 	 (match_dup 1)
 	 (const_int 1)))]
   "TARGET_SSE"
@@ -3042,7 +3097,7 @@
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
 	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	     (match_operand:VF_128 2 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	     (match_operand:SI 3 "const_0_to_31_operand" "n")]
 	    UNSPEC_PCMP)
 	  (const_int 1)))]
@@ -3058,7 +3113,7 @@
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
 	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	     (match_operand:VF_128 2 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	     (match_operand:SI 3 "const_0_to_31_operand" "n")]
 	    UNSPEC_PCMP)
 	  (and:<avx512fmaskmode>
@@ -4687,8 +4742,8 @@
 	(vec_merge:VF_128
 	  (fma:VF_128
 	    (match_operand:VF_128 1 "register_operand")
-	    (match_operand:VF_128 2 "<round_nimm_predicate>")
-	    (match_operand:VF_128 3 "<round_nimm_predicate>"))
+	    (match_operand:VF_128 2 "<round_nimm_scalar_predicate>")
+	    (match_operand:VF_128 3 "<round_nimm_scalar_predicate>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA")
@@ -4698,9 +4753,9 @@
 	(vec_merge:VF_128
 	  (fma:VF_128
 	    (match_operand:VF_128 1 "register_operand")
-	    (match_operand:VF_128 2 "<round_nimm_predicate>")
+	    (match_operand:VF_128 2 "<round_nimm_scalar_predicate>")
 	    (neg:VF_128
-	      (match_operand:VF_128 3 "<round_nimm_predicate>")))
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>")))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA")
@@ -4710,9 +4765,9 @@
 	(vec_merge:VF_128
 	  (fma:VF_128
 	    (neg:VF_128
-	      (match_operand:VF_128 2 "<round_nimm_predicate>"))
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>"))
 	    (match_operand:VF_128 1 "register_operand")
-	    (match_operand:VF_128 3 "<round_nimm_predicate>"))
+	    (match_operand:VF_128 3 "<round_nimm_scalar_predicate>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA")
@@ -4722,10 +4777,10 @@
 	(vec_merge:VF_128
 	  (fma:VF_128
 	    (neg:VF_128
-	      (match_operand:VF_128 2 "<round_nimm_predicate>"))
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>"))
 	    (match_operand:VF_128 1 "register_operand")
 	    (neg:VF_128
-	      (match_operand:VF_128 3 "<round_nimm_predicate>")))
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>")))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA")
@@ -4735,8 +4790,8 @@
         (vec_merge:VF_128
 	  (fma:VF_128
 	    (match_operand:VF_128 1 "register_operand" "0,0")
-	    (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>, v")
-	    (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	    (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>, v")
+	    (match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA || TARGET_AVX512F"
@@ -4751,9 +4806,9 @@
         (vec_merge:VF_128
 	  (fma:VF_128
 	    (match_operand:VF_128   1 "register_operand" "0,0")
-	    (match_operand:VF_128   2 "<round_nimm_predicate>" "<round_constraint>,v")
+	    (match_operand:VF_128   2 "<round_nimm_scalar_predicate>" "<round_constraint>,v")
 	    (neg:VF_128
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>")))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA || TARGET_AVX512F"
@@ -4768,9 +4823,9 @@
         (vec_merge:VF_128
 	  (fma:VF_128
 	    (neg:VF_128
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v"))
 	    (match_operand:VF_128   1 "register_operand" "0,0")
-	    (match_operand:VF_128   3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	    (match_operand:VF_128   3 "<round_nimm_scalar_predicate>" "v,<round_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA || TARGET_AVX512F"
@@ -4785,10 +4840,10 @@
         (vec_merge:VF_128
 	  (fma:VF_128
 	    (neg:VF_128
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v"))
 	    (match_operand:VF_128   1 "register_operand" "0,0")
 	    (neg:VF_128
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>")))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA || TARGET_AVX512F"
@@ -4804,8 +4859,8 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (match_operand:VF_128 1 "register_operand" "0,0")
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v")
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>"))
 	    (match_dup 1)
 	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -4822,8 +4877,8 @@
 	(vec_merge:VF_128
 	  (vec_merge:VF_128
 	    (fma:VF_128
-	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")
+	      (match_operand:VF_128 1 "<round_nimm_scalar_predicate>" "%v")
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>")
 	      (match_operand:VF_128 3 "register_operand" "0"))
 	    (match_dup 3)
 	    (match_operand:QI 4 "register_operand" "Yk"))
@@ -4854,8 +4909,8 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (match_operand:VF_128 1 "register_operand" "0,0")
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v")
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>"))
 	    (match_operand:VF_128 4 "const0_operand" "C,C")
 	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -4873,9 +4928,9 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (match_operand:VF_128 1 "register_operand" "0,0")
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v")
 	      (neg:VF_128
-		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+		(match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>")))
 	    (match_dup 1)
 	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -4892,8 +4947,8 @@
 	(vec_merge:VF_128
 	  (vec_merge:VF_128
 	    (fma:VF_128
-	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")
+	      (match_operand:VF_128 1 "<round_nimm_scalar_predicate>" "%v")
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>")
 	      (neg:VF_128
 		(match_operand:VF_128 3 "register_operand" "0")))
 	    (match_dup 3)
@@ -4911,9 +4966,9 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (match_operand:VF_128 1 "register_operand" "0,0")
-	      (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v")
+	      (match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v")
 	      (neg:VF_128
-		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+		(match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>")))
 	    (match_operand:VF_128 4 "const0_operand" "C,C")
 	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -4931,9 +4986,9 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (neg:VF_128
-		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+		(match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v"))
 	      (match_operand:VF_128 1 "register_operand" "0,0")
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>"))
 	    (match_dup 1)
 	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -4951,8 +5006,8 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (neg:VF_128
-		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>"))
-	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
+		(match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>"))
+	      (match_operand:VF_128 1 "<round_nimm_scalar_predicate>" "%v")
 	      (match_operand:VF_128 3 "register_operand" "0"))
 	    (match_dup 3)
 	    (match_operand:QI 4 "register_operand" "Yk"))
@@ -4969,9 +5024,9 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (neg:VF_128
-		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+		(match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v"))
 	      (match_operand:VF_128 1 "register_operand" "0,0")
-	      (match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>"))
+	      (match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>"))
 	    (match_operand:VF_128 4 "const0_operand" "C,C")
 	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -4989,10 +5044,10 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (neg:VF_128
-		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+		(match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v"))
 	      (match_operand:VF_128 1 "register_operand" "0,0")
 	      (neg:VF_128
-		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+		(match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>")))
 	    (match_dup 1)
 	    (match_operand:QI 4 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -5010,8 +5065,8 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (neg:VF_128
-		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>"))
-	      (match_operand:VF_128 1 "<round_nimm_predicate>" "%v")
+		(match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>"))
+	      (match_operand:VF_128 1 "<round_nimm_scalar_predicate>" "%v")
 	      (neg:VF_128
 		(match_operand:VF_128 3 "register_operand" "0")))
 	    (match_dup 3)
@@ -5029,10 +5084,10 @@
 	  (vec_merge:VF_128
 	    (fma:VF_128
 	      (neg:VF_128
-		(match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>,v"))
+		(match_operand:VF_128 2 "<round_nimm_scalar_predicate>" "<round_constraint>,v"))
 	      (match_operand:VF_128 1 "register_operand" "0,0")
 	      (neg:VF_128
-		(match_operand:VF_128 3 "<round_nimm_predicate>" "v,<round_constraint>")))
+		(match_operand:VF_128 3 "<round_nimm_scalar_predicate>" "v,<round_constraint>")))
 	    (match_operand:VF_128 4 "const0_operand" "C,C")
 	    (match_operand:QI 5 "register_operand" "Yk,Yk"))
 	  (match_dup 1)
@@ -5270,7 +5325,7 @@
 	(unspec:SWI48 [(match_operand:SF 1 "nonimmediate_operand" "v,m")]
 		      UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE"
-  "%vcvtss2si<rex64suffix>\t{%1, %0|%0, %k1}"
+  "%vcvtss2si<rex64suffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
@@ -5300,7 +5355,7 @@
 	(vec_merge:VF_128
 	  (vec_duplicate:VF_128
 	    (unsigned_float:<ssescalarmode>
-	      (match_operand:SI 2 "<round_nimm_predicate>" "<round_constraint3>")))
+	      (match_operand:SI 2 "<round_nimm_scalar_predicate>" "<round_constraint3>")))
 	  (match_operand:VF_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F && <round_modev4sf_condition>"
@@ -5314,7 +5369,7 @@
 	(vec_merge:VF_128
 	  (vec_duplicate:VF_128
 	    (unsigned_float:<ssescalarmode>
-	      (match_operand:DI 2 "<round_nimm_predicate>" "<round_constraint3>")))
+	      (match_operand:DI 2 "<round_nimm_scalar_predicate>" "<round_constraint3>")))
 	  (match_operand:VF_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F && TARGET_64BIT"
@@ -9653,7 +9708,7 @@
           (unspec:VF_128
             [(match_operand:VF_128 1 "register_operand" "0")
 	     (match_operand:VF_128 2 "register_operand" "v")
-	     (match_operand:<sseintvecmode> 3 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	     (match_operand:<sseintvecmode> 3 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	     (match_operand:SI 4 "const_0_to_255_operand")]
 	    UNSPEC_FIXUPIMM)
 	  (match_dup 1)
@@ -9670,7 +9725,7 @@
 	    (unspec:VF_128
 	       [(match_operand:VF_128 1 "register_operand" "0")
 		(match_operand:VF_128 2 "register_operand" "v")
-		(match_operand:<sseintvecmode> 3 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+		(match_operand:<sseintvecmode> 3 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 		(match_operand:SI 4 "const_0_to_255_operand")]
 	       UNSPEC_FIXUPIMM)
 	    (match_dup 1)
@@ -9694,18 +9749,33 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512f_rndscale<mode><round_saeonly_name>"
+(define_insn "avx512f_rndscale<mode><mask_scalar_name><round_saeonly_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	    [(match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
 	     (match_operand:SI 3 "const_0_to_255_operand")]
 	    UNSPEC_ROUND)
-	  (match_dup 1)
+	  (match_operand:VF_128 1 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F"
-  "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|%0, %1, %<iptr>2<round_saeonly_op4>, %3}"
+  "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %<iptr>2<round_saeonly_scalar_mask_op4>, %3}"
+  [(set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*avx512f_rndscale<mode><round_saeonly_name>"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (unspec:<ssescalarmode>
+	      [(match_operand:<ssescalarmode> 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	       (match_operand:SI 3 "const_0_to_255_operand")]
+	      UNSPEC_ROUND))
+          (match_operand:VF_128 1 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vrndscale<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|%0, %1, %2<round_saeonly_op4>, %3}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
@@ -10078,7 +10148,7 @@
   "!TARGET_SSE2 && TARGET_SSE
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
-   movhps\t{%1, %0|%q0, %1}
+   movhps\t{%1, %0|%0, %1}
    movhlps\t{%1, %0|%0, %1}
    movlps\t{%H1, %0|%0, %H1}"
   [(set_attr "type" "ssemov")
@@ -17364,7 +17434,7 @@
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_SSE4_1 && <mask_avx512bw_condition> && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17421,7 +17491,7 @@
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17470,7 +17540,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17536,7 +17606,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17580,7 +17650,7 @@
 		       (const_int 2) (const_int 3)
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
-  "TARGET_AVX512F && can_create_pseudo_p ()"
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17627,7 +17697,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17694,7 +17764,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
   "TARGET_AVX2 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17741,7 +17811,7 @@
 		(const_int 1)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17805,7 +17875,7 @@
 		(const_int 0)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE4_1 && <mask_avx512vl_condition>
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -17955,9 +18025,33 @@
   [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x,v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 2 "register_operand" "Yr,*x,x,v")
+	    [(match_operand:VF_128 2 "nonimmediate_operand" "Yrm,*xm,xm,vm")
 	     (match_operand:SI 3 "const_0_to_15_operand" "n,n,n,n")]
 	    UNSPEC_ROUND)
+	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
+	  (const_int 1)))]
+  "TARGET_SSE4_1"
+  "@
+   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}
+   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}
+   vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}
+   vrndscale<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx,avx512f")
+   (set_attr "type" "ssecvt")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex,evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*sse4_1_round<ssescalarmodesuffix>"
+  [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x,v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (unspec:<ssescalarmode>
+	      [(match_operand:<ssescalarmode> 2 "nonimmediate_operand" "Yrm,*xm,xm,vm")
+	       (match_operand:SI 3 "const_0_to_15_operand" "n,n,n,n")]
+	      UNSPEC_ROUND))
 	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
   "TARGET_SSE4_1"
@@ -18088,7 +18182,7 @@
 	   (match_dup 6)]
 	  UNSPEC_PCMPESTR))]
   "TARGET_SSE4_2
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -18224,7 +18318,7 @@
 	   (match_dup 4)]
 	  UNSPEC_PCMPISTR))]
   "TARGET_SSE4_2
-   && can_create_pseudo_p ()"
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -18548,7 +18642,7 @@
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+	    [(match_operand:VF_128 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")]
 	    UNSPEC_RCP28)
 	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
@@ -18574,7 +18668,7 @@
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+	    [(match_operand:VF_128 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")]
 	    UNSPEC_RSQRT28)
 	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
@@ -21794,7 +21888,7 @@
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
-	    [(match_operand:VF_128 1 "vector_operand" "vm")
+	    [(match_operand:VF_128 1 "nonimmediate_operand" "vm")
              (match_operand:QI 2 "const_0_to_255_operand" "n")]
 	    UNSPEC_FPCLASS)
 	  (const_int 1)))]

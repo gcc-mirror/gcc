@@ -250,7 +250,7 @@ Collect_export_references::expression(Expression** pexpr)
     }
 
   const Named_object* nco = expr->named_constant();
-  if (nco != 0 && nco->package() == NULL)
+  if (nco != 0)
     {
       const Named_constant *nc = nco->const_value();
       Type::traverse(nc->type(), this);

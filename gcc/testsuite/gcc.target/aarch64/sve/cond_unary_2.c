@@ -13,7 +13,10 @@
 		      TYPE *__restrict pred, int n)		\
   {								\
     for (int i = 0; i < n; ++i)					\
-      r[i] = pred[i] ? OP (a[i]) : b[i];			\
+      {								\
+	TYPE bi = b[i];						\
+	r[i] = pred[i] ? OP (a[i]) : bi;			\
+      }								\
   }
 
 #define TEST_INT_TYPE(T, TYPE) \

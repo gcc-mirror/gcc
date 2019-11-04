@@ -914,10 +914,10 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
          to unconditionally.  */
       if (base_master_dr
 	  && DR_BASE_W_UNCONDITIONALLY (*base_master_dr))
-	return PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES);
+	return flag_store_data_races;
       /* or the base is known to be not readonly.  */
       else if (base_object_writable (DR_REF (a)))
-	return PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES);
+	return flag_store_data_races;
     }
 
   return false;
@@ -2973,10 +2973,11 @@ ifcvt_local_dce (class loop *loop)
 	  ao_ref write;
 	  ao_ref_init (&write, lhs);
 
-          if (dse_classify_store (&write, stmt, false, NULL, NULL, latch_vdef)
-              == DSE_STORE_DEAD)
-            delete_dead_or_redundant_assignment (&gsi, "dead");
-	  gsi_next (&gsi);
+	  if (dse_classify_store (&write, stmt, false, NULL, NULL, latch_vdef)
+	      == DSE_STORE_DEAD)
+	    delete_dead_or_redundant_assignment (&gsi, "dead");
+	  else
+	    gsi_next (&gsi);
 	  continue;
 	}
 

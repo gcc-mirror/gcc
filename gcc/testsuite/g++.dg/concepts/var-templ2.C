@@ -1,5 +1,5 @@
 // PR c++/67139
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 template <class T>

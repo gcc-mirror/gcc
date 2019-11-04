@@ -30,13 +30,12 @@ int test (void)
 /* { dg-regexp "\"line\": 8" } */
 /* { dg-regexp "\"column\": 10" } */
 
-/* { dg-regexp "\"locations\": \[\[\{\}, \]*\]" } */
-
 /* The outer diagnostic.  */
 
 /* { dg-regexp "\"kind\": \"warning\"" } */
 /* { dg-regexp "\"message\": \"this 'if' clause does not guard...\"" } */
 /* { dg-regexp "\"option\": \"-Wmisleading-indentation\"" } */
+/* { dg-regexp "\"option_url\": \"https:\[^\n\r\"\]*#index-Wmisleading-indentation\"" } */
 
 /* { dg-regexp "\"caret\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
@@ -47,6 +46,13 @@ int test (void)
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
 /* { dg-regexp "\"line\": 6" } */
 /* { dg-regexp "\"column\": 4" } */
+
+/* More from the nested diagnostic (we can't guarantee what order the
+   "file" keys are consumed).  */
+
+/* { dg-regexp "\"locations\": \[\[\{\}, \]*\]" } */
+
+/* More from the outer diagnostic.  */
 
 /* { dg-regexp "\"locations\": \[\[\{\}, \]*\]" } */
 

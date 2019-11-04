@@ -19,14 +19,15 @@
 
 #include <tr1/unordered_set>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   std::tr1::unordered_set<int> us;
 
-  VERIFY( (us.max_size() == std::allocator<std::tr1::__detail::_Hash_node<
- 	   int, false> >().max_size()) );
+  std::allocator<std::tr1::__detail::_Hash_node<int, false> > a;
+  VERIFY( us.max_size() == __gnu_test::max_size(a) );
 }
 
 int main()

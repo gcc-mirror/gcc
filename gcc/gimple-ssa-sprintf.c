@@ -1974,8 +1974,11 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
   if (!str)
     return fmtresult ();
 
-  /* Try to determine the dynamic string length first.  */
+  /* Try to determine the dynamic string length first.
+     Set MAXBOUND to an arbitrary non-null non-integer node as a request
+     to have it set to the length of the longest string in a PHI.  */
   c_strlen_data lendata = { };
+  lendata.maxbound = str;
   if (eltsize == 1)
     get_range_strlen_dynamic (str, &lendata, vr);
   else
@@ -1988,26 +1991,27 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
       get_range_strlen (str, &lendata, eltsize);
     }
 
-  /* LENDATA.MAXBOUND is null when LENDATA.MIN corresponds to the shortest
-     string referenced by STR.  Otherwise, if it's not equal to .MINLEN it
-     corresponds to the bound of the largest array STR refers to, if known,
-     or it's SIZE_MAX otherwise.  */
+  /* If LENDATA.MAXBOUND is not equal to .MINLEN it corresponds to the bound
+     of the largest array STR refers to, if known, or it's set to SIZE_MAX
+     otherwise.  */
 
   /* Return the default result when nothing is known about the string.  */
-  if (lendata.maxbound)
+  if ((lendata.maxbound && !tree_fits_uhwi_p (lendata.maxbound))
+      || !tree_fits_uhwi_p (lendata.maxlen))
     {
-      if (integer_all_onesp (lendata.maxbound)
-      	  && integer_all_onesp (lendata.maxlen))
-      	return fmtresult ();
+      fmtresult res;
+      res.nonstr = lendata.decl;
+      return res;
+    }
 
-      if (!tree_fits_uhwi_p (lendata.maxbound)
-	  || !tree_fits_uhwi_p (lendata.maxlen))
-      	return fmtresult ();
-
-      unsigned HOST_WIDE_INT lenmax = tree_to_uhwi (max_object_size ()) - 2;
-      if (lenmax <= tree_to_uhwi (lendata.maxbound)
-	  && lenmax <= tree_to_uhwi (lendata.maxlen))
-	return fmtresult ();
+  unsigned HOST_WIDE_INT lenmax = tree_to_uhwi (max_object_size ()) - 2;
+  if (integer_zerop (lendata.minlen)
+      && (!lendata.maxbound || lenmax <= tree_to_uhwi (lendata.maxbound))
+      && lenmax <= tree_to_uhwi (lendata.maxlen))
+    {
+      fmtresult res;
+      res.nonstr = lendata.decl;
+      return res;
     }
 
   HOST_WIDE_INT min
@@ -2056,9 +2060,9 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
     {
       /* When the upper bound is unknown (it can be zero or excessive)
 	 set the likely length to the greater of 1.  If MAXBOUND is
-	 set, also reset the length of the lower bound to zero.  */
+	 known, also reset the length of the lower bound to zero.  */
       res.range.likely = res.range.min ? res.range.min : warn_level > 1;
-      if (lendata.maxbound)
+      if (lendata.maxbound && !integer_all_onesp (lendata.maxbound))
 	res.range.min = 0;
     }
 

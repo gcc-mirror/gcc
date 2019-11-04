@@ -52,6 +52,8 @@ CCS:  EQ          LT           GT          UNORDERED  (LTGFR, LTGR, LTR, ICM/Y,
                                                        ADB/R, AEB/R, SDB/R, SEB/R,
                                                        SRAG, SRA, SRDA)
 CCSR: EQ          GT           LT          UNORDERED  (CGF/R, CH/Y)
+CCSFPS: EQ        LT           GT          UNORDERED  (KEB/R, KDB/R, KXBR, KDTR,
+						       KXTR, WFK)
 
 Condition codes resulting from add with overflow
 
@@ -140,6 +142,11 @@ around. The following both modes can be considered as CCS and CCU modes with
 exchanged operands.
 
 
+CCSFPS
+
+This mode is used for signaling rtxes: LT, LE, GT, GE and LTGT.
+
+
 CCL1, CCL2
 
 These modes represent the result of overflow checks.
@@ -226,6 +233,7 @@ CC_MODE (CCU);
 CC_MODE (CCUR);
 CC_MODE (CCS);
 CC_MODE (CCSR);
+CC_MODE (CCSFPS);
 CC_MODE (CCT);
 CC_MODE (CCT1);
 CC_MODE (CCT2);

@@ -649,7 +649,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case CTRLREG_INTB:  fprintf (file, "intb"); break;
 	default:
 	  warning (0, "unrecognized control register number: %d"
-		   "- using %<psw%>", (int) INTVAL (op));
+		   " - using %<psw%>", (int) INTVAL (op));
 	  fprintf (file, "psw");
 	  break;
 	}

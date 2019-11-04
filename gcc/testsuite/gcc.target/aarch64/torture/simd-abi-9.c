@@ -6,7 +6,7 @@
 int callee (void);
 
 /*
-** caller:
+** caller:	{ target lp64 }
 **	ldr	(w[0-9]+), \[x0\]
 **	cbn?z	\1, [^\n]*
 **	...

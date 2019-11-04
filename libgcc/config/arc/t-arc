@@ -46,7 +46,6 @@ LIB2ADD = fp-bit.c dp-bit.c
 
 dp-bit.c: $(srcdir)/fp-bit.c
 	echo '#ifndef __big_endian__' > dp-bit.c
-	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> dp-bit.c
 	echo '#endif' >> dp-bit.c
 	echo '#include "fp-bit.h"' >> dp-bit.c
 	echo '#include "config/arc/dp-hack.h"' >> dp-bit.c
@@ -55,7 +54,6 @@ dp-bit.c: $(srcdir)/fp-bit.c
 fp-bit.c: $(srcdir)/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	echo '#ifndef __big_endian__' >> fp-bit.c
-	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
 	echo '#endif' >> fp-bit.c
 	echo '#include "config/arc/fp-hack.h"' >> fp-bit.c
 	cat $(srcdir)/fp-bit.c >> fp-bit.c

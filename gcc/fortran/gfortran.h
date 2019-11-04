@@ -1614,6 +1614,9 @@ typedef struct gfc_symbol
   /* Set if a previous error or warning has occurred and no other
      should be reported.  */
   unsigned error:1;
+  /* Set if the dummy argument of a procedure could be an array despite
+     being called with a scalar actual argument. */
+  unsigned maybe_array:1;
 
   int refs;
   struct gfc_namespace *ns;	/* namespace containing this symbol */
@@ -2194,6 +2197,10 @@ typedef struct gfc_expr
   /* Set this if no warning should be given somewhere in a lower level.  */
 
   unsigned int do_not_warn : 1;
+
+  /* Set this if the expression came from expanding an array constructor.  */
+  unsigned int from_constructor : 1;
+
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-
      memory representation, and these cannot always be backformed from

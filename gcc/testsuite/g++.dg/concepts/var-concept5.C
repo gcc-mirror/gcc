@@ -1,4 +1,4 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 template<typename T1, typename T2>
@@ -8,8 +8,8 @@ template<typename T1, typename T2, typename T3>
 concept bool C2 = true;
 
 
-template<C1 T> // { dg-error "not a type" }
+template<C1 T> // { dg-error "wrong number of template arguments" }
 constexpr bool f1( )  { return true; }
 
-template<C2<int> T> // { dg-error "expected|not a type" }
+template<C2<int> T> // { dg-error "wrong number of template arguments" }
 constexpr bool f2( )  { return true; }

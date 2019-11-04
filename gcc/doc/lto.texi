@@ -350,10 +350,11 @@ while the @emph{Read summary}, @emph{Execute}, and
 @end itemize
 
 To simplify development, the GCC pass manager differentiates
-between normal inter-procedural passes and small inter-procedural
-passes.  A @emph{small inter-procedural pass}
-(@code{SIMPLE_IPA_PASS}) is a pass that does
-everything at once and thus it cannot be executed during WPA in
+between normal inter-procedural passes (@pxref{Regular IPA passes}),
+small inter-procedural passes (@pxref{Small IPA passes})
+and late inter-procedural passes (@pxref{Late IPA passes}).
+A small or late IPA pass (@code{SIMPLE_IPA_PASS}) does
+everything at once and thus cannot be executed during WPA in
 WHOPR mode.  It defines only the @emph{Execute} stage and during
 this stage it accesses and modifies the function bodies.  Such
 passes are useful for optimization at LGEN or LTRANS time and are

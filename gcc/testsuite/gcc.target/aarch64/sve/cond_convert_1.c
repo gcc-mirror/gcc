@@ -11,7 +11,10 @@
 		   INT_TYPE *__restrict pred, int n)		\
   {								\
     for (int i = 0; i < n; ++i)					\
-      r[i] = pred[i] ? (FLOAT_TYPE) a[i] : b[i];		\
+      {								\
+	FLOAT_TYPE bi = b[i];					\
+	r[i] = pred[i] ? (FLOAT_TYPE) a[i] : bi;		\
+      }								\
   }
 
 #define TEST_ALL(T) \

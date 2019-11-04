@@ -184,4 +184,19 @@ struct queryResult klmdQuery() {
     return ret;
 }
 
+struct queryResult kdsaQuery(void)
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.kdsaQuery")
+  __attribute__((no_split_stack));
+
+struct queryResult kdsaQuery() {
+    struct queryResult ret;
+
+    __asm__ ("lghi   %%r0, 0\t\n"  // set function code to 0 (KDSA-Query)
+            "la     %%r1, %[ret]\t\n"
+            ".long  0xb93a0024\t\n"  // kdsa
+            :[ret] "=QRST" (ret) : : "r0", "r1", "cc");
+
+    return ret;
+}
+
 #endif /* defined(__s390x__)  */

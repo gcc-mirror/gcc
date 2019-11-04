@@ -647,8 +647,8 @@ package Errout is
    --  CODEFIX Facility --
    -----------------------
 
-   --  The GPS and GNATBench IDE's have a codefix facility that allows for
-   --  automatic correction of a subset of the errors and warnings issued
+   --  The GNAT Studio and GNATBench IDE's have a codefix facility that allows
+   --  for automatic correction of a subset of the errors and warnings issued
    --  by the compiler. This is done by recognizing the text of specific
    --  messages using appropriate matching patterns.
 

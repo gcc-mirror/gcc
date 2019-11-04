@@ -1,3 +1,107 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_get_context_selector): Remove.
+	* c-omp.c (c_omp_get_context_selector): Moved to omp-general.c
+	and renamed to omp_get_context_selector.
+
+	* c-omp.c (c_omp_mark_declare_variant): Use
+	omp_context_selector_set_compare.
+
+	PR c++/88335 - Implement P1073R3: Immediate functions
+	* c-common.h (enum rid): Add RID_CONSTEVAL.
+	* c-common.c (c_common_reswords): Add consteval.
+
+2019-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add 'L' suffix to feature
+	macros.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66970
+	* c-common.c (c_common_nodes_and_builtins): Call c_define_builtins
+	even when only preprocessing.
+	* c-common.h (names_builtin_p): Declare new function.
+	* c-lex.c (init_c_lex): Set has_builtin.
+	(c_common_has_builtin): Define a new function.
+	* c-ppoutput.c (init_pp_output): Set has_builtin.
+
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_context_selector_matches): Remove.
+	* c-omp.c (c_omp_context_selector_matches): Remove.
+	* c-attribs.c (c_common_attribute_table): Add
+	"omp declare target {host,nohost,block}" attributes.
+
+2019-10-17  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* c-lex.c (c_common_has_attribute): Update nodiscard value.
+
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.h (user_facing_original_type_p): Declare.
+	* c-common.c: Include c-spellcheck.h.
+	(user_facing_original_type_p): New function.
+
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_mark_declare_variant,
+	c_omp_context_selector_matches): Declare.
+	* c-omp.c: Include attribs.h, gimplify.h, cgraph.h, symbol-summary.h
+	and hsa-common.h.
+	(c_omp_get_context_selector): Support second argument NULL.
+	(c_omp_mark_declare_variant, c_omp_context_selector_matches): New
+	functions.
+	* c-attribs.c (c_common_attribute_table): Remove "omp declare variant"
+	attribute, add "omp declare variant base" and
+	"omp declare variant variant" attributes.
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (Wc11-c2x-compat): Add CPP(cpp_warn_c11_c2x_compat)
+	CppReason(CPP_W_C11_C2X_COMPAT).
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_common_reswords): Do not use D_EXT for _Decimal32,
+	_Decimal64 and _Decimal128.
+
+2019-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Do not define macros for DFP
+	types if DFP not supported.
+
+2019-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_check_context_selector,
+	c_omp_get_context_selector): Declare.
+	* c-omp.c (c_omp_declare_simd_clauses_to_numbers): Fix spelling
+	in diagnostic message.
+	(c_omp_check_context_selector, c_omp_get_context_selector): New
+	functions.
+	* c-attribs.c (c_common_attribute_table): Add "omp declare variant"
+	attribute.
+	(handle_omp_declare_variant_attribute): New function.
+
+2019-10-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90879
+	* c.opt (-Wstring-compare): New option.
+
+2019-10-08  Andrew Sutton  <asutton@lock3software.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Update the concepts implementation to conform to the C++20
+	specification, improve compile times, and generally clean up
+	the implementation.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use new feature test values for
+	concepts when -std=c++2a. Bump __cpp_concepts to 201907.
+	* c.opt: Add -Wconcepts-ts.
+	* c-opts.c (c_common_post_options): Warn when -fconcepts is used
+	with -std=c++2a. Disable warning for -fconcepts in C++20 mode.
+	(set_std_cxx2a): Enable concepts by default.
+
 2019-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (c_common_post_options): Set

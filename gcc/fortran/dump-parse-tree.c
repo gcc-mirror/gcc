@@ -559,6 +559,16 @@ show_expr (gfc_expr *p)
 	  fputc (')', dumpfile);
 	  break;
 
+	case BT_BOZ:
+	  if (p->boz.rdx == 2)
+	    fputs ("b'", dumpfile);
+	  else if (p->boz.rdx == 8)
+	    fputs ("o'", dumpfile);
+	  else
+	    fputs ("z'", dumpfile);
+	  fprintf (dumpfile, "%s'", p->boz.str);
+	  break;
+
 	case BT_HOLLERITH:
 	  fprintf (dumpfile, HOST_WIDE_INT_PRINT_DEC "H",
 		   p->representation.length);

@@ -21,6 +21,7 @@
 
 #include <forward_list>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 void
 test01()
@@ -40,8 +41,8 @@ test01()
   using std::_Fwd_list_node;
 #endif
 
-  VERIFY( (fld.max_size()
-	   == std::allocator<_Fwd_list_node<double> >().max_size()) );
+  std::allocator<_Fwd_list_node<double> > a;
+  VERIFY( fld.max_size() == __gnu_test::max_size(a) );
 }
 
 int

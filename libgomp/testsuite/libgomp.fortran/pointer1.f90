@@ -21,7 +21,7 @@ contains
         c(1) = c(1) + 1
       r = r + 1
     !$omp end parallel
-    if (a.ne.r.or.c(1).ne.r) STOP 1
+    if (a.ne.r.or.c(1).ne.r) stop 1
     r2 = r
     b => a
     d => c
@@ -33,7 +33,7 @@ contains
         d(1) = d(1) + 1
       r = r + 1
     !$omp end parallel
-    if (b.ne.r+r2.or.d(1).ne.r+r2) STOP 2
+    if (b.ne.r+r2.or.d(1).ne.r+r2) stop 2
   end subroutine foo
   subroutine bar (a, c)
     integer, pointer :: a, c(:), b, d(:)
@@ -55,8 +55,8 @@ contains
 	end if
       end do
     !$omp end parallel do
-    if (b.ne.100.or.any(d.ne.10)) STOP 3
-    if (a.ne.17.or.any(c.ne.21)) STOP 4
+    if (b.ne.100.or.any(d.ne.10)) stop 3
+    if (a.ne.17.or.any(c.ne.21)) stop 4
     a => b
     c => d
     !$omp parallel do firstprivate (b, d) lastprivate (b, d)
@@ -71,7 +71,7 @@ contains
 	end if
       end do
     !$omp end parallel do
-    if (a.ne.200.or.any(c.ne.20)) STOP 5
-    if (b.ne.17.or.any(d.ne.21)) STOP 6
+    if (a.ne.200.or.any(c.ne.20)) stop 5
+    if (b.ne.17.or.any(d.ne.21)) stop 6
   end subroutine bar
 end

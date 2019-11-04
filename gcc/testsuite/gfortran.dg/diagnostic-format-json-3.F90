@@ -10,6 +10,7 @@
 ! { dg-regexp "\"kind\": \"error\"" }
 ! { dg-regexp "\"message\": \"#warning message\"" }
 ! { dg-regexp "\"option\": \"-Werror=cpp\"" }
+! { dg-regexp "\"option_url\": \"\[^\n\r\"\]*#index-Wcpp\"" }
 
 ! { dg-regexp "\"caret\": \{" }
 ! { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-3.F90\"" }

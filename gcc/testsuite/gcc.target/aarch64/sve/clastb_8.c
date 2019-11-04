@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -ftree-vectorize -msve-vector-bits=256 --save-temps" } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details -msve-vector-bits=256 --save-temps" } */
 
 #include <stdint.h>
 
@@ -19,6 +19,7 @@ TEST_TYPE (uint16_t);
 TEST_TYPE (uint32_t);
 TEST_TYPE (uint64_t);
 
+/* { dg-final { scan-tree-dump-times "using a fully-masked loop." 4 "vect" } } */
 /* { dg-final { scan-assembler {\tclastb\t(b[0-9]+), p[0-7], \1, z[0-9]+\.b\n} } } */
 /* { dg-final { scan-assembler {\tclastb\t(h[0-9]+), p[0-7], \1, z[0-9]+\.h\n} } } */
 /* { dg-final { scan-assembler {\tclastb\t(s[0-9]+), p[0-7], \1, z[0-9]+\.s\n} } } */

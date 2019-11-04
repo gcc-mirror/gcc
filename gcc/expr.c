@@ -5790,7 +5790,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 		copy_blkmode_from_reg (target, temp, TREE_TYPE (exp));
 	      else
 		store_bit_field (target,
-				 INTVAL (expr_size (exp)) * BITS_PER_UNIT,
+				 rtx_to_poly_int64 (expr_size (exp))
+				 * BITS_PER_UNIT,
 				 0, 0, 0, GET_MODE (temp), temp, reverse);
 	    }
 	  else
@@ -8953,9 +8954,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		     != INTEGER_CST check.  Handle it.  */
 		  if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
 		    goto widen_mult_const;
-		  if (TREE_CODE (treeop1) == INTEGER_CST)
-		    op1 = convert_modes (mode, word_mode, op1,
-					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
 		  temp = expand_binop (mode, other_optab, op0, op1, target,
 				       unsignedp, OPTAB_LIB_WIDEN);
 		  hipart = gen_highpart (word_mode, temp);

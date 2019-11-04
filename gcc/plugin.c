@@ -712,10 +712,10 @@ try_init_one_plugin (struct plugin_name_args *plugin)
   if (dlsym (dl_handle, str_license) == NULL)
     fatal_error (input_location,
 		 "plugin %s is not licensed under a GPL-compatible license"
-		 "%s", plugin->full_name, dlerror ());
+		 " %s", plugin->full_name, dlerror ());
 
-  PTR_UNION_AS_VOID_PTR (plugin_init_union) =
-      dlsym (dl_handle, str_plugin_init_func_name);
+  PTR_UNION_AS_VOID_PTR (plugin_init_union)
+    = dlsym (dl_handle, str_plugin_init_func_name);
   plugin_init = PTR_UNION_AS_CAST_PTR (plugin_init_union);
 
   if ((err = dlerror ()) != NULL)

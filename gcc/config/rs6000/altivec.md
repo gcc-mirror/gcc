@@ -560,7 +560,7 @@
   [(set_attr "type" "vecsimple")])
 
 ;;
-(define_insn "altivec_vavgu<VI_char>"
+(define_insn "uavg<mode>3_ceil"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v")]
@@ -569,7 +569,7 @@
   "vavgu<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "altivec_vavgs<VI_char>"
+(define_insn "avg<mode>3_ceil"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v")]

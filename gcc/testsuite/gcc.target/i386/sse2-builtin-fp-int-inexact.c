@@ -1,7 +1,6 @@
 /* Test -fno-fp-int-builtin-inexact for SSE 2.  */
 /* { dg-do run } */
 /* { dg-options "-O2 -msse2 -mfpmath=sse -fno-fp-int-builtin-inexact" } */
-/* { dg-add-options c99_runtime } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-require-effective-target sse2 } */
 

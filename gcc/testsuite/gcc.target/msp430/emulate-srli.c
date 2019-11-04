@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-mcpu=msp430" } { "" } } */
 /* { dg-options "-Os" } */
 /* { dg-final { scan-assembler-not "mspabi_srli" } } */
 /* { dg-final { scan-assembler "rrum" } } */

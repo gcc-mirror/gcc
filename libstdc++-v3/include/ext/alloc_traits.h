@@ -31,10 +31,8 @@
 
 #pragma GCC system_header
 
-#if __cplusplus >= 201103L
-# include <bits/move.h>
 # include <bits/alloc_traits.h>
-#else
+#if __cplusplus < 201103L
 # include <bits/allocator.h>  // for __alloc_swap
 #endif
 
@@ -78,7 +76,8 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
   public:
     // overload construct for non-standard pointer types
     template<typename _Ptr, typename... _Args>
-      static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
+      static _GLIBCXX14_CONSTEXPR
+      std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
       construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
       noexcept(noexcept(_Base_type::construct(__a, std::__to_address(__p),
 					      std::forward<_Args>(__args)...)))
@@ -89,15 +88,16 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
 
     // overload destroy for non-standard pointer types
     template<typename _Ptr>
-      static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
+      static _GLIBCXX14_CONSTEXPR
+      std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
       destroy(_Alloc& __a, _Ptr __p)
       noexcept(noexcept(_Base_type::destroy(__a, std::__to_address(__p))))
       { _Base_type::destroy(__a, std::__to_address(__p)); }
 
-    static _Alloc _S_select_on_copy(const _Alloc& __a)
+    static constexpr _Alloc _S_select_on_copy(const _Alloc& __a)
     { return _Base_type::select_on_container_copy_construction(__a); }
 
-    static void _S_on_swap(_Alloc& __a, _Alloc& __b)
+    static _GLIBCXX14_CONSTEXPR void _S_on_swap(_Alloc& __a, _Alloc& __b)
     { std::__alloc_on_swap(__a, __b); }
 
     static constexpr bool _S_propagate_on_copy_assign()
@@ -118,7 +118,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     template<typename _Tp>
       struct rebind
       { typedef typename _Base_type::template rebind_alloc<_Tp> other; };
-#else
+#else // ! C++11
 
     typedef typename _Alloc::pointer                pointer;
     typedef typename _Alloc::const_pointer          const_pointer;
@@ -131,6 +131,11 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     _GLIBCXX_NODISCARD static pointer
     allocate(_Alloc& __a, size_type __n)
     { return __a.allocate(__n); }
+
+    template<typename _Hint>
+      _GLIBCXX_NODISCARD static pointer
+      allocate(_Alloc& __a, size_type __n, _Hint __hint)
+      { return __a.allocate(__n, __hint); }
 
     static void deallocate(_Alloc& __a, pointer __p, size_type __n)
     { __a.deallocate(__p, __n); }
@@ -157,7 +162,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     template<typename _Tp>
       struct rebind
       { typedef typename _Alloc::template rebind<_Tp>::other other; };
-#endif
+#endif // C++11
   };
 
 _GLIBCXX_END_NAMESPACE_VERSION

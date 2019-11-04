@@ -1,4 +1,4 @@
-// { dg-do compile { target c++17 } }
+// { dg-do link { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 // Check equivalence of short- and longhand declarations.

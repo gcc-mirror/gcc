@@ -2,6 +2,8 @@
    don't get eliminated even if their result on success can be computed at
    compile time (they can fail).
    { dg-require-effective-target unwrapped }
+   { dg-prune-output "warning: warning: \[^\n\r\]* possibly used unsafely" }
+   { dg-skip-if "requires io" { avr-*-* } }
    { dg-skip-if "requires io" { freestanding } } */
 
 #include <stdarg.h>

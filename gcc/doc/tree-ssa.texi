@@ -385,14 +385,14 @@ optimization can manipulate the stmt when all the uses have been
 processed.  This is a little slower than the FAST version since it adds a
 placeholder element and must sort through the list a bit for each statement.
 This placeholder element must be also be removed if the loop is
-terminated early.  The macro @code{BREAK_FROM_IMM_USE_SAFE} is provided
+terminated early.  The macro @code{BREAK_FROM_IMM_USE_STMT} is provided
 to do this :
 
 @smallexample
   FOR_EACH_IMM_USE_STMT (stmt, iterator, ssa_var)
     @{
       if (stmt == last_stmt)
-        BREAK_FROM_SAFE_IMM_USE (iter);
+        BREAK_FROM_IMM_USE_STMT (iterator);
 
       FOR_EACH_IMM_USE_ON_STMT (imm_use_p, iterator)
         SET_USE (imm_use_p, ssa_var_2);

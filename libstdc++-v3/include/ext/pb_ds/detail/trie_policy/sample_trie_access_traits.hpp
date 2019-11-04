@@ -49,8 +49,8 @@ namespace __gnu_pbds
     typedef std::size_t 		       		size_type;
     typedef std::string 			       	key_type;
 
-    typedef typename _Alloc::template rebind<key_type>	__rebind_k;
-    typedef typename __rebind_k::other::const_reference	key_const_reference;
+    typedef typename rebind_traits<_Alloc, key_type>::const_reference
+      key_const_reference;
     typedef std::string::const_iterator 		const_iterator;
 
     /// Element type.

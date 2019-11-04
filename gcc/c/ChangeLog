@@ -1,3 +1,103 @@
+2019-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_finish_omp_declare_variant): Use
+	omp_get_context_selector instead of c_omp_get_context_selector.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_enum_decl): Declare.
+	* c-decl.c (c_simulate_enum_decl): New function.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_ENUM_DECL): Define to the above.
+
+2019-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_builtin_function_decl): Declare.
+	* c-decl.c (c_simulate_builtin_function_decl): New function.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL): Define
+	to the above.
+
+2019-10-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/66970
+	* c-decl.c (names_builtin_p): Define a new function.
+
+2019-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR c/92249
+	* gimple-parser.c (c_parser_parse_gimple_body): Make
+	current_bb the entry block initially to easier recover
+	from errors.
+	(c_parser_gimple_compound_statement): Adjust.
+
+2019-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_finish_omp_declare_variant): Use
+	omp_context_selector_matches instead of
+	c_omp_context_selector_matches.
+	* c-decl.c (c_decl_attributes): Add "omp declare target block"
+	attribute in between declare target and end declare target
+	pragmas.
+
+2019-10-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_attribute_any_word): Rename to
+	c_parser_gnu_attribute_any_word.  All callers changed.
+	(c_parser_attribute): Rename to c_parser_gnu_attribute.  All
+	callers changed.
+	(c_parser_attributes): Rename to c_parser_gnu_attributes.  All
+	callers changed.
+	(c_parser_declaration_or_fndef, c_parser_declspecs)
+	(c_parser_enum_specifier, c_parser_struct_or_union_specifier)
+	(c_parser_struct_declaration, c_parser_declarator)
+	(c_parser_gnu_attribute, c_parser_compound_statement)
+	(c_parser_label, c_parser_statement, c_parser_objc_method_decl)
+	(c_parser_transaction_attributes): Add "gnu-" prefix to names of
+	attribute-related syntax productions.
+
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-objc-common.c (useful_aka_type_p): Replace with...
+	(get_aka_type): ...this new function.  Given the original type,
+	decide which aka type to print (if any).  Only look through typedefs
+	if user_facing_original_type_p.
+	(print_type): Update accordingly.
+
+2019-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_all_clauses): Change bool NESTED_P argument
+	into int NESTED, if it is 2, diagnose missing commas in between
+	clauses.
+	(c_parser_omp_context_selector): Pass 2 as last argument to
+	c_parser_omp_all_clauses.
+
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_context_selector): Improve error recovery.
+	For simd properties, put them directly into TREE_VALUE.
+	(c_finish_omp_declare_variant): Call c_omp_mark_declare_variant.
+	If c_omp_context_selector_matches is 0, don't add attribute, otherwise
+	add "omp declare variant base" attribute rather than
+	"omp declare variant".
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (declspecs_add_type): Use pedwarn_c11 for DFP types.
+
+2019-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_all_clauses): Add NESTED_P argument, if
+	true, terminate processing on closing paren and don't skip to end of
+	pragma line.
+	(c_parser_omp_declare_simd): Handle also declare variant.
+	(omp_construct_selectors, omp_device_selectors,
+	omp_implementation_selectors, omp_user_selectors): New variables.
+	(c_parser_omp_context_selector,
+	c_parser_omp_context_selector_specification,
+	c_finish_omp_declare_variant): New functions.
+	(c_finish_omp_declare_simd): Handle both declare simd and
+	declare variant.
+	(c_parser_omp_declare): Handle declare variant.
+
 2019-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_asm_statement): Handle CPP_SCOPE like two

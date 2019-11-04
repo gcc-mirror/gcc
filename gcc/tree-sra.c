@@ -392,7 +392,7 @@ dump_access (FILE *f, struct access *access, bool grp)
 	     "grp_hint = %d, grp_covered = %d, "
 	     "grp_unscalarizable_region = %d, grp_unscalarized_data = %d, "
 	     "grp_same_access_path = %d, grp_partial_lhs = %d, "
-	     "grp_to_be_replaced = %d, grp_to_be_debug_replaced = %d\n",
+	     "grp_to_be_replaced = %d, grp_to_be_debug_replaced = %d}\n",
 	     access->grp_read, access->grp_write, access->grp_assignment_read,
 	     access->grp_assignment_write, access->grp_scalar_read,
 	     access->grp_scalar_write, access->grp_total_scalarization,
@@ -402,7 +402,7 @@ dump_access (FILE *f, struct access *access, bool grp)
 	     access->grp_to_be_replaced, access->grp_to_be_debug_replaced);
   else
     fprintf (f, ", write = %d, grp_total_scalarization = %d, "
-	     "grp_partial_lhs = %d\n",
+	     "grp_partial_lhs = %d}\n",
 	     access->write, access->grp_total_scalarization,
 	     access->grp_partial_lhs);
 }

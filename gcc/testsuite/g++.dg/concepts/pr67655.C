@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-additional-options "-fconcepts" }
 
-template<class... Xs>                 
+template<class... Xs>
 void consume(Xs&&...) {}
 
 template<class... Xs>

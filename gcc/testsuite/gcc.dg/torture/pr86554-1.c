@@ -2,25 +2,25 @@
 
 struct foo
 {
-  unsigned x;
+  __UINT32_TYPE__ x;
 };
 typedef struct foo foo;
 
-static inline int zot(foo *f)
+static inline __INT32_TYPE__ zot(foo *f)
 {
   int ret;
 
   if (f->x > 0x7FFFFFFF)
-    ret = (int)(f->x - 0x7FFFFFFF);
+    ret = (__INT32_TYPE__)(f->x - 0x7FFFFFFF);
   else
-    ret = (int)f->x - 0x7FFFFFFF;
+    ret = (__INT32_TYPE__)f->x - 0x7FFFFFFF;
   return ret;
 }
 
 void __attribute__((noinline,noclone)) bar(foo *f)
 {
-  int ret = zot(f);
-  volatile int x = ret;
+  __INT32_TYPE__ ret = zot(f);
+  volatile __INT32_TYPE__ x = ret;
   if (ret < 1)
     __builtin_abort ();
 }

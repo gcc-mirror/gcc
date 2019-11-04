@@ -19,6 +19,7 @@
 #include "config.h"
 #include "system.h"
 #include "diagnostic-color.h"
+#include "diagnostic-url.h"
 
 #ifdef __MINGW32__
 #  include <windows.h>
@@ -232,6 +233,25 @@ colorize_init (diagnostic_color_rule_t rule)
 	return parse_gcc_colors ();
       else
 	return false;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Determine if URLs should be enabled, based on RULE.
+   This reuses the logic for colorization.  */
+
+bool
+diagnostic_urls_enabled_p (diagnostic_url_rule_t rule)
+{
+  switch (rule)
+    {
+    case DIAGNOSTICS_URL_NO:
+      return false;
+    case DIAGNOSTICS_URL_YES:
+      return true;
+    case DIAGNOSTICS_URL_AUTO:
+      return should_colorize ();
     default:
       gcc_unreachable ();
     }

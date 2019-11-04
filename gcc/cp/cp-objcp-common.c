@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "cp-objcp-common.h"
 #include "dwarf2.h"
+#include "stringpool.h"
 
 /* Special routine to get the alias set for C++.  */
 
@@ -348,6 +349,77 @@ identifier_global_value (tree name)
   return get_global_binding (name);
 }
 
+/* Returns true if NAME refers to a built-in function or function-like
+   operator.  */
+
+bool
+names_builtin_p (const char *name)
+{
+  tree id = get_identifier (name);
+  if (tree binding = get_global_binding (id))
+    {
+      if (TREE_CODE (binding) == FUNCTION_DECL && DECL_IS_BUILTIN (binding))
+	return true;
+
+      /* Handle the case when an overload for a  built-in name exists.  */
+      if (TREE_CODE (binding) != OVERLOAD)
+	return false;
+
+      for (ovl_iterator it (binding); it; ++it)
+	{
+	  tree decl = *it;
+	  if (DECL_IS_BUILTIN (decl))
+	    return true;
+	}
+    }
+
+  /* Also detect common reserved C++ words that aren't strictly built-in
+     functions.  */
+  switch (C_RID_CODE (id))
+    {
+    case RID_ADDRESSOF:
+    case RID_BUILTIN_CONVERTVECTOR:
+    case RID_BUILTIN_HAS_ATTRIBUTE:
+    case RID_BUILTIN_SHUFFLE:
+    case RID_BUILTIN_LAUNDER:
+    case RID_OFFSETOF:
+    case RID_HAS_NOTHROW_ASSIGN:
+    case RID_HAS_NOTHROW_CONSTRUCTOR:
+    case RID_HAS_NOTHROW_COPY:
+    case RID_HAS_TRIVIAL_ASSIGN:
+    case RID_HAS_TRIVIAL_CONSTRUCTOR:
+    case RID_HAS_TRIVIAL_COPY:
+    case RID_HAS_TRIVIAL_DESTRUCTOR:
+    case RID_HAS_UNIQUE_OBJ_REPRESENTATIONS:
+    case RID_HAS_VIRTUAL_DESTRUCTOR:
+    case RID_IS_ABSTRACT:
+    case RID_IS_AGGREGATE:
+    case RID_IS_BASE_OF:
+    case RID_IS_CLASS:
+    case RID_IS_EMPTY:
+    case RID_IS_ENUM:
+    case RID_IS_FINAL:
+    case RID_IS_LITERAL_TYPE:
+    case RID_IS_POD:
+    case RID_IS_POLYMORPHIC:
+    case RID_IS_SAME_AS:
+    case RID_IS_STD_LAYOUT:
+    case RID_IS_TRIVIAL:
+    case RID_IS_TRIVIALLY_ASSIGNABLE:
+    case RID_IS_TRIVIALLY_CONSTRUCTIBLE:
+    case RID_IS_TRIVIALLY_COPYABLE:
+    case RID_IS_UNION:
+    case RID_IS_ASSIGNABLE:
+    case RID_IS_CONSTRUCTIBLE:
+    case RID_UNDERLYING_TYPE:
+      return true;
+    default:
+      break;
+    }
+
+  return false;
+}
+
 /* Register c++-specific dumps.  */
 
 void
@@ -381,6 +453,7 @@ cp_common_init_ts (void)
   /* New decls.  */
   MARK_TS_DECL_COMMON (TEMPLATE_DECL);
   MARK_TS_DECL_COMMON (WILDCARD_DECL);
+  MARK_TS_DECL_COMMON (CONCEPT_DECL);
 
   MARK_TS_DECL_NON_COMMON (USING_DECL);
 
@@ -458,17 +531,11 @@ cp_common_init_ts (void)
   MARK_TS_EXP (CHECK_CONSTR);
   MARK_TS_EXP (COMPOUND_REQ);
   MARK_TS_EXP (CONJ_CONSTR);
-  MARK_TS_EXP (DEDUCT_CONSTR);
   MARK_TS_EXP (DISJ_CONSTR);
-  MARK_TS_EXP (EXCEPT_CONSTR);
-  MARK_TS_EXP (EXPR_CONSTR);
-  MARK_TS_EXP (ICONV_CONSTR);
+  MARK_TS_EXP (ATOMIC_CONSTR);
   MARK_TS_EXP (NESTED_REQ);
-  MARK_TS_EXP (PARM_CONSTR);
-  MARK_TS_EXP (PRED_CONSTR);
   MARK_TS_EXP (REQUIRES_EXPR);
   MARK_TS_EXP (SIMPLE_REQ);
-  MARK_TS_EXP (TYPE_CONSTR);
   MARK_TS_EXP (TYPE_REQ);
 
   c_common_init_ts ();

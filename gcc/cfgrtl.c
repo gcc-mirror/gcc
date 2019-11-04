@@ -2375,7 +2375,6 @@ static vec<basic_block>
 find_partition_fixes (bool flag_only)
 {
   basic_block bb;
-  vec<basic_block> bbs_in_cold_partition = vNULL;
   vec<basic_block> bbs_to_fix = vNULL;
   hash_set<basic_block> set;
 
@@ -2394,7 +2393,6 @@ find_partition_fixes (bool flag_only)
 	else
 	  BB_SET_PARTITION (bb, BB_COLD_PARTITION);
 	bbs_to_fix.safe_push (bb);
-	bbs_in_cold_partition.safe_push (bb);
       }
 
   return bbs_to_fix;

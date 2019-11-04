@@ -4688,7 +4688,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	     be to be able to keep both bodies and use extern inline body
 	     for inlining, but we can't do that because frontends overwrite
 	     the body.  */
-	  && !cg_edge->callee->local.redefined_extern_inline
+	  && !cg_edge->callee->redefined_extern_inline
 	  /* During early inline pass, report only when optimization is
 	     not turned on.  */
 	  && (symtab->global_info_ready

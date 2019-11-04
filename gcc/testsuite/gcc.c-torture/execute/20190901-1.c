@@ -1,7 +1,12 @@
 /* PR target/91472 */
 /* Reported by John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> */
+/* { dg-require-effective-target double64plus } */
 
+#if __SIZEOF_INT__ >= 4
 typedef unsigned int gmp_uint_least32_t;
+#else
+typedef __UINT_LEAST32_TYPE__ gmp_uint_least32_t;
+#endif
 
 union ieee_double_extract
 {

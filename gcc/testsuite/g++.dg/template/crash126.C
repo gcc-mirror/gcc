@@ -4,7 +4,7 @@ template < class T, class > struct A
 {
   A ();
   A (A &);
-  A (A < T, T >);  // { dg-error "invalid constructor" }
+  A (A < T, T >);  // { dg-error "3:invalid constructor" }
 };
 
 void f () 

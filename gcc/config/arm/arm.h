@@ -1068,9 +1068,8 @@ extern int arm_regs_in_sequence[];
 /* Use different register alloc ordering for Thumb.  */
 #define ADJUST_REG_ALLOC_ORDER arm_order_regs_for_local_alloc ()
 
-/* Tell IRA to use the order we define rather than messing it up with its
-   own cost calculations.  */
-#define HONOR_REG_ALLOC_ORDER 1
+/* Tell IRA to use the order we define when optimizing for size.  */
+#define HONOR_REG_ALLOC_ORDER optimize_function_for_size_p (cfun)
 
 /* Interrupt functions can only use registers that have already been
    saved by the prologue, even if they would normally be

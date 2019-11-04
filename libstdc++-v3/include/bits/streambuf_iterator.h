@@ -61,6 +61,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Types:
       //@{
       /// Public typedefs
+#if __cplusplus > 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3188. istreambuf_iterator::pointer should not be unspecified
+      using pointer = void;
+#endif
       typedef _CharT					char_type;
       typedef _Traits					traits_type;
       typedef typename _Traits::int_type		int_type;
@@ -230,6 +235,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Types:
       //@{
       /// Public typedefs
+#if __cplusplus > 201703L
+      using difference_type = ptrdiff_t;
+#endif
       typedef _CharT			       char_type;
       typedef _Traits			       traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
@@ -247,6 +255,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool		_M_failed;
 
     public:
+
+#if __cplusplus > 201703L
+      constexpr
+      ostreambuf_iterator() noexcept
+      : _M_sbuf(nullptr), _M_failed(true) { }
+#endif
+
       ///  Construct output iterator from ostream.
       ostreambuf_iterator(ostream_type& __s) _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }

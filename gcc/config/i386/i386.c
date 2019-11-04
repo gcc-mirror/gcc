@@ -1119,8 +1119,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       if (target && opt_for_fn (target->decl, optimize)
 	  && !(profile_flag && !flag_fentry))
 	{
-	  cgraph_local_info *i = &target->local;
-	  if (i && i->local && i->can_change_signature)
+	  if (target->local && target->can_change_signature)
 	    {
 	      int local_regparm, globals = 0, regno;
 
@@ -1216,8 +1215,7 @@ ix86_function_sseregparm (const_tree type, const_tree decl, bool warn)
       && opt_for_fn (target->decl, optimize)
       && !(profile_flag && !flag_fentry))
     {
-      cgraph_local_info *i = &target->local;
-      if (i && i->local && i->can_change_signature)
+      if (target->local && target->can_change_signature)
 	{
 	  /* Refuse to produce wrong code when local function with SSE enabled
 	     is called from SSE disabled function.
@@ -1698,7 +1696,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		      tree fndecl,
 		      int caller)
 {
-  struct cgraph_local_info *i = NULL;
+  struct cgraph_node *local_info_node = NULL;
   struct cgraph_node *target = NULL;
 
   memset (cum, 0, sizeof (*cum));
@@ -1709,7 +1707,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
       if (target)
 	{
 	  target = target->function_symbol ();
-	  i = cgraph_node::local_info (target->decl);
+	  local_info_node = cgraph_node::local_info_node (target->decl);
 	  cum->call_abi = ix86_function_abi (target->decl);
 	}
       else
@@ -1751,7 +1749,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
      va_start so for local functions maybe_vaarg can be made aggressive
      helping K&R code.
      FIXME: once typesytem is fixed, we won't need this code anymore.  */
-  if (i && i->local && i->can_change_signature)
+  if (local_info_node && local_info_node->local
+      && local_info_node->can_change_signature)
     fntype = TREE_TYPE (target->decl);
   cum->stdarg = stdarg_p (fntype);
   cum->maybe_vaarg = (fntype
@@ -4892,6 +4891,18 @@ ix86_standard_x87sse_constant_load_p (const rtx_insn *insn, rtx dst)
     return false;
 
   return true;
+}
+
+/* Predicate for pre-reload splitters with associated instructions,
+   which can match any time before the split1 pass (usually combine),
+   then are unconditionally split in that pass and should not be
+   matched again afterwards.  */
+
+bool
+ix86_pre_reload_split (void)
+{
+  return (can_create_pseudo_p ()
+	  && !(cfun->curr_properties & PROP_rtl_split_insns));
 }
 
 /* Returns true if OP contains a symbol reference */
@@ -13530,7 +13541,7 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	 modes wider than 256 bits.  It's only safe to issue a
 	 vzeroupper if all SSE registers are clobbered.  */
       const function_abi &abi = insn_callee_abi (insn);
-      if (!hard_reg_set_subset_p (reg_class_contents[ALL_SSE_REGS],
+      if (!hard_reg_set_subset_p (reg_class_contents[SSE_REGS],
 				  abi.mode_clobbers (V4DImode)))
 	return AVX_U128_ANY;
 
@@ -23023,12 +23034,13 @@ ix86_run_selftests (void)
   ix86_simd_clone_compute_vecsize_and_simdlen
 
 #undef TARGET_SIMD_CLONE_ADJUST
-#define TARGET_SIMD_CLONE_ADJUST \
-  ix86_simd_clone_adjust
+#define TARGET_SIMD_CLONE_ADJUST ix86_simd_clone_adjust
 
 #undef TARGET_SIMD_CLONE_USABLE
-#define TARGET_SIMD_CLONE_USABLE \
-  ix86_simd_clone_usable
+#define TARGET_SIMD_CLONE_USABLE ix86_simd_clone_usable
+
+#undef TARGET_OMP_DEVICE_KIND_ARCH_ISA
+#define TARGET_OMP_DEVICE_KIND_ARCH_ISA ix86_omp_device_kind_arch_isa
 
 #undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
 #define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \

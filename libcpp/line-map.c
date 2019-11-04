@@ -27,9 +27,9 @@ along with this program; see the file COPYING3.  If not see
 #include "hashtab.h"
 
 static void trace_include (const line_maps *, const line_map_ordinary *);
-static const line_map_ordinary * linemap_ordinary_map_lookup (line_maps *,
+static const line_map_ordinary * linemap_ordinary_map_lookup (const line_maps *,
 							      location_t);
-static const line_map_macro* linemap_macro_map_lookup (line_maps *,
+static const line_map_macro* linemap_macro_map_lookup (const line_maps *,
 						       location_t);
 static location_t linemap_macro_map_loc_to_def_point
 (const line_map_macro *, location_t);
@@ -937,7 +937,7 @@ linemap_position_for_loc_and_offset (line_maps *set,
    ordinary or a macro map), returns that map.  */
 
 const struct line_map*
-linemap_lookup (line_maps *set, location_t line)
+linemap_lookup (const line_maps *set, location_t line)
 {
   if (IS_ADHOC_LOC (line))
     line = get_location_from_adhoc_loc (set, line);
@@ -952,7 +952,7 @@ linemap_lookup (line_maps *set, location_t line)
    binary search.  */
 
 static const line_map_ordinary *
-linemap_ordinary_map_lookup (line_maps *set, location_t line)
+linemap_ordinary_map_lookup (const line_maps *set, location_t line)
 {
   unsigned int md, mn, mx;
   const line_map_ordinary *cached, *result;
@@ -965,7 +965,7 @@ linemap_ordinary_map_lookup (line_maps *set, location_t line)
 
   mn = LINEMAPS_ORDINARY_CACHE (set);
   mx = LINEMAPS_ORDINARY_USED (set);
-  
+
   cached = LINEMAPS_ORDINARY_MAP_AT (set, mn);
   /* We should get a segfault if no line_maps have been added yet.  */
   if (line >= MAP_START_LOCATION (cached))
@@ -1000,7 +1000,7 @@ linemap_ordinary_map_lookup (line_maps *set, location_t line)
    binary search.  */
 
 static const line_map_macro *
-linemap_macro_map_lookup (line_maps *set, location_t line)
+linemap_macro_map_lookup (const line_maps *set, location_t line)
 {
   unsigned int md, mn, mx;
   const struct line_map_macro *cached, *result;

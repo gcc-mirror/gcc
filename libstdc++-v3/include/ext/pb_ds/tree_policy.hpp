@@ -108,13 +108,13 @@ namespace __gnu_pbds
     /// Const pointer to the container's value-type.
     typedef typename base_type::const_pointer 		const_pointer;
 
-    typedef typename _Alloc::template rebind<metadata_type>::other __rebind_m;
-
     /// Const metadata reference.
-    typedef typename __rebind_m::const_reference       metadata_const_reference;
+    typedef typename detail::rebind_traits<_Alloc, metadata_type>::const_reference
+      metadata_const_reference;
 
     /// Metadata reference.
-    typedef typename __rebind_m::reference 		metadata_reference;
+    typedef typename detail::rebind_traits<_Alloc, metadata_type>::reference
+      metadata_reference;
 
     /// Returns the node_const_iterator associated with the tree's root node.
     virtual node_const_iterator

@@ -8,3 +8,4 @@
 real (bad_kind(0d0)) function foo () ! { dg-error "must be an intrinsic function" }
   foo = real (kind (foo))
 end function
+! { dg-prune-output "Bad kind expression for function" }

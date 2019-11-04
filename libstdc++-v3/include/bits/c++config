@@ -633,6 +633,7 @@ namespace std
 # define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# define _GLIBCXX_BUILTIN_IS_SAME_AS(T, U) __is_same_as(T, U)
 # if __GNUC__ >= 9
 #  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
 # endif
@@ -649,6 +650,9 @@ namespace std
 # endif
 # if __has_builtin(__builtin_is_constant_evaluated)
 #  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+# endif
+# if ! __is_identifier(__is_same)
+#  define _GLIBCXX_BUILTIN_IS_SAME_AS(T, U) __is_same(T, U)
 # endif
 #endif // GCC
 

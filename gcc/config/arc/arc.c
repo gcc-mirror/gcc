@@ -8001,7 +8001,7 @@ hwloop_optimize (hwloop_info loop)
 	  return false;
 	}
       if (dump_file)
-	fprintf (dump_file, ";; loop %d has a control like last insn;"
+	fprintf (dump_file, ";; loop %d has a control like last insn; "
 		 "add a nop\n",
 		 loop->loop_no);
 
@@ -8011,7 +8011,7 @@ hwloop_optimize (hwloop_info loop)
   if (LABEL_P (last_insn))
     {
       if (dump_file)
-	fprintf (dump_file, ";; loop %d has a label as last insn;"
+	fprintf (dump_file, ";; loop %d has a label as last insn; "
 		 "add a nop\n",
 		 loop->loop_no);
       last_insn = emit_insn_after (gen_nopv (), last_insn);
@@ -8038,7 +8038,7 @@ hwloop_optimize (hwloop_info loop)
   if (entry_edge == NULL)
     {
       if (dump_file)
-	fprintf (dump_file, ";; loop %d has no fallthru edge jumping"
+	fprintf (dump_file, ";; loop %d has no fallthru edge jumping "
 		 "into the loop\n",
 		 loop->loop_no);
       return false;

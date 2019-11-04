@@ -38,6 +38,11 @@ static const struct default_options avr_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_mgas_isr_prologues, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_mmain_is_OS_task, NULL, 1 },
+    /* Allow optimizer to introduce store data races. This used to be the
+       default -- it was changed because bigger targets did not see any
+       performance decrease. For the AVR though, disallowing data races
+       introduces additional code in LIM and increases reg pressure.  */
+    { OPT_LEVELS_ALL, OPT_fallow_store_data_races, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 

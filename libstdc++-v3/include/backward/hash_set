@@ -88,6 +88,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_class_requires3(_HashFcn, size_t, _Value, _UnaryFunctionConcept)
       __glibcxx_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept)
 
+      typedef __alloc_traits<_Alloc> _Alloc_traits;
+
     private:
       typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>,
 			_EqualKey, _Alloc> _Ht;
@@ -101,10 +103,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       typedef typename _Ht::size_type size_type;
       typedef typename _Ht::difference_type difference_type;
-      typedef typename _Alloc::pointer pointer;
-      typedef typename _Alloc::const_pointer const_pointer;
-      typedef typename _Alloc::reference reference;
-      typedef typename _Alloc::const_reference const_reference;
+      typedef typename _Alloc_traits::pointer pointer;
+      typedef typename _Alloc_traits::const_pointer const_pointer;
+      typedef typename _Alloc_traits::reference reference;
+      typedef typename _Alloc_traits::const_reference const_reference;
       
       typedef typename _Ht::const_iterator iterator;
       typedef typename _Ht::const_iterator const_iterator;

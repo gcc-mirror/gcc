@@ -221,7 +221,7 @@ namespace __gnu_debug
 #endif
 
   template<typename _InputIterator>
-    _GLIBCXX_CONSTEXPR
+    _GLIBCXX14_CONSTEXPR
     inline bool
     __valid_range(_InputIterator __first, _InputIterator __last)
     {

@@ -1,4 +1,5 @@
 /* { dg-options "-O3 -fdump-tree-lversion-details" } */
+/* { dg-require-effective-target size32plus } */
 
 /* The simplest IV case.  */
 

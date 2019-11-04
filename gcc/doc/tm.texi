@@ -6103,6 +6103,13 @@ to use it.
 Return number of threads in SIMT thread group on the target.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_OMP_DEVICE_KIND_ARCH_ISA (enum omp_device_kind_arch_isa @var{trait}, const char *@var{name})
+Return 1 if @var{trait} @var{name} is present in the OpenMP context's
+device trait set, return 0 if not present in any OpenMP context in the
+whole translation unit, or -1 if not present in the current OpenMP context
+but might be present in another OpenMP context in the same TU.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_GOACC_VALIDATE_DIMS (tree @var{decl}, int *@var{dims}, int @var{fn_level}, unsigned @var{used})
 This hook should check the launch dimensions provided for an OpenACC
 compute region, or routine.  Defaulted values are represented as -1

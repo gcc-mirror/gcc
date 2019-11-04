@@ -35,7 +35,7 @@
 
 /**
  * @file hash_eq_fn.hpp
- * Contains 2 eqivalence functions, one employing a hash value,
+ * Contains 2 equivalence functions, one employing a hash value,
  * and one ignoring it.
  */
 
@@ -43,6 +43,7 @@
 #define PB_DS_HASH_EQ_FN_HPP
 
 #include <utility>
+#include <ext/pb_ds/detail/types_traits.hpp>
 #include <debug/debug.h>
 
 namespace __gnu_pbds
@@ -58,8 +59,8 @@ namespace __gnu_pbds
     struct hash_eq_fn<Key, Eq_Fn, _Alloc, false> : public Eq_Fn
     {
       typedef Eq_Fn 					   eq_fn_base;
-      typedef typename _Alloc::template rebind<Key>::other key_allocator;
-      typedef typename key_allocator::const_reference 	   key_const_reference;
+      typedef typename rebind_traits<_Alloc, Key>::const_reference
+	key_const_reference;
 
       hash_eq_fn() { }
 
@@ -82,8 +83,8 @@ namespace __gnu_pbds
     {
       typedef typename _Alloc::size_type 		   size_type;
       typedef Eq_Fn 					   eq_fn_base;
-      typedef typename _Alloc::template rebind<Key>::other key_allocator;
-      typedef typename key_allocator::const_reference 	   key_const_reference;
+      typedef typename rebind_traits<_Alloc, Key>::const_reference
+	key_const_reference;
 
       hash_eq_fn() { }
 

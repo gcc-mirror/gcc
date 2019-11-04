@@ -1921,7 +1921,7 @@ symtab_node::get_partitioning_class (void)
   if (DECL_ABSTRACT_P (decl))
     return SYMBOL_EXTERNAL;
 
-  if (cnode && cnode->global.inlined_to)
+  if (cnode && cnode->inlined_to)
     return SYMBOL_DUPLICATE;
 
   /* Transparent aliases are always duplicated.  */
@@ -2321,7 +2321,7 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
     return true;
 
   /* Inline clones always binds locally.  */
-  if (cnode && cnode->global.inlined_to)
+  if (cnode && cnode->inlined_to)
     return true;
 
   if (DECL_EXTERNAL (decl))
@@ -2333,7 +2333,7 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
     {
       cgraph_node *cref = dyn_cast <cgraph_node *> (ref);
       if (cref)
-	ref = cref->global.inlined_to;
+	ref = cref->inlined_to;
     }
 
   /* If this is a reference from symbol itself and there are no aliases, we

@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
    any particular GC implementation.  */
 
 #include "config.h"
+#ifdef HAVE_MALLINFO
+#include <malloc.h>
+#endif
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
@@ -29,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "hosthooks.h"
 #include "plugin.h"
+#include "options.h"
 
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;
@@ -887,10 +891,11 @@ public:
     fprintf (stderr,
 	     "%-48s " PRsa (9) ":%5.1f%%" PRsa (9) ":%5.1f%%"
 	     PRsa (9) ":%5.1f%%" PRsa (9) ":%5.1f%%" PRsa (9) "\n",
-	     prefix, SIZE_AMOUNT (m_collected),
+	     prefix,
+	     SIZE_AMOUNT (balance), get_percent (balance, total.get_balance ()),
+	     SIZE_AMOUNT (m_collected),
 	     get_percent (m_collected, total.m_collected),
 	     SIZE_AMOUNT (m_freed), get_percent (m_freed, total.m_freed),
-	     SIZE_AMOUNT (balance), get_percent (balance, total.get_balance ()),
 	     SIZE_AMOUNT (m_overhead),
 	     get_percent (m_overhead, total.m_overhead),
 	     SIZE_AMOUNT (m_times));
@@ -927,33 +932,21 @@ public:
   static int
   compare (const void *first, const void *second)
   {
-    const mem_pair_t f = *(const mem_pair_t *)first;
-    const mem_pair_t s = *(const mem_pair_t *)second;
+    const mem_pair_t mem1 = *(const mem_pair_t *) first;
+    const mem_pair_t mem2 = *(const mem_pair_t *) second;
 
-    return s.second->get_balance () - f.second->get_balance ();
-  }
+    size_t balance1 = mem1.second->get_balance ();
+    size_t balance2 = mem2.second->get_balance ();
 
-  /* Compare rows in final GGC summary dump.  */
-  static int
-  compare_final (const void *first, const void *second)
-  {
-    typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
-
-    const ggc_usage *f = ((const mem_pair_t *)first)->second;
-    const ggc_usage *s = ((const mem_pair_t *)second)->second;
-
-    size_t a = f->m_allocated + f->m_overhead - f->m_freed;
-    size_t b = s->m_allocated + s->m_overhead - s->m_freed;
-
-    return a == b ? 0 : (a < b ? 1 : -1);
+    return balance1 == balance2 ? 0 : (balance1 < balance2 ? 1 : -1);
   }
 
   /* Dump header with NAME.  */
   static inline void
   dump_header (const char *name)
   {
-    fprintf (stderr, "%-48s %11s%17s%17s%16s%17s\n", name, "Garbage", "Freed",
-	     "Leak", "Overhead", "Times");
+    fprintf (stderr, "%-48s %11s%17s%17s%16s%17s\n", name, "Leak", "Garbage",
+	     "Freed", "Overhead", "Times");
   }
 
   /* Freed memory in bytes.  */
@@ -970,7 +963,7 @@ static mem_alloc_description<ggc_usage> ggc_mem_desc;
 /* Dump per-site memory statistics.  */
 
 void
-dump_ggc_loc_statistics (bool final)
+dump_ggc_loc_statistics ()
 {
   if (! GATHER_STATISTICS)
     return;
@@ -978,7 +971,7 @@ dump_ggc_loc_statistics (bool final)
   ggc_force_collect = true;
   ggc_collect ();
 
-  ggc_mem_desc.dump (GGC_ORIGIN, final ? ggc_usage::compare_final : NULL);
+  ggc_mem_desc.dump (GGC_ORIGIN);
 
   ggc_force_collect = false;
 }
@@ -1016,4 +1009,15 @@ ggc_prune_overhead_list (void)
 
   delete ggc_mem_desc.m_reverse_object_map;
   ggc_mem_desc.m_reverse_object_map = new map_t (13, false, false, false);
+}
+
+/* Return memory used by heap in kb, 0 if this info is not available.  */
+
+void
+report_heap_memory_use ()
+{
+#ifdef HAVE_MALLINFO
+  if (!quiet_flag)
+    fprintf (stderr," {heap %luk}", (unsigned long)(mallinfo().arena / 1024));
+#endif
 }

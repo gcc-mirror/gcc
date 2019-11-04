@@ -4,4 +4,4 @@
 /* { dg-warning "supports 16-bit hardware multiply" "" { target msp430_hwmul_not_16bit } 0 } */
 
 /* revision=1, hwmpy=1 */
-#include "../devices-main.c"
+#include "devices-main.c"

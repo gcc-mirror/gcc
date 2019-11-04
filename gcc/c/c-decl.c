@@ -4481,6 +4481,16 @@ c_builtin_function_ext_scope (tree decl)
 
   return decl;
 }
+
+/* Implement LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL.  */
+
+tree
+c_simulate_builtin_function_decl (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  C_DECL_BUILTIN_PROTOTYPE (decl) = prototype_p (type);
+  return pushdecl (decl);
+}
 
 /* Called when a declaration is seen that contains no names to declare.
    If its type is a reference to a structure, union or enum inherited
@@ -4832,8 +4842,12 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	attributes = tree_cons (get_identifier ("omp declare target implicit"),
 				NULL_TREE, attributes);
       else
-	attributes = tree_cons (get_identifier ("omp declare target"),
-				NULL_TREE, attributes);
+	{
+	  attributes = tree_cons (get_identifier ("omp declare target"),
+				  NULL_TREE, attributes);
+	  attributes = tree_cons (get_identifier ("omp declare target block"),
+				  NULL_TREE, attributes);
+	}
     }
 
   /* Look up the current declaration with all the attributes merged
@@ -8893,6 +8907,36 @@ build_enumerator (location_t decl_loc, location_t loc,
   return tree_cons (decl, value, NULL_TREE);
 }
 
+/* Implement LANG_HOOKS_SIMULATE_ENUM_DECL.  */
+
+tree
+c_simulate_enum_decl (location_t loc, const char *name,
+		      vec<string_int_pair> values)
+{
+  location_t saved_loc = input_location;
+  input_location = loc;
+
+  struct c_enum_contents the_enum;
+  tree enumtype = start_enum (loc, &the_enum, get_identifier (name));
+
+  tree value_chain = NULL_TREE;
+  string_int_pair *value;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (values, i, value)
+    {
+      tree decl = build_enumerator (loc, loc, &the_enum,
+				    get_identifier (value->first),
+				    build_int_cst (integer_type_node,
+						   value->second));
+      TREE_CHAIN (decl) = value_chain;
+      value_chain = decl;
+    }
+
+  finish_enum (enumtype, nreverse (value_chain), NULL_TREE);
+
+  input_location = saved_loc;
+  return enumtype;
+}
 
 /* Create the FUNCTION_DECL for a function definition.
    DECLSPECS, DECLARATOR and ATTRIBUTES are the parts of
@@ -9986,6 +10030,34 @@ identifier_global_value	(tree t)
   return NULL_TREE;
 }
 
+/* Returns true if NAME refers to a built-in function or function-like
+   operator.  */
+
+bool
+names_builtin_p (const char *name)
+{
+  tree id = get_identifier (name);
+  if (tree decl = identifier_global_value (id))
+    return TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_BUILTIN (decl);
+
+  /* Also detect common reserved C words that aren't strictly built-in
+     functions.  */
+  switch (C_RID_CODE (id))
+    {
+    case RID_BUILTIN_CONVERTVECTOR:
+    case RID_BUILTIN_HAS_ATTRIBUTE:
+    case RID_BUILTIN_SHUFFLE:
+    case RID_CHOOSE_EXPR:
+    case RID_OFFSETOF:
+    case RID_TYPES_COMPATIBLE_P:
+      return true;
+    default:
+      break;
+    }
+
+  return false;
+}
+
 /* In C, the only C-linkage public declaration is at file scope.  */
 
 tree
@@ -10959,8 +11031,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("decimal floating-point not supported "
 			   "for this target"));
-	      pedwarn (loc, OPT_Wpedantic,
-		       "ISO C does not support decimal floating-point");
+	      pedwarn_c11 (loc, OPT_Wpedantic,
+			   "ISO C does not support decimal floating-point "
+			   "before C2X");
 	      return specs;
 	    case RID_FRACT:
 	    case RID_ACCUM:

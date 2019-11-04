@@ -1717,7 +1717,7 @@ d_number (struct d_info *di)
 	}
       if (ret > ((INT_MAX - (peek - '0')) / 10))
         return -1;
-      ret = ret * 10 + peek - '0';
+      ret = ret * 10 + (peek - '0');
       d_advance (di, 1);
       peek = d_peek_char (di);
     }
@@ -5977,10 +5977,10 @@ d_print_mod (struct d_print_info *dpi, int options,
       d_append_string (dpi, "&&");
       return;
     case DEMANGLE_COMPONENT_COMPLEX:
-      d_append_string (dpi, "complex ");
+      d_append_string (dpi, " _Complex");
       return;
     case DEMANGLE_COMPONENT_IMAGINARY:
-      d_append_string (dpi, "imaginary ");
+      d_append_string (dpi, " _Imaginary");
       return;
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
       if (d_last_char (dpi) != '(')

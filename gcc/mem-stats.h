@@ -361,14 +361,11 @@ public:
      are filtered by ORIGIN type, LENGTH is return value where we register
      the number of elements in the list. If we want to process custom order,
      CMP comparator can be provided.  */
-  mem_list_t *get_list (mem_alloc_origin origin, unsigned *length,
-			int (*cmp) (const void *first,
-				    const void *second) = NULL);
+  mem_list_t *get_list (mem_alloc_origin origin, unsigned *length);
 
   /* Dump all tracked instances of type ORIGIN. If we want to process custom
      order, CMP comparator can be provided.  */
-  void dump (mem_alloc_origin origin,
-	     int (*cmp) (const void *first, const void *second) = NULL);
+  void dump (mem_alloc_origin origin);
 
   /* Reverse object map used for every object allocation mapping.  */
   reverse_object_map_t *m_reverse_object_map;
@@ -593,9 +590,7 @@ mem_alloc_description<T>::~mem_alloc_description ()
 template <class T>
 inline
 typename mem_alloc_description<T>::mem_list_t *
-mem_alloc_description<T>::get_list (mem_alloc_origin origin, unsigned *length,
-				    int (*cmp) (const void *first,
-						const void *second))
+mem_alloc_description<T>::get_list (mem_alloc_origin origin, unsigned *length)
 {
   /* vec data structure is not used because all vectors generate memory
      allocation info a it would create a cycle.  */
@@ -608,7 +603,7 @@ mem_alloc_description<T>::get_list (mem_alloc_origin origin, unsigned *length,
     if ((*it).first->m_origin == origin)
       list[i++] = std::pair<mem_location*, T*> (*it);
 
-  qsort (list, i, element_size, cmp == NULL ? T::compare : cmp);
+  qsort (list, i, element_size, T::compare);
   *length = i;
 
   return list;
@@ -637,15 +632,13 @@ mem_alloc_description<T>::get_sum (mem_alloc_origin origin)
 
 template <class T>
 inline void
-mem_alloc_description<T>::dump (mem_alloc_origin origin,
-				int (*cmp) (const void *first,
-					    const void *second))
+mem_alloc_description<T>::dump (mem_alloc_origin origin)
 {
   unsigned length;
 
   fprintf (stderr, "\n");
 
-  mem_list_t *list = get_list (origin, &length, cmp);
+  mem_list_t *list = get_list (origin, &length);
   T total = get_sum (origin);
 
   T::print_dash_line ();

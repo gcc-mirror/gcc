@@ -219,11 +219,6 @@
 ;; Code iterators
 ;;----------------------------------------------------------------------------
 
-;; A list of condition codes used in compare instructions where
-;; the carry flag from the addition is used instead of doing the
-;; compare a second time.
-(define_code_iterator LTUGEU [ltu geu])
-
 ;; The signed gt, ge comparisons
 (define_code_iterator GTGE [gt ge])
 
@@ -270,7 +265,7 @@
 (define_code_iterator FCVT [unsigned_float float])
 
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
-;; a stack pointer opoerand.  The minus operation is a candidate for an rsub
+;; a stack pointer operand.  The minus operation is a candidate for an rsub
 ;; and hence only plus is supported.
 (define_code_attr t2_binop0
   [(plus "rk") (minus "r") (ior "r") (xor "r") (and "r")])
@@ -797,6 +792,10 @@
 ;; Code attributes
 ;;----------------------------------------------------------------------------
 
+;; Determine the mode of a 'wide compare', ie where the carry flag is
+;; propagated into the comparison.
+(define_code_attr CC_EXTEND [(sign_extend "CC_NV") (zero_extend "CC_B")])
+
 ;; Assembler mnemonics for vqh_ops and vqhs_ops iterators.
 (define_code_attr VQH_mnem [(plus "vadd") (smin "vmin") (smax "vmax")
                 (umin "vmin") (umax "vmax")])
@@ -809,13 +808,9 @@
 (define_code_attr VQH_sign [(plus "i") (smin "s") (smax "s") (umin "u")
                 (umax "u")])
 
-(define_code_attr cnb [(ltu "CC_C") (geu "CC")])
-
 ;; Map rtl operator codes to optab names
 (define_code_attr optab
- [(ltu "ltu")
-  (geu "geu")
-  (and "and")
+ [(and "and")
   (ior "ior")
   (xor "xor")])
 

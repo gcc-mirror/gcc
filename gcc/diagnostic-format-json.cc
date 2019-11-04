@@ -48,8 +48,8 @@ json_from_expanded_location (location_t loc)
   json::object *result = new json::object ();
   if (exploc.file)
     result->set ("file", new json::string (exploc.file));
-  result->set ("line", new json::number (exploc.line));
-  result->set ("column", new json::number (exploc.column));
+  result->set ("line", new json::integer_number (exploc.line));
+  result->set ("column", new json::integer_number (exploc.column));
   return result;
 }
 
@@ -152,6 +152,17 @@ json_end_diagnostic (diagnostic_context *context, diagnostic_info *diagnostic,
     {
       diag_obj->set ("option", new json::string (option_text));
       free (option_text);
+    }
+
+  if (context->get_option_url)
+    {
+      char *option_url = context->get_option_url (context,
+						  diagnostic->option_index);
+      if (option_url)
+	{
+	  diag_obj->set ("option_url", new json::string (option_url));
+	  free (option_url);
+	}
     }
 
   /* If we've already emitted a diagnostic within this auto_diagnostic_group,

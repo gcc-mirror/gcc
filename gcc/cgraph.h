@@ -707,38 +707,6 @@ struct GTY(()) cgraph_thunk_info {
   bool thunk_p;
 };
 
-/* Information about the function collected locally.
-   Available after function is analyzed.  */
-
-struct GTY(()) cgraph_local_info {
-  /* Set when function is visible in current compilation unit only and
-     its address is never taken.  */
-  unsigned local : 1;
-
-  /* False when there is something makes versioning impossible.  */
-  unsigned versionable : 1;
-
-  /* False when function calling convention and signature cannot be changed.
-     This is the case when __builtin_apply_args is used.  */
-  unsigned can_change_signature : 1;
-
-  /* True when the function has been originally extern inline, but it is
-     redefined now.  */
-  unsigned redefined_extern_inline : 1;
-
-  /* True if the function may enter serial irrevocable mode.  */
-  unsigned tm_may_enter_irr : 1;
-};
-
-/* Information about the function that needs to be computed globally
-   once compilation is finished.  Available only with -funit-at-a-time.  */
-
-struct GTY(()) cgraph_global_info {
-  /* For inline clones this points to the function they will be
-     inlined into.  */
-  cgraph_node *inlined_to;
-};
-
 /* Represent which DECL tree (or reference to such tree)
    will be replaced by another tree while versioning.  */
 struct GTY(()) ipa_replace_map
@@ -979,7 +947,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
      If the new node is being inlined into another one, NEW_INLINED_TO should be
      the outline function the new one is (even indirectly) inlined to.
-     All hooks will see this in node's global.inlined_to, when invoked.
+     All hooks will see this in node's inlined_to, when invoked.
      Can be NULL if the node is not inlined.  SUFFIX is string that is appended
      to the original name.  */
   cgraph_node *create_clone (tree decl, profile_count count,
@@ -1379,9 +1347,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   static cgraph_node * get_create (tree);
 
   /* Return local info for the compiled function.  */
-  static cgraph_local_info *local_info (tree decl);
+  static cgraph_node *local_info_node (tree decl);
 
-  /* Return local info for the compiled function.  */
+  /* Return RTL info for the compiled function.  */
   static struct cgraph_rtl_info *rtl_info (const_tree);
 
   /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
@@ -1445,8 +1413,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      per-function in order to allow IPA passes to introduce new functions.  */
   vec<ipa_opt_pass> GTY((skip)) ipa_transforms_to_apply;
 
-  cgraph_local_info local;
-  cgraph_global_info global;
+  /* For inline clones this points to the function they will be
+     inlined into.  */
+  cgraph_node *inlined_to;
+
   struct cgraph_rtl_info *rtl;
   cgraph_clone_info clone;
   cgraph_thunk_info thunk;
@@ -1500,6 +1470,19 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned split_part : 1;
   /* True if the function appears as possible target of indirect call.  */
   unsigned indirect_call_target : 1;
+  /* Set when function is visible in current compilation unit only and
+     its address is never taken.  */
+  unsigned local : 1;
+  /* False when there is something makes versioning impossible.  */
+  unsigned versionable : 1;
+  /* False when function calling convention and signature cannot be changed.
+     This is the case when __builtin_apply_args is used.  */
+  unsigned can_change_signature : 1;
+  /* True when the function has been originally extern inline, but it is
+     redefined now.  */
+  unsigned redefined_extern_inline : 1;
+  /* True if the function may enter serial irrevocable mode.  */
+  unsigned tm_may_enter_irr : 1;
 
 private:
   /* Unique id of the node.  */
@@ -2095,9 +2078,19 @@ public:
   friend struct cgraph_node;
   friend struct cgraph_edge;
 
-  symbol_table (): cgraph_max_uid (1), cgraph_max_summary_id (0),
-  edges_max_uid (1), edges_max_summary_id (0),
-  cgraph_released_summary_ids (), edge_released_summary_ids ()
+  symbol_table (): 
+  cgraph_count (0), cgraph_max_uid (1), cgraph_max_summary_id (0),
+  edges_count (0), edges_max_uid (1), edges_max_summary_id (0),
+  cgraph_released_summary_ids (), edge_released_summary_ids (),
+  nodes (NULL), asmnodes (NULL), asm_last_node (NULL),
+  order (0), global_info_ready (false), state (PARSING),
+  function_flags_ready (false), cpp_implicit_aliases_done (false),
+  section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
+  dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
+  m_first_edge_removal_hook (NULL), m_first_cgraph_removal_hook (NULL),
+  m_first_edge_duplicated_hook (NULL), m_first_cgraph_duplicated_hook (NULL),
+  m_first_cgraph_insertion_hook (NULL), m_first_varpool_insertion_hook (NULL),
+  m_first_varpool_removal_hook (NULL)
   {
   }
 
@@ -2343,6 +2336,9 @@ public:
   /* Vector of released summary IDS for cgraph nodes.  */
   vec<int> GTY ((skip)) edge_released_summary_ids;
 
+  /* Return symbol used to separate symbol name from suffix.  */
+  static char symbol_suffix_separator ();
+
   symtab_node* GTY(()) nodes;
   asm_node* GTY(()) asmnodes;
   asm_node* GTY(()) asm_last_node;
@@ -2371,9 +2367,6 @@ public:
   hash_map<symtab_node *, symbol_priority_map> *init_priority_hash;
 
   FILE* GTY ((skip)) dump_file;
-
-  /* Return symbol used to separate symbol name from suffix.  */
-  static char symbol_suffix_separator ();
 
   FILE* GTY ((skip)) ipa_clones_dump_file;
 
@@ -2509,7 +2502,7 @@ symtab_node::real_symbol_p (void)
   if (!is_a <cgraph_node *> (this))
     return true;
   cnode = dyn_cast <cgraph_node *> (this);
-  if (cnode->global.inlined_to)
+  if (cnode->inlined_to)
     return false;
   return true;
 }
@@ -2532,13 +2525,13 @@ symtab_node::in_same_comdat_group_p (symtab_node *target)
 
   if (cgraph_node *cn = dyn_cast <cgraph_node *> (target))
     {
-      if (cn->global.inlined_to)
-	source = cn->global.inlined_to;
+      if (cn->inlined_to)
+	source = cn->inlined_to;
     }
   if (cgraph_node *cn = dyn_cast <cgraph_node *> (target))
     {
-      if (cn->global.inlined_to)
-	target = cn->global.inlined_to;
+      if (cn->inlined_to)
+	target = cn->inlined_to;
     }
 
   return source->get_comdat_group () == target->get_comdat_group ();
@@ -2985,7 +2978,7 @@ struct GTY((for_user)) constant_descriptor_tree {
 inline bool
 cgraph_node::only_called_directly_or_aliased_p (void)
 {
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
   return (!force_output && !address_taken
 	  && !ifunc_resolver
 	  && !used_from_other_partition
@@ -3002,7 +2995,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 inline bool
 cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
 {
-  gcc_checking_assert (!global.inlined_to);
+  gcc_checking_assert (!inlined_to);
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
@@ -3173,8 +3166,8 @@ inline bool
 cgraph_edge::recursive_p (void)
 {
   cgraph_node *c = callee->ultimate_alias_target ();
-  if (caller->global.inlined_to)
-    return caller->global.inlined_to->decl == c->decl;
+  if (caller->inlined_to)
+    return caller->inlined_to->decl == c->decl;
   else
     return caller->decl == c->decl;
 }
@@ -3211,8 +3204,8 @@ cgraph_edge::binds_to_current_def_p ()
 inline int
 cgraph_edge::frequency ()
 {
-  return count.to_cgraph_frequency (caller->global.inlined_to
-				    ? caller->global.inlined_to->count
+  return count.to_cgraph_frequency (caller->inlined_to
+				    ? caller->inlined_to->count
 				    : caller->count);
 }
 
@@ -3234,7 +3227,7 @@ inline void
 cgraph_node::mark_force_output (void)
 {
   force_output = 1;
-  gcc_checking_assert (!global.inlined_to);
+  gcc_checking_assert (!inlined_to);
 }
 
 /* Return true if function should be optimized for size.  */

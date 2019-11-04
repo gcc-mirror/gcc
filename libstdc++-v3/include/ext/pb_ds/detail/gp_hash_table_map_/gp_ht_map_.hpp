@@ -85,7 +85,7 @@ namespace __gnu_pbds
 #ifdef _GLIBCXX_DEBUG
 #define PB_DS_DEBUG_MAP_BASE_C_DEC \
    debug_map_base<Key, Eq_Fn, \
-		  typename _Alloc::template rebind<Key>::other::const_reference>
+		  typename rebind_traits<_Alloc, Key>::const_reference>
 #endif
 
 
@@ -169,12 +169,13 @@ namespace __gnu_pbds
 	entry_status m_stat;
       };
 
-      typedef typename _Alloc::template rebind<entry>::other entry_allocator;
-      typedef typename entry_allocator::pointer entry_pointer;
-      typedef typename entry_allocator::const_pointer const_entry_pointer;
-      typedef typename entry_allocator::reference entry_reference;
-      typedef typename entry_allocator::const_reference const_entry_reference;
-      typedef typename entry_allocator::pointer entry_array;
+      typedef rebind_traits<_Alloc, entry> entry_traits;
+      typedef typename entry_traits::allocator_type entry_allocator;
+      typedef typename entry_traits::pointer entry_pointer;
+      typedef typename entry_traits::const_pointer const_entry_pointer;
+      typedef typename entry_traits::reference entry_reference;
+      typedef typename entry_traits::const_reference const_entry_reference;
+      typedef typename entry_traits::pointer entry_array;
 
       typedef PB_DS_RANGED_PROBE_FN_C_DEC 	ranged_probe_fn_base;
 

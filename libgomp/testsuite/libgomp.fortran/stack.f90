@@ -11,7 +11,7 @@ program stack
 !$omp end parallel
   ! Check that the two threads are not sharing a location for
   ! the array x in foo()
-  if (ilocs(1) .eq. ilocs(2)) STOP 1
+  if (ilocs(1) .eq. ilocs(2)) stop 1
 end program stack
 
 integer function foo ()

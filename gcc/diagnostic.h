@@ -194,6 +194,12 @@ struct diagnostic_context
      May be passed 0 as well as the index of a particular option.  */
   char *(*option_name) (diagnostic_context *, int, diagnostic_t, diagnostic_t);
 
+  /* Client hook to return a URL describing the option that controls
+     a diagnostic.  Returns malloced memory.  May return NULL if no URL
+     is available.  May be passed 0 as well as the index of a
+     particular option.  */
+  char *(*get_option_url) (diagnostic_context *, int);
+
   /* Auxiliary data for client.  */
   void *x_data;
 
@@ -331,6 +337,7 @@ diagnostic_override_option_index (diagnostic_info *info, int optidx)
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *, int);
 extern void diagnostic_color_init (diagnostic_context *, int value = -1);
+extern void diagnostic_urls_init (diagnostic_context *, int value = -1);
 extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *, location_t);
 extern void diagnostic_show_locus (diagnostic_context *,

@@ -24,6 +24,8 @@
 # values during the configure step.  We enforce this during the
 # top-level configury.
 
+s-mlib: $(srcdir)/config/arm/t-multilib $(srcdir)/config/arm/t-aprofile $(srcdir)/config/arm/t-rmprofile
+
 MULTILIB_OPTIONS     =
 MULTILIB_DIRNAMES    =
 MULTILIB_EXCEPTIONS  =
@@ -63,6 +65,8 @@ all_early_arch		:= armv5tej armv6 armv6j armv6k armv6z armv6kz \
 v7_a_arch_variants	:= $(call all_feat_combs, mp sec)
 v7_a_nosimd_variants	:= +fp +vfpv3 +vfpv3-d16-fp16 +vfpv3-fp16 +vfpv4-d16 +vfpv4
 v7_a_simd_variants	:= +simd +neon-fp16 +neon-vfpv4
+v7_r_sp_variants	:= +fp.sp +fp.sp+idiv +vfpv3xd-fp16 +vfpv3xd-fp16+idiv
+v7_r_dp_variants	:= +fp +fp+idiv +vfpv3-d16-fp16 +vfpv3-d16-fp16+idiv
 v7ve_nosimd_variants	:= +vfpv3-d16 +vfpv3 +vfpv3-d16-fp16 +vfpv3-fp16 +fp +vfpv4
 v7ve_vfpv3_simd_variants := +neon +neon-fp16
 v7ve_vfpv4_simd_variants := +simd
@@ -86,8 +90,8 @@ SEP := $(and $(HAS_APROFILE),$(HAS_RMPROFILE),/)
 MULTILIB_OPTIONS	+= marm/mthumb
 MULTILIB_DIRNAMES	+= arm thumb
 
-MULTILIB_OPTIONS	+= march=armv5te+fp/march=armv7/march=armv7+fp/$(MULTI_ARCH_OPTS_A)$(SEP)$(MULTI_ARCH_OPTS_RM)
-MULTILIB_DIRNAMES	+= v5te v7 v7+fp $(MULTI_ARCH_DIRS_A) $(MULTI_ARCH_DIRS_RM)
+MULTILIB_OPTIONS	+= march=armv5te+fp/march=armv7/march=armv7+fp/march=armv7-r+fp.sp/$(MULTI_ARCH_OPTS_A)$(SEP)$(MULTI_ARCH_OPTS_RM)
+MULTILIB_DIRNAMES	+= v5te v7 v7+fp v7-r+fp.sp $(MULTI_ARCH_DIRS_A) $(MULTI_ARCH_DIRS_RM)
 
 MULTILIB_OPTIONS	+= mfloat-abi=soft/mfloat-abi=softfp/mfloat-abi=hard
 MULTILIB_DIRNAMES	+= nofp softfp hard
@@ -100,22 +104,31 @@ MULTILIB_REQUIRED	+= mthumb/march=armv7/mfloat-abi=soft
 MULTILIB_REQUIRED	+= mthumb/march=armv7+fp/mfloat-abi=softfp
 MULTILIB_REQUIRED	+= mthumb/march=armv7+fp/mfloat-abi=hard
 
-# Map v7-r down onto common v7 code.
+MULTILIB_REQUIRED	+= mthumb/march=armv7-r+fp.sp/mfloat-abi=softfp
+MULTILIB_REQUIRED	+= mthumb/march=armv7-r+fp.sp/mfloat-abi=hard
+
+# Map v7-r with double precision down onto common v7 code.
 MULTILIB_MATCHES	+= march?armv7=march?armv7-r
 MULTILIB_MATCHES	+= march?armv7=march?armv7-r+idiv
-MULTILIB_MATCHES	+= march?armv7+fp=march?armv7-r+fp
-MULTILIB_MATCHES	+= march?armv7+fp=march?armv7-r+fp+idiv
+MULTILIB_MATCHES	+= $(foreach ARCH, $(v7_r_dp_variants), \
+			     march?armv7+fp=march?armv7-r$(ARCH))
+
+# Map v7-r single precision variants to v7-r with single precision.
+MULTILIB_MATCHES	+= $(foreach ARCH, \
+			     $(filter-out +fp.sp, $(v7_r_sp_variants)), \
+			     march?armv7-r+fp.sp=march?armv7-r$(ARCH))
 
 MULTILIB_MATCHES	+= $(foreach ARCH, $(all_early_arch), \
 			     march?armv5te+fp=march?$(ARCH)+fp)
-# Map v8-r down onto common v7 code.
+# Map v8-r down onto common v7 code or v7-r sp.
 MULTILIB_MATCHES	+= march?armv7=march?armv8-r
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_r_nosimd_variants), \
 			     march?armv7=march?armv8-r$(ARCH))
 MULTILIB_MATCHES	+= $(foreach ARCH,+simd +crypto, \
 			     march?armv7+fp=march?armv8-r$(ARCH) \
 			     march?armv7+fp=march?armv8-r+crc$(ARCH))
-
+MULTILIB_MATCHES	+= march?armv7-r+fp.sp=march?armv8-r+fp.sp
+MULTILIB_MATCHES	+= march?armv7-r+fp.sp=march?armv8-r+crc+fp.sp
 
 ifeq (,$(HAS_APROFILE))
 # Map all v7-a
@@ -177,7 +190,7 @@ MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_5_a_simd_variants), \
 MULTILIB_REUSE		+= mthumb/march.armv7/mfloat-abi.soft=marm/march.armv7/mfloat-abi.soft
 
 MULTILIB_REUSE		+= $(foreach ABI, hard softfp, \
-			     $(foreach ARCH, armv7+fp, \
+			     $(foreach ARCH, armv7+fp armv7-r+fp\.sp, \
 			       mthumb/march.$(ARCH)/mfloat-abi.$(ABI)=marm/march.$(ARCH)/mfloat-abi.$(ABI)))
 
 # Softfp but no FP, use the soft-float libraries.

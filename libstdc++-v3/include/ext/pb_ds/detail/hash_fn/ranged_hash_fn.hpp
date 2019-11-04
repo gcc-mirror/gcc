@@ -43,6 +43,7 @@
 #define PB_DS_RANGED_HASH_FN_HPP
 
 #include <utility>
+#include <ext/pb_ds/detail/types_traits.hpp>
 #include <debug/debug.h>
 
 namespace __gnu_pbds
@@ -75,8 +76,8 @@ namespace __gnu_pbds
       typedef typename _Alloc::size_type size_type;
       typedef Hash_Fn hash_fn_base;
       typedef Comb_Hash_Fn comb_hash_fn_base;
-      typedef typename _Alloc::template rebind< Key>::other key_allocator;
-      typedef typename key_allocator::const_reference key_const_reference;
+      typedef typename rebind_traits<_Alloc, Key>::const_reference
+	key_const_reference;
 
       ranged_hash_fn(size_type);
 
@@ -158,8 +159,8 @@ namespace __gnu_pbds
       typedef std::pair<size_type, size_type> comp_hash;
       typedef Hash_Fn hash_fn_base;
       typedef Comb_Hash_Fn comb_hash_fn_base;
-      typedef typename _Alloc::template rebind<Key>::other key_allocator;
-      typedef typename key_allocator::const_reference key_const_reference;
+      typedef typename rebind_traits<_Alloc, Key>::const_reference
+	key_const_reference;
 
       ranged_hash_fn(size_type);
 

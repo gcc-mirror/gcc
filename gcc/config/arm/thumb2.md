@@ -24,20 +24,6 @@
 ;; changes made in armv5t as "thumb2".  These are considered part
 ;; the 16-bit Thumb-1 instruction set.
 
-;; Thumb-2 only allows shift by constant on data processing instructions
-(define_insn "*thumb_andsi_not_shiftsi_si"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(and:SI (not:SI (match_operator:SI 4 "shift_operator"
-			 [(match_operand:SI 2 "s_register_operand" "r")
-			  (match_operand:SI 3 "const_int_operand" "M")]))
-		(match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_THUMB2"
-  "bic%?\\t%0, %1, %2%S4"
-  [(set_attr "predicable" "yes")
-   (set_attr "shift" "2")
-   (set_attr "type" "alu_shift_imm")]
-)
-
 ;; We use the '0' constraint for operand 1 because reload should
 ;; be smart enough to generate an appropriate move for the r/r/r case.
 (define_insn_and_split "*thumb2_smaxsi3"
@@ -333,19 +319,6 @@
   [(set_attr "type" "store_8")]
 )
 
-(define_insn "*thumb2_cmpsi_neg_shiftsi"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:SI 0 "s_register_operand" "r")
-		    (neg:SI (match_operator:SI 3 "shift_operator"
-			     [(match_operand:SI 1 "s_register_operand" "r")
-			      (match_operand:SI 2 "const_int_operand" "M")]))))]
-  "TARGET_THUMB2"
-  "cmn%?\\t%0, %1%S3"
-  [(set_attr "conds" "set")
-   (set_attr "shift" "1")
-   (set_attr "type" "alus_shift_imm")]
-)
-
 (define_insn_and_split "*thumb2_mov_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=l,r")
 	(match_operator:SI 1 "arm_comparison_operator_mode"
@@ -368,7 +341,9 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(neg:SI (match_operator:SI 1 "arm_comparison_operator_mode"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
-  "TARGET_THUMB2 && !arm_restrict_it"
+  "TARGET_THUMB2
+   && !arm_restrict_it
+   && !arm_borrow_operation (operands[1], SImode)"
   "#"   ; "ite\\t%D1\;mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
   "&& true"
   [(set (match_dup 0)
@@ -387,7 +362,9 @@
   [(set (match_operand:SI 0 "low_register_operand" "=l")
 	(neg:SI (match_operator:SI 1 "arm_comparison_operator_mode"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
-  "TARGET_THUMB2 && arm_restrict_it"
+  "TARGET_THUMB2
+   && arm_restrict_it
+   && !arm_borrow_operation (operands[1], SImode)"
   "#"   ; ";mvn\\t%0, #0 ;it\\t%D1\;mov%D1\\t%0, #0\"
   "&& reload_completed"
   [(set (match_dup 0)

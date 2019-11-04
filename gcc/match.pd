@@ -5689,6 +5689,64 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (cmp (popcount @0) integer_zerop)
       (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 
+#if GIMPLE
+/* 64- and 32-bits branchless implementations of popcount are detected:
+
+   int popcount64c (uint64_t x)
+   {
+     x -= (x >> 1) & 0x5555555555555555ULL;
+     x = (x & 0x3333333333333333ULL) + ((x >> 2) & 0x3333333333333333ULL);
+     x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0fULL;
+     return (x * 0x0101010101010101ULL) >> 56;
+   }
+
+   int popcount32c (uint32_t x)
+   {
+     x -= (x >> 1) & 0x55555555;
+     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+     x = (x + (x >> 4)) & 0x0f0f0f0f;
+     return (x * 0x01010101) >> 24;
+   }  */
+(simplify
+  (rshift
+    (mult
+      (bit_and
+	(plus:c
+	  (rshift @8 INTEGER_CST@5)
+	  (plus:c@8
+	    (bit_and @6 INTEGER_CST@7)
+	    (bit_and
+	      (rshift
+		(minus@6
+		  @0
+		  (bit_and
+		    (rshift @0 INTEGER_CST@4)
+		    INTEGER_CST@11))
+	      INTEGER_CST@10)
+	    INTEGER_CST@9)))
+	INTEGER_CST@3)
+      INTEGER_CST@2)
+    INTEGER_CST@1)
+  /* Check constants and optab.  */
+  (with
+     {
+       unsigned prec = TYPE_PRECISION (type);
+       int shift = 64 - prec;
+       const unsigned HOST_WIDE_INT c1 = 0x0101010101010101ULL >> shift,
+				    c2 = 0x0F0F0F0F0F0F0F0FULL >> shift,
+				    c3 = 0x3333333333333333ULL >> shift,
+				    c4 = 0x5555555555555555ULL >> shift;
+     }
+    (if (prec <= 64 && TYPE_UNSIGNED (type) && tree_to_uhwi (@4) == 1
+          && tree_to_uhwi (@10) == 2 && tree_to_uhwi (@5) == 4
+          && tree_to_uhwi (@1) == prec - 8 && tree_to_uhwi (@2) == c1
+          && tree_to_uhwi (@3) == c2 && tree_to_uhwi (@9) == c3
+          && tree_to_uhwi (@7) == c3 && tree_to_uhwi (@11) == c4
+          && direct_internal_fn_supported_p (IFN_POPCOUNT, type,
+	    OPTIMIZE_FOR_BOTH))
+        (convert (IFN_POPCOUNT:type @0)))))
+#endif
+
 /* Simplify:
 
      a = a1 op a2

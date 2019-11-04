@@ -1,3 +1,5 @@
+! { dg-do run }
+!
 ! PR middle-end/63247
 
 program test

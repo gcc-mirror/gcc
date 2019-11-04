@@ -835,7 +835,10 @@ accessible_p (tree type, tree decl, bool consider_local_p)
      in default arguments for template parameters), and access
      checking should be performed in the outermost parameter list.  */
   if (processing_template_decl
-      && !expanding_concept ()
+      /* FIXME CWG has been talking about doing access checking in the context
+	 of the constraint-expression, rather than the constrained declaration,
+	 in which case we would want to remove this test.  */
+      && !processing_constraint_expression_p ()
       && (!processing_template_parmlist || processing_template_decl > 1))
     return 1;
 

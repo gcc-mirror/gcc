@@ -93,32 +93,33 @@ struct lang_flags
   char utf8_char_literals;
   char va_opt;
   char scope;
+  char dfp_constants;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid c11 std digr ulit rlit udlit bincst digsep trig u8chlit vaopt scope*/
-  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1 },
-  /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1 },
-  /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1 },
-  /* GNUC17   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1 },
-  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1 },
-  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0 },
-  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0 },
-  /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0 },
-  /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0 },
-  /* STDC17   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0 },
-  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   1 },
-  /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1 },
-  /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1 },
-  /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1 },
-  /* CXX11    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    0,     0,     1,   0,      0,   1 },
-  /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   0,      1,   1 },
-  /* CXX14    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1,   0,      0,   1 },
-  /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1 },
-  /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1 },
-  /* GNUCXX2A */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1 },
-  /* CXX2A    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1 },
-  /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0 }
+{ /*              c99 c++ xnum xid c11 std digr ulit rlit udlit bincst digsep trig u8chlit vaopt scope dfp */
+  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0 },
+  /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
+  /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
+  /* GNUC17   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
+  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     1 },
+  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
+  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
+  /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
+  /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
+  /* STDC17   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
+  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   1,     1 },
+  /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0 },
+  /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0 },
+  /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0 },
+  /* CXX11    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    0,     0,     1,   0,      0,   1,     0 },
+  /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   0,      1,   1,     0 },
+  /* CXX14    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1,   0,      0,   1,     0 },
+  /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
+  /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0 },
+  /* GNUCXX2A */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
+  /* CXX2A    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
+  /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0 }
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -145,6 +146,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, utf8_char_literals)	 = l->utf8_char_literals;
   CPP_OPTION (pfile, va_opt)			 = l->va_opt;
   CPP_OPTION (pfile, scope)			 = l->scope;
+  CPP_OPTION (pfile, dfp_constants)		 = l->dfp_constants;
 }
 
 /* Initialize library global state.  */
@@ -193,6 +195,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
   CPP_OPTION (pfile, cpp_warn_c90_c99_compat) = -1;
+  CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_cxx11_compat) = 0;
   CPP_OPTION (pfile, cpp_warn_deprecated) = 1;
   CPP_OPTION (pfile, cpp_warn_long_long) = 0;
@@ -400,6 +403,7 @@ static const struct builtin_macro builtin_array[] =
   B("__COUNTER__",	 BT_COUNTER,       true),
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
+  B("__has_builtin",	 BT_HAS_BUILTIN,   true),
   /* Keep builtins not used for -traditional-cpp at the end, and
      update init_builtins() if any more are added.  */
   B("_Pragma",		 BT_PRAGMA,        true),
@@ -480,7 +484,8 @@ cpp_init_special_builtins (cpp_reader *pfile)
 
   for (b = builtin_array; b < builtin_array + n; b++)
     {
-      if (b->value == BT_HAS_ATTRIBUTE
+      if ((b->value == BT_HAS_ATTRIBUTE
+	   || b->value == BT_HAS_BUILTIN)
 	  && (CPP_OPTION (pfile, lang) == CLK_ASM
 	      || pfile->cb.has_attribute == NULL))
 	continue;
@@ -490,6 +495,25 @@ cpp_init_special_builtins (cpp_reader *pfile)
 	hp->flags |= NODE_WARN;
       hp->value.builtin = (enum cpp_builtin_type) b->value;
     }
+}
+
+/* Restore macro C to builtin macro definition.  */
+
+void
+_cpp_restore_special_builtin (cpp_reader *pfile, struct def_pragma_macro *c)
+{
+  size_t len = strlen (c->name);
+
+  for (const struct builtin_macro *b = builtin_array;
+       b < builtin_array + ARRAY_SIZE (builtin_array); b++)
+    if (b->len == len && memcmp (c->name, b->name, len + 1) == 0)
+      {
+	cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
+	hp->type = NT_BUILTIN_MACRO;
+	if (b->always_warn_if_redefined)
+	  hp->flags |= NODE_WARN;
+	hp->value.builtin = (enum cpp_builtin_type) b->value;
+      }
 }
 
 /* Read the builtins table above and enter them, and language-specific

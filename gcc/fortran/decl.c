@@ -3980,6 +3980,38 @@ error_return:
 }
 
 
+/* Match a legacy nonstandard BYTE type-spec.  */
+
+static match
+match_byte_typespec (gfc_typespec *ts)
+{
+  if (gfc_match (" byte") == MATCH_YES)
+    {
+      if (!gfc_notify_std (GFC_STD_GNU, "BYTE type at %C"))
+	return MATCH_ERROR;
+
+      if (gfc_current_form == FORM_FREE)
+	{
+	  char c = gfc_peek_ascii_char ();
+	  if (!gfc_is_whitespace (c) && c != ',')
+	    return MATCH_NO;
+	}
+
+      if (gfc_validate_kind (BT_INTEGER, 1, true) < 0)
+	{
+	  gfc_error ("BYTE type used at %C "
+		     "is not available on the target machine");
+	  return MATCH_ERROR;
+	}
+
+      ts->type = BT_INTEGER;
+      ts->kind = 1;
+      return MATCH_YES;
+    }
+  return MATCH_NO;
+}
+
+
 /* Matches a declaration-type-spec (F03:R502).  If successful, sets the ts
    structure to the matched specification.  This is necessary for FUNCTION and
    IMPLICIT statements.
@@ -4012,22 +4044,10 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   /* Clear the current binding label, in case one is given.  */
   curr_binding_label = NULL;
 
-  if (gfc_match (" byte") == MATCH_YES)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "BYTE type at %C"))
-	return MATCH_ERROR;
-
-      if (gfc_validate_kind (BT_INTEGER, 1, true) < 0)
-	{
-	  gfc_error ("BYTE type used at %C "
-		     "is not available on the target machine");
-	  return MATCH_ERROR;
-	}
-
-      ts->type = BT_INTEGER;
-      ts->kind = 1;
-      return MATCH_YES;
-    }
+  /* Match BYTE type-spec.  */
+  m = match_byte_typespec (ts);
+  if (m != MATCH_NO)
+    return m;
 
   m = gfc_match (" type (");
   matched_type = (m == MATCH_YES);
@@ -6202,13 +6222,17 @@ gfc_match_prefix (gfc_typespec *ts)
 	  found_prefix = true;
 	}
 
-      if (!seen_type && ts != NULL
-	  && gfc_match_decl_type_spec (ts, 0) == MATCH_YES
-	  && gfc_match_space () == MATCH_YES)
+      if (!seen_type && ts != NULL)
 	{
-
-	  seen_type = true;
-	  found_prefix = true;
+	  match m;
+	  m = gfc_match_decl_type_spec (ts, 0);
+	  if (m == MATCH_ERROR)
+	    goto error;
+	  if (m == MATCH_YES && gfc_match_space () == MATCH_YES)
+	    {
+	      seen_type = true;
+	      found_prefix = true;
+	    }
 	}
 
       if (gfc_match ("elemental% ") == MATCH_YES)
@@ -7259,13 +7283,16 @@ gfc_match_function_decl (void)
   if (sym->attr.is_bind_c == 1)
     {
       sym->attr.is_bind_c = 0;
-      if (sym->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(sym->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
+
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state != COMP_SUBMODULE)
+	{
+	  locus loc;
+	  loc = sym->old_symbol != NULL
+	    ? sym->old_symbol->declared_at : gfc_current_locus;
+	  gfc_error_now ("BIND(C) attribute at %L can only be used for "
+			 "variables or common blocks", &loc);
+	}
     }
 
   if (found_match != MATCH_YES)
@@ -7278,6 +7305,24 @@ gfc_match_function_decl (void)
       else
 	found_match = suffix_match;
     }
+
+  /* F2018 C1550 (R1526) If MODULE appears in the prefix of a module
+     subprogram and a binding label is specified, it shall be the
+     same as the binding label specified in the corresponding module
+     procedure interface body.  */
+    if (sym->attr.is_bind_c && sym->attr.module_procedure && sym->old_symbol
+  	&& strcmp (sym->name, sym->old_symbol->name) == 0
+	&& strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
+      {
+	  const char *null = "NULL", *s1, *s2;
+	  s1 = sym->binding_label;
+	  if (!s1) s1 = null;
+	  s2 = sym->old_symbol->binding_label;
+	  if (!s2) s2 = null;
+          gfc_error ("Mismatch in BIND(C) names (%qs/%qs) at %C", s1, s2);
+	  sym->refs++;	/* Needed to avoid an ICE in gfc_release_symbol */
+	  return MATCH_ERROR;
+      }
 
   if(found_match != MATCH_YES)
     m = MATCH_ERROR;
@@ -7517,15 +7562,15 @@ gfc_match_entry (void)
      not allowed for procedures.  */
   if (entry->attr.is_bind_c == 1)
     {
+      locus loc;
+
       entry->attr.is_bind_c = 0;
-      if (entry->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(entry->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
-    }
+
+      loc = entry->old_symbol != NULL
+	? entry->old_symbol->declared_at : gfc_current_locus; 
+      gfc_error_now ("BIND(C) attribute at %L can only be used for "
+		     "variables or common blocks", &loc);
+     }
 
   /* Check what next non-whitespace character is so we can tell if there
      is the required parens if we have a BIND(C).  */
@@ -7725,13 +7770,16 @@ gfc_match_subroutine (void)
   if (sym->attr.is_bind_c == 1)
     {
       sym->attr.is_bind_c = 0;
-      if (sym->old_symbol != NULL)
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks",
-                       &(sym->old_symbol->declared_at));
-      else
-        gfc_error_now ("BIND(C) attribute at %L can only be used for "
-                       "variables or common blocks", &gfc_current_locus);
+
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state != COMP_SUBMODULE)
+	{
+	  locus loc;
+	  loc = sym->old_symbol != NULL
+	    ? sym->old_symbol->declared_at : gfc_current_locus;
+	  gfc_error_now ("BIND(C) attribute at %L can only be used for "
+			 "variables or common blocks", &loc);
+	}
     }
 
   /* C binding names are not allowed for internal procedures.  */
@@ -7772,6 +7820,24 @@ gfc_match_subroutine (void)
           gfc_error ("Missing required parentheses before BIND(C) at %C");
           return MATCH_ERROR;
         }
+
+      /* F2018 C1550 (R1526) If MODULE appears in the prefix of a module
+	 subprogram and a binding label is specified, it shall be the
+	 same as the binding label specified in the corresponding module
+	 procedure interface body.  */
+      if (sym->attr.module_procedure && sym->old_symbol
+  	  && strcmp (sym->name, sym->old_symbol->name) == 0
+	  && strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
+	{
+	  const char *null = "NULL", *s1, *s2;
+	  s1 = sym->binding_label;
+	  if (!s1) s1 = null;
+	  s2 = sym->old_symbol->binding_label;
+	  if (!s2) s2 = null;
+          gfc_error ("Mismatch in BIND(C) names (%qs/%qs) at %C", s1, s2);
+	  sym->refs++;	/* Needed to avoid an ICE in gfc_release_symbol */
+	  return MATCH_ERROR;
+	}
 
       /* Scan the dummy arguments for an alternate return.  */
       for (arg = sym->formal; arg; arg = arg->next)
@@ -8478,15 +8544,6 @@ attr_decl1 (void)
       goto cleanup;
     }
 
-  /* Check F2018:C822.  */
-  if (sym->attr.dimension && sym->attr.codimension
-      && sym->as && sym->as->rank + sym->as->corank > 15)
-    {
-      gfc_error ("rank + corank of %qs exceeds 15 at %C", sym->name);
-      m = MATCH_ERROR;
-      return m;
-    }
-
   if (sym->attr.cray_pointee && sym->as != NULL)
     {
       /* Fix the array spec.  */
@@ -9022,7 +9079,6 @@ match
 gfc_match_private (gfc_statement *st)
 {
   gfc_state_data *prev;
-  char c;
 
   if (gfc_match ("private") != MATCH_YES)
     return MATCH_NO;
@@ -9046,10 +9102,14 @@ gfc_match_private (gfc_statement *st)
       return MATCH_YES;
     }
 
-  /* At this point, PRIVATE must be followed by whitespace or ::.  */
-  c = gfc_peek_ascii_char ();
-  if (!gfc_is_whitespace (c) && c != ':')
-    return MATCH_NO;
+  /* At this point in free-form source code, PRIVATE must be followed
+     by whitespace or ::.  */
+  if (gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != ':')
+	return MATCH_NO;
+    }
 
   prev = gfc_state_stack->previous;
   if (gfc_current_state () != COMP_MODULE
@@ -9071,8 +9131,6 @@ gfc_match_private (gfc_statement *st)
 match
 gfc_match_public (gfc_statement *st)
 {
-  char c;
-
   if (gfc_match ("public") != MATCH_YES)
     return MATCH_NO;
 
@@ -9090,10 +9148,14 @@ gfc_match_public (gfc_statement *st)
       return MATCH_YES;
     }
 
-  /* At this point, PUBLIC must be followed by whitespace or ::.  */
-  c = gfc_peek_ascii_char ();
-  if (!gfc_is_whitespace (c) && c != ':')
-    return MATCH_NO;
+  /* At this point in free-form source code, PUBLIC must be followed
+     by whitespace or ::.  */
+  if (gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != ':')
+	return MATCH_NO;
+    }
 
   if (gfc_current_state () != COMP_MODULE)
     {

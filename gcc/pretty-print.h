@@ -273,6 +273,9 @@ public:
 
   /* Nonzero means that text should be colorized.  */
   bool show_color;
+
+  /* Nonzero means that URLs should be emitted.  */
+  bool show_urls;
 };
 
 static inline const char *
@@ -392,6 +395,9 @@ extern void pp_maybe_space (pretty_printer *);
 
 extern void pp_begin_quote (pretty_printer *, bool);
 extern void pp_end_quote (pretty_printer *, bool);
+
+extern void pp_begin_url (pretty_printer *pp, const char *url);
+extern void pp_end_url (pretty_printer *pp);
 
 /* Switch into verbatim mode and return the old mode.  */
 static inline pp_wrapping_mode_t

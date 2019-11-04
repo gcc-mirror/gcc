@@ -34,4 +34,12 @@ go_selectively_encode_id(const std::string &id);
 extern std::string
 go_mangle_struct_tag(const std::string& tag);
 
+// Encode a package path.  A package path can contain any arbitrary
+// character, including '.'.  go_encode_id expects that any '.' will
+// be inserted by name mangling in a controlled manner.  So first
+// translate any '.' using the same .x encoding as used by
+// go_mangle_struct_tag.
+extern std::string
+go_mangle_pkgpath(const std::string& pkgpath);
+
 #endif // !defined(GO_ENCODE_ID_H)

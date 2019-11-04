@@ -1,6 +1,6 @@
 /* PRE tree-optimization/90626 - fold strcmp(a, b) == 0 to zero when
    one string length is exact and the other is unequal
-   { dg-do compile }
+   { dg-do run }
    { dg-options "-O2 -Wall -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
@@ -65,8 +65,44 @@ test_strncmp (void)
   A (0 <  strncmp (b, a, 5));
 }
 
+
+__attribute__ ((noclone, noinline, noipa)) void
+test_strncmp_a4_cond_s5_s2_2 (const char *s, int i)
+{
+  char a4[4];
+  strcpy (a4, s);
+  A (0 == strncmp (a4, i ? "12345" : "12", 2));
+}
+
+
+__attribute__ ((noclone, noinline, noipa)) void
+test_strncmp_a4_cond_a5_s2_5 (const char *s, const char *t, int i)
+{
+  char a4[4], a5[5];
+  strcpy (a4, s);
+  strcpy (a5, t);
+  A (0 == strncmp (a4, i ? a5 : "12", 5));
+}
+
+__attribute__ ((noclone, noinline, noipa)) void
+test_strncmp_a4_cond_a5_a3_n (const char *s1, const char *s2, const char *s3,
+			      int i, unsigned n)
+{
+  char a3[3], a4[4], a5[5];
+  strcpy (a3, s1);
+  strcpy (a4, s2);
+  strcpy (a5, s3);
+  A (0 == strncmp (a4, i ? a5 : a3, n));
+}
+
+
 int main (void)
 {
   test_strcmp ();
   test_strncmp ();
+  test_strncmp_a4_cond_s5_s2_2 ("12", 0);
+  test_strncmp_a4_cond_a5_s2_5 ("12", "1234", 0);
+
+  test_strncmp_a4_cond_a5_a3_n ("12", "123", "1234", 0, 2);
+  test_strncmp_a4_cond_a5_a3_n ("123", "12", "12", 1, 3);
 }

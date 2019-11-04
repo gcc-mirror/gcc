@@ -53,8 +53,9 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 procedure Gnatls is
    pragma Ident (Gnat_Static_Version_String);
 
-   --  NOTE : The following string may be used by other tools, such as GPS. So
-   --  it can only be modified if these other uses are checked and coordinated.
+   --  NOTE : The following string may be used by other tools, such as
+   --  GNAT Studio. So it can only be modified if these other uses are checked
+   --  and coordinated.
 
    Project_Search_Path : constant String := "Project Search Path:";
    --  Label displayed in verbose mode before the directories in the project

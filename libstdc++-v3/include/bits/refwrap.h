@@ -300,7 +300,9 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     {
       _Tp* _M_data;
 
+      _GLIBCXX20_CONSTEXPR
       static _Tp* _S_fun(_Tp& __r) noexcept { return std::__addressof(__r); }
+
       static void _S_fun(_Tp&&) = delete;
 
       template<typename _Up, typename _Up2 = __remove_cvref_t<_Up>>
@@ -315,6 +317,7 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
       // 3041. Unnecessary decay in reference_wrapper
       template<typename _Up, typename = __not_same<_Up>, typename
 		= decltype(reference_wrapper::_S_fun(std::declval<_Up>()))>
+	_GLIBCXX20_CONSTEXPR
 	reference_wrapper(_Up&& __uref)
 	noexcept(noexcept(reference_wrapper::_S_fun(std::declval<_Up>())))
 	: _M_data(reference_wrapper::_S_fun(std::forward<_Up>(__uref)))
@@ -325,14 +328,17 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
       reference_wrapper&
       operator=(const reference_wrapper&) = default;
 
+      _GLIBCXX20_CONSTEXPR
       operator _Tp&() const noexcept
       { return this->get(); }
 
+      _GLIBCXX20_CONSTEXPR
       _Tp&
       get() const noexcept
       { return *_M_data; }
 
       template<typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	typename result_of<_Tp&(_Args&&...)>::type
 	operator()(_Args&&... __args) const
 	{
@@ -352,12 +358,14 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 
   /// Denotes a reference should be taken to a variable.
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline reference_wrapper<_Tp>
     ref(_Tp& __t) noexcept
     { return reference_wrapper<_Tp>(__t); }
 
   /// Denotes a const reference should be taken to a variable.
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline reference_wrapper<const _Tp>
     cref(const _Tp& __t) noexcept
     { return reference_wrapper<const _Tp>(__t); }
@@ -370,12 +378,14 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 
   /// std::ref overload to prevent wrapping a reference_wrapper
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline reference_wrapper<_Tp>
     ref(reference_wrapper<_Tp> __t) noexcept
     { return __t; }
 
   /// std::cref overload to prevent wrapping a reference_wrapper
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline reference_wrapper<const _Tp>
     cref(reference_wrapper<_Tp> __t) noexcept
     { return { __t.get() }; }

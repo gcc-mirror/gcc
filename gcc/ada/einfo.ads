@@ -1739,7 +1739,7 @@ package Einfo is
 
 --    Has_Inherited_Invariants (Flag291) [base type only]
 --       Defined in all type entities. Set on private extensions and derived
---       types which inherit at least on class-wide invariant from a parent or
+--       types which inherit at least one class-wide invariant from a parent or
 --       an interface type. The flag is also set on the full view of a private
 --       extension for completeness.
 
@@ -1841,7 +1841,7 @@ package Einfo is
 --       when the type is subject to pragma Default_Initial_Condition.
 
 --    Has_Own_Invariants (Flag232) [base type only]
---       Defined in all type entities. Set on any type which defines at least
+--       Defined in all type entities. Set on any type that defines at least
 --       one invariant of its own. The flag is also set on the full view of a
 --       private type for completeness.
 
@@ -2258,6 +2258,11 @@ package Einfo is
 --       Defined in record types and subtypes. List of abstract interfaces
 --       implemented by a tagged type that are not already implemented by the
 --       ancestors (Ada 2005: AI-251).
+
+--    Invariants_Ignored (Flag308)
+--       Defined on all types. Indicates whether the type declaration is in
+--       a context where Assertion_Policy is Ignore, in which case no checks
+--       (static or dynamic) must be generated for objects of the type.
 
 --    Invariant_Procedure (synthesized)
 --       Defined in types and subtypes. Set for private types and their full
@@ -7272,6 +7277,7 @@ package Einfo is
    function Interface_Alias                     (Id : E) return E;
    function Interface_Name                      (Id : E) return N;
    function Interfaces                          (Id : E) return L;
+   function Invariants_Ignored                  (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
    function Is_Access_Constant                  (Id : E) return B;
@@ -7973,6 +7979,7 @@ package Einfo is
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
    procedure Set_Interfaces                      (Id : E; V : L);
+   procedure Set_Invariants_Ignored              (Id : E; V : B := True);
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
    procedure Set_Is_Access_Constant              (Id : E; V : B := True);
@@ -8801,6 +8808,7 @@ package Einfo is
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
    pragma Inline (Interfaces);
+   pragma Inline (Invariants_Ignored);
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
    pragma Inline (Is_Access_Constant);
@@ -9338,6 +9346,7 @@ package Einfo is
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
    pragma Inline (Set_Interfaces);
+   pragma Inline (Set_Invariants_Ignored);
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
    pragma Inline (Set_Is_Access_Constant);

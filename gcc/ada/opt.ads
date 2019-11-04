@@ -501,7 +501,8 @@ package Opt is
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling
-   --  files. Internal flag to be used in conjunction with an IDE (e.g GPS).
+   --  files. Internal flag to be used in conjunction with an IDE
+   --  (e.g GNAT Studio).
 
    type Distribution_Stub_Mode_Type is
    --  GNAT

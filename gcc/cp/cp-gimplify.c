@@ -1,4 +1,4 @@
-/* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
+/* C++-specific tree lowering bits; see also c-gimplify.c and gimple.c.
 
    Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
@@ -638,6 +638,22 @@ lvalue_has_side_effects (tree e)
     return TREE_SIDE_EFFECTS (e);
 }
 
+/* Gimplify *EXPR_P as rvalue into an expression that can't be modified
+   by expressions with side-effects in other operands.  */
+
+static enum gimplify_status
+gimplify_to_rvalue (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
+		    bool (*gimple_test_f) (tree))
+{
+  enum gimplify_status t
+    = gimplify_expr (expr_p, pre_p, post_p, gimple_test_f, fb_rvalue);
+  if (t == GS_ERROR)
+    return GS_ERROR;
+  else if (is_gimple_variable (*expr_p) && TREE_CODE (*expr_p) != SSA_NAME)
+    *expr_p = get_initialized_tmp_var (*expr_p, pre_p);
+  return t;
+}
+
 /* Do C++-specific gimplification.  Args are as for gimplify_expr.  */
 
 int
@@ -751,7 +767,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		&& (TREE_CODE (op1) == CALL_EXPR
 		    || (SCALAR_TYPE_P (TREE_TYPE (op1))
 			&& !TREE_CONSTANT (op1))))
-	 TREE_OPERAND (*expr_p, 1) = get_formal_tmp_var (op1, pre_p);
+	 TREE_OPERAND (*expr_p, 1) = get_initialized_tmp_var (op1, pre_p);
       }
       ret = GS_OK;
       break;
@@ -822,16 +838,17 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  && CALL_EXPR_FN (*expr_p)
 	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
 	{
+	  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 	  enum gimplify_status t
-	    = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
-			     is_gimple_call_addr, fb_rvalue);
+	    = gimplify_to_rvalue (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
+				  is_gimple_call_addr);
 	  if (t == GS_ERROR)
 	    ret = GS_ERROR;
-	  else if (is_gimple_variable (CALL_EXPR_FN (*expr_p))
-		   && TREE_CODE (CALL_EXPR_FN (*expr_p)) != SSA_NAME)
+	  /* GIMPLE considers most pointer conversion useless, but for
+	     calls we actually care about the exact function pointer type.  */
+	  else if (TREE_TYPE (CALL_EXPR_FN (*expr_p)) != fnptrtype)
 	    CALL_EXPR_FN (*expr_p)
-	      = get_initialized_tmp_var (CALL_EXPR_FN (*expr_p), pre_p,
-					 NULL);
+	      = build1 (NOP_EXPR, fnptrtype, CALL_EXPR_FN (*expr_p));
 	}
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;

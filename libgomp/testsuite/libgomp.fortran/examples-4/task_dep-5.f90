@@ -51,7 +51,7 @@ contains
       do j = 1, N
         diff = A(i, j) - B(i, j)
         if (diff > EPS .or. -diff > EPS) then
-          STOP 1
+          stop 1
         end if
       end do
     end do

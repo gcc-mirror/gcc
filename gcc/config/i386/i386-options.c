@@ -178,6 +178,167 @@ static unsigned HOST_WIDE_INT initial_ix86_tune_features[X86_TUNE_LAST] = {
 /* Feature tests against the various architecture variations.  */
 unsigned char ix86_arch_features[X86_ARCH_LAST];
 
+struct ix86_target_opts
+{
+  const char *option;		/* option string */
+  HOST_WIDE_INT mask;		/* isa mask options */
+};
+
+/* This table is ordered so that options like -msse4.2 that imply other
+   ISAs come first.  Target string will be displayed in the same order.  */
+static struct ix86_target_opts isa2_opts[] =
+{
+  { "-mcx16",		OPTION_MASK_ISA_CX16 },
+  { "-mvaes",		OPTION_MASK_ISA_VAES },
+  { "-mrdpid",		OPTION_MASK_ISA_RDPID },
+  { "-mpconfig",	OPTION_MASK_ISA_PCONFIG },
+  { "-mwbnoinvd",	OPTION_MASK_ISA_WBNOINVD },
+  { "-mavx512vp2intersect", OPTION_MASK_ISA_AVX512VP2INTERSECT },
+  { "-msgx",		OPTION_MASK_ISA_SGX },
+  { "-mavx5124vnniw",	OPTION_MASK_ISA_AVX5124VNNIW },
+  { "-mavx5124fmaps",	OPTION_MASK_ISA_AVX5124FMAPS },
+  { "-mhle",		OPTION_MASK_ISA_HLE },
+  { "-mmovbe",		OPTION_MASK_ISA_MOVBE },
+  { "-mclzero",		OPTION_MASK_ISA_CLZERO },
+  { "-mmwaitx",		OPTION_MASK_ISA_MWAITX },
+  { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
+  { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
+  { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
+  { "-mptwrite",	OPTION_MASK_ISA_PTWRITE },
+  { "-mavx512bf16",	OPTION_MASK_ISA_AVX512BF16 },
+  { "-menqcmd",		OPTION_MASK_ISA_ENQCMD }
+};
+static struct ix86_target_opts isa_opts[] =
+{
+  { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
+  { "-mavx512bitalg",	OPTION_MASK_ISA_AVX512BITALG },
+  { "-mvpclmulqdq",	OPTION_MASK_ISA_VPCLMULQDQ },
+  { "-mgfni",		OPTION_MASK_ISA_GFNI },
+  { "-mavx512vnni",	OPTION_MASK_ISA_AVX512VNNI },
+  { "-mavx512vbmi2",	OPTION_MASK_ISA_AVX512VBMI2 },
+  { "-mavx512vbmi",	OPTION_MASK_ISA_AVX512VBMI },
+  { "-mavx512ifma",	OPTION_MASK_ISA_AVX512IFMA },
+  { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
+  { "-mavx512bw",	OPTION_MASK_ISA_AVX512BW },
+  { "-mavx512dq",	OPTION_MASK_ISA_AVX512DQ },
+  { "-mavx512er",	OPTION_MASK_ISA_AVX512ER },
+  { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
+  { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
+  { "-mavx512f",	OPTION_MASK_ISA_AVX512F },
+  { "-mavx2",		OPTION_MASK_ISA_AVX2 },
+  { "-mfma",		OPTION_MASK_ISA_FMA },
+  { "-mxop",		OPTION_MASK_ISA_XOP },
+  { "-mfma4",		OPTION_MASK_ISA_FMA4 },
+  { "-mf16c",		OPTION_MASK_ISA_F16C },
+  { "-mavx",		OPTION_MASK_ISA_AVX },
+/*{ "-msse4"		OPTION_MASK_ISA_SSE4 }, */
+  { "-msse4.2",		OPTION_MASK_ISA_SSE4_2 },
+  { "-msse4.1",		OPTION_MASK_ISA_SSE4_1 },
+  { "-msse4a",		OPTION_MASK_ISA_SSE4A },
+  { "-mssse3",		OPTION_MASK_ISA_SSSE3 },
+  { "-msse3",		OPTION_MASK_ISA_SSE3 },
+  { "-maes",		OPTION_MASK_ISA_AES },
+  { "-msha",		OPTION_MASK_ISA_SHA },
+  { "-mpclmul",		OPTION_MASK_ISA_PCLMUL },
+  { "-msse2",		OPTION_MASK_ISA_SSE2 },
+  { "-msse",		OPTION_MASK_ISA_SSE },
+  { "-m3dnowa",		OPTION_MASK_ISA_3DNOW_A },
+  { "-m3dnow",		OPTION_MASK_ISA_3DNOW },
+  { "-mmmx",		OPTION_MASK_ISA_MMX },
+  { "-mrtm",		OPTION_MASK_ISA_RTM },
+  { "-mprfchw",		OPTION_MASK_ISA_PRFCHW },
+  { "-mrdseed",		OPTION_MASK_ISA_RDSEED },
+  { "-madx",		OPTION_MASK_ISA_ADX },
+  { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
+  { "-mclflushopt",	OPTION_MASK_ISA_CLFLUSHOPT },
+  { "-mxsaves",		OPTION_MASK_ISA_XSAVES },
+  { "-mxsavec",		OPTION_MASK_ISA_XSAVEC },
+  { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
+  { "-mxsave",		OPTION_MASK_ISA_XSAVE },
+  { "-mabm",		OPTION_MASK_ISA_ABM },
+  { "-mbmi",		OPTION_MASK_ISA_BMI },
+  { "-mbmi2",		OPTION_MASK_ISA_BMI2 },
+  { "-mlzcnt",		OPTION_MASK_ISA_LZCNT },
+  { "-mtbm",		OPTION_MASK_ISA_TBM },
+  { "-mpopcnt",		OPTION_MASK_ISA_POPCNT },
+  { "-msahf",		OPTION_MASK_ISA_SAHF },
+  { "-mcrc32",		OPTION_MASK_ISA_CRC32 },
+  { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
+  { "-mrdrnd",		OPTION_MASK_ISA_RDRND },
+  { "-mpku",		OPTION_MASK_ISA_PKU },
+  { "-mlwp",		OPTION_MASK_ISA_LWP },
+  { "-mfxsr",		OPTION_MASK_ISA_FXSR },
+  { "-mclwb",		OPTION_MASK_ISA_CLWB },
+  { "-mshstk",		OPTION_MASK_ISA_SHSTK },
+  { "-mmovdiri",	OPTION_MASK_ISA_MOVDIRI }
+};
+
+/* Return 1 if TRAIT NAME is present in the OpenMP context's
+   device trait set, return 0 if not present in any OpenMP context in the
+   whole translation unit, or -1 if not present in the current OpenMP context
+   but might be present in another OpenMP context in the same TU.  */
+
+int
+ix86_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
+			       const char *name)
+{
+  switch (trait)
+    {
+    case omp_device_kind:
+      return strcmp (name, "cpu") == 0;
+    case omp_device_arch:
+      if (strcmp (name, "x86") == 0)
+	return 1;
+      if (TARGET_64BIT)
+	{
+	  if (TARGET_X32)
+	    return strcmp (name, "x32") == 0;
+	  else
+	    return strcmp (name, "x86_64") == 0;
+	}
+      if (strcmp (name, "ia32") == 0 || strcmp (name, "i386") == 0)
+	return 1;
+      if (strcmp (name, "i486") == 0)
+	return ix86_arch != PROCESSOR_I386 ? 1 : -1;
+      if (strcmp (name, "i586") == 0)
+	return (ix86_arch != PROCESSOR_I386
+		&& ix86_arch != PROCESSOR_I486) ? 1 : -1;
+      if (strcmp (name, "i686") == 0)
+	return (ix86_arch != PROCESSOR_I386
+		&& ix86_arch != PROCESSOR_I486
+		&& ix86_arch != PROCESSOR_LAKEMONT
+		&& ix86_arch != PROCESSOR_PENTIUM) ? 1 : -1;
+      return 0;
+    case omp_device_isa:
+      for (int i = 0; i < 2; i++)
+	{
+	  struct ix86_target_opts *opts = i ? isa2_opts : isa_opts;
+	  size_t nopts = i ? ARRAY_SIZE (isa2_opts) : ARRAY_SIZE (isa_opts);
+	  HOST_WIDE_INT mask = i ? ix86_isa_flags2 : ix86_isa_flags;
+	  for (size_t n = 0; n < nopts; n++)
+	    {
+	      const char *option = opts[n].option + 2;
+	      /* -msse4.2 and -msse4.1 options contain dot, which is not valid
+		 in identifiers.  Use underscore instead, and handle sse4
+		 as an alias to sse4_2.  */
+	      if (opts[n].mask == OPTION_MASK_ISA_SSE4_2)
+		{
+		  option = "sse4_2";
+		  if (strcmp (name, "sse4") == 0)
+		    return (mask & opts[n].mask) != 0 ? 1 : -1;
+		}
+	      else if (opts[n].mask == OPTION_MASK_ISA_SSE4_1)
+		option = "sse4_1";
+	      if (strcmp (name, option) == 0)
+		return (mask & opts[n].mask) != 0 ? 1 : -1;
+	    }
+	}
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Return a string that documents the current -m options.  The caller is
    responsible for freeing the string.  */
 
@@ -187,101 +348,6 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 		    const char *arch, const char *tune,
 		    enum fpmath_unit fpmath, bool add_nl_p, bool add_abi_p)
 {
-  struct ix86_target_opts
-  {
-    const char *option;		/* option string */
-    HOST_WIDE_INT mask;		/* isa mask options */
-  };
-
-  /* This table is ordered so that options like -msse4.2 that imply other
-     ISAs come first.  Target string will be displayed in the same order.  */
-  static struct ix86_target_opts isa2_opts[] =
-  {
-    { "-mcx16",		OPTION_MASK_ISA_CX16 },
-    { "-mvaes",		OPTION_MASK_ISA_VAES },
-    { "-mrdpid",	OPTION_MASK_ISA_RDPID },
-    { "-mpconfig",	OPTION_MASK_ISA_PCONFIG },
-    { "-mwbnoinvd",     OPTION_MASK_ISA_WBNOINVD },
-    { "-mavx512vp2intersect", OPTION_MASK_ISA_AVX512VP2INTERSECT },
-    { "-msgx",		OPTION_MASK_ISA_SGX },
-    { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
-    { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
-    { "-mhle",		OPTION_MASK_ISA_HLE },
-    { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
-    { "-mclzero",	OPTION_MASK_ISA_CLZERO },
-    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
-    { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
-    { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
-    { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
-    { "-mptwrite",	OPTION_MASK_ISA_PTWRITE },
-    { "-mavx512bf16",	OPTION_MASK_ISA_AVX512BF16 },
-    { "-menqcmd",       OPTION_MASK_ISA_ENQCMD }
-  };
-  static struct ix86_target_opts isa_opts[] =
-  {
-    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
-    { "-mavx512bitalg", OPTION_MASK_ISA_AVX512BITALG },
-    { "-mvpclmulqdq",	OPTION_MASK_ISA_VPCLMULQDQ },
-    { "-mgfni",		OPTION_MASK_ISA_GFNI },
-    { "-mavx512vnni",	OPTION_MASK_ISA_AVX512VNNI },
-    { "-mavx512vbmi2",	OPTION_MASK_ISA_AVX512VBMI2 },
-    { "-mavx512vbmi",	OPTION_MASK_ISA_AVX512VBMI },
-    { "-mavx512ifma",	OPTION_MASK_ISA_AVX512IFMA },
-    { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
-    { "-mavx512bw",	OPTION_MASK_ISA_AVX512BW },
-    { "-mavx512dq",	OPTION_MASK_ISA_AVX512DQ },
-    { "-mavx512er",	OPTION_MASK_ISA_AVX512ER },
-    { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
-    { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
-    { "-mavx512f",	OPTION_MASK_ISA_AVX512F },
-    { "-mavx2",		OPTION_MASK_ISA_AVX2 },
-    { "-mfma",		OPTION_MASK_ISA_FMA },
-    { "-mxop",		OPTION_MASK_ISA_XOP },
-    { "-mfma4",		OPTION_MASK_ISA_FMA4 },
-    { "-mf16c",		OPTION_MASK_ISA_F16C },
-    { "-mavx",		OPTION_MASK_ISA_AVX },
-/*  { "-msse4"		OPTION_MASK_ISA_SSE4 }, */
-    { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
-    { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
-    { "-msse4a",	OPTION_MASK_ISA_SSE4A },
-    { "-mssse3",	OPTION_MASK_ISA_SSSE3 },
-    { "-msse3",		OPTION_MASK_ISA_SSE3 },
-    { "-maes",		OPTION_MASK_ISA_AES },
-    { "-msha",		OPTION_MASK_ISA_SHA },
-    { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
-    { "-msse2",		OPTION_MASK_ISA_SSE2 },
-    { "-msse",		OPTION_MASK_ISA_SSE },
-    { "-m3dnowa",	OPTION_MASK_ISA_3DNOW_A },
-    { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
-    { "-mmmx",		OPTION_MASK_ISA_MMX },
-    { "-mrtm",		OPTION_MASK_ISA_RTM },
-    { "-mprfchw",	OPTION_MASK_ISA_PRFCHW },
-    { "-mrdseed",	OPTION_MASK_ISA_RDSEED },
-    { "-madx",		OPTION_MASK_ISA_ADX },
-    { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
-    { "-mclflushopt",	OPTION_MASK_ISA_CLFLUSHOPT },
-    { "-mxsaves",	OPTION_MASK_ISA_XSAVES },
-    { "-mxsavec",	OPTION_MASK_ISA_XSAVEC },
-    { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
-    { "-mxsave",	OPTION_MASK_ISA_XSAVE },
-    { "-mabm",		OPTION_MASK_ISA_ABM },
-    { "-mbmi",		OPTION_MASK_ISA_BMI },
-    { "-mbmi2",		OPTION_MASK_ISA_BMI2 },
-    { "-mlzcnt",	OPTION_MASK_ISA_LZCNT },
-    { "-mtbm",		OPTION_MASK_ISA_TBM },
-    { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
-    { "-msahf",		OPTION_MASK_ISA_SAHF },
-    { "-mcrc32",	OPTION_MASK_ISA_CRC32 },
-    { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
-    { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
-    { "-mpku",		OPTION_MASK_ISA_PKU },
-    { "-mlwp",		OPTION_MASK_ISA_LWP },
-    { "-mfxsr",		OPTION_MASK_ISA_FXSR },
-    { "-mclwb",		OPTION_MASK_ISA_CLWB },
-    { "-mshstk",	OPTION_MASK_ISA_SHSTK },
-    { "-mmovdiri",	OPTION_MASK_ISA_MOVDIRI }
-  };
-
   /* Flag options.  */
   static struct ix86_target_opts flag_opts[] =
   {

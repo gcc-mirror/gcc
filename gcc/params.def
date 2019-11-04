@@ -105,7 +105,7 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SMALL,
 DEFPARAM (PARAM_INLINE_HEURISTICS_HINT_PERCENT,
 	  "inline-heuristics-hint-percent",
 	  "The scale (in percents) applied to inline-insns-single and auto limits when heuristics hints that inlining is very profitable with -O3 and -Ofast.",
-	  1600, 100, 1000000)
+	  600, 100, 1000000)
 
 DEFPARAM (PARAM_INLINE_HEURISTICS_HINT_PERCENT_O2,
 	  "inline-heuristics-hint-percent-O2",
@@ -1165,6 +1165,12 @@ DEFPARAM (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS,
 	  "statement used during IPA functoin summary generation.",
 	  5, 0, 0)
 
+DEFPARAM (PARAM_IPA_MAX_PARAM_EXPR_OPS,
+	  "ipa-max-param-expr-ops",
+	  "Maximum number of operations in a parameter expression that can "
+	  "be handled by IPA analysis.",
+	  10, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,
@@ -1224,12 +1230,6 @@ DEFPARAM (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SPEED,
 	  "into a jump table (in percent).  The parameter is used when "
 	  "optimizing for speed.",
 	  800, 0, 0)
-
-/* Data race flags for C++0x memory model compliance.  */
-DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
-	  "allow-store-data-races",
-	  "Allow new data races on stores to be introduced.",
-	  0, 0, 1)
 
 /* Reassociation width to be used by tree reassoc optimization.  */
 DEFPARAM (PARAM_TREE_REASSOC_WIDTH,
@@ -1434,7 +1434,7 @@ DEFPARAM (PARAM_MAX_VRP_SWITCH_ASSERTIONS,
 DEFPARAM (PARAM_VECT_EPILOGUES_NOMASK,
 	  "vect-epilogues-nomask",
 	  "Enable loop epilogue vectorization using smaller vector size.",
-	  0, 0, 1)
+	  1, 0, 1)
 
 DEFPARAM(PARAM_UNROLL_JAM_MIN_PERCENT,
 	 "unroll-jam-min-percent",

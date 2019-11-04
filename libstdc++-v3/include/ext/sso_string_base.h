@@ -98,7 +98,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _M_construct_aux(_InIterator __beg, _InIterator __end, 
 			 std::__false_type)
 	{
-          typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
+          typedef typename std::iterator_traits<_InIterator>::iterator_category
+	    _Tag;
           _M_construct(__beg, __end, _Tag());
 	}
 
@@ -140,7 +141,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       size_type
       _M_max_size() const
-      { return (_M_get_allocator().max_size() - 1) / 2; }
+      {
+	typedef __alloc_traits<_CharT_alloc_type> _ATraits;
+	return (_ATraits::max_size(_M_get_allocator()) - 1) / 2;
+      }
 
       _CharT*
       _M_data() const

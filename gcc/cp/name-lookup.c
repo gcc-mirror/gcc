@@ -2268,7 +2268,13 @@ diagnose_name_conflict (tree decl, tree bval)
       && (TREE_CODE (decl) != TYPE_DECL
 	  || DECL_ARTIFICIAL (decl) == DECL_ARTIFICIAL (bval))
       && CP_DECL_CONTEXT (decl) == CP_DECL_CONTEXT (bval))
-    error ("redeclaration of %q#D", decl);
+    {
+      if (concept_definition_p (decl))
+        error ("redeclaration of %q#D with different template parameters",
+               decl);
+      else
+        error ("redeclaration of %q#D", decl);
+    }
   else
     error ("%q#D conflicts with a previous declaration", decl);
 
@@ -2333,6 +2339,9 @@ matching_fn_p (tree one, tree two)
 			TREE_TYPE (TREE_TYPE (two))))
 	return false;
     }
+
+  if (!equivalently_constrained (one, two))
+    return false;
 
   return true;
 }
@@ -2741,29 +2750,31 @@ check_local_shadow (tree decl)
 	 parameter, more than often they would use the variable
 	 thinking (mistakenly) it's still the parameter. It would be
 	 rare that users would use the variable in the place that
-	 expects the parameter but thinking it's a new decl.  */
+	 expects the parameter but thinking it's a new decl.
+	 If either object is a TYPE_DECL, '-Wshadow=compatible-local'
+	 warns regardless of whether one of the types involved
+	 is a subclass of the other, since that is never okay.  */
 
       enum opt_code warning_code;
       if (warn_shadow)
 	warning_code = OPT_Wshadow;
-      else if (warn_shadow_local)
-	warning_code = OPT_Wshadow_local;
-      else if (warn_shadow_compatible_local
-	       && (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
-		   || (!dependent_type_p (TREE_TYPE (decl))
-		       && !dependent_type_p (TREE_TYPE (old))
-		       /* If the new decl uses auto, we don't yet know
-			  its type (the old type cannot be using auto
-			  at this point, without also being
-			  dependent).  This is an indication we're
-			  (now) doing the shadow checking too
-			  early.  */
-		       && !type_uses_auto (TREE_TYPE (decl))
-		       && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
-				       tf_none))))
+      else if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
+	       || TREE_CODE (decl) == TYPE_DECL
+	       || TREE_CODE (old) == TYPE_DECL
+	       || (!dependent_type_p (TREE_TYPE (decl))
+		   && !dependent_type_p (TREE_TYPE (old))
+		   /* If the new decl uses auto, we don't yet know
+		      its type (the old type cannot be using auto
+		      at this point, without also being
+		      dependent).  This is an indication we're
+		      (now) doing the shadow checking too
+		      early.  */
+		   && !type_uses_auto (TREE_TYPE (decl))
+		   && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
+				   tf_none)))
 	warning_code = OPT_Wshadow_compatible_local;
       else
-	return;
+	warning_code = OPT_Wshadow_local;
 
       const char *msg;
       if (TREE_CODE (old) == PARM_DECL)
@@ -4604,6 +4615,7 @@ do_class_using_decl (tree scope, tree name)
       maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
       name = ctor_identifier;
       CLASSTYPE_NON_AGGREGATE (current_class_type) = true;
+      TYPE_HAS_USER_CONSTRUCTOR (current_class_type) = true;
     }
 
   /* Cannot introduce a constructor name.  */

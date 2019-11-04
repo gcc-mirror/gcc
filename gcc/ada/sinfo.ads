@@ -11574,6 +11574,27 @@ package Sinfo is
       V10 : Node_Kind;
       V11 : Node_Kind) return Boolean;
 
+   --  12..15-parameter versions are not yet needed
+
+   function Nkind_In
+     (T   : Node_Kind;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind;
+      V12 : Node_Kind;
+      V13 : Node_Kind;
+      V14 : Node_Kind;
+      V15 : Node_Kind;
+      V16 : Node_Kind) return Boolean;
+
    pragma Inline (Nkind_In);
    --  Inline all above functions
 

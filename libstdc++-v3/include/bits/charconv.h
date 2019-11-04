@@ -50,16 +50,16 @@ namespace __detail
       static_assert(is_unsigned<_Tp>::value, "implementation bug");
 
       unsigned __n = 1;
-      const int __b2 = __base  * __base;
-      const int __b3 = __b2 * __base;
-      const int __b4 = __b3 * __base;
+      const unsigned __b2 = __base  * __base;
+      const unsigned __b3 = __b2 * __base;
+      const unsigned long __b4 = __b3 * __base;
       for (;;)
 	{
-	  if (__value < __base) return __n;
+	  if (__value < (unsigned)__base) return __n;
 	  if (__value < __b2) return __n + 1;
 	  if (__value < __b3) return __n + 2;
 	  if (__value < __b4) return __n + 3;
-	  __value /= (unsigned)__b4;
+	  __value /= __b4;
 	  __n += 4;
 	}
     }

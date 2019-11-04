@@ -35,6 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimplify.h"
+#include "cgraph.h"
+#include "symbol-summary.h"
+#include "hsa-common.h"
+#include "tree-pass.h"
+#include "omp-device-properties.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -46,6 +52,14 @@ omp_find_clause (tree clauses, enum omp_clause_code kind)
       return clauses;
 
   return NULL_TREE;
+}
+
+/* True if OpenMP should regard this DECL as being a scalar which has Fortran's
+   allocatable or pointer attribute.  */
+bool
+omp_is_allocatable_or_ptr (tree decl)
+{
+  return lang_hooks.decls.omp_is_allocatable_or_ptr (decl);
 }
 
 /* Return true if DECL is a Fortran optional argument.  */
@@ -524,11 +538,919 @@ omp_max_simt_vf (void)
       {
 	if (!strncmp (c, "nvptx", strlen ("nvptx")))
 	  return 32;
-	else if ((c = strchr (c, ',')))
+	else if ((c = strchr (c, ':')))
 	  c++;
       }
   return 0;
 }
+
+/* Store the construct selectors as tree codes from last to first,
+   return their number.  */
+
+int
+omp_constructor_traits_to_codes (tree ctx, enum tree_code *constructs)
+{
+  int nconstructs = list_length (ctx);
+  int i = nconstructs - 1;
+  for (tree t2 = ctx; t2; t2 = TREE_CHAIN (t2), i--)
+    {
+      const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t2));
+      if (!strcmp (sel, "target"))
+	constructs[i] = OMP_TARGET;
+      else if (!strcmp (sel, "teams"))
+	constructs[i] = OMP_TEAMS;
+      else if (!strcmp (sel, "parallel"))
+	constructs[i] = OMP_PARALLEL;
+      else if (!strcmp (sel, "for") || !strcmp (sel, "do"))
+	constructs[i] = OMP_FOR;
+      else if (!strcmp (sel, "simd"))
+	constructs[i] = OMP_SIMD;
+      else
+	gcc_unreachable ();
+    }
+  gcc_assert (i == -1);
+  return nconstructs;
+}
+
+/* Return true if PROP is possibly present in one of the offloading target's
+   OpenMP contexts.  The format of PROPS string is always offloading target's
+   name terminated by '\0', followed by properties for that offloading
+   target separated by '\0' and terminated by another '\0'.  The strings
+   are created from omp-device-properties installed files of all configured
+   offloading targets.  */
+
+static bool
+omp_offload_device_kind_arch_isa (const char *props, const char *prop)
+{
+  const char *names = getenv ("OFFLOAD_TARGET_NAMES");
+  if (names == NULL || *names == '\0')
+    return false;
+  while (*props != '\0')
+    {
+      size_t name_len = strlen (props);
+      bool matches = false;
+      for (const char *c = names; c; )
+	{
+	  if (strncmp (props, c, name_len) == 0
+	      && (c[name_len] == '\0'
+		  || c[name_len] == ':'
+		  || c[name_len] == '='))
+	    {
+	      matches = true;
+	      break;
+	    }
+	  else if ((c = strchr (c, ':')))
+	    c++;
+	}
+      props = props + name_len + 1;
+      while (*props != '\0')
+	{
+	  if (matches && strcmp (props, prop) == 0)
+	    return true;
+	  props = strchr (props, '\0') + 1;
+	}
+      props++;
+    }
+  return false;
+}
+
+/* Return true if the current code location is or might be offloaded.
+   Return true in declare target functions, or when nested in a target
+   region or when unsure, return false otherwise.  */
+
+static bool
+omp_maybe_offloaded (void)
+{
+  if (!hsa_gen_requested_p ())
+    {
+      if (!ENABLE_OFFLOADING)
+	return false;
+      const char *names = getenv ("OFFLOAD_TARGET_NAMES");
+      if (names == NULL || *names == '\0')
+	return false;
+    }
+  if (symtab->state == PARSING)
+    /* Maybe.  */
+    return true;
+  if (current_function_decl
+      && lookup_attribute ("omp declare target",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return true;
+  if (cfun && (cfun->curr_properties & PROP_gimple_any) == 0)
+    {
+      enum tree_code construct = OMP_TARGET;
+      if (omp_construct_selector_matches (&construct, 1, NULL))
+	return true;
+    }
+  return false;
+}
+
+/* Return 1 if context selector matches the current OpenMP context, 0
+   if it does not and -1 if it is unknown and need to be determined later.
+   Some properties can be checked right away during parsing (this routine),
+   others need to wait until the whole TU is parsed, others need to wait until
+   IPA, others until vectorization.  */
+
+int
+omp_context_selector_matches (tree ctx)
+{
+  int ret = 1;
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    {
+      char set = IDENTIFIER_POINTER (TREE_PURPOSE (t1))[0];
+      if (set == 'c')
+	{
+	  /* For now, ignore the construct set.  While something can be
+	     determined already during parsing, we don't know until end of TU
+	     whether additional constructs aren't added through declare variant
+	     unless "omp declare variant variant" attribute exists already
+	     (so in most of the cases), and we'd need to maintain set of
+	     surrounding OpenMP constructs, which is better handled during
+	     gimplification.  */
+	  if (symtab->state == PARSING
+	      || (cfun->curr_properties & PROP_gimple_any) != 0)
+	    {
+	      ret = -1;
+	      continue;
+	    }
+
+	  enum tree_code constructs[5];
+	  int nconstructs
+	    = omp_constructor_traits_to_codes (TREE_VALUE (t1), constructs);
+	  int r = omp_construct_selector_matches (constructs, nconstructs,
+						  NULL);
+	  if (r == 0)
+	    return 0;
+	  if (r == -1)
+	    ret = -1;
+	  continue;
+	}
+      for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	{
+	  const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t2));
+	  switch (*sel)
+	    {
+	    case 'v':
+	      if (set == 'i' && !strcmp (sel, "vendor"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    if (!strcmp (prop, " score") || !strcmp (prop, "gnu"))
+		      continue;
+		    return 0;
+		  }
+	      break;
+	    case 'e':
+	      if (set == 'i' && !strcmp (sel, "extension"))
+		/* We don't support any extensions right now.  */
+		return 0;
+	      break;
+	    case 'a':
+	      if (set == 'i' && !strcmp (sel, "atomic_default_mem_order"))
+		{
+		  enum omp_memory_order omo
+		    = ((enum omp_memory_order)
+		       (omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER));
+		  if (omo == OMP_MEMORY_ORDER_UNSPECIFIED)
+		    {
+		      /* We don't know yet, until end of TU.  */
+		      if (symtab->state == PARSING)
+			{
+			  ret = -1;
+			  break;
+			}
+		      else
+			omo = OMP_MEMORY_ORDER_RELAXED;
+		    }
+		  tree t3 = TREE_VALUE (t2);
+		  const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		  if (!strcmp (prop, " score"))
+		    {
+		      t3 = TREE_CHAIN (t3);
+		      prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    }
+		  if (!strcmp (prop, "relaxed")
+		      && omo != OMP_MEMORY_ORDER_RELAXED)
+		    return 0;
+		  else if (!strcmp (prop, "seq_cst")
+			   && omo != OMP_MEMORY_ORDER_SEQ_CST)
+		    return 0;
+		  else if (!strcmp (prop, "acq_rel")
+			   && omo != OMP_MEMORY_ORDER_ACQ_REL)
+		    return 0;
+		}
+	      if (set == 'd' && !strcmp (sel, "arch"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *arch = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    int r = 0;
+		    if (targetm.omp.device_kind_arch_isa != NULL)
+		      r = targetm.omp.device_kind_arch_isa (omp_device_arch,
+							    arch);
+		    if (r == 0 || (r == -1 && symtab->state != PARSING))
+		      {
+			/* If we are or might be in a target region or
+			   declare target function, need to take into account
+			   also offloading values.  */
+			if (!omp_maybe_offloaded ())
+			  return 0;
+			if (strcmp (arch, "hsa") == 0
+			    && hsa_gen_requested_p ())
+			  {
+			    ret = -1;
+			    continue;
+			  }
+			if (ENABLE_OFFLOADING)
+			  {
+			    const char *arches = omp_offload_device_arch;
+			    if (omp_offload_device_kind_arch_isa (arches,
+								  arch))
+			      {
+				ret = -1;
+				continue;
+			      }
+			  }
+			return 0;
+		      }
+		    else if (r == -1)
+		      ret = -1;
+		    /* If arch matches on the host, it still might not match
+		       in the offloading region.  */
+		    else if (omp_maybe_offloaded ())
+		      ret = -1;
+		  }
+	      break;
+	    case 'u':
+	      if (set == 'i' && !strcmp (sel, "unified_address"))
+		{
+		  if ((omp_requires_mask & OMP_REQUIRES_UNIFIED_ADDRESS) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      if (set == 'i' && !strcmp (sel, "unified_shared_memory"))
+		{
+		  if ((omp_requires_mask
+		       & OMP_REQUIRES_UNIFIED_SHARED_MEMORY) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      break;
+	    case 'd':
+	      if (set == 'i' && !strcmp (sel, "dynamic_allocators"))
+		{
+		  if ((omp_requires_mask
+		       & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      break;
+	    case 'r':
+	      if (set == 'i' && !strcmp (sel, "reverse_offload"))
+		{
+		  if ((omp_requires_mask & OMP_REQUIRES_REVERSE_OFFLOAD) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		  break;
+		}
+	      break;
+	    case 'k':
+	      if (set == 'd' && !strcmp (sel, "kind"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    if (!strcmp (prop, "any"))
+		      continue;
+		    if (!strcmp (prop, "host"))
+		      {
+			if (omp_maybe_offloaded ())
+			  ret = -1;
+			continue;
+		      }
+		    if (!strcmp (prop, "nohost"))
+		      {
+			if (omp_maybe_offloaded ())
+			  ret = -1;
+			else
+			  return 0;
+			continue;
+		      }
+		    int r = 0;
+		    if (targetm.omp.device_kind_arch_isa != NULL)
+		      r = targetm.omp.device_kind_arch_isa (omp_device_kind,
+							    prop);
+		    else
+		      r = strcmp (prop, "cpu") == 0;
+		    if (r == 0 || (r == -1 && symtab->state != PARSING))
+		      {
+			/* If we are or might be in a target region or
+			   declare target function, need to take into account
+			   also offloading values.  */
+			if (!omp_maybe_offloaded ())
+			  return 0;
+			if (strcmp (prop, "gpu") == 0
+			    && hsa_gen_requested_p ())
+			  {
+			    ret = -1;
+			    continue;
+			  }
+			if (ENABLE_OFFLOADING)
+			  {
+			    const char *kinds = omp_offload_device_kind;
+			    if (omp_offload_device_kind_arch_isa (kinds, prop))
+			      {
+				ret = -1;
+				continue;
+			      }
+			  }
+			return 0;
+		      }
+		    else if (r == -1)
+		      ret = -1;
+		    /* If kind matches on the host, it still might not match
+		       in the offloading region.  */
+		    else if (omp_maybe_offloaded ())
+		      ret = -1;
+		  }
+	      break;
+	    case 'i':
+	      if (set == 'd' && !strcmp (sel, "isa"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  {
+		    const char *isa = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    int r = 0;
+		    if (targetm.omp.device_kind_arch_isa != NULL)
+		      r = targetm.omp.device_kind_arch_isa (omp_device_isa,
+							    isa);
+		    if (r == 0 || (r == -1 && symtab->state != PARSING))
+		      {
+			/* If we are or might be in a target region or
+			   declare target function, need to take into account
+			   also offloading values.  */
+			if (!omp_maybe_offloaded ())
+			  return 0;
+			if (ENABLE_OFFLOADING)
+			  {
+			    const char *isas = omp_offload_device_isa;
+			    if (omp_offload_device_kind_arch_isa (isas, isa))
+			      {
+				ret = -1;
+				continue;
+			      }
+			  }
+			return 0;
+		      }
+		    else if (r == -1)
+		      ret = -1;
+		    /* If isa matches on the host, it still might not match
+		       in the offloading region.  */
+		    else if (omp_maybe_offloaded ())
+		      ret = -1;
+		  }
+	      break;
+	    case 'c':
+	      if (set == 'u' && !strcmp (sel, "condition"))
+		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		  if (TREE_PURPOSE (t3) == NULL_TREE)
+		    {
+		      if (integer_zerop (TREE_VALUE (t3)))
+			return 0;
+		      if (integer_nonzerop (TREE_VALUE (t3)))
+			break;
+		      ret = -1;
+		    }
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
+  return ret;
+}
+
+/* Compare construct={simd} CLAUSES1 with CLAUSES2, return 0/-1/1/2 as
+   in omp_context_selector_set_compare.  */
+
+static int
+omp_construct_simd_compare (tree clauses1, tree clauses2)
+{
+  if (clauses1 == NULL_TREE)
+    return clauses2 == NULL_TREE ? 0 : -1;
+  if (clauses2 == NULL_TREE)
+    return 1;
+
+  int r = 0;
+  struct declare_variant_simd_data {
+    bool inbranch, notinbranch;
+    tree simdlen;
+    auto_vec<tree,16> data_sharing;
+    auto_vec<tree,16> aligned;
+    declare_variant_simd_data ()
+      : inbranch(false), notinbranch(false), simdlen(NULL_TREE) {}
+  } data[2];
+  unsigned int i;
+  for (i = 0; i < 2; i++)
+    for (tree c = i ? clauses2 : clauses1; c; c = OMP_CLAUSE_CHAIN (c))
+      {
+	vec<tree> *v;
+	switch (OMP_CLAUSE_CODE (c))
+	  {
+	  case OMP_CLAUSE_INBRANCH:
+	    data[i].inbranch = true;
+	    continue;
+	  case OMP_CLAUSE_NOTINBRANCH:
+	    data[i].notinbranch = true;
+	    continue;
+	  case OMP_CLAUSE_SIMDLEN:
+	    data[i].simdlen = OMP_CLAUSE_SIMDLEN_EXPR (c);
+	    continue;
+	  case OMP_CLAUSE_UNIFORM:
+	  case OMP_CLAUSE_LINEAR:
+	    v = &data[i].data_sharing;
+	    break;
+	  case OMP_CLAUSE_ALIGNED:
+	    v = &data[i].aligned;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	unsigned HOST_WIDE_INT argno = tree_to_uhwi (OMP_CLAUSE_DECL (c));
+	if (argno >= v->length ())
+	  v->safe_grow_cleared (argno + 1);
+	(*v)[argno] = c;
+      }
+  /* Here, r is used as a bitmask, 2 is set if CLAUSES1 has something
+     CLAUSES2 doesn't, 1 is set if CLAUSES2 has something CLAUSES1
+     doesn't.  Thus, r == 3 implies return value 2, r == 1 implies
+     -1, r == 2 implies 1 and r == 0 implies 0.  */
+  if (data[0].inbranch != data[1].inbranch)
+    r |= data[0].inbranch ? 2 : 1;
+  if (data[0].notinbranch != data[1].notinbranch)
+    r |= data[0].notinbranch ? 2 : 1;
+  if (!simple_cst_equal (data[0].simdlen, data[1].simdlen))
+    {
+      if (data[0].simdlen && data[1].simdlen)
+	return 2;
+      r |= data[0].simdlen ? 2 : 1;
+    }
+  if (data[0].data_sharing.length () < data[1].data_sharing.length ()
+      || data[0].aligned.length () < data[1].aligned.length ())
+    r |= 1;
+  tree c1, c2;
+  FOR_EACH_VEC_ELT (data[0].data_sharing, i, c1)
+    {
+      c2 = (i < data[1].data_sharing.length ()
+	    ? data[1].data_sharing[i] : NULL_TREE);
+      if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
+	{
+	  r |= c1 != NULL_TREE ? 2 : 1;
+	  continue;
+	}
+      if (c1 == NULL_TREE)
+	continue;
+      if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_CODE (c2))
+	return 2;
+      if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_LINEAR)
+	continue;
+      if (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c1)
+	  != OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c2))
+	return 2;
+      if (OMP_CLAUSE_LINEAR_KIND (c1) != OMP_CLAUSE_LINEAR_KIND (c2))
+	return 2;
+      if (!simple_cst_equal (OMP_CLAUSE_LINEAR_STEP (c1),
+			     OMP_CLAUSE_LINEAR_STEP (c2)))
+	return 2;
+    }
+  FOR_EACH_VEC_ELT (data[0].aligned, i, c1)
+    {
+      c2 = i < data[1].aligned.length () ? data[1].aligned[i] : NULL_TREE;
+      if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
+	{
+	  r |= c1 != NULL_TREE ? 2 : 1;
+	  continue;
+	}
+      if (c1 == NULL_TREE)
+	continue;
+      if (!simple_cst_equal (OMP_CLAUSE_ALIGNED_ALIGNMENT (c1),
+			     OMP_CLAUSE_ALIGNED_ALIGNMENT (c2)))
+	return 2;
+    }
+  switch (r)
+    {
+    case 0: return 0;
+    case 1: return -1;
+    case 2: return 1;
+    case 3: return 2;
+    default: gcc_unreachable ();
+    }
+}
+
+/* Compare properties of selectors SEL from SET other than construct.
+   Return 0/-1/1/2 as in omp_context_selector_set_compare.
+   Unlike set names or selector names, properties can have duplicates.  */
+
+static int
+omp_context_selector_props_compare (const char *set, const char *sel,
+				    tree ctx1, tree ctx2)
+{
+  int ret = 0;
+  for (int pass = 0; pass < 2; pass++)
+    for (tree t1 = pass ? ctx2 : ctx1; t1; t1 = TREE_CHAIN (t1))
+      {
+	tree t2;
+	for (t2 = pass ? ctx1 : ctx2; t2; t2 = TREE_CHAIN (t2))
+	  if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	    {
+	      if (TREE_PURPOSE (t1) == NULL_TREE)
+		{
+		  if (set[0] == 'u' && strcmp (sel, "condition") == 0)
+		    {
+		      if (integer_zerop (TREE_VALUE (t1))
+			  != integer_zerop (TREE_VALUE (t2)))
+			return 2;
+		      break;
+		    }
+		  if (simple_cst_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
+		    break;
+		}
+	      else if (strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			       " score") == 0)
+		{
+		  if (!simple_cst_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
+		    return 2;
+		  break;
+		}
+	      else
+		break;
+	    }
+	if (t2 == NULL_TREE)
+	  {
+	    int r = pass ? -1 : 1;
+	    if (ret && ret != r)
+	      return 2;
+	    else if (pass)
+	      return r;
+	    else
+	      {
+		ret = r;
+		break;
+	      }
+	  }
+      }
+  return ret;
+}
+
+/* Compare single context selector sets CTX1 and CTX2 with SET name.
+   Return 0 if CTX1 is equal to CTX2,
+   -1 if CTX1 is a strict subset of CTX2,
+   1 if CTX2 is a strict subset of CTX1, or
+   2 if neither context is a subset of another one.  */
+
+int
+omp_context_selector_set_compare (const char *set, tree ctx1, tree ctx2)
+{
+  bool swapped = false;
+  int ret = 0;
+  int len1 = list_length (ctx1);
+  int len2 = list_length (ctx2);
+  int cnt = 0;
+  if (len1 < len2)
+    {
+      swapped = true;
+      std::swap (ctx1, ctx2);
+      std::swap (len1, len2);
+    }
+  if (set[0] == 'c')
+    {
+      tree t1;
+      tree t2 = ctx2;
+      tree simd = get_identifier ("simd");
+      /* Handle construct set specially.  In this case the order
+	 of the selector matters too.  */
+      for (t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	  {
+	    int r = 0;
+	    if (TREE_PURPOSE (t1) == simd)
+	      r = omp_construct_simd_compare (TREE_VALUE (t1),
+					      TREE_VALUE (t2));
+	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
+	      return 2;
+	    if (ret == 0)
+	      ret = r;
+	    t2 = TREE_CHAIN (t2);
+	    if (t2 == NULL_TREE)
+	      {
+		t1 = TREE_CHAIN (t1);
+		break;
+	      }
+	  }
+	else if (ret < 0)
+	  return 2;
+	else
+	  ret = 1;
+      if (t2 != NULL_TREE)
+	return 2;
+      if (t1 != NULL_TREE)
+	{
+	  if (ret < 0)
+	    return 2;
+	  ret = 1;
+	}
+      if (ret == 0)
+	return 0;
+      return swapped ? -ret : ret;
+    }
+  for (tree t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+    {
+      tree t2;
+      for (t2 = ctx2; t2; t2 = TREE_CHAIN (t2))
+	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	  {
+	    const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
+	    int r = omp_context_selector_props_compare (set, sel,
+							TREE_VALUE (t1),
+							TREE_VALUE (t2));
+	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
+	      return 2;
+	    if (ret == 0)
+	      ret = r;
+	    cnt++;
+	    break;
+	  }
+      if (t2 == NULL_TREE)
+	{
+	  if (ret == -1)
+	    return 2;
+	  ret = 1;
+	}
+    }
+  if (cnt < len2)
+    return 2;
+  if (ret == 0)
+    return 0;
+  return swapped ? -ret : ret;
+}
+
+/* Compare whole context selector specification CTX1 and CTX2.
+   Return 0 if CTX1 is equal to CTX2,
+   -1 if CTX1 is a strict subset of CTX2,
+   1 if CTX2 is a strict subset of CTX1, or
+   2 if neither context is a subset of another one.  */
+
+static int
+omp_context_selector_compare (tree ctx1, tree ctx2)
+{
+  bool swapped = false;
+  int ret = 0;
+  int len1 = list_length (ctx1);
+  int len2 = list_length (ctx2);
+  int cnt = 0;
+  if (len1 < len2)
+    {
+      swapped = true;
+      std::swap (ctx1, ctx2);
+      std::swap (len1, len2);
+    }
+  for (tree t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+    {
+      tree t2;
+      for (t2 = ctx2; t2; t2 = TREE_CHAIN (t2))
+	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	  {
+	    const char *set = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
+	    int r = omp_context_selector_set_compare (set, TREE_VALUE (t1),
+						      TREE_VALUE (t2));
+	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
+	      return 2;
+	    if (ret == 0)
+	      ret = r;
+	    cnt++;
+	    break;
+	  }
+      if (t2 == NULL_TREE)
+	{
+	  if (ret == -1)
+	    return 2;
+	  ret = 1;
+	}
+    }
+  if (cnt < len2)
+    return 2;
+  if (ret == 0)
+    return 0;
+  return swapped ? -ret : ret;
+}
+
+/* From context selector CTX, return trait-selector with name SEL in
+   trait-selector-set with name SET if any, or NULL_TREE if not found.
+   If SEL is NULL, return the list of trait-selectors in SET.  */
+
+tree
+omp_get_context_selector (tree ctx, const char *set, const char *sel)
+{
+  tree setid = get_identifier (set);
+  tree selid = sel ? get_identifier (sel) : NULL_TREE;
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    if (TREE_PURPOSE (t1) == setid)
+      {
+	if (sel == NULL)
+	  return TREE_VALUE (t1);
+	for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	  if (TREE_PURPOSE (t2) == selid)
+	    return t2;
+      }
+  return NULL_TREE;
+}
+
+/* Compute *SCORE for context selector CTX.  Return true if the score
+   would be different depending on whether it is a declare simd clone or
+   not.  DECLARE_SIMD should be true for the case when it would be
+   a declare simd clone.  */
+
+static bool
+omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
+{
+  tree construct = omp_get_context_selector (ctx, "construct", NULL);
+  bool has_kind = omp_get_context_selector (ctx, "device", "kind");
+  bool has_arch = omp_get_context_selector (ctx, "device", "arch");
+  bool has_isa = omp_get_context_selector (ctx, "device", "isa");
+  bool ret = false;
+  *score = 1;
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+      if (tree t3 = TREE_VALUE (t2))
+	if (TREE_PURPOSE (t3)
+	    && strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)), " score") == 0
+	    && TREE_CODE (TREE_VALUE (t3)) == INTEGER_CST)
+	  *score += wi::to_widest (TREE_VALUE (t3));
+  if (construct || has_kind || has_arch || has_isa)
+    {
+      int scores[12];
+      enum tree_code constructs[5];
+      int nconstructs = 0;
+      if (construct)
+	nconstructs = omp_constructor_traits_to_codes (construct, constructs);
+      if (omp_construct_selector_matches (constructs, nconstructs, scores)
+	  == 2)
+	ret = true;
+      int b = declare_simd ? nconstructs + 1 : 0;
+      if (scores[b + nconstructs] + 4U < score->get_precision ())
+	{
+	  for (int n = 0; n < nconstructs; ++n)
+	    {
+	      if (scores[b + n] < 0)
+		{
+		  *score = 0;
+		  return ret;
+		}
+	      *score += wi::shifted_mask <widest_int> (scores[b + n], 1, false);
+	    }
+	  if (has_kind)
+	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs],
+						     1, false);
+	  if (has_arch)
+	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs] + 1,
+						     1, false);
+	  if (has_isa)
+	    *score += wi::shifted_mask <widest_int> (scores[b + nconstructs] + 2,
+						     1, false);
+	}
+      else /* FIXME: Implement this.  */
+	gcc_unreachable ();
+    }
+  return ret;
+}
+
+/* Try to resolve declare variant, return the variant decl if it should
+   be used instead of base, or base otherwise.  */
+
+tree
+omp_resolve_declare_variant (tree base)
+{
+  tree variant1 = NULL_TREE, variant2 = NULL_TREE;
+  auto_vec <tree, 16> variants;
+  for (tree attr = DECL_ATTRIBUTES (base); attr; attr = TREE_CHAIN (attr))
+    {
+      attr = lookup_attribute ("omp declare variant base", attr);
+      if (attr == NULL_TREE)
+	break;
+      if (TREE_CODE (TREE_PURPOSE (TREE_VALUE (attr))) != FUNCTION_DECL)
+	continue;
+      switch (omp_context_selector_matches (TREE_VALUE (TREE_VALUE (attr))))
+	{
+	case 0:
+	  /* No match, ignore.  */
+	  break;
+	case -1:
+	  /* Needs to be deferred.  */
+	  return base;
+	default:
+	  variants.safe_push (attr);
+	}
+    }
+  if (variants.length () == 0)
+    return base;
+  if (variants.length () == 1)
+    return TREE_PURPOSE (TREE_VALUE (variants[0]));
+
+  /* A context selector that is a strict subset of another context selector has a score
+     of zero.  */
+  tree attr1, attr2;
+  unsigned int i, j;
+  FOR_EACH_VEC_ELT (variants, i, attr1)
+    if (attr1)
+      {
+	tree ctx1 = TREE_VALUE (TREE_VALUE (attr1));
+	FOR_EACH_VEC_ELT_FROM (variants, j, attr2, i + 1)
+	  if (attr2)
+	    {
+	      tree ctx2 = TREE_VALUE (TREE_VALUE (attr2));
+	      int r = omp_context_selector_compare (ctx1, ctx2);
+	      if (r == -1)
+		{
+		  /* ctx1 is a strict subset of ctx2, remove
+		     attr1 from the vector.  */
+		  variants[i] = NULL_TREE;
+		  break;
+		}
+	      else if (r == 1)
+		/* ctx2 is a strict subset of ctx1, remove attr2
+		   from the vector.  */
+		variants[j] = NULL_TREE;
+	    }
+      }
+  widest_int max_score1 = 0;
+  widest_int max_score2 = 0;
+  bool first = true;
+  FOR_EACH_VEC_ELT (variants, i, attr1)
+    if (attr1)
+      {
+	if (variant1)
+	  {
+	    widest_int score1;
+	    widest_int score2;
+	    bool need_two;
+	    tree ctx;
+	    if (first)
+	      {
+		first = false;
+		ctx = TREE_VALUE (TREE_VALUE (variant1));
+		need_two = omp_context_compute_score (ctx, &max_score1, false);
+		if (need_two)
+		  omp_context_compute_score (ctx, &max_score2, true);
+		else
+		  max_score2 = max_score1;
+	      }
+	    ctx = TREE_VALUE (TREE_VALUE (attr1));
+	    need_two = omp_context_compute_score (ctx, &score1, false);
+	    if (need_two)
+	      omp_context_compute_score (ctx, &score2, true);
+	    else
+	      score2 = score1;
+	    if (score1 > max_score1)
+	      {
+		max_score1 = score1;
+		variant1 = attr1;
+	      }
+	    if (score2 > max_score2)
+	      {
+		max_score2 = score2;
+		variant2 = attr1;
+	      }
+	  }
+	else
+	  {
+	    variant1 = attr1;
+	    variant2 = attr1;
+	  }
+      }
+  /* If there is a disagreement on which variant has the highest score
+     depending on whether it will be in a declare simd clone or not,
+     punt for now and defer until after IPA where we will know that.  */
+  return ((variant1 && variant1 == variant2)
+	  ? TREE_PURPOSE (TREE_VALUE (variant1)) : base);
+}
+
 
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK
    macro on gomp-constants.h.  We do not check for overflow.  */

@@ -98,8 +98,8 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   flags = 0;
   f = d = l = w = q = i = fn = fnx = fn_bits = 0;
 
-  /* The following decimal float suffixes, from TR 24732:2009 and TS
-     18661-2:2015, are supported:
+  /* The following decimal float suffixes, from TR 24732:2009, TS
+     18661-2:2015 and C2X, are supported:
 
      df, DF - _Decimal32.
      dd, DD - _Decimal64.
@@ -744,9 +744,16 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 			     "fixed-point constants are a GCC extension");
 
-      if ((result & CPP_N_DFLOAT) && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			     "decimal float constants are a GCC extension");
+      if (result & CPP_N_DFLOAT)
+	{
+	  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, dfp_constants))
+	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+				 "decimal float constants are a C2X feature");
+	  else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	    cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+				   virtual_location, 0,
+				   "decimal float constants are a C2X feature");
+	}
 
       result |= CPP_N_FLOATING;
     }

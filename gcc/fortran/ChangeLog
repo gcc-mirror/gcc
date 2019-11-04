@@ -1,3 +1,246 @@
+2019-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92113
+	* trans-decl.c (gfc_get_symbol_decl): If __def_init actually
+	contains a value, put it into  the read-only section.
+
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (match_byte_typespec): New function.  Match BYTE type-spec.
+	(gfc_match_decl_type_spec): Use it.
+
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90988
+	* decl.c (gfc_match_private, gfc_match_public): Fixed-form source code
+	does not require whitespace between PRIVATE (or PUBLIC) and an entity.
+
+2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_ARRAY_DATA): Set to gfc_omp_array_data.
+	* trans-array.c (gfc_conv_descriptor_data_get): Handle also
+	REFERENCE_TYPE.
+	* trans-openmp.c (gfc_omp_array_data): New.
+	* trans.h (gfc_omp_array_data): New prototype.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92284.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Free CFI descriptor
+	at the end; partial revised revert of Rev. 277502.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92277
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Fix DECL_ARTIFICIAL
+	checking.
+
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92208
+	* trans-array.c (gfc_conv_array_parameter): Only copy
+	string-length backend_decl if expression is not a function.
+
+2019-10-30  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* invoke.texi: Add -Wno-overwrite-recursive to list of options. Add
+	description of -Wno-overwrite-recursive. Fix typo in description
+	of -Winteger-division.
+	* lang.opt: Add option -Woverwrite-recursive initialised as on.
+	* option.c (gfc_post_options): Output warning only if it is enabled.
+
+2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91863
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Don't free data
+	memory as that's done on the Fortran side.
+	(gfc_conv_procedure_call): Handle void* pointers from
+	gfc_conv_gfc_desc_to_cfi_desc.
+
+2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86248
+	* resolve.c (flag_fn_result_spec): Correct a typo before the
+	function declaration.
+	* trans-decl.c (gfc_sym_identifier): Boost the length of 'name'
+	to allow for all variants. Simplify the code by using a pointer
+	to the symbol's proc_name and taking the return out of each of
+	the conditional branches. Allow symbols with fn_result_spec set
+	that do not come from a procedure namespace and have a module
+	name to go through the non-fn_result_spec branch.
+
+2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_map_clause): Add and pass allow_commons
+	argument.
+	(gfc_match_omp_clauses): Update calls to permit common blocks for
+	OpenACC's copy/copyin/copyout, create/delete, host,
+	pcopy/pcopy_in/pcopy_out, present_or_copy, present_or_copy_in,
+	present_or_copy_out, present_or_create and self.
+
+2019-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/92174
+	* array.c (gfc_resolve_array_spec): Break the loop
+	for out of bounds index.
+	* resolve.c (is_non_constant_shape_array): Likewise.
+
+2019-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	dump-parse-tree.c (show_expr): Add dumping of BT_BOZ constants.
+
+2019-10-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92174
+	* decl.c (attr_decl1): Move check for F2018:C822 from here ...
+	* array.c (gfc_set_array_spec): ... to here.
+
+2019-10-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69455
+	* trans-decl.c (generate_local_decl): Avoid misconstructed
+	intrinsic modules in a BLOCK construct.
+
+2019-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91586
+	* class.c (gfc_find_derived_vtab): Return NULL
+	instead of deref'ing NULL pointer.
+
+2019-10-15  James Norris  <jnorris@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/65438
+	* openmp.c (check_array_not_assumed): Remove pointer check.
+
+2019-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89943
+	decl.c (gfc_match_function_decl): Ignore duplicate BIND(C) for function
+	declaration in submodule.  Implement at check for F2018 C1550.
+	(gfc_match_entry): Use temporary for locus, which allows removal of
+	one gfc_error_now().
+	(gfc_match_subroutine): Ignore duplicate BIND(C) for subroutine
+	declaration in submodule.  Implement at check for F2018 C1550.
+
+2019-10-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92004
+	* array.c (expand_constructor): Set from_constructor on
+	expression.
+	* gfortran.h (gfc_symbol): Add maybe_array.
+	(gfc_expr): Add from_constructor.
+	* interface.c (maybe_dummy_array_arg): New function.
+	(compare_parameter): If the formal argument is generated from a
+	call, check the conditions where an array element could be
+	passed to an array.  Adjust error message for assumed-shape
+	or pointer array.  Use correct language for assumed shaped arrays.
+	(gfc_get_formal_from_actual_arglist): Set maybe_array on the
+	symbol if the actual argument is an array element fulfilling
+	the conditions of 15.5.2.4.
+
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* error.c: Remove debug pragma added in previous commit.
+
+2019-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92072
+	* error.c (error_print, gfc_format_decoder): Fix %C column-
+	offset handling.
+
+2019-10-13  Damian Rouson  <damain@sourceryinstitue.org>
+
+	PR fortran/91513
+	* resolve.c (resolve_ordinary_assign): Improved error message.
+
+2019-10-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90297
+	* resolve.c (resolve_typebound_function): Remove code with no
+	functional effect.
+
+2019-10-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92017
+	* expr.c (simplify_parameter_variable): Set the character length
+	of the result expression from the original expression if
+	necessary.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91649
+	check.c (gfc_check_findloc): Additional checking for valid arguments
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91715
+	* decl.c (gfc_match_prefix): If matching a type-spec returns an error,
+	it's an error so re-act correctly.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92018
+	* check.c (reset_boz): New function.
+	(illegal_boz_arg, boz_args_check, gfc_check_complex, gfc_check_float,
+	gfc_check_transfer): Use it.
+	(gfc_check_dshift): Use reset_boz, and re-arrange the checking to
+	help suppress possible run-on errors.
+	(gfc_check_and): Restore checks for valid argument types.  Use
+	reset_boz, and re-arrange the checking to help suppress possible
+	run-on errors.
+	* resolve.c (resolve_function): Actual arguments cannot be BOZ in
+	a function reference.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92019
+	* array.c (match_subscript): BOZ cannot be an array subscript.
+
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92050
+	* trans-expr.c (gfc_conv_procedure_call): Handle code generated
+	by -fcheck=all.
+
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR): Re-define to
+	gfc_omp_is_allocatable_or_ptr.
+	* trans-decl.c (create_function_arglist): Set GFC_DECL_OPTIONAL_ARGUMENT
+	only if not passed by value.
+	* trans-openmp.c (gfc_omp_is_allocatable_or_ptr): New.
+	(gfc_trans_omp_clauses): For MAP, handle (present) optional arguments;
+	for target update, handle allocatable/pointer scalars.
+	* trans.h (gfc_omp_is_allocatable_or_ptr): Declare.
+
+2019-10-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Actually pass use_device_addr
+	on to the middle end.
+
+2019-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91801
+	* simplify.c (gfc_simplify_reshape): Convert a gcc_assert into a
+	gfc_error as a user can easily hit the condition.
+
+2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (parse_executable): Add missing ST_OMP_TARGET_SIMD.
+
+2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* match.h (gfc_match_omp_eos_error): Renamed from gfc_match_omp_eos.
+	* openmp.c (gfc_match_omp_eos): Make static.
+	(gfc_match_omp_eos_error): New.
+	* parse.c (matchs, matchdo, matchds): Do as done for 'matcho' -
+	if error occurred after OpenMP/OpenACC directive matched, do not
+	try other directives.
+	(decode_oacc_directive, decode_omp_directive): Call new function
+	instead.
+
 2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/47045
@@ -19,7 +262,8 @@
 
 2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
-	* error (error_print, gfc_format_decoder): Fix off-by one issue with %C.
+	* error.c (error_print, gfc_format_decoder): Fix off-by one issue
+	with %C.
 
 2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
@@ -153,7 +397,6 @@
 	(lang_decl): Add new optional_arg field.
 	(GFC_DECL_OPTIONAL_ARGUMENT): New macro.
 
->>>>>>> .r276463
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_diagnostic_starter): Clear the prefix before

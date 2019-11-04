@@ -98,8 +98,8 @@ propagate_comdat_group (struct symtab_node *symbol,
 
       if (cgraph_node * cn = dyn_cast <cgraph_node *> (symbol2))
 	{
-	  if (cn->global.inlined_to)
-	    symbol2 = cn->global.inlined_to;
+	  if (cn->inlined_to)
+	    symbol2 = cn->inlined_to;
 	}
 
       /* The actual merge operation.  */
@@ -133,8 +133,8 @@ propagate_comdat_group (struct symtab_node *symbol,
 	    /* If we see inline clone, its comdat group actually
 	       corresponds to the comdat group of the function it
 	       is inlined to.  */
-	    if (cn->global.inlined_to)
-	      symbol2 = cn->global.inlined_to;
+	    if (cn->inlined_to)
+	      symbol2 = cn->inlined_to;
 	  }
 
         /* The actual merge operation.  */

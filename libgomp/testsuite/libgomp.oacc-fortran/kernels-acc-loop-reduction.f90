@@ -1,10 +1,12 @@
+! { dg-do run }
+!
 program foo
   IMPLICIT NONE
   INTEGER :: vol = 0
 
   call bar (vol)
 
-  if (vol .ne. 2) call abort
+  if (vol .ne. 2) stop 1
 end program foo
 
 subroutine bar(vol)

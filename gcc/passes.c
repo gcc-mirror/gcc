@@ -2564,6 +2564,8 @@ execute_one_pass (opt_pass *pass)
   if (!((todo_after | pass->todo_flags_finish) & TODO_do_not_ggc_collect))
     ggc_collect ();
 
+  if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
+    report_heap_memory_use ();
   return true;
 }
 
@@ -2705,20 +2707,12 @@ ipa_write_summaries (void)
     {
       struct cgraph_node *node = order[i];
 
-      if (gimple_has_body_p (node->decl))
-	{
-	  /* When streaming out references to statements as part of some IPA
-	     pass summary, the statements need to have uids assigned and the
-	     following does that for all the IPA passes here. Naturally, this
-	     ordering then matches the one IPA-passes get in their stmt_fixup
-	     hooks.  */
-
-	  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-	  renumber_gimple_stmt_uids ();
-	  pop_cfun ();
-	}
       if (node->definition && node->need_lto_streaming)
-        lto_set_symtab_encoder_in_partition (encoder, node);
+	{
+	  if (gimple_has_body_p (node->decl))
+	    lto_prepare_function_for_streaming (node);
+	  lto_set_symtab_encoder_in_partition (encoder, node);
+	}
     }
 
   FOR_EACH_DEFINED_FUNCTION (node)
@@ -2786,28 +2780,13 @@ void
 ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
-  lto_symtab_encoder_iterator lsei;
   state->symtab_node_encoder = encoder;
 
   lto_output_init_mode_table ();
   lto_push_out_decl_state (state);
-  for (lsei = lsei_start_function_in_partition (encoder);
-       !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))
-    {
-      struct cgraph_node *node = lsei_cgraph_node (lsei);
-      /* When streaming out references to statements as part of some IPA
-	 pass summary, the statements need to have uids assigned.
 
-	 For functions newly born at WPA stage we need to initialize
-	 the uids here.  */
-      if (node->definition
-	  && gimple_has_body_p (node->decl))
-	{
-	  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-	  renumber_gimple_stmt_uids ();
-	  pop_cfun ();
-	}
-    }
+  /* Be sure that we did not forget to renumber stmt uids.  */
+  gcc_checking_assert (flag_wpa);
 
   gcc_assert (flag_wpa);
   pass_manager *passes = g->get_passes ();
@@ -2841,6 +2820,8 @@ ipa_read_summaries_1 (opt_pass *pass)
 	      /* If a timevar is present, start it.  */
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
+	      if (!quiet_flag)
+		fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 
 	      pass_init_dump_file (pass);
 
@@ -2852,6 +2833,8 @@ ipa_read_summaries_1 (opt_pass *pass)
 	      /* Stop timevar.  */
 	      if (pass->tv_id)
 		timevar_pop (pass->tv_id);
+	      ggc_grow ();
+	      report_heap_memory_use ();
 	    }
 
 	  if (pass->sub && pass->sub->type != GIMPLE_PASS)
@@ -2892,6 +2875,8 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
 	      /* If a timevar is present, start it.  */
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
+	      if (!quiet_flag)
+		fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 
 	      pass_init_dump_file (pass);
 
@@ -2907,6 +2892,8 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
 
 	  if (pass->sub && pass->sub->type != GIMPLE_PASS)
 	    ipa_read_optimization_summaries_1 (pass->sub);
+	  ggc_grow ();
+	  report_heap_memory_use ();
 	}
       pass = pass->next;
     }
@@ -3056,7 +3043,7 @@ function_called_by_processed_nodes_p (void)
         continue;
       if (TREE_ASM_WRITTEN (e->caller->decl))
         continue;
-      if (!e->caller->process && !e->caller->global.inlined_to)
+      if (!e->caller->process && !e->caller->inlined_to)
       	break;
     }
   if (dump_file && e)

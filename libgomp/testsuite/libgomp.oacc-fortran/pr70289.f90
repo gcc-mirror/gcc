@@ -1,3 +1,5 @@
+! { dg-do run }
+!
 program foo
   implicit none
   integer :: i

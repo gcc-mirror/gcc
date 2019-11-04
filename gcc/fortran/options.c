@@ -409,7 +409,8 @@ gfc_post_options (const char **pfilename)
     gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
   else if (!flag_automatic && flag_recursive)
-    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%>");
+    gfc_warning_now (OPT_Woverwrite_recursive, "Flag %<-fno-automatic%> "
+		     "overwrites %<-frecursive%>");
   else if (!flag_automatic && flag_openmp)
     gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
 		     "%<-fopenmp%>");

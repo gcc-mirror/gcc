@@ -9,6 +9,6 @@ int (*p2)[5];
 void
 test ()
 {
-  p1 == p2;		// { dg-error "comparison between distinct pointer types" } comparison.*
-  p1 > p2;		// { dg-error "comparison between distinct pointer types" } comparison.*
+  p1 == p2;		// { dg-error "6:comparison between distinct pointer types" } comparison.*
+  p1 > p2;		// { dg-error "6:comparison between distinct pointer types" } comparison.*
 }

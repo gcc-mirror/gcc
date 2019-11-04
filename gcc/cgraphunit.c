@@ -340,7 +340,10 @@ symbol_table::process_new_functions (void)
 		 and splitting.  This is redundant for functions added late.
 		 Just throw away whatever it did.  */
 	      if (!summaried_computed)
-		ipa_free_fn_summary ();
+		{
+		  ipa_free_fn_summary ();
+		  ipa_free_size_summary ();
+		}
 	    }
 	  else if (ipa_fn_summaries != NULL)
 	    compute_fn_summary (node, true);
@@ -388,8 +391,7 @@ cgraph_node::reset (void)
   gcc_assert (!process);
 
   /* Reset our data structures so we can analyze the function again.  */
-  memset (&local, 0, sizeof (local));
-  memset (&global, 0, sizeof (global));
+  inlined_to = NULL;
   memset (&rtl, 0, sizeof (rtl));
   analyzed = false;
   definition = false;
@@ -442,7 +444,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
       gcc_assert (!DECL_CONTEXT (decl)
 		  || TREE_CODE (DECL_CONTEXT (decl)) !=	FUNCTION_DECL);
       node->reset ();
-      node->local.redefined_extern_inline = true;
+      node->redefined_extern_inline = true;
     }
 
   /* Set definition first before calling notice_global_symbol so that
@@ -550,7 +552,7 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 	/* Bring the function into finalized state and enqueue for later
 	   analyzing and compilation.  */
 	node = cgraph_node::get_create (fndecl);
-	node->local.local = false;
+	node->local = false;
 	node->definition = true;
 	node->force_output = true;
 	if (TREE_PUBLIC (fndecl))
@@ -1118,7 +1120,7 @@ analyze_functions (bool first_time)
 		  && !cnode->dispatcher_function)
 		{
 		  cnode->reset ();
-		  cnode->local.redefined_extern_inline = true;
+		  cnode->redefined_extern_inline = true;
 		  continue;
 		}
 
@@ -1504,7 +1506,7 @@ mark_functions_to_output (void)
       if (node->analyzed
 	  && !node->thunk.thunk_p
 	  && !node->alias
-	  && !node->global.inlined_to
+	  && !node->inlined_to
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))
 	{
@@ -1529,7 +1531,7 @@ mark_functions_to_output (void)
 	{
 	  /* We should've reclaimed all functions that are not needed.  */
 	  if (flag_checking
-	      && !node->global.inlined_to
+	      && !node->inlined_to
 	      && gimple_has_body_p (decl)
 	      /* FIXME: in ltrans unit when offline copy is outside partition but inline copies
 		 are inside partition, we can end up not removing the body since we no longer
@@ -1542,7 +1544,7 @@ mark_functions_to_output (void)
 	      node->debug ();
 	      internal_error ("failed to reclaim unneeded function");
 	    }
-	  gcc_assert (node->global.inlined_to
+	  gcc_assert (node->inlined_to
 		      || !gimple_has_body_p (decl)
 		      || node->in_other_partition
 		      || node->clones
@@ -1557,7 +1559,7 @@ mark_functions_to_output (void)
       if (node->same_comdat_group && !node->process)
 	{
 	  tree decl = node->decl;
-	  if (!node->global.inlined_to
+	  if (!node->inlined_to
 	      && gimple_has_body_p (decl)
 	      /* FIXME: in an ltrans unit when the offline copy is outside a
 		 partition but inline copies are inside a partition, we can
@@ -2114,7 +2116,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 
   for (e = callers; e;)
     if (e->caller->thunk.thunk_p
-	&& !e->caller->global.inlined_to)
+	&& !e->caller->inlined_to)
       {
 	cgraph_node *thunk = e->caller;
 
@@ -2151,7 +2153,7 @@ cgraph_node::expand (void)
   location_t saved_loc;
 
   /* We ought to not compile any inline clones.  */
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
 
   /* __RTL functions are compiled as soon as they are parsed, so don't
      do it again.  */
@@ -2599,10 +2601,7 @@ symbol_table::compile (void)
 
   timevar_push (TV_CGRAPHOPT);
   if (pre_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption before IPA");
   if (!quiet_flag)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   state = IPA;
@@ -2634,10 +2633,7 @@ symbol_table::compile (void)
       symtab->dump (dump_file);
     }
   if (post_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption after IPA");
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
@@ -2710,7 +2706,7 @@ symbol_table::compile (void)
       bool error_found = false;
 
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (node->global.inlined_to
+	if (node->inlined_to
 	    || gimple_has_body_p (node->decl))
 	  {
 	    error_found = true;

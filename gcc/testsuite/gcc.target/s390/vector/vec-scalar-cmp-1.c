@@ -34,7 +34,7 @@ gt (double a, double b)
   return a > b;
 }
 
-/* { dg-final { scan-assembler "gt:\n\[^:\]*\twfcdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinh\t%r2,0" } } */
+/* { dg-final { scan-assembler "gt:\n\[^:\]*\twfkdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinh\t%r2,0" } } */
 
 int
 ge (double a, double b)
@@ -45,7 +45,7 @@ ge (double a, double b)
   return a >= b;
 }
 
-/* { dg-final { scan-assembler "ge:\n\[^:\]*\twfcdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinhe\t%r2,0" } } */
+/* { dg-final { scan-assembler "ge:\n\[^:\]*\twfkdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinhe\t%r2,0" } } */
 
 int
 lt (double a, double b)
@@ -56,7 +56,7 @@ lt (double a, double b)
   return a < b;
 }
 
-/* { dg-final { scan-assembler "lt:\n\[^:\]*\twfcdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinl\t%r2,0" } } */
+/* { dg-final { scan-assembler "lt:\n\[^:\]*\twfkdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinl\t%r2,0" } } */
 
 int
 le (double a, double b)
@@ -67,4 +67,4 @@ le (double a, double b)
   return a <= b;
 }
 
-/* { dg-final { scan-assembler "le:\n\[^:\]*\twfcdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinle\t%r2,0" } } */
+/* { dg-final { scan-assembler "le:\n\[^:\]*\twfkdb\t%v\[0-9\]*,%v\[0-9\]*\n\t\[^:\]+\tlochinle\t%r2,0" } } */

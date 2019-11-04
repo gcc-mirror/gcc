@@ -82,6 +82,10 @@ package Treepr is
    --  the definition of Union_Id. Historically this was only for printing
    --  nodes, hence the name.
 
+   procedure ppar (N : Union_Id);
+   pragma Export (Ada, ppar);
+   --  Print the node, its parent, its parent's parent, and so on
+
    procedure pt  (N : Union_Id);
    procedure ppp (N : Union_Id);
    pragma Export (Ada, pt);

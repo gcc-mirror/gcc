@@ -3,7 +3,7 @@
    Verify that -Wstringop-truncation is issued for uses of arrays and
    pointers to qualified forms of characters of all three types.
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wstringop-truncation" } */
+   { dg-options "-O2 -Wall -Wstringop-truncation -fno-ipa-icf" } */
 
 #if __cplusplus
 extern "C"

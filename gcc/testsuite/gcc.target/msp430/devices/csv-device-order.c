@@ -8,4 +8,4 @@
    devices.csv, but should not be matched.
    Errors and warnings will be emitted if msp430f0123 is wrongly matched.  */
 
-#include "../devices-main.c"
+#include "devices-main.c"

@@ -960,6 +960,20 @@ AC_SUBST(CONFIGURE_SPECS)
 ACX_PKGVERSION([GCC])
 ACX_BUGURL([https://gcc.gnu.org/bugs/])
 
+# Allow overriding the default URL for documentation
+AC_ARG_WITH(documentation-root-url,
+    AS_HELP_STRING([--with-documentation-root-url=URL],
+                   [Root for documentation URLs]),
+    [case "$withval" in
+      yes) AC_MSG_ERROR([documentation root URL not specified]) ;;
+      no)  AC_MSG_ERROR([documentation root URL not specified]) ;;
+      *)   DOCUMENTATION_ROOT_URL="$withval"
+	   ;;
+     esac],
+     DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/gcc/"
+)
+AC_SUBST(DOCUMENTATION_ROOT_URL)
+
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.
 AC_ARG_ENABLE(languages,
@@ -1018,6 +1032,18 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
     enable_hsa=1
   else
     enable_offloading=1
+    case "$tgt" in
+      *-intelmicemul-*)
+	omp_device_property=omp-device-properties-i386
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
+	;;
+      nvptx*-*)
+	omp_device_property=omp-device-properties-nvptx
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+	;;
+    esac
+    omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
+    omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
   fi
 
   if test x"$offload_targets" = x; then
@@ -1026,6 +1052,9 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
     offload_targets="$offload_targets,$tgt"
   fi
 done
+AC_SUBST(omp_device_properties)
+AC_SUBST(omp_device_property_deps)
+
 AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
   [Define to offload targets, separated by commas.])
 if test x"$enable_offloading" != x; then
@@ -1345,7 +1374,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap setlocale \
-	gcc_UNLOCKED_FUNCS madvise)
+	gcc_UNLOCKED_FUNCS madvise mallinfo)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1422,6 +1451,14 @@ gcc_AC_CHECK_DECLS(getrlimit setrlimit getrusage, , ,[
 #include "system.h"
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
+#endif
+])
+
+gcc_AC_CHECK_DECLS(mallinfo, , ,[
+#include "ansidecl.h"
+#include "system.h"
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
 #endif
 ])
 
@@ -2040,7 +2077,7 @@ do
 		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
 	fi
 done
-tmake_file="${tmake_file_}"
+tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
 out_object_file=`basename $out_file .c`.o
 common_out_object_file=`basename $common_out_file .c`.o

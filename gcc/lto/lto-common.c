@@ -1646,11 +1646,13 @@ unify_scc (class data_in *data_in, unsigned from,
       tree t = streamer_tree_cache_get_tree (cache, from + i);
       scc->entries[i] = t;
       /* Do not merge SCCs with local entities inside them.  Also do
-	 not merge TRANSLATION_UNIT_DECLs and anonymous namespace types.  */
+	 not merge TRANSLATION_UNIT_DECLs and anonymous namespaces
+	 and types therein types.  */
       if (TREE_CODE (t) == TRANSLATION_UNIT_DECL
 	  || (VAR_OR_FUNCTION_DECL_P (t)
 	      && !(TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
 	  || TREE_CODE (t) == LABEL_DECL
+	  || (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAME (t))
 	  || (TYPE_P (t)
 	      && type_with_linkage_p (TYPE_MAIN_VARIANT (t))
 	      && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t))))
@@ -2175,7 +2177,8 @@ create_subid_section_table (struct lto_section_slot *ls, splay_tree file_ids,
 /* Read declarations and other initializations for a FILE_DATA.  */
 
 static void
-lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
+lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
+		   int order)
 {
   const char *data;
   size_t len;
@@ -2193,6 +2196,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 
   file_data->renaming_hash_table = lto_create_renaming_table ();
   file_data->file_name = file->filename;
+  file_data->order = order;
 #ifdef ACCEL_COMPILER
   lto_input_mode_table (file_data);
 #else
@@ -2200,7 +2204,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 #endif
 
   /* Read and verify LTO section.  */
-  data = lto_get_section_data (file_data, LTO_section_lto, NULL, &len, false);
+  data = lto_get_summary_section_data (file_data, LTO_section_lto, &len);
   if (data == NULL)
     {
       fatal_error (input_location, "bytecode stream in file %qs generated "
@@ -2213,7 +2217,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 		     file_data->lto_section_header.minor_version,
 		     file_data->file_name);
 
-  data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
+  data = lto_get_summary_section_data (file_data, LTO_section_decls, &len);
   if (data == NULL)
     {
       internal_error ("cannot read %<LTO_section_decls%> from %s",
@@ -2229,9 +2233,9 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 
 static int
 lto_create_files_from_ids (lto_file *file, struct lto_file_decl_data *file_data,
-			   int *count)
+			   int *count, int order)
 {
-  lto_file_finalize (file_data, file);
+  lto_file_finalize (file_data, file, order);
   if (symtab->dump_file)
     fprintf (symtab->dump_file,
 	     "Creating file %s with sub id " HOST_WIDE_INT_PRINT_HEX "\n",
@@ -2283,9 +2287,10 @@ lto_file_read (lto_file *file, FILE *resolution_file, int *count)
   lto_resolution_read (file_ids, resolution_file, file);
 
   /* Finalize each lto file for each submodule in the merged object.  */
+  int order = 0;
   for (file_data = file_list.first; file_data != NULL;
        file_data = file_data->next)
-    lto_create_files_from_ids (file, file_data, count);
+    lto_create_files_from_ids (file, file_data, count, order++);
 
   splay_tree_delete (file_ids);
   htab_delete (section_hash_table);
@@ -2391,15 +2396,15 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
 
 static const char *
 get_section_data (struct lto_file_decl_data *file_data,
-		      enum lto_section_type section_type,
-		      const char *name,
-		      size_t *len)
+		  enum lto_section_type section_type,
+		  const char *name, int order,
+		  size_t *len)
 {
   htab_t section_hash_table = file_data->section_hash_table;
   struct lto_section_slot *f_slot;
   struct lto_section_slot s_slot;
   const char *section_name = lto_get_section_name (section_type, name,
-						   file_data);
+						   order, file_data);
   char *data = NULL;
 
   *len = 0;
@@ -2779,7 +2784,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* At this stage we know that majority of GGC memory is reachable.
      Growing the limits prevents unnecesary invocation of GGC.  */
   ggc_grow ();
-  ggc_collect ();
+  report_heap_memory_use ();
 
   /* Set the hooks so that all of the ipa passes can read in their data.  */
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
@@ -2787,7 +2792,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_pop (TV_IPA_LTO_DECL_IN);
 
   if (!quiet_flag)
-    fprintf (stderr, "\nReading the callgraph\n");
+    fprintf (stderr, "\nReading the symbol table:");
 
   timevar_push (TV_IPA_LTO_CGRAPH_IO);
   /* Read the symtab.  */
@@ -2827,7 +2832,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_pop (TV_IPA_LTO_CGRAPH_IO);
 
   if (!quiet_flag)
-    fprintf (stderr, "Merging declarations\n");
+    fprintf (stderr, "\nMerging declarations:");
 
   timevar_push (TV_IPA_LTO_DECL_MERGE);
   /* Merge global decls.  In ltrans mode we read merged cgraph, we do not
@@ -2850,19 +2855,26 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (tree_with_vars)
     ggc_free (tree_with_vars);
   tree_with_vars = NULL;
-  ggc_collect ();
+  /* During WPA we want to prevent ggc collecting by default.  Grow limits
+     until after the IPA summaries are streamed in.  Basically all IPA memory
+     is explcitly managed by ggc_free and ggc collect is not useful.
+     Exception are the merged declarations.  */
+  ggc_grow ();
+  report_heap_memory_use ();
 
   timevar_pop (TV_IPA_LTO_DECL_MERGE);
   /* Each pass will set the appropriate timer.  */
 
   if (!quiet_flag)
-    fprintf (stderr, "Reading summaries\n");
+    fprintf (stderr, "\nReading summaries:");
 
   /* Read the IPA summary data.  */
   if (flag_ltrans)
     ipa_read_optimization_summaries ();
   else
     ipa_read_summaries ();
+
+  ggc_grow ();
 
   for (i = 0; all_file_decl_data[i]; i++)
     {
@@ -2881,6 +2893,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       /* Finally merge the cgraph according to the decl merging decisions.  */
       timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
 
+      if (!quiet_flag)
+	fprintf (stderr, "\nMerging symbols:");
+
       gcc_assert (!dump_file);
       dump_file = dump_begin (lto_link_dump_id, NULL);
 
@@ -2895,6 +2910,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 	 We could also just remove them while merging.  */
       symtab->remove_unreachable_nodes (dump_file);
       ggc_collect ();
+      report_heap_memory_use ();
 
       if (dump_file)
 	dump_end (lto_link_dump_id, dump_file);

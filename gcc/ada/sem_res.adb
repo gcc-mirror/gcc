@@ -6845,7 +6845,7 @@ package body Sem_Res is
       end if;
 
       --  If this is a dispatching call, generate the appropriate reference,
-      --  for better source navigation in GPS.
+      --  for better source navigation in GNAT Studio.
 
       if Is_Overloadable (Nam)
         and then Present (Controlling_Argument (N))

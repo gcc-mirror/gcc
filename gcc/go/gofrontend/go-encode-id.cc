@@ -253,3 +253,16 @@ go_mangle_struct_tag(const std::string& tag)
     }
   return ret;
 }
+
+// Encode a package path.
+
+std::string
+go_mangle_pkgpath(const std::string& pkgpath)
+{
+  std::string s = pkgpath;
+  for (size_t i = s.find('.');
+       i != std::string::npos;
+       i = s.find('.', i + 1))
+    s.replace(i, 1, ".x2e"); // 0x2e is the ASCII encoding for '.'
+  return s;
+}

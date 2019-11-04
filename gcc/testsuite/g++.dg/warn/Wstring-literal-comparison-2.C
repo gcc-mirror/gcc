@@ -4,7 +4,7 @@
 
 int test1(char *ptr)
 {
-  return ptr == "foo";  /* { dg-warning "comparison with string" } */
+  return ptr == "foo";  /* { dg-warning "14:comparison with string" } */
 }
 
 int test2()

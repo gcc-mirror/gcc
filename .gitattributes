@@ -1,1 +1,6 @@
-*.{c,C,cc,h} whitespace=indent-with-non-tab,space-before-tab,trailing-space
+# Add indent-with-non-tab to the default git whitespace warnings.
+# Note that this file doesn't support bash-style brace expansion.
+
+*.[cCh] whitespace=indent-with-non-tab,space-before-tab,trailing-space
+*.cc whitespace=indent-with-non-tab,space-before-tab,trailing-space
+ChangeLog whitespace=indent-with-non-tab,space-before-tab,trailing-space

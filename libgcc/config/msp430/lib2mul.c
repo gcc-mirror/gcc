@@ -46,6 +46,9 @@ typedef unsigned int  uint08_type   __attribute__ ((mode (QI)));
 
 #elif defined MUL_16
 
+/* The 16-bit multiply library needs a software version of SI->DI widening
+   multiplication.  */
+
 signed long long
 __mspabi_mpysll (signed long a, signed long b)
 {

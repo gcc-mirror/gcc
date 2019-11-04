@@ -102,23 +102,23 @@ namespace __gnu_pbds
 
       typedef integral_constant<int, simple_value> 	no_throw_copies_t;
 
-      typedef typename _Alloc::template rebind<value_type>	__rebind_v;
-      typedef typename __rebind_v::other 		value_allocator;
+      typedef rebind_traits<_Alloc, value_type>		__rebind_v;
+      typedef typename __rebind_v::allocator_type 	value_allocator;
 
     public:
-      typedef typename value_allocator::pointer		pointer;
-      typedef typename value_allocator::const_pointer	const_pointer;
-      typedef typename value_allocator::reference	reference;
-      typedef typename value_allocator::const_reference	const_reference;
+      typedef typename __rebind_v::pointer		pointer;
+      typedef typename __rebind_v::const_pointer	const_pointer;
+      typedef typename __rebind_v::reference	reference;
+      typedef typename __rebind_v::const_reference	const_reference;
 
       typedef typename __conditional_type<simple_value,
 					  value_type, pointer>::__type
       							entry;
 
-      typedef typename _Alloc::template rebind<entry>::other
+      typedef typename rebind_traits<_Alloc, entry>::allocator_type
       							entry_allocator;
 
-      typedef typename entry_allocator::pointer 	entry_pointer;
+      typedef typename rebind_traits<_Alloc, entry>::pointer 	entry_pointer;
 
       typedef binary_heap_point_const_iterator_<value_type, entry,
 						simple_value, _Alloc>

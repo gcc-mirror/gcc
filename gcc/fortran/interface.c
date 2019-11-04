@@ -2229,6 +2229,67 @@ argument_rank_mismatch (const char *name, locus *where,
 }
 
 
+/* Under certain conditions, a scalar actual argument can be passed
+   to an array dummy argument - see F2018, 15.5.2.4, paragraph 14.
+   This function returns true for these conditions so that an error
+   or warning for this can be suppressed later.  Always return false
+   for expressions with rank > 0.  */
+
+bool
+maybe_dummy_array_arg (gfc_expr *e)
+{
+  gfc_symbol *s;
+  gfc_ref *ref;
+  bool array_pointer = false;
+  bool assumed_shape = false;
+  bool scalar_ref = true;
+
+  if (e->rank > 0)
+    return false;
+
+  if (e->ts.type == BT_CHARACTER && e->ts.kind == 1)
+    return true;
+
+  /* If this comes from a constructor, it has been an array element
+     originally.  */
+
+  if (e->expr_type == EXPR_CONSTANT)
+    return e->from_constructor;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  s = e->symtree->n.sym;
+
+  if (s->attr.dimension)
+    {
+      scalar_ref = false;
+      array_pointer = s->attr.pointer;
+    }
+
+  if (s->as && s->as->type == AS_ASSUMED_SHAPE)
+    assumed_shape = true;
+
+  for (ref=e->ref; ref; ref=ref->next)
+    {
+      if (ref->type == REF_COMPONENT)
+	{
+	  symbol_attribute *attr;
+	  attr = &ref->u.c.component->attr;
+	  if (attr->dimension)
+	    {
+	      array_pointer = attr->pointer;
+	      assumed_shape = false;
+	      scalar_ref = false;
+	    }
+	  else
+	    scalar_ref = true;
+	}
+    }
+
+  return !(scalar_ref || array_pointer || assumed_shape);
+}
+
 /* Given a symbol of a formal argument list and an expression, see if
    the two are compatible as arguments.  Returns true if
    compatible, false if not compatible.  */
@@ -2544,7 +2605,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       || (actual->rank == 0 && formal->attr.dimension
 	  && gfc_is_coindexed (actual)))
     {
-      if (where)
+      if (where 
+	  && (!formal->attr.artificial || (!formal->maybe_array
+					   && !maybe_dummy_array_arg (actual))))
 	{
 	  locus *where_formal;
 	  if (formal->attr.artificial)
@@ -2594,9 +2657,17 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && (is_pointer || ref->u.ar.as->type == AS_ASSUMED_SHAPE))
     {
       if (where)
-	gfc_error ("Element of assumed-shaped or pointer "
-		   "array passed to array dummy argument %qs at %L",
-		   formal->name, &actual->where);
+	{
+	  if (formal->attr.artificial)
+	    gfc_error ("Element of assumed-shape or pointer array "
+		       "as actual argument at %L can not correspond to "
+		       "actual argument at %L ",
+		       &actual->where, &formal->declared_at);
+	  else
+	    gfc_error ("Element of assumed-shape or pointer "
+		       "array passed to array dummy argument %qs at %L",
+		       formal->name, &actual->where);
+	}
       return false;
     }
 
@@ -2625,7 +2696,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
-      if (where)
+      if (where 
+	  && (!formal->attr.artificial || (!formal->maybe_array
+					   && !maybe_dummy_array_arg (actual))))
 	{
 	  locus *where_formal;
 	  if (formal->attr.artificial)
@@ -3717,6 +3790,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 {
   gfc_actual_arglist *a;
   gfc_formal_arglist *dummy_args;
+  bool implicit = false;
 
   /* Warn about calls with an implicit interface.  Special case
      for calling a ISO_C_BINDING because c_loc and c_funloc
@@ -3724,6 +3798,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
      explicitly declared at all if requested.  */
   if (sym->attr.if_source == IFSRC_UNKNOWN && !sym->attr.is_iso_c)
     {
+      implicit = true;
       if (sym->ns->has_implicit_none_export && sym->attr.proc == PROC_UNKNOWN)
 	{
 	  const char *guessed
@@ -3777,6 +3852,19 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	{
 	  if (a->expr && a->expr->error)
 	    return false;
+
+	  /* F2018, 15.4.2.2 Explicit interface is required for a
+	     polymorphic dummy argument, so there is no way to
+	     legally have a class appear in an argument with an
+	     implicit interface.  */
+
+	  if (implicit && a->expr && a->expr->ts.type == BT_CLASS)
+	    {
+	      gfc_error ("Explicit interface required for polymorphic "
+			 "argument at %L",&a->expr->where);
+	      a->expr->error = 1;
+	      break;
+	    }
 
 	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
 	  if (a->name != NULL && a->name[0] != '%')
@@ -5228,6 +5316,8 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 		  s->as->upper[0] = NULL;
 		  s->as->type = AS_ASSUMED_SIZE;
 		}
+	      else
+		s->maybe_array = maybe_dummy_array_arg (a->expr);
 	    }
 	  s->attr.dummy = 1;
 	  s->declared_at = a->expr->where;

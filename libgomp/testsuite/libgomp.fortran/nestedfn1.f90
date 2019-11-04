@@ -5,7 +5,7 @@
   b = 2
   c = 3
   call foo
-  if (a .ne. 7) STOP 1
+  if (a .ne. 7) stop 1
 contains
   subroutine foo
     use omp_lib
@@ -38,6 +38,6 @@ contains
       if (a .ne. 7 .or. b .ne. 8 .or. c .ne. 9) l = .true.
     end if
 !$omp end parallel
-    if (l) STOP 2
+    if (l) stop 2
   end subroutine foo
 end

@@ -1,4 +1,4 @@
-// { dg-do run { target c++11 } }
+// { dg-do run { target { c++11 && { ! c++2a } } } }
 
 // 2007-10-26  Paolo Carlini  <pcarlini@suse.de>
 

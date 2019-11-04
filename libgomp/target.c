@@ -593,6 +593,30 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  tgt->list[i].key = NULL;
 	  if (!not_found_cnt)
 	    {
+	      /* In OpenMP < 5.0 and OpenACC the mapping has to be done
+		 on a separate construct prior to using use_device_{addr,ptr}.
+		 In OpenMP 5.0, map directives need to be ordered by the
+		 middle-end before the use_device_* clauses.  If
+		 !not_found_cnt, all mappings requested (if any) are already
+		 mapped, so use_device_{addr,ptr} can be resolved right away.
+		 Otherwise, if not_found_cnt, gomp_map_lookup might fail
+		 now but would succeed after performing the mappings in the
+		 following loop.  We can't defer this always to the second
+		 loop, because it is not even invoked when !not_found_cnt
+		 after the first loop.  */
+	      cur_node.host_start = (uintptr_t) hostaddrs[i];
+	      cur_node.host_end = cur_node.host_start;
+	      splay_tree_key n = gomp_map_lookup (mem_map, &cur_node);
+	      if (n == NULL)
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  gomp_fatal ("use_device_ptr pointer wasn't mapped");
+		}
+	      cur_node.host_start -= n->host_start;
+	      hostaddrs[i]
+		= (void *) (n->tgt->tgt_start + n->tgt_offset
+			    + cur_node.host_start);
+	      tgt->list[i].offset = ~(uintptr_t) 0;
 	    }
 	  else
 	    tgt->list[i].offset = 0;

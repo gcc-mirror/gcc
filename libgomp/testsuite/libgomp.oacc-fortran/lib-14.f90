@@ -19,14 +19,14 @@ program main
 
   call acc_present_or_copyin (h)
 
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
   call acc_copyout (h)
 
-  if (acc_is_present (h) .neqv. .FALSE.) call abort
+  if (acc_is_present (h) .neqv. .FALSE.) stop 1
 
   do i = 1, N
-    if (h(i) /= i) call abort
+    if (h(i) /= i) stop 1
   end do
 
   do i = 1, N
@@ -35,19 +35,19 @@ program main
 
   call acc_pcopyin (h, sizeof (h))
 
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
   call acc_copyout (h)
 
-  if (acc_is_present (h) .neqv. .FALSE.) call abort
+  if (acc_is_present (h) .neqv. .FALSE.) stop 1
 
   do i = 1, N
-    if (h(i) /= i + i) call abort
+    if (h(i) /= i + i) stop 1
   end do
 
   call acc_create (h)
 
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
   !$acc parallel loop
     do i = 1, N
@@ -57,26 +57,26 @@ program main
 
   call acc_copyout (h)
 
-  if (acc_is_present (h) .neqv. .FALSE.) call abort
+  if (acc_is_present (h) .neqv. .FALSE.) stop 1
 
   do i = 1, N
-    if (h(i) /= i) call abort
+    if (h(i) /= i) stop 1
   end do
 
   call acc_present_or_create (h, sizeof (h))
 
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
   call acc_delete (h)
 
-  if (acc_is_present (h) .neqv. .FALSE.) call abort
+  if (acc_is_present (h) .neqv. .FALSE.) stop 1
 
   call acc_pcreate (h)
 
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
   call acc_delete (h)
 
-  if (acc_is_present (h) .neqv. .FALSE.) call abort
+  if (acc_is_present (h) .neqv. .FALSE.) stop 1
 
 end program

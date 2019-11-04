@@ -82,8 +82,8 @@ INT_MODE (XI, 64);
    strictly necessary to set the alignment here, since the default would
    be clamped to BIGGEST_ALIGNMENT anyhow, but it seems clearer.  */
 #define SVE_MODES(NVECS, VB, VH, VS, VD) \
-  VECTOR_MODES_WITH_PREFIX (VNx, INT, 16 * NVECS); \
-  VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 16 * NVECS); \
+  VECTOR_MODES_WITH_PREFIX (VNx, INT, 16 * NVECS, 0); \
+  VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 16 * NVECS, 0); \
   \
   ADJUST_NUNITS (VB##QI, aarch64_sve_vg * NVECS * 8); \
   ADJUST_NUNITS (VH##HI, aarch64_sve_vg * NVECS * 4); \
@@ -107,6 +107,40 @@ SVE_MODES (1, VNx16, VNx8, VNx4, VNx2)
 SVE_MODES (2, VNx32, VNx16, VNx8, VNx4)
 SVE_MODES (3, VNx48, VNx24, VNx12, VNx6)
 SVE_MODES (4, VNx64, VNx32, VNx16, VNx8)
+
+/* Partial SVE vectors:
+
+      VNx2QI VNx4QI VNx8QI
+      VNx2HI VNx4HI
+      VNx2SI
+
+   In memory they occupy contiguous locations, in the same way as fixed-length
+   vectors.  E.g. VNx8QImode is half the size of VNx16QImode.
+
+   Passing 1 as the final argument ensures that the modes come after all
+   other modes in the GET_MODE_WIDER chain, so that we never pick them
+   in preference to a full vector mode.  */
+VECTOR_MODES_WITH_PREFIX (VNx, INT, 2, 1);
+VECTOR_MODES_WITH_PREFIX (VNx, INT, 4, 1);
+VECTOR_MODES_WITH_PREFIX (VNx, INT, 8, 1);
+
+ADJUST_NUNITS (VNx2QI, aarch64_sve_vg);
+ADJUST_NUNITS (VNx2HI, aarch64_sve_vg);
+ADJUST_NUNITS (VNx2SI, aarch64_sve_vg);
+
+ADJUST_NUNITS (VNx4QI, aarch64_sve_vg * 2);
+ADJUST_NUNITS (VNx4HI, aarch64_sve_vg * 2);
+
+ADJUST_NUNITS (VNx8QI, aarch64_sve_vg * 4);
+
+ADJUST_ALIGNMENT (VNx2QI, 1);
+ADJUST_ALIGNMENT (VNx4QI, 1);
+ADJUST_ALIGNMENT (VNx8QI, 1);
+
+ADJUST_ALIGNMENT (VNx2HI, 2);
+ADJUST_ALIGNMENT (VNx4HI, 2);
+
+ADJUST_ALIGNMENT (VNx2SI, 4);
 
 /* Quad float: 128-bit floating mode for long doubles.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);

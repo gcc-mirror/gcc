@@ -8,25 +8,25 @@ f1 (int *p, int **q)
 {
   int r = 0;
 
-  r += p == '\0'; /* { dg-warning "comparison between pointer and zero character" } */
-  r += p == L'\0'; /* { dg-warning "comparison between pointer and zero character" } */
-  r += p != '\0'; /* { dg-warning "comparison between pointer and zero character" } */
-  r += p != L'\0'; /* { dg-warning "comparison between pointer and zero character" } */
+  r += p == '\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
+  r += p == L'\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
+  r += p != '\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
+  r += p != L'\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
 
-  r += '\0' == p; /* { dg-warning "comparison between pointer and zero character" } */
-  r += L'\0' == p; /* { dg-warning "comparison between pointer and zero character" } */
-  r += '\0' != p; /* { dg-warning "comparison between pointer and zero character" } */
-  r += L'\0' != p; /* { dg-warning "comparison between pointer and zero character" } */
+  r += '\0' == p; /* { dg-warning "13:comparison between pointer and zero character" } */
+  r += L'\0' == p; /* { dg-warning "14:comparison between pointer and zero character" } */
+  r += '\0' != p; /* { dg-warning "13:comparison between pointer and zero character" } */
+  r += L'\0' != p; /* { dg-warning "14:comparison between pointer and zero character" } */
 
-  r += q == '\0'; /* { dg-warning "comparison between pointer and zero character" } */
-  r += q == L'\0'; /* { dg-warning "comparison between pointer and zero character" } */
-  r += q != '\0'; /* { dg-warning "comparison between pointer and zero character" } */
-  r += q != L'\0'; /* { dg-warning "comparison between pointer and zero character" } */
+  r += q == '\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
+  r += q == L'\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
+  r += q != '\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
+  r += q != L'\0'; /* { dg-warning "10:comparison between pointer and zero character" } */
 
-  r += '\0' == q; /* { dg-warning "comparison between pointer and zero character" } */
-  r += L'\0' == q; /* { dg-warning "comparison between pointer and zero character" } */
-  r += '\0' != q; /* { dg-warning "comparison between pointer and zero character" } */
-  r += L'\0' != q; /* { dg-warning "comparison between pointer and zero character" } */
+  r += '\0' == q; /* { dg-warning "13:comparison between pointer and zero character" } */
+  r += L'\0' == q; /* { dg-warning "14:comparison between pointer and zero character" } */
+  r += '\0' != q; /* { dg-warning "13:comparison between pointer and zero character" } */
+  r += L'\0' != q; /* { dg-warning "14:comparison between pointer and zero character" } */
 
   return r;
 }
@@ -55,11 +55,11 @@ f3 (int *p)
 {
   int r = 0;
 
-  r += p == (char) 0; /* { dg-warning "comparison between pointer and zero character" } */
-  r += p != (char) 0; /* { dg-warning "comparison between pointer and zero character" } */
+  r += p == (char) 0; /* { dg-warning "10:comparison between pointer and zero character" } */
+  r += p != (char) 0; /* { dg-warning "10:comparison between pointer and zero character" } */
 
-  r += (char) 0 == p; /* { dg-warning "comparison between pointer and zero character" } */
-  r += (char) 0 != p; /* { dg-warning "comparison between pointer and zero character" } */
+  r += (char) 0 == p; /* { dg-warning "17:comparison between pointer and zero character" } */
+  r += (char) 0 != p; /* { dg-warning "17:comparison between pointer and zero character" } */
 
   return r;
 }

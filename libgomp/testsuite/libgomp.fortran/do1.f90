@@ -47,7 +47,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b)) STOP 1
+  if (any (a .ne. b)) stop 1
   a = -1
 
 !$omp parallel num_threads (4)
@@ -79,7 +79,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b)) STOP 2
+  if (any (a .ne. b)) stop 2
   a = -1
 
 !$omp parallel num_threads (4)
@@ -111,7 +111,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b)) STOP 3
+  if (any (a .ne. b)) stop 3
   a = -1
 
 !$omp parallel num_threads (4)
@@ -143,7 +143,7 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b)) STOP 4
+  if (any (a .ne. b)) stop 4
   a = -1
 
 !$omp parallel num_threads (4)
@@ -175,5 +175,5 @@
 
 !$omp end parallel
 
-  if (any (a .ne. b)) STOP 5
+  if (any (a .ne. b)) stop 5
 end

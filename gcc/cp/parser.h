@@ -41,34 +41,34 @@ struct GTY(()) tree_check {
 
 struct GTY (()) cp_token {
   /* The kind of token.  */
-  ENUM_BITFIELD (cpp_ttype) type : 8;
+  enum cpp_ttype type : 8;
   /* If this token is a keyword, this value indicates which keyword.
      Otherwise, this value is RID_MAX.  */
-  ENUM_BITFIELD (rid) keyword : 8;
+  enum rid keyword : 8;
   /* Token flags.  */
   unsigned char flags;
   /* True if this token is from a context where it is implicitly extern "C" */
-  BOOL_BITFIELD implicit_extern_c : 1;
+  bool implicit_extern_c : 1;
   /* True if an error has already been reported for this token, such as a
      CPP_NAME token that is not a keyword (i.e., for which KEYWORD is
      RID_MAX) iff this name was looked up and found to be ambiguous.  */
-  BOOL_BITFIELD error_reported : 1;
+  bool error_reported : 1;
   /* True for a token that has been purged.  If a token is purged,
      it is no longer a valid token and it should be considered
      deleted.  */
-  BOOL_BITFIELD purged_p : 1;
-  /* 5 unused bits.  */
+  bool purged_p : 1;
+  bool tree_check_p : 1;
+  /* 4 unused bits.  */
+
   /* The location at which this token was found.  */
   location_t location;
   /* The value associated with this token, if any.  */
   union cp_token_value {
     /* Used for compound tokens such as CPP_NESTED_NAME_SPECIFIER.  */
-    struct tree_check* GTY((tag ("1"))) tree_check_value;
+    struct tree_check* GTY((tag ("true"))) tree_check_value;
     /* Use for all other tokens.  */
-    tree GTY((tag ("0"))) value;
-  } GTY((desc ("(%1.type == CPP_TEMPLATE_ID)"
-	       "|| (%1.type == CPP_NESTED_NAME_SPECIFIER)"
-	       "|| (%1.type == CPP_DECLTYPE)"))) u;
+    tree GTY((tag ("false"))) value;
+  } GTY((desc ("%1.tree_check_p"))) u;
 };
 
 
@@ -98,6 +98,10 @@ struct GTY (()) cp_lexer {
      began saving tokens.  If the stack is non-empty, we are saving
      tokens.  */
   vec<cp_token_position> GTY ((skip)) saved_tokens;
+
+  /* Saved pieces of end token we replaced with the eof token.  */
+  enum cpp_ttype saved_type : 8;
+  enum rid saved_keyword : 8;
 
   /* The next lexer in a linked list of lexers.  */
   struct cp_lexer *next;
@@ -163,10 +167,6 @@ struct GTY(()) cp_unparsed_functions_entry {
      FIELD_DECLs appear in this list in declaration order.  */
   vec<tree, va_gc> *nsdmis;
 
-  /* Nested classes go in this vector, so that we can do some final
-     processing after parsing any NSDMIs.  */
-  vec<tree, va_gc> *classes;
-
   /* Functions with noexcept-specifiers that require post-processing.  */
   vec<tree, va_gc> *noexcepts;
 };
@@ -202,10 +202,11 @@ struct GTY (()) cp_parser_context {
 };
 
 
-/* Helper data structure for parsing #pragma omp declare simd.  */
+/* Helper data structure for parsing #pragma omp declare {simd,variant}.  */
 struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
+  bool variant_p; /* Set for #pragma omp declare variant.  */
   vec<cp_token_cache_ptr> tokens;
   tree clauses;
 };

@@ -54,6 +54,7 @@ if {[info exists tests_file] && [file exists $tests_file]} {
     # Find directories that might have tests.
     # This list should be consistent with scripts/create_testsuite_files
     set subdirs [glob "$srcdir/\[0-9\]\[0-9\]*"]
+    lappend subdirs "$srcdir/std"
     lappend subdirs "$srcdir/abi"
     lappend subdirs "$srcdir/backward"
     lappend subdirs "$srcdir/ext"

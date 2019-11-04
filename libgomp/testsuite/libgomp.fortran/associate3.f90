@@ -16,5 +16,5 @@
     if (j.eq.1) k = 7
   end do
   end associate
-  if (any (v%f(:).ne.21.) .or. i.ne.7) STOP 1
+  if (any (v%f(:).ne.21.) .or. i.ne.7) stop 1
 end

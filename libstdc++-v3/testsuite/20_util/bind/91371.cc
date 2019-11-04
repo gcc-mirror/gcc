@@ -32,6 +32,6 @@ test01()
 
   static_assert(std::is_function<decltype(bar)>::value, "");
   static_assert(std::is_function<decltype(baz)>::value, "");
-  static_assert(std::is_pointer<std::decay_t<decltype(bar)>>::value, "");
-  static_assert(std::is_pointer<std::decay_t<decltype(baz)>>::value, "");
+  static_assert(std::is_pointer<std::decay<decltype(bar)>::type>::value, "");
+  static_assert(std::is_pointer<std::decay<decltype(baz)>::type>::value, "");
 }

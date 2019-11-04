@@ -5867,11 +5867,7 @@ package body Sem_Util is
    -- Defining_Entity --
    ---------------------
 
-   function Defining_Entity
-     (N                  : Node_Id;
-      Empty_On_Errors    : Boolean := False;
-      Concurrent_Subunit : Boolean := False) return Entity_Id
-   is
+   function Defining_Entity (N : Node_Id) return Entity_Id is
    begin
       case Nkind (N) is
          when N_Abstract_Subprogram_Declaration
@@ -5922,24 +5918,11 @@ package body Sem_Util is
          =>
             return Defining_Identifier (N);
 
+         when N_Compilation_Unit =>
+            return Defining_Entity (Unit (N));
+
          when N_Subunit =>
-            declare
-               Bod      : constant Node_Id := Proper_Body (N);
-               Orig_Bod : constant Node_Id := Original_Node (Bod);
-
-            begin
-               --  Retrieve the entity of the original protected or task body
-               --  if requested by the caller.
-
-               if Concurrent_Subunit
-                 and then Nkind (Bod) = N_Null_Statement
-                 and then Nkind_In (Orig_Bod, N_Protected_Body, N_Task_Body)
-               then
-                  return Defining_Entity (Orig_Bod);
-               else
-                  return Defining_Entity (Bod);
-               end if;
-            end;
+            return Defining_Entity (Proper_Body (N));
 
          when N_Function_Instantiation
             | N_Function_Specification
@@ -5965,14 +5948,10 @@ package body Sem_Util is
                --  can continue semantic analysis.
 
                elsif Nam = Error then
-                  if Empty_On_Errors then
-                     return Empty;
-                  else
-                     Err := Make_Temporary (Sloc (N), 'T');
-                     Set_Defining_Unit_Name (N, Err);
+                  Err := Make_Temporary (Sloc (N), 'T');
+                  Set_Defining_Unit_Name (N, Err);
 
-                     return Err;
-                  end if;
+                  return Err;
 
                --  If not an entity, get defining identifier
 
@@ -5987,11 +5966,7 @@ package body Sem_Util is
             return Entity (Identifier (N));
 
          when others =>
-            if Empty_On_Errors then
-               return Empty;
-            else
-               raise Program_Error;
-            end if;
+            raise Program_Error;
       end case;
    end Defining_Entity;
 
@@ -6997,17 +6972,17 @@ package body Sem_Util is
       elsif Ekind_In (Dyn_Scop, E_Block, E_Loop, E_Return_Statement) then
          return Enclosing_Subprogram (Dyn_Scop);
 
-      elsif Ekind (Dyn_Scop) = E_Entry then
+      elsif Ekind_In (Dyn_Scop, E_Entry, E_Entry_Family) then
 
-         --  For a task entry, return the enclosing subprogram of the
-         --  task itself.
+         --  For a task entry or entry family, return the enclosing subprogram
+         --  of the task itself.
 
          if Ekind (Scope (Dyn_Scop)) = E_Task_Type then
             return Enclosing_Subprogram (Dyn_Scop);
 
-         --  A protected entry is rewritten as a protected procedure which is
-         --  the desired enclosing subprogram. This is relevant when unnesting
-         --  a procedure local to an entry body.
+         --  A protected entry or entry family is rewritten as a protected
+         --  procedure which is the desired enclosing subprogram. This is
+         --  relevant when unnesting a procedure local to an entry body.
 
          else
             return Protected_Body_Subprogram (Dyn_Scop);
@@ -9071,8 +9046,8 @@ package body Sem_Util is
             --  components are being gathered for an aggregate, in which case
             --  the caller must check Report_Errors.
             --
-            --  In Ada2020 the above rules are relaxed. A non-static governing
-            --  discriminant is ok as long as it has a static subtype and
+            --  In Ada 2020 the above rules are relaxed. A nonstatic governing
+            --  discriminant is OK as long as it has a static subtype and
             --  every value of that subtype (and there must be at least one)
             --  selects the same variant.
 

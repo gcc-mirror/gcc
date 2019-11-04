@@ -19,14 +19,16 @@
 
 #include <tr1/unordered_map>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   std::tr1::unordered_multimap<int, int> umm;
 
-  VERIFY( (umm.max_size() == std::allocator<std::tr1::__detail::_Hash_node<
- 	   std::pair<const int, int>, false> >().max_size()) );
+  std::allocator<std::tr1::__detail::_Hash_node<std::pair<const int, int>,
+						false> > a;
+  VERIFY( umm.max_size() == __gnu_test::max_size(a) );
 }
 
 int main()

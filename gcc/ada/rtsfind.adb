@@ -949,22 +949,16 @@ package body Rtsfind is
       Install_Ghost_Region (None, Empty);
       Install_SPARK_Mode   (None, Empty);
 
-      --  Note if secondary stack is used
-
-      if U_Id = System_Secondary_Stack then
-         Opt.Sec_Stack_Used := True;
-      end if;
-
-      --  Otherwise we need to load the unit, First build unit name
-      --  from the enumeration literal name in type RTU_Id.
+      --  Otherwise we need to load the unit, First build unit name from the
+      --  enumeration literal name in type RTU_Id.
 
       U.Uname                := Get_Unit_Name (U_Id);
       U.First_Implicit_With  := Empty;
 
-      --  Now do the load call, note that setting Error_Node to Empty is
-      --  a signal to Load_Unit that we will regard a failure to find the
-      --  file as a fatal error, and that it should not output any kind
-      --  of diagnostics, since we will take care of it here.
+      --  Now do the load call, note that setting Error_Node to Empty is a
+      --  signal to Load_Unit that we will regard a failure to find the file as
+      --  a fatal error, and that it should not output any kind of diagnostics,
+      --  since we will take care of it here.
 
       --  We save style checking switches and turn off style checking for
       --  loading the unit, since we don't want any style checking.
@@ -1245,21 +1239,6 @@ package body Rtsfind is
    ---------
 
    function RTE (E : RE_Id) return Entity_Id is
-      U_Id : constant RTU_Id := RE_Unit_Table (E);
-      U    : RT_Unit_Table_Record renames RT_Unit_Table (U_Id);
-
-      Lib_Unit : Node_Id;
-      Pkg_Ent  : Entity_Id;
-      Ename    : Name_Id;
-
-      --  The following flag is used to disable front-end inlining when RTE
-      --  is invoked. This prevents the analysis of other runtime bodies when
-      --  a particular spec is loaded through Rtsfind. This is both efficient,
-      --  and it prevents spurious visibility conflicts between use-visible
-      --  user entities, and entities in run-time packages.
-
-      Save_Front_End_Inlining : Boolean;
-
       procedure Check_RPC;
       --  Reject programs that make use of distribution features not supported
       --  on the current target. Also check that the PCS is compatible with the
@@ -1351,6 +1330,22 @@ package body Rtsfind is
          return Ent;
       end Find_Local_Entity;
 
+      --  Local variables
+
+      U_Id : constant RTU_Id := RE_Unit_Table (E);
+      U    : RT_Unit_Table_Record renames RT_Unit_Table (U_Id);
+
+      Ename    : Name_Id;
+      Lib_Unit : Node_Id;
+      Pkg_Ent  : Entity_Id;
+
+      Save_Front_End_Inlining : constant Boolean := Front_End_Inlining;
+      --  This flag is used to disable front-end inlining when RTE is invoked.
+      --  This prevents the analysis of other runtime bodies when a particular
+      --  spec is loaded through Rtsfind. This is both efficient, and prevents
+      --  spurious visibility conflicts between use-visible user entities, and
+      --  entities in run-time packages.
+
    --  Start of processing for RTE
 
    begin
@@ -1372,7 +1367,6 @@ package body Rtsfind is
          return Check_CRT (E, Find_Local_Entity (E));
       end if;
 
-      Save_Front_End_Inlining := Front_End_Inlining;
       Front_End_Inlining := False;
 
       --  Load unit if unit not previously loaded
@@ -1435,9 +1429,19 @@ package body Rtsfind is
       end if;
 
    <<Found>>
-      Maybe_Add_With (U);
 
+      --  Record whether the secondary stack is in use in order to generate
+      --  the proper binder code. No action is taken when the secondary stack
+      --  is pulled within an ignored Ghost context because all this code will
+      --  disappear.
+
+      if U_Id = System_Secondary_Stack and then Ghost_Mode /= Ignore then
+         Sec_Stack_Used := True;
+      end if;
+
+      Maybe_Add_With (U);
       Front_End_Inlining := Save_Front_End_Inlining;
+
       return Check_CRT (E, RE_Table (E));
    end RTE;
 

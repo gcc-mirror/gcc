@@ -1061,10 +1061,10 @@ output_intermediate_json_line (json::array *object,
     return;
 
   json::object *lineo = new json::object ();
-  lineo->set ("line_number", new json::number (line_num));
+  lineo->set ("line_number", new json::integer_number (line_num));
   if (function_name != NULL)
     lineo->set ("function_name", new json::string (function_name));
-  lineo->set ("count", new json::number (line->count));
+  lineo->set ("count", new json::integer_number (line->count));
   lineo->set ("unexecuted_block",
 	      new json::literal (line->has_unexecuted_block));
 
@@ -1079,7 +1079,7 @@ output_intermediate_json_line (json::array *object,
 	if (!(*it)->is_unconditional && !(*it)->is_call_non_return)
 	  {
 	    json::object *branch = new json::object ();
-	    branch->set ("count", new json::number ((*it)->count));
+	    branch->set ("count", new json::integer_number ((*it)->count));
 	    branch->set ("throw", new json::literal ((*it)->is_throw));
 	    branch->set ("fallthrough",
 			 new json::literal ((*it)->fall_through));
@@ -1138,16 +1138,19 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
       function->set ("name", new json::string ((*it)->m_name));
       function->set ("demangled_name",
 		     new json::string ((*it)->get_demangled_name ()));
-      function->set ("start_line", new json::number ((*it)->start_line));
-      function->set ("start_column", new json::number ((*it)->start_column));
-      function->set ("end_line", new json::number ((*it)->end_line));
-      function->set ("end_column", new json::number ((*it)->end_column));
+      function->set ("start_line",
+		     new json::integer_number ((*it)->start_line));
+      function->set ("start_column",
+		     new json::integer_number ((*it)->start_column));
+      function->set ("end_line", new json::integer_number ((*it)->end_line));
+      function->set ("end_column",
+		     new json::integer_number ((*it)->end_column));
       function->set ("blocks",
-		     new json::number ((*it)->get_block_count ()));
+		     new json::integer_number ((*it)->get_block_count ()));
       function->set ("blocks_executed",
-		     new json::number ((*it)->blocks_executed));
+		     new json::integer_number ((*it)->blocks_executed));
       function->set ("execution_count",
-		     new json::number ((*it)->blocks[0].count));
+		     new json::integer_number ((*it)->blocks[0].count));
 
       functions->append (function);
     }

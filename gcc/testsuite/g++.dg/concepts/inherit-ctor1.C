@@ -1,23 +1,33 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 template<typename T>
-  concept bool C() { return __is_class(T); }
-
-template<typename T>
-  struct S1 { S1(double) requires C<T>() { } };
-
-struct S2 : S1<int> {
-  using S1<int>::S1;
-};
-
-template<typename T>
-  struct S3 : S1<T> {
-    using S1<T>::S1;
-  };
+  concept bool C = __is_class(T);
 
 struct X { };
 
+template<typename T>
+  struct Base {
+    Base(double) requires C<T> { } 
+  };
+
+struct Ok1 : Base<X> {
+  using Base<X>::Base;
+};
+
+struct Err1 : Base<int> {
+  using Base<int>::Base;
+};
+
+template<typename T>
+  struct Generic : Base<T> {
+    using Base<T>::Base;
+  };
+
+
 int main() {
-  S3<X> s(0.0);
+  Ok1 x1(0.0);
+  Err1 x2(0.0); // { dg-error "no matching" }
+  Generic<X> x3(0.0);
+  Generic<int> x4(0.0); // { dg-error "no matching" }
 }

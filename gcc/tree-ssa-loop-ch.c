@@ -199,7 +199,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "  Not duplicating bb %i: condition based on non-IV loop"
-		 "variant.\n", header->index);
+		 " variant.\n", header->index);
       return false;
     }
 

@@ -1,3 +1,12 @@
+2019-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-metadata-tags.h (OCTI_RT_META_IVAR_REF): New.
+	(meta_ivar_ref): New.
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_init_metadata_attributes): Create the
+	IVAR ref metadata identifier.
+	(ivar_offset_ref): Tag IVAR refs with specific metadata.
+
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
 	* objc-act.c (objc_build_setter_call): Adjust quoting and hyphenation.

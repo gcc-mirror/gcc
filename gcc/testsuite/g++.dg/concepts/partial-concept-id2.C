@@ -1,4 +1,4 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 // Make sure that we check partial concept ids

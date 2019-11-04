@@ -13,6 +13,6 @@
 
         int test( const foo* f, const bar* b )
                 {
-                return f == b;// { dg-error "comparison between distinct pointer types" } 
+                return f == b;// { dg-error "26:comparison between distinct pointer types" } 
                 }
 

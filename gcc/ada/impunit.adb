@@ -32,8 +32,8 @@ with Namet;    use Namet;
 with Opt;      use Opt;
 with Uname;    use Uname;
 
---  Note: this package body is used by GPS and GNATBench to supply a list of
---  entries for help on available library routines.
+--  Note: this package body is used by GNAT Studio and GNATBench to supply a
+--  list of entries for help on available library routines.
 
 package body Impunit is
 

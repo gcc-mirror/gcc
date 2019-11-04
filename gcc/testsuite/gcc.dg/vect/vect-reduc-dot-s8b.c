@@ -1,3 +1,5 @@
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
@@ -12,12 +14,6 @@ signed char Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 /* char->short->short dot product.
    The dot-product pattern should be detected.
-   The reduction is currently not vectorized becaus of the signed->unsigned->signed
-   casts, since this patch:
-
-     2005-12-26  Kazu Hirata  <kazu@codesourcery.com>
-                                                                                                
-        PR tree-optimization/25125
 
    When the dot-product is detected, the loop should be vectorized on vect_sdot_qi 
    targets (targets that support dot-product of signed char).  
@@ -60,5 +56,5 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected" 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" } } */
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_widen_mult_qi_to_hi } } } */
 

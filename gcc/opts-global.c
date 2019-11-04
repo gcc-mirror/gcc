@@ -255,6 +255,7 @@ init_options_once (void)
      construct their pretty-printers means that all previous settings
      are overriden.  */
   diagnostic_color_init (global_dc);
+  diagnostic_urls_init (global_dc);
 }
 
 /* Decode command-line options to an array, like

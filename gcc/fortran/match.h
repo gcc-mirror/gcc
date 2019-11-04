@@ -151,7 +151,7 @@ match gfc_match_oacc_exit_data (void);
 match gfc_match_oacc_routine (void);
 
 /* OpenMP directive matchers.  */
-match gfc_match_omp_eos (void);
+match gfc_match_omp_eos_error (void);
 match gfc_match_omp_atomic (void);
 match gfc_match_omp_barrier (void);
 match gfc_match_omp_cancel (void);

@@ -47,7 +47,21 @@ along with GCC; see the file COPYING3.  If not see
 
 int ompws_flags;
 
-/* True if OpenMP should treat this DECL as an optional argument.  */
+/* True if OpenMP should regard this DECL as being a scalar which has Fortran's
+   allocatable or pointer attribute.  */
+
+bool
+gfc_omp_is_allocatable_or_ptr (const_tree decl)
+{
+  return (DECL_P (decl)
+	  && (GFC_DECL_GET_SCALAR_POINTER (decl)
+	      || GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)));
+}
+
+/* True if OpenMP should treat this DECL as an optional argument;  note: for
+   arguments with VALUE attribute, the DECL is identical to nonoptional
+   arguments; hence, we return false here.  To check whether the variable is
+   present, use the DECL which is passed as hidden argument.  */
 
 bool
 gfc_omp_is_optional_argument (const_tree decl)
@@ -55,6 +69,33 @@ gfc_omp_is_optional_argument (const_tree decl)
   return (TREE_CODE (decl) == PARM_DECL
 	  && DECL_LANG_SPECIFIC (decl)
 	  && GFC_DECL_OPTIONAL_ARGUMENT (decl));
+}
+
+
+/* Returns tree with NULL if it is not an array descriptor and with the tree to
+   access the 'data' component otherwise.  With type_only = true, it returns the
+   TREE_TYPE without creating a new tree.  */
+
+tree
+gfc_omp_array_data (tree decl, bool type_only)
+{
+  tree type = TREE_TYPE (decl);
+
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  if (!GFC_DESCRIPTOR_TYPE_P (type))
+    return NULL_TREE;
+
+  if (type_only)
+    return GFC_TYPE_ARRAY_DATAPTR_TYPE (type);
+
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref (decl);
+
+  decl = gfc_conv_descriptor_data_get (decl);
+  STRIP_NOPS (decl);
+  return decl;
 }
 
 /* True if OpenMP should privatize what this DECL points to rather
@@ -1887,6 +1928,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_USE_DEVICE_PTR:
 	  clause_code = OMP_CLAUSE_USE_DEVICE_PTR;
 	  goto add_clause;
+	case OMP_LIST_USE_DEVICE_ADDR:
+	  clause_code = OMP_CLAUSE_USE_DEVICE_ADDR;
+	  goto add_clause;
 	case OMP_LIST_IS_DEVICE_PTR:
 	  clause_code = OMP_CLAUSE_IS_DEVICE_PTR;
 	  goto add_clause;
@@ -2170,7 +2214,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      OMP_CLAUSE_DECL (node4) = decl;
 		      OMP_CLAUSE_SIZE (node4) = size_int (0);
 		      decl = build_fold_indirect_ref (decl);
-		      if (TREE_CODE (TREE_TYPE (orig_decl)) == REFERENCE_TYPE
+		      if ((TREE_CODE (TREE_TYPE (orig_decl)) == REFERENCE_TYPE
+			   || gfc_omp_is_optional_argument (orig_decl))
 			  && (GFC_DECL_GET_SCALAR_POINTER (orig_decl)
 			      || GFC_DECL_GET_SCALAR_ALLOCATABLE (orig_decl)))
 			{
@@ -2414,7 +2459,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		{
 		  tree decl = gfc_trans_omp_variable (n->sym, false);
 		  if (gfc_omp_privatize_by_reference (decl))
-		    decl = build_fold_indirect_ref (decl);
+		    {
+		      if (gfc_omp_is_allocatable_or_ptr (decl))
+			decl = build_fold_indirect_ref (decl);
+		      decl = build_fold_indirect_ref (decl);
+		    }
 		  else if (DECL_P (decl))
 		    TREE_ADDRESSABLE (decl) = 1;
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
@@ -2436,7 +2485,12 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 				       OMP_CLAUSE_SIZE (node), elemsz);
 		    }
 		  else
-		    OMP_CLAUSE_DECL (node) = decl;
+		    {
+		      OMP_CLAUSE_DECL (node) = decl;
+		      if (gfc_omp_is_allocatable_or_ptr (decl))
+			OMP_CLAUSE_SIZE (node)
+				= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)));
+		    }
 		}
 	      else
 		{

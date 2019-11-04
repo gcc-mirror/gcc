@@ -932,6 +932,14 @@
     return false;
 
   addr = XEXP (inner, 0);
+
+  /* The LWA instruction uses the DS-form instruction format which requires
+     that the bottom two bits of the offset must be 0.  The prefixed PLWA does
+     not have this restriction.  While the actual load from memory is 32-bits,
+     we pass in DImode here to test for using a DS instruction.  */
+  if (address_is_prefixed (addr, DImode, NON_PREFIXED_DS))
+    return true;
+
   if (GET_CODE (addr) == PRE_INC
       || GET_CODE (addr) == PRE_DEC
       || (GET_CODE (addr) == PRE_MODIFY

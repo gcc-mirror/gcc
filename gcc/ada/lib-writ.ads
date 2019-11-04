@@ -56,7 +56,8 @@ package Lib.Writ is
    --  incompatible with new versions of the compiler. Any changes to ali file
    --  formats must be carefully evaluated to understand any such possible
    --  conflicts, and in particular, it is very undesirable to create conflicts
-   --  between older versions of GPS and newer versions of the compiler.
+   --  between older versions of GNAT Studio and newer versions of the
+   --  compiler.
 
    --  If the following guidelines are respected, downward compatibility
    --  problems (old tools reading new ali files) should be minimized:

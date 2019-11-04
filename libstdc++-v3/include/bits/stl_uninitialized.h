@@ -57,12 +57,14 @@
 #define _STL_UNINITIALIZED_H 1
 
 #if __cplusplus > 201402L
-#include <utility>
+#include <bits/stl_pair.h>
 #endif
 
 #if __cplusplus >= 201103L
 #include <type_traits>
 #endif
+
+#include <ext/alloc_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

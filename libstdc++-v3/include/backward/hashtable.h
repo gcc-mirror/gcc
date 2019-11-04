@@ -63,6 +63,7 @@
 #include <iterator>
 #include <algorithm>
 #include <bits/stl_function.h>
+#include <ext/alloc_traits.h>
 #include <backward/hash_fun.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -280,14 +281,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Hashtable_node<_Val> _Node;
 
     public:
-      typedef typename _Alloc::template rebind<value_type>::other allocator_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<value_type>::other allocator_type;
+
       allocator_type
       get_allocator() const
       { return _M_node_allocator; }
 
     private:
-      typedef typename _Alloc::template rebind<_Node>::other _Node_Alloc;
-      typedef typename _Alloc::template rebind<_Node*>::other _Nodeptr_Alloc;
+      typedef __gnu_cxx::__alloc_traits<allocator_type> _Alloc_traits;
+      typedef typename _Alloc_traits::template rebind<_Node>::other
+	_Node_Alloc;
+      typedef typename _Alloc_traits::template rebind<_Node*>::other
+	_Nodeptr_Alloc;
       typedef std::vector<_Node*, _Nodeptr_Alloc> _Vector_type;
 
       _Node_Alloc _M_node_allocator;
@@ -608,7 +614,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__n->_M_next = 0;
 	__try
 	  {
-	    this->get_allocator().construct(&__n->_M_val, __obj);
+	    allocator_type __a = this->get_allocator();
+	    _Alloc_traits::construct(__a, &__n->_M_val, __obj);
 	    return __n;
 	  }
 	__catch(...)
@@ -621,7 +628,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_delete_node(_Node* __n)
       {
-	this->get_allocator().destroy(&__n->_M_val);
+	allocator_type __a = this->get_allocator();
+	_Alloc_traits::destroy(__a, &__n->_M_val);
 	_M_put_node(__n);
       }
       

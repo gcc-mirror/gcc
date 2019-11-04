@@ -1,3 +1,5 @@
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-require-effective-target vect_condition } */
 
 #include "tree-vect.h"
@@ -41,5 +43,5 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" } } */
-/* { dg-final { scan-tree-dump-times "condition expression based on integer induction." 4 "vect" { xfail vect_fold_extract_last } } } */
-/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 4 "vect" { target vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump-times "condition expression based on integer induction." 2 "vect" { xfail vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 2 "vect" { target vect_fold_extract_last } } } */

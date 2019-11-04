@@ -445,6 +445,9 @@ enum aarch64_builtins
   AARCH64_TME_BUILTIN_TCOMMIT,
   AARCH64_TME_BUILTIN_TTEST,
   AARCH64_TME_BUILTIN_TCANCEL,
+  /* Armv8.5-a RNG instruction builtins.  */
+  AARCH64_BUILTIN_RNG_RNDR,
+  AARCH64_BUILTIN_RNG_RNDRRS,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1111,7 +1114,25 @@ aarch64_init_tme_builtins (void)
 				   AARCH64_TME_BUILTIN_TCANCEL);
 }
 
+/* Add builtins for Random Number instructions.  */
+
+static void
+aarch64_init_rng_builtins (void)
+{
+  tree unsigned_ptr_type = build_pointer_type (unsigned_intDI_type_node);
+  tree ftype
+    = build_function_type_list (integer_type_node, unsigned_ptr_type, NULL);
+  aarch64_builtin_decls[AARCH64_BUILTIN_RNG_RNDR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rndr", ftype,
+				   AARCH64_BUILTIN_RNG_RNDR);
+  aarch64_builtin_decls[AARCH64_BUILTIN_RNG_RNDRRS]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rndrrs", ftype,
+				   AARCH64_BUILTIN_RNG_RNDRRS);
+}
+
+
 /* Initialize all builtins in the AARCH64_BUILTIN_GENERAL group.  */
+
 void
 aarch64_general_init_builtins (void)
 {
@@ -1144,6 +1165,7 @@ aarch64_general_init_builtins (void)
 
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
+  aarch64_init_rng_builtins ();
 
   tree ftype_jcvt
     = build_function_type_list (intSI_type_node, double_type_node, NULL);
@@ -1607,10 +1629,48 @@ aarch64_expand_builtin_tme (int fcode, tree exp, rtx target)
     return target;
 }
 
-/* Expand an expression EXP that calls built-in function FCODE,
-   with result going to TARGET if that's convenient.  */
+/* Expand a random number builtin EXP with code FCODE, putting the result
+   int TARGET.  If IGNORE is true the return value is ignored.  */
+
 rtx
-aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target)
+aarch64_expand_rng_builtin (tree exp, rtx target, int fcode, int ignore)
+{
+  rtx pat;
+  enum insn_code icode;
+  if (fcode == AARCH64_BUILTIN_RNG_RNDR)
+    icode = CODE_FOR_aarch64_rndr;
+  else if (fcode == AARCH64_BUILTIN_RNG_RNDRRS)
+    icode = CODE_FOR_aarch64_rndrrs;
+  else
+    gcc_unreachable ();
+
+  rtx rand = gen_reg_rtx (DImode);
+  pat = GEN_FCN (icode) (rand);
+  if (!pat)
+    return NULL_RTX;
+
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx res_addr = expand_normal (arg0);
+  res_addr = convert_memory_address (Pmode, res_addr);
+  rtx res_mem = gen_rtx_MEM (DImode, res_addr);
+  emit_insn (pat);
+  emit_move_insn (res_mem, rand);
+  /* If the status result is unused don't generate the CSET code.  */
+  if (ignore)
+    return target;
+
+  rtx cc_reg = gen_rtx_REG (CC_Zmode, CC_REGNUM);
+  rtx cmp_rtx = gen_rtx_fmt_ee (NE, SImode, cc_reg, const0_rtx);
+  emit_insn (gen_aarch64_cstoresi (target, cmp_rtx, cc_reg));
+  return target;
+}
+
+/* Expand an expression EXP that calls built-in function FCODE,
+   with result going to TARGET if that's convenient.  IGNORE is true
+   if the result of the builtin is ignored.  */
+rtx
+aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
+				int ignore)
 {
   int icode;
   rtx pat, op0;
@@ -1717,6 +1777,9 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target)
     case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ180_V4HF:
     case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ270_V4HF:
       return aarch64_expand_fcmla_builtin (exp, target, fcode);
+    case AARCH64_BUILTIN_RNG_RNDR:
+    case AARCH64_BUILTIN_RNG_RNDRRS:
+      return aarch64_expand_rng_builtin (exp, target, fcode, ignore);
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)

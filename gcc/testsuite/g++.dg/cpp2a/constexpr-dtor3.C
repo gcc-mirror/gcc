@@ -149,7 +149,7 @@ constexpr int x3 = f3 ();
 constexpr int
 f4 ()
 {
-  W7 w13 = 5;
+  W7 w13 = 5;			// { dg-message "in 'constexpr' expansion of" }
   return 0;
 }
 

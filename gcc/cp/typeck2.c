@@ -923,7 +923,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     return split_nonconstant_init (decl, value);
 
   /* DECL may change value; purge caches.  */
-  clear_cv_and_fold_caches ();
+  clear_cv_and_fold_caches (TREE_STATIC (decl));
 
   /* If the value is a constant, just put it in DECL_INITIAL.  If DECL
      is an automatic variable, the middle end will turn this into a
@@ -2242,8 +2242,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       if (!CLASS_PLACEHOLDER_TEMPLATE (anode))
 	{
 	  if (complain & tf_error)
-	    error_at (DECL_SOURCE_LOCATION (TEMPLATE_TYPE_DECL (anode)),
-		      "invalid use of %qT", anode);
+	    error ("invalid use of %qT", anode);
 	  return error_mark_node;
 	}
       else if (!parms)

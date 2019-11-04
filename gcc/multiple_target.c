@@ -429,7 +429,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
 						   attributes);
       if (new_node == NULL)
 	return false;
-      new_node->local.local = false;
+      new_node->local = false;
       XDELETEVEC (suffix);
 
       decl2_v = new_node->function_version ();
@@ -457,7 +457,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   tree attributes = make_attribute ("target", "default",
 				    DECL_ATTRIBUTES (node->decl));
   DECL_ATTRIBUTES (node->decl) = attributes;
-  node->local.local = false;
+  node->local = false;
   return true;
 }
 

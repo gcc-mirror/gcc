@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "--param allow-store-data-races=0" } */
+/* { dg-options "-fno-allow-store-data-races" } */
 /* { dg-final { simulate-thread } } */
 
 /* Test that setting <var.a> does not touch either <var.b> or <var.c>.

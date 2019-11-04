@@ -39,7 +39,7 @@ void test_memcpy_array_cst_range_off (const void *s)
   T (d + SR (-7, -1), 1);
   T (d + SR (-2, -1), 3);     /* { dg-warning "writing 3 bytes into a region of size 2 " "pr85350" { xfail *-*-* } } */
 
-  T (d + UR (1, 2), 1);       /* { dg-warning "writing 1 byte into a region of size 0 " "pr89350" { xfail *-*-* } } */
+  T (d + UR (1, 2), 1);       /* { dg-warning "writing 1 byte into a region of size 0 " } */
 }
 
 

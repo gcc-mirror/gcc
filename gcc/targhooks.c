@@ -2164,11 +2164,11 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       real_part = std_gimplify_va_arg_expr (valist,
 					    TREE_TYPE (type), pre_p, NULL);
-      real_part = get_initialized_tmp_var (real_part, pre_p, NULL);
+      real_part = get_initialized_tmp_var (real_part, pre_p);
 
       imag_part = std_gimplify_va_arg_expr (unshare_expr (valist),
 					    TREE_TYPE (type), pre_p, NULL);
-      imag_part = get_initialized_tmp_var (imag_part, pre_p, NULL);
+      imag_part = get_initialized_tmp_var (imag_part, pre_p);
 
       return build2 (COMPLEX_EXPR, type, real_part, imag_part);
    }
@@ -2186,7 +2186,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   boundary /= BITS_PER_UNIT;
 
   /* Hoist the valist value into a temporary for the moment.  */
-  valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
+  valist_tmp = get_initialized_tmp_var (valist, pre_p);
 
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */

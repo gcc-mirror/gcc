@@ -341,6 +341,7 @@ namespace gcc {
 }
 
 typedef std::pair <tree, tree> tree_pair;
+typedef std::pair <const char *, int> string_int_pair;
 
 /* Define a name->value mapping.  */
 template <typename ValueType>

@@ -563,6 +563,8 @@ extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);
 extern tree finish_struct (location_t, tree, tree, tree,
 			   class c_struct_parse_info *);
+extern tree c_simulate_enum_decl (location_t, const char *,
+				  vec<string_int_pair>);
 extern struct c_arg_info *build_arg_info (void);
 extern struct c_arg_info *get_parm_info (bool, tree);
 extern tree grokfield (location_t, struct c_declarator *,
@@ -579,6 +581,7 @@ extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 							struct c_declarator *);
 extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
+extern tree c_simulate_builtin_function_decl (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree);

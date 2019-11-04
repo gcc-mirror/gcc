@@ -315,5 +315,6 @@ call_clobbered_in_region_p (unsigned int abis, const_hard_reg_set mask,
 extern const predefined_function_abi &fntype_abi (const_tree);
 extern function_abi fndecl_abi (const_tree);
 extern function_abi insn_callee_abi (const rtx_insn *);
+extern function_abi expr_callee_abi (const_tree);
 
 #endif

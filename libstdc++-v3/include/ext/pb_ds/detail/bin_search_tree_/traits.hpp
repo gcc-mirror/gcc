@@ -64,14 +64,14 @@ namespace __gnu_pbds
     {
     private:
       typedef types_traits<Key, Mapped, _Alloc, false> type_traits;
+      typedef rebind_traits<_Alloc, Node> node_alloc_traits;
 
     public:
       typedef Node node;
 
       typedef
       bin_search_tree_const_it_<
-	typename _Alloc::template rebind<
-	node>::other::pointer,
+	typename node_alloc_traits::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
 	typename type_traits::const_pointer,
@@ -83,8 +83,7 @@ namespace __gnu_pbds
 
       typedef
       bin_search_tree_it_<
-	typename _Alloc::template rebind<
-	node>::other::pointer,
+	typename node_alloc_traits::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
 	typename type_traits::const_pointer,
@@ -96,8 +95,7 @@ namespace __gnu_pbds
 
       typedef
       bin_search_tree_const_it_<
-	typename _Alloc::template rebind<
-	node>::other::pointer,
+	typename node_alloc_traits::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
 	typename type_traits::const_pointer,
@@ -109,8 +107,7 @@ namespace __gnu_pbds
 
       typedef
       bin_search_tree_it_<
-	typename _Alloc::template rebind<
-	node>::other::pointer,
+	typename node_alloc_traits::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
 	typename type_traits::const_pointer,
@@ -171,14 +168,14 @@ namespace __gnu_pbds
     {
     private:
       typedef types_traits<Key, null_type, _Alloc, false> type_traits;
+      typedef rebind_traits<_Alloc, Node> node_alloc_traits;
 
     public:
       typedef Node node;
 
       typedef
       bin_search_tree_const_it_<
-	typename _Alloc::template rebind<
-	node>::other::pointer,
+	typename node_alloc_traits::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
 	typename type_traits::const_pointer,
@@ -192,8 +189,7 @@ namespace __gnu_pbds
 
       typedef
       bin_search_tree_const_it_<
-	typename _Alloc::template rebind<
-	node>::other::pointer,
+	typename node_alloc_traits::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
 	typename type_traits::const_pointer,

@@ -721,7 +721,7 @@ namespace
 	    static const char*
 	      constness_names[_Error_formatter::__last_constness] =
 	      {
-		"<unknown>",
+		"<unknown constness>",
 		"constant",
 		"mutable"
 	      };
@@ -732,7 +732,7 @@ namespace
 	    static const char*
 	      state_names[_Error_formatter::__last_state] =
 	      {
-		"<unknown>",
+		"<unknown state>",
 		"singular",
 		"dereferenceable (start-of-sequence)",
 		"dereferenceable",

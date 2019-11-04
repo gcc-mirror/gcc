@@ -420,7 +420,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
            (Element => N.Element'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -445,7 +445,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
            (Element => N.Element'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -1256,7 +1256,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
         Container.TC'Unrestricted_Access;
    begin
       return R : constant Reference_Control_Type := (Controlled with TC) do
-         Lock (TC.all);
+         Busy (TC.all);
       end return;
    end Pseudo_Reference;
 
@@ -1376,7 +1376,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
            (Element => N.Element'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Reference;
@@ -1401,7 +1401,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
            (Element => N.Element'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Reference;

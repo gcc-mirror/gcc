@@ -242,6 +242,14 @@ package body Treepr is
 
    function par (N : Union_Id) return Node_Or_Entity_Id renames p;
 
+   procedure ppar (N : Union_Id) is
+   begin
+      if N /= Empty_List_Or_Node then
+         pp (N);
+         ppar (Union_Id (p (N)));
+      end if;
+   end ppar;
+
    --------
    -- pe --
    --------

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "escaped_string.h"
 
 static tree convert_to_pointer_force (tree, tree, tsubst_flags_t);
 static tree build_type_conversion (tree, tree);
@@ -1026,22 +1027,39 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 
   tree rettype = TREE_TYPE (type);
   tree fn = cp_get_fndecl_from_callee (callee);
+  tree attr;
   if (implicit != ICV_CAST && fn
-      && lookup_attribute ("nodiscard", DECL_ATTRIBUTES (fn)))
+      && (attr = lookup_attribute ("nodiscard", DECL_ATTRIBUTES (fn))))
     {
+      escaped_string msg;
+      tree args = TREE_VALUE (attr);
+      if (args)
+	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
+      const char* format = (msg ?
+	G_("ignoring return value of %qD, "
+	   "declared with attribute %<nodiscard%>: %<%s%>") :
+	G_("ignoring return value of %qD, "
+	   "declared with attribute %<nodiscard%>%s"));
+      const char* raw_msg = msg ? msg : "";
       auto_diagnostic_group d;
-      if (warning_at (loc, OPT_Wunused_result,
-		      "ignoring return value of %qD, "
-		      "declared with attribute nodiscard", fn))
+      if (warning_at (loc, OPT_Wunused_result, format, fn, raw_msg))
 	inform (DECL_SOURCE_LOCATION (fn), "declared here");
     }
   else if (implicit != ICV_CAST
-	   && lookup_attribute ("nodiscard", TYPE_ATTRIBUTES (rettype)))
+	   && (attr = lookup_attribute ("nodiscard", TYPE_ATTRIBUTES (rettype))))
     {
+      escaped_string msg;
+      tree args = TREE_VALUE (attr);
+      if (args)
+	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
+      const char* format = msg ?
+	G_("ignoring returned value of type %qT, "
+	   "declared with attribute %<nodiscard%>: %<%s%>") :
+	G_("ignoring returned value of type %qT, "
+	   "declared with attribute %<nodiscard%>%s");
+      const char* raw_msg = msg ? msg : "";
       auto_diagnostic_group d;
-      if (warning_at (loc, OPT_Wunused_result,
-		      "ignoring returned value of type %qT, "
-		      "declared with attribute nodiscard", rettype))
+      if (warning_at (loc, OPT_Wunused_result, format, rettype, raw_msg))
 	{
 	  if (fn)
 	    inform (DECL_SOURCE_LOCATION (fn),
@@ -1180,7 +1198,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	 instantiations be affected by an ABI property that is, or at
 	 least ought to be transparent to the language.  */
       if (tree fn = cp_get_callee_fndecl_nofold (expr))
-	if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
+	if (DECL_DESTRUCTOR_P (fn))
 	  return expr;
 
       maybe_warn_nodiscard (expr, implicit);

@@ -23,12 +23,37 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <string.h>
 
+#include <string.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+
+#if __nvptx__
+/* Map "exit" to "abort"; see PR85463 '[nvptx] "exit" in offloaded region
+   doesn't terminate process'.  */
+# undef exit
+# define exit(status) do { (void) (status); abort (); } while (0)
+#endif
+
+
+#if __nvptx__
+/* 'printf' is all we have.  */
+# undef estr_vprintf
+# define estr_vprintf vprintf
+#else
+# error TODO
+#endif
+
+
+/* runtime/environ.c */
+
+options_t options;
+
+
+/* runtime/main.c */
 
 /* Stupid function to be sure the constructor is always linked in, even
    in the case of static linking.  See PR libfortran/22298 for details.  */
@@ -38,10 +63,125 @@ stupid_function_name_for_static_linking (void)
   return;
 }
 
-options_t options;
 
 static int argc_save;
 static char **argv_save;
+
+
+/* Set the saved values of the command line arguments.  */
+
+void
+set_args (int argc, char **argv)
+{
+  argc_save = argc;
+  argv_save = argv;
+}
+iexport(set_args);
+
+
+/* Retrieve the saved values of the command line arguments.  */
+
+void
+get_args (int *argc, char ***argv)
+{
+  *argc = argc_save;
+  *argv = argv_save;
+}
+
+
+/* runtime/error.c */
+
+/* Write a null-terminated C string to standard error. This function
+   is async-signal-safe.  */
+
+ssize_t
+estr_write (const char *str)
+{
+  return write (STDERR_FILENO, str, strlen (str));
+}
+
+
+/* printf() like function for for printing to stderr.  Uses a stack
+   allocated buffer and doesn't lock stderr, so it should be safe to
+   use from within a signal handler.  */
+
+int
+st_printf (const char * format, ...)
+{
+  int written;
+  va_list ap;
+  va_start (ap, format);
+  written = estr_vprintf (format, ap);
+  va_end (ap);
+  return written;
+}
+
+
+/* sys_abort()-- Terminate the program showing backtrace and dumping
+   core.  */
+
+void
+sys_abort (void)
+{
+  /* If backtracing is enabled, print backtrace and disable signal
+     handler for ABRT.  */
+  if (options.backtrace == 1
+      || (options.backtrace == -1 && compile_options.backtrace == 1))
+    {
+      estr_write ("\nProgram aborted.\n");
+    }
+
+  abort();
+}
+
+
+/* Exit in case of error termination. If backtracing is enabled, print
+   backtrace, then exit.  */
+
+void
+exit_error (int status)
+{
+  if (options.backtrace == 1
+      || (options.backtrace == -1 && compile_options.backtrace == 1))
+    {
+      estr_write ("\nError termination.\n");
+    }
+  exit (status);
+}
+
+
+/* show_locus()-- Print a line number and filename describing where
+ * something went wrong */
+
+void
+show_locus (st_parameter_common *cmp)
+{
+  char *filename;
+
+  if (!options.locus || cmp == NULL || cmp->filename == NULL)
+    return;
+  
+  if (cmp->unit > 0)
+    {
+      filename = /* TODO filename_from_unit (cmp->unit) */ NULL;
+
+      if (filename != NULL)
+	{
+	  st_printf ("At line %d of file %s (unit = %d, file = '%s')\n",
+		   (int) cmp->line, cmp->filename, (int) cmp->unit, filename);
+	  free (filename);
+	}
+      else
+	{
+	  st_printf ("At line %d of file %s (unit = %d)\n",
+		   (int) cmp->line, cmp->filename, (int) cmp->unit);
+	}
+      return;
+    }
+
+  st_printf ("At line %d of file %s\n", (int) cmp->line, cmp->filename);
+}
+
 
 /* recursion_check()-- It's possible for additional errors to occur
  * during fatal error processing.  We detect this condition here and
@@ -70,11 +210,33 @@ void
 os_error (const char *message)
 {
   recursion_check ();
-  printf ("Operating system error: ");
-  printf ("%s\n", message);
-  exit (1);
+  estr_write ("Operating system error: ");
+  estr_write (message);
+  estr_write ("\n");
+  exit_error (1);
 }
-iexport(os_error);
+iexport(os_error); /* TODO, DEPRECATED, ABI: Should not be exported
+		      anymore when bumping so version.  */
+
+
+/* Improved version of os_error with a printf style format string and
+   a locus.  */
+
+void
+os_error_at (const char *where, const char *message, ...)
+{
+  va_list ap;
+
+  recursion_check ();
+  estr_write (where);
+  estr_write (": ");
+  va_start (ap, message);
+  estr_vprintf (message, ap);
+  va_end (ap);
+  estr_write ("\n");
+  exit_error (1);
+}
+iexport(os_error_at);
 
 
 /* void runtime_error()-- These are errors associated with an
@@ -86,12 +248,12 @@ runtime_error (const char *message, ...)
   va_list ap;
 
   recursion_check ();
-  printf ("Fortran runtime error: ");
+  estr_write ("Fortran runtime error: ");
   va_start (ap, message);
-  vprintf (message, ap);
+  estr_vprintf (message, ap);
   va_end (ap);
-  printf ("\n");
-  exit (2);
+  estr_write ("\n");
+  exit_error (2);
 }
 iexport(runtime_error);
 
@@ -104,13 +266,13 @@ runtime_error_at (const char *where, const char *message, ...)
   va_list ap;
 
   recursion_check ();
-  printf ("%s", where);
-  printf ("\nFortran runtime error: ");
+  estr_write (where);
+  estr_write ("\nFortran runtime error: ");
   va_start (ap, message);
-  vprintf (message, ap);
+  estr_vprintf (message, ap);
   va_end (ap);
-  printf ("\n");
-  exit (2);
+  estr_write ("\n");
+  exit_error (2);
 }
 iexport(runtime_error_at);
 
@@ -120,12 +282,12 @@ runtime_warning_at (const char *where, const char *message, ...)
 {
   va_list ap;
 
-  printf ("%s", where);
-  printf ("\nFortran runtime warning: ");
+  estr_write (where);
+  estr_write ("\nFortran runtime warning: ");
   va_start (ap, message);
-  vprintf (message, ap);
+  estr_vprintf (message, ap);
   va_end (ap);
-  printf ("\n");
+  estr_write ("\n");
 }
 iexport(runtime_warning_at);
 
@@ -137,9 +299,10 @@ void
 internal_error (st_parameter_common *cmp, const char *message)
 {
   recursion_check ();
-  printf ("Internal Error: ");
-  printf ("%s", message);
-  printf ("\n");
+  show_locus (cmp);
+  estr_write ("Internal Error: ");
+  estr_write (message);
+  estr_write ("\n");
 
   /* This function call is here to get the main.o object file included
      when linking statically. This works because error.o is supposed to
@@ -147,45 +310,7 @@ internal_error (st_parameter_common *cmp, const char *message)
      because hopefully it doesn't happen too often).  */
   stupid_function_name_for_static_linking();
 
-  exit (3);
-}
-
-
-/* Set the saved values of the command line arguments.  */
-
-void
-set_args (int argc, char **argv)
-{
-  argc_save = argc;
-  argv_save = argv;
-}
-iexport(set_args);
-
-
-/* Retrieve the saved values of the command line arguments.  */
-
-void
-get_args (int *argc, char ***argv)
-{
-  *argc = argc_save;
-  *argv = argv_save;
-}
-
-/* sys_abort()-- Terminate the program showing backtrace and dumping
-   core.  */
-
-void
-sys_abort (void)
-{
-  /* If backtracing is enabled, print backtrace and disable signal
-     handler for ABRT.  */
-  if (options.backtrace == 1
-      || (options.backtrace == -1 && compile_options.backtrace == 1))
-    {
-      printf ("\nProgram aborted.\n");
-    }
-
-  abort();
+  exit_error (3);
 }
 
 
@@ -193,18 +318,7 @@ sys_abort (void)
 
 #undef report_exception
 #define report_exception() do {} while (0)
-#undef st_printf
-#define st_printf printf
-#undef estr_write
-#define estr_write(X) write(STDERR_FILENO, (X), strlen (X))
-#if __nvptx__
-/* Map "exit" to "abort"; see PR85463 '[nvptx] "exit" in offloaded region
-   doesn't terminate process'.  */
-#undef exit
-#define exit(...) do { abort (); } while (0)
-#endif
-#undef exit_error
-#define exit_error(...) do { abort (); } while (0)
+
 
 /* A numeric STOP statement.  */
 

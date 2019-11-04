@@ -291,6 +291,8 @@ struct processor_costs {
   const int large_insn;		/* insns larger than this cost more */
   const int move_ratio;		/* The threshold of number of scalar
 				   memory-to-memory move insns.  */
+  const int clear_ratio;	/* The threshold of number of scalar
+				   memory clearing insns.  */
   const int int_load[3];	/* cost of loading integer registers
 				   in QImode, HImode and SImode relative
 				   to reg-reg move (2).  */
@@ -1947,7 +1949,7 @@ typedef struct ix86_args {
 /* If a clear memory operation would take CLEAR_RATIO or more simple
    move-instruction sequences, we will do a clrmem or libcall instead.  */
 
-#define CLEAR_RATIO(speed) ((speed) ? MIN (6, ix86_cost->move_ratio) : 2)
+#define CLEAR_RATIO(speed) ((speed) ? ix86_cost->clear_ratio : 2)
 
 /* Define if shifts truncate the shift count which implies one can
    omit a sign-extension or zero-extension of a shift count.

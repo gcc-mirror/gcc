@@ -273,6 +273,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
+-fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-format=@r{[}text@r{|}json@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
@@ -324,6 +325,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winaccessible-base @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
+-Wzero-length-bounds @gol
 -Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
@@ -341,7 +343,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-pragmas  -Wno-prio-ctor-dtor  -Wredundant-decls @gol
 -Wrestrict  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
--Wshadow=global,  -Wshadow=local,  -Wshadow=compatible-local @gol
+-Wshadow=global  -Wshadow=local  -Wshadow=compatible-local @gol
 -Wshift-overflow  -Wshift-overflow=@var{n} @gol
 -Wshift-count-negative  -Wshift-count-overflow  -Wshift-negative-value @gol
 -Wsign-compare  -Wsign-conversion  -Wfloat-conversion @gol
@@ -349,6 +351,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
+-Wstring-compare @gol
 -Wstringop-overflow=@var{n}  -Wstringop-truncation  -Wsubobject-linkage @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
@@ -404,6 +407,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-fallow-store-data-races @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
 -fcaller-saves @gol
@@ -2512,14 +2516,17 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
 
 @item -fconcepts
+@itemx -fconcepts-ts
 @opindex fconcepts
-Enable support for the C++ Extensions for Concepts Technical
-Specification, ISO 19217 (2015), which allows code like
+@opindex fconcepts-ts
+Below @option{-std=c++2a}, @option{-fconcepts} enables support for the
+C++ Extensions for Concepts Technical Specification, ISO 19217 (2015).
 
-@smallexample
-template <class T> concept bool Addable = requires (T t) @{ t + t; @};
-template <Addable T> T add (T a, T b) @{ return a + b; @}
-@end smallexample
+With @option{-std=c++2a} and above, Concepts are part of the language
+standard, so @option{-fconcepts} defaults to on.  But the standard
+specification of Concepts differs significantly from the TS, so some
+constructs that were allowed in the TS but didn't make it into the
+standard can still be enabled by @option{-fconcepts-ts}.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
@@ -3904,6 +3911,18 @@ SGR substring for highlighting mismatching types within template
 arguments in the C++ frontend.
 @end table
 
+@item -fdiagnostics-urls[=@var{WHEN}]
+@opindex fdiagnostics-urls
+@cindex urls
+Use escape sequences to embed URLs in diagnostics.  For example, when
+@option{-fdiagnostics-show-option} emits text showing the command-line
+option controlling a diagnostic, embed a URL for documentation of that
+option.
+
+@var{WHEN} is @samp{never}, @samp{always}, or @samp{auto}.
+The default is @samp{auto}, which means to use URL escape sequences only
+when the standard error is a terminal.
+
 @item -fno-diagnostics-show-option
 @opindex fno-diagnostics-show-option
 @opindex fdiagnostics-show-option
@@ -4099,6 +4118,7 @@ might be printed in JSON form (after formatting) like this:
         ],
         "message": "this \u2018if\u2019 clause does not guard...",
         "option": "-Wmisleading-indentation",
+        "option_url": "https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wmisleading-indentation",
         "children": [
             @{
                 "kind": "note",
@@ -4419,6 +4439,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Winit-self @r{(only for C++)} @gol
+-Wzero-length-bounds @gol
 -Wlogical-not-parentheses @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
@@ -4482,6 +4503,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wold-style-declaration @r{(C only)}  @gol
 -Woverride-init  @gol
 -Wsign-compare @r{(C only)} @gol
+-Wstring-compare @gol
 -Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
@@ -5797,6 +5819,30 @@ comparisons, so this warning level gives a very large number of
 false positives.
 @end table
 
+@item -Wstring-compare
+@opindex Wstring-compare
+@opindex Wno-string-compare
+Warn for calls to @code{strcmp} and @code{strncmp} whose result is
+determined to be either zero or non-zero in tests for such equality
+owing to the length of one argument being greater than the size of
+the array the other argument is stored in (or the bound in the case
+of @code{strncmp}).  Such calls could be mistakes.  For example,
+the call to @code{strcmp} below is diagnosed because its result is
+necessarily non-zero irrespective of the contents of the array @code{a}.
+
+@smallexample
+extern char a[4];
+void f (char *d)
+@{
+  strcpy (d, "string");
+  @dots{}
+  if (0 == strcmp (a, d))   // cannot be true
+    puts ("a and d are the same");
+@}
+@end smallexample
+
+@option{-Wstring-compare} is enabled by @option{-Wextra}.
+
 @item -Wstringop-overflow
 @itemx -Wstringop-overflow=@var{type}
 @opindex Wstringop-overflow
@@ -6265,7 +6311,7 @@ can be used to suppress such a warning.
 @opindex Wno-discarded-array-qualifiers
 @opindex Wdiscarded-array-qualifiers
 Do not warn if type qualifiers on arrays which are pointer targets
-are being discarded. Typically, the compiler warns if a
+are being discarded.  Typically, the compiler warns if a
 @code{const int (*)[]} variable is passed to a function that
 takes a @code{int (*)[]} parameter.  This option can be used to
 suppress such a warning.
@@ -6285,6 +6331,33 @@ Do not warn about incompatible integer to pointer and pointer to integer
 conversions.  This warning is about implicit conversions; for explicit
 conversions the warnings @option{-Wno-int-to-pointer-cast} and
 @option{-Wno-pointer-to-int-cast} may be used.
+
+@item -Wzero-length-bounds
+@opindex Wzero-length-bounds
+@opindex Wzero-length-bounds
+Warn about accesses to elements of zero-length array members that might
+overlap other members of the same object.  Declaring interior zero-length
+arrays is discouraged because accesses to them are undefined.  See
+@xref{Zero Length}.
+
+For example, the first two stores in function @code{bad} are diagnosed
+because the array elements overlap the subsequent members @code{b} and
+@code{c}.  The third store is diagnosed by @option{-Warray-bounds}
+because it is beyond the bounds of the enclosing object.
+
+@smallexample
+struct X @{ int a[0]; int b, c; @};
+struct X x;
+
+void bad (void)
+@{
+  x.a[0] = 0;   // -Wzero-length-bounds
+  x.a[1] = 1;   // -Wzero-length-bounds
+  x.a[2] = 2;   // -Warray-bounds
+@}
+@end smallexample
+
+Option @option{-Wzero-length-bounds} is enabled by @option{-Warray-bounds}.
 
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero
@@ -6464,9 +6537,13 @@ allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Declarations}.
 @opindex Wno-shadow
 Warn whenever a local variable or type declaration shadows another
 variable, parameter, type, class member (in C++), or instance variable
-(in Objective-C) or whenever a built-in function is shadowed. Note
+(in Objective-C) or whenever a built-in function is shadowed.  Note
 that in C++, the compiler warns if a local variable shadows an
 explicit typedef, but not if it shadows a struct/class/enum.
+If this warning is enabled, it includes also all instances of
+local shadowing.  This means that @option{-Wno-shadow=local}
+and @option{-Wno-shadow=compatible-local} are ignored when
+@option{-Wshadow} is used.
 Same as @option{-Wshadow=global}.
 
 @item -Wno-shadow-ivar @r{(Objective-C only)}
@@ -6477,20 +6554,19 @@ Objective-C method.
 
 @item -Wshadow=global
 @opindex Wshadow=global
-The default for @option{-Wshadow}. Warns for any (global) shadowing.
-This warning is enabled by @option{-Wshadow=global}.
+Warn for any shadowing.
+Same as @option{-Wshadow}.
 
 @item -Wshadow=local
 @opindex Wshadow=local
 Warn when a local variable shadows another local variable or parameter.
-This warning is enabled by @option{-Wshadow=local}.
 
 @item -Wshadow=compatible-local
 @opindex Wshadow=compatible-local
 Warn when a local variable shadows another local variable or parameter
-whose type is compatible with that of the shadowing variable. In C++,
+whose type is compatible with that of the shadowing variable.  In C++,
 type compatibility here means the type of the shadowing variable can be
-converted to that of the shadowed variable. The creation of this flag
+converted to that of the shadowed variable.  The creation of this flag
 (in addition to @option{-Wshadow=local}) is based on the idea that when
 a local variable shadows another one of incompatible type, it is most
 likely intentional, not a bug or typo, as shown in the following example:
@@ -6509,16 +6585,15 @@ for (SomeIterator i = SomeObj.begin(); i != SomeObj.end(); ++i)
 @end smallexample
 
 Since the two variable @code{i} in the example above have incompatible types,
-enabling only @option{-Wshadow=compatible-local} will not emit a warning.
+enabling only @option{-Wshadow=compatible-local} does not emit a warning.
 Because their types are incompatible, if a programmer accidentally uses one
-in place of the other, type checking will catch that and emit an error or
-warning. So not warning (about shadowing) in this case will not lead to
-undetected bugs. Use of this flag instead of @option{-Wshadow=local} can
+in place of the other, type checking is expected to catch that and emit an
+error or warning.  Use of this flag instead of @option{-Wshadow=local} can
 possibly reduce the number of warnings triggered by intentional shadowing.
-Note that this does also mean that shadowing @code{const char *i} by
-@code{char *i} will not emit a warning.
+Note that this also means that shadowing @code{const char *i} by
+@code{char *i} does not emit a warning.
 
-This warning is enabled by @option{-Wshadow=compatible-local}.
+This warning is also enabled by @option{-Wshadow=local}.
 
 @item -Wlarger-than=@var{byte-size}
 @opindex Wlarger-than=
@@ -8420,9 +8495,9 @@ designed to reduce code size.
 Disregard strict standards compliance.  @option{-Ofast} enables all
 @option{-O3} optimizations.  It also enables optimizations that are not
 valid for all standard-compliant programs.
-It turns on @option{-ffast-math} and the Fortran-specific
-@option{-fstack-arrays}, unless @option{-fmax-stack-var-size} is
-specified, and @option{-fno-protect-parens}.
+It turns on @option{-ffast-math}, @option{-fallow-store-data-races}
+and the Fortran-specific @option{-fstack-arrays}, unless
+@option{-fmax-stack-var-size} is specified, and @option{-fno-protect-parens}.
 
 @item -Og
 @opindex Og
@@ -10183,6 +10258,12 @@ If @var{n} is not specified or is zero, use a machine-dependent default.
 The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@item -fallow-store-data-races
+@opindex fallow-store-data-races
+Allow the compiler to introduce new data races on stores.
+
+Enabled at level @option{-Ofast}.
 
 @item -funit-at-a-time
 @opindex funit-at-a-time
@@ -11984,6 +12065,13 @@ For switch exceeding this limit, IPA-CP will not construct cloning cost
 predicate, which is used to estimate cloning benefit, for default case
 of the switch statement.
 
+@item ipa-max-param-expr-ops
+IPA-CP will analyze conditional statement that references some function
+parameter to estimate benefit for cloning upon certain constant value.
+But if number of operations in a parameter expression exceeds
+@option{ipa-max-param-expr-ops}, the expression is treated as complicated
+one, and is not handled by IPA analysis.
+
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.
@@ -12016,10 +12104,6 @@ statements with memory operands as those are even more profitable so sink.
 The maximum number of conditional store pairs that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.
-
-@item allow-store-data-races
-Allow optimizers to introduce new data races on stores.
-Set to 1 to allow, otherwise to 0.
 
 @item case-values-threshold
 The smallest number of different values for which it is best to use a

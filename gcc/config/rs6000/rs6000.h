@@ -1847,9 +1847,19 @@ extern scalar_int_mode rs6000_pmode;
 /* Adjust the length of an INSN.  LENGTH is the currently-computed length and
    should be adjusted to reflect any required changes.  This macro is used when
    there is some systematic length adjustment required that would be difficult
-   to express in the length attribute.  */
+   to express in the length attribute.
 
-/* #define ADJUST_INSN_LENGTH(X,LENGTH) */
+   In the PowerPC, we use this to adjust the length of an instruction if one or
+   more prefixed instructions are generated, using the attribute
+   num_prefixed_insns.  A prefixed instruction is 8 bytes instead of 4, but the
+   hardware requires that a prefied instruciton does not cross a 64-byte
+   boundary.  This means the compiler has to assume the length of the first
+   prefixed instruction is 12 bytes instead of 8 bytes.  Since the length is
+   already set for the non-prefixed instruction, we just need to udpate for the
+   difference.  */
+
+#define ADJUST_INSN_LENGTH(INSN,LENGTH)					\
+  (LENGTH) = rs6000_adjust_insn_length ((INSN), (LENGTH))
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a
    COMPARE, return the mode to be used for the comparison.  For

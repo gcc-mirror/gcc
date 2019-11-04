@@ -33,7 +33,7 @@ cd $srcdir
 # what has to happen when find(1) doesn't support -mindepth, or -xtype.
 # The directories here should be consistent with libstdc++-dg/conformance.exp
 dlist=`echo [0-9][0-9]*`
-dlist="$dlist abi backward ext performance tr1 tr2 decimal experimental"
+dlist="$dlist std abi backward ext performance tr1 tr2 decimal experimental"
 dlist="$dlist special_functions"
 find $dlist "(" -type f -o -type l ")" -name "*.cc" -print > $tmp.01
 find $dlist "(" -type f -o -type l ")" -name "*.c" -print > $tmp.02

@@ -40,6 +40,7 @@
 
 #include <utility>
 #include <iterator>
+#include <memory>
 #include <ext/pb_ds/detail/cond_dealtor.hpp>
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/pb_ds/detail/hash_fn/ranged_hash_fn.hpp>
@@ -73,7 +74,7 @@ namespace __gnu_pbds
 
 #define PB_DS_CLASS_C_DEC \
     PB_DS_CC_HASH_NAME<Key, Mapped, Hash_Fn, Eq_Fn, _Alloc,	\
-		     Store_Hash, Comb_Hash_Fn, Resize_Policy>
+		       Store_Hash, Comb_Hash_Fn, Resize_Policy>
 
 #define PB_DS_HASH_EQ_FN_C_DEC \
     hash_eq_fn<Key, Eq_Fn, _Alloc, Store_Hash>
@@ -87,7 +88,7 @@ namespace __gnu_pbds
 #ifdef _GLIBCXX_DEBUG
 #define PB_DS_DEBUG_MAP_BASE_C_DEC \
     debug_map_base<Key,	Eq_Fn, \
-		  typename _Alloc::template rebind<Key>::other::const_reference>
+		   typename rebind_traits<_Alloc, Key>::const_reference>
 #endif
 
 
@@ -135,7 +136,7 @@ namespace __gnu_pbds
 	     typename _Alloc,
 	     bool Store_Hash,
 	     typename Comb_Hash_Fn,
-	     typename Resize_Policy >
+	     typename Resize_Policy>
     class PB_DS_CC_HASH_NAME:
 #ifdef _GLIBCXX_DEBUG
       protected PB_DS_DEBUG_MAP_BASE_C_DEC,
@@ -156,19 +157,21 @@ namespace __gnu_pbds
 
       struct entry : public traits_base::stored_data_type
       {
-	typename _Alloc::template rebind<entry>::other::pointer m_p_next;
+	typename rebind_traits<_Alloc, entry>::pointer m_p_next;
       };
 
       typedef cond_dealtor<entry, _Alloc> 	cond_dealtor_t;
 
-      typedef typename _Alloc::template rebind<entry>::other entry_allocator;
-      typedef typename entry_allocator::pointer entry_pointer;
-      typedef typename entry_allocator::const_pointer const_entry_pointer;
-      typedef typename entry_allocator::reference entry_reference;
-      typedef typename entry_allocator::const_reference const_entry_reference;
+      typedef rebind_traits<_Alloc, entry> entry_traits;
+      typedef typename entry_traits::allocator_type entry_allocator;
+      typedef typename entry_traits::pointer entry_pointer;
+      typedef typename entry_traits::const_pointer const_entry_pointer;
+      typedef typename entry_traits::reference entry_reference;
+      typedef typename entry_traits::const_reference const_entry_reference;
 
-      typedef typename _Alloc::template rebind<entry_pointer>::other entry_pointer_allocator;
-      typedef typename entry_pointer_allocator::pointer entry_pointer_array;
+      typedef rebind_traits<_Alloc, entry_pointer> entry_pointer_traits;
+      typedef typename entry_pointer_traits::allocator_type entry_pointer_allocator;
+      typedef typename entry_pointer_traits::pointer entry_pointer_array;
 
       typedef PB_DS_RANGED_HASH_FN_C_DEC ranged_hash_fn_base;
       typedef PB_DS_HASH_EQ_FN_C_DEC hash_eq_fn_base;

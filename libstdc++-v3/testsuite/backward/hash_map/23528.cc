@@ -30,9 +30,13 @@ void test01()
 
   __gnu_cxx::hash_map<int, int>::value_type *y = a.allocate(1);
 
+#if __cplusplus >= 201103L
+  std::allocator_traits<decltype(a)>::construct(a, y, *m.begin());
+  std::allocator_traits<decltype(a)>::destroy(a, y);
+#else
   a.construct(y, *m.begin());
-
   a.destroy(y);
+#endif
   a.deallocate(y, 1);
 }
 

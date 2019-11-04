@@ -315,12 +315,12 @@ m32c*-*-*)
         ;;
 aarch64*-*-*)
 	cpu_type=aarch64
-	extra_headers="arm_fp16.h arm_neon.h arm_acle.h"
+	extra_headers="arm_fp16.h arm_neon.h arm_acle.h arm_sve.h"
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
-	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o"
-	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c"
+	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o"
+	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
@@ -523,7 +523,7 @@ pru-*-*)
 	;;
 riscv*)
 	cpu_type=riscv
-	extra_objs="riscv-builtins.o riscv-c.o"
+	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o"
 	d_target_objs="riscv-d.o"
 	;;
 rs6000*-*-*)
@@ -4782,14 +4782,12 @@ case "${target}" in
 			 echo "#undef  LINK_OS_EXTRA_SPEC32"
 			 echo "#define LINK_OS_EXTRA_SPEC32" \
 			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib -rpath $at/lib" \
-			      "-L $prefix/lib -L $at/lib\""
+			      "-rpath $prefix/lib -rpath $at/lib\""
 			 echo
 			 echo "#undef  LINK_OS_EXTRA_SPEC64"
 			 echo "#define LINK_OS_EXTRA_SPEC64" \
 			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib64 -rpath $at/lib64" \
-			      "-L $prefix/lib64 -L $at/lib64\""
+			      "-rpath $prefix/lib64 -rpath $at/lib64\""
 			 echo
 			 echo "#undef  LINK_OS_NEW_DTAGS_SPEC"
 			 echo "#define LINK_OS_NEW_DTAGS_SPEC" \
@@ -4802,7 +4800,10 @@ case "${target}" in
 			 echo "#define MD_EXEC_PREFIX \"$at/bin/\""
 			 echo
 			 echo "#undef  MD_STARTFILE_PREFIX"
-			 echo "#define MD_STARTFILE_PREFIX \"$at/lib/\"") \
+			 echo "#define MD_STARTFILE_PREFIX \"$prefix/lib/\""
+			 echo
+			 echo "#undef  MD_STARTFILE_PREFIX_1"
+			 echo "#define MD_STARTFILE_PREFIX_1 \"$at/lib/\"") \
 			    > advance-toolchain.h
 		    else
 			echo "Unknown advance-toolchain $with_advance_toolchain"
@@ -4825,7 +4826,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 )
+			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | z15 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 )
 				# OK
 				;;
 			*)

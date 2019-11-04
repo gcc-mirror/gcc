@@ -67,6 +67,10 @@
 # include <type_traits>  // For __void_t, is_convertible
 #endif
 
+#if __cplusplus > 201703L && __cpp_concepts
+# include <bits/iterator_concepts.h>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -101,6 +105,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Random-access iterators support a superset of bidirectional
   /// iterator operations.
   struct random_access_iterator_tag : public bidirectional_iterator_tag { };
+
+#if __cplusplus > 201703L
+  /// Contiguous iterators point to objects stored contiguously in memory.
+  struct contiguous_iterator_tag : public random_access_iterator_tag { };
+#endif
   //@}
 
   /**
@@ -137,11 +146,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  argument.  Specialized versions for pointers and pointers-to-const
    *  provide tighter, more correct semantics.
   */
+  template<typename _Iterator>
+    struct iterator_traits;
+
 #if __cplusplus >= 201103L
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2408. SFINAE-friendly common_type/iterator_traits is missing in C++14
   template<typename _Iterator, typename = __void_t<>>
     struct __iterator_traits { };
+
+#if ! __cpp_lib_concepts
 
   template<typename _Iterator>
     struct __iterator_traits<_Iterator,
@@ -157,11 +171,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _Iterator::pointer           pointer;
       typedef typename _Iterator::reference         reference;
     };
+#endif // ! concepts
 
   template<typename _Iterator>
     struct iterator_traits
     : public __iterator_traits<_Iterator> { };
-#else
+
+#else // ! C++11
   template<typename _Iterator>
     struct iterator_traits
     {
@@ -171,8 +187,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _Iterator::pointer           pointer;
       typedef typename _Iterator::reference         reference;
     };
-#endif
+#endif // C++11
 
+#if __cplusplus > 201703L
+  /// Partial specialization for object pointer types.
+  template<typename _Tp>
+#if __cpp_concepts
+    requires is_object_v<_Tp>
+#endif
+    struct iterator_traits<_Tp*>
+    {
+      using iterator_concept  = contiguous_iterator_tag;
+      using iterator_category = random_access_iterator_tag;
+      using value_type	      = remove_cv_t<_Tp>;
+      using difference_type   = ptrdiff_t;
+      using pointer	      = _Tp*;
+      using reference	      = _Tp&;
+    };
+#else
   /// Partial specialization for pointer types.
   template<typename _Tp>
     struct iterator_traits<_Tp*>
@@ -194,6 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef const _Tp*                  pointer;
       typedef const _Tp&                  reference;
     };
+#endif
 
   /**
    *  This function is not a part of the C++ standard but is syntactic

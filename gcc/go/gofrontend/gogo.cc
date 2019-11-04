@@ -298,7 +298,7 @@ void
 Gogo::set_pkgpath(const std::string& arg)
 {
   go_assert(!this->pkgpath_set_);
-  this->pkgpath_ = arg;
+  this->pkgpath_ = go_mangle_pkgpath(arg);
   this->pkgpath_set_ = true;
   this->pkgpath_from_option_ = true;
 }
@@ -396,7 +396,8 @@ Gogo::set_package_name(const std::string& package_name,
 	{
 	  if (!this->prefix_from_option_)
 	    this->prefix_ = "go";
-	  this->pkgpath_ = this->prefix_ + '.' + package_name;
+	  this->pkgpath_ = (go_mangle_pkgpath(this->prefix_) + '.'
+			    + package_name);
 	  this->pkgpath_symbol_ = (Gogo::pkgpath_for_symbol(this->prefix_) + '.'
 				   + Gogo::pkgpath_for_symbol(package_name));
 	}

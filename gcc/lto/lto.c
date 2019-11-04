@@ -304,6 +304,16 @@ lto_wpa_write_files (void)
 
   timevar_push (TV_WHOPR_WPA_IO);
 
+  cgraph_node *node;
+  /* Do body modifications needed for streaming before we fork out
+     worker processes.  */
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    if (!node->clone_of && gimple_has_body_p (node->decl))
+      lto_prepare_function_for_streaming (node);
+
+  ggc_trim ();
+  report_heap_memory_use ();
+
   /* Generate a prefix for the LTRANS unit files.  */
   blen = strlen (ltrans_output_list);
   temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));
@@ -447,10 +457,7 @@ do_whole_program_analysis (void)
   timevar_push (TV_WHOPR_WPA);
 
   if (pre_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption before IPA");
 
   symtab->function_flags_ready = true;
 
@@ -490,9 +497,9 @@ do_whole_program_analysis (void)
   else
     gcc_unreachable ();
 
-  /* Inline summaries are needed for balanced partitioning.  Free them now so
+  /* Size summaries are needed for balanced partitioning.  Free them now so
      the memory can be used for streamer caches.  */
-  ipa_free_fn_summary ();
+  ipa_free_size_summary ();
 
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */
@@ -529,16 +536,13 @@ do_whole_program_analysis (void)
   timevar_stop (TV_PHASE_STREAM_OUT);
 
   if (post_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption after IPA");
 
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
     print_lto_report_1 ();
   if (mem_report_wpa)
-    dump_memory_report (true);
+    dump_memory_report ("Final");
 }
 
 /* Create artificial pointers for "omp declare target link" vars.  */

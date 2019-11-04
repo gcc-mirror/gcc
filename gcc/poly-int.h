@@ -1528,6 +1528,29 @@ constant_lower_bound (const poly_int_pod<N, Ca> &a)
   return a.coeffs[0];
 }
 
+/* Return the constant lower bound of A, given that it is no less than B.  */
+
+template<unsigned int N, typename Ca, typename Cb>
+inline POLY_CONST_COEFF (Ca, Cb)
+constant_lower_bound_with_limit (const poly_int_pod<N, Ca> &a, const Cb &b)
+{
+  if (known_ge (a, b))
+    return a.coeffs[0];
+  return b;
+}
+
+/* Return the constant upper bound of A, given that it is no greater
+   than B.  */
+
+template<unsigned int N, typename Ca, typename Cb>
+inline POLY_CONST_COEFF (Ca, Cb)
+constant_upper_bound_with_limit (const poly_int_pod<N, Ca> &a, const Cb &b)
+{
+  if (known_le (a, b))
+    return a.coeffs[0];
+  return b;
+}
+
 /* Return a value that is known to be no greater than A and B.  This
    will be the greatest lower bound for some indeterminate values but
    not necessarily for all.  */

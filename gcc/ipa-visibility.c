@@ -707,7 +707,7 @@ function_and_variable_visibility (bool whole_program)
 		  || DECL_EXTERNAL (node->decl));
       if (cgraph_externally_visible_p (node, whole_program))
         {
-	  gcc_assert (!node->global.inlined_to);
+	  gcc_assert (!node->inlined_to);
 	  node->externally_visible = true;
 	}
       else
@@ -747,8 +747,8 @@ function_and_variable_visibility (bool whole_program)
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      if (!node->local.local)
-        node->local.local |= node->local_p ();
+      if (!node->local)
+	node->local |= node->local_p ();
 
       /* If we know that function cannot be overwritten by a
 	 different semantics and moreover its section cannot be
@@ -868,7 +868,7 @@ function_and_variable_visibility (bool whole_program)
     {
       fprintf (dump_file, "\nMarking local functions:");
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (node->local.local)
+	if (node->local)
 	  fprintf (dump_file, " %s", node->name ());
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible functions:");

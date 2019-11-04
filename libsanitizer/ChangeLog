@@ -1,3 +1,9 @@
+2019-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.cpp:
+	Cherry-pick compiler-rt revision r375220.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.

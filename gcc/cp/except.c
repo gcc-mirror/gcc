@@ -51,14 +51,14 @@ init_exception_processing (void)
   tree tmp;
 
   /* void std::terminate (); */
-  push_namespace (std_identifier);
+  push_nested_namespace (std_node);
   tmp = build_function_type_list (void_type_node, NULL_TREE);
   terminate_fn = build_cp_library_fn_ptr ("terminate", tmp,
 					   ECF_NOTHROW | ECF_NORETURN
 					   | ECF_COLD);
   gcc_checking_assert (TREE_THIS_VOLATILE (terminate_fn)
 		       && TREE_NOTHROW (terminate_fn));
-  pop_namespace ();
+  pop_nested_namespace (std_node);
 
   /* void __cxa_call_unexpected(void *); */
   tmp = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);

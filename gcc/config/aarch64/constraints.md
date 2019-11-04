@@ -257,6 +257,38 @@
 						  true,
 						  ADDR_QUERY_LDP_STP_N)")))
 
+(define_address_constraint "UPb"
+  "@internal
+   An address valid for SVE PRFB instructions."
+  (match_test "aarch64_sve_prefetch_operand_p (op, VNx16QImode)"))
+
+(define_address_constraint "UPd"
+  "@internal
+   An address valid for SVE PRFD instructions."
+  (match_test "aarch64_sve_prefetch_operand_p (op, VNx2DImode)"))
+
+(define_address_constraint "UPh"
+  "@internal
+   An address valid for SVE PRFH instructions."
+  (match_test "aarch64_sve_prefetch_operand_p (op, VNx8HImode)"))
+
+(define_address_constraint "UPw"
+  "@internal
+   An address valid for SVE PRFW instructions."
+  (match_test "aarch64_sve_prefetch_operand_p (op, VNx4SImode)"))
+
+(define_memory_constraint "Utf"
+  "@internal
+   An address valid for SVE LDFF1 instructions."
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ldff1_operand_p (op)")))
+
+(define_memory_constraint "Utn"
+  "@internal
+   An address valid for SVE LDNF1 instructions."
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ldnf1_operand_p (op)")))
+
 (define_memory_constraint "Utr"
   "@internal
    An address valid for SVE LDR and STR instructions (as distinct from
@@ -395,6 +427,30 @@
  An address valid for a prefetch instruction."
  (match_test "aarch64_address_valid_for_prefetch_p (op, true)"))
 
+(define_constraint "vgb"
+  "@internal
+   A constraint that matches an immediate offset valid for SVE LD1B
+   gather instructions."
+ (match_operand 0 "aarch64_sve_gather_immediate_b"))
+
+(define_constraint "vgd"
+  "@internal
+   A constraint that matches an immediate offset valid for SVE LD1D
+   gather instructions."
+ (match_operand 0 "aarch64_sve_gather_immediate_d"))
+
+(define_constraint "vgh"
+  "@internal
+   A constraint that matches an immediate offset valid for SVE LD1H
+   gather instructions."
+ (match_operand 0 "aarch64_sve_gather_immediate_h"))
+
+(define_constraint "vgw"
+  "@internal
+   A constraint that matches an immediate offset valid for SVE LD1W
+   gather instructions."
+ (match_operand 0 "aarch64_sve_gather_immediate_w"))
+
 (define_constraint "vsa"
   "@internal
    A constraint that matches an immediate operand valid for SVE
@@ -436,6 +492,18 @@
    A constraint that matches an immediate operand whose negative
    is valid for SVE SUB instructions."
  (match_operand 0 "aarch64_sve_sub_arith_immediate"))
+
+(define_constraint "vsQ"
+  "@internal
+   Like vsa, but additionally check that the immediate is nonnegative
+   when interpreted as a signed value."
+ (match_operand 0 "aarch64_sve_qadd_immediate"))
+
+(define_constraint "vsS"
+  "@internal
+   Like vsn, but additionally check that the immediate is negative
+   when interpreted as a signed value."
+ (match_operand 0 "aarch64_sve_qsub_immediate"))
 
 (define_constraint "vsl"
   "@internal

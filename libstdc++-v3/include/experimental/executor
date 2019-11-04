@@ -1501,12 +1501,18 @@ inline namespace v1
       std::tuple<_Func, _Alloc> _M_t;
     };
 
+  template<typename _Func, typename _Tp>
+    struct __use_future_ct<_Func, std::allocator<_Tp>>
+    {
+      _Func _M_f;
+    };
+
   template<typename _ProtoAllocator = allocator<void>>
     class use_future_t
     {
     public:
       // use_future_t types:
-      typedef _ProtoAllocator allocator_type;
+      using allocator_type = _ProtoAllocator;
 
       // use_future_t members:
       constexpr use_future_t() noexcept : _M_alloc() { }
@@ -1514,7 +1520,7 @@ inline namespace v1
       explicit
       use_future_t(const _ProtoAllocator& __a) noexcept : _M_alloc(__a) { }
 
-      template<class _OtherAllocator>
+      template<typename _OtherAllocator>
 	use_future_t<_OtherAllocator>
 	rebind(const _OtherAllocator& __a) const noexcept
 	{ return use_future_t<_OtherAllocator>(__a); }
@@ -1531,6 +1537,35 @@ inline namespace v1
 
     private:
       _ProtoAllocator _M_alloc;
+    };
+
+  template<typename _Tp>
+    class use_future_t<std::allocator<_Tp>>
+    {
+    public:
+      // use_future_t types:
+      using allocator_type = std::allocator<_Tp>;
+
+      // use_future_t members:
+      constexpr use_future_t() noexcept = default;
+
+      explicit
+      use_future_t(const allocator_type& __a) noexcept { }
+
+      template<class _Up>
+	use_future_t<std::allocator<_Up>>
+	rebind(const std::allocator<_Up>& __a) const noexcept
+	{ return use_future_t<std::allocator<_Up>>(__a); }
+
+      allocator_type get_allocator() const noexcept { return {}; }
+
+      template<typename _Func>
+	auto
+	operator()(_Func&& __f) const
+	{
+	  using _Token = __use_future_ct<decay_t<_Func>, allocator_type>;
+	  return _Token{std::forward<_Func>(__f)};
+	}
     };
 
   constexpr use_future_t<> use_future = use_future_t<>();
@@ -1550,6 +1585,12 @@ inline namespace v1
 	__use_future_ch(__use_future_ct<_Func, _Alloc>&& __token)
 	: _M_f{ std::move(std::get<0>(__token._M_t)) },
 	  _M_promise{ std::get<1>(__token._M_t) }
+	{ }
+
+      template<typename _Tp>
+	explicit
+	__use_future_ch(__use_future_ct<_Func, std::allocator<_Tp>>&& __token)
+	: _M_f{ std::move(__token._M_f) }
 	{ }
 
       void

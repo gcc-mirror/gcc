@@ -83,7 +83,7 @@ namespace __gnu_pbds
 #ifdef _GLIBCXX_DEBUG
 #define PB_DS_DEBUG_MAP_BASE_C_DEC \
     debug_map_base<Key, eq_by_less<Key, Cmp_Fn>, \
-       	typename _Alloc::template rebind<Key>::other::const_reference>
+		   typename rebind_traits<_Alloc, Key>::const_reference>
 #endif
 
 #ifdef PB_DS_TREE_TRACE
@@ -120,8 +120,9 @@ namespace __gnu_pbds
 
       typedef typename remove_const<typename traits_base::value_type>::type non_const_value_type;
 
-      typedef typename _Alloc::template rebind<non_const_value_type>::other value_allocator;
-      typedef typename value_allocator::pointer 	value_vector;
+      typedef rebind_traits<_Alloc, non_const_value_type> value_alloc_traits;
+      typedef typename value_alloc_traits::allocator_type value_allocator;
+      typedef typename value_alloc_traits::pointer	  value_vector;
 
 #ifdef _GLIBCXX_DEBUG
       typedef PB_DS_DEBUG_MAP_BASE_C_DEC 		debug_base;
@@ -136,16 +137,17 @@ namespace __gnu_pbds
 
       typedef typename traits_type::metadata_type 	metadata_type;
 
-      typedef typename _Alloc::template rebind<metadata_type>::other metadata_allocator;
-      typedef typename metadata_allocator::pointer 	metadata_pointer;
-      typedef typename metadata_allocator::const_reference metadata_const_reference;
-      typedef typename metadata_allocator::reference 	metadata_reference;
+      typedef rebind_traits<_Alloc, metadata_type>	metadata_alloc_traits;
+      typedef typename metadata_alloc_traits::allocator_type metadata_allocator;
+      typedef typename metadata_alloc_traits::pointer	metadata_pointer;
+      typedef typename metadata_alloc_traits::const_reference metadata_const_reference;
+      typedef typename metadata_alloc_traits::reference	metadata_reference;
 
       typedef typename traits_type::null_node_update_pointer
       null_node_update_pointer;
 
     public:
-      typedef ov_tree_tag 				 container_category;
+      typedef ov_tree_tag 				container_category;
       typedef _Alloc 					allocator_type;
       typedef typename _Alloc::size_type 		size_type;
       typedef typename _Alloc::difference_type 		difference_type;

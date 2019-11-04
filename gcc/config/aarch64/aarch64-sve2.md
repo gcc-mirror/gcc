@@ -142,3 +142,187 @@
   }
 )
 
+;; Unpredicated 3-way exclusive OR.
+(define_insn "*aarch64_sve2_eor3<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, w, ?&w")
+	(xor:SVE_I
+	  (xor:SVE_I
+	    (match_operand:SVE_I 1 "register_operand" "0, w, w, w")
+	    (match_operand:SVE_I 2 "register_operand" "w, 0, w, w"))
+	  (match_operand:SVE_I 3 "register_operand" "w, w, 0, w")))]
+  "TARGET_SVE2"
+  "@
+  eor3\t%0.d, %0.d, %2.d, %3.d
+  eor3\t%0.d, %0.d, %1.d, %3.d
+  eor3\t%0.d, %0.d, %1.d, %2.d
+  movprfx\t%0, %1\;eor3\t%0.d, %0.d, %2.d, %3.d"
+  [(set_attr "movprfx" "*,*,*,yes")]
+)
+
+;; Use NBSL for vector NOR.
+(define_insn_and_rewrite "*aarch64_sve2_nor<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand 3)
+	   (and:SVE_I
+	     (not:SVE_I
+	       (match_operand:SVE_I 1 "register_operand" "%0, w"))
+	     (not:SVE_I
+	       (match_operand:SVE_I 2 "register_operand" "w, w")))]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE2"
+  "@
+  nbsl\t%0.d, %0.d, %2.d, %0.d
+  movprfx\t%0, %1\;nbsl\t%0.d, %0.d, %2.d, %0.d"
+  "&& !CONSTANT_P (operands[3])"
+  {
+    operands[3] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Use NBSL for vector NAND.
+(define_insn_and_rewrite "*aarch64_sve2_nand<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand 3)
+	   (ior:SVE_I
+	     (not:SVE_I
+	       (match_operand:SVE_I 1 "register_operand" "%0, w"))
+	     (not:SVE_I
+	       (match_operand:SVE_I 2 "register_operand" "w, w")))]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE2"
+  "@
+  nbsl\t%0.d, %0.d, %2.d, %2.d
+  movprfx\t%0, %1\;nbsl\t%0.d, %0.d, %2.d, %2.d"
+  "&& !CONSTANT_P (operands[3])"
+  {
+    operands[3] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Unpredicated bitwise select.
+;; (op3 ? bsl_mov : bsl_dup) == (((bsl_mov ^ bsl_dup) & op3) ^ bsl_dup)
+(define_insn "*aarch64_sve2_bsl<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(xor:SVE_I
+	  (and:SVE_I
+	    (xor:SVE_I
+	      (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
+	      (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
+	    (match_operand:SVE_I 3 "register_operand" "w, w"))
+	  (match_dup BSL_DUP)))]
+  "TARGET_SVE2"
+  "@
+  bsl\t%0.d, %0.d, %<bsl_dup>.d, %3.d
+  movprfx\t%0, %<bsl_mov>\;bsl\t%0.d, %0.d, %<bsl_dup>.d, %3.d"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Unpredicated bitwise inverted select.
+;; (~(op3 ? bsl_mov : bsl_dup)) == (~(((bsl_mov ^ bsl_dup) & op3) ^ bsl_dup))
+(define_insn_and_rewrite "*aarch64_sve2_nbsl<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand 4)
+	   (not:SVE_I
+	     (xor:SVE_I
+	       (and:SVE_I
+		 (xor:SVE_I
+		   (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
+		   (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
+		 (match_operand:SVE_I 3 "register_operand" "w, w"))
+	       (match_dup BSL_DUP)))]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE2"
+  "@
+  nbsl\t%0.d, %0.d, %<bsl_dup>.d, %3.d
+  movprfx\t%0, %<bsl_mov>\;nbsl\t%0.d, %0.d, %<bsl_dup>.d, %3.d"
+  "&& !CONSTANT_P (operands[4])"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Unpredicated bitwise select with inverted first operand.
+;; (op3 ? ~bsl_mov : bsl_dup) == ((~(bsl_mov ^ bsl_dup) & op3) ^ bsl_dup)
+(define_insn_and_rewrite "*aarch64_sve2_bsl1n<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(xor:SVE_I
+	  (and:SVE_I
+	    (unspec:SVE_I
+	      [(match_operand 4)
+	       (not:SVE_I
+		 (xor:SVE_I
+		   (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
+		   (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w")))]
+	      UNSPEC_PRED_X)
+	    (match_operand:SVE_I 3 "register_operand" "w, w"))
+	  (match_dup BSL_DUP)))]
+  "TARGET_SVE2"
+  "@
+  bsl1n\t%0.d, %0.d, %<bsl_dup>.d, %3.d
+  movprfx\t%0, %<bsl_mov>\;bsl1n\t%0.d, %0.d, %<bsl_dup>.d, %3.d"
+  "&& !CONSTANT_P (operands[4])"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Unpredicated bitwise select with inverted second operand.
+;; (bsl_dup ? bsl_mov : ~op3) == ((bsl_dup & bsl_mov) | (~op3 & ~bsl_dup))
+(define_insn_and_rewrite "*aarch64_sve2_bsl2n<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(ior:SVE_I
+	  (and:SVE_I
+	    (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
+	    (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
+	  (unspec:SVE_I
+	    [(match_operand 4)
+	     (and:SVE_I
+	       (not:SVE_I
+		 (match_operand:SVE_I 3 "register_operand" "w, w"))
+	       (not:SVE_I
+		 (match_dup BSL_DUP)))]
+	    UNSPEC_PRED_X)))]
+  "TARGET_SVE2"
+  "@
+  bsl2n\t%0.d, %0.d, %3.d, %<bsl_dup>.d
+  movprfx\t%0, %<bsl_mov>\;bsl2n\t%0.d, %0.d, %3.d, %<bsl_dup>.d"
+  "&& !CONSTANT_P (operands[4])"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Unpredicated bitwise select with inverted second operand, alternative form.
+;; (bsl_dup ? bsl_mov : ~op3) == ((bsl_dup & bsl_mov) | (~bsl_dup & ~op3))
+(define_insn_and_rewrite "*aarch64_sve2_bsl2n<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(ior:SVE_I
+	  (and:SVE_I
+	    (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
+	    (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
+	  (unspec:SVE_I
+	    [(match_operand 4)
+	     (and:SVE_I
+	       (not:SVE_I
+		 (match_dup BSL_DUP))
+	       (not:SVE_I
+		 (match_operand:SVE_I 3 "register_operand" "w, w")))]
+	    UNSPEC_PRED_X)))]
+  "TARGET_SVE2"
+  "@
+  bsl2n\t%0.d, %0.d, %3.d, %<bsl_dup>.d
+  movprfx\t%0, %<bsl_mov>\;bsl2n\t%0.d, %0.d, %3.d, %<bsl_dup>.d"
+  "&& !CONSTANT_P (operands[4])"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)

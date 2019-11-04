@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR middle-end/35130
 
 program pr35130
@@ -10,7 +11,7 @@ program pr35130
     call inner(k)
   end do
 !$omp end parallel do
-  if (any (a.ne.42)) STOP 1
+  if (any (a.ne.42)) stop 1
 contains
  subroutine inner(i)
    implicit none

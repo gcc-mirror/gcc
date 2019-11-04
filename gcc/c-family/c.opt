@@ -338,6 +338,10 @@ Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
 
+Wzero-length-bounds
+C ObjC C++ ObjC++ Var(warn_zero_length_bounds) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about accesses to interior zero-length array members.
+
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
 Warn whenever an Objective-C assignment is being intercepted by the garbage collector.
@@ -367,7 +371,7 @@ C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACR
 Warn when a built-in preprocessor macro is undefined or redefined.
 
 Wc11-c2x-compat
-C ObjC Var(warn_c11_c2x_compat) Init(-1) Warning
+C ObjC CPP(cpp_warn_c11_c2x_compat) CppReason(CPP_W_C11_C2X_COMPAT) Var(warn_c11_c2x_compat) Init(-1) Warning
 Warn about features not present in ISO C11, but present in ISO C2X.
 
 Wc90-c99-compat
@@ -794,6 +798,12 @@ Warn about suspicious length parameters to certain string functions if the argum
 Wsizeof-array-argument
 C ObjC C++ ObjC++ Var(warn_sizeof_array_argument) Warning Init(1)
 Warn when sizeof is applied on a parameter declared as an array.
+
+Wstring-compare
+C ObjC C++ LTO ObjC++ Warning Var(warn_string_compare) Warning LangEnabledBy(C ObjC C++ ObjC++, Wextra)
+Warn about calls to strcmp and strncmp used in equality expressions that
+are necessarily true or false due to the length of one and size of the other
+argument.
 
 Wstringop-overflow
 C ObjC C++ LTO ObjC++ Warning Alias(Wstringop-overflow=, 2, 0)
@@ -1426,6 +1436,10 @@ Removed in GCC 8.  This switch has no effect.
 fconcepts
 C++ ObjC++ Var(flag_concepts)
 Enable support for C++ concepts.
+
+fconcepts-ts
+C++ ObjC++ Var(flag_concepts_ts) Init(0)
+Enable certain features present in the Concepts TS.
 
 fcond-mismatch
 C ObjC C++ ObjC++

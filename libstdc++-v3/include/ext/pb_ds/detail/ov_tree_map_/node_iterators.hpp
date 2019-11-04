@@ -58,20 +58,14 @@ namespace __gnu_pbds
     {
 
     protected:
-      typedef
-      typename _Alloc::template rebind<
-      Value_Type>::other::pointer
-      pointer;
+      typedef typename rebind_traits<_Alloc, Value_Type>::pointer
+	pointer;
 
-      typedef
-      typename _Alloc::template rebind<
-	Value_Type>::other::const_pointer
-      const_pointer;
+      typedef typename rebind_traits<_Alloc, Value_Type>::const_pointer
+	const_pointer;
 
-      typedef
-      typename _Alloc::template rebind<
-	Metadata_Type>::other::const_pointer
-      const_metadata_pointer;
+      typedef typename rebind_traits<_Alloc, Metadata_Type>::const_pointer
+	const_metadata_pointer;
 
       typedef PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC this_type;
 
@@ -91,33 +85,32 @@ namespace __gnu_pbds
 
       typedef trivial_iterator_difference_type difference_type;
 
-      typedef
-      typename _Alloc::template rebind<
-	Value_Type>::other::const_pointer
-      value_type;
+      typedef typename rebind_traits<_Alloc, Value_Type>::const_pointer
+	value_type;
 
-      typedef
-      typename _Alloc::template rebind<
-	typename remove_const<
-	Value_Type>::type>::other::const_pointer
-      reference;
+      typedef typename rebind_traits<_Alloc,
+	      typename remove_const<Value_Type>::type>::const_pointer
+	reference;
 
-      typedef
-      typename _Alloc::template rebind<
-	typename remove_const<
-	Value_Type>::type>::other::const_pointer
-      const_reference;
+      typedef typename rebind_traits<_Alloc, 
+	      typename remove_const<Value_Type>::type>::const_pointer
+	const_reference;
 
       typedef Metadata_Type metadata_type;
 
-      typedef
-      typename _Alloc::template rebind<
-	metadata_type>::other::const_reference
-      metadata_const_reference;
+      typedef typename rebind_traits<_Alloc, metadata_type>::const_reference
+	metadata_const_reference;
 
     public:
       inline
-      ov_tree_node_const_it_(const_pointer p_nd = 0,  const_pointer p_begin_nd = 0,  const_pointer p_end_nd = 0,  const_metadata_pointer p_metadata = 0) : m_p_value(const_cast<pointer>(p_nd)), m_p_begin_value(const_cast<pointer>(p_begin_nd)), m_p_end_value(const_cast<pointer>(p_end_nd)), m_p_metadata(p_metadata)
+      ov_tree_node_const_it_(const_pointer p_nd = 0,
+			     const_pointer p_begin_nd = 0,
+			     const_pointer p_end_nd = 0,
+			     const_metadata_pointer p_metadata = 0)
+      : m_p_value(const_cast<pointer>(p_nd)),
+	m_p_begin_value(const_cast<pointer>(p_begin_nd)),
+	m_p_end_value(const_cast<pointer>(p_end_nd)),
+	m_p_metadata(p_metadata)
       { }
 
       inline const_reference
@@ -221,22 +214,16 @@ namespace __gnu_pbds
 
       typedef trivial_iterator_difference_type difference_type;
 
-      typedef
-      typename _Alloc::template rebind<
-	Value_Type>::other::pointer
-      value_type;
+      typedef typename rebind_traits<_Alloc, Value_Type>::pointer
+	value_type;
 
-      typedef
-      typename _Alloc::template rebind<
-	typename remove_const<
-	Value_Type>::type>::other::pointer
-      reference;
+      typedef typename rebind_traits<_Alloc,
+	      typename remove_const<Value_Type>::type>::pointer
+	reference;
 
-      typedef
-      typename _Alloc::template rebind<
-	typename remove_const<
-	Value_Type>::type>::other::pointer
-      const_reference;
+      typedef typename rebind_traits<_Alloc, 
+	      typename remove_const<Value_Type>::type>::pointer
+	const_reference;
 
       inline
       ov_tree_node_it_(const_pointer p_nd = 0,  const_pointer p_begin_nd = 0,  const_pointer p_end_nd = 0,  const_metadata_pointer p_metadata = 0) : base_type(p_nd,  p_begin_nd,  p_end_nd,  p_metadata)

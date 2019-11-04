@@ -585,6 +585,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	gcc_unreachable ();
       }
 
+    case E_Named_Integer:
+    case E_Named_Real:
+      {
+	tree gnu_ext_name = NULL_TREE;
+
+	if (Is_Public (gnat_entity))
+	  gnu_ext_name = create_concat_name (gnat_entity, NULL);
+
+	/* All references are supposed to be folded in the front-end.  */
+	gcc_assert (definition && gnu_expr);
+
+	gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
+	gnu_expr = convert (gnu_type, gnu_expr);
+
+	/* Build a CONST_DECL for debugging purposes exclusively.  */
+	gnu_decl
+	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
+			     gnu_expr, true, Is_Public (gnat_entity),
+			     false, false, false, artificial_p,
+			     debug_info_p, NULL, gnat_entity, true);
+      }
+      break;
+
     case E_Constant:
       /* Ignore constant definitions already marked with the error node.  See
 	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
@@ -1519,18 +1542,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If this is a constant and we are defining it or it generates a real
 	   symbol at the object level and we are referencing it, we may want
 	   or need to have a true variable to represent it:
-	     - if optimization isn't enabled, for debugging purposes,
 	     - if the constant is public and not overlaid on something else,
 	     - if its address is taken,
-	     - if either itself or its type is aliased.  */
+	     - if it is aliased,
+	     - if optimization isn't enabled, for debugging purposes.  */
 	if (TREE_CODE (gnu_decl) == CONST_DECL
 	    && (definition || Sloc (gnat_entity) > Standard_Location)
-	    && ((!optimize && debug_info_p)
-		|| (Is_Public (gnat_entity)
-		    && No (Address_Clause (gnat_entity)))
+	    && ((Is_Public (gnat_entity) && No (Address_Clause (gnat_entity)))
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
-		|| Is_Aliased (gnat_type)))
+		|| (!optimize && debug_info_p)))
 	  {
 	    tree gnu_corr_var
 	      = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
@@ -1540,6 +1561,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				 attr_list, gnat_entity, false);
 
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
+	    DECL_IGNORED_P (gnu_decl) = 1;
 	  }
 
 	/* If this is a constant, even if we don't need a true variable, we
@@ -5004,6 +5026,11 @@ Gigi_Equivalent_Type (Entity_Id gnat_entity)
       gnat_equiv = Etype (gnat_entity);
       break;
 
+    case E_Array_Subtype:
+      if (!Is_Constrained (gnat_entity))
+	gnat_equiv = Etype (gnat_entity);
+      break;
+
     case E_Class_Wide_Type:
       gnat_equiv = Root_Type (gnat_entity);
       break;
@@ -6755,6 +6782,15 @@ elaborate_reference_1 (tree ref, void *data)
 		   elaborate_reference_1 (TREE_OPERAND (ref, 0), data),
 		   TREE_OPERAND (ref, 1), NULL_TREE);
 
+  /* If this is the displacement of a pointer, elaborate the pointer and then
+     displace the result.  The actual purpose here is to drop the location on
+     the expression, which may be problematic if replicated on references.  */
+  if (TREE_CODE (ref) == POINTER_PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (ref, 1)) == INTEGER_CST)
+    return build2 (POINTER_PLUS_EXPR, TREE_TYPE (ref),
+		   elaborate_reference_1 (TREE_OPERAND (ref, 0), data),
+		   TREE_OPERAND (ref, 1));
+
   sprintf (suffix, "EXP%d", ++er->n);
   return
     elaborate_expression_1 (ref, er->entity, suffix, er->definition, false);
@@ -7202,9 +7238,16 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	  && INTEGRAL_TYPE_P (TREE_TYPE (TYPE_FIELDS (gnu_field_type))))
 	gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
+      orig_field_type = gnu_field_type;
       gnu_field_type
 	= make_type_from_size (gnu_field_type, gnu_size,
 			       Has_Biased_Representation (gnat_field));
+
+      /* If the type has been extended, we may need to cap the alignment.  */
+      if (!needs_strict_alignment
+	  && gnu_field_type != orig_field_type
+	  && tree_int_cst_lt (TYPE_SIZE (orig_field_type), gnu_size))
+	packed = adjust_packed (gnu_field_type, gnu_record_type, packed);
 
       orig_field_type = gnu_field_type;
       gnu_field_type = maybe_pad_type (gnu_field_type, gnu_size, 0, gnat_field,
@@ -7889,7 +7932,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
        && !(Is_Packed (gnat_record_type)
 	    ? has_non_packed_fixed_size_field
 	    : Optimize_Alignment_Space (gnat_record_type))
-       && !debug__debug_flag_dot_r);
+       && !Debug_Flag_Dot_R);
   const bool w_reorder
     = (Convention (gnat_record_type) == Convention_Ada
        && Warn_On_Questionable_Layout
@@ -8260,9 +8303,8 @@ annotate_value (tree gnu_size)
     {
     case INTEGER_CST:
       /* For negative values, build NEGATE_EXPR of the opposite.  Such values
-	 can appear for discriminants in expressions for variants.  Note that,
-	 sizetype being unsigned, we don't directly use tree_int_cst_sgn.  */
-      if (tree_int_cst_sign_bit (gnu_size))
+	 can appear for discriminants in expressions for variants.  */
+      if (tree_int_cst_sgn (gnu_size) < 0)
 	{
 	  tree t = wide_int_to_tree (sizetype, -wi::to_wide (gnu_size));
 	  tcode = Negate_Expr;
@@ -8340,9 +8382,8 @@ annotate_value (tree gnu_size)
 	  && tree_int_cst_sign_bit (TREE_OPERAND (gnu_size, 1)))
 	{
 	  tcode = Minus_Expr;
-	  ops[0] = annotate_value (TREE_OPERAND (gnu_size, 0));
-	  wide_int op1 = -wi::to_wide (TREE_OPERAND (gnu_size, 1));
-	  ops[1] = annotate_value (wide_int_to_tree (sizetype, op1));
+	  wide_int wop1 = -wi::to_wide (TREE_OPERAND (gnu_size, 1));
+	  ops[1] = annotate_value (wide_int_to_tree (sizetype, wop1));
 	  break;
 	}
 
@@ -8383,9 +8424,9 @@ annotate_value (tree gnu_size)
 	 Such values can appear in expressions with aligning patterns.  */
       if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
 	{
-	  wide_int op1 = wi::sext (wi::to_wide (TREE_OPERAND (gnu_size, 1)),
-				   TYPE_PRECISION (sizetype));
-	  ops[1] = annotate_value (wide_int_to_tree (sizetype, op1));
+	  wide_int wop1 = -wi::to_wide (TREE_OPERAND (gnu_size, 1));
+	  tree op1 = wide_int_to_tree (sizetype, wop1);
+	  ops[1] = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
 	}
       break;
 

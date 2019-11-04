@@ -5,4 +5,4 @@
 /* { dg-error "'-mlarge' requires a 430X-compatible '-mmcu='" "" { target msp430_mlarge_selected } 0 } */
 
 /* revision=0, hwmpy=0  */
-#include "../devices-main.c"
+#include "devices-main.c"

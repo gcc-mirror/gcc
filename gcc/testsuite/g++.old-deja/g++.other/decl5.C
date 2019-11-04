@@ -8,11 +8,10 @@
 
 
 struct A {
-  int A::fn();        // { dg-error "extra qualification" } 
-  int A::m;           // { dg-error "extra qualification" } 
+  int A::fn();        // { dg-error "7:extra qualification" } 
+  int A::m;           // { dg-error "7:extra qualification" } 
   struct e;
-  struct A::e {int i;}; // { dg-error "extra qualification" "qual" } 
-  // { dg-error "anonymous struct" "anon" { target *-*-* } .-1 }
+  struct A::e {int i;}; // { dg-error "10:extra qualification" "qual" } 
   struct A::expand {  // { dg-error "qualified name" } 
   int m;
   };

@@ -2499,6 +2499,14 @@ operation_could_trap_helper_p (enum tree_code op,
       /* Constructing an object cannot trap.  */
       return false;
 
+    case COND_EXPR:
+    case VEC_COND_EXPR:
+      /* Whether *COND_EXPR can trap depends on whether the
+	 first argument can trap, so signal it as not handled.
+	 Whether lhs is floating or not doesn't matter.  */
+      *handled = false;
+      return false;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (fp_operation && flag_trapping_math)
@@ -2614,9 +2622,12 @@ tree_could_trap_p (tree expr)
   if (!expr)
     return false;
 
-  /* For COND_EXPR and VEC_COND_EXPR only the condition may trap.  */
+  /* In COND_EXPR and VEC_COND_EXPR only the condition may trap, but
+     they won't appear as operands in GIMPLE form, so this is just for the
+     GENERIC uses where it needs to recurse on the operands and so
+     *COND_EXPR itself doesn't trap.  */
   if (TREE_CODE (expr) == COND_EXPR || TREE_CODE (expr) == VEC_COND_EXPR)
-    expr = TREE_OPERAND (expr, 0);
+    return false;
 
   code = TREE_CODE (expr);
   t = TREE_TYPE (expr);

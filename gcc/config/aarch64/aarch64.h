@@ -245,6 +245,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
 #define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
+#define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
 #define AARCH64_ISA_V8_5	   (aarch64_isa_flags & AARCH64_FL_V8_5)
 #define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
 
@@ -299,6 +300,9 @@ extern unsigned aarch64_architecture_version;
 
 /* TME instructions are enabled.  */
 #define TARGET_TME (AARCH64_ISA_TME)
+
+/* Random number instructions from Armv8.5-a.  */
+#define TARGET_RNG (AARCH64_ISA_RNG)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -362,6 +366,9 @@ extern unsigned aarch64_architecture_version;
    P0-P7        Predicate low registers: valid in all predicate contexts
    P8-P15       Predicate high registers: used as scratch space
 
+   FFR		First Fault Register, a fixed-use SVE predicate register
+   FFRT		FFR token: a fake register used for modelling dependencies
+
    VG           Pseudo "vector granules" register
 
    VG is the number of 64-bit elements in an SVE vector.  We define
@@ -382,6 +389,7 @@ extern unsigned aarch64_architecture_version;
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
+    1, 1			/* FFR and FFRT */	\
   }
 
 /* X30 is marked as caller-saved which is in line with regular function call
@@ -404,6 +412,7 @@ extern unsigned aarch64_architecture_version;
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
+    1, 1			/* FFR and FFRT */	\
   }
 
 #define REGISTER_NAMES						\
@@ -419,6 +428,7 @@ extern unsigned aarch64_architecture_version;
     "sfp", "ap",  "cc",  "vg",					\
     "p0",  "p1",  "p2",  "p3",  "p4",  "p5",  "p6",  "p7",	\
     "p8",  "p9",  "p10", "p11", "p12", "p13", "p14", "p15",	\
+    "ffr", "ffrt"						\
   }
 
 /* Generate the register aliases for core register N */
@@ -467,11 +477,12 @@ extern unsigned aarch64_architecture_version;
 #define FRAME_POINTER_REGNUM		SFP_REGNUM
 #define STACK_POINTER_REGNUM		SP_REGNUM
 #define ARG_POINTER_REGNUM		AP_REGNUM
-#define FIRST_PSEUDO_REGISTER		(P15_REGNUM + 1)
+#define FIRST_PSEUDO_REGISTER		(FFRT_REGNUM + 1)
 
-/* The number of (integer) argument register available.  */
+/* The number of argument registers available for each class.  */
 #define NUM_ARG_REGS			8
 #define NUM_FP_ARG_REGS			8
+#define NUM_PR_ARG_REGS			4
 
 /* A Homogeneous Floating-Point or Short-Vector Aggregate may have at most
    four members.  */
@@ -597,6 +608,8 @@ enum reg_class
   PR_LO_REGS,
   PR_HI_REGS,
   PR_REGS,
+  FFR_REGS,
+  PR_AND_FFR_REGS,
   ALL_REGS,
   LIM_REG_CLASSES		/* Last */
 };
@@ -617,6 +630,8 @@ enum reg_class
   "PR_LO_REGS",					\
   "PR_HI_REGS",					\
   "PR_REGS",					\
+  "FFR_REGS",					\
+  "PR_AND_FFR_REGS",				\
   "ALL_REGS"					\
 }
 
@@ -634,6 +649,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* PR_LO_REGS */	\
   { 0x00000000, 0x00000000, 0x000ff000 },	/* PR_HI_REGS */	\
   { 0x00000000, 0x00000000, 0x000ffff0 },	/* PR_REGS */		\
+  { 0x00000000, 0x00000000, 0x00300000 },	/* FFR_REGS */		\
+  { 0x00000000, 0x00000000, 0x003ffff0 },	/* PR_AND_FFR_REGS */	\
   { 0xffffffff, 0xffffffff, 0x000fffff }	/* ALL_REGS */		\
 }
 
@@ -709,7 +726,7 @@ extern enum aarch64_processor aarch64_tune;
 #ifdef HAVE_POLY_INT_H
 struct GTY (()) aarch64_frame
 {
-  HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
+  poly_int64 reg_offset[LAST_SAVED_REGNUM + 1];
 
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the
@@ -717,9 +734,12 @@ struct GTY (()) aarch64_frame
      STACK_BOUNDARY.  */
   HOST_WIDE_INT saved_varargs_size;
 
-  /* The size of the saved callee-save int/FP registers.  */
+  /* The size of the callee-save registers with a slot in REG_OFFSET.  */
+  poly_int64 saved_regs_size;
 
-  HOST_WIDE_INT saved_regs_size;
+  /* The size of the callee-save registers with a slot in REG_OFFSET that
+     are saved below the hard frame pointer.  */
+  poly_int64 below_hard_fp_saved_regs_size;
 
   /* Offset from the base of the frame (incomming SP) to the
      top of the locals area.  This value is always a multiple of
@@ -747,6 +767,10 @@ struct GTY (()) aarch64_frame
      It may be non-zero if no push is used (ie. callee_adjust == 0).  */
   poly_int64 callee_offset;
 
+  /* The size of the stack adjustment before saving or after restoring
+     SVE registers.  */
+  poly_int64 sve_callee_adjust;
+
   /* The size of the stack adjustment after saving callee-saves.  */
   poly_int64 final_adjust;
 
@@ -755,6 +779,11 @@ struct GTY (()) aarch64_frame
 
   unsigned wb_candidate1;
   unsigned wb_candidate2;
+
+  /* Big-endian SVE frames need a spare predicate register in order
+     to save vector registers in the correct layout for unwinding.
+     This is the register they should use.  */
+  unsigned spare_pred_reg;
 
   bool laid_out;
 };
@@ -784,6 +813,8 @@ enum arm_pcs
 {
   ARM_PCS_AAPCS64,		/* Base standard AAPCS for 64 bit.  */
   ARM_PCS_SIMD,			/* For aarch64_vector_pcs functions.  */
+  ARM_PCS_SVE,			/* For functions that pass or return
+				   values in SVE registers.  */
   ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
   ARM_PCS_UNKNOWN
 };
@@ -811,6 +842,8 @@ typedef struct
   int aapcs_nextncrn;		/* Next next core register number.  */
   int aapcs_nvrn;		/* Next Vector register number.  */
   int aapcs_nextnvrn;		/* Next Next Vector register number.  */
+  int aapcs_nprn;		/* Next Predicate register number.  */
+  int aapcs_nextnprn;		/* Next Next Predicate register number.  */
   rtx aapcs_reg;		/* Register assigned to this argument.  This
 				   is NULL_RTX if this parameter goes on
 				   the stack.  */
@@ -821,6 +854,8 @@ typedef struct
 				   aapcs_reg == NULL_RTX.  */
   int aapcs_stack_size;		/* The total size (in words, per 8 byte) of the
 				   stack arg area so far.  */
+  bool silent_p;		/* True if we should act silently, rather than
+				   raise an error for invalid calls.  */
 } CUMULATIVE_ARGS;
 #endif
 
@@ -1128,7 +1163,8 @@ extern poly_uint16 aarch64_sve_vg;
 #define BITS_PER_SVE_VECTOR (poly_uint16 (aarch64_sve_vg * 64))
 #define BYTES_PER_SVE_VECTOR (poly_uint16 (aarch64_sve_vg * 8))
 
-/* The number of bytes in an SVE predicate.  */
+/* The number of bits and bytes in an SVE predicate.  */
+#define BITS_PER_SVE_PRED BYTES_PER_SVE_VECTOR
 #define BYTES_PER_SVE_PRED aarch64_sve_vg
 
 /* The SVE mode for a vector of bytes.  */

@@ -53,6 +53,7 @@
 
 
 static void msp430_compute_frame_info (void);
+static bool use_32bit_hwmult (void);
 
 
 
@@ -332,28 +333,9 @@ msp430_hard_regno_nregs (unsigned int, machine_mode mode)
 	  / UNITS_PER_WORD);
 }
 
-/* Implements HARD_REGNO_NREGS_HAS_PADDING.  */
-int
-msp430_hard_regno_nregs_has_padding (int regno ATTRIBUTE_UNUSED,
-				     machine_mode mode)
-{
-  if (mode == PSImode && msp430x)
-    return 1;
-  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
-	  / UNITS_PER_WORD);
-}
-
-/* Implements HARD_REGNO_NREGS_WITH_PADDING.  */
-int
-msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
-				      machine_mode mode)
-{
-  if (mode == PSImode)
-    return 2;
-  if (mode == CPSImode)
-    return 4;
-  return msp430_hard_regno_nregs (regno, mode);
-}
+/* subreg_get_info correctly handles PSImode registers, so defining
+   HARD_REGNO_NREGS_HAS_PADDING and HARD_REGNO_NREGS_WITH_PADDING
+   has no effect.  */
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK msp430_hard_regno_mode_ok
@@ -942,12 +924,17 @@ msp430_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
       return false;
 
     case PLUS:
+    case POST_INC:
       if (REG_P (XEXP (x, 0)))
 	{
 	  if (GET_MODE (x) != GET_MODE (XEXP (x, 0)))
 	    return false;
 	  if (!reg_ok_for_addr (XEXP (x, 0), strict))
 	    return false;
+	  if (GET_CODE (x) == POST_INC)
+	    /* At this point, if the original rtx was a post_inc, we don't have
+	       anything further to check.  */
+	    return true;
 	  switch (GET_CODE (XEXP (x, 1)))
 	    {
 	    case CONST:
@@ -2705,7 +2692,7 @@ void
 msp430_expand_helper (rtx *operands, const char *helper_name,
 		      bool const_variants)
 {
-  rtx c, f;
+  rtx c, fusage, fsym;
   char *helper_const = NULL;
   int arg1 = 12;
   int arg2 = 13;
@@ -2714,8 +2701,14 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
   machine_mode arg1mode = GET_MODE (operands[1]);
   machine_mode arg2mode = GET_MODE (operands[2]);
   int have_430x = msp430x ? 1 : 0;
+  int expand_mpy = strncmp (helper_name, "__mspabi_mpy",
+			    sizeof ("__mspabi_mpy") - 1) == 0;
+  /* This function has been used incorrectly if CONST_VARIANTS is TRUE for a
+     hwmpy function.  */
+  gcc_assert (!(expand_mpy && const_variants));
 
-  if (CONST_INT_P (operands[2]))
+  /* Emit size-optimal insns for small shifts we can easily do inline.  */
+  if (CONST_INT_P (operands[2]) && !expand_mpy)
     {
       int i;
 
@@ -2732,6 +2725,10 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 	}
     }
 
+  if (arg1mode != VOIDmode && arg2mode != VOIDmode)
+    /* Modes of arguments must be equal if not constants.  */
+    gcc_assert (arg1mode == arg2mode);
+
   if (arg1mode == VOIDmode)
     arg1mode = arg0mode;
   if (arg2mode == VOIDmode)
@@ -2744,12 +2741,13 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
     }
   else if (arg1mode == DImode)
     {
-      /* Shift value in R8:R11, shift amount in R12.  */
       arg1 = 8;
       arg1sz = 4;
       arg2 = 12;
     }
 
+  /* Use the "const_variant" of a shift library function if requested.
+     These are faster, but have larger code size.  */
   if (const_variants
       && CONST_INT_P (operands[2])
       && INTVAL (operands[2]) >= 1
@@ -2763,25 +2761,58 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 		(int) INTVAL (operands[2]));
     }
 
+  /* Setup the arguments to the helper function.  */
   emit_move_insn (gen_rtx_REG (arg1mode, arg1),
 		  operands[1]);
   if (!helper_const)
     emit_move_insn (gen_rtx_REG (arg2mode, arg2),
 		    operands[2]);
 
-  c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12),
-			       gen_rtx_SYMBOL_REF (VOIDmode, helper_const
-						   ? helper_const
-						   : helper_name),
-			       GEN_INT (0));
+  if (expand_mpy)
+    {
+      if (msp430_use_f5_series_hwmult ())
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+						     "_f5hw", NULL));
+      else if (use_32bit_hwmult ())
+	{
+	  /* When the arguments are 16-bits, the 16-bit hardware multiplier is
+	     used.  */
+	  if (arg1mode == HImode)
+	    fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+							 "_hw", NULL));
+	  else
+	    fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+							 "_hw32", NULL));
+	}
+      /* 16-bit hardware multiply.  */
+      else if (msp430_has_hwmult ())
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+						     "_hw", NULL));
+      else
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, helper_name);
+    }
+  else
+    fsym = gen_rtx_SYMBOL_REF (VOIDmode,
+			       helper_const ? helper_const : helper_name);
+
+  c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12), fsym, GEN_INT (0));
+
   c = emit_call_insn (c);
   RTL_CONST_CALL_P (c) = 1;
 
-  f = 0;
-  use_regs (&f, arg1, arg1sz);
+  /* Add register usage information for the arguments to the call.  */
+  fusage = NULL;
+  use_regs (&fusage, arg1, arg1sz);
   if (!helper_const)
-    use_regs (&f, arg2, 1);
-  add_function_usage_to (c, f);
+    {
+      /* If we are expanding a shift, we only need to use the low register
+	 for the shift amount.  */
+      if (!expand_mpy)
+	use_regs (&fusage, arg2, 1);
+      else
+	use_regs (&fusage, arg2, arg1sz);
+    }
+  add_function_usage_to (c, fusage);
 
   emit_move_insn (operands[0],
 		  /* Return value will always start in R12.  */
@@ -2810,6 +2841,7 @@ rtx
 msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
 {
   rtx rv;
+  gcc_assert (mode == HImode);
 
   if (GET_CODE (r) == SUBREG
       && SUBREG_BYTE (r) == 0)
@@ -2826,7 +2858,15 @@ msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
 	rv = simplify_gen_subreg (mode, ireg, imode, byte);
     }
   else if (GET_CODE (r) == MEM)
-    rv = adjust_address (r, mode, byte);
+    {
+      /* When byte == 2, we can be certain that we were already called with an
+	 identical rtx with byte == 0.  So we don't need to do anything to
+	 get a 2 byte offset of a (mem (post_inc)) rtx, since the address has
+	 already been offset by the post_inc itself.  */
+      if (GET_CODE (XEXP (r, 0)) == POST_INC && byte == 2)
+	byte = 0;
+      rv = adjust_address (r, mode, byte);
+    }
   else if (GET_CODE (r) == SYMBOL_REF
 	   && (byte == 0 || byte == 2)
 	   && mode == HImode)
@@ -2861,6 +2901,18 @@ msp430_split_addsi (rtx *operands)
 
   if (GET_CODE (operands[5]) == CONST_INT)
     operands[9] = GEN_INT (INTVAL (operands[5]) & 0xffff);
+  /* Handle post_inc, for example:
+     (set (reg:SI)
+	  (plus:SI (reg:SI)
+		   (mem:SI (post_inc:PSI (reg:PSI))))).  */
+  else if (MEM_P (operands[5]) && GET_CODE (XEXP (operands[5], 0)) == POST_INC)
+    {
+      /* Strip out the post_inc from (mem (post_inc (reg))).  */
+      operands[9] = XEXP (XEXP (operands[5], 0), 0);
+      operands[9] = gen_rtx_MEM (HImode, operands[9]);
+      /* Then zero extend as normal.  */
+      operands[9] = gen_rtx_ZERO_EXTEND (SImode, operands[9]);
+    }
   else
     operands[9] = gen_rtx_ZERO_EXTEND (SImode, operands[5]);
   return 0;
@@ -3071,20 +3123,22 @@ use_32bit_hwmult (void)
 /* Returns true if the current MCU does not have a
    hardware multiplier of any kind.  */
 
-static bool
-msp430_no_hwmult (void)
+bool
+msp430_has_hwmult (void)
 {
   static const char * cached_match = NULL;
   static bool cached_result;
 
   if (msp430_hwmult_type == MSP430_HWMULT_NONE)
-    return true;
-
-  if (msp430_hwmult_type != MSP430_HWMULT_AUTO)
     return false;
 
-  if (target_mcu == NULL)
+  /* TRUE for any other explicit hwmult specified.  */
+  if (msp430_hwmult_type != MSP430_HWMULT_AUTO)
     return true;
+
+  /* Now handle -mhwmult=auto.  */
+  if (target_mcu == NULL)
+    return false;
 
   if (target_mcu == cached_match)
     return cached_result;
@@ -3093,11 +3147,11 @@ msp430_no_hwmult (void)
 
   msp430_extract_mcu_data (target_mcu);
   if (extracted_mcu_data.name != NULL)
-    return cached_result = extracted_mcu_data.hwmpy == 0;
+    return cached_result = extracted_mcu_data.hwmpy != 0;
 
   /* If we do not recognise the MCU name, we assume that it does not support
      any kind of hardware multiply - this is the safest assumption to make.  */
-  return cached_result = true;
+  return cached_result = false;
 }
 
 /* This function does the same as the default, but it will replace GCC
@@ -3117,13 +3171,13 @@ msp430_output_labelref (FILE *file, const char *name)
 
   /* If we have been given a specific MCU name then we may be
      able to make use of its hardware multiply capabilities.  */
-  if (msp430_hwmult_type != MSP430_HWMULT_NONE)
+  if (msp430_has_hwmult ())
     {
       if (strcmp ("__mspabi_mpyi", name) == 0)
 	{
 	  if (msp430_use_f5_series_hwmult ())
 	    name = "__mulhi2_f5";
-	  else if (! msp430_no_hwmult ())
+	  else
 	    name = "__mulhi2";
 	}
       else if (strcmp ("__mspabi_mpyl", name) == 0)
@@ -3132,7 +3186,7 @@ msp430_output_labelref (FILE *file, const char *name)
 	    name = "__mulsi2_f5";
 	  else if (use_32bit_hwmult ())
 	    name = "__mulsi2_hw32";
-	  else if (! msp430_no_hwmult ())
+	  else
 	    name = "__mulsi2";
 	}
     }
@@ -3205,6 +3259,10 @@ msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
       fprintf (file, "@");
       break;
 
+    case POST_INC:
+      fprintf (file, "@%s+", reg_names[REGNO (XEXP (addr, 0))]);
+      return;
+
     case CONST:
     case CONST_INT:
     case SYMBOL_REF:
@@ -3219,10 +3277,37 @@ msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
   msp430_print_operand_raw (file, addr);
 }
 
+/* We can only allow signed 15-bit indexes i.e. +/-32K.  */
+static bool
+msp430_check_index_not_high_mem (rtx op)
+{
+  if (CONST_INT_P (op)
+      && IN_RANGE (INTVAL (op), HOST_WIDE_INT_M1U << 15, (1 << 15) - 1))
+    return true;
+  return false;
+}
+
+/* If this returns true, we don't need a 430X insn.  */
+static bool
+msp430_check_plus_not_high_mem (rtx op)
+{
+  if (GET_CODE (op) != PLUS)
+    return false;
+  rtx op0 = XEXP (op, 0);
+  rtx op1 = XEXP (op, 1);
+  if (SYMBOL_REF_P (op0)
+      && (SYMBOL_REF_FLAGS (op0) & SYMBOL_FLAG_LOW_MEM)
+      && msp430_check_index_not_high_mem (op1))
+    return true;
+  return false;
+}
+
 /* Determine whether an RTX is definitely not a MEM referencing an address in
    the upper memory region.  Returns true if we've decided the address will be
    in the lower memory region, or the RTX is not a MEM.  Returns false
-   otherwise.  */
+   otherwise.
+   The Ys constraint will catch (mem (plus (const/reg)) but we catch cases
+   involving a symbol_ref here.  */
 bool
 msp430_op_not_in_high_mem (rtx op)
 {
@@ -3238,11 +3323,15 @@ msp430_op_not_in_high_mem (rtx op)
        memory.  */
     return true;
 
-  /* Catch (mem (const (plus ((symbol_ref) (const_int))))) e.g. &addr+2.  */
-  if ((GET_CODE (op0) == CONST)
-      && (GET_CODE (XEXP (op0, 0)) == PLUS)
-      && (SYMBOL_REF_P (XEXP (XEXP (op0, 0), 0)))
-      && (SYMBOL_REF_FLAGS (XEXP (XEXP (op0, 0), 0)) & SYMBOL_FLAG_LOW_MEM))
+  /* Check possibilites for (mem (plus)).
+     e.g. (mem (const (plus ((symbol_ref) (const_int))))) : &addr+2.  */
+  if (msp430_check_plus_not_high_mem (op0)
+      || ((GET_CODE (op0) == CONST)
+	  && msp430_check_plus_not_high_mem (XEXP (op0, 0))))
+    return true;
+
+  /* An absolute 16-bit address is allowed.  */
+  if ((CONST_INT_P (op0) && (IN_RANGE (INTVAL (op0), 0, (1 << 16) - 1))))
     return true;
 
   /* Return false when undecided.  */

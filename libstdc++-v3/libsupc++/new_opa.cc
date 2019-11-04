@@ -108,9 +108,10 @@ operator new (std::size_t sz, std::align_val_t al)
     sz = 1;
 
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
-# ifdef _AIX
+# if defined _AIX || defined __APPLE__
   /* AIX 7.2.0.0 aligned_alloc incorrectly has posix_memalign's requirement
-   * that alignment is a multiple of sizeof(void*).  */
+   * that alignment is a multiple of sizeof(void*).
+   * OS X 10.15 has the same requirement.  */
   if (align < sizeof(void*))
     align = sizeof(void*);
 # endif

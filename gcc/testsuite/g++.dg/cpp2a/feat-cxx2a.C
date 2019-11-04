@@ -470,8 +470,8 @@
 
 #  if ! __has_cpp_attribute(nodiscard)
 #    error "__has_cpp_attribute(nodiscard)"
-#  elif __has_cpp_attribute(nodiscard) != 201603
-#    error "__has_cpp_attribute(nodiscard) != 201603"
+#  elif __has_cpp_attribute(nodiscard) != 201907
+#    error "__has_cpp_attribute(nodiscard) != 201907"
 #  endif
 
 #  if ! __has_cpp_attribute(fallthrough)

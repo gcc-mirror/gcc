@@ -142,6 +142,9 @@ gfc_conv_descriptor_data_get (tree desc)
   tree field, type, t;
 
   type = TREE_TYPE (desc);
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = TYPE_FIELDS (type);
@@ -8049,7 +8052,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  /* The components shall be deallocated before their containing entity.  */
 	  gfc_prepend_expr_to_block (&se->post, tmp);
 	}
-      if (expr->ts.type == BT_CHARACTER)
+      if (expr->ts.type == BT_CHARACTER && expr->expr_type != EXPR_FUNCTION)
 	se->string_length = expr->ts.u.cl->backend_decl;
       if (size)
 	array_parameter_size (se->expr, expr, size);

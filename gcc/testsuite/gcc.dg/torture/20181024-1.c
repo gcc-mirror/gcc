@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target size32plus } */
 /* { dg-additional-options "-march=core-avx2" { target { x86_64-*-* i?86-*-* } } } */
 
 typedef enum {

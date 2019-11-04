@@ -76,7 +76,11 @@ namespace __gnu_test
     check_delete(Alloc a = Alloc())
     {
       __gnu_test::counter::exceptions(false);
+#if __cplusplus >= 201103L
+      auto p = a.allocate(10);
+#else
       typename Alloc::pointer p = a.allocate(10);
+#endif
       const std::size_t count1 = __gnu_test::counter::count();
       a.deallocate(p, 10);
       const std::size_t count2 = __gnu_test::counter::count();

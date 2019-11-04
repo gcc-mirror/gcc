@@ -381,10 +381,15 @@
       </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-xml-single-docbook</code></strong></pre><p>
       </p><p>
-	Generated files are output into separate sub directores of
+	Generated files are output into separate sub-directores of
 	<code class="filename">doc/docbook/</code> in the
 	build directory, based on the output format. For instance, the
 	HTML docs will be in <code class="filename">doc/docbook/html</code>.
+      </p><p>
+	The </p><pre class="screen">doc-html-docbook-regenerate</pre><p> target will generate
+	the HTML files and copy them back to the libstdc++ source tree.
+	This can be used to update the HTML files that are checked in to
+	version control.
       </p><p>
 	If the Docbook stylesheets are installed in a custom location,
 	one can use the variable <code class="literal">XSL_STYLE_DIR</code> to

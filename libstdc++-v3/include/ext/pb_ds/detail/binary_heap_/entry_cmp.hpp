@@ -62,10 +62,10 @@ namespace __gnu_pbds
       struct entry_cmp<_VTp, Cmp_Fn, _Alloc, false>
       {
       private:
-	typedef typename _Alloc::template rebind<_VTp>		__rebind_v;
+	typedef rebind_traits<_Alloc, _VTp>		__rebind_v;
 
       public:
-	typedef typename __rebind_v::other::const_pointer	entry;
+	typedef typename __rebind_v::const_pointer	entry;
 
 	/// Compare plus entry.
 	struct type : public Cmp_Fn

@@ -17,13 +17,13 @@ program main
   i = 41
   read (20,*, asynchronous="yes") i
   wait (20)
-  if (i .ne. 1) STOP 1
+  if (i .ne. 1) stop 1
   write (*,*) ' '
   backspace (20)
   i = 42
   read (20,*, asynchronous="yes") i
   close (20)
-  if (i .ne. 1) STOP 2
+  if (i .ne. 1) stop 2
 
   ! PR libfortran/20125
   open (20, status='scratch', asynchronous="yes")
@@ -31,14 +31,14 @@ program main
   backspace (20)
   read (20,*, asynchronous="yes") i
   wait (20)
-  if (i .ne. 7) STOP 3
+  if (i .ne. 7) stop 3
   close (20)
 
   open (20, status='scratch', form='unformatted')
   write (20) 8
   backspace (20)
   read (20) i
-  if (i .ne. 8) STOP 4
+  if (i .ne. 8) stop 4
   close (20)
 
   ! PR libfortran/20471
@@ -52,7 +52,7 @@ program main
   read (3) (y(n),n=1,10)
 
   do n = 1, 10
-     if (abs(x(n)-y(n)) > 0.00001) STOP 5
+     if (abs(x(n)-y(n)) > 0.00001) stop 5
   end do
   close (3)
 
@@ -69,7 +69,7 @@ program main
   nr = nr + 1
   goto 20
 30 continue
-  if (nr .ne. 5) STOP 6
+  if (nr .ne. 5) stop 6
 
   do i = 1, nr+1
      backspace (3)
@@ -77,14 +77,14 @@ program main
 
   do i = 1, nr
      read(3,end=70,err=90) n, (x(n),n=1,10)
-     if (abs(x(1) - i) .gt. 0.001) STOP 7
+     if (abs(x(1) - i) .gt. 0.001) stop 7
   end do
   close (3)
   stop
 
 70 continue
-  STOP 8
+  stop 8
 90 continue
-  STOP 9
+  stop 9
 
 end program

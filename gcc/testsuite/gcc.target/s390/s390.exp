@@ -27,6 +27,7 @@ if ![istarget s390*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 load_lib target-supports.exp
+load_lib gfortran-dg.exp
 
 # Return 1 if the the assembler understands .machine and .machinemode.  The
 # target attribute needs that feature to work.
@@ -193,6 +194,10 @@ global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS " -ansi -pedantic-errors"
 }
+global DEFAULT_FFLAGS
+if ![info exists DEFAULT_FFLAGS] then {
+    set DEFAULT_FFLAGS " -pedantic-errors"
+}
 
 # Initialize `dg'.
 dg-init
@@ -208,6 +213,9 @@ dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.{c,S}] \
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
+
+gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.F90]] \
+	"" $DEFAULT_FFLAGS
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS

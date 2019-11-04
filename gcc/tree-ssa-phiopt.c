@@ -2467,7 +2467,11 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 						 then_assign, else_assign);
     }
 
-  if (MAX_STORES_TO_SINK == 0)
+  /* If either vectorization or if-conversion is disabled then do
+     not sink any stores.  */
+  if (MAX_STORES_TO_SINK == 0
+      || (!flag_tree_loop_vectorize && !flag_tree_slp_vectorize)
+      || !flag_tree_loop_if_convert)
     return false;
 
   /* Find data references.  */

@@ -77,8 +77,8 @@ namespace __gnu_pbds
       typedef Comb_Probe_Fn comb_probe_fn_base;
       typedef Hash_Fn hash_fn_base;
       typedef Probe_Fn probe_fn_base;
-      typedef typename _Alloc::template rebind<Key>::other key_allocator;
-      typedef typename key_allocator::const_reference key_const_reference;
+      typedef typename rebind_traits<_Alloc, Key>::const_reference
+	key_const_reference;
 
       ranged_probe_fn(size_type);
 
@@ -183,8 +183,8 @@ namespace __gnu_pbds
       typedef Comb_Probe_Fn comb_probe_fn_base;
       typedef Hash_Fn hash_fn_base;
       typedef Probe_Fn probe_fn_base;
-      typedef typename _Alloc::template rebind<Key>::other key_allocator;
-      typedef typename key_allocator::const_reference key_const_reference;
+      typedef typename rebind_traits<_Alloc, Key>::const_reference
+	key_const_reference;
 
       ranged_probe_fn(size_type);
 
@@ -300,8 +300,8 @@ namespace __gnu_pbds
     protected:
       typedef typename _Alloc::size_type size_type;
       typedef Comb_Probe_Fn comb_probe_fn_base;
-      typedef typename _Alloc::template rebind<Key>::other key_allocator;
-      typedef typename key_allocator::const_reference key_const_reference;
+      typedef typename rebind_traits<_Alloc, Key>::const_reference
+	key_const_reference;
 
       ranged_probe_fn(size_type size)
       { Comb_Probe_Fn::notify_resized(size); }

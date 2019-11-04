@@ -78,7 +78,7 @@ namespace __gnu_pbds
     : public PB_DS_B_HEAP_BASE
     {
     private:
-      typedef typename _Alloc::template rebind<Value_Type>::other __rebind_v;
+      typedef rebind_traits<_Alloc, Value_Type>		__rebind_v;
       typedef PB_DS_B_HEAP_BASE	  			base_type;
 
     protected:

@@ -69,6 +69,8 @@ extern int code_for_indirect_jump_scratch;
    FPU is disabled (which makes it compatible with SH4al-dsp).  */
 #define TARGET_SH4A_FP (TARGET_SH4A && TARGET_FPU_ANY)
 
+/* True if the FPU is a SH4-300 variant.  */
+#define TARGET_FPU_SH4_300 (TARGET_FPU_ANY && TARGET_SH4_300)
 
 /* This is not used by the SH2E calling convention  */
 #define TARGET_VARARGS_PRETEND_ARGS(FUN_DECL) \

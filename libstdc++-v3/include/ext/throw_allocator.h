@@ -62,6 +62,7 @@
 # include <tr1/functional>
 # include <tr1/random>
 #endif
+#include <ext/alloc_traits.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -795,8 +796,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public annotate_base, public _Cond
     {
     public:
-      typedef size_t 				size_type;
-      typedef ptrdiff_t 			difference_type;
+      typedef std::size_t 			size_type;
+      typedef std::ptrdiff_t 			difference_type;
       typedef _Tp 				value_type;
       typedef value_type* 			pointer;
       typedef const value_type* 		const_pointer;
@@ -814,12 +815,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       std::allocator<value_type> 		_M_allocator;
 
+      typedef __gnu_cxx::__alloc_traits<std::allocator<value_type> > traits;
+
       using condition_type::throw_conditionally;
 
     public:
       size_type
       max_size() const _GLIBCXX_USE_NOEXCEPT
-      { return _M_allocator.max_size(); }
+      { return traits::max_size(_M_allocator); }
 
       pointer
       address(reference __x) const _GLIBCXX_NOEXCEPT
@@ -830,13 +833,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::__addressof(__x); }
 
       _GLIBCXX_NODISCARD pointer
-      allocate(size_type __n, std::allocator<void>::const_pointer hint = 0)
+      allocate(size_type __n, const void* hint = 0)
       {
 	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
 	throw_conditionally();
-	pointer const a = _M_allocator.allocate(__n, hint);
+	pointer const a = traits::allocate(_M_allocator, __n, hint);
 	insert(a, sizeof(value_type) * __n);
 	return a;
       }
@@ -846,7 +849,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         void
         construct(_Up* __p, _Args&&... __args)
 	{
-	  _M_allocator.construct(__p, std::forward<_Args>(__args)...);
+	  traits::construct(_M_allocator, __p, std::forward<_Args>(__args)...);
 	  insert_construct(__p);
 	}
 
@@ -855,7 +858,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         destroy(_Up* __p)
         {
 	  erase_construct(__p);
-	  _M_allocator.destroy(__p);
+	  traits::destroy(_M_allocator, __p);
 	}
 #else
       void

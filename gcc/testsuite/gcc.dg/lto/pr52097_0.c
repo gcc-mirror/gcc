@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options { { -O -flto -fexceptions -fnon-call-exceptions --param allow-store-data-races=0 } } } */
+/* { dg-lto-options { { -O -flto -fexceptions -fnon-call-exceptions -fno-allow-store-data-races } } } */
 /* { dg-require-effective-target exceptions } */
 
 typedef struct { unsigned int e0 : 16; } s1;

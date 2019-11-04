@@ -19,7 +19,7 @@ contains
     do k = 1, cols
       do i = 1, rows
         diff = P(i,k) - Q(i,k)
-        if (diff > EPS .or. -diff > EPS) STOP 1
+        if (diff > EPS .or. -diff > EPS) stop 1
       end do
     end do
   end subroutine

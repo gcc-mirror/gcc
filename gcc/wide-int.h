@@ -852,6 +852,8 @@ inline HOST_WIDE_INT
 generic_wide_int <storage>::sign_mask () const
 {
   unsigned int len = this->get_len ();
+  gcc_assert (len > 0);
+
   unsigned HOST_WIDE_INT high = this->get_val ()[len - 1];
   if (!is_sign_extended)
     {

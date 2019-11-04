@@ -256,9 +256,9 @@ enum riscv_microarchitecture_type riscv_microarchitecture;
 const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
   GR_REGS,	GR_REGS,	SIBCALL_REGS,	SIBCALL_REGS,
-  JALR_REGS,	JALR_REGS,	JALR_REGS,	JALR_REGS,
-  JALR_REGS,	JALR_REGS,	JALR_REGS,	JALR_REGS,
-  JALR_REGS,	JALR_REGS, 	JALR_REGS,	JALR_REGS,
+  JALR_REGS,	JALR_REGS,	SIBCALL_REGS,	SIBCALL_REGS,
+  SIBCALL_REGS,	SIBCALL_REGS,	SIBCALL_REGS,	SIBCALL_REGS,
+  SIBCALL_REGS,	SIBCALL_REGS,	JALR_REGS,	JALR_REGS,
   JALR_REGS,	JALR_REGS,	JALR_REGS,	JALR_REGS,
   JALR_REGS,	JALR_REGS,	JALR_REGS,	JALR_REGS,
   SIBCALL_REGS,	SIBCALL_REGS,	SIBCALL_REGS,	SIBCALL_REGS,
@@ -5007,6 +5007,16 @@ riscv_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   return mode;
 }
 
+/* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
+
+static void
+riscv_reorg (void)
+{
+  /* Do nothing unless we have -msave-restore */
+  if (TARGET_SAVE_RESTORE)
+    riscv_remove_unneeded_save_restore_calls ();
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -5180,6 +5190,9 @@ riscv_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* The low bit is ignored by jump instructions so is safe to use.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG riscv_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

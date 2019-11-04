@@ -223,7 +223,7 @@ package body Ada.Containers.Hashed_Sets is
            (Element => Position.Node.Element'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -1119,7 +1119,7 @@ package body Ada.Containers.Hashed_Sets is
         Container.HT.TC'Unrestricted_Access;
    begin
       return R : constant Reference_Control_Type := (Controlled with TC) do
-         Lock (TC.all);
+         Busy (TC.all);
       end return;
    end Pseudo_Reference;
 
@@ -1839,7 +1839,7 @@ package body Ada.Containers.Hashed_Sets is
               (Element => Node.Element'Access,
                Control => (Controlled with TC))
             do
-               Lock (TC.all);
+               Busy (TC.all);
             end return;
          end;
       end Constant_Reference;
@@ -2025,7 +2025,7 @@ package body Ada.Containers.Hashed_Sets is
                               Old_Pos  => Position,
                               Old_Hash => Hash (Key (Position))))
             do
-               Lock (HT.TC);
+               Busy (HT.TC);
             end return;
          end;
       end Reference_Preserving_Key;
@@ -2055,7 +2055,7 @@ package body Ada.Containers.Hashed_Sets is
                               Old_Pos  => P,
                               Old_Hash => Hash (Key)))
             do
-               Lock (HT.TC);
+               Busy (HT.TC);
             end return;
          end;
       end Reference_Preserving_Key;

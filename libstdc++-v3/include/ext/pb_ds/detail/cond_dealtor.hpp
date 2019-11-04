@@ -41,6 +41,8 @@
 #ifndef PB_DS_COND_DEALTOR_HPP
 #define PB_DS_COND_DEALTOR_HPP
 
+#include <ext/pb_ds/detail/types_traits.hpp>
+
 namespace __gnu_pbds
 {
   namespace detail
@@ -49,11 +51,11 @@ namespace __gnu_pbds
     template<typename Entry, typename _Alloc>
       class cond_dealtor
       {
-	typedef typename _Alloc::template rebind<Entry>	__rebind_e;
+	typedef rebind_traits<_Alloc, Entry>	alloc_traits;
 
       public:
-	typedef typename __rebind_e::other 		entry_allocator;
-	typedef typename entry_allocator::pointer 	entry_pointer;
+	typedef typename alloc_traits::allocator_type entry_allocator;
+	typedef typename alloc_traits::pointer	      entry_pointer;
 
 	cond_dealtor(entry_pointer p_e)
 	: m_p_e(p_e), m_no_action_destructor(false) { }

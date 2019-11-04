@@ -7,7 +7,6 @@
 
 /* { dg-do link } */
 /* { dg-options "-ffast-math" } */
-/* { dg-add-options c99_runtime } */
 /* { dg-skip-if "PR44214" { *-*-* } { "-O0" } { "" } } */
 
 #include "../builtins-config.h"

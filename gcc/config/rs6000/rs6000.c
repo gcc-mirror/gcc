@@ -4540,6 +4540,26 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
+      /* unroll very small loops 2 time if no -funroll-loops.  */
+      if (!global_options_set.x_flag_unroll_loops
+	  && !global_options_set.x_flag_unroll_all_loops)
+	{
+	  maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 2,
+				 global_options.x_param_values,
+				 global_options_set.x_param_values);
+
+	  maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 20,
+				 global_options.x_param_values,
+				 global_options_set.x_param_values);
+
+	  /* If fweb or frename-registers are not specificed in command-line,
+	     do not turn them on implicitly.  */
+	  if (!global_options_set.x_flag_web)
+	    global_options.x_flag_web = 0;
+	  if (!global_options_set.x_flag_rename_registers)
+	    global_options.x_flag_rename_registers = 0;
+	}
+
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
 	 ap = __builtin_next_arg (0).  */
@@ -4781,10 +4801,11 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	  return 1;
 
       case vec_promote_demote:
-        if (TARGET_VSX)
-          return 4;
-        else
-          return 1;
+	/* Power7 has only one permute/pack unit, make it a bit expensive.  */
+	if (TARGET_VSX && rs6000_tune == PROCESSOR_POWER7)
+	  return 4;
+	else
+	  return 1;
 
       case cond_branch_taken:
         return 3;
@@ -7250,6 +7271,13 @@ quad_address_p (rtx addr, machine_mode mode, bool strict)
   if (VECTOR_MODE_P (mode) && !mode_supports_dq_form (mode))
     return false;
 
+  /* Is this a valid prefixed address?  If the bottom four bits of the offset
+     are non-zero, we could use a prefixed instruction (which does not have the
+     DQ-form constraint that the traditional instruction had) instead of
+     forcing the unaligned offset to a GPR.  */
+  if (address_is_prefixed (addr, mode, NON_PREFIXED_DQ))
+    return true;
+
   if (GET_CODE (addr) != PLUS)
     return false;
 
@@ -7321,6 +7349,103 @@ address_offset (rtx op)
   return NULL_RTX;
 }
 
+/* This tests that a lo_sum {constant, symbol, symbol+offset} is valid for
+   the mode.  If we can't find (or don't know) the alignment of the symbol
+   we assume (optimistically) that it's sufficiently aligned [??? maybe we
+   should be pessimistic].  Offsets are validated in the same way as for
+   reg + offset.  */
+static bool
+darwin_rs6000_legitimate_lo_sum_const_p (rtx x, machine_mode mode)
+{
+  /* We should not get here with this.  */
+  gcc_checking_assert (! mode_supports_dq_form (mode));
+
+  if (GET_CODE (x) == CONST)
+    x = XEXP (x, 0);
+
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_MACHOPIC_OFFSET)
+    x =  XVECEXP (x, 0, 0);
+
+  rtx sym = NULL_RTX;
+  unsigned HOST_WIDE_INT offset = 0;
+
+  if (GET_CODE (x) == PLUS)
+    {
+      sym = XEXP (x, 0);
+      if (! SYMBOL_REF_P (sym))
+	return false;
+      if (!CONST_INT_P (XEXP (x, 1)))
+	return false;
+      offset = INTVAL (XEXP (x, 1));
+    }
+  else if (SYMBOL_REF_P (x))
+    sym = x;
+  else if (CONST_INT_P (x))
+    offset = INTVAL (x);
+  else if (GET_CODE (x) == LABEL_REF)
+    offset = 0; // We assume code labels are Pmode aligned
+  else
+    return false; // not sure what we have here.
+
+  /* If we don't know the alignment of the thing to which the symbol refers,
+     we assume optimistically it is "enough".
+     ??? maybe we should be pessimistic instead.  */
+  unsigned align = 0;
+
+  if (sym)
+    {
+      tree decl = SYMBOL_REF_DECL (sym);
+#if TARGET_MACHO
+      if (MACHO_SYMBOL_INDIRECTION_P (sym))
+      /* The decl in an indirection symbol is the original one, which might
+	 be less aligned than the indirection.  Our indirections are always
+	 pointer-aligned.  */
+	;
+      else
+#endif
+      if (decl && DECL_ALIGN (decl))
+	align = DECL_ALIGN_UNIT (decl);
+   }
+
+  unsigned int extra = 0;
+  switch (mode)
+    {
+    case E_DFmode:
+    case E_DDmode:
+    case E_DImode:
+      /* If we are using VSX scalar loads, restrict ourselves to reg+reg
+	 addressing.  */
+      if (VECTOR_MEM_VSX_P (mode))
+	return false;
+
+      if (!TARGET_POWERPC64)
+	extra = 4;
+      else if ((offset & 3) || (align & 3))
+	return false;
+      break;
+
+    case E_TFmode:
+    case E_IFmode:
+    case E_KFmode:
+    case E_TDmode:
+    case E_TImode:
+    case E_PTImode:
+      extra = 8;
+      if (!TARGET_POWERPC64)
+	extra = 12;
+      else if ((offset & 3) || (align & 3))
+	return false;
+      break;
+
+    default:
+      break;
+    }
+
+  /* We only care if the access(es) would cause a change to the high part.  */
+  offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
+}
+
 /* Return true if the MEM operand is a memory operand suitable for use
    with a (full width, possibly multiple) gpr load/store.  On
    powerpc64 this means the offset must be divisible by 4.
@@ -7351,7 +7476,20 @@ mem_operand_gpr (rtx op, machine_mode mode)
       && legitimate_indirect_address_p (XEXP (addr, 0), false))
     return true;
 
-  /* Don't allow non-offsettable addresses.  See PRs 83969 and 84279.  */
+  /* Allow prefixed instructions if supported.  If the bottom two bits of the
+     offset are non-zero, we could use a prefixed instruction (which does not
+     have the DS-form constraint that the traditional instruction had) instead
+     of forcing the unaligned offset to a GPR.  */
+  if (address_is_prefixed (addr, mode, NON_PREFIXED_DS))
+    return true;
+
+  /* We need to look through Mach-O PIC unspecs to determine if a lo_sum is
+     really OK.  Doing this early avoids teaching all the other machinery
+     about them.  */
+  if (TARGET_MACHO && GET_CODE (addr) == LO_SUM)
+    return darwin_rs6000_legitimate_lo_sum_const_p (XEXP (addr, 1), mode);
+
+  /* Only allow offsettable addresses.  See PRs 83969 and 84279.  */
   if (!rs6000_offsettable_memref_p (op, mode, false))
     return false;
 
@@ -7384,6 +7522,13 @@ mem_operand_ds_form (rtx op, machine_mode mode)
   unsigned HOST_WIDE_INT offset;
   int extra;
   rtx addr = XEXP (op, 0);
+
+  /* Allow prefixed instructions if supported.  If the bottom two bits of the
+     offset are non-zero, we could use a prefixed instruction (which does not
+     have the DS-form constraint that the traditional instruction had) instead
+     of forcing the unaligned offset to a GPR.  */
+  if (address_is_prefixed (addr, mode, NON_PREFIXED_DS))
+    return true;
 
   if (!offsettable_address_p (false, mode, addr))
     return false;
@@ -7754,7 +7899,10 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
       break;
     }
 
-  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
+  if (TARGET_PREFIXED_ADDR)
+    return SIGNED_34BIT_OFFSET_EXTRA_P (offset, extra);
+  else
+    return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 bool
@@ -8651,6 +8799,11 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
       && mode_supports_pre_incdec_p (mode)
       && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict))
     return 1;
+
+  /* Handle prefixed addresses (PC-relative or 34-bit offset).  */
+  if (address_is_prefixed (x, mode, NON_PREFIXED_DEFAULT))
+    return 1;
+
   /* Handle restricted vector d-form offsets in ISA 3.0.  */
   if (quad_offset_p)
     {
@@ -8709,7 +8862,11 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
 	  || (!avoiding_indexed_address_p (mode)
 	      && legitimate_indexed_address_p (XEXP (x, 1), reg_ok_strict)))
       && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
-    return 1;
+    {
+      /* There is no prefixed version of the load/store with update.  */
+      rtx addr = XEXP (x, 1);
+      return !address_is_prefixed (addr, mode, NON_PREFIXED_DEFAULT);
+    }
   if (reg_offset_p && !quad_offset_p
       && legitimate_lo_sum_address_p (mode, x, reg_ok_strict))
     return 1;
@@ -8773,7 +8930,10 @@ rs6000_mode_dependent_address (const_rtx addr)
 	{
 	  HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
 	  HOST_WIDE_INT extra = TARGET_POWERPC64 ? 8 : 12;
-	  return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
+	  if (TARGET_PREFIXED_ADDR)
+	    return !SIGNED_34BIT_OFFSET_EXTRA_P (val, extra);
+	  else
+	    return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
 	}
       break;
 
@@ -20936,14 +21096,32 @@ rs6000_insn_cost (rtx_insn *insn, bool speed)
   if (recog_memoized (insn) < 0)
     return 0;
 
+  /* If we are optimizing for size, just use the length.  */
   if (!speed)
     return get_attr_length (insn);
 
+  /* Use the cost if provided.  */
   int cost = get_attr_cost (insn);
   if (cost > 0)
     return cost;
 
-  int n = get_attr_length (insn) / 4;
+  /* If the insn tells us how many insns there are, use that.  Otherwise use
+     the length/4.  Adjust the insn length to remove the extra size that
+     prefixed instructions take.  */
+  int n = get_attr_num_insns (insn);
+  if (n == 0)
+    {
+      int length = get_attr_length (insn);
+      if (get_attr_prefixed (insn) == PREFIXED_YES)
+	{
+	  int adjust = 0;
+	  ADJUST_INSN_LENGTH (insn, adjust);
+	  length -= adjust;
+	}
+
+      n = length / 4;
+    }
+
   enum attr_type type = get_attr_type (insn);
 
   switch (type)
@@ -23927,25 +24105,31 @@ rs6000_can_inline_p (tree caller, tree callee)
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
 
-  /* If callee has no option attributes, then it is ok to inline.  */
+  /* If the callee has no option attributes, then it is ok to inline.  */
   if (!callee_tree)
     ret = true;
 
-  /* If caller has no option attributes, but callee does then it is not ok to
-     inline.  */
-  else if (!caller_tree)
-    ret = false;
-
   else
     {
-      struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+      HOST_WIDE_INT caller_isa;
       struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+      HOST_WIDE_INT callee_isa = callee_opts->x_rs6000_isa_flags;
+      HOST_WIDE_INT explicit_isa = callee_opts->x_rs6000_isa_flags_explicit;
 
-      /* Callee's options should a subset of the caller's, i.e. a vsx function
-	 can inline an altivec function but a non-vsx function can't inline a
-	 vsx function.  */
-      if ((caller_opts->x_rs6000_isa_flags & callee_opts->x_rs6000_isa_flags)
-	  == callee_opts->x_rs6000_isa_flags)
+      /* If the caller has option attributes, then use them.
+	 Otherwise, use the command line options.  */
+      if (caller_tree)
+	caller_isa = TREE_TARGET_OPTION (caller_tree)->x_rs6000_isa_flags;
+      else
+	caller_isa = rs6000_isa_flags;
+
+      /* The callee's options must be a subset of the caller's options, i.e.
+	 a vsx function may inline an altivec function, but a no-vsx function
+	 must not inline a vsx function.  However, for those options that the
+	 callee has explicitly enabled or disabled, then we must enforce that
+	 the callee's and caller's options match exactly; see PR70010.  */
+      if (((caller_isa & callee_isa) == callee_isa)
+	  && (caller_isa & explicit_isa) == (callee_isa & explicit_isa))
 	ret = true;
     }
 
@@ -24941,6 +25125,37 @@ rs6000_asm_output_opcode (FILE *stream)
   return;
 }
 
+/* Adjust the length of an INSN.  LENGTH is the currently-computed length and
+   should be adjusted to reflect any required changes.  This macro is used when
+   there is some systematic length adjustment required that would be difficult
+   to express in the length attribute.
+
+   In the PowerPC, we use this to adjust the length of an instruction if one or
+   more prefixed instructions are generated, using the attribute
+   num_prefixed_insns.  A prefixed instruction is 8 bytes instead of 4, but the
+   hardware requires that a prefied instruciton does not cross a 64-byte
+   boundary.  This means the compiler has to assume the length of the first
+   prefixed instruction is 12 bytes instead of 8 bytes.  Since the length is
+   already set for the non-prefixed instruction, we just need to udpate for the
+   difference.  */
+
+int
+rs6000_adjust_insn_length (rtx_insn *insn, int length)
+{
+  if (TARGET_PREFIXED_ADDR && NONJUMP_INSN_P (insn))
+    {
+      rtx pattern = PATTERN (insn);
+      if (GET_CODE (pattern) != USE && GET_CODE (pattern) != CLOBBER
+	  && get_attr_prefixed (insn) == PREFIXED_YES)
+	{
+	  int num_prefixed = get_attr_max_prefixed_insns (insn);
+	  length += 4 * (num_prefixed + 1);
+	}
+    }
+
+  return length;
+}
+
 
 #ifdef HAVE_GAS_HIDDEN
 # define USE_HIDDEN_LINKONCE 1
@@ -25864,8 +26079,8 @@ rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
   rtx_tmp2 = gen_reg_rtx (V4SFmode);
   rtx_tmp3 = gen_reg_rtx (V4SFmode);
 
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp2, rtx_tmp0));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp3, rtx_tmp1));
 
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));
