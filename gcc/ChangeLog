@@ -1,3 +1,11 @@
+2019-11-04  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop): Remove orig_loop_vinfo
+	parameter.
+	* tree-vectorizer.h (vect_analyze_loop): Update declaration.
+	* tree-vectorizer.c (try_vectorize_loop_1): Update calls to
+	vect_analyze_loop.
+
 2019-11-04  Joel Hutton  <Joel.Hutton@arm.com>
 
 	* expr.c (store_constructor): Modify to handle single element vectors.
