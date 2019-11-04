@@ -1,3 +1,8 @@
+2019-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/92302
+	* gcc.target/sparc/sparc-ret-3.c: Accept more registers in address.
+
 2019-11-04  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92349
