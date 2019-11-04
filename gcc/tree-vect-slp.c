@@ -4149,7 +4149,7 @@ vect_remove_slp_scalar_calls (slp_tree node)
 void
 vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 {
-  gassign *rstmt;
+  gassign *rstmt = NULL;
 
   if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) == 1)
     {
@@ -4183,6 +4183,9 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
       tree r_constructor = build_constructor (rtype, v);
       rstmt = gimple_build_assign (lhs, r_constructor);
     }
+
+    gcc_assert (rstmt);
+
     gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmt->stmt);
     gsi_replace (&rgsi, rstmt, true);
 }
