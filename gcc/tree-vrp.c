@@ -6286,10 +6286,12 @@ value_range_base::contains_p (tree cst) const
 void
 value_range_base::invert ()
 {
+  /* We can't just invert VR_RANGE and VR_ANTI_RANGE because we may
+     create non-canonical ranges.  Use the constructors instead.  */
   if (m_kind == VR_RANGE)
-    m_kind = VR_ANTI_RANGE;
+    *this = value_range_base (VR_ANTI_RANGE, m_min, m_max);
   else if (m_kind == VR_ANTI_RANGE)
-    m_kind = VR_RANGE;
+    *this = value_range_base (VR_RANGE, m_min, m_max);
   else
     gcc_unreachable ();
 }

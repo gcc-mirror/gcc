@@ -1,5 +1,10 @@
 2019-11-04  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (value_range_base::invert): Use constructors to build
+	range.
+
+2019-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (range_int_cst_singleton_p): Remove.
 	* tree-vrp.h (range_int_cst_singleton_p): Remove.
 
