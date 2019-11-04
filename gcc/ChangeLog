@@ -1,3 +1,8 @@
+2019-11-04  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-reference.c (init_function_info): Initialize
+	info->global.statics_read.
+
 2019-11-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (value_range_base::invert): Use constructors to build
