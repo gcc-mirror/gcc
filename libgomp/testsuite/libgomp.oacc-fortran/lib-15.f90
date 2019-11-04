@@ -47,6 +47,6 @@ program main
 
   call acc_delete (h)
 
-  if (acc_is_present (h) .neqv. .FALSE.) stop 4
+  if (acc_is_present (h) .neqv. .FALSE.) stop 5
   
 end program
