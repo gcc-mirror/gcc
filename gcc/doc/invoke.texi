@@ -2413,6 +2413,9 @@ trivial move constructor.
 Version 13, which first appeared in G++ 8.2, fixes the accidental
 change in version 12.
 
+Version 14, which first appeared in G++ 10, corrects the mangling of
+the nullptr expression.
+
 See also @option{-Wabi}.
 
 @item -fabi-compat-version=@var{n}

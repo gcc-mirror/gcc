@@ -1,3 +1,9 @@
+2019-11-04  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	* cp-demangle.c (d_expr_primary): Handle
+	nullptr demangling.
+	* testsuite/demangle-expected: Added test.
+
 2019-10-29 Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	* cp-demangle.c (d_number): Avoid signed int overflow.
