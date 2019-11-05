@@ -2890,12 +2890,16 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
 	  error_at (loc, "version control conflict marker in file");
 	  expanded_location token_exploc = expand_location (token->location);
 	  /* Consume tokens until the end of the source line.  */
-	  while (1)
+	  for (;;)
 	    {
 	      cp_lexer_consume_token (parser->lexer);
 	      cp_token *next = cp_lexer_peek_token (parser->lexer);
-	      if (next == NULL)
+	      if (next->type == CPP_EOF)
 		break;
+	      if (next->location == UNKNOWN_LOCATION
+		  || loc == UNKNOWN_LOCATION)
+		break;
+
 	      expanded_location next_exploc = expand_location (next->location);
 	      if (next_exploc.file != token_exploc.file)
 		break;

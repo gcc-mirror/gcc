@@ -1,3 +1,8 @@
+2019-11-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/92370
+	* g++.dg/pr92370.C: New.
+
 2019-11-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/92341
