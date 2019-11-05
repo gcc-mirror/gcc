@@ -80,12 +80,7 @@ void InitializePlatformInterceptors();
 #if ASAN_HAS_EXCEPTIONS && !SANITIZER_WINDOWS && !SANITIZER_SOLARIS && \
     !SANITIZER_NETBSD
 # define ASAN_INTERCEPT___CXA_THROW 1
-# if ! defined(ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION) \
-     || ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
-# else
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 0
-# endif
+# define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
 # if defined(_GLIBCXX_SJLJ_EXCEPTIONS) || (SANITIZER_IOS && defined(__arm__))
 #  define ASAN_INTERCEPT__UNWIND_SJLJ_RAISEEXCEPTION 1
 # else
@@ -104,6 +99,12 @@ void InitializePlatformInterceptors();
 # define ASAN_INTERCEPT___CXA_ATEXIT 0
 #endif
 
+#if SANITIZER_NETBSD
+# define ASAN_INTERCEPT_ATEXIT 1
+#else
+# define ASAN_INTERCEPT_ATEXIT 0
+#endif
+
 #if SANITIZER_LINUX && !SANITIZER_ANDROID
 # define ASAN_INTERCEPT___STRDUP 1
 #else
@@ -115,6 +116,12 @@ void InitializePlatformInterceptors();
 # define ASAN_INTERCEPT_VFORK 1
 #else
 # define ASAN_INTERCEPT_VFORK 0
+#endif
+
+#if SANITIZER_NETBSD
+# define ASAN_INTERCEPT_PTHREAD_ATFORK 1
+#else
+# define ASAN_INTERCEPT_PTHREAD_ATFORK 0
 #endif
 
 DECLARE_REAL(int, memcmp, const void *a1, const void *a2, uptr size)

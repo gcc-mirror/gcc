@@ -23,6 +23,7 @@
 #include "sanitizer_flags.h"
 #include "sanitizer_freebsd.h"
 #include "sanitizer_getauxval.h"
+#include "sanitizer_glibc_version.h"
 #include "sanitizer_linux.h"
 #include "sanitizer_placement_new.h"
 #include "sanitizer_procmaps.h"
@@ -188,11 +189,7 @@ __attribute__((unused)) static bool GetLibcVersion(int *major, int *minor,
 static uptr g_tls_size;
 
 #ifdef __i386__
-# ifndef __GLIBC_PREREQ
-#  define CHECK_GET_TLS_STATIC_INFO_VERSION 1
-# else
-#  define CHECK_GET_TLS_STATIC_INFO_VERSION (!__GLIBC_PREREQ(2, 27))
-# endif
+# define CHECK_GET_TLS_STATIC_INFO_VERSION (!__GLIBC_PREREQ(2, 27))
 #else
 # define CHECK_GET_TLS_STATIC_INFO_VERSION 0
 #endif
@@ -701,13 +698,9 @@ u32 GetNumberOfCPUs() {
 #elif SANITIZER_SOLARIS
   return sysconf(_SC_NPROCESSORS_ONLN);
 #else
-#if defined(CPU_COUNT)
   cpu_set_t CPUs;
   CHECK_EQ(sched_getaffinity(0, sizeof(cpu_set_t), &CPUs), 0);
   return CPU_COUNT(&CPUs);
-#else
-  return 1;
-#endif
 #endif
 }
 

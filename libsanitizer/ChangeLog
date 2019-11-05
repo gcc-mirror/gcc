@@ -1,3 +1,7 @@
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* all source files: Merge from upstream r375507.
+
 2019-10-22  Tamar Christina  <tamar.christina@arm.com>
 
 	PR sanitizer/92154

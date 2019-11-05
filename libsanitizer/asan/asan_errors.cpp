@@ -35,7 +35,8 @@ static void OnStackUnwind(const SignalContext &sig,
   // corresponding code in the sanitizer_common and we use this callback to
   // print it.
   static_cast<const ScarinessScoreBase *>(callback_context)->Print();
-  stack->Unwind(sig.pc, sig.bp, sig.context, fast);
+  stack->Unwind(StackTrace::GetNextInstructionPc(sig.pc), sig.bp, sig.context,
+                fast);
 }
 
 void ErrorDeadlySignal::Print() {
@@ -244,7 +245,7 @@ void ErrorInvalidPosixMemalignAlignment::Print() {
       "ERROR: AddressSanitizer: invalid alignment requested in posix_memalign: "
       "%zd, alignment must be a power of two and a multiple of sizeof(void*) "
       "== %zd (thread %s)\n",
-      alignment, sizeof(void*), AsanThreadIdAndName(tid).c_str());  // NOLINT
+      alignment, sizeof(void *), AsanThreadIdAndName(tid).c_str());
   Printf("%s", d.Default());
   stack->Print();
   PrintHintAllocatorCannotReturnNull();

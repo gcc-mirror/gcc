@@ -1,4 +1,4 @@
-//===-- tsan_libdispatch.cpp ----------------------------------------------===//
+//===-- tsan_interceptors_libdispatch.cpp ---------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -16,6 +16,7 @@
 #include "tsan_interceptors.h"
 #include "tsan_rtl.h"
 
+#include "BlocksRuntime/Block.h"
 #include "tsan_dispatch_defs.h"
 
 namespace __tsan {
