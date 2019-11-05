@@ -3626,7 +3626,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
 		}
 	    }
 	  else if (TREE_CODE (off) == SSA_NAME
-	      && INTEGRAL_TYPE_P (TREE_TYPE (off)))
+		   && INTEGRAL_TYPE_P (TREE_TYPE (off)))
 	    {
 	      wide_int min, max;
 	      enum value_range_kind rng = get_range_info (off, &min, &max);
@@ -3680,7 +3680,8 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
 	  if (TREE_CODE (dest) == ARRAY_REF)
 	    {
 	      tree eltype = TREE_TYPE (dest);
-	      if (tree tpsize = TYPE_SIZE_UNIT (eltype))
+	      tree tpsize = TYPE_SIZE_UNIT (eltype);
+	      if (tpsize && TREE_CODE (tpsize) == INTEGER_CST)
 		off = fold_build2 (MULT_EXPR, size_type_node, off, tpsize);
 	      else
 		return NULL_TREE;
