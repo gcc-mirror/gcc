@@ -1,5 +1,8 @@
 2019-11-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/version [!_GLIBCXX_HOSTED]: Do not define feature test
+	macros for features that are only present in hosted builds.
+
 	* include/bits/iterator_concepts.h (__iter_without_nested_types):
 	Remove incorrect comment.
 
