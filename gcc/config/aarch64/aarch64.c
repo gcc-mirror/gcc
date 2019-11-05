@@ -585,7 +585,7 @@ static const struct cpu_vector_cost thunderx2t99_vector_cost =
   1, /* scalar_store_cost  */
   5, /* vec_int_stmt_cost  */
   6, /* vec_fp_stmt_cost  */
-  3, /* vec_permute_cost  */
+  10, /* vec_permute_cost  */
   6, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
   8, /* vec_align_load_cost  */
