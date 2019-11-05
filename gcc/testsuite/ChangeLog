@@ -1,3 +1,8 @@
+2019-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92371
+	* gcc.dg/torture/pr92371.c: New testcase.
+
 2019-11-05  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/ubsan/ptr-overflow-2.c: Update based on changed
