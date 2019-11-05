@@ -13,4 +13,4 @@ template <typename T>
   requires C<T>
 constexpr bool is_c() { return true; }
 
-static_assert(is_c<void>(), ""); // { dg-error "cannot call" }
+static_assert(is_c<void>(), ""); // { dg-error "" }

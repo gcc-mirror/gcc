@@ -28,5 +28,5 @@ struct Y {private: ~Y();};
 
 int main()
 {
-    f<Y>(); // { dg-error "cannot call" }
+    f<Y>(); // { dg-error "" }
 }

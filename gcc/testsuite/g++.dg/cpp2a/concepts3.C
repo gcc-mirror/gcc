@@ -42,7 +42,7 @@ template<typename T>
 void f3() { }
 
 void driver2() {
-  f1<S1>(); // { dg-error "cannot call|is private" }
-  f2<S1>(); // { dg-error "cannot call|is private" }
-  f3<S1>(); // { dg-error "cannot call|is private" }
+  f1<S1>(); // { dg-error "unsatisfied|is private" }
+  f2<S1>(); // { dg-error "unsatisfied|is private" }
+  f3<S1>(); // { dg-error "unsatisfied|is private" }
 }

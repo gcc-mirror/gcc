@@ -35,11 +35,11 @@ auto f15(auto x) -> SameAs<decltype(x)> { return 0; } // { dg-error "deduced ret
 void driver()
 {
   f1(0);
-  f2(0); // { dg-error "cannot call" }
+  f2(0); // { dg-error "" }
   f3(0);
-  f3('a'); // { dg-error "cannot call" }
+  f3('a'); // { dg-error "" }
   f4(0, 0);
-  f4(0, 'a'); // { dg-error "cannot call" }
+  f4(0, 'a'); // { dg-error "" }
   f15(0);
   f15('a'); // { dg-message "" }
 }

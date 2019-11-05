@@ -5524,6 +5524,21 @@ mark_used (tree decl, tsubst_flags_t complain)
      directly.  */
   maybe_instantiate_decl (decl);
 
+  if (flag_concepts && TREE_CODE (decl) == FUNCTION_DECL
+      && !constraints_satisfied_p (decl))
+    {
+      if (complain & tf_error)
+	{
+	  auto_diagnostic_group d;
+	  error ("use of function %qD with unsatisfied constraints",
+		 decl);
+	  location_t loc = DECL_SOURCE_LOCATION (decl);
+	  inform (loc, "declared here");
+	  diagnose_constraints (loc, decl, NULL_TREE);
+	}
+      return false;
+    }
+
   if (processing_template_decl || in_template_function ())
     return true;
 

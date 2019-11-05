@@ -20,7 +20,7 @@ template<typename T>
 void f(T) {}
 
 int main() {
-  f(1); // { dg-error "cannot call" }
+  f(1); // { dg-error "" }
 }
 
 
