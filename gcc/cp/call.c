@@ -182,16 +182,7 @@ static struct z_candidate *add_template_candidate
 static struct z_candidate *add_template_candidate_real
 	(struct z_candidate **, tree, tree, tree, tree, const vec<tree, va_gc> *,
 	 tree, tree, tree, int, tree, unification_kind_t, tsubst_flags_t);
-static void add_builtin_candidates
-	(struct z_candidate **, enum tree_code, enum tree_code,
-	 tree, tree *, int, tsubst_flags_t);
-static void add_builtin_candidate
-	(struct z_candidate **, enum tree_code, enum tree_code,
-	 tree, tree, tree, tree *, tree *, int, tsubst_flags_t);
 static bool is_complete (tree);
-static void build_builtin_candidate
-	(struct z_candidate **, tree, tree, tree, tree *, tree *,
-	 int, tsubst_flags_t);
 static struct z_candidate *add_conv_candidate
 	(struct z_candidate **, tree, tree, const vec<tree, va_gc> *, tree,
 	 tree, tsubst_flags_t);
@@ -2512,20 +2503,20 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
 
 static void
 build_builtin_candidate (struct z_candidate **candidates, tree fnname,
-			 tree type1, tree type2, tree *args, tree *argtypes,
-			 int flags, tsubst_flags_t complain)
+			 tree type1, tree type2, const vec<tree,va_gc> &args,
+			 tree *argtypes, int flags, tsubst_flags_t complain)
 {
   conversion *t;
   conversion **convs;
   size_t num_convs;
-  int viable = 1, i;
+  int viable = 1;
   tree types[2];
   struct rejection_reason *reason = NULL;
 
   types[0] = type1;
   types[1] = type2;
 
-  num_convs =  args[2] ? 3 : (args[1] ? 2 : 1);
+  num_convs = args.length ();
   convs = alloc_conversions (num_convs);
 
   /* TRUTH_*_EXPR do "contextual conversion to bool", which means explicit
@@ -2536,11 +2527,8 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
   if (type1 != boolean_type_node)
     flags |= LOOKUP_ONLYCONVERTING;
 
-  for (i = 0; i < 2; ++i)
+  for (unsigned i = 0; i < 2 && i < num_convs; ++i)
     {
-      if (! args[i])
-	break;
-
       t = implicit_conversion (types[i], argtypes[i], args[i],
 			       /*c_cast_p=*/false, flags, complain);
       if (! t)
@@ -2562,7 +2550,7 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
     }
 
   /* For COND_EXPR we rearranged the arguments; undo that now.  */
-  if (args[2])
+  if (num_convs == 3)
     {
       convs[2] = convs[1];
       convs[1] = convs[0];
@@ -2623,8 +2611,8 @@ promoted_arithmetic_type_p (tree type)
 static void
 add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 		       enum tree_code code2, tree fnname, tree type1,
-		       tree type2, tree *args, tree *argtypes, int flags,
-		       tsubst_flags_t complain)
+		       tree type2, vec<tree,va_gc> &args, tree *argtypes,
+		       int flags, tsubst_flags_t complain)
 {
   switch (code)
     {
@@ -3083,18 +3071,21 @@ type_decays_to (tree type)
 
 static void
 add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
-			enum tree_code code2, tree fnname, tree *args,
+			enum tree_code code2, tree fnname,
+			vec<tree, va_gc> *argv,
 			int flags, tsubst_flags_t complain)
 {
-  int ref1, i;
+  int ref1;
   int enum_p = 0;
   tree type, argtypes[3], t;
   /* TYPES[i] is the set of possible builtin-operator parameter types
      we will consider for the Ith argument.  */
   vec<tree, va_gc> *types[2];
   unsigned ix;
+  vec<tree, va_gc> &args = *argv;
+  unsigned len = args.length ();
 
-  for (i = 0; i < 3; ++i)
+  for (unsigned i = 0; i < len; ++i)
     {
       if (args[i])
 	argtypes[i] = unlowered_expr_type (args[i]);
@@ -3157,11 +3148,11 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
   types[0] = make_tree_vector ();
   types[1] = make_tree_vector ();
 
-  for (i = 0; i < 2; ++i)
+  if (len == 3)
+    len = 2;
+  for (unsigned i = 0; i < len; ++i)
     {
-      if (! args[i])
-	;
-      else if (MAYBE_CLASS_TYPE_P (argtypes[i]))
+      if (MAYBE_CLASS_TYPE_P (argtypes[i]))
 	{
 	  tree convs;
 
@@ -5397,16 +5388,16 @@ build_conditional_expr_1 (const op_location_t &loc,
   if (!same_type_p (arg2_type, arg3_type)
       && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)))
     {
-      tree args[3];
+      releasing_vec args;
       conversion *conv;
       bool any_viable_p;
 
       /* Rearrange the arguments so that add_builtin_candidate only has
 	 to know about two args.  In build_builtin_candidate, the
 	 arguments are unscrambled.  */
-      args[0] = arg2;
-      args[1] = arg3;
-      args[2] = arg1;
+      args->quick_push (arg2);
+      args->quick_push (arg3);
+      args->quick_push (arg1);
       add_builtin_candidates (&candidates,
 			      COND_EXPR,
 			      NOP_EXPR,
@@ -5816,7 +5807,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 {
   struct z_candidate *candidates = 0, *cand;
   vec<tree, va_gc> *arglist;
-  tree args[3];
   tree result = NULL_TREE;
   bool result_valid_p = false;
   enum tree_code code2 = NOP_EXPR;
@@ -5929,10 +5919,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 		      flags, &candidates, complain);
     }
 
-  args[0] = arg1;
-  args[1] = arg2;
-  args[2] = NULL_TREE;
-
   /* Add class-member operators to the candidate set.  */
   if (CLASS_TYPE_P (arg1_type))
     {
@@ -5952,7 +5938,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 			BASELINK_ACCESS_BINFO (fns),
 			flags, &candidates, complain);
     }
-  /* Per 13.3.1.2/3, 2nd bullet, if no operand has a class type, then
+  /* Per [over.match.oper]3.2, if no operand has a class type, then
      only non-member functions that have type T1 or reference to
      cv-qualified-opt T1 for the first argument, if the first argument
      has an enumeration type, or T2 or reference to cv-qualified-opt
@@ -5978,9 +5964,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 
 	      if (TYPE_REF_P (parmtype))
 		parmtype = TREE_TYPE (parmtype);
-	      if (TREE_CODE (unlowered_expr_type (args[i])) == ENUMERAL_TYPE
+	      if (TREE_CODE (unlowered_expr_type ((*arglist)[i])) == ENUMERAL_TYPE
 		  && (same_type_ignoring_top_level_qualifiers_p
-		      (unlowered_expr_type (args[i]), parmtype)))
+		      (unlowered_expr_type ((*arglist)[i]), parmtype)))
 		break;
 
 	      parmlist = TREE_CHAIN (parmlist);
@@ -5996,7 +5982,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	}
     }
 
-  add_builtin_candidates (&candidates, code, code2, fnname, args,
+  add_builtin_candidates (&candidates, code, code2, fnname, arglist,
 			  flags, complain);
 
   switch (code)

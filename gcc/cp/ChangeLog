@@ -1,5 +1,12 @@
 2019-11-04  Jason Merrill  <jason@redhat.com>
 
+	Use vec instead of raw array for built-in candidates.
+	* call.c (build_builtin_candidate): Take args in a vec.
+	(add_builtin_candidate, add_builtin_candidates): Likewise.
+	(build_conditional_expr_1, build_new_op_1): Adjust.
+
+2019-11-04  Jason Merrill  <jason@redhat.com>
+
 	* constexpr.c (explain_invalid_constexpr_fn): Show location of fn.
 
 	* pt.c (maybe_instantiate_noexcept): Only update clones if we
