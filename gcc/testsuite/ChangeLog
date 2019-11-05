@@ -1,5 +1,11 @@
 2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* gcc.dg/tree-ssa/gen-vect-11.c: Add --param min-vect-loop-bound=0
+	for IBM Z.
+	* gcc.dg/tree-ssa/gen-vect-11.c: Likewise.
+
+2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* gcc.target/s390/s390.exp
 	(check_effective_target_s390_useable_hw): Add inline asm for z14
 	and z15. Replace instruction for z13 with lochiz. Add register
