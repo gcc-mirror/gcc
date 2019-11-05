@@ -2740,6 +2740,7 @@ pop:
   /* Check whether the reduction path detected is valid.  */
   bool fail = path.length () == 0;
   bool neg = false;
+  int sign = -1;
   *code = ERROR_MARK;
   for (unsigned i = 1; i < path.length (); ++i)
     {
@@ -2783,8 +2784,18 @@ pop:
 				    TREE_TYPE (gimple_assign_rhs1 (use_stmt))))
 	;
       else if (*code == ERROR_MARK)
-	*code = use_code;
+	{
+	  *code = use_code;
+	  sign = TYPE_SIGN (TREE_TYPE (gimple_assign_lhs (use_stmt)));
+	}
       else if (use_code != *code)
+	{
+	  fail = true;
+	  break;
+	}
+      else if ((use_code == MIN_EXPR
+		|| use_code == MAX_EXPR)
+	       && sign != TYPE_SIGN (TREE_TYPE (gimple_assign_lhs (use_stmt))))
 	{
 	  fail = true;
 	  break;
