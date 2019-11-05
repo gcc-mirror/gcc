@@ -11119,6 +11119,76 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       else
 	val = NULL_TREE;
     }
+  else if (flag_openmp
+	   && is_attribute_p ("omp declare variant base",
+			      get_attribute_name (t)))
+    {
+      ++cp_unevaluated_operand;
+      tree varid
+	= tsubst_expr (TREE_PURPOSE (val), args, complain,
+		       in_decl, /*integral_constant_expression_p=*/false);
+      --cp_unevaluated_operand;
+      tree chain = TREE_CHAIN (val);
+      location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
+      tree ctx = copy_list (TREE_VALUE (val));
+      tree simd = get_identifier ("simd");
+      tree score = get_identifier (" score");
+      tree condition = get_identifier ("condition");
+      for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+	{
+	  const char *set = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
+	  TREE_VALUE (t1) = copy_list (TREE_VALUE (t1));
+	  for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	    {
+	      if (TREE_PURPOSE (t2) == simd && set[0] == 'c')
+		{
+		  tree clauses = TREE_VALUE (t2);
+		  clauses = tsubst_omp_clauses (clauses,
+						C_ORT_OMP_DECLARE_SIMD, args,
+						complain, in_decl);
+		  c_omp_declare_simd_clauses_to_decls (*decl_p, clauses);
+		  clauses = finish_omp_clauses (clauses, C_ORT_OMP_DECLARE_SIMD);
+		  TREE_VALUE (t2) = clauses;
+		}
+	      else
+		{
+		  TREE_VALUE (t2) = copy_list (TREE_VALUE (t2));
+		  for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		    if (TREE_VALUE (t3))
+		      {
+			bool allow_string
+			  = ((TREE_PURPOSE (t2) != condition || set[0] != 'u')
+			     && TREE_PURPOSE (t3) != score);
+			if (TREE_CODE (t3) == STRING_CST && allow_string)
+			  continue;
+			tree v = TREE_VALUE (t3);
+			v = tsubst_expr (v, args, complain, in_decl, true);
+			v = fold_non_dependent_expr (v);
+			if (!INTEGRAL_TYPE_P (TREE_TYPE (v))
+			    || !tree_fits_shwi_p (v))
+			  {
+			    location_t loc
+			      = cp_expr_loc_or_loc (TREE_VALUE (t3),
+						    match_loc);
+			    if (TREE_PURPOSE (t3) == score)
+			      error_at (loc, "score argument must be "
+					     "constant integer expression");
+			    else if (allow_string)
+			      error_at (loc, "property must be constant "
+					     "integer expression or string "
+					     "literal");
+			    else
+			      error_at (loc, "property must be constant "
+					     "integer expression");
+			    return NULL_TREE;
+			  }
+			TREE_VALUE (t3) = v;
+		      }
+		}
+	    }
+	}
+      val = tree_cons (varid, ctx, chain);
+    }
   /* If the first attribute argument is an identifier, don't
      pass it through tsubst.  Attributes like mode, format,
      cleanup and several target specific attributes expect it
@@ -13579,6 +13649,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 
   apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
 				  args, complain, in_decl);
+  if (flag_openmp)
+    if (tree attr = lookup_attribute ("omp declare variant base",
+				      DECL_ATTRIBUTES (r)))
+      omp_declare_variant_finalize (r, attr);
+
   return r;
 }
 

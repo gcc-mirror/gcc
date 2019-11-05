@@ -1,7 +1,20 @@
+2019-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (omp_declare_variant_finalize_one): Call
+	declare_simd_adjust_this not just on the context, but also on the
+	variant-id expression for methods.  Don't call
+	cp_get_callee_fndecl_nofold, call cp_get_callee and only if it is
+	safe cp_get_fndecl_from_callee.  Don't try to print as %qD
+	NULL in diagnostics.
+	* pt.c (tsubst_attribute): Handle "omp declare variant base"
+	attribute.
+	(tsubst_function_decl): Call omp_declare_variant_finalize
+	if there are any "omp declare variant base" attributes left.
+
 2019-11-04  Kamlesh Kumar  <kamleshbhalui@gmail.com>
 
 	PR c++/91979 - mangling nullptr expression
-	* cp/mangle.c (write_template_arg_literal): Handle nullptr
+	* mangle.c (write_template_arg_literal): Handle nullptr
 	mangling.
 
 2019-11-04  Jason Merrill  <jason@redhat.com>

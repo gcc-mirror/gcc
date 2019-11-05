@@ -7099,8 +7099,12 @@ static bool
 omp_declare_variant_finalize_one (tree decl, tree attr)
 {
   if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-    walk_tree (&TREE_VALUE (TREE_VALUE (attr)), declare_simd_adjust_this,
-	       DECL_ARGUMENTS (decl), NULL);
+    {
+      walk_tree (&TREE_VALUE (TREE_VALUE (attr)), declare_simd_adjust_this,
+		 DECL_ARGUMENTS (decl), NULL);
+      walk_tree (&TREE_PURPOSE (TREE_VALUE (attr)), declare_simd_adjust_this,
+		 DECL_ARGUMENTS (decl), NULL);
+    }
 
   tree ctx = TREE_VALUE (TREE_VALUE (attr));
   tree simd = omp_get_context_selector (ctx, "construct", "simd");
@@ -7179,7 +7183,16 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (variant == error_mark_node && !processing_template_decl)
     return true;
 
-  variant = cp_get_callee_fndecl_nofold (variant);
+  variant = cp_get_callee (variant);
+  if (variant)
+    {
+      if (TREE_CODE (variant) == FUNCTION_DECL)
+	;
+      else if (TREE_TYPE (variant) && INDIRECT_TYPE_P (TREE_TYPE (variant)))
+	variant = cp_get_fndecl_from_callee (variant, false);
+      else
+	variant = NULL_TREE;
+    }
 
   input_location = save_loc;
 
@@ -7211,7 +7224,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
     }
   else if (!processing_template_decl)
     {
-      error_at (varid_loc, "could not find variant %qD declaration", variant);
+      error_at (varid_loc, "could not find variant declaration");
       return true;
     }
 
