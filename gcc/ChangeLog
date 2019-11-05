@@ -1,3 +1,8 @@
+2019-11-05  Anton Youdkevitch  <anton.youdkevitch@bell-sw.com>
+
+	* config/aarch64/aarch64.c (thunderx2t99_vector_cost):
+	Change vec_perm field to 10.
+
 2019-11-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/install.texi: Further fix syntax for html generation.
