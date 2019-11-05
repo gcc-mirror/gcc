@@ -1847,7 +1847,7 @@ wi_optimize_and_or (value_range_base &r,
 // for all numbers in the range the bit is 1, otherwise it might be 0
 // or 1.
 
-static void
+void
 wi_set_zero_nonzero_bits (tree type,
 			  const wide_int &lb, const wide_int &ub,
 			  wide_int &maybe_nonzero,

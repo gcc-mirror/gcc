@@ -82,7 +82,10 @@ protected:
 };
 
 extern range_operator *range_op_handler (enum tree_code code, tree type);
-
 extern void range_cast (value_range_base &, tree type);
+extern void wi_set_zero_nonzero_bits (tree type,
+				      const wide_int &, const wide_int &,
+				      wide_int &maybe_nonzero,
+				      wide_int &mustbe_nonzero);
 
 #endif // GCC_RANGE_OP_H

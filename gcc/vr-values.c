@@ -3341,6 +3341,30 @@ vr_values::simplify_abs_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   return false;
 }
 
+/* value_range wrapper for wi_set_zero_nonzero_bits.
+
+   Return TRUE if VR was a constant range and we were able to compute
+   the bit masks.  */
+
+static bool
+vr_set_zero_nonzero_bits (const tree expr_type,
+			  const value_range_base *vr,
+			  wide_int *may_be_nonzero,
+			  wide_int *must_be_nonzero)
+{
+  if (range_int_cst_p (vr))
+    {
+      wi_set_zero_nonzero_bits (expr_type,
+				wi::to_wide (vr->min ()),
+				wi::to_wide (vr->max ()),
+				*may_be_nonzero, *must_be_nonzero);
+      return true;
+    }
+  *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
+  *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
+  return false;
+}
+
 /* Optimize away redundant BIT_AND_EXPR and BIT_IOR_EXPR.
    If all the bits that are being cleared by & are already
    known to be zero from VR, or all the bits that are being
@@ -3373,11 +3397,11 @@ vr_values::simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi,
   else
     return false;
 
-  if (!vrp_set_zero_nonzero_bits (TREE_TYPE (op0), &vr0, &may_be_nonzero0,
-				  &must_be_nonzero0))
+  if (!vr_set_zero_nonzero_bits (TREE_TYPE (op0), &vr0, &may_be_nonzero0,
+				 &must_be_nonzero0))
     return false;
-  if (!vrp_set_zero_nonzero_bits (TREE_TYPE (op1), &vr1, &may_be_nonzero1,
-				  &must_be_nonzero1))
+  if (!vr_set_zero_nonzero_bits (TREE_TYPE (op1), &vr1, &may_be_nonzero1,
+				 &must_be_nonzero1))
     return false;
 
   switch (gimple_assign_rhs_code (stmt))
