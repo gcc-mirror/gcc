@@ -938,7 +938,8 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
    constants.  */
 
 bool
-check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
+check_narrowing (tree type, tree init, tsubst_flags_t complain,
+		 bool const_only/*= false*/)
 {
   tree ftype = unlowered_expr_type (init);
   bool ok = true;

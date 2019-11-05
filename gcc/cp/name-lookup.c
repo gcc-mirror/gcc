@@ -1273,7 +1273,7 @@ get_class_binding_direct (tree klass, tree name, bool want_type)
    special function creation as necessary.  */
 
 tree
-get_class_binding (tree klass, tree name, bool want_type)
+get_class_binding (tree klass, tree name, bool want_type /*=false*/)
 {
   klass = complete_type (klass);
 
@@ -5943,7 +5943,7 @@ suggest_alternative_in_scoped_enum (tree name, tree scoped_enum)
 
 tree
 lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
-		       bool find_hidden)
+		       bool find_hidden /*=false*/)
 {
   tree t = NULL_TREE;
 
@@ -5966,6 +5966,12 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
     return error_mark_node;
   return t;
 }
+
+/* Wrapper for the above that takes a string argument.  The function name is
+   not at the beginning of the line to keep this wrapper out of etags.  */
+
+tree lookup_qualified_name (tree t, const char *p, int wt, bool c, bool fh)
+{ return lookup_qualified_name (t, get_identifier (p), wt, c, fh); }
 
 /* [namespace.qual]
    Accepts the NAME to lookup and its qualifying SCOPE.

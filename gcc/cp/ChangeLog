@@ -1,3 +1,19 @@
+2019-11-04  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (explain_invalid_constexpr_fn): Show location of fn.
+
+	* pt.c (maybe_instantiate_noexcept): Only update clones if we
+	instantiated.
+
+	* typeck.c (contextual_conv_bool): New.
+
+	* name-lookup.c (lookup_qualified_name): Add wrapper overload taking
+	C string rather than identifier.
+	* parser.c (cp_parser_userdef_numeric_literal): Use it.
+	* rtti.c (emit_support_tinfos): Use it.
+	* cp-tree.h (ovl_op_identifier): Change to inline functions.
+	(build_x_binary_op): Add wrapper with fewer parms.
+
 2019-11-05  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (mark_used): Diagnose use of a function with unsatisfied

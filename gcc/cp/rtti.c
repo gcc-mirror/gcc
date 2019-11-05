@@ -1553,7 +1553,7 @@ emit_support_tinfos (void)
 
   /* Look for a defined class.  */
   tree bltn_type = lookup_qualified_name
-    (abi_node, get_identifier ("__fundamental_type_info"), true, false, false);
+    (abi_node, "__fundamental_type_info", true, false);
   if (TREE_CODE (bltn_type) != TYPE_DECL)
     return;
 
