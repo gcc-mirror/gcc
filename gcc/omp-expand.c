@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-offload.h"
 #include "tree-cfgcleanup.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"

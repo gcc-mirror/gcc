@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-low.h"
 #include "omp-grid.h"
 #include "gimple-low.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "tree-nested.h"
 #include "context.h"

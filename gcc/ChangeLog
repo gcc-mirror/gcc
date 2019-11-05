@@ -1,3 +1,23 @@
+2019-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* hsa-brig.c: Include alloc-pool.h
+	* hsa-dump.c: Likewise.
+	* hsa-gen.c: Likewise.
+	* hse-regalloc.c: Likewise.
+	* ipa-hsa.c: Likewise.
+	* ipa-predicate.c: Likewise.
+	* ipa-reference.c: Likewise.
+	* ipa-sra.c: Likewise.
+	* omp-expand.c: Likewise.
+	* omp-general.c: Likewise.
+	* omp-low.c: Likewise.
+	* sumbol-summary.h (function_summary_base): Add allocator.
+	(function_summary<T *>::function_summary): Update construction.
+	(fast_function_summary<T *, V>::fast_function_summary): Likewise.
+	(call_summary_base): Add allcator.
+	(call_summary<T *>::call_summary): Update construction.
+	(fast_call_summary<T *, V>::fast_call_summary): Likewise.
+
 2019-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91945
