@@ -1,3 +1,12 @@
+2019-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92333
+	PR middle-end/82608
+	* tree-vrp.c (vrp_prop::check_array_ref): Handle VLAs with constant
+	size.
+	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Use a meaninful
+	name and location for a temporary variable.
+
 2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (value_range::value_range): Fix whitespace.
