@@ -1,3 +1,8 @@
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92339
+	* g++.dg/pr92339.C: New test.
+
 2019-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/declare-variant-7.C: New test.
