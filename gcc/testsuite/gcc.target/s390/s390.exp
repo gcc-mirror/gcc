@@ -86,18 +86,22 @@ proc check_effective_target_s390_useable_hw { } {
 	int main (void)
 	{
 	    asm (".machinemode zarch" : : );
-	#if __ARCH__ >= 11
-	    asm ("lcbb %%r2,0(%%r15),0" : : );
+	#if __ARCH__ >= 13
+	    asm ("ncrk %%r2,%%r2,%%r2" : : : "r2");
+	#elif __ARCH__ >= 12
+	    asm ("agh %%r2,0(%%r15)" : : : "r2");
+	#elif __ARCH__ >= 11
+	    asm ("lochiz %%r2,42" : : : "r2");
 	#elif __ARCH__ >= 10
-	    asm ("risbgn %%r2,%%r2,0,0,0" : : );
+	    asm ("risbgn %%r2,%%r2,0,0,0" : : : "r2");
 	#elif __ARCH__ >= 9
-	    asm ("sgrk %%r2,%%r2,%%r2" : : );
+	    asm ("sgrk %%r2,%%r2,%%r2" : : : "r2");
 	#elif __ARCH__ >= 8
-	    asm ("rosbg %%r2,%%r2,0,0,0" : : );
+	    asm ("rosbg %%r2,%%r2,0,0,0" : : : "r2");
 	#elif __ARCH__ >= 7
-	    asm ("nilf %%r2,0" : : );
+	    asm ("nilf %%r2,0" : : : "r2");
 	#elif __ARCH__ >= 6
-	    asm ("lay %%r2,0(%%r15)" : : );
+	    asm ("lay %%r2,0(%%r15)" : : : "r2");
 	#elif __ARCH__ >= 5
 	    asm ("tam" : : );
 	#endif
@@ -107,8 +111,8 @@ proc check_effective_target_s390_useable_hw { } {
 	    asm ("etnd %0" : "=d" (nd));
 	  }
 	#endif
-	#ifdef __VX__
-	    asm ("vzero %%v0" : : );
+	#if defined (__VX__) && defined (__zarch__)
+	    asm ("vzero %%v0" : : : "v0");
 	#endif
 	  return 0;
 	}
