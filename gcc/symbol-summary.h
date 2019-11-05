@@ -31,7 +31,7 @@ public:
   function_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
   m_symtab (symtab),
   m_insertion_enabled (true),
-  allocator ("function summary" PASS_MEM_STAT)
+  m_allocator ("function summary" PASS_MEM_STAT)
   {}
 
   /* Basic implementation of insert operation.  */
@@ -62,7 +62,7 @@ protected:
     /* Call gcc_internal_because we do not want to call finalizer for
        a type T.  We call dtor explicitly.  */
     return is_ggc () ? new (ggc_internal_alloc (sizeof (T))) T ()
-		     : allocator.allocate () ;
+		     : m_allocator.allocate () ;
   }
 
   /* Release an item that is stored within map.  */
@@ -74,7 +74,7 @@ protected:
 	ggc_free (item);
       }
     else
-      allocator.remove (item);
+      m_allocator.remove (item);
   }
 
   /* Unregister all call-graph hooks.  */
@@ -95,7 +95,9 @@ protected:
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
   virtual bool is_ggc () = 0;
-  object_allocator<T> allocator;
+
+  /* Object allocator for heap allocation.  */
+  object_allocator<T> m_allocator;
 };
 
 template <typename T>
@@ -537,7 +539,7 @@ public:
   call_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
   m_symtab (symtab),
   m_initialize_when_cloning (false),
-  allocator ("call summary" PASS_MEM_STAT)
+  m_allocator ("call summary" PASS_MEM_STAT)
   {}
 
   /* Basic implementation of removal operation.  */
@@ -553,7 +555,7 @@ protected:
     /* Call gcc_internal_because we do not want to call finalizer for
        a type T.  We call dtor explicitly.  */
     return is_ggc () ? new (ggc_internal_alloc (sizeof (T))) T ()
-		     : allocator.allocate ();
+		     : m_allocator.allocate ();
   }
 
   /* Release an item that is stored within map.  */
@@ -565,7 +567,7 @@ protected:
 	ggc_free (item);
       }
     else
-      allocator.remove (item);
+      m_allocator.remove (item);
   }
 
   /* Unregister all call-graph hooks.  */
@@ -584,7 +586,9 @@ protected:
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
   virtual bool is_ggc () = 0;
-  object_allocator<T> allocator;
+
+  /* Object allocator for heap allocation.  */
+  object_allocator<T> m_allocator;
 };
 
 template <typename T>
