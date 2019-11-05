@@ -5565,15 +5565,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 (if (elt < CONSTRUCTOR_NELTS (ctor))
 	  (view_convert { CONSTRUCTOR_ELT (ctor, elt)->value; })
 	  { build_zero_cst (type); })
-	 {
-	   vec<constructor_elt, va_gc> *vals;
-	   vec_alloc (vals, count);
-	   for (unsigned i = 0;
-		i < count && elt + i < CONSTRUCTOR_NELTS (ctor); ++i)
-	     CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
-				     CONSTRUCTOR_ELT (ctor, elt + i)->value);
-	   build_constructor (type, vals);
-	 })))
+	 /* We don't want to emit new CTORs unless the old one goes away.
+	    ???  Eventually allow this if the CTOR ends up constant or
+	    uniform.  */
+	 (if (single_use (@0))
+	  {
+	    vec<constructor_elt, va_gc> *vals;
+	    vec_alloc (vals, count);
+	    for (unsigned i = 0;
+		 i < count && elt + i < CONSTRUCTOR_NELTS (ctor); ++i)
+	      CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
+				      CONSTRUCTOR_ELT (ctor, elt + i)->value);
+	    build_constructor (type, vals);
+	  }))))
       /* The bitfield references a single constructor element.  */
       (if (k.is_constant (&const_k)
 	   && idx + n <= (idx / const_k + 1) * const_k)
