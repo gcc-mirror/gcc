@@ -934,7 +934,10 @@ explain_invalid_constexpr_fn (tree fun)
   if (!DECL_DEFAULTED_FN (fun)
       && !LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun))
       && !is_instantiation_of_constexpr (fun))
-    return;
+    {
+      inform (DECL_SOURCE_LOCATION (fun), "%qD declared here", fun);
+      return;
+    }
   if (diagnosed == NULL)
     diagnosed = new hash_set<tree>;
   if (diagnosed->add (fun))

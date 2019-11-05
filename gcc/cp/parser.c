@@ -4546,9 +4546,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 
   if (i14 && ext)
     {
-      tree cxlit = lookup_qualified_name (std_node,
-					  get_identifier ("complex_literals"),
-					  0, false, false);
+      tree cxlit = lookup_qualified_name (std_node, "complex_literals",
+					  0, false);
       if (cxlit == error_mark_node)
 	{
 	  /* No <complex>, so pedwarn and use GNU semantics.  */
