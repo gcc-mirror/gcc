@@ -69,10 +69,7 @@ protected:
   void release (T *item)
   {
     if (is_ggc ())
-      {
-	item->~T ();
-	ggc_free (item);
-      }
+      ggc_delete (item);
     else
       m_allocator.remove (item);
   }
@@ -562,10 +559,7 @@ protected:
   void release (T *item)
   {
     if (is_ggc ())
-      {
-	item->~T ();
-	ggc_free (item);
-      }
+      ggc_delete (item);
     else
       m_allocator.remove (item);
   }

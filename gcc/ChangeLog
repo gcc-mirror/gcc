@@ -1,3 +1,7 @@
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h: Use ggc_delete.
+
 2019-11-05  Anton Youdkevitch  <anton.youdkevitch@bell-sw.com>
 
 	* config/aarch64/aarch64.c (thunderx2t99_vector_cost):
