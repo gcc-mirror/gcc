@@ -1,3 +1,9 @@
+2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range_base::operator==): Use equal_p to
+	properly handle symbolics.
+	(range_compatible_p): Remove.
+
 2019-11-04  Kamlesh Kumar  <kamleshbhalui@gmail.com>
 
 	* common.opt (-fabi-version): Document =14.

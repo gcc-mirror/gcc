@@ -6319,33 +6319,10 @@ value_range_base::intersect (const value_range_base &r)
     dump_flags |= TDF_DETAILS;
 }
 
-/* Return TRUE if two types are compatible for range operations.  */
-
-static bool
-range_compatible_p (tree t1, tree t2)
-{
-  if (POINTER_TYPE_P (t1) && POINTER_TYPE_P (t2))
-    return true;
-
-  return types_compatible_p (t1, t2);
-}
-
 bool
 value_range_base::operator== (const value_range_base &r) const
 {
-  if (undefined_p ())
-    return r.undefined_p ();
-
-  if (num_pairs () != r.num_pairs ()
-      || !range_compatible_p (type (), r.type ()))
-    return false;
-
-  for (unsigned p = 0; p < num_pairs (); p++)
-    if (wi::ne_p (lower_bound (p), r.lower_bound (p))
-	|| wi::ne_p (upper_bound (p), r.upper_bound (p)))
-      return false;
-
-  return true;
+  return equal_p (r);
 }
 
 /* Visit all arguments for PHI node PHI that flow through executable
