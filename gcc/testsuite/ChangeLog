@@ -1,5 +1,11 @@
 2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* gcc.dg/tree-ssa/gen-vect-26.c: Disable loop peeling check for
+	IBM Z.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+
+2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* gcc.dg/tree-ssa/gen-vect-11.c: Add --param min-vect-loop-bound=0
 	for IBM Z.
 	* gcc.dg/tree-ssa/gen-vect-11.c: Likewise.
