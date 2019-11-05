@@ -254,6 +254,18 @@ value_range_base::equal_p (const value_range_base &other) const
 	  && vrp_operand_equal_p (m_max, other.m_max));
 }
 
+/* Return true if the bitmaps B1 and B2 are equal.  */
+
+static bool
+vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
+{
+  return (b1 == b2
+	  || ((!b1 || bitmap_empty_p (b1))
+	      && (!b2 || bitmap_empty_p (b2)))
+	  || (b1 && b2
+	      && bitmap_equal_p (b1, b2)));
+}
+
 /* Returns TRUE if THIS == OTHER.  Ignores the equivalence bitmap if
    IGNORE_EQUIVS is TRUE.  */
 
@@ -908,18 +920,6 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   if (!val1 || !val2 || !operand_equal_p (val1, val2, 0))
     return false;
   return true;
-}
-
-/* Return true, if the bitmaps B1 and B2 are equal.  */
-
-bool
-vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
-{
-  return (b1 == b2
-	  || ((!b1 || bitmap_empty_p (b1))
-	      && (!b2 || bitmap_empty_p (b2)))
-	  || (b1 && b2
-	      && bitmap_equal_p (b1, b2)));
 }
 
 static bool
