@@ -1,3 +1,7 @@
+2019-10-05  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Disable snapshots from gcc-7-branch.
+
 2019-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* update_web_docs_svn: Proceed even if the invocation of
