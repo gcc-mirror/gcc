@@ -1,3 +1,8 @@
+2019-11-05  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_handle_attr_cpu): Allocate
+	enough bytes for the NULL character.
+
 2019-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92280

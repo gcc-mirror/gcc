@@ -14156,7 +14156,7 @@ aarch64_handle_attr_cpu (const char *str)
  static bool
  aarch64_handle_attr_branch_protection (const char* str)
  {
-  char *err_str = (char *) xmalloc (strlen (str));
+  char *err_str = (char *) xmalloc (strlen (str) + 1);
   enum aarch64_parse_opt_result res = aarch64_parse_branch_protection (str,
 								      &err_str);
   bool success = false;
