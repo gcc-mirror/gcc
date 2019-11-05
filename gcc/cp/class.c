@@ -3234,6 +3234,17 @@ add_implicitly_declared_members (tree t, tree* access_decls,
      a virtual function from a base class.  */
   declare_virt_assop_and_dtor (t);
 
+  /* If the class definition does not explicitly declare an == operator
+     function, but declares a defaulted three-way comparison operator function,
+     an == operator function is declared implicitly.  */
+  if (!classtype_has_op (t, EQ_EXPR))
+    if (tree space = classtype_has_defaulted_op (t, SPACESHIP_EXPR))
+      {
+	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
+					 NULL_TREE);
+	add_method (t, eq, false);
+      }
+
   while (*access_decls)
     {
       tree using_decl = TREE_VALUE (*access_decls);
@@ -5383,6 +5394,44 @@ classtype_has_depr_implicit_copy (tree t)
 	return fn;
     }
 
+  return NULL_TREE;
+}
+
+/* True iff T has a member or friend declaration of operator OP.  */
+
+bool
+classtype_has_op (tree t, tree_code op)
+{
+  tree name = ovl_op_identifier (op);
+  if (get_class_binding (t, name))
+    return true;
+  for (tree f = DECL_FRIENDLIST (TYPE_MAIN_DECL (t)); f; f = TREE_CHAIN (f))
+    if (FRIEND_NAME (f) == name)
+      return true;
+  return false;
+}
+
+
+/* If T has a defaulted member or friend declaration of OP, return it.  */
+
+tree
+classtype_has_defaulted_op (tree t, tree_code op)
+{
+  tree name = ovl_op_identifier (op);
+  for (ovl_iterator oi (get_class_binding (t, name)); oi; ++oi)
+    {
+      tree fn = *oi;
+      if (DECL_DEFAULTED_FN (fn))
+	return fn;
+    }
+  for (tree f = DECL_FRIENDLIST (TYPE_MAIN_DECL (t)); f; f = TREE_CHAIN (f))
+    if (FRIEND_NAME (f) == name)
+      for (tree l = FRIEND_DECLS (f); l; l = TREE_CHAIN (l))
+	{
+	  tree fn = TREE_VALUE (l);
+	  if (DECL_DEFAULTED_FN (fn))
+	    return fn;
+	}
   return NULL_TREE;
 }
 

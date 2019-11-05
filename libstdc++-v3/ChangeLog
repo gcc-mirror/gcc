@@ -1,5 +1,10 @@
 2019-11-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/compare: New header.
+	* libsupc++/Makefile.am (std_HEADERS): Add compare.
+	* include/std/version: Define __cpp_lib_three_way_comparison.
+	* include/std/functional: #include <compare>.
+
 	* include/std/version [!_GLIBCXX_HOSTED]: Do not define feature test
 	macros for features that are only present in hosted builds.
 

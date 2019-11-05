@@ -19003,6 +19003,7 @@ tsubst_copy_and_build (tree t,
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
+    case SPACESHIP_EXPR:
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       {

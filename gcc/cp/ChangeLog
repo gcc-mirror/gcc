@@ -1,3 +1,59 @@
+2019-11-05  Jason Merrill  <jason@redhat.com>
+
+	Implement C++20 operator<=>.
+	* cp-tree.h (struct lang_decl_fn): Add maybe_deleted bitfield.
+	(DECL_MAYBE_DELETED): New.
+	(enum special_function_kind): Add sfk_comparison.
+	(LOOKUP_REWRITTEN, LOOKUP_REVERSED): New.
+	* call.c (struct z_candidate): Add rewritten and reversed methods.
+	(add_builtin_candidate): Handle SPACESHIP_EXPR.
+	(add_builtin_candidates): Likewise.
+	(add_candidates): Don't add a reversed candidate if the parms are
+	the same.
+	(add_operator_candidates): Split out from build_new_op_1.  Handle
+	rewritten and reversed candidates.
+	(add_candidate): Swap conversions of reversed candidate.
+	(build_new_op_1): Swap them back.  Build a second operation for
+	rewritten candidates.
+	(extract_call_expr): Handle rewritten calls.
+	(same_fn_or_template): New.
+	(joust): Handle rewritten and reversed candidates.
+	* class.c (add_implicitly_declared_members): Add implicit op==.
+	(classtype_has_op, classtype_has_defaulted_op): New.
+	* constexpr.c (cxx_eval_binary_expression): Handle SPACESHIP_EXPR.
+	(cxx_eval_constant_expression, potential_constant_expression_1):
+	Likewise.
+	* cp-gimplify.c (genericize_spaceship): New.
+	(cp_genericize_r): Use it.
+	* cp-objcp-common.c (cp_common_init_ts): Handle SPACESHIP_EXPR.
+	* decl.c (finish_function): Handle deleted function.
+	* decl2.c (grokfield): SET_DECL_FRIEND_CONTEXT on defaulted friend.
+	(mark_used): Check DECL_MAYBE_DELETED.  Remove assumption that
+	defaulted functions are non-static members.
+	* error.c (dump_expr): Handle SPACESHIP_EXPR.
+	* method.c (type_has_trivial_fn): False for sfk_comparison.
+	(enum comp_cat_tag, struct comp_cat_info_t): New types.
+	(comp_cat_cache): New array variable.
+	(lookup_comparison_result, lookup_comparison_category)
+	(is_cat, cat_tag_for, spaceship_comp_cat)
+	(spaceship_type, genericize_spaceship)
+	(common_comparison_type, early_check_defaulted_comparison)
+	(comp_info, build_comparison_op): New.
+	(synthesize_method): Handle sfk_comparison.  Handle deleted.
+	(get_defaulted_eh_spec, maybe_explain_implicit_delete)
+	(explain_implicit_non_constexpr, implicitly_declare_fn)
+	(defaulted_late_check, defaultable_fn_check): Handle sfk_comparison.
+	* name-lookup.c (get_std_name_hint): Add comparison categories.
+	* tree.c (special_function_p): Add sfk_comparison.
+	* typeck.c (cp_build_binary_op): Handle SPACESHIP_EXPR.
+
+2019-11-05  Tim van Deurzen  <tim@kompiler.org>
+
+	Add new tree code for the spaceship operator.
+	* cp-tree.def: Add new tree code.
+	* operators.def: New binary operator.
+	* parser.c: Add new token and tree code.
+
 2019-09-15  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_new_op_1): Don't apply any standard conversions to

@@ -52,7 +52,7 @@ static_assert( ! std::regular<HasReference> );
 
 struct HasEq { };
 bool operator==(HasEq, HasEq) { return true; }
-#ifdef __cpp_lib_three_way_comparison
+#ifdef __cpp_impl_three_way_comparison
 static_assert( std::regular<HasEq> );
 #else
 static_assert( ! std::regular<HasEq> );

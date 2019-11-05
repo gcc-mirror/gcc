@@ -1,3 +1,8 @@
+2019-11-05  Tim van Deurzen  <tim@kompiler.org>
+
+	* cpplib.h: Add spaceship operator for C++.
+	* lex.c: Implement conditional lexing of spaceship operator for C++20.
+
 2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/92296

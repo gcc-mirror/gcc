@@ -2980,7 +2980,13 @@ _cpp_lex_direct (cpp_reader *pfile)
 
       result->type = CPP_LESS;
       if (*buffer->cur == '=')
-	buffer->cur++, result->type = CPP_LESS_EQ;
+	{
+	  buffer->cur++, result->type = CPP_LESS_EQ;
+	  if (*buffer->cur == '>'
+	      && CPP_OPTION (pfile, cplusplus)
+	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX2A)
+	    buffer->cur++, result->type = CPP_SPACESHIP;
+	}
       else if (*buffer->cur == '<')
 	{
 	  buffer->cur++;
@@ -3491,6 +3497,7 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
 				|| (CPP_OPTION (pfile, objc)
 				    && token1->val.str.text[0] == '@'
 				    && (b == CPP_NAME || b == CPP_STRING)));
+    case CPP_LESS_EQ:	return c == '>';
     case CPP_STRING:
     case CPP_WSTRING:
     case CPP_UTF8STRING:

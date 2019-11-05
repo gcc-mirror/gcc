@@ -16793,6 +16793,13 @@ finish_function (bool inline_p)
 	}
     }
 
+  if (DECL_DELETED_FN (fndecl))
+    {
+      DECL_INITIAL (fndecl) = error_mark_node;
+      DECL_SAVED_TREE (fndecl) = NULL_TREE;
+      goto cleanup;
+    }
+
   // If this is a concept, check that the definition is reasonable.
   if (DECL_DECLARED_CONCEPT_P (fndecl))
     check_function_concept (fndecl);
@@ -16939,6 +16946,7 @@ finish_function (bool inline_p)
   if (!processing_template_decl && !DECL_IMMEDIATE_FUNCTION_P (fndecl))
     cp_genericize (fndecl);
 
+ cleanup:
   /* We're leaving the context of this function, so zap cfun.  It's still in
      DECL_STRUCT_FUNCTION, and we'll restore it in tree_rest_of_compilation.  */
   set_cfun (NULL);

@@ -66,6 +66,7 @@
 #endif
 #if __cplusplus > 201703L
 # include <bits/range_cmp.h>
+# include <compare>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

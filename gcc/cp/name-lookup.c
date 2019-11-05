@@ -5592,6 +5592,12 @@ get_std_name_hint (const char *name)
     {"atomic_ref", "<atomic>", cxx2a},
     /* <bitset>.  */
     {"bitset", "<bitset>", cxx11},
+    /* <compare> */
+    {"weak_equality", "<compare>", cxx2a},
+    {"strong_equality", "<compare>", cxx2a},
+    {"partial_ordering", "<compare>", cxx2a},
+    {"weak_ordering", "<compare>", cxx2a},
+    {"strong_ordering", "<compare>", cxx2a},
     /* <complex>.  */
     {"complex", "<complex>", cxx98},
     {"complex_literals", "<complex>", cxx14},

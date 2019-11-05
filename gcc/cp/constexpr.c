@@ -2480,6 +2480,12 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   else if (code == POINTER_PLUS_EXPR)
     r = cxx_fold_pointer_plus_expression (ctx, t, lhs, rhs, non_constant_p,
 					  overflow_p);
+  else if (code == SPACESHIP_EXPR)
+    {
+      r = genericize_spaceship (type, lhs, rhs);
+      r = cxx_eval_constant_expression (ctx, r, false, non_constant_p,
+					overflow_p);
+    }
 
   if (r == NULL_TREE)
     r = fold_binary_loc (loc, code, type, lhs, rhs);
@@ -5226,6 +5232,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case GE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
+    case SPACESHIP_EXPR:
     case UNORDERED_EXPR:
     case ORDERED_EXPR:
     case UNLT_EXPR:
@@ -7037,6 +7044,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case GE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
+    case SPACESHIP_EXPR:
       want_rval = true;
       goto binary;
 

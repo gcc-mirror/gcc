@@ -514,6 +514,9 @@ struct z_candidate {
 
   /* The flags active in add_candidate.  */
   int flags;
+
+  bool rewritten () { return (flags & LOOKUP_REWRITTEN); }
+  bool reversed () { return (flags & LOOKUP_REVERSED); }
 };
 
 /* Returns true iff T is a null pointer constant in the sense of
@@ -2106,6 +2109,11 @@ add_candidate (struct z_candidate **candidates,
   cand->flags = flags;
   *candidates = cand;
 
+  if (convs && cand->reversed ())
+    /* Swap the conversions for comparison in joust; we'll swap them back
+       before build_over_call.  */
+    std::swap (convs[0], convs[1]);
+
   return cand;
 }
 
@@ -2737,6 +2745,16 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
      where  LR  is  the  result of the usual arithmetic conversions between
      types L and R.
 
+     For every integral type T there exists a candidate operator function of
+     the form
+
+       std::strong_ordering operator<=>(T, T);
+
+     For every pair of floating-point types L and R, there exists a candidate
+     operator function of the form
+
+       std::partial_ordering operator<=>(L, R);
+
    14For every pair of types T and I, where T  is  a  cv-qualified  or  cv-
      unqualified  complete  object  type and I is a promoted integral type,
      there exist candidate operator functions of the form
@@ -2758,11 +2776,15 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     bool    operator>=(T, T);
 	     bool    operator==(T, T);
 	     bool    operator!=(T, T);
+	     R       operator<=>(T, T);
+
+     where R is the result type specified in [expr.spaceship].
 
    17For every pointer to member type T,  there  exist  candidate  operator
      functions of the form
 	     bool    operator==(T, T);
-	     bool    operator!=(T, T);  */
+	     bool    operator!=(T, T);
+	     std::strong_equality operator<=>(T, T);  */
 
     case MINUS_EXPR:
       if (TYPE_PTROB_P (type1) && TYPE_PTROB_P (type2))
@@ -2780,6 +2802,11 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
       return;
 
+      /* This isn't exactly what's specified above for operator<=>, but it's
+	 close enough.  In particular, we don't care about the return type
+	 specified above; it doesn't participate in overload resolution and it
+	 doesn't affect the semantics of the built-in operator.  */
+    case SPACESHIP_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
       if ((TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2))
@@ -3138,6 +3165,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
     case LE_EXPR:
     case GT_EXPR:
     case GE_EXPR:
+    case SPACESHIP_EXPR:
       enum_p = 1;
       /* Fall through.  */
 
@@ -5740,6 +5768,15 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	  fn_args = non_static_args;
 	}
 
+      /* Don't bother reversing an operator with two identical parameters.  */
+      else if (args->length () == 2 && (flags & LOOKUP_REVERSED))
+	{
+	  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	  if (same_type_p (TREE_VALUE (parmlist),
+			   TREE_VALUE (TREE_CHAIN (parmlist))))
+	    continue;
+	}
+
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	add_template_candidate (candidates,
 				fn,
@@ -5800,6 +5837,178 @@ op_is_ordered (tree_code code)
     }
 }
 
+/* Subroutine of build_new_op_1: Add to CANDIDATES all candidates for the
+   operator indicated by CODE/CODE2.  This function calls itself recursively to
+   handle C++20 rewritten comparison operator candidates.  */
+
+static tree
+add_operator_candidates (z_candidate **candidates,
+			 tree_code code, tree_code code2,
+			 vec<tree, va_gc> *arglist,
+			 int flags, tsubst_flags_t complain)
+{
+  z_candidate *start_candidates = *candidates;
+  bool ismodop = code2 != ERROR_MARK;
+  tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
+
+  /* LOOKUP_REWRITTEN is set when we're looking for the == or <=> operator to
+     rewrite from, and also when we're looking for the e.g. < operator to use
+     on the result of <=>.  In the latter case, we don't want the flag set in
+     the candidate, we just want to suppress looking for rewrites.  */
+  bool rewritten = (flags & LOOKUP_REWRITTEN);
+  if (rewritten && code != EQ_EXPR && code != SPACESHIP_EXPR)
+    flags &= ~LOOKUP_REWRITTEN;
+
+  bool memonly = false;
+  switch (code)
+    {
+      /* =, ->, [], () must be non-static member functions.  */
+    case MODIFY_EXPR:
+      if (code2 != NOP_EXPR)
+	break;
+      /* FALLTHRU */
+    case COMPONENT_REF:
+    case ARRAY_REF:
+      memonly = true;
+      break;
+
+    default:
+      break;
+    }
+
+  /* Add namespace-scope operators to the list of functions to
+     consider.  */
+  if (!memonly)
+    {
+      tree fns = lookup_name_real (fnname, 0, 1, /*block_p=*/true, 0, 0);
+      fns = lookup_arg_dependent (fnname, fns, arglist);
+      add_candidates (fns, NULL_TREE, arglist, NULL_TREE,
+		      NULL_TREE, false, NULL_TREE, NULL_TREE,
+		      flags, candidates, complain);
+    }
+
+  /* Add class-member operators to the candidate set.  */
+  tree arg1_type = TREE_TYPE ((*arglist)[0]);
+  unsigned nargs = arglist->length () > 1 ? 2 : 1;
+  tree arg2_type = nargs > 1 ? TREE_TYPE ((*arglist)[1]) : NULL_TREE;
+  if (CLASS_TYPE_P (arg1_type))
+    {
+      tree fns = lookup_fnfields (arg1_type, fnname, 1);
+      if (fns == error_mark_node)
+	return error_mark_node;
+      if (fns)
+	add_candidates (BASELINK_FUNCTIONS (fns),
+			NULL_TREE, arglist, NULL_TREE,
+			NULL_TREE, false,
+			BASELINK_BINFO (fns),
+			BASELINK_ACCESS_BINFO (fns),
+			flags, candidates, complain);
+    }
+  /* Per [over.match.oper]3.2, if no operand has a class type, then
+     only non-member functions that have type T1 or reference to
+     cv-qualified-opt T1 for the first argument, if the first argument
+     has an enumeration type, or T2 or reference to cv-qualified-opt
+     T2 for the second argument, if the second argument has an
+     enumeration type.  Filter out those that don't match.  */
+  else if (! arg2_type || ! CLASS_TYPE_P (arg2_type))
+    {
+      struct z_candidate **candp, **next;
+
+      for (candp = candidates; *candp != start_candidates; candp = next)
+	{
+	  unsigned i;
+	  z_candidate *cand = *candp;
+	  next = &cand->next;
+
+	  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (cand->fn));
+
+	  for (i = 0; i < nargs; ++i)
+	    {
+	      tree parmtype = TREE_VALUE (parmlist);
+	      tree argtype = unlowered_expr_type ((*arglist)[i]);
+
+	      if (TYPE_REF_P (parmtype))
+		parmtype = TREE_TYPE (parmtype);
+	      if (TREE_CODE (argtype) == ENUMERAL_TYPE
+		  && (same_type_ignoring_top_level_qualifiers_p
+		      (argtype, parmtype)))
+		break;
+
+	      parmlist = TREE_CHAIN (parmlist);
+	    }
+
+	  /* No argument has an appropriate type, so remove this
+	     candidate function from the list.  */
+	  if (i == nargs)
+	    {
+	      *candp = cand->next;
+	      next = candp;
+	    }
+	}
+    }
+
+  if (!rewritten)
+    {
+      /* The standard says to rewrite built-in candidates, too,
+	 but there's no point.  */
+      add_builtin_candidates (candidates, code, code2, fnname, arglist,
+			      flags, complain);
+
+      /* Maybe add C++20 rewritten comparison candidates.  */
+      tree_code rewrite_code = ERROR_MARK;
+      if (cxx_dialect >= cxx2a
+	  && nargs == 2
+	  && (OVERLOAD_TYPE_P (arg1_type) || OVERLOAD_TYPE_P (arg2_type)))
+	switch (code)
+	  {
+	  case LT_EXPR:
+	  case LE_EXPR:
+	  case GT_EXPR:
+	  case GE_EXPR:
+	  case SPACESHIP_EXPR:
+	    rewrite_code = SPACESHIP_EXPR;
+	    break;
+
+	  case NE_EXPR:
+	  case EQ_EXPR:
+	    rewrite_code = EQ_EXPR;
+	    break;
+
+	  default:;
+	  }
+
+      if (rewrite_code)
+	{
+	  flags |= LOOKUP_REWRITTEN;
+	  if (rewrite_code != code)
+	    /* Add rewritten candidates in same order.  */
+	    add_operator_candidates (candidates, rewrite_code, ERROR_MARK,
+				     arglist, flags, complain);
+
+	  z_candidate *save_cand = *candidates;
+
+	  /* Add rewritten candidates in reverse order.  */
+	  flags |= LOOKUP_REVERSED;
+	  vec<tree,va_gc> *revlist = make_tree_vector ();
+	  revlist->quick_push ((*arglist)[1]);
+	  revlist->quick_push ((*arglist)[0]);
+	  add_operator_candidates (candidates, rewrite_code, ERROR_MARK,
+				   revlist, flags, complain);
+
+	  /* Release the vec if we didn't add a candidate that uses it.  */
+	  for (z_candidate *c = *candidates; c != save_cand; c = c->next)
+	    if (c->args == revlist)
+	      {
+		revlist = NULL;
+		break;
+	      }
+	  release_tree_vector (revlist);
+	}
+    }
+
+  return NULL_TREE;
+}
+
 static tree
 build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 		tree arg1, tree arg2, tree arg3, tree *overload,
@@ -5809,7 +6018,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   vec<tree, va_gc> *arglist;
   tree result = NULL_TREE;
   bool result_valid_p = false;
-  enum tree_code code2 = NOP_EXPR;
+  enum tree_code code2 = ERROR_MARK;
   enum tree_code code_orig_arg1 = ERROR_MARK;
   enum tree_code code_orig_arg2 = ERROR_MARK;
   conversion *conv;
@@ -5828,14 +6037,12 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       code2 = TREE_CODE (arg3);
       arg3 = NULL_TREE;
     }
-  tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
 
   tree arg1_type = unlowered_expr_type (arg1);
   tree arg2_type = arg2 ? unlowered_expr_type (arg2) : NULL_TREE;
 
   arg1 = prep_operand (arg1);
 
-  bool memonly = false;
   switch (code)
     {
     case NEW_EXPR:
@@ -5868,16 +6075,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       code_orig_arg2 = TREE_CODE (arg2_type);
       break;
 
-      /* =, ->, [], () must be non-static member functions.  */
-    case MODIFY_EXPR:
-      if (code2 != NOP_EXPR)
-	break;
-      /* FALLTHRU */
-    case COMPONENT_REF:
-    case ARRAY_REF:
-      memonly = true;
-      break;
-
     default:
       break;
     }
@@ -5908,82 +6105,10 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
 
-  /* Add namespace-scope operators to the list of functions to
-     consider.  */
-  if (!memonly)
-    {
-      tree fns = lookup_name_real (fnname, 0, 1, /*block_p=*/true, 0, 0);
-      fns = lookup_arg_dependent (fnname, fns, arglist);
-      add_candidates (fns, NULL_TREE, arglist, NULL_TREE,
-		      NULL_TREE, false, NULL_TREE, NULL_TREE,
-		      flags, &candidates, complain);
-    }
-
-  /* Add class-member operators to the candidate set.  */
-  if (CLASS_TYPE_P (arg1_type))
-    {
-      tree fns;
-
-      fns = lookup_fnfields (arg1_type, fnname, 1);
-      if (fns == error_mark_node)
-	{
-	  result = error_mark_node;
-	  goto user_defined_result_ready;
-	}
-      if (fns)
-	add_candidates (BASELINK_FUNCTIONS (fns),
-			NULL_TREE, arglist, NULL_TREE,
-			NULL_TREE, false,
-			BASELINK_BINFO (fns),
-			BASELINK_ACCESS_BINFO (fns),
-			flags, &candidates, complain);
-    }
-  /* Per [over.match.oper]3.2, if no operand has a class type, then
-     only non-member functions that have type T1 or reference to
-     cv-qualified-opt T1 for the first argument, if the first argument
-     has an enumeration type, or T2 or reference to cv-qualified-opt
-     T2 for the second argument, if the second argument has an
-     enumeration type.  Filter out those that don't match.  */
-  else if (! arg2 || ! CLASS_TYPE_P (arg2_type))
-    {
-      struct z_candidate **candp, **next;
-
-      for (candp = &candidates; *candp; candp = next)
-	{
-	  tree parmlist, parmtype;
-	  int i, nargs = (arg2 ? 2 : 1);
-
-	  cand = *candp;
-	  next = &cand->next;
-
-	  parmlist = TYPE_ARG_TYPES (TREE_TYPE (cand->fn));
-
-	  for (i = 0; i < nargs; ++i)
-	    {
-	      parmtype = TREE_VALUE (parmlist);
-
-	      if (TYPE_REF_P (parmtype))
-		parmtype = TREE_TYPE (parmtype);
-	      if (TREE_CODE (unlowered_expr_type ((*arglist)[i])) == ENUMERAL_TYPE
-		  && (same_type_ignoring_top_level_qualifiers_p
-		      (unlowered_expr_type ((*arglist)[i]), parmtype)))
-		break;
-
-	      parmlist = TREE_CHAIN (parmlist);
-	    }
-
-	  /* No argument has an appropriate type, so remove this
-	     candidate function from the list.  */
-	  if (i == nargs)
-	    {
-	      *candp = cand->next;
-	      next = candp;
-	    }
-	}
-    }
-
-  add_builtin_candidates (&candidates, code, code2, fnname, arglist,
-			  flags, complain);
+  result = add_operator_candidates (&candidates, code, code2, arglist,
+				    flags, complain);
+  if (result == error_mark_node)
+    goto user_defined_result_ready;
 
   switch (code)
     {
@@ -6021,6 +6146,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	     -fpermissive.  */
 	  else
 	    {
+	      tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
 	      const char *msg = (flag_permissive) 
 		? G_("no %<%D(int)%> declared for postfix %qs,"
 		     " trying prefix operator instead")
@@ -6091,7 +6217,12 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	  if (resolve_args (arglist, complain) == NULL)
 	    result = error_mark_node;
 	  else
-	    result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	    {
+	      if (cand->reversed ())
+		/* We swapped these in add_candidate, swap them back now.  */
+		std::swap (cand->convs[0], cand->convs[1]);
+	      result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	    }
 
 	  if (trivial_fn_p (cand->fn))
 	    /* There won't be a CALL_EXPR.  */;
@@ -6119,6 +6250,73 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 
 		default:
 		  break;
+		}
+	    }
+
+	  /* If this was a C++20 rewritten comparison, adjust the result.  */
+	  if (cand->rewritten ())
+	    {
+	      /* FIXME build_min_non_dep_op_overload can't handle rewrites.  */
+	      if (overload)
+		*overload = NULL_TREE;
+	      switch (code)
+		{
+		case EQ_EXPR:
+		  gcc_checking_assert (cand->reversed ());
+		  gcc_fallthrough ();
+		case NE_EXPR:
+		  /* If a rewritten operator== candidate is selected by
+		     overload resolution for an operator @, its return type
+		     shall be cv bool.... */
+		  if (TREE_CODE (TREE_TYPE (result)) != BOOLEAN_TYPE)
+		    {
+		      if (complain & tf_error)
+			{
+			  auto_diagnostic_group d;
+			  error_at (loc, "return type of %qD is not %qs",
+				    cand->fn, "bool");
+			  inform (loc, "used as rewritten candidate for "
+				  "comparison of %qT and %qT",
+				  arg1_type, arg2_type);
+			}
+		      result = error_mark_node;
+		    }
+		  else if (code == NE_EXPR)
+		    /* !(y == x) or !(x == y)  */
+		    result = build1_loc (loc, TRUTH_NOT_EXPR,
+					 boolean_type_node, result);
+		  break;
+
+		  /* If a rewritten operator<=> candidate is selected by
+		     overload resolution for an operator @, x @ y is
+		     interpreted as 0 @ (y <=> x) if the selected candidate is
+		     a synthesized candidate with reversed order of parameters,
+		     or (x <=> y) @ 0 otherwise, using the selected rewritten
+		     operator<=> candidate.  */
+		case SPACESHIP_EXPR:
+		  if (!cand->reversed ())
+		    /* We're in the build_new_op call below for an outer
+		       reversed call; we don't need to do anything more.  */
+		    break;
+		  gcc_fallthrough ();
+		case LT_EXPR:
+		case LE_EXPR:
+		case GT_EXPR:
+		case GE_EXPR:
+		  {
+		    tree lhs = result;
+		    tree rhs = integer_zero_node;
+		    if (cand->reversed ())
+		      std::swap (lhs, rhs);
+		    result = build_new_op (loc, code,
+					   LOOKUP_NORMAL|LOOKUP_REWRITTEN,
+					   lhs, rhs, NULL_TREE,
+					   NULL, complain);
+		  }
+		  break;
+
+		default:
+		  gcc_unreachable ();
 		}
 	    }
 	}
@@ -6232,6 +6430,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       if (complain & tf_warning && warn_tautological_compare)
 	warn_tautological_cmp (loc, code, arg1, arg2);
       /* Fall through.  */
+    case SPACESHIP_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
@@ -6307,6 +6506,29 @@ extract_call_expr (tree call)
     call = TREE_OPERAND (call, 0);
   if (TREE_CODE (call) == TARGET_EXPR)
     call = TARGET_EXPR_INITIAL (call);
+  if (cxx_dialect >= cxx2a)
+    switch (TREE_CODE (call))
+      {
+	/* C++20 rewritten comparison operators.  */
+      case TRUTH_NOT_EXPR:
+	call = TREE_OPERAND (call, 0);
+	break;
+      case LT_EXPR:
+      case LE_EXPR:
+      case GT_EXPR:
+      case GE_EXPR:
+      case SPACESHIP_EXPR:
+	{
+	  tree op0 = TREE_OPERAND (call, 0);
+	  if (integer_zerop (op0))
+	    call = TREE_OPERAND (call, 1);
+	  else
+	    call = op0;
+	}
+	break;
+      default:;
+      }
+
   gcc_assert (TREE_CODE (call) == CALL_EXPR
 	      || TREE_CODE (call) == AGGR_INIT_EXPR
 	      || call == error_mark_node);
@@ -10772,6 +10994,20 @@ joust_maybe_elide_copy (z_candidate *&cand)
   return false;
 }
 
+/* True if cand1 and cand2 represent the same function or function
+   template.  */
+
+static bool
+same_fn_or_template (z_candidate *cand1, z_candidate *cand2)
+{
+  if (cand1->fn == cand2->fn)
+    return true;
+  if (!cand1->template_decl || !cand2->template_decl)
+    return false;
+  return (most_general_template (TI_TEMPLATE (cand1->template_decl))
+	  == most_general_template (TI_TEMPLATE (cand2->template_decl)));
+}
+
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -10798,6 +11034,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
   /* If we have two pseudo-candidates for conversions to the same type,
      or two candidates for the same function, arbitrarily pick one.  */
   if (cand1->fn == cand2->fn
+      && cand1->reversed () == cand2->reversed ()
       && (IS_TYPE_OR_DECL_P (cand1->fn)))
     return 1;
 
@@ -10917,6 +11154,21 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
 	  if (winner && comp != winner)
 	    {
+	      if (same_fn_or_template (cand1, cand2))
+		{
+		  /* Ambiguity between normal and reversed versions of the
+		     same comparison operator; prefer the normal one.
+		     https://lists.isocpp.org/core/2019/10/7438.php  */
+		  if (cand1->reversed ())
+		    winner = -1;
+		  else
+		    {
+		      gcc_checking_assert (cand2->reversed ());
+		      winner = 1;
+		    }
+		  break;
+		}
+
 	      winner = 0;
 	      goto tweak;
 	    }
@@ -11045,6 +11297,21 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       if (winner)
 	return winner;
     }
+
+  /* F2 is a rewritten candidate (12.4.1.2) and F1 is not, or F1 and F2 are
+     rewritten candidates, and F2 is a synthesized candidate with reversed
+     order of parameters and F1 is not.  */
+  if (cand1->rewritten ())
+    {
+      if (!cand2->rewritten ())
+	return -1;
+      if (!cand1->reversed () && cand2->reversed ())
+	return 1;
+      if (cand1->reversed () && !cand2->reversed ())
+	return -1;
+    }
+  else if (cand2->rewritten ())
+    return 1;
 
   /* F1 is generated from a deduction-guide (13.3.1.8) and F2 is not */
   if (deduction_guide_p (cand1->fn))
