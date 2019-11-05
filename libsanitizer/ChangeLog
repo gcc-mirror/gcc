@@ -1,5 +1,27 @@
 2019-11-05  Martin Liska  <mliska@suse.cz>
 
+	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply from
+	LOCAL_PATCHES.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* asan/asan_interceptors.h (ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION): Likewise.
+	(defined): Likewise.
+	* asan/asan_mapping.h: Likewise.
+	* sanitizer_common/sanitizer_linux_libcdep.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_mac.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_linux.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cpp (GetCanonicFrame): Likewise.
+	* tsan/tsan_rtl_ppc64.S: Likewise.
+	* ubsan/ubsan_handlers.cpp (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+	* ubsan/ubsan_platform.h: Likewise.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
 	* tsan/Makefile.am: Rename tsan_interceptors.cpp to
 	tsan_interceptors_posix.
 	* tsan/Makefile.in: Regenerate.
