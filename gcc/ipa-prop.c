@@ -107,12 +107,12 @@ static GTY ((cache)) hash_table<ipa_bit_ggc_hash_traits> *ipa_bits_hash_table;
 /* Traits for a hash table for reusing value_ranges used for IPA.  Note that
    the equiv bitmap is not hashed and is expected to be NULL.  */
 
-struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range_base *>
+struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
 {
-  typedef value_range_base *value_type;
-  typedef value_range_base *compare_type;
+  typedef value_range *value_type;
+  typedef value_range *compare_type;
   static hashval_t
-  hash (const value_range_base *p)
+  hash (const value_range *p)
     {
       inchash::hash hstate (p->kind ());
       inchash::add_expr (p->min (), hstate);
@@ -120,29 +120,29 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range_base *>
       return hstate.end ();
     }
   static bool
-  equal (const value_range_base *a, const value_range_base *b)
+  equal (const value_range *a, const value_range *b)
     {
       return a->equal_p (*b);
     }
   static void
-  mark_empty (value_range_base *&p)
+  mark_empty (value_range *&p)
     {
       p = NULL;
     }
   static bool
-  is_empty (const value_range_base *p)
+  is_empty (const value_range *p)
     {
       return p == NULL;
     }
   static bool
-  is_deleted (const value_range_base *p)
+  is_deleted (const value_range *p)
     {
-      return p == reinterpret_cast<const value_range_base *> (1);
+      return p == reinterpret_cast<const value_range *> (1);
     }
   static void
-  mark_deleted (value_range_base *&p)
+  mark_deleted (value_range *&p)
     {
-      p = reinterpret_cast<value_range_base *> (1);
+      p = reinterpret_cast<value_range *> (1);
     }
 };
 
@@ -1802,14 +1802,14 @@ ipa_set_jfunc_bits (ipa_jump_func *jf, const widest_int &value,
 /* Return a pointer to a value_range just like *TMP, but either find it in
    ipa_vr_hash_table or allocate it in GC memory.  TMP->equiv must be NULL.  */
 
-static value_range_base *
-ipa_get_value_range (value_range_base *tmp)
+static value_range *
+ipa_get_value_range (value_range *tmp)
 {
-  value_range_base **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
+  value_range **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
   if (*slot)
     return *slot;
 
-  value_range_base *vr = ggc_alloc<value_range_base> ();
+  value_range *vr = ggc_alloc<value_range> ();
   *vr = *tmp;
   *slot = vr;
 
@@ -1820,10 +1820,10 @@ ipa_get_value_range (value_range_base *tmp)
    equiv set. Use hash table in order to avoid creating multiple same copies of
    value_ranges.  */
 
-static value_range_base *
+static value_range *
 ipa_get_value_range (enum value_range_kind type, tree min, tree max)
 {
-  value_range_base tmp (type, min, max);
+  value_range tmp (type, min, max);
   return ipa_get_value_range (&tmp);
 }
 
@@ -1842,7 +1842,7 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, enum value_range_kind type,
    copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
 
 static void
-ipa_set_jfunc_vr (ipa_jump_func *jf, value_range_base *tmp)
+ipa_set_jfunc_vr (ipa_jump_func *jf, value_range *tmp)
 {
   jf->m_vr = ipa_get_value_range (tmp);
 }
@@ -1919,8 +1919,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && (type = get_range_info (arg, &min, &max))
 	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
 	    {
-	      value_range_base resvr;
-	      value_range_base tmpvr (type,
+	      value_range resvr;
+	      value_range tmpvr (type,
 				      wide_int_to_tree (TREE_TYPE (arg), min),
 				      wide_int_to_tree (TREE_TYPE (arg), max));
 	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,

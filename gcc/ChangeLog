@@ -1,3 +1,13 @@
+2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-fold.c, gimple-loop-versioning.cc,
+	gimple-ssa-evrp-analyze.[ch], gimple-ssa-evrp.c,
+	gimple-ssa-sprintf.c, ipa-cp.c, ipa-prop.c, ipa-prop.h,
+	range-op.[hc]*, range.[hc]*, selftest.h, tree-ssa-dom.c,
+	tree-ssa-strlen.c, tree-ssa-threadedge.c, tree-ssanames.[hc],
+	tree-vrp.[hc], vr-values.[hc]: Global rename of value_range to
+	value_range_equiv, and value_range_base to value_range.
+
 2019-11-05  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* expr.c (build_personality_function): Fix generated type to

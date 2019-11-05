@@ -29,61 +29,60 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "range.h"
 
-value_range_base
-range_intersect (const value_range_base &r1, const value_range_base &r2)
+value_range
+range_intersect (const value_range &r1, const value_range &r2)
 {
-  value_range_base tmp (r1);
+  value_range tmp (r1);
   tmp.intersect (r2);
   return tmp;
 }
 
-value_range_base
-range_invert (const value_range_base &r1)
+value_range
+range_invert (const value_range &r1)
 {
-  value_range_base tmp (r1);
+  value_range tmp (r1);
   tmp.invert ();
   return tmp;
 }
 
-value_range_base
-range_union (const value_range_base &r1, const value_range_base &r2)
+value_range
+range_union (const value_range &r1, const value_range &r2)
 {
-  value_range_base tmp (r1);
+  value_range tmp (r1);
   tmp.union_ (r2);
   return tmp;
 }
 
-value_range_base
+value_range
 range_zero (tree type)
 {
-  return value_range_base (build_zero_cst (type), build_zero_cst (type));
+  return value_range (build_zero_cst (type), build_zero_cst (type));
 }
 
-value_range_base
+value_range
 range_nonzero (tree type)
 {
-  return value_range_base (VR_ANTI_RANGE,
+  return value_range (VR_ANTI_RANGE,
 			   build_zero_cst (type), build_zero_cst (type));
 }
 
-value_range_base
+value_range
 range_positives (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
   signop sign = TYPE_SIGN (type);
-  return value_range_base (type, wi::zero (prec), wi::max_value (prec, sign));
+  return value_range (type, wi::zero (prec), wi::max_value (prec, sign));
 }
 
-value_range_base
+value_range
 range_negatives (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
   signop sign = TYPE_SIGN (type);
-  value_range_base r;
+  value_range r;
   if (sign == UNSIGNED)
     r.set_undefined ();
   else
-    r = value_range_base (type, wi::min_value (prec, sign),
-			  wi::minus_one (prec));
+    r = value_range (type, wi::min_value (prec, sign), wi::minus_one (prec));
   return r;
 }

@@ -1495,7 +1495,7 @@ loop_versioning::prune_loop_conditions (class loop *loop, vr_values *vrs)
   EXECUTE_IF_SET_IN_BITMAP (&li.unity_names, 0, i, bi)
     {
       tree name = ssa_name (i);
-      const value_range *vr = vrs->get_value_range (name);
+      const value_range_equiv *vr = vrs->get_value_range (name);
       if (vr && !vr->may_contain_p (build_one_cst (TREE_TYPE (name))))
 	{
 	  if (dump_enabled_p ())

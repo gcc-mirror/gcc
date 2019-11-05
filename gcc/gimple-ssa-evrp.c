@@ -109,7 +109,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       if (virtual_operand_p (lhs))
 	continue;
 
-      const value_range *vr = evrp_range_analyzer.get_value_range (lhs);
+      const value_range_equiv *vr = evrp_range_analyzer.get_value_range (lhs);
       /* Mark PHIs whose lhs we fully propagate for removal.  */
       tree val;
       if (vr->singleton_p (&val) && may_propagate_copy (lhs, val))
@@ -158,11 +158,11 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  output = get_output_for_vrp (stmt);
 	  if (output)
 	    {
-	      tree val;
-	      const value_range *vr
+	      const value_range_equiv *vr
 		= evrp_range_analyzer.get_value_range (output);
 
 	      /* Mark stmts whose output we fully propagate for removal.  */
+	      tree val;
 	      if (vr->singleton_p (&val)
 		  && may_propagate_copy (output, val)
 		  && !stmt_could_throw_p (cfun, stmt)
@@ -244,7 +244,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  if (TREE_CODE (arg) != SSA_NAME
 	      || virtual_operand_p (arg))
 	    continue;
-	  const value_range *vr = evrp_range_analyzer.get_value_range (arg);
+	  const value_range_equiv
+	    *vr = evrp_range_analyzer.get_value_range (arg);
 	  tree val;
 	  if (vr->singleton_p (&val) && may_propagate_copy (arg, val))
 	    propagate_value (use_p, val);
