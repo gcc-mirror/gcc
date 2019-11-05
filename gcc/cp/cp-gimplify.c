@@ -1144,6 +1144,17 @@ cp_fold_function (tree fndecl)
   cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &pset, NULL);
 }
 
+/* Turn SPACESHIP_EXPR EXPR into GENERIC.  */
+
+static tree genericize_spaceship (tree expr)
+{
+  iloc_sentinel s (cp_expr_location (expr));
+  tree type = TREE_TYPE (expr);
+  tree op0 = TREE_OPERAND (expr, 0);
+  tree op1 = TREE_OPERAND (expr, 1);
+  return genericize_spaceship (type, op0, op1);
+}
+
 /* Perform any pre-gimplification lowering of C++ front end trees to
    GENERIC.  */
 
@@ -1572,6 +1583,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
     case BREAK_STMT:
       genericize_break_stmt (stmt_p);
+      break;
+
+    case SPACESHIP_EXPR:
+      *stmt_p = genericize_spaceship (*stmt_p);
       break;
 
     case OMP_FOR:

@@ -927,6 +927,10 @@ grokfield (const cp_declarator *declarator,
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {
+	      if (friendp)
+		/* ??? do_friend doesn't set this because funcdef_flag is false
+		   for in-class defaulted functions.  So set it here.  */
+		SET_DECL_FRIEND_CONTEXT (value, current_class_type);
 	      if (defaultable_fn_check (value))
 		{
 		  DECL_DEFAULTED_FN (value) = 1;
@@ -5472,6 +5476,17 @@ mark_used (tree decl, tsubst_flags_t complain)
     used_types_insert (DECL_CONTEXT (decl));
 
   if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_MAYBE_DELETED (decl))
+    {
+      /* ??? Switch other defaulted functions to use DECL_MAYBE_DELETED?  */
+      gcc_assert (special_function_p (decl) == sfk_comparison);
+
+      ++function_depth;
+      synthesize_method (decl);
+      --function_depth;
+    }
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
       && !maybe_instantiate_noexcept (decl, complain))
     return false;
 
@@ -5592,7 +5607,6 @@ mark_used (tree decl, tsubst_flags_t complain)
 
   /* Is it a synthesized method that needs to be synthesized?  */
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && DECL_DEFAULTED_FN (decl)
       /* A function defaulted outside the class is synthesized either by
 	 cp_finish_decl or instantiate_decl.  */

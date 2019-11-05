@@ -2695,7 +2695,8 @@ struct GTY(()) lang_decl_fn {
   unsigned omp_declare_reduction_p : 1;
   unsigned has_dependent_explicit_spec_p : 1;
   unsigned immediate_fn_p : 1;
-  unsigned spare : 11;
+  unsigned maybe_deleted : 1;
+  unsigned spare : 10;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3136,6 +3137,11 @@ struct GTY(()) lang_decl {
    with a value-dependent expression.  */
 #define DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->has_dependent_explicit_spec_p)
+
+/* Nonzero for a defaulted FUNCTION_DECL for which we haven't decided yet if
+   it's deleted.  */
+#define DECL_MAYBE_DELETED(NODE) \
+  (LANG_DECL_FN_CHECK (NODE)->maybe_deleted)
 
 /* True (in a FUNCTION_DECL) if NODE is a virtual function that is an
    invalid overrider for a function from a base class.  Once we have
@@ -5203,6 +5209,7 @@ enum special_function_kind {
 			      destroyed.  */
   sfk_conversion,	   /* A conversion operator.  */
   sfk_deduction_guide,	   /* A class template deduction guide.  */
+  sfk_comparison,	   /* A comparison operator (e.g. ==, <, <=>).  */
   sfk_virtual_destructor   /* Used by member synthesis fns.  */
 };
 
@@ -5565,6 +5572,17 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_ALLOW_FLEXARRAY_INIT (LOOKUP_DELEGATING_CONS << 1)
 /* Require constant initialization of a non-constant variable.  */
 #define LOOKUP_CONSTINIT (LOOKUP_ALLOW_FLEXARRAY_INIT << 1)
+/* We're looking for either a rewritten comparison operator candidate or the
+   operator to use on the former's result.  We distinguish between the two by
+   knowing that comparisons other than == and <=> must be the latter, as must
+   a <=> expression trying to rewrite to <=> without reversing.  */
+#define LOOKUP_REWRITTEN (LOOKUP_CONSTINIT << 1)
+/* Reverse the order of the two arguments for comparison rewriting.  First we
+   swap the arguments in add_operator_candidates, then we swap the conversions
+   in add_candidate (so that they correspond to the original order of the
+   args), then we swap the conversions back in build_new_op_1 (so they
+   correspond to the order of the args in the candidate).  */
+#define LOOKUP_REVERSED (LOOKUP_REWRITTEN << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
@@ -6371,6 +6389,8 @@ extern bool type_has_virtual_destructor		(tree);
 extern bool classtype_has_move_assign_or_move_ctor_p (tree, bool user_declared);
 extern bool classtype_has_non_deleted_move_ctor (tree);
 extern tree classtype_has_depr_implicit_copy	(tree);
+extern bool classtype_has_op (tree, tree_code);
+extern tree classtype_has_defaulted_op (tree, tree_code);
 extern bool type_build_ctor_call		(tree);
 extern bool type_build_dtor_call		(tree);
 extern void explain_non_literal_class		(tree);
@@ -7544,6 +7564,8 @@ extern tree composite_pointer_type		(const op_location_t &,
 extern tree merge_types				(tree, tree);
 extern tree strip_array_domain			(tree);
 extern tree check_return_expr			(tree, bool *);
+extern tree spaceship_type			(tree, tsubst_flags_t = tf_warning_or_error);
+extern tree genericize_spaceship		(tree, tree, tree);
 extern tree cp_build_binary_op                  (const op_location_t &,
 						 enum tree_code, tree, tree,
 						 tsubst_flags_t);
