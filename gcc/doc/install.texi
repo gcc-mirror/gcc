@@ -2731,7 +2731,7 @@ and network filesystems.
 @ref{GNAT-prerequisite}.
 @end ifnothtml
 @ifhtml
-@uref{GNAT-prerequisite}.
+@uref{prerequisites.html#GNAT-prerequisite,,GNAT prerequisites}.
 @end ifhtml
 
 @section Building with profile feedback
