@@ -10,5 +10,5 @@ void foo( Args... args ) {}
 
 int main()
 {
-  foo(1, 2, 3); // { dg-error "cannot call" }
+  foo(1, 2, 3); // { dg-error "" }
 }

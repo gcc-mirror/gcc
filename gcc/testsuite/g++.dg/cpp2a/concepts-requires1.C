@@ -26,7 +26,7 @@ void driver_1() {
   struct S { } s;
   f4(s);
   f5(0);
-  f5((void*)0); // { dg-error "cannot call" }
+  f5((void*)0); // { dg-error "" }
   test.f(s);
 }
 
@@ -67,5 +67,5 @@ void print2(const T& x) { }
 
 void driver_3()
 {
-  print2("hello"); // { dg-error "cannot call" }
+  print2("hello"); // { dg-error "" }
 }

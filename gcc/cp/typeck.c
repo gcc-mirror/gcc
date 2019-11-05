@@ -3871,26 +3871,6 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
 
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
-      /* If the function is a non-template member function
-         or a non-template friend, then we need to check the
-         constraints.
-
-        Note that if overload resolution failed with a single
-        candidate this function will be used to explicitly diagnose
-        the failure for the single call expression. The check is
-        technically redundant since we also would have failed in
-        add_function_candidate. */
-      if (flag_concepts
-          && (complain & tf_error)
-          && !constraints_satisfied_p (function))
-        {
-          auto_diagnostic_group d;
-          error ("cannot call function %qD", function);
-          location_t loc = DECL_SOURCE_LOCATION (function);
-          diagnose_constraints (loc, function, NULL_TREE);
-          return error_mark_node;
-        }
-
       if (!mark_used (function, complain))
 	return error_mark_node;
       fndecl = function;
