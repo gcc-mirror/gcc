@@ -1,3 +1,11 @@
+2019-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92371
+	* tree-vect-loop.c (vectorizable_reduction): Set STMT_VINFO_REDUC_DEF
+	on the original stmt of live stmts in the chain.
+	(vectorizable_live_operation): Look at the original stmt when
+	checking STMT_VINFO_REDUC_DEF.
+
 2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-fold.c, gimple-loop-versioning.cc,

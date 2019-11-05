@@ -5836,21 +5836,22 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   while (reduc_def != PHI_RESULT (reduc_def_phi))
     {
       stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
-      def = vect_stmt_to_vectorize (def);
-      if (STMT_VINFO_REDUC_IDX (def) == -1)
+      stmt_vec_info vdef = vect_stmt_to_vectorize (def);
+      if (STMT_VINFO_REDUC_IDX (vdef) == -1)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "reduction chain broken by patterns.\n");
 	  return false;
 	}
-      if (!REDUC_GROUP_FIRST_ELEMENT (def))
+      if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
 	only_slp_reduc_chain = false;
       /* ???  For epilogue generation live members of the chain need
-         to point back to the PHI for info_for_reduction to work.  */
-      if (STMT_VINFO_LIVE_P (def))
+         to point back to the PHI via their original stmt for
+	 info_for_reduction to work.  */
+      if (STMT_VINFO_LIVE_P (vdef))
 	STMT_VINFO_REDUC_DEF (def) = phi_info;
-      reduc_def = gimple_op (def->stmt, 1 + STMT_VINFO_REDUC_IDX (def));
+      reduc_def = gimple_op (vdef->stmt, 1 + STMT_VINFO_REDUC_IDX (vdef));
       reduc_chain_length++;
     }
 
@@ -7554,7 +7555,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
   /* If a stmt of a reduction is live, vectorize it via
      vect_create_epilog_for_reduction.  vectorizable_reduction assessed
      validity so just trigger the transform here.  */
-  if (STMT_VINFO_REDUC_DEF (stmt_info))
+  if (STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)))
     {
       if (!vec_stmt_p)
 	return true;
