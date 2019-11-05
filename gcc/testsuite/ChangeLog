@@ -1,3 +1,8 @@
+2019-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/declare-variant-7.C: New test.
+	* g++.dg/gomp/declare-variant-8.C: New test.
+
 2019-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR testsuite/92302
