@@ -1,3 +1,9 @@
+2019-11-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/92370
+	* parser.c (cp_parser_error_1): Check EOF and UNKNOWN_LOCATION
+	when skipping over version control marker.
+
 2019-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92343
