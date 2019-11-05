@@ -3682,10 +3682,6 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
     case IDENTIFIER_NODE:
       hstate.add_object (IDENTIFIER_HASH_VALUE (t));
       return;
-    case FIELD_DECL:
-      inchash::add_expr (DECL_FIELD_OFFSET (t), hstate, flags);
-      inchash::add_expr (DECL_FIELD_BIT_OFFSET (t), hstate, flags);
-      return;
     case FUNCTION_DECL:
       /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
 	 Otherwise nodes that compare equal according to operand_equal_p might
