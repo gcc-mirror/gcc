@@ -239,6 +239,11 @@ bool MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
   return true;
 }
 
+bool MmapFixedSuperNoReserve(uptr fixed_addr, uptr size, const char *name) {
+  // FIXME: Windows support large pages too. Might be worth checking
+  return MmapFixedNoReserve(fixed_addr, size, name);
+}
+
 // Memory space mapped by 'MmapFixedOrDie' must have been reserved by
 // 'MmapFixedNoAccess'.
 void *MmapFixedOrDie(uptr fixed_addr, uptr size, const char *name) {
@@ -671,7 +676,7 @@ static int RunAtexit() {
   return ret;
 }
 
-#pragma section(".CRT$XID", long, read)  // NOLINT
+#pragma section(".CRT$XID", long, read)
 __declspec(allocate(".CRT$XID")) int (*__run_atexit)() = RunAtexit;
 #endif
 
@@ -938,6 +943,11 @@ uptr SignalContext::GetAddress() const {
 
 bool SignalContext::IsMemoryAccess() const {
   return GetWriteFlag() != SignalContext::UNKNOWN;
+}
+
+bool SignalContext::IsTrueFaultingAddress() const {
+  // FIXME: Provide real implementation for this. See Linux and Mac variants.
+  return IsMemoryAccess();
 }
 
 SignalContext::WriteFlag SignalContext::GetWriteFlag() const {

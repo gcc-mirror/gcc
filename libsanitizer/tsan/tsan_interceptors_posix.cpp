@@ -1,4 +1,4 @@
-//===-- tsan_interceptors.cpp ---------------------------------------------===//
+//===-- tsan_interceptors_posix.cpp ---------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -31,8 +31,7 @@
 #include "tsan_mman.h"
 #include "tsan_fd.h"
 
-
-using namespace __tsan;  // NOLINT
+using namespace __tsan;
 
 #if SANITIZER_FREEBSD || SANITIZER_MAC
 #define stdout __stdoutp
@@ -41,9 +40,10 @@ using namespace __tsan;  // NOLINT
 
 #if SANITIZER_NETBSD
 #define dirfd(dirp) (*(int *)(dirp))
-#define fileno_unlocked(fp) \
-  (((__sanitizer_FILE*)fp)->_file == -1 ? -1 : \
-   (int)(unsigned short)(((__sanitizer_FILE*)fp)->_file))  // NOLINT
+#define fileno_unlocked(fp)              \
+  (((__sanitizer_FILE *)fp)->_file == -1 \
+       ? -1                              \
+       : (int)(unsigned short)(((__sanitizer_FILE *)fp)->_file))
 
 #define stdout ((__sanitizer_FILE*)&__sF[1])
 #define stderr ((__sanitizer_FILE*)&__sF[2])
@@ -114,6 +114,7 @@ const int PTHREAD_MUTEX_RECURSIVE_NP = 2;
 const int EPOLL_CTL_ADD = 1;
 #endif
 const int SIGILL = 4;
+const int SIGTRAP = 5;
 const int SIGABRT = 6;
 const int SIGFPE = 8;
 const int SIGSEGV = 11;
@@ -133,7 +134,7 @@ const int PTHREAD_BARRIER_SERIAL_THREAD = 1234567;
 const int PTHREAD_BARRIER_SERIAL_THREAD = -1;
 #endif
 const int MAP_FIXED = 0x10;
-typedef long long_t;  // NOLINT
+typedef long long_t;
 
 // From /usr/include/unistd.h
 # define F_ULOCK 0      /* Unlock a previously locked region.  */
@@ -723,12 +724,12 @@ TSAN_INTERCEPTOR(uptr, malloc_usable_size, void *p) {
 }
 #endif
 
-TSAN_INTERCEPTOR(char*, strcpy, char *dst, const char *src) {  // NOLINT
-  SCOPED_TSAN_INTERCEPTOR(strcpy, dst, src);  // NOLINT
+TSAN_INTERCEPTOR(char *, strcpy, char *dst, const char *src) {
+  SCOPED_TSAN_INTERCEPTOR(strcpy, dst, src);
   uptr srclen = internal_strlen(src);
   MemoryAccessRange(thr, pc, (uptr)dst, srclen + 1, true);
   MemoryAccessRange(thr, pc, (uptr)src, srclen + 1, false);
-  return REAL(strcpy)(dst, src);  // NOLINT
+  return REAL(strcpy)(dst, src);
 }
 
 TSAN_INTERCEPTOR(char*, strncpy, char *dst, char *src, uptr n) {
@@ -745,6 +746,8 @@ TSAN_INTERCEPTOR(char*, strdup, const char *str) {
   return REAL(strdup)(str);
 }
 
+// Zero out addr if it points into shadow memory and was provided as a hint
+// only, i.e., MAP_FIXED is not set.
 static bool fix_mmap_addr(void **addr, long_t sz, int flags) {
   if (*addr) {
     if (!IsAppMem((uptr)*addr) || !IsAppMem((uptr)*addr + sz - 1)) {
@@ -767,22 +770,14 @@ static void *mmap_interceptor(ThreadState *thr, uptr pc, Mmap real_mmap,
   void *res = real_mmap(addr, sz, prot, flags, fd, off);
   if (res != MAP_FAILED) {
     if (fd > 0) FdAccess(thr, pc, fd);
-    if (thr->ignore_reads_and_writes == 0)
-      MemoryRangeImitateWrite(thr, pc, (uptr)res, sz);
-    else
-      MemoryResetRange(thr, pc, (uptr)res, sz);
+    MemoryRangeImitateWriteOrResetRange(thr, pc, (uptr)res, sz);
   }
   return res;
 }
 
 TSAN_INTERCEPTOR(int, munmap, void *addr, long_t sz) {
   SCOPED_TSAN_INTERCEPTOR(munmap, addr, sz);
-  if (sz != 0) {
-    // If sz == 0, munmap will return EINVAL and don't unmap any memory.
-    DontNeedShadowFor((uptr)addr, sz);
-    ScopedGlobalProcessor sgp;
-    ctx->metamap.ResetRange(thr->proc(), (uptr)addr, (uptr)sz);
-  }
+  UnmapShadow(thr, (uptr)addr, sz);
   int res = REAL(munmap)(addr, sz);
   return res;
 }
@@ -1968,10 +1963,10 @@ void ProcessPendingSignals(ThreadState *thr) {
 }  // namespace __tsan
 
 static bool is_sync_signal(ThreadSignalContext *sctx, int sig) {
-  return sig == SIGSEGV || sig == SIGBUS || sig == SIGILL ||
-      sig == SIGABRT || sig == SIGFPE || sig == SIGPIPE || sig == SIGSYS ||
-      // If we are sending signal to ourselves, we must process it now.
-      (sctx && sig == sctx->int_signal_send);
+  return sig == SIGSEGV || sig == SIGBUS || sig == SIGILL || sig == SIGTRAP ||
+         sig == SIGABRT || sig == SIGFPE || sig == SIGPIPE || sig == SIGSYS ||
+         // If we are sending signal to ourselves, we must process it now.
+         (sctx && sig == sctx->int_signal_send);
 }
 
 void ALWAYS_INLINE rtl_generic_sighandler(bool sigact, int sig,
@@ -2666,7 +2661,7 @@ void InitializeInterceptors() {
   TSAN_MAYBE_INTERCEPT_PVALLOC;
   TSAN_INTERCEPT(posix_memalign);
 
-  TSAN_INTERCEPT(strcpy);  // NOLINT
+  TSAN_INTERCEPT(strcpy);
   TSAN_INTERCEPT(strncpy);
   TSAN_INTERCEPT(strdup);
 

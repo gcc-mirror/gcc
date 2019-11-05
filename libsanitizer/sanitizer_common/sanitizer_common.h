@@ -100,6 +100,8 @@ void UnmapOrDie(void *addr, uptr size);
 void *MmapOrDieOnFatalError(uptr size, const char *mem_type);
 bool MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name = nullptr)
      WARN_UNUSED_RESULT;
+bool MmapFixedSuperNoReserve(uptr fixed_addr, uptr size,
+                             const char *name = nullptr) WARN_UNUSED_RESULT;
 void *MmapNoReserveOrDie(uptr size, const char *mem_type);
 void *MmapFixedOrDie(uptr fixed_addr, uptr size, const char *name = nullptr);
 // Behaves just like MmapFixedOrDie, but tolerates out of memory condition, in
@@ -337,18 +339,18 @@ void ReportMmapWriteExec(int prot);
 // Math
 #if SANITIZER_WINDOWS && !defined(__clang__) && !defined(__GNUC__)
 extern "C" {
-unsigned char _BitScanForward(unsigned long *index, unsigned long mask);  // NOLINT
-unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);  // NOLINT
+unsigned char _BitScanForward(unsigned long *index, unsigned long mask);
+unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);
 #if defined(_WIN64)
-unsigned char _BitScanForward64(unsigned long *index, unsigned __int64 mask);  // NOLINT
-unsigned char _BitScanReverse64(unsigned long *index, unsigned __int64 mask);  // NOLINT
+unsigned char _BitScanForward64(unsigned long *index, unsigned __int64 mask);
+unsigned char _BitScanReverse64(unsigned long *index, unsigned __int64 mask);
 #endif
 }
 #endif
 
 INLINE uptr MostSignificantSetBitIndex(uptr x) {
   CHECK_NE(x, 0U);
-  unsigned long up;  // NOLINT
+  unsigned long up;
 #if !SANITIZER_WINDOWS || defined(__clang__) || defined(__GNUC__)
 # ifdef _WIN64
   up = SANITIZER_WORDSIZE - 1 - __builtin_clzll(x);
@@ -365,7 +367,7 @@ INLINE uptr MostSignificantSetBitIndex(uptr x) {
 
 INLINE uptr LeastSignificantSetBitIndex(uptr x) {
   CHECK_NE(x, 0U);
-  unsigned long up;  // NOLINT
+  unsigned long up;
 #if !SANITIZER_WINDOWS || defined(__clang__) || defined(__GNUC__)
 # ifdef _WIN64
   up = __builtin_ctzll(x);
@@ -879,6 +881,11 @@ struct SignalContext {
   bool is_memory_access;
   enum WriteFlag { UNKNOWN, READ, WRITE } write_flag;
 
+  // In some cases the kernel cannot provide the true faulting address; `addr`
+  // will be zero then.  This field allows to distinguish between these cases
+  // and dereferences of null.
+  bool is_true_faulting_addr;
+
   // VS2013 doesn't implement unrestricted unions, so we need a trivial default
   // constructor
   SignalContext() = default;
@@ -891,7 +898,8 @@ struct SignalContext {
         context(context),
         addr(GetAddress()),
         is_memory_access(IsMemoryAccess()),
-        write_flag(GetWriteFlag()) {
+        write_flag(GetWriteFlag()),
+        is_true_faulting_addr(IsTrueFaultingAddress()) {
     InitPcSpBp();
   }
 
@@ -912,6 +920,7 @@ struct SignalContext {
   uptr GetAddress() const;
   WriteFlag GetWriteFlag() const;
   bool IsMemoryAccess() const;
+  bool IsTrueFaultingAddress() const;
 };
 
 void InitializePlatformEarly();
@@ -971,7 +980,7 @@ INLINE u32 GetNumberOfCPUsCached() {
 }  // namespace __sanitizer
 
 inline void *operator new(__sanitizer::operator_new_size_type size,
-                          __sanitizer::LowLevelAllocator &alloc) {
+                          __sanitizer::LowLevelAllocator &alloc) {  // NOLINT
   return alloc.Allocate(size);
 }
 

@@ -22,6 +22,10 @@
 #ifdef _FILE_OFFSET_BITS
 #undef _FILE_OFFSET_BITS
 #endif
+
+// Must go after undef _FILE_OFFSET_BITS.
+#include "sanitizer_glibc_version.h"
+
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <grp.h>
@@ -136,6 +140,7 @@ typedef struct user_fpregs elf_fpregset_t;
 #include <linux/serial.h>
 #include <sys/msg.h>
 #include <sys/ipc.h>
+#include <crypt.h>
 #endif // SANITIZER_LINUX && !SANITIZER_ANDROID
 
 #if SANITIZER_ANDROID
@@ -236,6 +241,7 @@ namespace __sanitizer {
   unsigned struct_ustat_sz = SIZEOF_STRUCT_USTAT;
   unsigned struct_rlimit64_sz = sizeof(struct rlimit64);
   unsigned struct_statvfs64_sz = sizeof(struct statvfs64);
+  unsigned struct_crypt_data_sz = sizeof(struct crypt_data);
 #endif // SANITIZER_LINUX && !SANITIZER_ANDROID
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID
@@ -1005,10 +1011,6 @@ CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_len);
 CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_level);
 CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_type);
 
-#ifndef __GLIBC_PREREQ
-#define __GLIBC_PREREQ(x, y) 0
-#endif
-
 #if SANITIZER_LINUX && (__ANDROID_API__ >= 21 || __GLIBC_PREREQ (2, 14))
 CHECK_TYPE_SIZE(mmsghdr);
 CHECK_SIZE_AND_OFFSET(mmsghdr, msg_hdr);
@@ -1129,9 +1131,8 @@ CHECK_SIZE_AND_OFFSET(ipc_perm, cgid);
 #if (!defined(__aarch64__) || !SANITIZER_LINUX || __GLIBC_PREREQ (2, 21)) && \
     !defined(__arm__)
 /* On aarch64 glibc 2.20 and earlier provided incorrect mode field.  */
-/* On Arm glibc 2.31 and later provide a different mode field, this field is
-   never used by libsanitizer so we can simply ignore this assert for all glibc
-   versions.  */
+/* On Arm newer glibc provide a different mode field, it's hard to detect
+   so just disable the check.  */
 CHECK_SIZE_AND_OFFSET(ipc_perm, mode);
 #endif
 
