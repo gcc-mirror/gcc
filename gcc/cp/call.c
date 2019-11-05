@@ -6156,41 +6156,40 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      break;
 	    }
 
-	  /* We need to strip any leading REF_BIND so that bitfields
-	     don't cause errors.  This should not remove any important
-	     conversions, because builtins don't apply to class
-	     objects directly.  */
+	  /* "If a built-in candidate is selected by overload resolution, the
+	     operands of class type are converted to the types of the
+	     corresponding parameters of the selected operation function,
+	     except that the second standard conversion sequence of a
+	     user-defined conversion sequence (12.3.3.1.2) is not applied."  */
 	  conv = cand->convs[0];
-	  if (conv->kind == ck_ref_bind)
-	    conv = next_conversion (conv);
-	  arg1 = convert_like (conv, arg1, complain);
+	  if (conv->user_conv_p)
+	    {
+	      while (conv->kind != ck_user)
+		conv = next_conversion (conv);
+	      arg1 = convert_like (conv, arg1, complain);
+	    }
 
 	  if (arg2)
 	    {
 	      conv = cand->convs[1];
-	      if (conv->kind == ck_ref_bind)
-		conv = next_conversion (conv);
-	      else
-		arg2 = decay_conversion (arg2, complain);
-
-	      /* We need to call warn_logical_operator before
-		 converting arg2 to a boolean_type, but after
-		 decaying an enumerator to its value.  */
-	      if (complain & tf_warning)
-		warn_logical_operator (loc, code, boolean_type_node,
-				       code_orig_arg1, arg1,
-				       code_orig_arg2, arg2);
-
-	      arg2 = convert_like (conv, arg2, complain);
+	      if (conv->user_conv_p)
+		{
+		  while (conv->kind != ck_user)
+		    conv = next_conversion (conv);
+		  arg2 = convert_like (conv, arg2, complain);
+		}
 	    }
+
 	  if (arg3)
 	    {
 	      conv = cand->convs[2];
-	      if (conv->kind == ck_ref_bind)
-		conv = next_conversion (conv);
-	      convert_like (conv, arg3, complain);
+	      if (conv->user_conv_p)
+		{
+		  while (conv->kind != ck_user)
+		    conv = next_conversion (conv);
+		  arg3 = convert_like (conv, arg3, complain);
+		}
 	    }
-
 	}
     }
 
@@ -6258,7 +6257,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case ABS_EXPR:
-      return cp_build_unary_op (code, arg1, candidates != 0, complain);
+      return cp_build_unary_op (code, arg1, false, complain);
 
     case ARRAY_REF:
       return cp_build_array_ref (input_location, arg1, arg2, complain);
