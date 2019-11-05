@@ -1038,7 +1038,7 @@ c_common_post_options (const char **pfilename)
      to know when concepts are enabled. Note that -fconcepts-ts can
      be used to include additional features, although modified to
      work with the standard.  */
-  if (cxx_dialect >= cxx2a)
+  if (cxx_dialect >= cxx2a || flag_concepts_ts)
     flag_concepts = 1;
   else if (flag_concepts)
     /* For -std=c++17 -fconcepts, imply -fconcepts-ts.  */
