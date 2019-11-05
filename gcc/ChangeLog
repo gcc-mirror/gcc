@@ -1,3 +1,14 @@
+2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (wi_set_zero_nonzero_bits): Remove static qualifier.
+	* range-op.h (wi_set_zero_nonzero_bits): New prototype.
+	* tree-vrp.h (vrp_set_zero_nonzero_bits): Remove.
+	* tree-vrp.c (wide_int_range_set_zero_nonzero_bits): Remove.
+	(vrp_set_zero_nonzero_bits): Move to...
+	* vr-values.c (vr_set_zero_nonzero_bits): ...here.
+	(vr_values::simplify_bit_ops_using_ranges): Rename
+	vrp_set_zero_nonzero_bits to vr_set_zero_nonzero_bits.
+
 2019-11-05  Martin Liska  <mliska@suse.cz>
 
 	PR c++/92339

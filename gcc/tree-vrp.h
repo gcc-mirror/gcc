@@ -299,8 +299,6 @@ void range_fold_binary_expr (value_range_base *, enum tree_code, tree type,
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 extern enum value_range_kind intersect_range_with_nonzero_bits
   (enum value_range_kind, wide_int *, wide_int *, const wide_int &, signop);
-extern bool vrp_set_zero_nonzero_bits (const tree, const value_range_base *,
-				       wide_int *, wide_int *);
 
 extern bool find_case_label_range (gswitch *, tree, tree, size_t *, size_t *);
 extern bool find_case_label_index (gswitch *, size_t, tree, size_t *);

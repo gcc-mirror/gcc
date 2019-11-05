@@ -1260,69 +1260,6 @@ value_range_base::value_inside_range (tree val) const
     return !!cmp2;
 }
 
-/* For range [LB, UB] compute two wide_int bit masks.
-
-   In the MAY_BE_NONZERO bit mask, if some bit is unset, it means that
-   for all numbers in the range the bit is 0, otherwise it might be 0
-   or 1.
-
-   In the MUST_BE_NONZERO bit mask, if some bit is set, it means that
-   for all numbers in the range the bit is 1, otherwise it might be 0
-   or 1.  */
-
-static inline void
-wide_int_range_set_zero_nonzero_bits (signop sign,
-				      const wide_int &lb, const wide_int &ub,
-				      wide_int &may_be_nonzero,
-				      wide_int &must_be_nonzero)
-{
-  may_be_nonzero = wi::minus_one (lb.get_precision ());
-  must_be_nonzero = wi::zero (lb.get_precision ());
-
-  if (wi::eq_p (lb, ub))
-    {
-      may_be_nonzero = lb;
-      must_be_nonzero = may_be_nonzero;
-    }
-  else if (wi::ge_p (lb, 0, sign) || wi::lt_p (ub, 0, sign))
-    {
-      wide_int xor_mask = lb ^ ub;
-      may_be_nonzero = lb | ub;
-      must_be_nonzero = lb & ub;
-      if (xor_mask != 0)
-	{
-	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
-				    may_be_nonzero.get_precision ());
-	  may_be_nonzero = may_be_nonzero | mask;
-	  must_be_nonzero = wi::bit_and_not (must_be_nonzero, mask);
-	}
-    }
-}
-
-/* value_range wrapper for wide_int_range_set_zero_nonzero_bits above.
-
-   Return TRUE if VR was a constant range and we were able to compute
-   the bit masks.  */
-
-bool
-vrp_set_zero_nonzero_bits (const tree expr_type,
-			   const value_range_base *vr,
-			   wide_int *may_be_nonzero,
-			   wide_int *must_be_nonzero)
-{
-  if (!range_int_cst_p (vr))
-    {
-      *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
-      *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
-      return false;
-    }
-  wide_int_range_set_zero_nonzero_bits (TYPE_SIGN (expr_type),
-					wi::to_wide (vr->min ()),
-					wi::to_wide (vr->max ()),
-					*may_be_nonzero, *must_be_nonzero);
-  return true;
-}
-
 /* Create two value-ranges in *VR0 and *VR1 from the anti-range *AR
    so that *VR0 U *VR1 == *AR.  Returns true if that is possible,
    false otherwise.  If *AR can be represented with a single range
