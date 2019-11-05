@@ -6298,7 +6298,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 		       : _("wrong type argument to unary plus"));
 	else
 	  {
-	    if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	    if (!noconvert && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
 	      arg = cp_perform_integral_promotions (arg, complain);
 
 	    /* Make sure the result is not an lvalue: a unary plus or minus
@@ -6323,7 +6323,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 						   | WANT_VECTOR_OR_COMPLEX,
 						   arg, true)))
 	errstring = _("wrong type argument to bit-complement");
-      else if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+      else if (!noconvert && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
 	{
 	  /* Warn if the expression has boolean value.  */
 	  if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
