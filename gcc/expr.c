@@ -12554,7 +12554,8 @@ build_personality_function (const char *lang)
 
   name = ACONCAT (("__", lang, "_personality", unwind_and_version, NULL));
 
-  type = build_function_type_list (integer_type_node, integer_type_node,
+  type = build_function_type_list (unsigned_type_node,
+				   integer_type_node, integer_type_node,
 				   long_long_unsigned_type_node,
 				   ptr_type_node, ptr_type_node, NULL_TREE);
   decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
