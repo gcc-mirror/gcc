@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-O1 -march=armv8-a -mfloat-abi=soft -mthumb" }  */
 /* { dg-skip-if "Do not combine float-abi= hard | soft | softfp" {*-*-*} {"-mfloat-abi=hard" -mfloat-abi=softfp } {""} } */
 int a;

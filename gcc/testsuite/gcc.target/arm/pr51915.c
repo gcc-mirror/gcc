@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "no support for hard-float VFP ABI" { arm_thumb1 } { "-march=*" } { "" } } */
 /* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=hard" } } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-march=armv7-a+fp -mfloat-abi=hard -O2" } */
 
 struct S { int s1; void *s2; };

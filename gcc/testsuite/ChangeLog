@@ -1,3 +1,53 @@
+2019-11-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/attr-crypto.c: Skip if -mpure-code is used.
+	* gcc.target/arm/attr-neon-fp16.c: Likewise.
+	* gcc.target/arm/combine-cmp-shift.c: Likewise.
+	* gcc.target/arm/data-rel-1.c: Likewise.
+	* gcc.target/arm/data-rel-2.c: Likewise.
+	* gcc.target/arm/data-rel-3.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7ve-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7ve-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
+	* gcc.target/arm/lceil-vcvt_1.c: Likewise.
+	* gcc.target/arm/lfloor-vcvt_1.c: Likewise.
+	* gcc.target/arm/lround-vcvt_1.c: Likewise.
+	* gcc.target/arm/memset-inline-10.c: Likewise.
+	* gcc.target/arm/mod_2.c: Likewise.
+	* gcc.target/arm/mod_256.c: Likewise.
+	* gcc.target/arm/pr40657-1.c: Likewise.
+	* gcc.target/arm/pr44788.c: Likewise.
+	* gcc.target/arm/pr50305.c: Likewise.
+	* gcc.target/arm/pr51835.c: Likewise.
+	* gcc.target/arm/pr51915.c: Likewise.
+	* gcc.target/arm/pr52006.c: Likewise.
+	* gcc.target/arm/pr53187.c: Likewise.
+	* gcc.target/arm/pr58784.c: Likewise.
+	* gcc.target/arm/pr59575.c: Likewise.
+	* gcc.target/arm/pr59923.c: Likewise.
+	* gcc.target/arm/pr60650-2.c: Likewise.
+	* gcc.target/arm/pr60657.c: Likewise.
+	* gcc.target/arm/pr60663.c: Likewise.
+	* gcc.target/arm/pr67439_1.c: Likewise.
+	* gcc.target/arm/pr68620.c: Likewise.
+	* gcc.target/arm/pr7676.c: Likewise.
+	* gcc.target/arm/pr79239.c: Likewise.
+	* gcc.target/arm/pr81863.c: Likewise.
+	* gcc.target/arm/pragma_attribute.c: Likewise.
+	* gcc.target/arm/pragma_cpp_fma.c: Likewise.
+	* gcc.target/arm/require-pic-register-loc.c: Likewise.
+	* gcc.target/arm/thumb-ltu.c: Likewise.
+	* gcc.target/arm/thumb1-pic-high-reg.c: Likewise.
+	* gcc.target/arm/thumb1-pic-single-base.c: Likewise.
+	* gcc.target/arm/tlscall.c: Likewise.
+	* gcc.target/arm/unsigned-float.c: Likewise.
+	* gcc.target/arm/vrinta-ce.c: Likewise.
+
 2019-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92324
