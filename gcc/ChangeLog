@@ -1,6 +1,18 @@
 2019-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
+	2019-10-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (altivec_vavgu<VI_char>): Rename to...
+	(uavg<mode>3_ceil): ... This.
+	(altivec_vavgs<VI_char>): Rename to...
+	(avg<mode>3_ceil): ... This.
+	* config/rs6000/rs6000-builtin.def (VAVGUB, VAVGSB, VAVGUH, VAVGSH,
+	VAVGUW, VAVGSW): Adjust.
+
+2019-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
 	2019-10-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91289
