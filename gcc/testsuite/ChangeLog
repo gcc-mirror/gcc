@@ -1,5 +1,8 @@
 2019-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/91945
+	* gfortran.dg/pr91945.f90: New test.
+
 	PR c++/92343
 	* g++.dg/cpp2a/attr-likely6.C: New test.
 

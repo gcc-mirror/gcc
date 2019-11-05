@@ -1,3 +1,10 @@
+2019-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91945
+	* builtins.c (compute_objsize): For ARRAY_REF, only multiply off
+	by tpsize if it is both non-NULL and INTEGER_CST, otherwise punt.
+	Formatting fix.
+
 2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op.cc (wi_set_zero_nonzero_bits): Remove static qualifier.
