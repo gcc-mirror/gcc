@@ -135,10 +135,8 @@ value_range::value_range (tree type)
   set_varying (type);
 }
 
-value_range::value_range (enum value_range_kind kind,
-				    tree type,
-				    const wide_int &wmin,
-				    const wide_int &wmax)
+value_range::value_range (enum value_range_kind kind, tree type,
+			  const wide_int &wmin, const wide_int &wmax)
 {
   tree min = wide_int_to_tree (type, wmin);
   tree max = wide_int_to_tree (type, wmax);
@@ -147,8 +145,7 @@ value_range::value_range (enum value_range_kind kind,
 }
 
 value_range::value_range (tree type,
-				    const wide_int &wmin,
-				    const wide_int &wmax)
+			  const wide_int &wmin, const wide_int &wmax)
 {
   tree min = wide_int_to_tree (type, wmin);
   tree max = wide_int_to_tree (type, wmax);
@@ -1743,8 +1740,7 @@ supported_types_p (value_range *vr,
 
 static bool
 defined_ranges_p (value_range *vr,
-		  const value_range *vr0,
-		  const value_range *vr1 = NULL)
+		  const value_range *vr0, const value_range *vr1 = NULL)
 {
   if (vr0->undefined_p () && (!vr1 || vr1->undefined_p ()))
     {
@@ -1770,8 +1766,7 @@ static bool
 range_fold_binary_symbolics_p (value_range *vr,
 			       tree_code code,
 			       tree expr_type,
-			       const value_range *vr0,
-			       const value_range *vr1)
+			       const value_range *vr0, const value_range *vr1)
 {
   if (vr0->symbolic_p () || vr1->symbolic_p ())
     {
@@ -5830,8 +5825,7 @@ intersect_ranges (enum value_range_kind *vr0type,
    ranges.  This may not be the smallest possible such range.  */
 
 value_range
-value_range::intersect_helper (const value_range *vr0,
-				    const value_range *vr1)
+value_range::intersect_helper (const value_range *vr0, const value_range *vr1)
 {
   /* If either range is VR_VARYING the other one wins.  */
   if (vr1->varying_p ())
@@ -5944,8 +5938,7 @@ value_range_equiv::intersect (const value_range_equiv *other)
    smallest possible such range.  */
 
 value_range
-value_range::union_helper (const value_range *vr0,
-				const value_range *vr1)
+value_range::union_helper (const value_range *vr0, const value_range *vr1)
 {
   /* VR0 has the resulting range if VR1 is undefined or VR0 is varying.  */
   if (vr1->undefined_p ()

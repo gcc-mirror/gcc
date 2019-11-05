@@ -1,3 +1,12 @@
+2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range::value_range): Fix whitespace.
+	(defined_ranges_p): Same.
+	(range_fold_binary_symbolics_p): Same.
+	(value_range::intersect_helper): Same.
+	(value_range::union_helper): Same.
+	* tree-vrp.h (range_fold_binary_expr): Same.
+
 2019-11-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/92341

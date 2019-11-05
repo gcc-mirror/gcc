@@ -293,8 +293,7 @@ extern tree vrp_val_max (const_tree);
 void range_fold_unary_expr (value_range *, enum tree_code, tree type,
 			    const value_range *, tree op0_type);
 void range_fold_binary_expr (value_range *, enum tree_code, tree type,
-			     const value_range *,
-			     const value_range *);
+			     const value_range *, const value_range *);
 
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 extern enum value_range_kind intersect_range_with_nonzero_bits
