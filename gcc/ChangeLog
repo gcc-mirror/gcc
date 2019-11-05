@@ -1,5 +1,11 @@
 2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.h (vrp_bitmap_equal_p): Remove.
+	* tree-vrp.c (vrp_bitmap_equal_p): Move before use and make
+	static.
+
+2019-11-05  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (value_range_base::operator==): Use equal_p to
 	properly handle symbolics.
 	(range_compatible_p): Remove.
