@@ -1,5 +1,10 @@
 2019-11-05  Martin Liska  <mliska@suse.cz>
 
+	* ubsan/ubsan_flags.cpp (InitializeFlags): Trunk decided to print
+	summary for all sanitizers, but we want to have UBSAN without it.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
 	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply from
 	LOCAL_PATCHES.
 	(CheckODRViolationViaPoisoning): Likewise.
