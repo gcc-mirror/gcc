@@ -4085,6 +4085,9 @@ vrp_prop::check_array_ref (location_t location, tree ref,
   tree up_sub = low_sub;
   tree up_bound = array_ref_up_bound (ref);
 
+  /* Referenced decl if one can be determined.  */
+  tree decl = NULL_TREE;
+
   /* Set for accesses to interior zero-length arrays.  */
   bool interior_zero_len = false;
 
@@ -4115,7 +4118,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  tree arg = TREE_OPERAND (ref, 0);
 	  poly_int64 off;
 
-	  if (TREE_CODE (arg) == COMPONENT_REF)
+	  const bool compref = TREE_CODE (arg) == COMPONENT_REF;
+	  if (compref)
 	    {
 	      /* Try to determine the size of the trailing array from
 		 its initializer (if it has one).  */
@@ -4124,12 +4128,27 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 		  maxbound = refsize;
 	    }
 
-	  if (maxbound == ptrdiff_max
-	      && get_addr_base_and_unit_offset (arg, &off)
-	      && known_gt (off, 0))
-	    maxbound = wide_int_to_tree (sizetype,
-					 wi::sub (wi::to_wide (maxbound),
-						  off));
+	  if (maxbound == ptrdiff_max)
+	    {
+	      /* Try to determine the size of the base object.  Avoid
+		 COMPONENT_REF already tried above.  Using its DECL_SIZE
+		 size wouldn't necessarily be correct if the reference is
+		 to its flexible array member initialized in a different
+		 translation unit.  */
+	      tree base = get_addr_base_and_unit_offset (arg, &off);
+	      if (!compref && base && DECL_P (base))
+		if (tree basesize = DECL_SIZE_UNIT (base))
+		  if (TREE_CODE (basesize) == INTEGER_CST)
+		    {
+		      maxbound = basesize;
+		      decl = base;
+		    }
+
+	      if (known_gt (off, 0))
+		maxbound = wide_int_to_tree (sizetype,
+					     wi::sub (wi::to_wide (maxbound),
+						      off));
+	    }
 	  else
 	    maxbound = fold_convert (sizetype, maxbound);
 
@@ -4214,7 +4233,7 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  fprintf (dump_file, "\n");
 	}
 
-      ref = TREE_OPERAND (ref, 0);
+      ref = decl ? decl : TREE_OPERAND (ref, 0);
 
       tree rec = NULL_TREE;
       if (TREE_CODE (ref) == COMPONENT_REF)
