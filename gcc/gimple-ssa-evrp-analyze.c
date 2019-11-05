@@ -62,7 +62,7 @@ evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
 void
 evrp_range_analyzer::push_marker ()
 {
-  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
+  stack.safe_push (std::make_pair (NULL_TREE, (value_range_equiv *)NULL));
 }
 
 /* Analyze ranges as we enter basic block BB.  */
@@ -79,12 +79,12 @@ evrp_range_analyzer::enter (basic_block bb)
 }
 
 /* Find new range for NAME such that (OP CODE LIMIT) is true.  */
-value_range *
+value_range_equiv *
 evrp_range_analyzer::try_find_new_range (tree name,
-				    tree op, tree_code code, tree limit)
+					 tree op, tree_code code, tree limit)
 {
-  value_range vr;
-  const value_range *old_vr = get_value_range (name);
+  value_range_equiv vr;
+  const value_range_equiv *old_vr = get_value_range (name);
 
   /* Discover VR when condition is true.  */
   vr_values->extract_range_for_var_from_comparison_expr (name, code, op,
@@ -93,11 +93,9 @@ evrp_range_analyzer::try_find_new_range (tree name,
      PUSH old value in the stack with the old VR.  */
   if (!vr.undefined_p () && !vr.varying_p ())
     {
-      if (old_vr->kind () == vr.kind ()
-	  && vrp_operand_equal_p (old_vr->min (), vr.min ())
-	  && vrp_operand_equal_p (old_vr->max (), vr.max ()))
+      if (old_vr->equal_p (vr, /*ignore_equivs=*/true))
 	return NULL;
-      value_range *new_vr = vr_values->allocate_value_range ();
+      value_range_equiv *new_vr = vr_values->allocate_value_range_equiv ();
       new_vr->move (&vr);
       return new_vr;
     }
@@ -106,7 +104,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 
 /* For LHS record VR in the SSA info.  */
 void
-evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range *vr)
+evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range_equiv *vr)
 {
   gcc_assert (m_update_global_ranges);
 
@@ -187,13 +185,14 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	  if (TREE_CODE (op1) == SSA_NAME)
 	    register_edge_assert_for (op1, pred_e, code, op0, op1, asserts);
 
-	  auto_vec<std::pair<tree, value_range *>, 8> vrs;
+	  auto_vec<std::pair<tree, value_range_equiv *>, 8> vrs;
 	  for (unsigned i = 0; i < asserts.length (); ++i)
 	    {
-	      value_range *vr = try_find_new_range (asserts[i].name,
-						    asserts[i].expr,
-						    asserts[i].comp_code,
-						    asserts[i].val);
+	      value_range_equiv *vr
+		= try_find_new_range (asserts[i].name,
+				      asserts[i].expr,
+				      asserts[i].comp_code,
+				      asserts[i].val);
 	      if (vr)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));
 	    }
@@ -209,9 +208,9 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      /* But make sure we do not weaken ranges like when
 	         getting first [64, +INF] and then ~[0, 0] from
 		 conditions like (s & 0x3cc0) == 0).  */
-	      const value_range *old_vr = get_value_range (vrs[i].first);
-	      value_range_base tem (old_vr->kind (), old_vr->min (),
-				    old_vr->max ());
+	      const value_range_equiv *old_vr
+		= get_value_range (vrs[i].first);
+	      value_range tem (*old_vr);
 	      tem.intersect (vrs[i].second);
 	      if (tem.equal_p (*old_vr))
 		{
@@ -256,10 +255,10 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 
       /* Skips floats and other things we can't represent in a
 	 range.  */
-      if (!value_range_base::supports_type_p (TREE_TYPE (lhs)))
+      if (!value_range::supports_type_p (TREE_TYPE (lhs)))
 	continue;
 
-      value_range vr_result;
+      value_range_equiv vr_result;
       bool interesting = stmt_interesting_for_vrp (phi);
       if (!has_unvisited_preds && interesting)
 	vr_values->extract_range_from_phi_node (phi, &vr_result);
@@ -303,7 +302,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
   else if (stmt_interesting_for_vrp (stmt))
     {
       edge taken_edge;
-      value_range vr;
+      value_range_equiv vr;
       vr_values->extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
       if (output)
 	{
@@ -333,7 +332,8 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 		 a new range and push the old range onto the stack.  We
 		 also have to be very careful about sharing the underlying
 		 bitmaps.  Ugh.  */
-	      value_range *new_vr = vr_values->allocate_value_range ();
+	      value_range_equiv *new_vr
+		= vr_values->allocate_value_range_equiv ();
 	      new_vr->set (vr.kind (), vr.min (), vr.max ());
 	      vr.equiv_clear ();
 	      push_value_range (output, new_vr);
@@ -379,15 +379,15 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 
 		  /* Add VR when (T COMP_CODE value) condition is
 		     true.  */
-		  value_range *op_range
+		  value_range_equiv *op_range
 		    = try_find_new_range (t, t, comp_code, value);
 		  if (op_range)
 		    push_value_range (t, op_range);
 		}
 	    }
 	  /* Add VR when (OP COMP_CODE value) condition is true.  */
-	  value_range *op_range = try_find_new_range (op, op,
-						      comp_code, value);
+	  value_range_equiv *op_range = try_find_new_range (op, op,
+							    comp_code, value);
 	  if (op_range)
 	    push_value_range (op, op_range);
 	}
@@ -419,7 +419,7 @@ evrp_range_analyzer::leave (basic_block bb ATTRIBUTE_UNUSED)
 /* Push the Value Range of VAR to the stack and update it with new VR.  */
 
 void
-evrp_range_analyzer::push_value_range (tree var, value_range *vr)
+evrp_range_analyzer::push_value_range (tree var, value_range_equiv *vr)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -429,7 +429,7 @@ evrp_range_analyzer::push_value_range (tree var, value_range *vr)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  value_range *old_vr = vr_values->swap_vr_value (var, vr);
+  value_range_equiv *old_vr = vr_values->swap_vr_value (var, vr);
   stack.safe_push (std::make_pair (var, old_vr));
 }
 
@@ -438,9 +438,9 @@ evrp_range_analyzer::push_value_range (tree var, value_range *vr)
 void
 evrp_range_analyzer::pop_value_range ()
 {
-  std::pair<tree, value_range *> e = stack.pop ();
+  std::pair<tree, value_range_equiv *> e = stack.pop ();
   tree var = e.first;
-  value_range *vr = e.second;
+  value_range_equiv *vr = e.second;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "popping range for ");
@@ -451,7 +451,7 @@ evrp_range_analyzer::pop_value_range ()
     }
   /* We saved off a lattice entry, now give it back and release
      the one we popped.  */
-  value_range *popped_vr = vr_values->swap_vr_value (var, vr);
+  value_range_equiv *popped_vr = vr_values->swap_vr_value (var, vr);
   if (popped_vr)
     vr_values->free_value_range (popped_vr);
 }

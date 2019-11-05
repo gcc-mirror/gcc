@@ -225,7 +225,7 @@ compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off,
   if (!rvals || TREE_CODE (si->nonzero_chars) != SSA_NAME)
     return -1;
 
-  const value_range *vr
+  const value_range_equiv *vr
     = (CONST_CAST (class vr_values *, rvals)
        ->get_value_range (si->nonzero_chars));
 
@@ -799,7 +799,7 @@ dump_strlen_info (FILE *fp, gimple *stmt, const vr_values *rvals)
 		  wide_int min, max;
 		  if (rvals)
 		    {
-		      const value_range *vr
+		      const value_range_equiv *vr
 			= CONST_CAST (class vr_values *, rvals)
 			->get_value_range (si->nonzero_chars);
 		      rng = vr->kind ();
@@ -991,7 +991,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	    pdata->minlen = si->nonzero_chars;
 	  else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	    {
-	      const value_range *vr
+	      const value_range_equiv *vr
 		= CONST_CAST (class vr_values *, rvals)
 		->get_value_range (si->nonzero_chars);
 	      if (vr->kind () == VR_RANGE
@@ -1031,7 +1031,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	}
       else if (pdata->minlen && TREE_CODE (pdata->minlen) == SSA_NAME)
 	{
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, rvals)
 	    ->get_value_range (si->nonzero_chars);
 	  if (vr->kind () == VR_RANGE
@@ -4040,7 +4040,7 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	       && si->nonzero_chars
 	       && TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, rvals)
 	    ->get_value_range (si->nonzero_chars);
 	  if (vr->kind () != VR_RANGE

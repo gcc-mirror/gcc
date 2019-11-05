@@ -901,7 +901,7 @@ simplify_stmt_for_jump_threading (gimple *stmt,
       if (TREE_CODE (op) != SSA_NAME)
 	return NULL_TREE;
 
-      const value_range *vr = x_vr_values->get_value_range (op);
+      const value_range_equiv *vr = x_vr_values->get_value_range (op);
       if (vr->undefined_p ()
 	  || vr->varying_p ()
 	  || vr->symbolic_p ())
@@ -963,9 +963,9 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 	{
 	  edge dummy_e;
 	  tree dummy_tree;
-	  value_range new_vr;
+	  value_range_equiv new_vr;
 	  x_vr_values->extract_range_from_stmt (stmt, &dummy_e,
-					      &dummy_tree, &new_vr);
+						&dummy_tree, &new_vr);
 	  tree singleton;
 	  if (new_vr.singleton_p (&singleton))
 	    return singleton;

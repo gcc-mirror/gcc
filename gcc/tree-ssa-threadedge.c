@@ -165,8 +165,8 @@ record_temporary_equivalences_from_phis (edge e,
 	  /* Get an empty new VR we can pass to update_value_range and save
 	     away in the VR stack.  */
 	  vr_values *vr_values = evrp_range_analyzer->get_vr_values ();
-	  value_range *new_vr = vr_values->allocate_value_range ();
-	  new (new_vr) value_range ();
+	  value_range_equiv *new_vr = vr_values->allocate_value_range_equiv ();
+	  new (new_vr) value_range_equiv ();
 
 	  /* There are three cases to consider:
 
