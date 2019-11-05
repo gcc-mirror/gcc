@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code supports M-profile only and without Neon" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_fp_ok } */
 /* { dg-options "-mfp16-format=ieee" } */
 /* { dg-add-options arm_fp } */

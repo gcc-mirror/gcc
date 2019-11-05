@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-O2 -march=armv7-a" } */
 
 
