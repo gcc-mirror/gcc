@@ -1,3 +1,11 @@
+2019-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92280
+	* match.pd (BIT_FIELD_REF of CTOR): Unless the original CTOR
+	had a single use do not create a new CTOR.
+	* tree-ssa-forwprop.c (simplify_bitfield_ref): Do not re-fold
+	BIT_FIELD_REF of a CTOR via GENERIC.
+
 2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.c (s390_vector_alignment): Check if the value
