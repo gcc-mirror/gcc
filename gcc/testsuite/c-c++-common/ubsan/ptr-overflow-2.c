@@ -93,16 +93,16 @@ main ()
   return 0;
 }
 
-/* { dg-output ":5:6\[79]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?\[fF]\+ overflowed to (0\[xX])?0\+(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*:6:6\[79]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?0\+ overflowed to (0\[xX])?\[fF]\+(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*:7:7\[46]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?\[fF]\+9 overflowed to (0\[xX])?0\+(\n|\r\n|\r)" } */
+/* { dg-output ":5:6\[79]\[^\n\r]*runtime error: applying non-zero offset to non-null pointer (0\[xX])?\[fF]\+ produced null pointer(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*:6:6\[79]\[^\n\r]*runtime error: applying non-zero offset \[0-9]\+ to null pointer(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*:7:7\[46]\[^\n\r]*runtime error: applying non-zero offset to non-null pointer (0\[xX])?\[fF]\+9 produced null pointer(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*:8:7\[46]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?0\+3 overflowed to (0\[xX])?\[fF]\+(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*:9:7\[46]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?0\+17 overflowed to (0\[xX])?\[fF]\+\[cC](\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*:10:7\[46]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?\[fF]\+1 overflowed to (0\[xX])?0\+(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*:10:7\[46]\[^\n\r]*runtime error: applying non-zero offset to non-null pointer (0\[xX])?\[fF]\+1 produced null pointer(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*:11:\[89]\[80]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?\[fF]\+\[eE]3 overflowed to (0\[xX])?0\+2(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*:13:\[89]\[80]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?0\+17 overflowed to (0\[xX])?\[fF]\+(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*:12:\[89]\[80]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?0\+7 overflowed to (0\[xX])?\[fF]\+(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*:14:\[89]\[91]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?\[fF]\+\[eE]7 overflowed to (0\[xX])?0\+" } */
+/* { dg-output "\[^\n\r]*:14:\[89]\[91]\[^\n\r]*runtime error: applying non-zero offset to non-null pointer (0\[xX])?\[fF]\+\[eE]7 produced null pointer" } */
 /* { dg-output "(\n|\r\n|\r)" { target int32 } } */
 /* { dg-output "\[^\n\r]*:17:\[67]\[82]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?\[fF]\+ overflowed to (0\[xX])?0\+3(\n|\r\n|\r)" { target int32 } } */
 /* { dg-output "\[^\n\r]*:18:\[67]\[86]\[^\n\r]*runtime error: pointer index expression with base (0\[xX])?\[fF]\+ overflowed to (0\[xX])?0\+107(\n|\r\n|\r)" { target int32 } } */
