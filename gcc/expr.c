@@ -3571,11 +3571,13 @@ emit_move_complex (machine_mode mode, rtx x, rtx y)
       rtx_insn *ret;
 
       /* For memory to memory moves, optimal behavior can be had with the
-	 existing block move logic.  */
+	 existing block move logic.  But use normal expansion if optimizing
+	 for size.  */
       if (MEM_P (x) && MEM_P (y))
 	{
 	  emit_block_move (x, y, gen_int_mode (GET_MODE_SIZE (mode), Pmode),
-			   BLOCK_OP_NO_LIBCALL);
+			   (optimize_insn_for_speed_p()
+			    ? BLOCK_OP_NO_LIBCALL : BLOCK_OP_NORMAL));
 	  return get_last_insn ();
 	}
 
