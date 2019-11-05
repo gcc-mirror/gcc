@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "ipa-utils.h"
 #include "ipa-reference.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 
 /* The static variables defined within the compilation unit that are
