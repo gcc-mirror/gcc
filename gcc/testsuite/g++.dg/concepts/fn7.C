@@ -1,5 +1,5 @@
 // { dg-do link { target c++14 } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 void f() requires true { }
 
