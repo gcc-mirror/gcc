@@ -309,7 +309,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typename _Iter::reference;
       };
 
-    // FIXME: needed due to PR c++/92102
     template<typename _Iter>
       concept __iter_without_nested_types = !__iter_with_nested_types<_Iter>;
 
