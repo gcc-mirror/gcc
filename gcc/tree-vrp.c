@@ -4083,17 +4083,17 @@ bool
 vrp_prop::check_array_ref (location_t location, tree ref,
 			   bool ignore_off_by_one)
 {
-  tree low_sub, up_sub;
-  tree low_bound, up_bound, up_bound_p1;
-
   if (TREE_NO_WARNING (ref))
     return false;
 
-  low_sub = up_sub = TREE_OPERAND (ref, 1);
-  up_bound = array_ref_up_bound (ref);
+  tree low_sub = TREE_OPERAND (ref, 1);
+  tree up_sub = low_sub;
+  tree up_bound = array_ref_up_bound (ref);
 
   /* Set for accesses to interior zero-length arrays.  */
   bool interior_zero_len = false;
+
+  tree up_bound_p1;
 
   if (!up_bound
       || TREE_CODE (up_bound) != INTEGER_CST
@@ -4148,7 +4148,7 @@ vrp_prop::check_array_ref (location_t location, tree ref,
     up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
 				   build_int_cst (TREE_TYPE (up_bound), 1));
 
-  low_bound = array_ref_low_bound (ref);
+  tree low_bound = array_ref_low_bound (ref);
 
   tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
 
@@ -4157,8 +4157,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
   /* Empty array.  */
   if (up_bound && tree_int_cst_equal (low_bound, up_bound_p1))
     warned = warning_at (location, OPT_Warray_bounds,
-			 "array subscript %E is above array bounds of %qT",
-			 low_bound, artype);
+			 "array subscript %E is outside array bounds of %qT",
+			 low_sub, artype);
 
   const value_range_equiv *vr = NULL;
   if (TREE_CODE (low_sub) == SSA_NAME)
@@ -4372,6 +4372,7 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
     {
       arg = TREE_OPERAND (arg, 0);
       if (TREE_CODE (arg) != STRING_CST
+	  && TREE_CODE (arg) != PARM_DECL
 	  && TREE_CODE (arg) != VAR_DECL)
 	return false;
     }
@@ -4455,7 +4456,9 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   if (ignore_off_by_one)
     ubound += 1;
 
-  if (offrange[0] >= ubound || offrange[1] < arrbounds[0])
+  if (arrbounds[0] == arrbounds[1]
+      || offrange[0] >= ubound
+      || offrange[1] < arrbounds[0])
     {
       /* Treat a reference to a non-array object as one to an array
 	 of a single element.  */

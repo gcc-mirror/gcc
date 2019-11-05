@@ -3068,6 +3068,13 @@ get_access_for_expr (tree expr)
       || !DECL_P (base))
     return NULL;
 
+  if (tree basesize = DECL_SIZE (base))
+    {
+      poly_int64 sz = tree_to_poly_int64 (basesize);
+      if (offset < 0 || known_le (sz, offset))
+	return NULL;
+    }
+
   if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
     return NULL;
 
