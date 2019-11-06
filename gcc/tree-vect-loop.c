@@ -5734,6 +5734,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
     }
 
   stmt_vec_info orig_stmt_of_analysis = stmt_info;
+  stmt_vec_info phi_info = stmt_info;
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
@@ -5758,8 +5759,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	  bool res = single_imm_use (gimple_phi_result (stmt_info->stmt),
 				     &use_p, &use_stmt);
 	  gcc_assert (res);
-	  stmt_info = loop_vinfo->lookup_stmt (use_stmt);
-	  stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (stmt_info));
+	  phi_info = loop_vinfo->lookup_stmt (use_stmt);
+	  stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (phi_info));
 	}
       /* STMT_VINFO_REDUC_DEF doesn't point to the first but the last
          element.  */
@@ -5769,6 +5770,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	  stmt_info = REDUC_GROUP_FIRST_ELEMENT (stmt_info);
 	}
     }
+  /* PHIs should not participate in patterns.  */
+  gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
 
   if (nested_in_vect_loop_p (loop, stmt_info))
     {
@@ -5831,9 +5834,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
-  stmt_vec_info phi_info = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info));
-  /* PHIs should not participate in patterns.  */
-  gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
   gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
 
   /* Verify following REDUC_IDX from the latch def leads us back to the PHI
@@ -5882,11 +5882,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 			     "use not simple.\n");
 	  return false;
 	}
-      if ((dt == vect_reduction_def || dt == vect_nested_cycle)
-	  && op == reduc_def)
-	{
-	  continue;
-	}
+      if (i == STMT_VINFO_REDUC_IDX (stmt_info))
+	continue;
 
       /* There should be only one cycle def in the stmt, the one
          leading to reduc_def.  */
@@ -6347,14 +6344,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
    This only works when we see both the reduction PHI and its only consumer
    in vectorizable_reduction and there are no intermediate stmts
    participating.  */
-  stmt_vec_info use_stmt_info;
-  tree reduc_phi_result = gimple_phi_result (reduc_def_phi);
   if (ncopies > 1
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
-      && (use_stmt_info = loop_vinfo->lookup_single_use (reduc_phi_result))
-      && (!STMT_VINFO_IN_PATTERN_P (use_stmt_info)
-	  || !STMT_VINFO_PATTERN_DEF_SEQ (use_stmt_info))
-      && vect_stmt_to_vectorize (use_stmt_info) == stmt_info)
+      && reduc_chain_length == 1)
     single_defuse_cycle = true;
 
   if (single_defuse_cycle || lane_reduc_code_p)
