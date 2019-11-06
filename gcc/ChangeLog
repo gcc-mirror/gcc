@@ -1,3 +1,9 @@
+2019-11-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92317
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard2): Also
+	update phi's with constant phi arguments.
+
 2019-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 	    Alexandre Oliva  <oliva@adacore.com>
 
