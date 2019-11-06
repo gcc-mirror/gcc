@@ -1,4 +1,8 @@
-2019-10-26  Jason Merrill  <jason@redhat.com>
+2019-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/md.texi (Insn Splitting): Fix combiner documentation.
+
+2019-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR tree-optimization/91825
 	* expmed.c: Reduce -Wmaybe-uninitialized to warning.
