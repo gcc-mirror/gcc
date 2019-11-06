@@ -1,3 +1,8 @@
+2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop): Only try to vectorize
+	the epilogue if there are peeled iterations for it to handle.
+
 2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_split_ior): Add asserts.
