@@ -2143,6 +2143,16 @@ start_over:
 				       " support peeling for gaps.\n");
     }
 
+  /* If we're vectorizing an epilogue loop, we either need a fully-masked
+     loop or a loop that has a lower VF than the main loop.  */
+  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+      && !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+      && maybe_ge (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+		   LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo)))
+    return opt_result::failure_at (vect_location,
+				   "Vectorization factor too high for"
+				   " epilogue loop.\n");
+
   /* Check the costings of the loop make vectorizing worthwhile.  */
   res = vect_analyze_loop_costing (loop_vinfo);
   if (res < 0)
