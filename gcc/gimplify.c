@@ -6235,8 +6235,13 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  is_inout = false;
 	}
 
-      /* If we can't make copies, we can only accept memory.  */
-      if (TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (link))))
+      /* If we can't make copies, we can only accept memory.
+	 Similarly for VLAs.  */
+      tree outtype = TREE_TYPE (TREE_VALUE (link));
+      if (outtype != error_mark_node
+	  && (TREE_ADDRESSABLE (outtype)
+	      || !COMPLETE_TYPE_P (outtype)
+	      || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (outtype))))
 	{
 	  if (allows_mem)
 	    allows_reg = 0;
@@ -6392,7 +6397,11 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			      oconstraints, &allows_mem, &allows_reg);
 
       /* If we can't make copies, we can only accept memory.  */
-      if (TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (link))))
+      tree intype = TREE_TYPE (TREE_VALUE (link));
+      if (intype != error_mark_node
+	  && (TREE_ADDRESSABLE (intype)
+	      || !COMPLETE_TYPE_P (intype)
+	      || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (intype))))
 	{
 	  if (allows_mem)
 	    allows_reg = 0;

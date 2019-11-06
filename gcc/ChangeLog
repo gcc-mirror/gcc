@@ -1,3 +1,9 @@
+2019-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/92352
+	* gimplify.c (gimplify_asm_expr): Reject VLA in output or input
+	operands with non-memory constraints.
+
 2019-11-05  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92373
@@ -530,10 +536,7 @@
 	PR middle-end/91647
 	PR middle-end/91463
 	PR middle-end/92312
-	* c-family/c-pretty-print.c (direct_abstract_declarator): Print
-	bound in zero-length arrays.
-	* gcc/c-family/c.opt (-Wzero-length-bounds): New option.
-	* gcc/doc/invoke.texi (-Wzero-length-bounds): Document.
+	* doc/invoke.texi (-Wzero-length-bounds): Document.
 	* gimple-match-head.c (try_conditional_simplification): Use memcpy
 	instead of a hand-rolled loop to avoid PR 92323.
 	* tree-vrp.c (vrp_prop::check_array_ref): Handle trailing arrays
@@ -962,7 +965,7 @@
 	* tree-ssa-loop-niter.h (simplify_replace_tree): Change declaration.
 	* tree-ssa-loop-niter.c (simplify_replace_tree): Add context parameter
 	and make the valueize function pointer also take a void pointer.
-	* gcc/tree-ssa-sccvn.c (vn_valueize_wrapper): New function to wrap
+	* tree-ssa-sccvn.c (vn_valueize_wrapper): New function to wrap
 	around vn_valueize, to call it without a context.
 	(process_bb): Use vn_valueize_wrapper instead of vn_valueize.
 	* tree-vect-loop.c (_loop_vec_info): Initialize epilogue_vinfos.
@@ -3607,7 +3610,7 @@
 
 2019-10-12  John David Anglin  <danglin@gcc.gnu.org>
 
-	* gcc/config/pa/pa.c (pa_option_override): Remove trailing comma
+	* config/pa/pa.c (pa_option_override): Remove trailing comma
 	from warning.
 
 2019-10-12  Jakub Jelinek  <jakub@redhat.com>
@@ -4009,7 +4012,7 @@
 2019-10-08  Dmitrij Pochepko <dmitrij.pochepko@bell-sw.com>
 
 	PR tree-optimization/90836
-	* gcc/match.pd (popcount): New pattern.
+	* match.pd (popcount): New pattern.
 
 2019-10-08  Martin Sebor  <msebor@redhat.com>
 
@@ -6878,7 +6881,7 @@
 2019-09-21  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91830
-	* gcc/gimple-ssa-warn-restrict.c (builtin_memref::set_base_and_offset):
+	* gimple-ssa-warn-restrict.c (builtin_memref::set_base_and_offset):
 	Simplify computation of the offset of the referenced subobject.
 
 2019-09-21  Iain Sandoe  <iain@sandoe.co.uk>
@@ -9388,15 +9391,15 @@
 
 2019-08-23  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc/doc/invoke.texi (mneon-for-64bits): Deprecate option.
-	* gcc/config/arm/arm.opt (mneon-for-64bits): Deprecate option.
-	* gcc/config/arm/arm.h (TARGET_PREFER_NEON_64BITS): Remove.
+	* doc/invoke.texi (mneon-for-64bits): Deprecate option.
+	* config/arm/arm.opt (mneon-for-64bits): Deprecate option.
+	* config/arm/arm.h (TARGET_PREFER_NEON_64BITS): Remove.
 	(prefer_neon_for_64bits): Remove.
-	* gcc/config/arm/arm.c (prefer_neon_for_64bits): Remove.
+	* config/arm/arm.c (prefer_neon_for_64bits): Remove.
 	(tune_params): Remove PREF_NEON_64_FALSE uses.
 	(arm_option_override): Remove prefer_neon selection code.
 	(arm_print_tune_info): Remove prefer_neon_for_64bits.
-	* gcc/config/arm/arm-protos.h (tune_params): Remove
+	* config/arm/arm-protos.h (tune_params): Remove
 	prefer_neon_for_64bits.
 	(prefer_neon_for_64bits): Remove.
 
@@ -11607,7 +11610,7 @@
 2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/81800
-	* gcc/config/aarch64/aarch64.md (lrint): Disable lrint pattern if GPF
+	* config/aarch64/aarch64.md (lrint): Disable lrint pattern if GPF
 	operand is larger than a long int.
 
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>

@@ -21,6 +21,16 @@
 	* c-common.h (enum rid): Add RID_CONSTEVAL.
 	* c-common.c (c_common_reswords): Add consteval.
 
+2019-11-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91679
+	PR middle-end/91647
+	PR middle-end/91463
+	PR middle-end/92312
+	* c-pretty-print.c (direct_abstract_declarator): Print
+	bound in zero-length arrays.
+	* c.opt (-Wzero-length-bounds): New option.
+
 2019-10-30  Nathan Sidwell  <nathan@acm.org>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Add 'L' suffix to feature

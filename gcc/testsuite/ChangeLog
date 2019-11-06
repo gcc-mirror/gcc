@@ -1,3 +1,8 @@
+2019-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/92352
+	* c-c++-common/pr92352.c: New test.
+
 2019-11-06  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	PR92090
