@@ -1,5 +1,11 @@
 2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_analyze_loop_2): When vectorizing an
+	epilogue loop, make sure that the VF is small enough or that
+	the epilogue loop can be fully-masked.
+
+2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vect_analyze_loop): Break out of the main
 	loop when we've finished, rather than returning directly from
 	the loop.  Use a local variable to track whether we're still
