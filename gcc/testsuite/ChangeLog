@@ -1,3 +1,8 @@
+2019-11-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backport from mainline
+	* gcc.target/s390/sigfpe-eh.c: New test.
+
 2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
