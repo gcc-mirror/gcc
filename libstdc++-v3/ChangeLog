@@ -1,5 +1,10 @@
 2019-11-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/compare (__3way_builtin_ptr_cmp): Define helper.
+	(compare_three_way): Add missing implementation.
+
 	* include/bits/iterator_concepts.h (unreachable_sentinel_t): Remove
 	redundant equality operators.
 	* testsuite/util/testsuite_iterators.h (test_range::sentinel):

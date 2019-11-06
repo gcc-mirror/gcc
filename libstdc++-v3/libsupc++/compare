@@ -519,7 +519,8 @@ namespace std
 
   // [cmp.common], common comparison category type
   template<typename... _Ts>
-    struct common_comparison_category {
+    struct common_comparison_category
+    {
       // using type = TODO
     };
 
@@ -527,7 +528,7 @@ namespace std
     using common_comparison_category_t
       = typename common_comparison_category<_Ts...>::type;
 
-#if __cpp_concepts
+#if __cpp_lib_concepts
   namespace __detail
   {
     template<typename _Tp, typename _Cat>
@@ -604,20 +605,42 @@ namespace std
     using compare_three_way_result_t
       = typename compare_three_way_result<_Tp, _Up>::__type;
 
+#if __cpp_lib_concepts
+  namespace __detail
+  {
+    // BUILTIN-PTR-THREE-WAY(T, U)
+    template<typename _Tp, typename _Up>
+      concept __3way_builtin_ptr_cmp
+	= convertible_to<_Tp, const volatile void*>
+	  && convertible_to<_Up, const volatile void*>
+	  && ! requires(_Tp&& __t, _Up&& __u)
+	     { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
+	  && ! requires(_Tp&& __t, _Up&& __u)
+	     { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); };
+  } // namespace __detail
+
   // [cmp.object], typename compare_three_way
   struct compare_three_way
   {
-    // TODO
-#if 0
     template<typename _Tp, typename _Up>
       requires (three_way_comparable_with<_Tp, _Up>
-	  || BUILTIN-PTR-THREE-WAY(_Tp, _Up))
+	  || __detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
     constexpr auto
     operator()(_Tp&& __t, _Up&& __u) const noexcept
     {
-      // TODO
+      if constexpr (__detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
+	{
+	  auto __pt = static_cast<const volatile void*>(__t);
+	  auto __pu = static_cast<const volatile void*>(__u);
+	  if (__builtin_is_constant_evaluated())
+	    return __pt <=> __pu;
+	  auto __it = reinterpret_cast<__UINTPTR_TYPE__>(__pt);
+	  auto __iu = reinterpret_cast<__UINTPTR_TYPE__>(__pu);
+	  return __it <=> __iu;
+	}
+      else
+	return static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u);
     }
-#endif
 
     using is_transparent = void;
   };
@@ -635,7 +658,8 @@ namespace std
     inline constexpr unspecified compare_partial_order_fallback = unspecified;
 #endif
   }
-}
+#endif
+} // namespace std
 
 #pragma GCC visibility pop
 
