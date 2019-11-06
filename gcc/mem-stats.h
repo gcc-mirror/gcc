@@ -535,11 +535,8 @@ inline void
 mem_alloc_description<T>::release_object_overhead (void *ptr)
 {
   std::pair <T *, size_t> *entry = m_reverse_object_map->get (ptr);
-  if (entry)
-    {
-      entry->first->release_overhead (entry->second);
-      m_reverse_object_map->remove (ptr);
-    }
+  entry->first->release_overhead (entry->second);
+  m_reverse_object_map->remove (ptr);
 }
 
 /* Unregister a memory allocation descriptor registered with
