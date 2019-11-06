@@ -1,3 +1,9 @@
+2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
+	Sahahb Vahedi  <shahab@synopsys.com>
+	Cupertino Miranda  <cmiranda@synopsys.com
+
+	* gcc.target/arc/or-cnst-size2.c: New test.
+
 2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/vect/slp-9.c: Use scan-tree-dump rather than

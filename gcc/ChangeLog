@@ -1,5 +1,13 @@
 2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_split_ior): Add asserts.
+	(arc_split_mov_const): Likewise.
+	(arc_check_ior_const): Do not match known short immediate values.
+	* config/arc/arc.md (movsi): Don't split predicated instructions
+	(iorsi): Likewise.
+
+2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.opt (mea): Update help string.
 	* doc/invoke.texi(ARC): Update mea option info.
 
