@@ -2459,6 +2459,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	  vect_epilogues = (!loop->simdlen
 			    && loop->inner == NULL
 			    && PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK)
+			    && LOOP_VINFO_PEELING_FOR_NITER (first_loop_vinfo)
 			    /* For now only allow one epilogue loop.  */
 			    && first_loop_vinfo->epilogue_vinfos.is_empty ());
 
