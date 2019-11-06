@@ -1,3 +1,12 @@
+2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (zero_extendqihi2_i): Cleanup pattern.
+	(zero_extendqisi2_ac): Likewise.
+	(zero_extendhisi2_i): Likewise.
+	(extendqihi2_i): Likewise.
+	(extendqisi2_ac): Likewise.
+	(extendhisi2_i): Likewise.
+
 2019-11-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vectorizable_reduction): Remember reduction
