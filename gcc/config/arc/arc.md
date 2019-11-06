@@ -816,8 +816,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    st%U0%V0\\t%1,%0	;26
    st%U0%V0\\t%1,%0	;37
    st%U0%V0\\t%1,%0	;28"
-  "reload_completed && satisfies_constraint_Cax (operands[1])
-   && register_operand (operands[0], SImode)"
+  "reload_completed
+   && GET_CODE (PATTERN (insn)) != COND_EXEC
+   && register_operand (operands[0], SImode)
+   && IN_RANGE (REGNO (operands[0]) ^ 4, 4, 11)
+   && satisfies_constraint_Cax (operands[1])"
   [(const_int 0)]
   "
    arc_split_mov_const (operands);
@@ -3370,7 +3373,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    #
    or%?\\t%0,%1,%2
    or%?\\t%0,%1,%2"
-  "reload_completed && satisfies_constraint_C0x (operands[2])"
+  "reload_completed
+   && GET_CODE (PATTERN (insn)) != COND_EXEC
+   && register_operand (operands[0], SImode)
+   && IN_RANGE (REGNO (operands[0]) ^ 4, 4, 11)
+   && satisfies_constraint_C0x (operands[2])"
   [(const_int 0)]
   "
    arc_split_ior (operands);
