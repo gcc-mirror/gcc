@@ -1,6 +1,6 @@
 /* { dg-do compile { target { lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok  -fno-inline-functions --param max-inline-insns-single-O2=200 } */
 /* { dg-options "-O2 -mvsx" } */
 
 __int128_t
