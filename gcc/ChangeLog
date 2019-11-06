@@ -1,3 +1,10 @@
+2019-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* ggc-common.c (ggc_prune_overhead_list): Do not delete surviving
+	allocations.
+	* mem-stats.h (mem_alloc_description<T>::release_object_overhead):
+	Do not silently ignore summary corruptions.
+
 2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop.c (vect_analyze_loop): Only try to vectorize
