@@ -1,3 +1,10 @@
+2019-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (unreachable_sentinel_t): Remove
+	redundant equality operators.
+	* testsuite/util/testsuite_iterators.h (test_range::sentinel):
+	Likewise.
+
 2019-11-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/compare: New header.

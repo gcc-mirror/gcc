@@ -797,23 +797,6 @@ namespace ranges
       friend constexpr bool
       operator==(unreachable_sentinel_t, const _It&) noexcept
       { return false; }
-
-#ifndef __cpp_lib_three_way_comparison
-    template<weakly_incrementable _It>
-      friend constexpr bool
-      operator!=(unreachable_sentinel_t, const _It&) noexcept
-      { return true; }
-
-    template<weakly_incrementable _It>
-      friend constexpr bool
-      operator==(const _It&, unreachable_sentinel_t) noexcept
-      { return false; }
-
-    template<weakly_incrementable _It>
-      friend constexpr bool
-      operator!=(const _It&, unreachable_sentinel_t) noexcept
-      { return true; }
-#endif
   };
 
   inline constexpr unreachable_sentinel_t unreachable_sentinel{};
