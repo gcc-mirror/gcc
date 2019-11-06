@@ -1,3 +1,9 @@
+2019-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Remember reduction
+	PHI.  Use STMT_VINFO_REDUC_IDX to skip the reduction operand.
+	Simplify single_defuse_cycle condition.
+
 2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop.c (vect_analyze_loop_2): When vectorizing an
