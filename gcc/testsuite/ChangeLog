@@ -1,3 +1,9 @@
+2019-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92373
+	* gcc.dg/Warray-bounds-55.c: New test.
+	* gcc.dg/Wzero-length-array-bounds-2.c: New test.
+
 2019-11-05  Jim Wilson  <jimw@sifive.com>
 
 	PR middle-end/92263
