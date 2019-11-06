@@ -13635,6 +13635,8 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	return NULL_TREE;
 
       base = TREE_OPERAND (ref, 0);
+      while (TREE_CODE (base) == COMPONENT_REF)
+	base = TREE_OPERAND (base, 0);
       baseoff = tree_to_poly_int64 (byte_position (TREE_OPERAND (ref, 1)));
     }
 
@@ -13656,27 +13658,28 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 
   memsize = NULL_TREE;
 
-  /* MEMBER is a true flexible array member.  Compute its size from
-     the initializer of the BASE object if it has one.  */
-  if (tree init = DECL_P (base) ? DECL_INITIAL (base) : NULL_TREE)
-    {
-      init = get_initializer_for (init, member);
-      if (init)
-	{
-	  memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
-	  if (tree refsize = TYPE_SIZE_UNIT (reftype))
-	    {
-	      /* Use the larger of the initializer size and the tail
-		 padding in the enclosing struct.  */
-	      poly_int64 rsz = tree_to_poly_int64 (refsize);
-	      rsz -= baseoff;
-	      if (known_lt (tree_to_poly_int64 (memsize), rsz))
-		memsize = wide_int_to_tree (TREE_TYPE (memsize), rsz);
-	    }
+  if (typematch)
+    /* MEMBER is a true flexible array member.  Compute its size from
+       the initializer of the BASE object if it has one.  */
+    if (tree init = DECL_P (base) ? DECL_INITIAL (base) : NULL_TREE)
+      {
+	init = get_initializer_for (init, member);
+	if (init)
+	  {
+	    memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
+	    if (tree refsize = TYPE_SIZE_UNIT (reftype))
+	      {
+		/* Use the larger of the initializer size and the tail
+		   padding in the enclosing struct.  */
+		poly_int64 rsz = tree_to_poly_int64 (refsize);
+		rsz -= baseoff;
+		if (known_lt (tree_to_poly_int64 (memsize), rsz))
+		  memsize = wide_int_to_tree (TREE_TYPE (memsize), rsz);
+	      }
 
-	  baseoff = 0;
-	}
-    }
+	    baseoff = 0;
+	  }
+      }
 
   if (!memsize)
     {
@@ -13689,17 +13692,19 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	    /* The size of a flexible array member of an extern struct
 	       with no initializer cannot be determined (it's defined
 	       in another translation unit and can have an initializer
-	       witth an arbitrary number of elements).  */
+	       with an arbitrary number of elements).  */
 	    return NULL_TREE;
 
 	  /* Use the size of the base struct or, for interior zero-length
 	     arrays, the size of the enclosing type.  */
 	  memsize = TYPE_SIZE_UNIT (bt);
 	}
-      else
+      else if (DECL_P (base))
 	/* Use the size of the BASE object (possibly an array of some
 	   other type such as char used to store the struct).  */
 	memsize = DECL_SIZE_UNIT (base);
+      else
+	return NULL_TREE;
     }
 
   /* If the flexible array member has a known size use the greater

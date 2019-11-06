@@ -1,3 +1,10 @@
+2019-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92373
+	* tree.c (component_ref_size): Only consider initializers of objects
+	of matching struct types.
+	Return null for instances of interior zero-length arrays.
+
 2019-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/md.texi (Insn Splitting): Fix combiner documentation.
