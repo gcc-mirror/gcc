@@ -200,6 +200,22 @@ enum stack_check_type
   FULL_BUILTIN_STACK_CHECK
 };
 
+/* Type of callgraph information.  */
+enum callgraph_info_type
+{
+  /* No information.  */
+  NO_CALLGRAPH_INFO = 0,
+
+  /* Naked callgraph.  */
+  CALLGRAPH_INFO_NAKED = 1,
+
+  /* Callgraph decorated with stack usage information.  */
+  CALLGRAPH_INFO_STACK_USAGE = 2,
+
+  /* Callgraph decoration with dynamic allocation information.  */
+  CALLGRAPH_INFO_DYNAMIC_ALLOC = 4
+};
+
 /* Floating-point contraction mode.  */
 enum fp_contract_mode {
   FP_CONTRACT_OFF = 0,

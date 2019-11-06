@@ -192,6 +192,23 @@ public:
   poly_int64 length;
 };
 
+/* Describe emitted builtin calls for -fcallgraph-info.  Those that
+   are not builtin are taken from cgraph edges.  */
+struct GTY(()) callinfo_callee
+{
+  location_t location;
+  tree decl;
+};
+#define CALLEE_FROM_CGRAPH_P(T)				\
+  (!fndecl_built_in_p (T) && !DECL_IS_BUILTIN (T))
+
+/* Describe dynamic allocation for -fcallgraph-info=da.  */
+struct GTY(()) callinfo_dalloc
+{
+  location_t location;
+  char const *name;
+};
+
 class GTY(()) stack_usage
 {
 public:
@@ -210,6 +227,13 @@ public:
   /* Nonzero if the amount of stack space allocated dynamically cannot
      be bounded at compile-time.  */
   unsigned int has_unbounded_dynamic_stack_size : 1;
+
+  /* Functions called within the function, if callgraph is enabled.  */
+  vec<callinfo_callee, va_gc> *callees;
+
+  /* Dynamic allocations encountered within the function, if callgraph
+     da is enabled.  */
+  vec<callinfo_dalloc, va_gc> *dallocs;
 };
 
 #define current_function_static_stack_size (cfun->su->static_stack_size)
@@ -405,6 +429,12 @@ void add_local_decl (struct function *fun, tree d);
 
 #define FOR_EACH_LOCAL_DECL(FUN, I, D)		\
   FOR_EACH_VEC_SAFE_ELT_REVERSE ((FUN)->local_decls, I, D)
+
+/* Record a final call to CALLEE at LOCATION.  */
+void record_final_call (tree callee, location_t location);
+
+/* Record a dynamic allocation made for DECL_OR_EXP.  */
+void record_dynamic_alloc (tree decl_or_exp);
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
    many units need to be saved.  */

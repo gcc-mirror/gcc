@@ -3759,6 +3759,9 @@ expand_call (tree exp, rtx target, int ignore)
 
   preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
 
+  if (flag_callgraph_info)
+    record_final_call (fndecl, EXPR_LOCATION (exp));
+
   /* We want to make two insn chains; one for a sibling call, the other
      for a normal call.  We will select one of the two chains after
      initial RTL generation is complete.  */
@@ -5342,6 +5345,9 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 			  PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT));
 
   before_call = get_last_insn ();
+
+  if (flag_callgraph_info)
+    record_final_call (SYMBOL_REF_DECL (orgfun), UNKNOWN_LOCATION);
 
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */

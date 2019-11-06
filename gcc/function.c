@@ -4725,6 +4725,16 @@ get_last_funcdef_no (void)
   return funcdef_no;
 }
 
+/* Allocate and initialize the stack usage info data structure for the
+   current function.  */
+static void
+allocate_stack_usage_info (void)
+{
+  gcc_assert (!cfun->su);
+  cfun->su = ggc_cleared_alloc<stack_usage> ();
+  cfun->su->static_stack_size = -1;
+}
+
 /* Allocate a function structure for FNDECL and set its contents
    to the defaults.  Set cfun to the newly-allocated object.
    Some of the helper functions invoked during initialization assume
@@ -4802,6 +4812,9 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 
       if (!profile_flag && !flag_instrument_function_entry_exit)
 	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (fndecl) = 1;
+
+      if (flag_callgraph_info)
+	allocate_stack_usage_info ();
     }
 
   /* Don't enable begin stmt markers if var-tracking at assignments is
@@ -4846,11 +4859,8 @@ prepare_function_start (void)
   init_expr ();
   default_rtl_profile ();
 
-  if (flag_stack_usage_info)
-    {
-      cfun->su = ggc_cleared_alloc<stack_usage> ();
-      cfun->su->static_stack_size = -1;
-    }
+  if (flag_stack_usage_info && !flag_callgraph_info)
+    allocate_stack_usage_info ();
 
   cse_not_expected = ! optimize;
 
@@ -6373,10 +6383,47 @@ rest_of_handle_thread_prologue_and_epilogue (void)
   cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
 
   /* The stack usage info is finalized during prologue expansion.  */
-  if (flag_stack_usage_info)
+  if (flag_stack_usage_info || flag_callgraph_info)
     output_stack_usage ();
 
   return 0;
+}
+
+/* Record a final call to CALLEE at LOCATION.  */
+
+void
+record_final_call (tree callee, location_t location)
+{
+  if (!callee || CALLEE_FROM_CGRAPH_P (callee))
+    return;
+
+  struct callinfo_callee datum = { location, callee };
+  vec_safe_push (cfun->su->callees, datum);
+}
+
+/* Record a dynamic allocation made for DECL_OR_EXP.  */
+
+void
+record_dynamic_alloc (tree decl_or_exp)
+{
+  struct callinfo_dalloc datum;
+
+  if (DECL_P (decl_or_exp))
+    {
+      datum.location = DECL_SOURCE_LOCATION (decl_or_exp);
+      const char *name = lang_hooks.decl_printable_name (decl_or_exp, 2);
+      const char *dot = strrchr (name, '.');
+      if (dot)
+	name = dot + 1;
+      datum.name = ggc_strdup (name);
+    }
+  else
+    {
+      datum.location = EXPR_LOCATION (decl_or_exp);
+      datum.name = NULL;
+    }
+
+  vec_safe_push (cfun->su->dallocs, datum);
 }
 
 namespace {
