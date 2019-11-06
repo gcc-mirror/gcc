@@ -34,7 +34,7 @@ int main(int, char**)
   auto z = []<typename T, int N = 5>(T t) requires (N < 4) { return t; };
   z.operator()<int, 3>(5);
 
-  [](int t) requires true { return t; }(5);
+  [](auto t) requires true { return t; }(5);
   [](C1 auto t) { return t; }(5);
 
   auto a0 = [](IsNotLarge auto a) { return [](auto b){ return b; }; };
@@ -57,7 +57,7 @@ int main(int, char**)
   foo2.b<int>()(5);
   foo2.b<long long>()(5);
 
-  Func m1 = [](int a) -> int requires true { return a; };
+  Func m1 = [](auto a) -> int requires true { return a; };
 
   return 0;
 }

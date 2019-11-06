@@ -60,19 +60,19 @@ void test0()
   auto g0 = []<False T>(T t) { return t; };
   auto g1 = []<typename T> requires False<T> (T t) { return t; };
   auto g2 = []<typename T>(T t) requires False<decltype(t)> { return t; };
-  auto g3 = [](int t) requires False<decltype(t)> { return t; };
+  auto g3 = [](int t) requires False<decltype(t)> { return t; }; // { dg-error "non-templated" }
   auto g4 = [](False auto t) { return t; };
   auto g5 = [](auto t) requires False<decltype(t)> { return t; };
-  auto g6 = [](int t) requires False<int> { return t; };
-  auto g7 = [](int t) requires false { return t; };
+  auto g6 = [](int t) requires False<int> { return t; }; // { dg-error "non-templated" }
+  auto g7 = [](int t) requires false { return t; };	 // { dg-error "non-templated" }
   g0(0); // { dg-error "no match" }
   g1(0); // { dg-error "no match" }
   g2(0); // { dg-error "no match" }
-  g3(0); // { dg-error "no match" }
+  g3(0);
   g4(0); // { dg-error "no match" }
   g5(0); // { dg-error "no match" }
-  g6(0); // { dg-error "no match" }
-  g7(0); // { dg-error "no match" }
+  g6(0);
+  g7(0);
 }
 
 void test1()
@@ -81,19 +81,19 @@ void test1()
   auto g0 = [&]<False T>(T t) { return t; };
   auto g1 = [&]<typename T> requires False<T> (T t) { return t; };
   auto g2 = [&]<typename T>(T t) requires False<decltype(t)> { return t; };
-  auto g3 = [&](int t) requires False<decltype(t)> { return t; };
+  auto g3 = [&](int t) requires False<decltype(t)> { return t; }; // { dg-error "non-templated" }
   auto g4 = [&](False auto t) { return t; };
   auto g5 = [&](auto t) requires False<decltype(t)> { return t; };
-  auto g6 = [&](int t) requires False<int> { return t; };
-  auto g7 = [&](int t) requires false { return t; };
+  auto g6 = [&](int t) requires False<int> { return t; }; // { dg-error "non-templated" }
+  auto g7 = [&](int t) requires false { return t; };	  // { dg-error "non-templated" }
   g0(0); // { dg-error "no match" }
   g1(0); // { dg-error "no match" }
   g2(0); // { dg-error "no match" }
-  g3(0); // { dg-error "no match" }
+  g3(0);
   g4(0); // { dg-error "no match" }
   g5(0); // { dg-error "no match" }
-  g6(0); // { dg-error "no match" }
-  g7(0); // { dg-error "no match" }
+  g6(0);
+  g7(0);
 }
 
 void test2()
@@ -147,7 +147,7 @@ using Func = int(*)(int);
 
 void test6()
 {
-  Func f1 = [](int a) requires false { return a; }; // { dg-error "cannot convert" }
+  Func f1 = [](int a) requires false { return a; }; // { dg-error "non-templated" }
   Func f2 = [](auto a) requires false { return a; }; // { dg-error "cannot convert" }
 }
 

@@ -7,8 +7,8 @@ concept Class = __is_class(T);
 template<typename T>
 concept C = requires { typename T::type; };
 
-void f1(int a) requires true;         // OK
-auto f2(int a) -> bool requires true; // OK
+void f1(int a) requires true;         // { dg-error "non-templated" }
+auto f2(int a) -> bool requires true; // { dg-error "non-templated" }
 auto f3(int a) requires true -> bool; // { dg-error "" } requires-clause precedes trailing-return-type
 typedef void fn_t() requires true;    // { dg-error "typedef" }
 void (*pf)() requires true;           // { dg-error "non-function" }
