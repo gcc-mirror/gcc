@@ -15542,6 +15542,15 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
       op = COMPONENT_REF;
       break;
 
+    case CPP_QUERY:
+      op = COND_EXPR;
+      /* Consume the `?'.  */
+      cp_lexer_consume_token (parser->lexer);
+      /* Look for the matching `:'.  */
+      cp_parser_require (parser, CPP_COLON, RT_COLON);
+      consumed = true;
+      break;
+
     case CPP_OPEN_PAREN:
       {
         /* Consume the `('.  */

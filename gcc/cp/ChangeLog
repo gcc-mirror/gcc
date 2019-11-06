@@ -1,3 +1,8 @@
+2019-11-06  Matthias Kretz  <m.kretz@gsi.de>
+
+	* parser.c (cp_parser_operator): Parse operator?: as an
+	attempt to overload the conditional operator.
+
 2019-11-05  Jason Merrill  <jason@redhat.com>
 
 	Implement C++20 operator<=>.
