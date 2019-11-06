@@ -1,3 +1,49 @@
+2019-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+	    Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (-fcallgraph-info[=]): New option.
+	* doc/invoke.texi (Developer options): Document it.
+	* opts.c (common_handle_option): Handle it.
+	* builtins.c (expand_builtin_alloca): Record allocation if
+	-fcallgraph-info=da.
+	* calls.c (expand_call): If -fcallgraph-info, record the call.
+	(emit_library_call_value_1): Likewise.
+	* flag-types.h (enum callgraph_info_type): New type.
+	* explow.c: Include stringpool.h.
+	(set_stack_check_libfunc): Set SET_SYMBOL_REF_DECL on the symbol.
+	* function.c (allocate_stack_usage_info): New.
+	(allocate_struct_function): Call it for -fcallgraph-info.
+	(prepare_function_start): Call it otherwise.
+	(record_final_call, record_dynamic_alloc): New.
+	* function.h (struct callinfo_callee): New.
+	(CALLEE_FROM_CGRAPH_P): New.
+	(struct callinfo_dalloc): New.
+	(struct stack_usage): Add callees and dallocs.
+	(record_final_call, record_dynamic_alloc): Declare.
+	* gimplify.c (gimplify_decl_expr): Record dynamically-allocated
+	object if -fcallgraph-info=da.
+	* optabs-libfuncs.c (build_libfunc_function): Keep SYMBOL_REF_DECL.
+	* print-tree.h (print_decl_identifier): Declare.
+	(PRINT_DECL_ORIGIN, PRINT_DECL_NAME, PRINT_DECL_UNIQUE_NAME): New.
+	* print-tree.c: Include print-tree.h.
+	(print_decl_identifier): New function.
+	* toplev.c: Include print-tree.h.
+	(callgraph_info_file): New global variable.
+	(callgraph_info_external_printed): Likewise.
+	(output_stack_usage): Rename to...
+	(output_stack_usage_1): ... this.  Make it static, add cf
+	parameter.  If -fcallgraph-info=su, print stack usage to cf.
+	If -fstack-usage, use print_decl_identifier for
+	pretty-printing.
+	(INDIRECT_CALL_NAME): New.
+	(dump_final_node_vcg_start): New.
+	(dump_final_callee_vcg, dump_final_node_vcg): New.
+	(output_stack_usage): New.
+	(lang_dependent_init): Open and start file if
+	-fcallgraph-info.  Allocated callgraph_info_external_printed.
+	(finalize): If callgraph_info_file is not null, finish it,
+	close it, and release callgraph_info_external_printed.
+
 2019-11-06  Gergö Barany  <gergo@codesourcery.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
@@ -7,7 +53,7 @@
 	(new_omp_context): Initialize these.
 	(scan_sharing_clauses): Record reduction clauses on OpenACC constructs.
 	(scan_omp_for): Check reduction clauses for incorrect nesting.
-	
+
 2019-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/92352

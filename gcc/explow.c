@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dojump.h"
 #include "explow.h"
 #include "expr.h"
+#include "stringpool.h"
 #include "common/common-target.h"
 #include "output.h"
 #include "params.h"
@@ -1611,6 +1612,10 @@ set_stack_check_libfunc (const char *libfunc_name)
 {
   gcc_assert (stack_check_libfunc == NULL_RTX);
   stack_check_libfunc = gen_rtx_SYMBOL_REF (Pmode, libfunc_name);
+  tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+			  get_identifier (libfunc_name), void_type_node);
+  DECL_EXTERNAL (decl) = 1;
+  SET_SYMBOL_REF_DECL (stack_check_libfunc, decl);
 }
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */

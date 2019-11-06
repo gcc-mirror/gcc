@@ -1093,6 +1093,14 @@ fbtr-bb-exclusive
 Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
+fcallgraph-info
+Common Report RejectNegative Var(flag_callgraph_info) Init(NO_CALLGRAPH_INFO);
+Output callgraph information on a per-file basis.
+
+fcallgraph-info=
+Common Report RejectNegative Joined
+Output callgraph information on a per-file basis with decorations.
+
 fcall-saved-
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fcall-saved-<register>	Mark <register> as being preserved across functions.

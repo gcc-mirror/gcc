@@ -584,8 +584,9 @@ Objective-C and Objective-C++ Dialects}.
 @item Developer Options
 @xref{Developer Options,,GCC Developer Options}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--dumpfullversion  -fchecking  -fchecking=@var{n}  -fdbg-cnt-list @gol
--fdbg-cnt=@var{counter-value-list} @gol
+-dumpfullversion  -fcallgraph-info@r{[}=su,da@r{]}
+-fchecking  -fchecking=@var{n}
+-fdbg-cnt-list @gol  -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
@@ -14566,6 +14567,24 @@ one of @samp{i} (inter-procedural analysis), @samp{l}
 The files are created in the directory of the output file. 
 
 @table @gcctabopt
+
+@item -fcallgraph-info
+@itemx -fcallgraph-info=@var{MARKERS}
+@opindex fcallgraph-info
+Makes the compiler output callgraph information for the program, on a
+per-object-file basis.  The information is generated in the common VCG
+format.  It can be decorated with additional, per-node and/or per-edge
+information, if a list of comma-separated markers is additionally
+specified.  When the @code{su} marker is specified, the callgraph is
+decorated with stack usage information; it is equivalent to
+@option{-fstack-usage}.  When the @code{da} marker is specified, the
+callgraph is decorated with information about dynamically allocated
+objects.
+
+When compiling with @option{-flto}, no callgraph information is output
+along with the object file.  At LTO link time, @option{-fcallgraph-info}
+may generate multiple callgraph information files next to intermediate
+LTO output files.
 
 @item -d@var{letters}
 @itemx -fdump-rtl-@var{pass}

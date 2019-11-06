@@ -5407,6 +5407,10 @@ expand_builtin_alloca (tree exp)
     = allocate_dynamic_stack_space (op0, 0, align, max_size, alloca_for_var);
   result = convert_memory_address (ptr_mode, result);
 
+  /* Dynamic allocations for variables are recorded during gimplification.  */
+  if (!alloca_for_var && (flag_callgraph_info & CALLGRAPH_INFO_DYNAMIC_ALLOC))
+    record_dynamic_alloc (exp);
+
   return result;
 }
 

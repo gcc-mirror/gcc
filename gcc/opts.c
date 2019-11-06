@@ -2433,6 +2433,32 @@ common_handle_option (struct gcc_options *opts,
       /* Deferred.  */
       break;
 
+    case OPT_fcallgraph_info:
+      opts->x_flag_callgraph_info = CALLGRAPH_INFO_NAKED;
+      break;
+
+    case OPT_fcallgraph_info_:
+      {
+	char *my_arg, *p;
+	my_arg = xstrdup (arg);
+	p = strtok (my_arg, ",");
+	while (p)
+	  {
+	    if (strcmp (p, "su") == 0)
+	      {
+		opts->x_flag_callgraph_info |= CALLGRAPH_INFO_STACK_USAGE;
+		opts->x_flag_stack_usage_info = true;
+	      }
+	    else if (strcmp (p, "da") == 0)
+	      opts->x_flag_callgraph_info |= CALLGRAPH_INFO_DYNAMIC_ALLOC;
+	    else
+	      return 0;
+	    p = strtok (NULL, ",");
+	  }
+	free (my_arg);
+      }
+      break;
+
     case OPT_fdiagnostics_show_location_:
       diagnostic_prefixing_rule (dc) = (diagnostic_prefixing_rule_t) value;
       break;
