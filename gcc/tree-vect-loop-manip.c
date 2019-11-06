@@ -2291,12 +2291,14 @@ slpeel_update_phi_nodes_for_guard2 (class loop *loop, class loop *epilog,
     {
       gphi *update_phi = gsi.phi ();
       tree old_arg = PHI_ARG_DEF (update_phi, 0);
-      /* This loop-closed-phi actually doesn't represent a use out of the
-	 loop - the phi arg is a constant.  */
-      if (TREE_CODE (old_arg) != SSA_NAME)
-	continue;
 
-      tree merge_arg = get_current_def (old_arg);
+      tree merge_arg = NULL_TREE;
+
+      /* If the old argument is a SSA_NAME use its current_def.  */
+      if (TREE_CODE (old_arg) == SSA_NAME)
+	merge_arg = get_current_def (old_arg);
+      /* If it's a constant or doesn't have a current_def, just use the old
+	 argument.  */
       if (!merge_arg)
 	merge_arg = old_arg;
 
