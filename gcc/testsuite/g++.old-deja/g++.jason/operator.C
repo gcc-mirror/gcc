@@ -5,7 +5,7 @@
 typedef __SIZE_TYPE__ size_t;
 
 struct A {
-  int operator?:(int a, int b);	   // { dg-error "expected type-specifier" } 
+  int operator?:(int a, int b);	   // { dg-error "prohibits overloading" } 
   static int operator()(int a);	   // { dg-error "14:.static int A::operator\\(\\)\\(int\\). must be a nonstatic member function" }
   static int operator+(A,A);	   // { dg-error "14:.static int A::operator\\+\\(A, A\\). must be either a non-static member function or a non-member function" } 
   int operator+(int a, int b = 1); // { dg-error "7:.int A::operator\\+\\(int, int\\). must have either zero or one argument" }
