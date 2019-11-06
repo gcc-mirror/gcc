@@ -1,3 +1,12 @@
+2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop): Break out of the main
+	loop when we've finished, rather than returning directly from
+	the loop.  Use a local variable to track whether we're still
+	searching for the preferred simdlen.  Make vect_epilogues
+	record whether the next iteration should try to treat the
+	loop as an epilogue.
+
 2019-11-06  Vineet Gupta  <vgupta@synopsys.com>
 
 	* config/arc/arc-c.c (arc_cpu_cpp_builtins) : Add

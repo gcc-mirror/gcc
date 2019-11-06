@@ -2382,16 +2382,13 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   poly_uint64 lowest_th = 0;
   unsigned vectorized_loops = 0;
 
-  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is enabled, this
-     is not a simd loop and it is the most inner loop.  */
-  bool vect_epilogues
-    = !loop->simdlen && loop->inner == NULL
-      && PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK);
+  bool vect_epilogues = false;
+  opt_result res = opt_result::success ();
+  unsigned HOST_WIDE_INT simdlen = loop->simdlen;
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
-      opt_loop_vec_info loop_vinfo
-	= vect_analyze_loop_form (loop, shared);
+      opt_loop_vec_info loop_vinfo = vect_analyze_loop_form (loop, shared);
       if (!loop_vinfo)
 	{
 	  if (dump_enabled_p ())
@@ -2404,67 +2401,70 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 
       bool fatal = false;
 
-      if (vect_epilogues && first_loop_vinfo)
+      if (vect_epilogues)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
-      opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
+      res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
       if (next_size == 0)
 	autodetected_vector_size = loop_vinfo->vector_size;
 
+      loop->aux = NULL;
       if (res)
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
 	  vectorized_loops++;
 
-	  if ((loop->simdlen
-	       && maybe_ne (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
-			    (unsigned HOST_WIDE_INT) loop->simdlen))
-	      || vect_epilogues)
-	    {
-	      if (first_loop_vinfo == NULL)
-		{
-		  first_loop_vinfo = loop_vinfo;
-		  lowest_th
-		    = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
-		  loop->aux = NULL;
-		}
-	      else
-		{
-		  /* Keep track of vector sizes that we know we can vectorize
-		     the epilogue with.  Only vectorize first epilogue.  */
-		  if (vect_epilogues
-		      && first_loop_vinfo->epilogue_vinfos.is_empty ())
-		    {
-		      loop->aux = NULL;
-		      first_loop_vinfo->epilogue_vinfos.reserve (1);
-		      first_loop_vinfo->epilogue_vinfos.quick_push (loop_vinfo);
-		      LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
-		      poly_uint64 th
-			= LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
-		      gcc_assert (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
-				  || maybe_ne (lowest_th, 0U));
-		      /* Keep track of the known smallest versioning
-			 threshold.  */
-		      if (ordered_p (lowest_th, th))
-			lowest_th = ordered_min (lowest_th, th);
-		    }
-		  else
-		    delete loop_vinfo;
-		}
-	    }
-	  else
+	  /* Once we hit the desired simdlen for the first time,
+	     discard any previous attempts.  */
+	  if (simdlen
+	      && known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), simdlen))
 	    {
 	      delete first_loop_vinfo;
-	      return loop_vinfo;
+	      first_loop_vinfo = opt_loop_vec_info::success (NULL);
+	      LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
+	      simdlen = 0;
 	    }
+
+	  if (first_loop_vinfo == NULL)
+	    {
+	      first_loop_vinfo = loop_vinfo;
+	      lowest_th = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
+	    }
+	  else if (vect_epilogues)
+	    {
+	      first_loop_vinfo->epilogue_vinfos.safe_push (loop_vinfo);
+	      poly_uint64 th = LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
+	      gcc_assert (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
+			  || maybe_ne (lowest_th, 0U));
+	      /* Keep track of the known smallest versioning
+		 threshold.  */
+	      if (ordered_p (lowest_th, th))
+		lowest_th = ordered_min (lowest_th, th);
+	    }
+	  else
+	    delete loop_vinfo;
+
+	  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is
+	     enabled, this is not a simd loop and it is the innermost loop.  */
+	  vect_epilogues = (!loop->simdlen
+			    && loop->inner == NULL
+			    && PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK)
+			    /* For now only allow one epilogue loop.  */
+			    && first_loop_vinfo->epilogue_vinfos.is_empty ());
+
+	  /* Commit to first_loop_vinfo if we have no reason to try
+	     alternatives.  */
+	  if (!simdlen && !vect_epilogues)
+	    break;
 	}
       else
-	delete loop_vinfo;
-
-      if (fatal)
 	{
-	  gcc_checking_assert (first_loop_vinfo == NULL);
-	  return opt_loop_vec_info::propagate_failure (res);
+	  delete loop_vinfo;
+	  if (fatal)
+	    {
+	      gcc_checking_assert (first_loop_vinfo == NULL);
+	      break;
+	    }
 	}
 
       if (next_size < vector_sizes.length ()
@@ -2473,24 +2473,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 
       if (next_size == vector_sizes.length ()
 	  || known_eq (autodetected_vector_size, 0U))
-	{
-	  if (first_loop_vinfo)
-	    {
-	      loop->aux = (loop_vec_info) first_loop_vinfo;
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location,
-				   "***** Choosing vector size ");
-		  dump_dec (MSG_NOTE, first_loop_vinfo->vector_size);
-		  dump_printf (MSG_NOTE, "\n");
-		}
-	      LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo) = lowest_th;
-
-	      return first_loop_vinfo;
-	    }
-	  else
-	    return opt_loop_vec_info::propagate_failure (res);
-	}
+	break;
 
       /* Try the next biggest vector size.  */
       next_vector_size = vector_sizes[next_size++];
@@ -2503,6 +2486,22 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	  dump_printf (MSG_NOTE, "\n");
 	}
     }
+
+  if (first_loop_vinfo)
+    {
+      loop->aux = (loop_vec_info) first_loop_vinfo;
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "***** Choosing vector size ");
+	  dump_dec (MSG_NOTE, first_loop_vinfo->vector_size);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+      LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo) = lowest_th;
+      return first_loop_vinfo;
+    }
+
+  return opt_loop_vec_info::propagate_failure (res);
 }
 
 /* Return true if there is an in-order reduction function for CODE, storing
