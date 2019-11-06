@@ -1,5 +1,10 @@
 2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.opt (mea): Update help string.
+	* doc/invoke.texi(ARC): Update mea option info.
+
+2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (zero_extendqihi2_i): Cleanup pattern.
 	(zero_extendqisi2_ac): Likewise.
 	(zero_extendhisi2_i): Likewise.

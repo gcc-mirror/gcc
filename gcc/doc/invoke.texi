@@ -16627,7 +16627,7 @@ aux registers.
 @opindex mea
 Generate extended arithmetic instructions.  Currently only
 @code{divaw}, @code{adds}, @code{subs}, and @code{sat16} are
-supported.  This is always enabled for @option{-mcpu=ARC700}.
+supported.  Only valid for @option{-mcpu=ARC700}.
 
 @item -mno-mpy
 @opindex mno-mpy
