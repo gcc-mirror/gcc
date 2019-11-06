@@ -8371,7 +8371,7 @@ case that the pattern is @emph{not} matched by any @code{define_insn}.
 The combiner pass first tries to split a single @code{set} expression
 and then the same @code{set} expression inside a @code{parallel}, but
 followed by a @code{clobber} of a pseudo-reg to use as a scratch
-register.  In these cases, the combiner expects exactly two new insn
+register.  In these cases, the combiner expects exactly one or two new insn
 patterns to be generated.  It will verify that these patterns match some
 @code{define_insn} definitions, so you need not do this test in the
 @code{define_split} (of course, there is no point in writing a
