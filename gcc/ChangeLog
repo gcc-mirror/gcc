@@ -1,3 +1,8 @@
+2019-11-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/vsx.md (xxswapd_<mode>): Add support for V2DF and
+	V2DI modes.
+
 2019-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* ggc-common.c (ggc_prune_overhead_list): Do not delete surviving
