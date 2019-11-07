@@ -1,3 +1,14 @@
+2019-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Support 64-bit double and 64-bit long double configurations.
+
+	PR target/92055
+	* config/avr/t-avr (HOST_LIBGCC2_CFLAGS): Only add -DF=SF if
+	long double is a 32-bit type.
+	* config/avr/t-avrlibc: Copy double64 and long-double64
+	multilib(s) from the vanilla one.
+	* config/avr/t-copy-libgcc: New Makefile snip.
+
 2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* crtstuff.c: Define USE_TM_CLONE_REGISTRY to 0 if it's undefined and

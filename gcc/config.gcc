@@ -1287,6 +1287,88 @@ avr-*-*)
 	    tm_file="${tm_file} ${cpu_type}/avrlibc.h"
 	    tm_defines="${tm_defines} WITH_AVRLIBC"
 	fi
+	case y${with_double} in
+	    y | y32)
+		avr_double=32
+		tm_defines="${tm_defines} HAVE_DOUBLE32"
+		;;
+	    y64)
+		avr_double=64
+		tm_defines="${tm_defines} HAVE_DOUBLE64"
+		;;
+	    y64,32)
+		avr_double=64
+		avr_double_multilib=1
+		tm_defines="${tm_defines} HAVE_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_DOUBLE_MULTILIB"
+		;;
+	    y32,64)
+		avr_double=32
+		avr_double_multilib=1
+		tm_defines="${tm_defines} HAVE_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_DOUBLE_MULTILIB"
+		;;
+	    *)
+		echo "Error: --with-double= can only be used with: '32', '32,64', '64,32', '64'" 1>&2
+		exit 1
+		;;
+	esac
+	case y${with_long_double} in
+	    y | y32)
+		avr_long_double=32
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		;;
+	    y64)
+		avr_long_double=64
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		;;
+	    y64,32)
+		avr_long_double=64
+		avr_long_double_multilib=1
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE_MULTILIB"
+		;;
+	    y32,64)
+		avr_long_double=32
+		avr_long_double_multilib=1
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE_MULTILIB"
+		;;
+	    ydouble)
+		avr_long_double=${avr_double}
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE_IS_DOUBLE"
+		if test y${avr_double_multilib} = y1; then
+		    tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		    tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		else
+		    tm_defines="${tm_defines} HAVE_LONG_DOUBLE${avr_long_double}"
+		fi
+		;;
+	    *)
+		echo "Error: --with-long_double= can only be used with: '32', '32,64', '64,32', '64', 'double'" 1>&2
+		exit 1
+		;;
+	esac
+	if test ${avr_long_double}x${avr_long_double_multilib}y${avr_double_multilib}z = 32xy1z; then
+	    if test y${with_long_double} != ydouble; then
+		echo "Error: --with-double=${with_double} requests a multilib for double, but long double is always 32 bits wide due to --with-long-double=${with_long_double}" 1>&2
+		exit 1
+	    fi
+	fi
+	if test ${avr_double}x${avr_long_double_multilib}y${avr_double_multilib}z = 64x1yz; then
+	    echo "Error: --with-long-double=${with_long_double} requests a multilib for long double, but double is always 64 bits wide due to --with-double=64" 1>&2
+	    exit 1
+	fi
+	if test y${avr_double}${avr_long_double} = y6432; then
+	    echo "Error: double default of 64 bits from --with-double=${with_double} conflicts with default of 32 bits for long double from --with-long-double=${with_long_double}" 1>&2
+	    exit 1
+	fi
+	tm_defines="${tm_defines} WITH_DOUBLE${avr_double}"
+	tm_defines="${tm_defines} WITH_LONG_DOUBLE${avr_long_double}"
 	tmake_file="${tmake_file} avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"

@@ -723,6 +723,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
 -mbranch-cost=@var{cost} @gol
 -mcall-prologues  -mgas-isr-prologues  -mint8 @gol
+-mdouble=@var{bits} -mlong-double=@var{bits} @gol
 -mn_flash=@var{size}  -mno-interrupts @gol
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
 -mfract-convert-truncate @gol
@@ -18278,6 +18279,17 @@ integers. The default branch cost is 0.
 @opindex mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@item -mdouble=@var{bits}
+@itemx -mlong-double=@var{bits}
+@opindex mdouble
+@opindex mlong-double
+Set the size (in bits) of the @code{double} or @code{long double} type,
+respectively.  Possible values for @var{bits} are 32 an 64.
+Whether or not a specific value for @var{bits} is allowed depends on
+the @code{--with--double=} and @code{--with-long-double=}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure options}},
+and the same applies for the default values of the options.
 
 @item -mgas-isr-prologues
 @opindex mgas-isr-prologues

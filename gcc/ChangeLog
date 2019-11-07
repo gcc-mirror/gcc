@@ -1,3 +1,41 @@
+2019-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Support 64-bit double and 64-bit long double configurations.
+
+	PR target/92055
+	* config.gcc (tm_defines) [avr]: Set from --with-double=,
+	--with-long-double=.
+	* config/avr/t-multilib: Remove.
+	* config/avr/t-avr: Output of genmultilib.awk is now fully
+	dynamically generated and no more part of the repo.
+	(HAVE_DOUBLE_MULTILIB, HAVE_LONG_DOUBLE_MULTILIB): New variables.
+	Pass them down to...
+	* config/avr/genmultilib.awk: ...here and handle them.
+	* gcc/config/avr/avr.opt (-mdouble=, avr_double). New option and var.
+	(-mlong-double=, avr_long_double). New option and var.
+	* common/config/avr/avr-common.c (opts.h, diagnostic.h): Include.
+	(TARGET_OPTION_OPTIMIZATION_TABLE) <-mdouble=, -mlong-double=>:
+	Set default as requested by --with-double=
+	(TARGET_HANDLE_OPTION): Define to this...
+	(avr_handle_option): ...new hook worker.
+	* config/avr/avr.h (DOUBLE_TYPE_SIZE): Define to avr_double.
+	(LONG_DOUBLE_TYPE_SIZE): Define to avr_long_double.
+	(avr_double_lib): New proto for spec function.
+	(EXTRA_SPEC_FUNCTIONS) <double-lib>: Add.
+	(DRIVER_SELF_SPECS): Call %:double-lib.
+	* config/avr/avr.c (avr_option_override): Assert
+	sizeof(long double) >= sizeof(double) for the target.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins)
+	[__HAVE_DOUBLE_MULTILIB__, __HAVE_LONG_DOUBLE_MULTILIB__]
+	[__HAVE_DOUBLE64__, __HAVE_DOUBLE32__, __DEFAULT_DOUBLE__=]
+	[__HAVE_LONG_DOUBLE64__, __HAVE_LONG_DOUBLE32__]
+	[__HAVE_LONG_DOUBLE_IS_DOUBLE__, __DEFAULT_LONG_DOUBLE__=]:
+	New built-in define depending on --with-double=, --with-long-double=.
+	* config/avr/driver-avr.c (avr_double_lib): New spec function.
+	* doc/invoke.tex (AVR Options) <-mdouble=,-mlong-double=>: Doc.
+	* doc/install.texi (Cross-Compiler-Specific Options)
+	<--with-double=, --with-long-double=>: Doc.
+
 2019-11-07  Richard Biener  <rguenther@suse.de>
 
 	* dbgcnt.def (gimple_unroll): New.
