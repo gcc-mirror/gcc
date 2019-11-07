@@ -4353,15 +4353,18 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
    fields at NEXT_FIELD, and return it.  */
 
 static tree
-build_base_field_1 (tree t, tree basetype, tree *&next_field)
+build_base_field_1 (tree t, tree binfo, tree *&next_field)
 {
   /* Create the FIELD_DECL.  */
+  tree basetype = BINFO_TYPE (binfo);
   gcc_assert (CLASSTYPE_AS_BASE (basetype));
   tree decl = build_decl (input_location,
 			  FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
+  TREE_PRIVATE (decl) = TREE_PRIVATE (binfo);
+  TREE_PROTECTED (decl) = TREE_PROTECTED (binfo);
   if (is_empty_class (basetype))
     /* CLASSTYPE_SIZE is one byte, but the field needs to have size zero.  */
     DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = size_zero_node;
@@ -4414,7 +4417,7 @@ build_base_field (record_layout_info rli, tree binfo,
       CLASSTYPE_EMPTY_P (t) = 0;
 
       /* Create the FIELD_DECL.  */
-      decl = build_base_field_1 (t, basetype, next_field);
+      decl = build_base_field_1 (t, binfo, next_field);
 
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
@@ -4448,7 +4451,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	 aggregate bases.  */
       if (cxx_dialect >= cxx17 && !BINFO_VIRTUAL_P (binfo))
 	{
-	  tree decl = build_base_field_1 (t, basetype, next_field);
+	  tree decl = build_base_field_1 (t, binfo, next_field);
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
 	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
 	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);

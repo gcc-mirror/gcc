@@ -1,5 +1,11 @@
 2019-11-06  Jason Merrill  <jason@redhat.com>
 
+	Implement D1907R1 "structural type".
+	* tree.c (structural_type_p): New.
+	* pt.c (invalid_nontype_parm_type_p): Use it.
+	* class.c (build_base_field_1): Take binfo.  Copy TREE_PRIVATE.
+	(build_base_field): Pass binfo.
+
 	PR c++/92150 - partial specialization with class NTTP.
 	* pt.c (unify): Handle VIEW_CONVERT_EXPR.
 
