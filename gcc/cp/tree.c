@@ -4378,6 +4378,63 @@ zero_init_p (const_tree t)
   return 1;
 }
 
+/* True IFF T is a C++20 structural type (P1907R1) that can be used as a
+   non-type template parameter.  If EXPLAIN, explain why not.  */
+
+bool
+structural_type_p (tree t, bool explain)
+{
+  t = strip_array_types (t);
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
+    return true;
+  if (NULLPTR_TYPE_P (t))
+    return true;
+  if (TYPE_PTR_P (t) || TYPE_PTRMEM_P (t))
+    return true;
+  if (TYPE_REF_P (t) && !TYPE_REF_IS_RVALUE (t))
+    return true;
+  if (!CLASS_TYPE_P (t))
+    return false;
+  if (TREE_CODE (t) == UNION_TYPE)
+    {
+      if (explain)
+	inform (location_of (t), "%qT is a union", t);
+      return false;
+    }
+  if (!literal_type_p (t))
+    {
+      if (explain)
+	explain_non_literal_class (t);
+      return false;
+    }
+  if (CLASSTYPE_HAS_MUTABLE (t))
+    {
+      if (explain)
+	inform (location_of (t), "%qT has a mutable member", t);
+      return false;
+    }
+  for (tree m = next_initializable_field (TYPE_FIELDS (t)); m;
+       m = next_initializable_field (DECL_CHAIN (m)))
+    {
+      if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
+	{
+	  if (explain)
+	    inform (location_of (m), "%qD is not public", m);
+	  return false;
+	}
+      if (!structural_type_p (TREE_TYPE (m)))
+	{
+	  if (explain)
+	    {
+	      inform (location_of (m), "%qD has a non-structural type", m);
+	      structural_type_p (TREE_TYPE (m), true);
+	    }
+	  return false;
+	}
+    }
+  return true;
+}
+
 /* Handle the C++17 [[nodiscard]] attribute, which is similar to the GNU
    warn_unused_result attribute.  */
 
