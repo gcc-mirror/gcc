@@ -1,3 +1,7 @@
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.c (build_vec_delete_1): Fix a comment typo - mist -> must.
+
 2019-11-07  Jason Merrill  <jason@redhat.com>
 
 	Implement D1959R0, remove weak_equality and strong_equality.

@@ -808,7 +808,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  return;
 	}
 
-      /* And in the last case we have either mistmatch in between two virtual
+      /* And in the last case we have either mismatch in between two virtual
 	 methods or two virtual table pointers.  */
       auto_diagnostic_group d;
       if (warning_at (DECL_SOURCE_LOCATION
