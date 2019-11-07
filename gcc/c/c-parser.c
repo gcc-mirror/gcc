@@ -185,8 +185,15 @@ struct GTY(()) c_parser {
   BOOL_BITFIELD in_pragma : 1;
   /* True if we're parsing the outermost block of an if statement.  */
   BOOL_BITFIELD in_if_block : 1;
-  /* True if we want to lex an untranslated string.  */
-  BOOL_BITFIELD lex_untranslated_string : 1;
+  /* True if we want to lex a translated, joined string (for an
+     initial #pragma pch_preprocess).  Otherwise the parser is
+     responsible for concatenating strings and translating to the
+     execution character set as needed.  */
+  BOOL_BITFIELD lex_joined_string : 1;
+  /* True if, when the parser is concatenating string literals, it
+     should translate them to the execution character set (false
+     inside attributes).  */
+  BOOL_BITFIELD translate_strings_p : 1;
 
   /* Objective-C specific parser/lexer information.  */
 
@@ -253,8 +260,8 @@ c_lex_one_token (c_parser *parser, c_token *token)
 
   token->type = c_lex_with_flags (&token->value, &token->location,
 				  &token->flags,
-				  (parser->lex_untranslated_string
-				   ? C_LEX_STRING_NO_TRANSLATE : 0));
+				  (parser->lex_joined_string
+				   ? 0 : C_LEX_STRING_NO_JOIN));
   token->id_kind = C_ID_NONE;
   token->keyword = RID_MAX;
   token->pragma_kind = PRAGMA_NONE;
@@ -2481,7 +2488,6 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   location_t value_tok_loc = c_parser_peek_token (parser)->location;
   value = c_parser_expr_no_commas (parser, NULL).value;
   value_loc = EXPR_LOC_OR_LOC (value, value_tok_loc);
-  parser->lex_untranslated_string = true;
   if (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
@@ -2492,13 +2498,10 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 	case CPP_STRING32:
 	case CPP_WSTRING:
 	case CPP_UTF8STRING:
-	  string = c_parser_peek_token (parser)->value;
-	  c_parser_consume_token (parser);
-	  parser->lex_untranslated_string = false;
+	  string = c_parser_string_literal (parser, false, true).value;
 	  break;
 	default:
 	  c_parser_error (parser, "expected string literal");
-	  parser->lex_untranslated_string = false;
 	  return;
 	}
     }
@@ -4200,10 +4203,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
 
    asm-string-literal:
      string-literal
-
-   ??? At present, following the old parser, the caller needs to have
-   set lex_untranslated_string to 1.  It would be better to follow the
-   C++ parser rather than using this kludge.  */
+*/
 
 static tree
 c_parser_asm_string_literal (c_parser *parser)
@@ -4211,23 +4211,7 @@ c_parser_asm_string_literal (c_parser *parser)
   tree str;
   int save_flag = warn_overlength_strings;
   warn_overlength_strings = 0;
-  if (c_parser_next_token_is (parser, CPP_STRING))
-    {
-      str = c_parser_peek_token (parser)->value;
-      c_parser_consume_token (parser);
-    }
-  else if (c_parser_next_token_is (parser, CPP_WSTRING))
-    {
-      error_at (c_parser_peek_token (parser)->location,
-		"wide string literal in %<asm%>");
-      str = build_string (1, "");
-      c_parser_consume_token (parser);
-    }
-  else
-    {
-      c_parser_error (parser, "expected string literal");
-      str = NULL_TREE;
-    }
+  str = c_parser_string_literal (parser, false, false).value;
   warn_overlength_strings = save_flag;
   return str;
 }
@@ -4245,18 +4229,11 @@ c_parser_simple_asm_expr (c_parser *parser)
 {
   tree str;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ASM));
-  /* ??? Follow the C++ parser rather than using the
-     lex_untranslated_string kludge.  */
-  parser->lex_untranslated_string = true;
   c_parser_consume_token (parser);
   matching_parens parens;
   if (!parens.require_open (parser))
-    {
-      parser->lex_untranslated_string = false;
-      return NULL_TREE;
-    }
+    return NULL_TREE;
   str = c_parser_asm_string_literal (parser);
-  parser->lex_untranslated_string = false;
   if (!parens.require_close (parser))
     {
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
@@ -4457,7 +4434,6 @@ c_parser_gnu_attribute (c_parser *parser, tree attrs,
     c_parser_consume_token (parser);
   else
     {
-      parser->lex_untranslated_string = false;
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				 "expected %<)%>");
       return error_mark_node;
@@ -4483,20 +4459,19 @@ c_parser_gnu_attributes (c_parser *parser)
   tree attrs = NULL_TREE;
   while (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
     {
-      /* ??? Follow the C++ parser rather than using the
-	 lex_untranslated_string kludge.  */
-      parser->lex_untranslated_string = true;
+      bool save_translate_strings_p = parser->translate_strings_p;
+      parser->translate_strings_p = false;
       /* Consume the `__attribute__' keyword.  */
       c_parser_consume_token (parser);
       /* Look for the two `(' tokens.  */
       if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	{
-	  parser->lex_untranslated_string = false;
+	  parser->translate_strings_p = save_translate_strings_p;
 	  return attrs;
 	}
       if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	{
-	  parser->lex_untranslated_string = false;
+	  parser->translate_strings_p = save_translate_strings_p;
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	  return attrs;
 	}
@@ -4518,7 +4493,7 @@ c_parser_gnu_attributes (c_parser *parser)
 	c_parser_consume_token (parser);
       else
 	{
-	  parser->lex_untranslated_string = false;
+	  parser->translate_strings_p = save_translate_strings_p;
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	  return attrs;
@@ -4527,12 +4502,12 @@ c_parser_gnu_attributes (c_parser *parser)
 	c_parser_consume_token (parser);
       else
 	{
-	  parser->lex_untranslated_string = false;
+	  parser->translate_strings_p = save_translate_strings_p;
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	  return attrs;
 	}
-      parser->lex_untranslated_string = false;
+      parser->translate_strings_p = save_translate_strings_p;
     }
 
   return attrs;
@@ -6487,9 +6462,6 @@ c_parser_asm_statement (c_parser *parser)
   bool is_inline = (inline_loc != UNKNOWN_LOCATION);
   bool is_goto = (goto_loc != UNKNOWN_LOCATION);
 
-  /* ??? Follow the C++ parser rather than using the
-     lex_untranslated_string kludge.  */
-  parser->lex_untranslated_string = true;
   ret = NULL;
 
   matching_parens parens;
@@ -6577,7 +6549,6 @@ c_parser_asm_statement (c_parser *parser)
 					clobbers, labels, simple, is_inline));
 
  error:
-  parser->lex_untranslated_string = false;
   return ret;
 
  error_close_paren:
@@ -6628,16 +6599,11 @@ c_parser_asm_operands (c_parser *parser)
       str = c_parser_asm_string_literal (parser);
       if (str == NULL_TREE)
 	return NULL_TREE;
-      parser->lex_untranslated_string = false;
       matching_parens parens;
       if (!parens.require_open (parser))
-	{
-	  parser->lex_untranslated_string = true;
-	  return NULL_TREE;
-	}
+	return NULL_TREE;
       expr = c_parser_expression (parser);
       mark_exp_read (expr.value);
-      parser->lex_untranslated_string = true;
       if (!parens.require_close (parser))
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
@@ -6716,6 +6682,185 @@ c_parser_asm_goto_operands (c_parser *parser)
       else
 	return nreverse (list);
     }
+}
+
+/* Parse a possibly concatenated sequence of string literals.
+   TRANSLATE says whether to translate them to the execution character
+   set; WIDE_OK says whether any kind of prefixed string literal is
+   permitted in this context.  This code is based on that in
+   lex_string.  */
+
+struct c_expr
+c_parser_string_literal (c_parser *parser, bool translate, bool wide_ok)
+{
+  struct c_expr ret;
+  size_t count;
+  struct obstack str_ob;
+  struct obstack loc_ob;
+  cpp_string str, istr, *strs;
+  c_token *tok;
+  location_t loc, last_tok_loc;
+  enum cpp_ttype type;
+  tree value, string_tree;
+
+  tok = c_parser_peek_token (parser);
+  loc = tok->location;
+  last_tok_loc = linemap_resolve_location (line_table, loc,
+					   LRK_MACRO_DEFINITION_LOCATION,
+					   NULL);
+  type = tok->type;
+  switch (type)
+    {
+    case CPP_STRING:
+    case CPP_WSTRING:
+    case CPP_STRING16:
+    case CPP_STRING32:
+    case CPP_UTF8STRING:
+      string_tree = tok->value;
+      break;
+
+    default:
+      c_parser_error (parser, "expected string literal");
+      ret.set_error ();
+      ret.value = NULL_TREE;
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL_TREE;
+      return ret;
+    }
+
+  /* Try to avoid the overhead of creating and destroying an obstack
+     for the common case of just one string.  */
+  switch (c_parser_peek_2nd_token (parser)->type)
+    {
+    default:
+      c_parser_consume_token (parser);
+      str.text = (const unsigned char *) TREE_STRING_POINTER (string_tree);
+      str.len = TREE_STRING_LENGTH (string_tree);
+      count = 1;
+      strs = &str;
+      break;
+
+    case CPP_STRING:
+    case CPP_WSTRING:
+    case CPP_STRING16:
+    case CPP_STRING32:
+    case CPP_UTF8STRING:
+      gcc_obstack_init (&str_ob);
+      gcc_obstack_init (&loc_ob);
+      count = 0;
+      do
+	{
+	  c_parser_consume_token (parser);
+	  count++;
+	  str.text = (const unsigned char *) TREE_STRING_POINTER (string_tree);
+	  str.len = TREE_STRING_LENGTH (string_tree);
+	  if (type != tok->type)
+	    {
+	      if (type == CPP_STRING)
+		type = tok->type;
+	      else if (tok->type != CPP_STRING)
+		error ("unsupported non-standard concatenation "
+		       "of string literals");
+	    }
+	  obstack_grow (&str_ob, &str, sizeof (cpp_string));
+	  obstack_grow (&loc_ob, &last_tok_loc, sizeof (location_t));
+	  tok = c_parser_peek_token (parser);
+	  string_tree = tok->value;
+	  last_tok_loc
+	    = linemap_resolve_location (line_table, tok->location,
+					LRK_MACRO_DEFINITION_LOCATION, NULL);
+	}
+      while (tok->type == CPP_STRING
+	     || tok->type == CPP_WSTRING
+	     || tok->type == CPP_STRING16
+	     || tok->type == CPP_STRING32
+	     || tok->type == CPP_UTF8STRING);
+      strs = (cpp_string *) obstack_finish (&str_ob);
+    }
+
+  if (count > 1 && !in_system_header_at (input_location))
+    warning (OPT_Wtraditional,
+	     "traditional C rejects string constant concatenation");
+
+  if ((type == CPP_STRING || wide_ok)
+      && ((translate
+	  ? cpp_interpret_string : cpp_interpret_string_notranslate)
+	  (parse_in, strs, count, &istr, type)))
+    {
+      value = build_string (istr.len, (const char *) istr.text);
+      free (CONST_CAST (unsigned char *, istr.text));
+      if (count > 1)
+	{
+	  location_t *locs = (location_t *) obstack_finish (&loc_ob);
+	  gcc_assert (g_string_concat_db);
+	  g_string_concat_db->record_string_concatenation (count, locs);
+	}
+    }
+  else
+    {
+      if (type != CPP_STRING && !wide_ok)
+	{
+	  error_at (loc, "a wide string is invalid in this context");
+	  type = CPP_STRING;
+	}
+      /* Callers cannot generally handle error_mark_node in this
+	 context, so return the empty string instead.  An error has
+	 been issued, either above or from cpp_interpret_string.  */
+      switch (type)
+	{
+	default:
+	case CPP_STRING:
+	case CPP_UTF8STRING:
+	  value = build_string (1, "");
+	  break;
+	case CPP_STRING16:
+	  value = build_string (TYPE_PRECISION (char16_type_node)
+				/ TYPE_PRECISION (char_type_node),
+				"\0");  /* char16_t is 16 bits */
+	  break;
+	case CPP_STRING32:
+	  value = build_string (TYPE_PRECISION (char32_type_node)
+				/ TYPE_PRECISION (char_type_node),
+				"\0\0\0");  /* char32_t is 32 bits */
+	  break;
+	case CPP_WSTRING:
+	  value = build_string (TYPE_PRECISION (wchar_type_node)
+				/ TYPE_PRECISION (char_type_node),
+				"\0\0\0");  /* widest supported wchar_t
+					       is 32 bits */
+	  break;
+        }
+    }
+
+  switch (type)
+    {
+    default:
+    case CPP_STRING:
+    case CPP_UTF8STRING:
+      TREE_TYPE (value) = char_array_type_node;
+      break;
+    case CPP_STRING16:
+      TREE_TYPE (value) = char16_array_type_node;
+      break;
+    case CPP_STRING32:
+      TREE_TYPE (value) = char32_array_type_node;
+      break;
+    case CPP_WSTRING:
+      TREE_TYPE (value) = wchar_array_type_node;
+    }
+  value = fix_string_type (value);
+
+  if (count > 1)
+    {
+      obstack_free (&str_ob, 0);
+      obstack_free (&loc_ob, 0);
+    }
+
+  ret.value = value;
+  ret.original_code = STRING_CST;
+  ret.original_type = NULL_TREE;
+  set_c_expr_source_range (&ret, get_range_from_loc (line_table, loc));
+  return ret;
 }
 
 /* Parse an expression other than a compound expression; that is, an
@@ -7700,14 +7845,14 @@ c_parser_has_attribute_expression (c_parser *parser)
       return result;
     }
 
-  parser->lex_untranslated_string = true;
+  bool save_translate_strings_p = parser->translate_strings_p;
 
   location_t atloc = c_parser_peek_token (parser)->location;
   /* Parse a single attribute.  Require no leading comma and do not
      allow empty attributes.  */
   tree attr = c_parser_gnu_attribute (parser, NULL_TREE, false, false);
 
-  parser->lex_untranslated_string = false;
+  parser->translate_strings_p = save_translate_strings_p;
 
   if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
     c_parser_consume_token (parser);
@@ -8202,10 +8347,8 @@ c_parser_postfix_expression (c_parser *parser)
     case CPP_STRING32:
     case CPP_WSTRING:
     case CPP_UTF8STRING:
-      expr.value = c_parser_peek_token (parser)->value;
-      set_c_expr_source_range (&expr, tok_range);
-      expr.original_code = STRING_CST;
-      c_parser_consume_token (parser);
+      expr = c_parser_string_literal (parser, parser->translate_strings_p,
+				      true);
       break;
     case CPP_OBJC_STRING:
       gcc_assert (c_dialect_objc ());
@@ -11687,6 +11830,8 @@ pragma_lex (tree *value, location_t *loc)
 
   if (ret == CPP_PRAGMA_EOL || ret == CPP_EOF)
     ret = CPP_EOF;
+  else if (ret == CPP_STRING)
+    *value = c_parser_string_literal (the_parser, false, false).value;
   else
     {
       if (ret == CPP_KEYWORD)
@@ -11702,6 +11847,7 @@ c_parser_pragma_pch_preprocess (c_parser *parser)
 {
   tree name = NULL;
 
+  parser->lex_joined_string = true;
   c_parser_consume_pragma (parser);
   if (c_parser_next_token_is (parser, CPP_STRING))
     {
@@ -11711,6 +11857,7 @@ c_parser_pragma_pch_preprocess (c_parser *parser)
   else
     c_parser_error (parser, "expected string literal");
   c_parser_skip_to_pragma_eol (parser);
+  parser->lex_joined_string = false;
 
   if (name)
     c_common_pch_pragma (parse_in, TREE_STRING_POINTER (name));
@@ -20783,6 +20930,7 @@ c_parse_file (void)
   c_parser tparser;
 
   memset (&tparser, 0, sizeof tparser);
+  tparser.translate_strings_p = true;
   tparser.tokens = &tparser.tokens_buf[0];
   the_parser = &tparser;
 

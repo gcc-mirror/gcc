@@ -1,3 +1,10 @@
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/asm-wide-1.c, gcc.dg/diagnostic-token-ranges.c,
+	gcc.dg/plugin/diagnostic-test-string-literals-1.c,
+	gcc.dg/plugin/diagnostic-test-string-literals-2.c: Update expected
+	diagnostics.
+
 2019-11-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/framework-1.c: Adjust test header path.
