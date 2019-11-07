@@ -1,3 +1,23 @@
+2019-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/70929
+	* cif-code.def (MISMATCHED_ARGUMENTS): Removed.
+	* cgraph.h (gimple_check_call_matching_types): Remove
+	* cgraph.c (gimple_check_call_args): Likewise.
+	(gimple_check_call_matching_types): Likewise.
+	(symbol_table::create_edge): Do not call
+	gimple_check_call_matching_types.
+	(cgraph_edge::make_direct): Likewise.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	* value-prof.h (check_ic_target): Remove.
+	* value-prof.c (check_ic_target): Remove.
+	(gimple_ic_transform): Do nat call check_ic_target.
+	* auto-profile.c (function_instance::find_icall_target_map): Likewise.
+	(afdo_indirect_call): Likewise.
+	* ipa-prop.c (update_indirect_edges_after_inlining): Do not call
+	gimple_check_call_matching_types.
+	* ipa-inline.c (early_inliner): Likewise.
+
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_<simd32_op>): New define_expand.
