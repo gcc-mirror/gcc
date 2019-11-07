@@ -1,3 +1,10 @@
+2019-11-07  Richard Biener  <rguenther@suse.de>
+
+	* dbgcnt.def (gimple_unroll): New.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Check
+	gimple_unroll debug counter before applying transform.
+	(try_peel_loop): Likewise.
+
 2019-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* ira.c (setup_alloc_regs): Setup no_unit_alloc_regs for
