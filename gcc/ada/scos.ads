@@ -162,6 +162,8 @@ package SCOs is
    --      R        extended RETURN statement
    --      S        SELECT statement
    --      W        WHILE loop statement (from WHILE to end of condition)
+   --      X        body of a degenerate subprogram (null procedure or
+   --               expression function)
 
    --      Note: for I and W, condition above is in the RM syntax sense (this
    --      condition is a decision in SCO terminology).
