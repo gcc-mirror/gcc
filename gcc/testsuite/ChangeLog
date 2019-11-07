@@ -1,3 +1,8 @@
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/tm/attrs-1.c: New test.
+	* gcc.dg/tm/props-5.c: New test.  Based on props-4.c.
+
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/spaceship-scalar1-neg.C: Change dg-do from run to

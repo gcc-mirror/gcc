@@ -4308,6 +4308,70 @@ c_parser_gnu_attribute_any_word (c_parser *parser)
   return attr_name;
 }
 
+/* Parse attribute arguments.  This is a common form of syntax
+   covering all currently valid GNU and standard attributes.
+
+   gnu-attribute-arguments:
+     identifier
+     identifier , nonempty-expr-list
+     expr-list
+
+   where the "identifier" must not be declared as a type.  ??? Why not
+   allow identifiers declared as types to start the arguments?  */
+
+static tree
+c_parser_attribute_arguments (c_parser *parser, bool takes_identifier)
+{
+  vec<tree, va_gc> *expr_list;
+  tree attr_args;
+  /* Parse the attribute contents.  If they start with an
+     identifier which is followed by a comma or close
+     parenthesis, then the arguments start with that
+     identifier; otherwise they are an expression list.
+     In objective-c the identifier may be a classname.  */
+  if (c_parser_next_token_is (parser, CPP_NAME)
+      && (c_parser_peek_token (parser)->id_kind == C_ID_ID
+	  || (c_dialect_objc ()
+	      && c_parser_peek_token (parser)->id_kind
+	      == C_ID_CLASSNAME))
+      && ((c_parser_peek_2nd_token (parser)->type == CPP_COMMA)
+	  || (c_parser_peek_2nd_token (parser)->type
+	      == CPP_CLOSE_PAREN))
+      && (takes_identifier
+	  || (c_dialect_objc ()
+	      && c_parser_peek_token (parser)->id_kind
+	      == C_ID_CLASSNAME)))
+    {
+      tree arg1 = c_parser_peek_token (parser)->value;
+      c_parser_consume_token (parser);
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	attr_args = build_tree_list (NULL_TREE, arg1);
+      else
+	{
+	  tree tree_list;
+	  c_parser_consume_token (parser);
+	  expr_list = c_parser_expr_list (parser, false, true,
+					  NULL, NULL, NULL, NULL);
+	  tree_list = build_tree_list_vec (expr_list);
+	  attr_args = tree_cons (NULL_TREE, arg1, tree_list);
+	  release_tree_vector (expr_list);
+	}
+    }
+  else
+    {
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	attr_args = NULL_TREE;
+      else
+	{
+	  expr_list = c_parser_expr_list (parser, false, true,
+					  NULL, NULL, NULL, NULL);
+	  attr_args = build_tree_list_vec (expr_list);
+	  release_tree_vector (expr_list);
+	}
+    }
+  return attr_args;
+}
+
 /* Parse (possibly empty) gnu-attributes.  This is a GNU extension.
 
    gnu-attributes:
@@ -4324,16 +4388,12 @@ c_parser_gnu_attribute_any_word (c_parser *parser)
    gnu-attrib:
      empty
      any-word
-     any-word ( identifier )
-     any-word ( identifier , nonempty-expr-list )
-     any-word ( expr-list )
+     any-word ( gnu-attribute-arguments )
 
-   where the "identifier" must not be declared as a type, and
-   "any-word" may be any identifier (including one declared as a
+   where "any-word" may be any identifier (including one declared as a
    type), a reserved word storage class specifier, type specifier or
    type qualifier.  ??? This still leaves out most reserved keywords
-   (following the old parser), shouldn't we include them, and why not
-   allow identifiers declared as types to start the arguments?
+   (following the old parser), shouldn't we include them?
    When EXPECT_COMMA is true, expect the attribute to be preceded
    by a comma and fail if it isn't.
    When EMPTY_OK is true, allow and consume any number of consecutive
@@ -4381,53 +4441,9 @@ c_parser_gnu_attribute (c_parser *parser, tree attrs,
     }
   c_parser_consume_token (parser);
 
-  vec<tree, va_gc> *expr_list;
-  tree attr_args;
-  /* Parse the attribute contents.  If they start with an
-     identifier which is followed by a comma or close
-     parenthesis, then the arguments start with that
-     identifier; otherwise they are an expression list.
-     In objective-c the identifier may be a classname.  */
-  if (c_parser_next_token_is (parser, CPP_NAME)
-      && (c_parser_peek_token (parser)->id_kind == C_ID_ID
-	  || (c_dialect_objc ()
-	      && c_parser_peek_token (parser)->id_kind
-	      == C_ID_CLASSNAME))
-      && ((c_parser_peek_2nd_token (parser)->type == CPP_COMMA)
-	  || (c_parser_peek_2nd_token (parser)->type
-	      == CPP_CLOSE_PAREN))
-      && (attribute_takes_identifier_p (attr_name)
-	  || (c_dialect_objc ()
-	      && c_parser_peek_token (parser)->id_kind
-	      == C_ID_CLASSNAME)))
-    {
-      tree arg1 = c_parser_peek_token (parser)->value;
-      c_parser_consume_token (parser);
-      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	attr_args = build_tree_list (NULL_TREE, arg1);
-      else
-	{
-	  tree tree_list;
-	  c_parser_consume_token (parser);
-	  expr_list = c_parser_expr_list (parser, false, true,
-					  NULL, NULL, NULL, NULL);
-	  tree_list = build_tree_list_vec (expr_list);
-	  attr_args = tree_cons (NULL_TREE, arg1, tree_list);
-	  release_tree_vector (expr_list);
-	}
-    }
-  else
-    {
-      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	attr_args = NULL_TREE;
-      else
-	{
-	  expr_list = c_parser_expr_list (parser, false, true,
-					  NULL, NULL, NULL, NULL);
-	  attr_args = build_tree_list_vec (expr_list);
-	  release_tree_vector (expr_list);
-	}
-    }
+  tree attr_args
+    = c_parser_attribute_arguments (parser,
+				    attribute_takes_identifier_p (attr_name));
 
   attr = build_tree_list (attr_name, attr_args);
   if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
@@ -4511,6 +4527,202 @@ c_parser_gnu_attributes (c_parser *parser)
     }
 
   return attrs;
+}
+
+/* Parse an optional balanced token sequence.
+
+   balanced-token-sequence:
+     balanced-token
+     balanced-token-sequence balanced-token
+
+   balanced-token:
+     ( balanced-token-sequence[opt] )
+     [ balanced-token-sequence[opt] ]
+     { balanced-token-sequence[opt] }
+     any token other than ()[]{}
+*/
+
+static void
+c_parser_balanced_token_sequence (c_parser *parser)
+{
+  while (true)
+    {
+      c_token *token = c_parser_peek_token (parser);
+      switch (token->type)
+	{
+	case CPP_OPEN_BRACE:
+	  {
+	    matching_braces braces;
+	    braces.consume_open (parser);
+	    c_parser_balanced_token_sequence (parser);
+	    braces.require_close (parser);
+	    break;
+	  }
+
+	case CPP_OPEN_PAREN:
+	  {
+	    matching_parens parens;
+	    parens.consume_open (parser);
+	    c_parser_balanced_token_sequence (parser);
+	    parens.require_close (parser);
+	    break;
+	  }
+
+	case CPP_OPEN_SQUARE:
+	  c_parser_consume_token (parser);
+	  c_parser_balanced_token_sequence (parser);
+	  c_parser_require (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+	  break;
+
+	case CPP_CLOSE_BRACE:
+	case CPP_CLOSE_PAREN:
+	case CPP_CLOSE_SQUARE:
+	case CPP_EOF:
+	  return;
+
+	default:
+	  c_parser_consume_token (parser);
+	  break;
+	}
+    }
+}
+
+/* Parse standard (C2X) attributes (including GNU attributes in the
+   gnu:: namespace).
+
+   attribute-specifier-sequence:
+     attribute-specifier-sequence[opt] attribute-specifier
+
+   attribute-specifier:
+     [ [ attribute-list ] ]
+
+   attribute-list:
+     attribute[opt]
+     attribute-list, attribute[opt]
+
+   attribute:
+     attribute-token attribute-argument-clause[opt]
+
+   attribute-token:
+     standard-attribute
+     attribute-prefixed-token
+
+   standard-attribute:
+     identifier
+
+   attribute-prefixed-token:
+     attribute-prefix :: identifier
+
+   attribute-prefix:
+     identifier
+
+   attribute-argument-clause:
+     ( balanced-token-sequence[opt] )
+
+   Keywords are accepted as identifiers for this purpose.
+*/
+
+static tree
+c_parser_std_attribute (c_parser *parser)
+{
+  c_token *token = c_parser_peek_token (parser);
+  tree ns, name, attribute;
+
+  /* Parse the attribute-token.  */
+  if (token->type != CPP_NAME && token->type != CPP_KEYWORD)
+    {
+      c_parser_error (parser, "expected identifier");
+      return error_mark_node;
+    }
+  name = canonicalize_attr_name (token->value);
+  c_parser_consume_token (parser);
+  if (c_parser_next_token_is (parser, CPP_SCOPE))
+    {
+      ns = name;
+      c_parser_consume_token (parser);
+      token = c_parser_peek_token (parser);
+      if (token->type != CPP_NAME && token->type != CPP_KEYWORD)
+	{
+	  c_parser_error (parser, "expected identifier");
+	  return error_mark_node;
+	}
+      name = canonicalize_attr_name (token->value);
+      c_parser_consume_token (parser);
+    }
+  else
+    ns = NULL_TREE;
+  attribute = build_tree_list (build_tree_list (ns, name), NULL_TREE);
+
+  /* Parse the arguments, if any.  */
+  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
+    return attribute;
+  location_t open_loc = c_parser_peek_token (parser)->location;
+  matching_parens parens;
+  parens.consume_open (parser);
+  const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (attribute));
+  if ((as && as->max_length == 0)
+      /* Special-case the transactional-memory attribute "outer",
+	 which is specially handled but not registered as an
+	 attribute, to avoid allowing arbitrary balanced token
+	 sequences as arguments.  */
+      || is_attribute_p ("outer", name))
+    {
+      error_at (open_loc, "%qE attribute does not take any arguments", name);
+      parens.skip_until_found_close (parser);
+      return error_mark_node;
+    }
+  if (as)
+    {
+      bool takes_identifier
+	= (ns != NULL_TREE
+	   && strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0
+	   && attribute_takes_identifier_p (name));
+      TREE_VALUE (attribute)
+	= c_parser_attribute_arguments (parser, takes_identifier);
+    }
+  else
+    c_parser_balanced_token_sequence (parser);
+  parens.require_close (parser);
+  return attribute;
+}
+
+static tree
+c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
+    return NULL_TREE;
+  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
+    {
+      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+      return NULL_TREE;
+    }
+  if (!for_tm)
+    pedwarn_c11 (loc, OPT_Wpedantic,
+		 "ISO C does not support %<[[]]%> attributes before C2X");
+  tree attributes = NULL_TREE;
+  while (true)
+    {
+      c_token *token = c_parser_peek_token (parser);
+      if (token->type == CPP_CLOSE_SQUARE)
+	break;
+      if (token->type == CPP_COMMA)
+	{
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+      tree attribute = c_parser_std_attribute (parser);
+      if (attribute != error_mark_node)
+	{
+	  TREE_CHAIN (attribute) = attributes;
+	  attributes = attribute;
+	}
+      if (c_parser_next_token_is_not (parser, CPP_COMMA))
+	break;
+    }
+  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+  return nreverse (attributes);
 }
 
 /* Parse a type name (C90 6.5.5, C99 6.7.6, C11 6.7.7).  ALIGNAS_OK
@@ -20708,39 +20920,18 @@ c_parser_omp_threadprivate (c_parser *parser)
 
    transaction-attribute:
      gnu-attributes
-     [ [ any-word ] ]
-
-   The transactional memory language description is written for C++,
-   and uses the C++0x attribute syntax.  For compatibility, allow the
-   bracket style for transactions in C as well.  */
+     attribute-specifier
+*/
 
 static tree
 c_parser_transaction_attributes (c_parser *parser)
 {
-  tree attr_name, attr = NULL;
-
   if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
     return c_parser_gnu_attributes (parser);
 
   if (!c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
     return NULL_TREE;
-  c_parser_consume_token (parser);
-  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
-    goto error1;
-
-  attr_name = c_parser_gnu_attribute_any_word (parser);
-  if (attr_name)
-    {
-      c_parser_consume_token (parser);
-      attr = build_tree_list (attr_name, NULL_TREE);
-    }
-  else
-    c_parser_error (parser, "expected identifier");
-
-  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
- error1:
-  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
-  return attr;
+  return c_parser_std_attribute_specifier (parser, true);
 }
 
 /* Parse a __transaction_atomic or __transaction_relaxed statement
