@@ -1,3 +1,11 @@
+2018-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* simplify-rtx.c (comparison_to_mask): New function.
+	(mask_to_comparison): New function.
+	(simplify_logical_relational_operation): New function.
+	(simplify_binary_operation_1): Call
+	simplify_logical_relational_operation.
+
 2019-11-07  Peter Bergner <bergner@linux.ibm.com>
 
 	PR other/92090
