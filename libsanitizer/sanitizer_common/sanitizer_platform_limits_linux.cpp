@@ -26,9 +26,12 @@
 
 // With old kernels (and even new kernels on powerpc) asm/stat.h uses types that
 // are not defined anywhere in userspace headers. Fake them. This seems to work
-// fine with newer headers, too.
+// fine with newer headers, too.  Beware that with <sys/stat.h>, struct stat
+// takes the form of struct stat64 on 32-bit platforms if _FILE_OFFSET_BITS=64.
+// Also, for some platforms (e.g. mips) there are additional members in the
+// <sys/stat.h> struct stat:s.
 #include <linux/posix_types.h>
-#if defined(__x86_64__) ||  defined(__mips__)
+#if defined(__x86_64__)
 #include <sys/stat.h>
 #else
 #define ino_t __kernel_ino_t

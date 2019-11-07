@@ -1,5 +1,6 @@
 #include "tsan_ppc_regs.h"
 
+        .machine altivec
         .section .text
         .hidden __tsan_setjmp
         .globl _setjmp
