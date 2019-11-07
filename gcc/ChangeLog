@@ -1,3 +1,21 @@
+2019-11-07  Feng Xue <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/89134
+	* doc/invoke.texi (min-loop-cond-split-prob): Document new --params.
+	* params.def: Add min-loop-cond-split-prob.
+	* tree-ssa-loop-split.c (split_loop): Remove niter parameter, move some
+	outside checks on loop into the function.
+	(split_info): New class.
+	(find_vdef_in_loop, get_control_equiv_head_block): New functions.
+	(find_control_dep_blocks, vuse_semi_invariant_p): Likewise.
+	(ssa_semi_invariant_p, loop_iter_phi_semi_invariant_p): Likewise.
+	(control_dep_semi_invariant_p, stmt_semi_invariant_p_1): Likewise.
+	(stmt_semi_invariant_p, branch_removable_p): Likewise.
+	(get_cond_invariant_branch, compute_added_num_insns): Likewise.
+	(get_cond_branch_to_split_loop, do_split_loop_on_cond): Likewise.
+	(split_loop_on_cond): Likewise.
+	(tree_ssa_split_loops): Add loop split on conditional statement.
+
 2019-11-07  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.md ("*cstorecc<mode>_z13"): New insn_and_split
