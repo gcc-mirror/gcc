@@ -1047,8 +1047,7 @@
     return 1;
 
   /* Allow any integer constant.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && CONST_SCALAR_INT_P (op))
+  if (SCALAR_INT_MODE_P (mode) && CONST_SCALAR_INT_P (op))
     return 1;
 
   /* Allow easy vector constants.  */
