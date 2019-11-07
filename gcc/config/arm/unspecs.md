@@ -130,6 +130,8 @@
   UNSPEC_SMLALDX	; Represent the SMLALDX operation.
   UNSPEC_SMLSLD		; Represent the SMLSLD operation.
   UNSPEC_SMLSLDX	; Represent the SMLSLDX operation.
+  UNSPEC_SMLAWB		; Represent the SMLAWB operation.
+  UNSPEC_SMLAWT		; Represent the SMLAWT operation.
 ])
 
 

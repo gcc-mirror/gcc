@@ -499,6 +499,50 @@ __qdbl (int32_t __x)
 {
   return __qadd (__x, __x);
 }
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlabb (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlabb (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlatb (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlatb (__a, __b, __c);
+}
+
+/* smlatb is equivalent to smlabt with the two multiplication operands
+   swapped around.  */
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlabt (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __smlatb (__b, __a, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlatt (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlatt (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlawb (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlawb (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlawt (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlawt (__a, __b, __c);
+}
 #endif
 
 #pragma GCC push_options
