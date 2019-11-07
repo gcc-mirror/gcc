@@ -1,4 +1,9 @@
-2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+2019-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (validate_condition_mode): Don't assert for
+	valid conditions.
+
+2019-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-utils.c (ipa_merge_profiles): Fix fprintf format string
 	typo - mistmatch -> mismatch.
