@@ -5865,6 +5865,18 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
       reduc_chain_length++;
     }
 
+  /* For lane-reducing ops we're reducing the number of reduction PHIs
+     which means the only use of that may be in the lane-reducing operation.  */
+  if (lane_reduc_code_p
+      && reduc_chain_length != 1
+      && !only_slp_reduc_chain)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "lane-reducing reduction with extra stmts.\n");
+      return false;
+    }
+
   reduc_def = PHI_RESULT (reduc_def_phi);
   for (i = 0; i < op_type; i++)
     {
