@@ -1,3 +1,8 @@
+2019-11-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md ("*cstorecc<mode>_z13"): New insn_and_split
+	pattern.
+
 2019-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92405
