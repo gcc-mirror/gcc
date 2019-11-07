@@ -446,6 +446,8 @@
 (define_int_iterator SIMD32_DIMODE [UNSPEC_SMLALD UNSPEC_SMLALDX
 				    UNSPEC_SMLSLD UNSPEC_SMLSLDX])
 
+(define_int_iterator SMLAWBT [UNSPEC_SMLAWB UNSPEC_SMLAWT])
+
 (define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
 
 (define_int_iterator VFM_LANE_AS [UNSPEC_VFMA_LANE UNSPEC_VFMS_LANE])
@@ -1127,3 +1129,5 @@
 
 (define_int_attr opsuffix [(UNSPEC_DOT_S "s8")
 			   (UNSPEC_DOT_U "u8")])
+
+(define_int_attr smlaw_op [(UNSPEC_SMLAWB "smlawb") (UNSPEC_SMLAWT "smlawt")])

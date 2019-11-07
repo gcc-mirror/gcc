@@ -1,3 +1,24 @@
+2019-11-07  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_smlabb_setq): New define_insn.
+	(arm_smlabb): New define_expand.
+	(*maddhisi4tb): Rename to...
+	(maddhisi4tb): ... This.
+	(*maddhisi4tt): Rename to...
+	(maddhisi4tt): ... This.
+	(arm_smlatb_setq): New define_insn.
+	(arm_smlatb): New define_expand.
+	(arm_smlatt_setq): New define_insn.
+	(arm_smlatt): New define_expand.
+	(arm_<smlaw_op><add_clobber_name>_insn): New define_insn.
+	(arm_<smlaw_op>): New define_expand.
+	* config/arm/arm_acle.h (__smlabb, __smlatb, __smlabt, __smlatt,
+	__smlawb, __smlawt): Define.
+	* config/arm_acle_builtins.def: Define builtins for the above.
+	* config/arm/iterators.md (SMLAWBT): New int_iterator.
+	(slaw_op): New int_attribute.
+	* config/arm/unspecs.md (UNSPEC_SMLAWB, UNSPEC_SMLAWT): Define.
+
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_<ss_op>): New define_expand.
