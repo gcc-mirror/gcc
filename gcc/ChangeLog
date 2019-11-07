@@ -1,5 +1,12 @@
 2019-11-07  Martin Liska  <mliska@suse.cz>
 
+	PR c++/92354
+	* cgraph.c (delete_function_version): Clear global
+	variable version_info_node if equal to deleted
+	function.
+
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
 	* fold-const.c (operand_compare::operand_equal_p): Add comparison
 	of CONSTRUCTOR_NO_CLEARING.
 	(operand_compare::hash_operand): Likewise.
