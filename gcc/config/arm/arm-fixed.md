@@ -28,11 +28,22 @@
    (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "alu_sreg")])
 
-(define_insn "add<mode>3"
+(define_expand "add<mode>3"
+  [(set (match_operand:ADDSUB 0 "s_register_operand")
+	(plus:ADDSUB (match_operand:ADDSUB 1 "s_register_operand")
+		     (match_operand:ADDSUB 2 "s_register_operand")))]
+  "TARGET_INT_SIMD"
+  {
+    if (ARM_GE_BITS_READ)
+      FAIL;
+  }
+)
+
+(define_insn "*arm_add<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
 	(plus:ADDSUB (match_operand:ADDSUB 1 "s_register_operand" "r")
 		     (match_operand:ADDSUB 2 "s_register_operand" "r")))]
-  "TARGET_INT_SIMD"
+  "TARGET_INT_SIMD && !ARM_GE_BITS_READ"
   "sadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_dsp_reg")])
@@ -76,11 +87,22 @@
    (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "alu_sreg")])
 
-(define_insn "sub<mode>3"
+(define_expand "sub<mode>3"
+  [(set (match_operand:ADDSUB 0 "s_register_operand")
+	(minus:ADDSUB (match_operand:ADDSUB 1 "s_register_operand")
+		     (match_operand:ADDSUB 2 "s_register_operand")))]
+  "TARGET_INT_SIMD"
+  {
+    if (ARM_GE_BITS_READ)
+      FAIL;
+  }
+)
+
+(define_insn "*arm_sub<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
 	(minus:ADDSUB (match_operand:ADDSUB 1 "s_register_operand" "r")
 		      (match_operand:ADDSUB 2 "s_register_operand" "r")))]
-  "TARGET_INT_SIMD"
+  "TARGET_INT_SIMD && !ARM_GE_BITS_READ"
   "ssub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_dsp_reg")])

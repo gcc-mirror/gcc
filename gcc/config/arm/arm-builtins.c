@@ -3370,6 +3370,13 @@ arm_check_builtin_call (location_t , vec<location_t> , tree fndecl,
 	  = tree_cons (get_identifier ("acle qbit"), NULL_TREE,
 		       DECL_ATTRIBUTES (cfun->decl));
     }
+  if (fcode == ARM_BUILTIN_sel)
+    {
+      if (cfun && cfun->decl)
+	DECL_ATTRIBUTES (cfun->decl)
+	  = tree_cons (get_identifier ("acle gebits"), NULL_TREE,
+		       DECL_ATTRIBUTES (cfun->decl));
+    }
   return true;
 }
 

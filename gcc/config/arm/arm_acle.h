@@ -431,6 +431,97 @@ __smlsldx (int16x2_t __a, int16x2_t __b, int64_t __c)
   return __builtin_arm_smlsldx (__a, __b, __c);
 }
 
+__extension__ extern __inline uint8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sel (uint8x4_t __a, uint8x4_t __b)
+{
+  return __builtin_arm_sel (__a, __b);
+}
+
+__extension__ extern __inline int8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sadd8 (int8x4_t __a, int8x4_t __b)
+{
+  return __builtin_arm_sadd8 (__a, __b);
+}
+
+__extension__ extern __inline int8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__ssub8 (int8x4_t __a, int8x4_t __b)
+{
+  return __builtin_arm_ssub8 (__a, __b);
+}
+
+__extension__ extern __inline uint8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__uadd8 (uint8x4_t __a, uint8x4_t __b)
+{
+  return __builtin_arm_uadd8 (__a, __b);
+}
+
+__extension__ extern __inline uint8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__usub8 (uint8x4_t __a, uint8x4_t __b)
+{
+  return __builtin_arm_usub8 (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sadd16 (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_sadd16 (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sasx (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_sasx (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__ssax (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_ssax (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__ssub16 (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_ssub16 (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__uadd16 (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_uadd16 (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__uasx (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_uasx (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__usax (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_usax (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__usub16 (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_usub16 (__a, __b);
+}
+
 #endif
 
 #ifdef __ARM_FEATURE_SAT

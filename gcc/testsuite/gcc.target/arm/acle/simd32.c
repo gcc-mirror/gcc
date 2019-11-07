@@ -276,3 +276,99 @@ test_smlsldx (int16x2_t a, int16x2_t b, int64_t c)
 }
 
 /* { dg-final { scan-assembler-times "\tsmlsldx\t...?, ...?, ...?, ...?" 1 } } */
+
+int8x4_t
+test_sadd8 (int8x4_t a, int8x4_t b)
+{
+  return __sadd8 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tsadd8\t...?, ...?, ...?" 1 } } */
+
+int8x4_t
+test_ssub8 (int8x4_t a, int8x4_t b)
+{
+  return __ssub8 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tssub8\t...?, ...?, ...?" 1 } } */
+
+uint8x4_t
+test_uadd8 (uint8x4_t a, uint8x4_t b)
+{
+  return __uadd8 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tuadd8\t...?, ...?, ...?" 1 } } */
+
+uint8x4_t
+test_usub8 (uint8x4_t a, uint8x4_t b)
+{
+  return __usub8 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tusub8\t...?, ...?, ...?" 1 } } */
+
+int16x2_t
+test_sadd16 (int16x2_t a, int16x2_t b)
+{
+  return __sadd16 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tsadd8\t...?, ...?, ...?" 1 } } */
+
+int16x2_t
+test_sasx (int16x2_t a, int16x2_t b)
+{
+  return __sasx (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tsasx\t...?, ...?, ...?" 1 } } */
+
+int16x2_t
+test_ssax (int16x2_t a, int16x2_t b)
+{
+  return __ssax (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tssax\t...?, ...?, ...?" 1 } } */
+
+int16x2_t
+test_ssub16 (int16x2_t a, int16x2_t b)
+{
+  return __ssub16 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tssub16\t...?, ...?, ...?" 1 } } */
+
+uint16x2_t
+test_uadd16 (uint16x2_t a, uint16x2_t b)
+{
+  return __uadd16 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tuadd16\t...?, ...?, ...?" 1 } } */
+
+uint16x2_t
+test_uasx (uint16x2_t a, uint16x2_t b)
+{
+  return __uasx (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tuasx\t...?, ...?, ...?" 1 } } */
+
+uint16x2_t
+test_usax (uint16x2_t a, uint16x2_t b)
+{
+  return __usax (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tusax\t...?, ...?, ...?" 1 } } */
+
+uint16x2_t
+test_usub16 (uint16x2_t a, uint16x2_t b)
+{
+  return __usub16 (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tusub16\t...?, ...?, ...?" 1 } } */
