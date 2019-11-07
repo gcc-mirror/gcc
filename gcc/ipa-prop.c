@@ -3492,11 +3492,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       else if (new_direct_edge)
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
-	  if (new_direct_edge->call_stmt)
-	    new_direct_edge->call_stmt_cannot_inline_p
-	      = !gimple_check_call_matching_types (
-		  new_direct_edge->call_stmt,
-		  new_direct_edge->callee->decl, false);
 	  if (new_edges)
 	    {
 	      new_edges->safe_push (new_direct_edge);

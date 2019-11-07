@@ -1245,25 +1245,6 @@ find_func_by_profile_id (int profile_id)
     return NULL;
 }
 
-/* Perform sanity check on the indirect call target. Due to race conditions,
-   false function target may be attributed to an indirect call site. If the
-   call expression type mismatches with the target function's type, expand_call
-   may ICE. Here we only do very minimal sanity check just to make compiler happy.
-   Returns true if TARGET is considered ok for call CALL_STMT.  */
-
-bool
-check_ic_target (gcall *call_stmt, struct cgraph_node *target)
-{
-   if (gimple_check_call_matching_types (call_stmt, target->decl, true))
-     return true;
-
-   if (dump_enabled_p ())
-     dump_printf_loc (MSG_MISSED_OPTIMIZATION, call_stmt,
-                      "Skipping target %s with mismatching types for icall\n",
-                      target->name ());
-   return false;
-}
-
 /* Do transformation
 
   if (actual_callee_address == address_of_most_common_function/method)
@@ -1453,17 +1434,6 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
 			     "module %T=> %i (will resolve only with LTO)\n",
 			     gimple_call_fn (stmt), (int)val);
 	}
-      return false;
-    }
-
-  if (!check_ic_target (stmt, direct_call))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
-			 "Indirect call -> direct call %T => %T "
-			 "transformation skipped because of type mismatch: %G",
-			 gimple_call_fn (stmt), direct_call->decl, stmt);
-      gimple_remove_histogram_value (cfun, stmt, histogram);
       return false;
     }
 

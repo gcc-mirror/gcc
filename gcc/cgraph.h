@@ -2445,8 +2445,6 @@ bool cgraph_function_possibly_inlined_p (tree);
 const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
 cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
-extern bool gimple_check_call_matching_types (gimple *, tree, bool);
-
 /* In cgraphunit.c  */
 void cgraphunit_c_finalize (void);
 

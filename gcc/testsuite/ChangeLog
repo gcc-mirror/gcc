@@ -1,3 +1,9 @@
+2019-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/70929
+	* g++.dg/lto/pr70929_[01].C: New test.
+	* gcc.dg/winline-10.c: Adjust for the fact that inlining happens.
+
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/acle/simd32.c: Update test.

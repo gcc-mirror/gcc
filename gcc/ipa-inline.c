@@ -2913,14 +2913,6 @@ early_inliner (function *fun)
 		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
-
-	      if (edge->callee->decl
-		  && !gimple_check_call_matching_types (
-		      edge->call_stmt, edge->callee->decl, false))
-		{
- 		  edge->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-		  edge->call_stmt_cannot_inline_p = true;
-		}
 	    }
 	  if (iterations < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS) - 1)
 	    ipa_update_overall_fn_summary (node);
