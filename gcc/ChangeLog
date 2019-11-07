@@ -1,3 +1,69 @@
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aout.h (REGISTER_NAMES): Add apsrq.
+	* config/arm/arm.md (APSRQ_REGNUM): Define.
+	(add_setq): New define_subst.
+	(add_clobber_q_name): New define_subst_attr.
+	(add_clobber_q_pred): Likewise.
+	(maddhisi4): Change to define_expand.  Split into mult and add if
+	ARM_Q_BIT_READ.
+	(arm_maddhisi4): New define_insn.
+	(*maddhisi4tb): Disable for ARM_Q_BIT_READ.
+	(*maddhisi4tt): Likewise.
+	(arm_ssat): New define_expand.
+	(arm_usat): Likewise.
+	(arm_get_apsr): New define_insn.
+	(arm_set_apsr): Likewise.
+	(arm_saturation_occurred): New define_expand.
+	(arm_set_saturation): Likewise.
+	(*satsi_<SAT:code>): Rename to...
+	(satsi_<SAT:code><add_clobber_q_name>): ... This.
+	(*satsi_<SAT:code>_shift): Disable for ARM_Q_BIT_READ.
+	* config/arm/arm.h (FIXED_REGISTERS): Mark apsrq as fixed.
+	(CALL_USED_REGISTERS): Mark apsrq.
+	(FIRST_PSEUDO_REGISTER): Update value.
+	(REG_ALLOC_ORDER): Add APSRQ_REGNUM.
+	(machine_function): Add q_bit_access.
+	(ARM_Q_BIT_READ): Define.
+	* config/arm/arm.c (TARGET_CHECK_BUILTIN_CALL): Define.
+	(arm_conditional_register_usage): Clear APSRQ_REGNUM from
+	operand_reg_set.
+	(arm_q_bit_access): Define.
+	* config/arm/arm-builtins.c: Include stringpool.h.
+	(arm_sat_binop_imm_qualifiers,
+	arm_unsigned_sat_binop_unsigned_imm_qualifiers,
+	arm_sat_occurred_qualifiers, arm_set_sat_qualifiers): Define.
+	(SAT_BINOP_UNSIGNED_IMM_QUALIFIERS,
+	UNSIGNED_SAT_BINOP_UNSIGNED_IMM_QUALIFIERS, SAT_OCCURRED_QUALIFIERS,
+	SET_SAT_QUALIFIERS): Likewise.
+	(arm_builtins): Define ARM_BUILTIN_SAT_IMM_CHECK.
+	(arm_init_acle_builtins): Initialize __builtin_sat_imm_check.
+	Handle 0 argument expander.
+	(arm_expand_acle_builtin): Handle ARM_BUILTIN_SAT_IMM_CHECK.
+	(arm_check_builtin_call): Define.
+	* config/arm/arm.md (ssmulsa3, usmulusa3, usmuluha3,
+	arm_ssatsihi_shift, arm_usatsihi): Disable when ARM_Q_BIT_READ.
+	* config/arm/arm-protos.h (arm_check_builtin_call): Declare prototype.
+	(arm_q_bit_access): Likewise.
+	* config/arm/arm_acle.h (__ssat, __usat, __ignore_saturation,
+	__saturation_occurred, __set_saturation_occurred): Define.
+	* config/arm/arm_acle_builtins.def: Define builtins for ssat, usat,
+	saturation_occurred, set_saturation_occurred.
+	* config/arm/unspecs.md (UNSPEC_Q_SET): Define.
+	(UNSPEC_APSR_READ): Likewise.
+	(VUNSPEC_APSR_WRITE): Likewise.
+	* config/arm/arm-fixed.md (ssadd<mode>3): Convert to define_expand.
+	(*arm_ssadd<mode>3): New define_insn.
+	(sssub<mode>3): Convert to define_expand.
+	(*arm_sssub<mode>3): New define_insn.
+	(ssmulsa3): Convert to define_expand.
+	(*arm_ssmulsa3): New define_insn.
+	(usmulusa3): Convert to define_expand.
+	(*arm_usmulusa3): New define_insn.
+	(ssmulha3): FAIL if ARM_Q_BIT_READ.
+	(arm_ssatsihi_shift, arm_usatsihi): Disable for ARM_Q_BIT_READ.
+	* config/arm/iterators.md (qaddsub_clob_q): New mode attribute.
+
 2019-11-07  Martin Liska  <mliska@suse.cz>
 
 	PR c++/92354

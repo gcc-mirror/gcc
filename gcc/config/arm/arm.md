@@ -39,6 +39,7 @@
    (LAST_ARM_REGNUM  15)	;
    (CC_REGNUM       100)	; Condition code pseudo register
    (VFPCC_REGNUM    101)	; VFP Condition code pseudo register
+   (APSRQ_REGNUM    104)	; Q bit pseudo register
   ]
 )
 ;; 3rd operand to select_dominance_cc_mode
@@ -423,6 +424,20 @@
 (include "marvell-pj4.md")
 (include "xgene1.md")
 
+;; define_subst and associated attributes
+
+(define_subst "add_setq"
+  [(set (match_operand:SI 0 "" "")
+        (match_operand:SI 1 "" ""))]
+  ""
+  [(set (match_dup 0)
+        (match_dup 1))
+   (set (reg:CC APSRQ_REGNUM)
+	(unspec:CC [(reg:CC APSRQ_REGNUM)] UNSPEC_Q_SET))])
+
+(define_subst_attr "add_clobber_q_name" "add_setq" "" "_setq")
+(define_subst_attr "add_clobber_q_pred" "add_setq" "!ARM_Q_BIT_READ"
+		   "ARM_Q_BIT_READ")
 
 ;;---------------------------------------------------------------------------
 ;; Insn patterns
@@ -2515,14 +2530,36 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "maddhisi4"
+(define_expand "maddhisi4"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(plus:SI (mult:SI (sign_extend:SI
+			   (match_operand:HI 1 "s_register_operand"))
+			  (sign_extend:SI
+			   (match_operand:HI 2 "s_register_operand")))
+		 (match_operand:SI 3 "s_register_operand")))]
+  "TARGET_DSP_MULTIPLY"
+  {
+    /* If this function reads the Q bit from ACLE intrinsics break up the
+       multiplication and accumulation as an overflow during accumulation will
+       clobber the Q flag.  */
+    if (ARM_Q_BIT_READ)
+      {
+	rtx tmp = gen_reg_rtx (SImode);
+	emit_insn (gen_mulhisi3 (tmp, operands[1], operands[2]));
+	emit_insn (gen_addsi3 (operands[0], tmp, operands[3]));
+	DONE;
+      }
+  }
+)
+
+(define_insn "*arm_maddhisi4"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (mult:SI (sign_extend:SI
 			   (match_operand:HI 1 "s_register_operand" "r"))
 			  (sign_extend:SI
 			   (match_operand:HI 2 "s_register_operand" "r")))
 		 (match_operand:SI 3 "s_register_operand" "r")))]
-  "TARGET_DSP_MULTIPLY"
+  "TARGET_DSP_MULTIPLY && !ARM_Q_BIT_READ"
   "smlabb%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
@@ -2537,7 +2574,7 @@
 			  (sign_extend:SI
 			   (match_operand:HI 2 "s_register_operand" "r")))
 		 (match_operand:SI 3 "s_register_operand" "r")))]
-  "TARGET_DSP_MULTIPLY"
+  "TARGET_DSP_MULTIPLY && !ARM_Q_BIT_READ"
   "smlatb%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
@@ -2552,7 +2589,7 @@
 			   (match_operand:SI 2 "s_register_operand" "r")
 			   (const_int 16)))
 		 (match_operand:SI 3 "s_register_operand" "r")))]
-  "TARGET_DSP_MULTIPLY"
+  "TARGET_DSP_MULTIPLY && !ARM_Q_BIT_READ"
   "smlatt%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
@@ -4044,12 +4081,113 @@
 (define_code_attr SATlo [(smin "1") (smax "2")])
 (define_code_attr SAThi [(smin "2") (smax "1")])
 
-(define_insn "*satsi_<SAT:code>"
+(define_expand "arm_ssat"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "s_register_operand")
+   (match_operand:SI 2 "const_int_operand")]
+  "TARGET_32BIT && arm_arch6"
+  {
+    HOST_WIDE_INT val = INTVAL (operands[2]);
+    /* The builtin checking code should have ensured the right
+       range for the immediate.  */
+    gcc_assert (IN_RANGE (val, 1, 32));
+    HOST_WIDE_INT upper_bound = (HOST_WIDE_INT_1 << (val - 1)) - 1;
+    HOST_WIDE_INT lower_bound = -upper_bound - 1;
+    rtx up_rtx = gen_int_mode (upper_bound, SImode);
+    rtx lo_rtx = gen_int_mode (lower_bound, SImode);
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_satsi_smin_setq (operands[0], lo_rtx,
+				      up_rtx, operands[1]));
+    else
+      emit_insn (gen_satsi_smin (operands[0], lo_rtx, up_rtx, operands[1]));
+    DONE;
+  }
+)
+
+(define_expand "arm_usat"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "s_register_operand")
+   (match_operand:SI 2 "const_int_operand")]
+  "TARGET_32BIT && arm_arch6"
+  {
+    HOST_WIDE_INT val = INTVAL (operands[2]);
+    /* The builtin checking code should have ensured the right
+       range for the immediate.  */
+    gcc_assert (IN_RANGE (val, 0, 31));
+    HOST_WIDE_INT upper_bound = (HOST_WIDE_INT_1 << val) - 1;
+    rtx up_rtx = gen_int_mode (upper_bound, SImode);
+    rtx lo_rtx = CONST0_RTX (SImode);
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_satsi_smin_setq (operands[0], lo_rtx, up_rtx,
+				      operands[1]));
+    else
+      emit_insn (gen_satsi_smin (operands[0], lo_rtx, up_rtx, operands[1]));
+    DONE;
+  }
+)
+
+(define_insn "arm_get_apsr"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI [(reg:CC APSRQ_REGNUM)] UNSPEC_APSR_READ))]
+  "TARGET_ARM_QBIT"
+  "mrs%?\t%0, APSR"
+  [(set_attr "predicable" "yes")
+   (set_attr "conds" "use")]
+)
+
+(define_insn "arm_set_apsr"
+  [(set (reg:CC APSRQ_REGNUM)
+	(unspec_volatile:CC
+	  [(match_operand:SI 0 "s_register_operand" "r")] VUNSPEC_APSR_WRITE))]
+  "TARGET_ARM_QBIT"
+  "msr%?\tAPSR_nzcvq, %0"
+  [(set_attr "predicable" "yes")
+   (set_attr "conds" "set")]
+)
+
+;; Read the APSR and extract the Q bit (bit 27)
+(define_expand "arm_saturation_occurred"
+  [(match_operand:SI 0 "s_register_operand")]
+  "TARGET_ARM_QBIT"
+  {
+    rtx apsr = gen_reg_rtx (SImode);
+    emit_insn (gen_arm_get_apsr (apsr));
+    emit_insn (gen_extzv (operands[0], apsr, CONST1_RTX (SImode),
+	       gen_int_mode (27, SImode)));
+    DONE;
+  }
+)
+
+;; Read the APSR and set the Q bit (bit position 27) according to operand 0
+(define_expand "arm_set_saturation"
+  [(match_operand:SI 0 "reg_or_int_operand")]
+  "TARGET_ARM_QBIT"
+  {
+    rtx apsr = gen_reg_rtx (SImode);
+    emit_insn (gen_arm_get_apsr (apsr));
+    rtx to_insert = gen_reg_rtx (SImode);
+    if (CONST_INT_P (operands[0]))
+      emit_move_insn (to_insert, operands[0] == CONST0_RTX (SImode)
+				 ? CONST0_RTX (SImode) : CONST1_RTX (SImode));
+    else
+      {
+        rtx cmp = gen_rtx_NE (SImode, operands[0], CONST0_RTX (SImode));
+        emit_insn (gen_cstoresi4 (to_insert, cmp, operands[0],
+				  CONST0_RTX (SImode)));
+      }
+    emit_insn (gen_insv (apsr, CONST1_RTX (SImode),
+	       gen_int_mode (27, SImode), to_insert));
+    emit_insn (gen_arm_set_apsr (apsr));
+    DONE;
+  }
+)
+
+(define_insn "satsi_<SAT:code><add_clobber_q_name>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
         (SAT:SI (<SATrev>:SI (match_operand:SI 3 "s_register_operand" "r")
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6
+  "TARGET_32BIT && arm_arch6 && <add_clobber_q_pred>
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;
@@ -4075,7 +4213,7 @@
                               (match_operand:SI 5 "const_int_operand" "i")])
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6
+  "TARGET_32BIT && arm_arch6 && !ARM_Q_BIT_READ
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;

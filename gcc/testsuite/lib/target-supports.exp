@@ -3845,6 +3845,44 @@ proc add_options_for_arm_simd32 { flags } {
     return "$flags $et_arm_simd32_flags"
 }
 
+# Return 1 if this is an ARM target supporting the saturation intrinsics
+# from arm_acle.h.  Some multilibs may be incompatible with these options.
+# Also set et_arm_qbit_flags to the best options to add.
+# arm_acle.h includes stdint.h which can cause trouble with incompatible
+# -mfloat-abi= options.
+
+proc check_effective_target_arm_qbit_ok_nocache { } {
+    global et_arm_qbit_flags
+    set et_arm_qbit_flags ""
+    foreach flags {"" "-march=armv5te" "-march=armv5te -mfloat-abi=softfp" "-march=armv5te -mfloat-abi=hard"} {
+      if { [check_no_compiler_messages_nocache et_arm_qbit_flags object {
+	#include <arm_acle.h>
+	int dummy;
+	#ifndef __ARM_FEATURE_QBIT
+	#error not QBIT
+	#endif
+      } "$flags"] } {
+	set et_arm_qbit_flags $flags
+	return 1
+      }
+    }
+
+  return 0
+}
+
+proc check_effective_target_arm_qbit_ok { } {
+    return [check_cached_effective_target et_arm_qbit_flags \
+		check_effective_target_arm_qbit_ok_nocache]
+}
+
+proc add_options_for_arm_qbit { flags } {
+    if { ! [check_effective_target_arm_qbit_ok] } {
+	return "$flags"
+    }
+    global et_arm_qbit_flags
+    return "$flags $et_arm_qbit_flags"
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=neon without any
 # -mfloat-abi= option.  Useful in tests where add_options is not
 # supported (such as lto tests).
