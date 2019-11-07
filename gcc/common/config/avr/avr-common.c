@@ -23,6 +23,8 @@
 #include "tm.h"
 #include "common/common-target.h"
 #include "common/common-target-def.h"
+#include "opts.h"
+#include "diagnostic.h"
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options avr_option_optimization_table[] =
@@ -43,8 +45,101 @@ static const struct default_options avr_option_optimization_table[] =
        performance decrease. For the AVR though, disallowing data races
        introduces additional code in LIM and increases reg pressure.  */
     { OPT_LEVELS_ALL, OPT_fallow_store_data_races, NULL, 1 },
+
+#if defined (WITH_DOUBLE64)
+    { OPT_LEVELS_ALL, OPT_mdouble_, NULL, 64 },
+#elif defined (WITH_DOUBLE32)
+    { OPT_LEVELS_ALL, OPT_mdouble_, NULL, 32 },
+#else
+#error "align this with config.gcc"
+#endif
+
+#if defined (WITH_LONG_DOUBLE64)
+    { OPT_LEVELS_ALL, OPT_mlong_double_, NULL, 64 },
+#elif defined (WITH_LONG_DOUBLE32)
+    { OPT_LEVELS_ALL, OPT_mlong_double_, NULL, 32 },
+#else
+#error "align this with config.gcc"
+#endif
+
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
+
+
+/* Implement `TARGET_HANDLE_OPTION'.  */
+
+/* This is the same logic that driver-avr.c:avr_double_lib() applies
+   during DRIVER_SELF_SPECS, but this time we complain about -mdouble=
+   and -mlong-double= that are not provided by --with-double= resp.
+   --with-long-double=  */
+
+static bool
+avr_handle_option (struct gcc_options *opts, struct gcc_options*,
+                   const struct cl_decoded_option *decoded, location_t loc)
+{
+  int value = decoded->value;
+
+  switch (decoded->opt_index)
+    {
+    case OPT_mdouble_:
+      if (value == 64)
+        {
+#if !defined (HAVE_DOUBLE64)
+          error_at (loc, "option %<-mdouble=64%> is only available if "
+                    "configured %<--with-double={64|64,32|32,64}%>");
+#endif
+          opts->x_avr_long_double = 64;
+        }
+      else if (value == 32)
+        {
+#if !defined (HAVE_DOUBLE32)
+          error_at (loc, "option %<-mdouble=32%> is only available if "
+                    "configured %<--with-double={|32|32,64|64,32}%>");
+#endif
+        }
+      else
+        gcc_unreachable();
+
+#if defined (HAVE_LONG_DOUBLE_IS_DOUBLE)
+      opts->x_avr_long_double = value;
+#endif
+      break; // -mdouble=
+
+    case OPT_mlong_double_:
+      if (value == 64)
+        {
+#if !defined (HAVE_LONG_DOUBLE64)
+          error_at (loc, "option %<-mlong-double=64%> is only available if "
+                    "configured %<--with-long-double={64|64,32|32,64}%>, "
+                    "or %<--with-long-double=double%> together with "
+                    "%<--with-double={64|64,32|32,64}%>");
+#endif
+        }
+      else if (value == 32)
+        {
+#if !defined (HAVE_LONG_DOUBLE32)
+          error_at (loc, "option %<-mlong-double=32%> is only available if "
+                    "configured %<--with-long-double={|32|32,64|64,32}%>, "
+                    "or %<--with-long-double=double%> together with "
+                    "%<--with-double={|32|32,64|64,32}%>");
+#endif
+          opts->x_avr_double = 32;
+        }
+      else
+        gcc_unreachable();
+
+#if defined (HAVE_LONG_DOUBLE_IS_DOUBLE)
+      opts->x_avr_double = value;
+#endif
+      break; // -mlong-double=
+    }
+
+  return true;
+}
+
+
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION avr_handle_option
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE avr_option_optimization_table

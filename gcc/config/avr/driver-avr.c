@@ -111,3 +111,60 @@ avr_devicespecs_file (int argc, const char **argv)
 #endif
                  NULL);
 }
+
+
+/* Re-build the -mdouble= and -mlong-double= options.  This is needed
+   because multilib selection is based on the physical presence of an
+   option on the command line, which is not the case for, say, when the
+   double=64 multilib is to be selected by --with-double=64 but the user
+   does not specify -mdouble=64 explicitly.  */
+
+const char*
+avr_double_lib (int argc, const char **argv)
+{
+#if defined (WITH_DOUBLE64)
+  int dbl = 64;
+#elif defined (WITH_DOUBLE32)
+  int dbl = 32;
+#else
+#error "align this with config.gcc"
+#endif
+
+#if defined (WITH_LONG_DOUBLE64)
+  int ldb = 64;
+#elif defined (WITH_LONG_DOUBLE32)
+  int ldb = 32;
+#else
+#error "align this with config.gcc"
+#endif
+
+  for (int i = 0; i < argc; i++)
+    {
+      if (strcmp (argv[i], "mdouble=32") == 0)
+        {
+          dbl = 32;
+#ifdef HAVE_LONG_DOUBLE_IS_DOUBLE
+          ldb = dbl;
+#endif
+        }
+      else if (strcmp (argv[i], "mdouble=64") == 0)
+        {
+          ldb = dbl = 64;
+        }
+      else if (strcmp (argv[i], "mlong-double=32") == 0)
+        {
+          ldb = dbl = 32;
+        }
+      else if (strcmp (argv[i], "mlong-double=64") == 0)
+        {
+          ldb = 64;
+#ifdef HAVE_LONG_DOUBLE_IS_DOUBLE
+          dbl = ldb;
+#endif
+        }
+    }
+
+  return concat (" %<mdouble=* -mdouble=", dbl == 32 ? "32" : "64",
+                 " %<mlong-double=* -mlong-double=", ldb == 32 ? "32" : "64",
+                 NULL);
+}

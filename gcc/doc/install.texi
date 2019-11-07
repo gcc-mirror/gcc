@@ -2276,15 +2276,48 @@ being used as the target C library.  This causes @code{__eprintf} to be
 omitted from @file{libgcc.a} on the assumption that it will be provided by
 @samp{newlib}.
 
+@html
+<a name="avr"></a>
+@end html
 @item --with-avrlibc
-Specifies that @samp{AVR-Libc} is
-being used as the target C library.  This causes float support
+Only supported for the AVR target. Specifies that @samp{AVR-Libc} is
+being used as the target C@tie{} library.  This causes float support
 functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
 the assumption that it will be provided by @file{libm.a}.  For more
 technical details, cf. @uref{http://gcc.gnu.org/PR54461,,PR54461}.
-This option is only supported for the AVR target.  It is not supported for
+It is not supported for
 RTEMS configurations, which currently use newlib.  The option is
 supported since version 4.7.2 and is the default in 4.8.0 and newer.
+
+@item --with-double=@{32|64|32,64|64,32@}
+@itemx --with-long-double=@{32|64|32,64|64,32|double@}
+Only supported for the AVR target since version@tie{}10.
+Specify the default layout available for the C/C++ @samp{double}
+and @samp{long double} type, respectively. The following rules apply:
+@itemize
+@item
+The first value after the @samp{=} specifies the default layout (in bits)
+of the type and also the default for the @option{-mdouble=} resp.
+@option{-mlong-double=} compiler option.
+@item
+If more than one value is specified, respective multilib variants are
+available, and  @option{-mdouble=} resp. @option{-mlong-double=} acts
+as a multilib option.
+@item
+If @option{--with-long-double=double} is specified, @samp{double} and
+@samp{long double} will have the same layout.
+@item
+If the configure option is not set, it defaults to @samp{32} which
+is compatible with older versions of the compiler that use non-standard
+32-bit types for @samp{double} and @samp{long double}.
+@end itemize
+Not all combinations of @option{--with-double=} and
+@option{--with-long-double=} are valid.  For example, the combination
+@option{--with-double=32,64} @option{--with-long-double=32} will be
+rejected because the first option specifies the availability of
+multilibs for @samp{double}, whereas the second option implies
+that @samp{long double} --- and hence also @samp{double} --- is always
+32@tie{}bits wide.
 
 @item --with-nds32-lib=@var{library}
 Specifies that @var{library} setting is used for building @file{libgcc.a}.
