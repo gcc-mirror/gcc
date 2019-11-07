@@ -1170,6 +1170,10 @@ free_node (tree node)
     vec_free (BLOCK_NONLOCALIZED_VARS (node));
   else if (code == TREE_BINFO)
     vec_free (BINFO_BASE_ACCESSES (node));
+  else if (code == OPTIMIZATION_NODE)
+    cl_optimization_option_free (TREE_OPTIMIZATION (node));
+  else if (code == TARGET_OPTION_NODE)
+    cl_target_option_free (TREE_TARGET_OPTION (node));
   ggc_free (node);
 }
 
