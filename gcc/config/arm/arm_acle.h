@@ -478,6 +478,29 @@ __ignore_saturation (void)
   })
 #endif
 
+#ifdef __ARM_FEATURE_DSP
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__qadd (int32_t __a, int32_t __b)
+{
+  return __builtin_arm_qadd (__a, __b);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__qsub (int32_t __a, int32_t __b)
+{
+  return __builtin_arm_qsub (__a, __b);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__qdbl (int32_t __x)
+{
+  return __qadd (__x, __x);
+}
+#endif
+
 #pragma GCC push_options
 #ifdef __ARM_FEATURE_CRC32
 #ifdef __ARM_FP
