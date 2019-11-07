@@ -1,3 +1,9 @@
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
+	* fold-const.c (operand_compare::operand_equal_p): Add comparison
+	of CONSTRUCTOR_NO_CLEARING.
+	(operand_compare::hash_operand): Likewise.
+
 2019-11-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	Support 64-bit double and 64-bit long double configurations.

@@ -3475,6 +3475,9 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
     case tcc_exceptional:
       if (TREE_CODE (arg0) == CONSTRUCTOR)
 	{
+	  if (CONSTRUCTOR_NO_CLEARING (arg0) != CONSTRUCTOR_NO_CLEARING (arg1))
+	    return false;
+
 	  /* In GIMPLE constructors are used only to build vectors from
 	     elements.  Individual elements in the constructor must be
 	     indexed in increasing order and form an initial sequence.
@@ -3657,6 +3660,7 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	unsigned HOST_WIDE_INT idx;
 	tree field, value;
 	flags &= ~OEP_ADDRESS_OF;
+	hstate.add_int (CONSTRUCTOR_NO_CLEARING (t));
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
 	  {
 	    /* In GIMPLE the indexes can be either NULL or matching i.  */
