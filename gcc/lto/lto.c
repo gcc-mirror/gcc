@@ -475,6 +475,10 @@ do_whole_program_analysis (void)
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */
   timevar_pop (TV_WHOPR_WPA);
 
+  /* We are no longer going to stream in anything.  Free some memory.  */
+  lto_free_file_name_hash ();
+
+
   timevar_push (TV_WHOPR_PARTITIONING);
 
   gcc_assert (!dump_file);
