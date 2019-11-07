@@ -1,3 +1,8 @@
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-scalar1-neg.C: Change dg-do from run to
+	compile.
+
 2019-11-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr92258.c: Add dg-requires for masm_intel.
