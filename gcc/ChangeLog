@@ -1,5 +1,14 @@
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (arm_<ss_op>): New define_expand.
+	(arm_<ss_op><add_clobber_q_name>_insn): New define_insn.
+	* config/arm/arm_acle.h (__qadd, __qsub, __qdbl): Define.
+	* config/arm/arm_acle_builtins.def: Add builtins for qadd, qsub.
+	* config/arm/iterators.md (SSPLUSMINUS): New code iterator.
+	(ss_op): New code_attr.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/aout.h (REGISTER_NAMES): Add apsrq.
 	* config/arm/arm.md (APSRQ_REGNUM): Define.
 	(add_setq): New define_subst.

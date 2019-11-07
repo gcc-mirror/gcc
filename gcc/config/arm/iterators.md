@@ -264,6 +264,9 @@
 ;; Conversions.
 (define_code_iterator FCVT [unsigned_float float])
 
+;; Saturating addition, subtraction
+(define_code_iterator SSPLUSMINUS [ss_plus ss_minus])
+
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
 ;; a stack pointer operand.  The minus operation is a candidate for an rsub
 ;; and hence only plus is supported.
@@ -281,6 +284,8 @@
 (define_code_attr cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")])
 
 (define_code_attr vfml_op [(plus "a") (minus "s")])
+
+(define_code_attr ss_op [(ss_plus "qadd") (ss_minus "qsub")])
 
 ;;----------------------------------------------------------------------------
 ;; Int iterators

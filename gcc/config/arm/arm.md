@@ -4076,6 +4076,32 @@
    (set_attr "type" "multiple")]
 )
 
+
+(define_expand "arm_<ss_op>"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(SSPLUSMINUS:SI (match_operand:SI 1 "s_register_operand")
+			(match_operand:SI 2 "s_register_operand")))]
+  "TARGET_DSP_MULTIPLY"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_<ss_op>_setq_insn (operands[0],
+					    operands[1], operands[2]));
+    else
+      emit_insn (gen_arm_<ss_op>_insn (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+
+(define_insn "arm_<ss_op><add_clobber_q_name>_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(SSPLUSMINUS:SI (match_operand:SI 1 "s_register_operand" "r")
+			(match_operand:SI 2 "s_register_operand" "r")))]
+  "TARGET_DSP_MULTIPLY && <add_clobber_q_pred>"
+  "<ss_op>%?\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")]
+)
+
 (define_code_iterator SAT [smin smax])
 (define_code_attr SATrev [(smin "smax") (smax "smin")])
 (define_code_attr SATlo [(smin "1") (smax "2")])

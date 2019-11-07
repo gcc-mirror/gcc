@@ -1,5 +1,9 @@
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/arm/acle/dsp_arith.c: New test.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/arm/acle/saturation.c: New test.
 	* gcc.target/arm/acle/sat_no_smlatb.c: Likewise.
 	* lib/target-supports.exp (check_effective_target_arm_qbit_ok_nocache):
