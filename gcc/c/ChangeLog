@@ -1,5 +1,15 @@
 2019-11-07  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-parser.c (c_parser_attribute_arguments): New function.
+	Factored out of c_parser_gnu_attribute.
+	(c_parser_gnu_attribute): Use c_parser_attribute_arguments.
+	(c_parser_balanced_token_sequence, c_parser_std_attribute)
+	(c_parser_std_attribute_specifier): New functions.
+	(c_parser_transaction_attributes): Use
+	c_parser_std_attribute_specifier.
+
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-parser.c (c_parser): Remove lex_untranslated_string.  Add
 	lex_joined_string and translate_strings_p.
 	(c_lex_one_token): Pass 0 or C_LEX_STRING_NO_JOIN to

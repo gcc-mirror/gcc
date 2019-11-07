@@ -1,3 +1,7 @@
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-attribs.c (parse_tm_stmt_attr): Handle scoped attributes.
+
 2019-11-05  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.c (c_common_post_options): -fconcepts-ts implies

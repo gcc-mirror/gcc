@@ -3227,10 +3227,12 @@ parse_tm_stmt_attr (tree attrs, int allowed)
 
   for ( ; attrs ; attrs = TREE_CHAIN (attrs))
     {
-      tree a = TREE_PURPOSE (attrs);
+      tree a = get_attribute_name (attrs);
+      tree ns = get_attribute_namespace (attrs);
       int m = 0;
 
-      if (is_attribute_p ("outer", a))
+      if (is_attribute_p ("outer", a)
+	  && (ns == NULL_TREE || strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0))
 	m = TM_STMT_ATTR_OUTER;
 
       if ((m & allowed) == 0)
