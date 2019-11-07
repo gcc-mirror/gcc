@@ -522,6 +522,48 @@ __usub16 (uint16x2_t __a, uint16x2_t __b)
   return __builtin_arm_usub16 (__a, __b);
 }
 
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlad (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smlad (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smladx (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smladx (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlsd (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smlsd (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlsdx (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smlsdx (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smuad (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_smuad (__a, __b);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smuadx (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_smuadx (__a, __b);
+}
+
 #endif
 
 #ifdef __ARM_FEATURE_SAT

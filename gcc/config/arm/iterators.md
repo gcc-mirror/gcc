@@ -453,6 +453,11 @@
 				UNSPEC_SSAX UNSPEC_SSUB16 UNSPEC_UADD16
 				UNSPEC_UASX UNSPEC_USAX UNSPEC_USUB16])
 
+(define_int_iterator SIMD32_TERNOP_Q [UNSPEC_SMLAD UNSPEC_SMLADX UNSPEC_SMLSD
+				      UNSPEC_SMLSDX])
+
+(define_int_iterator SIMD32_BINOP_Q [UNSPEC_SMUAD UNSPEC_SMUADX])
+
 (define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
 
 (define_int_iterator VFM_LANE_AS [UNSPEC_VFMA_LANE UNSPEC_VFMS_LANE])
@@ -1075,7 +1080,10 @@
 			    (UNSPEC_SASX "sasx") (UNSPEC_SSAX "ssax")
 			    (UNSPEC_SSUB16 "ssub16") (UNSPEC_UADD16 "uadd16")
 			    (UNSPEC_UASX "uasx") (UNSPEC_USAX "usax")
-			    (UNSPEC_USUB16 "usub16")])
+			    (UNSPEC_USUB16 "usub16") (UNSPEC_SMLAD "smlad")
+			    (UNSPEC_SMLADX "smladx") (UNSPEC_SMLSD "smlsd")
+			    (UNSPEC_SMLSDX "smlsdx") (UNSPEC_SMUAD "smuad")
+			    (UNSPEC_SMUADX "smuadx")])
 
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])

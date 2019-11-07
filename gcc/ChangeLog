@@ -1,5 +1,18 @@
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (arm_<simd32_op><add_clobber_q_name>_insn):
+	New define_insns.
+	(arm_<simd32_op>): New define_expands.
+	* config/arm/arm_acle.h (__smlad, __smladx, __smlsd, __smlsdx,
+	__smuad, __smuadx): Define.
+	* config/arm/arm_acle_builtins.def: Define builtins for the above.
+	* config/arm/iterators.md (SIMD32_TERNOP_Q): New int_iterator.
+	(SIMD32_BINOP_Q): Likewise.
+	(simd32_op): Handle the above.
+	* config/arm/unspecs.md: Define unspecs for the above.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/aout.h (REGISTER_NAMES): Add apsrge.
 	* config/arm/arm.md (APSRGE_REGNUM): Define.
 	(arm_<simd32_op>): New define_insn.
