@@ -197,6 +197,9 @@ delete_function_version (cgraph_function_version_info *decl_v)
   if (decl_v == NULL)
     return;
 
+  if (version_info_node == decl_v)
+    version_info_node = NULL;
+
   if (decl_v->prev != NULL)
     decl_v->prev->next = decl_v->next;
 
