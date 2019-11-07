@@ -1,3 +1,11 @@
+2019-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* optc-save-gen.awk: Generate cl_target_option_free
+	and cl_optimization_option_free.
+	* opth-en.awk: Declare cl_target_option_free
+	and cl_optimization_option_free.
+	* tree.c (free_node): Use it.
+
 2019-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-in.c: Include alloc-pool.h.

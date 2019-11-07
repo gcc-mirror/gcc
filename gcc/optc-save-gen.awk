@@ -802,6 +802,17 @@ for (i = 0; i < n_target_val; i++) {
 
 print "}";
 
+print "/* free heap memory used by target options  */";
+print "void";
+print "cl_target_option_free (struct cl_target_option *ptr ATTRIBUTE_UNUSED)";
+print "{";
+for (i = 0; i < n_target_str; i++) {
+	name = var_target_str[i]
+	print "  if (ptr->" name")";
+	print "    free (const_cast <char *>(ptr->" name"));";
+}
+print "}";
+
 n_opt_val = 4;
 var_opt_val[0] = "x_optimize"
 var_opt_val_type[0] = "char "
@@ -919,6 +930,20 @@ for (i = 0; i < n_opt_val; i++) {
 	}
 	else
 	      print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_value (bp, 64);";
+}
+print "}";
+print "/* Free heap memory used by optimization options  */";
+print "void";
+print "cl_optimization_option_free (struct cl_optimization *ptr ATTRIBUTE_UNUSED)";
+print "{";
+for (i = 0; i < n_opt_val; i++) {
+	name = var_opt_val[i]
+	otype = var_opt_val_type[i];
+	if (otype ~ "^const char \\**$")
+	{
+	      print "  if (ptr->" name")";
+	      print "    free (const_cast <char *>(ptr->" name"));";
+	}
 }
 print "}";
 }
