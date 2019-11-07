@@ -27347,17 +27347,6 @@ cp_parser_requires_expression (cp_parser *parser)
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_REQUIRES));
   location_t loc = cp_lexer_consume_token (parser->lexer)->location;
 
-  /* A requires-expression shall appear only within a concept
-     definition or a requires-clause.
-
-     TODO: Implement this diagnostic correctly. */
-  if (!processing_template_decl)
-    {
-      error_at (loc, "a requires expression cannot appear outside a template");
-      cp_parser_skip_to_end_of_statement (parser);
-      return error_mark_node;
-    }
-
   /* This is definitely a requires-expression.  */
   cp_parser_commit_to_tentative_parse (parser);
 

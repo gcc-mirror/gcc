@@ -1,5 +1,29 @@
 2019-11-06  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (use_pack_expansion_extra_args_p): Still do substitution if
+	all packs are simple pack expansions.
+	(add_extra_args): Check that the extra args aren't dependent.
+
+2019-11-06  Andrew Sutton  <asutton@lock3software.com>
+
+	Use satisfaction with nested requirements.
+	* constraint.cc (build_parameter_mapping): Use
+	current_template_parms when the declaration is not available.
+	(norm_info::norm_info) Make explicit.
+	(normalize_constraint_expression): Factor into a separate overload
+	that takes arguments, and use that in the original function.
+	(tsubst_nested_requirement): Use satisfy_constraint instead of
+	trying to evaluate this as a constant expression.
+	(finish_nested_requirement): Keep the normalized constraint and the
+	original normalization arguments with the requirement.
+	(diagnose_nested_requirement): Use satisfy_constraint. Tentatively
+	implement more comprehensive diagnostics, but do not enable.
+	* parser.c (cp_parser_requires_expression): Relax requirement that
+	requires-expressions can live only inside templates.
+	* pt.c (any_template_parm_r): Look into type of PARM_DECL.
+
+2019-11-06  Jason Merrill  <jason@redhat.com>
+
 	C++20 NB CA378 - Remove constrained non-template functions.
 	* decl.c (grokfndecl): Reject constraints on non-templated function.
 
