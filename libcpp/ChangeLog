@@ -1,3 +1,14 @@
+2019-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91370 - Implement P1041R4 and P1139R2 - Stronger Unicode reqs
+	* charset.c (narrow_str_to_charconst): Add TYPE argument.  For
+	CPP_UTF8CHAR diagnose whenever number of chars is > 1, using
+	CPP_DL_ERROR instead of CPP_DL_WARNING.
+	(wide_str_to_charconst): For CPP_CHAR16 or CPP_CHAR32, use
+	CPP_DL_ERROR instead of CPP_DL_WARNING when multiple char16_t
+	or char32_t chars are needed.
+	(cpp_interpret_charconst): Adjust narrow_str_to_charconst caller.
+
 2019-11-05  Tim van Deurzen  <tim@kompiler.org>
 
 	* cpplib.h: Add spaceship operator for C++.
