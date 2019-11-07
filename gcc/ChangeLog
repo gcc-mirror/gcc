@@ -1,3 +1,11 @@
+2019-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* ira.c (setup_alloc_regs): Setup no_unit_alloc_regs for
+	frame pointer in multiple registers.
+	(ira_setup_eliminable_regset): Setup eliminable_regset,
+	ira_no_alloc_regs and regs_ever_live for frame pointer in
+	multiple registers.
+
 2019-11-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/vsx.md (xxswapd_<mode>): Add support for V2DF and
