@@ -1,3 +1,11 @@
+2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* gfortran.dg/fmt_error_10.f: Modify for new constraints.
+	* gfortran.dg/fmt_error_7.f: Add dg-options "-std=f95".
+	* gfortran.dg/fmt_error_9.f: Modify for new constraints.
+	* gfortran.dg/fmt_zero_width.f90: New test.
+
 2019-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/asm-wide-1.c, gcc.dg/diagnostic-token-ranges.c,

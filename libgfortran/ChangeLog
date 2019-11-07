@@ -1,3 +1,20 @@
+2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	io/format.c (parse_format_list): Relax format checking for
+	zero width as default and when -std=f2018.
+	io/format.h (format_token): Move definition to io.h.
+	io/io.h (format_token): Add definition here to allow access to
+	this definition at higher levels. Rename the declaration of
+	write_real_g0 to write_real_w0 and add a new format_token
+	argument, allowing higher level functions to pass in the
+	token for handling of g0 vs the other zero width specifiers.
+	io/transfer.c (formatted_transfer_scalar_write): Add checks for
+	zero width and call write_real_w0 to handle it.
+	io/write.c (write_real_g0): Remove.
+	(write_real_w0): Add new, same as previous write_real_g0 except
+	check format token to handle the g0 case.
+
 2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92284.

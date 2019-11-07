@@ -2008,7 +2008,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	    goto need_data;
 	  if (require_type (dtp, BT_REAL, type, f))
 	    return;
-	  write_d (dtp, f, p, kind);
+	  if (f->u.real.w == 0)
+	    write_real_w0 (dtp, p, kind, FMT_D, f->u.real.d);
+	  else
+	    write_d (dtp, f, p, kind);
 	  break;
 
 	case FMT_DT:
@@ -2071,7 +2074,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	    goto need_data;
 	  if (require_type (dtp, BT_REAL, type, f))
 	    return;
-	  write_e (dtp, f, p, kind);
+	  if (f->u.real.w == 0)
+	    write_real_w0 (dtp, p, kind, FMT_E, f->u.real.d);
+	  else
+	    write_e (dtp, f, p, kind);
 	  break;
 
 	case FMT_EN:
@@ -2079,7 +2085,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	    goto need_data;
 	  if (require_type (dtp, BT_REAL, type, f))
 	    return;
-	  write_en (dtp, f, p, kind);
+	  if (f->u.real.w == 0)
+	    write_real_w0 (dtp, p, kind, FMT_EN, f->u.real.d);
+	  else
+	    write_en (dtp, f, p, kind);
 	  break;
 
 	case FMT_ES:
@@ -2087,7 +2096,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	    goto need_data;
 	  if (require_type (dtp, BT_REAL, type, f))
 	    return;
-	  write_es (dtp, f, p, kind);
+	  if (f->u.real.w == 0)
+	    write_real_w0 (dtp, p, kind, FMT_ES, f->u.real.d);
+	  else
+	    write_es (dtp, f, p, kind);
 	  break;
 
 	case FMT_F:
@@ -2117,7 +2129,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 		break;
 	      case BT_REAL:
 		if (f->u.real.w == 0)
-                  write_real_g0 (dtp, p, kind, f->u.real.d);
+		  write_real_w0 (dtp, p, kind, FMT_G, f->u.real.d);
 		else
 		  write_d (dtp, f, p, kind);
 		break;

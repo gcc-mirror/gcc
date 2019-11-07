@@ -925,7 +925,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       tail->repeat = repeat;
 
       u = format_lex (fmt);
-      if (t == FMT_G && u == FMT_ZERO)
+      if (u == FMT_ZERO)
 	{
 	  *seen_dd = true;
 	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
@@ -944,10 +944,8 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 
 	  u = format_lex (fmt);
 	  if (u != FMT_POSINT)
-	    {
-	      fmt->error = posint_required;
-	      goto finished;
-	    }
+	    notify_std (&dtp->common, GFC_STD_F2003,
+			"Positive width required");
 	  tail->u.real.d = fmt->value;
 	  break;
 	}
