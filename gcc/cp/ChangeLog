@@ -1,5 +1,8 @@
 2019-11-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92150 - partial specialization with class NTTP.
+	* pt.c (unify): Handle VIEW_CONVERT_EXPR.
+
 	* pt.c (use_pack_expansion_extra_args_p): Still do substitution if
 	all packs are simple pack expansions.
 	(add_extra_args): Check that the extra args aren't dependent.
