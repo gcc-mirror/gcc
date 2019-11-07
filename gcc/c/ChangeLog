@@ -1,3 +1,28 @@
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser): Remove lex_untranslated_string.  Add
+	lex_joined_string and translate_strings_p.
+	(c_lex_one_token): Pass 0 or C_LEX_STRING_NO_JOIN to
+	c_lex_with_flags.
+	(c_parser_string_literal): New function.
+	(c_parser_static_assert_declaration_no_semi): Use
+	c_parser_string_literal.  Do not set lex_untranslated_string.
+	(c_parser_asm_string_literal): Use c_parser_string_literal.
+	(c_parser_simple_asm_expr): Do not set lex_untranslated_string.
+	(c_parser_gnu_attributes): Set and restore translate_strings_p
+	instead of lex_untranslated_string.
+	(c_parser_asm_statement): Do not set lex_untranslated_string.
+	(c_parser_asm_operands): Likewise.
+	(c_parser_has_attribute_expression): Set and restore
+	translate_strings_p instead of lex_untranslated_string.
+	(c_parser_postfix_expression): Use c_parser_string_literal.
+	(pragma_lex): Likewise.
+	(c_parser_pragma_pch_preprocess): Set lex_joined_string.
+	(c_parse_file): Set translate_strings_p.
+	* gimple-parser.c (c_parser_gimple_postfix_expression)
+	(c_parser_gimple_or_rtl_pass_list): Use c_parser_string_literal.
+	* c-parser.c (c_parser_string_literal): Declare function.
+
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_finish_omp_declare_variant): Use

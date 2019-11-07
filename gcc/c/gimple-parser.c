@@ -1406,10 +1406,7 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
     case CPP_STRING32:
     case CPP_WSTRING:
     case CPP_UTF8STRING:
-      expr.value = c_parser_peek_token (parser)->value;
-      set_c_expr_source_range (&expr, tok_range);
-      expr.original_code = STRING_CST;
-      c_parser_consume_token (parser);
+      expr = c_parser_string_literal (parser, false, true);
       break;
     case CPP_DOT:
       expr = c_parser_gimple_call_internal (parser);
@@ -1926,8 +1923,8 @@ c_parser_gimple_or_rtl_pass_list (c_parser *parser, c_declspecs *specs)
 	      return;
 	    }
 	  pass = xstrdup (TREE_STRING_POINTER
-				(c_parser_peek_token (parser)->value));
-	  c_parser_consume_token (parser);
+			  (c_parser_string_literal (parser, false,
+						    false).value));
 	  if (! c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<(%>"))
 	    return;
 	}
