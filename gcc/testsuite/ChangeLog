@@ -5,6 +5,10 @@
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/acle/simd32.c: Update test.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/simd32.c: Update test.
 	* gcc.target/arm/acle/simd32_sel.c: New test.
 
 2019-11-07  Kyrylo Tkachov <kyrylo.tkachov@arm.com>

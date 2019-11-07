@@ -564,6 +564,24 @@ __smuadx (int16x2_t __a, int16x2_t __b)
   return __builtin_arm_smuadx (__a, __b);
 }
 
+#define __ssat16(__a, __sat)					\
+  __extension__							\
+  ({								\
+    int16x2_t __arg = (__a);					\
+    __builtin_sat_imm_check (__sat, 1, 16);			\
+    int16x2_t __res = __builtin_arm_ssat16 (__arg, __sat);	\
+    __res;							\
+  })
+
+#define __usat16(__a, __sat)					\
+  __extension__							\
+  ({								\
+    int16x2_t __arg = (__a);					\
+    __builtin_sat_imm_check (__sat, 0, 15);			\
+    int16x2_t __res = __builtin_arm_usat16 (__arg, __sat);	\
+    __res;							\
+  })
+
 #endif
 
 #ifdef __ARM_FEATURE_SAT

@@ -458,6 +458,8 @@
 
 (define_int_iterator SIMD32_BINOP_Q [UNSPEC_SMUAD UNSPEC_SMUADX])
 
+(define_int_iterator USSAT16 [UNSPEC_SSAT16 UNSPEC_USAT16])
+
 (define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
 
 (define_int_iterator VFM_LANE_AS [UNSPEC_VFMA_LANE UNSPEC_VFMS_LANE])
@@ -918,6 +920,7 @@
   (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
   (UNSPEC_VCVTH_S "s") (UNSPEC_VCVTH_U "u")
   (UNSPEC_DOT_S "s") (UNSPEC_DOT_U "u")
+  (UNSPEC_SSAT16 "s") (UNSPEC_USAT16 "u")
 ])
 
 (define_int_attr vfml_half
@@ -1083,7 +1086,8 @@
 			    (UNSPEC_USUB16 "usub16") (UNSPEC_SMLAD "smlad")
 			    (UNSPEC_SMLADX "smladx") (UNSPEC_SMLSD "smlsd")
 			    (UNSPEC_SMLSDX "smlsdx") (UNSPEC_SMUAD "smuad")
-			    (UNSPEC_SMUADX "smuadx")])
+			    (UNSPEC_SMUADX "smuadx") (UNSPEC_SSAT16 "ssat16")
+			    (UNSPEC_USAT16 "usat16")])
 
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])

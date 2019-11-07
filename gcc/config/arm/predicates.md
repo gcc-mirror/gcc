@@ -193,6 +193,14 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (UINTVAL (op), 1, GET_MODE_BITSIZE (mode))")))
 
+(define_predicate "ssat16_imm"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 16)")))
+
+(define_predicate "usat16_imm"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
+
 (define_predicate "ldrd_strd_offset_operand"
   (and (match_operand 0 "const_int_operand")
        (match_test "TARGET_LDRD && offset_ok_for_ldrd_strd (INTVAL (op))")))
