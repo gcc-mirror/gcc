@@ -10250,14 +10250,6 @@ validate_condition_mode (enum rtx_code code, machine_mode mode)
 		  && code != UNGT && code != UNLT
 		  && code != UNGE && code != UNLE));
 
-  /* These should never be generated except for
-     flag_finite_math_only.  */
-  gcc_assert (mode != CCFPmode
-	      || flag_finite_math_only
-	      || (code != LE && code != GE
-		  && code != UNEQ && code != LTGT
-		  && code != UNGT && code != UNLT));
-
   /* These are invalid; the information is not there.  */
   gcc_assert (mode != CCEQmode || code == EQ || code == NE);
 }
