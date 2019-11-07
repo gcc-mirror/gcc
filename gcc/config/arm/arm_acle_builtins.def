@@ -79,3 +79,8 @@ VAR1 (TERNOP, smlald, di)
 VAR1 (TERNOP, smlaldx, di)
 VAR1 (TERNOP, smlsld, di)
 VAR1 (TERNOP, smlsldx, di)
+
+VAR1 (SAT_BINOP_UNSIGNED_IMM, ssat, si)
+VAR1 (UNSIGNED_SAT_BINOP_UNSIGNED_IMM, usat, si)
+VAR1 (SAT_OCCURRED, saturation_occurred, si)
+VAR1 (SET_SAT, set_saturation, void)

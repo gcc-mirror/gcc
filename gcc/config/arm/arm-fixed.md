@@ -46,11 +46,22 @@
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_dsp_reg")])
 
-(define_insn "ssadd<mode>3"
+(define_expand "ssadd<mode>3"
+  [(set (match_operand:QADDSUB 0 "s_register_operand")
+	(ss_plus:QADDSUB (match_operand:QADDSUB 1 "s_register_operand")
+			 (match_operand:QADDSUB 2 "s_register_operand")))]
+  "TARGET_INT_SIMD"
+  {
+    if (<qaddsub_clob_q>)
+      FAIL;
+  }
+)
+
+(define_insn "*arm_ssadd<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
 	(ss_plus:QADDSUB (match_operand:QADDSUB 1 "s_register_operand" "r")
 			 (match_operand:QADDSUB 2 "s_register_operand" "r")))]
-  "TARGET_INT_SIMD"
+  "TARGET_INT_SIMD && !<qaddsub_clob_q>"
   "qadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_dsp_reg")])
@@ -84,11 +95,22 @@
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_dsp_reg")])
 
-(define_insn "sssub<mode>3"
+(define_expand "sssub<mode>3"
+  [(set (match_operand:QADDSUB 0 "s_register_operand")
+	(ss_minus:QADDSUB (match_operand:QADDSUB 1 "s_register_operand")
+			  (match_operand:QADDSUB 2 "s_register_operand")))]
+  "TARGET_INT_SIMD"
+  {
+    if (<qaddsub_clob_q>)
+      FAIL;
+  }
+)
+
+(define_insn "*arm_sssub<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
 	(ss_minus:QADDSUB (match_operand:QADDSUB 1 "s_register_operand" "r")
 			  (match_operand:QADDSUB 2 "s_register_operand" "r")))]
-  "TARGET_INT_SIMD"
+  "TARGET_INT_SIMD && !<qaddsub_clob_q>"
   "qsub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_dsp_reg")])
@@ -193,19 +215,31 @@
   DONE;
 })
 
-;; The code sequence emitted by this insn pattern uses the Q flag, which GCC
-;; doesn't generally know about, so we don't bother expanding to individual
-;; instructions.  It may be better to just use an out-of-line asm libcall for
-;; this.
+;; The code sequence emitted by this insn pattern uses the Q flag, so we need
+;; to bail out when ARM_Q_BIT_READ and resort to a library sequence instead.
 
-(define_insn "ssmulsa3"
+(define_expand "ssmulsa3"
+  [(parallel [(set (match_operand:SA 0 "s_register_operand")
+	(ss_mult:SA (match_operand:SA 1 "s_register_operand")
+		    (match_operand:SA 2 "s_register_operand")))
+   (clobber (match_scratch:DI 3))
+   (clobber (match_scratch:SI 4))
+   (clobber (reg:CC CC_REGNUM))])]
+  "TARGET_32BIT && arm_arch6"
+  {
+    if (ARM_Q_BIT_READ)
+      FAIL;
+  }
+)
+
+(define_insn "*arm_ssmulsa3"
   [(set (match_operand:SA 0 "s_register_operand" "=r")
 	(ss_mult:SA (match_operand:SA 1 "s_register_operand" "r")
 		    (match_operand:SA 2 "s_register_operand" "r")))
    (clobber (match_scratch:DI 3 "=r"))
    (clobber (match_scratch:SI 4 "=r"))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && arm_arch6"
+  "TARGET_32BIT && arm_arch6 && !ARM_Q_BIT_READ"
 {
   /* s16.15 * s16.15 -> s32.30.  */
   output_asm_insn ("smull\\t%Q3, %R3, %1, %2", operands);
@@ -256,16 +290,28 @@
 		                    (const_int 38))
 		      (const_int 32)))])
 
-;; Same goes for this.
+(define_expand "usmulusa3"
+  [(parallel [(set (match_operand:USA 0 "s_register_operand")
+	(us_mult:USA (match_operand:USA 1 "s_register_operand")
+		     (match_operand:USA 2 "s_register_operand")))
+   (clobber (match_scratch:DI 3))
+   (clobber (match_scratch:SI 4))
+   (clobber (reg:CC CC_REGNUM))])]
+  "TARGET_32BIT && arm_arch6"
+  {
+    if (ARM_Q_BIT_READ)
+      FAIL;
+  }
+)
 
-(define_insn "usmulusa3"
+(define_insn "*arm_usmulusa3"
   [(set (match_operand:USA 0 "s_register_operand" "=r")
 	(us_mult:USA (match_operand:USA 1 "s_register_operand" "r")
 		     (match_operand:USA 2 "s_register_operand" "r")))
    (clobber (match_scratch:DI 3 "=r"))
    (clobber (match_scratch:SI 4 "=r"))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && arm_arch6"
+  "TARGET_32BIT && arm_arch6 && !ARM_Q_BIT_READ"
 {
   /* 16.16 * 16.16 -> 32.32.  */
   output_asm_insn ("umull\\t%Q3, %R3, %1, %2", operands);
@@ -358,6 +404,8 @@
 		    (match_operand:HA 2 "s_register_operand")))]
   "TARGET_32BIT && TARGET_DSP_MULTIPLY && arm_arch6"
 {
+  if (ARM_Q_BIT_READ)
+    FAIL;
   rtx tmp = gen_reg_rtx (SImode);
   rtx rshift;
 
@@ -378,6 +426,9 @@
 		     (match_operand:UHA 2 "s_register_operand")))]
   "TARGET_INT_SIMD"
 {
+  if (ARM_Q_BIT_READ)
+    FAIL;
+
   rtx tmp1 = gen_reg_rtx (SImode);
   rtx tmp2 = gen_reg_rtx (SImode);
   rtx tmp3 = gen_reg_rtx (SImode);
@@ -405,7 +456,7 @@
 	(ss_truncate:HI (match_operator:SI 1 "sat_shift_operator"
 			  [(match_operand:SI 2 "s_register_operand" "r")
 			   (match_operand:SI 3 "immediate_operand" "I")])))]
-  "TARGET_32BIT && arm_arch6"
+  "TARGET_32BIT && arm_arch6 && !ARM_Q_BIT_READ"
   "ssat%?\\t%0, #16, %2%S1"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "1")
@@ -414,7 +465,7 @@
 (define_insn "arm_usatsihi"
   [(set (match_operand:HI 0 "s_register_operand" "=r")
 	(us_truncate:HI (match_operand:SI 1 "s_register_operand")))]
-  "TARGET_INT_SIMD"
+  "TARGET_INT_SIMD && !ARM_Q_BIT_READ"
   "usat%?\\t%0, #16, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_imm")]

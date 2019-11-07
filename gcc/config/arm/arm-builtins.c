@@ -41,6 +41,7 @@
 #include "langhooks.h"
 #include "case-cfn-macros.h"
 #include "sbitmap.h"
+#include "stringpool.h"
 
 #define SIMD_MAX_BUILTIN_ARGS 7
 
@@ -126,6 +127,20 @@ static enum arm_type_qualifiers
 arm_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_immediate };
 #define BINOP_IMM_QUALIFIERS (arm_binop_imm_qualifiers)
+
+/* T (T, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_sat_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_unsigned_immediate };
+#define SAT_BINOP_UNSIGNED_IMM_QUALIFIERS \
+  (arm_sat_binop_imm_qualifiers)
+
+/* unsigned T (T, unsigned immediate).  */
+static enum arm_type_qualifiers
+arm_unsigned_sat_binop_unsigned_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_unsigned_immediate };
+#define UNSIGNED_SAT_BINOP_UNSIGNED_IMM_QUALIFIERS \
+  (arm_unsigned_sat_binop_unsigned_imm_qualifiers)
 
 /* T (T, lane index).  */
 static enum arm_type_qualifiers
@@ -284,6 +299,18 @@ arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode,
       qualifier_none, qualifier_struct_load_store_lane_index };
 #define STORE1LANE_QUALIFIERS (arm_storestruct_lane_qualifiers)
+
+   /* int (void).  */
+static enum arm_type_qualifiers
+arm_sat_occurred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_void };
+#define SAT_OCCURRED_QUALIFIERS (arm_sat_occurred_qualifiers)
+
+   /* void (int).  */
+static enum arm_type_qualifiers
+arm_set_sat_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_none };
+#define SET_SAT_QUALIFIERS (arm_set_sat_qualifiers)
 
 #define v8qi_UP  E_V8QImode
 #define v4hi_UP  E_V4HImode
@@ -674,6 +701,7 @@ enum arm_builtins
   ARM_BUILTIN_##N,
 
   ARM_BUILTIN_ACLE_BASE,
+  ARM_BUILTIN_SAT_IMM_CHECK = ARM_BUILTIN_ACLE_BASE,
 
 #include "arm_acle_builtins.def"
 
@@ -1168,6 +1196,16 @@ static void
 arm_init_acle_builtins (void)
 {
   unsigned int i, fcode = ARM_BUILTIN_ACLE_PATTERN_START;
+
+  tree sat_check_fpr = build_function_type_list (void_type_node,
+						 intSI_type_node,
+						 intSI_type_node,
+						 intSI_type_node,
+						 NULL);
+  arm_builtin_decls[ARM_BUILTIN_SAT_IMM_CHECK]
+    = add_builtin_function ("__builtin_sat_imm_check", sat_check_fpr,
+			    ARM_BUILTIN_SAT_IMM_CHECK, BUILT_IN_MD,
+			    NULL, NULL_TREE);
 
   for (i = 0; i < ARRAY_SIZE (acle_builtin_data); i++, fcode++)
     {
@@ -2307,6 +2345,9 @@ constant_arg:
   if (have_retval)
     switch (argc)
       {
+      case 0:
+	pat = GEN_FCN (icode) (target);
+	break;
       case 1:
 	pat = GEN_FCN (icode) (target, op[0]);
 	break;
@@ -2465,7 +2506,26 @@ arm_expand_builtin_1 (int fcode, tree exp, rtx target,
 static rtx
 arm_expand_acle_builtin (int fcode, tree exp, rtx target)
 {
+  if (fcode == ARM_BUILTIN_SAT_IMM_CHECK)
+    {
+      /* Check the saturation immediate bounds.  */
 
+      rtx min_sat = expand_normal (CALL_EXPR_ARG (exp, 1));
+      rtx max_sat = expand_normal (CALL_EXPR_ARG (exp, 2));
+      gcc_assert (CONST_INT_P (min_sat));
+      gcc_assert (CONST_INT_P (max_sat));
+      rtx sat_imm = expand_normal (CALL_EXPR_ARG (exp, 0));
+      if (CONST_INT_P (sat_imm))
+	{
+	  if (!IN_RANGE (sat_imm, min_sat, max_sat))
+	    error ("%Ksaturation bit range must be in the range [%wd, %wd]",
+		   exp, UINTVAL (min_sat), UINTVAL (max_sat));
+	}
+      else
+	error ("%Ksaturation bit range must be a constant immediate", exp);
+      /* Don't generate any RTL.  */
+      return const0_rtx;
+    }
   arm_builtin_datum *d
     = &acle_builtin_data[fcode - ARM_BUILTIN_ACLE_PATTERN_START];
 
@@ -3293,6 +3353,24 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   *update = build2 (COMPOUND_EXPR, void_type_node,
 		    build2 (COMPOUND_EXPR, void_type_node,
 			    reload_fenv, restore_fnenv), update_call);
+}
+
+/* Implement TARGET_CHECK_BUILTIN_CALL.  Record a read of the Q bit through
+   intrinsics in the machine function.  */
+bool
+arm_check_builtin_call (location_t , vec<location_t> , tree fndecl,
+			tree, unsigned int, tree *)
+{
+  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
+  if (fcode == ARM_BUILTIN_saturation_occurred
+      || fcode == ARM_BUILTIN_set_saturation)
+    {
+      if (cfun && cfun->decl)
+	DECL_ATTRIBUTES (cfun->decl)
+	  = tree_cons (get_identifier ("acle qbit"), NULL_TREE,
+		       DECL_ATTRIBUTES (cfun->decl));
+    }
+  return true;
 }
 
 #include "gt-arm-builtins.h"

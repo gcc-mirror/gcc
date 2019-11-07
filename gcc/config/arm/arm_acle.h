@@ -433,6 +433,50 @@ __smlsldx (int16x2_t __a, int16x2_t __b, int64_t __c)
 
 #endif
 
+#ifdef __ARM_FEATURE_SAT
+
+#define __ssat(__a, __sat)				\
+  __extension__						\
+  ({							\
+    int32_t __arg = (__a);				\
+    __builtin_sat_imm_check (__sat, 1, 32);		\
+    int32_t __res = __builtin_arm_ssat (__arg, __sat);	\
+    __res;						\
+  })
+
+#define __usat(__a, __sat)				\
+  __extension__						\
+  ({							\
+    int32_t __arg = (__a);				\
+    __builtin_sat_imm_check (__sat, 0, 31);		\
+    uint32_t __res = __builtin_arm_usat (__arg, __sat);	\
+    __res;						\
+  })
+
+#endif
+
+#ifdef __ARM_FEATURE_QBIT
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__ignore_saturation (void)
+{
+  /* ACLE designates this intrinsic as a hint.
+     Implement as a nop for now.  */
+}
+
+/* These are defined as macros because the implementation of the builtins
+   requires easy access to the current function so wrapping it in an
+   always_inline function complicates things.  */
+
+#define __saturation_occurred __builtin_arm_saturation_occurred
+
+#define __set_saturation_occurred(__a)			\
+  __extension__						\
+  ({							\
+    int __arg = (__a);					\
+    __builtin_arm_set_saturation (__arg);		\
+  })
+#endif
 
 #pragma GCC push_options
 #ifdef __ARM_FEATURE_CRC32

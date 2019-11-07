@@ -70,6 +70,9 @@
 			; that.
   UNSPEC_UNALIGNED_STORE ; Same for str/strh.
   UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
+  UNSPEC_Q_SET          ; Represent setting the Q bit.
+  UNSPEC_APSR_READ      ; Represent reading the APSR.
+
   UNSPEC_LL		; Represent an unpaired load-register-exclusive.
   UNSPEC_VRINTZ         ; Represent a float to integral float rounding
                         ; towards zero.
@@ -211,6 +214,7 @@
   VUNSPEC_MRRC		; Represent the coprocessor mrrc instruction.
   VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
   VUNSPEC_SPECULATION_BARRIER ; Represents an unconditional speculation barrier.
+  VUNSPEC_APSR_WRITE     ; Represent writing the APSR.
 ])
 
 ;; Enumerators for NEON unspecs.

@@ -763,6 +763,12 @@
 			       (V4QQ "8") (V2HQ "16") (QQ "8") (HQ "16")
 			       (V2HA "16") (HA "16") (SQ "") (SA "")])
 
+(define_mode_attr qaddsub_clob_q [(V4UQQ "0") (V2UHQ "0") (UQQ "0") (UHQ "0")
+			       (V2UHA "0") (UHA "0")
+			       (V4QQ "0") (V2HQ "0") (QQ "0") (HQ "0")
+			       (V2HA "0") (HA "0") (SQ "ARM_Q_BIT_READ")
+			       (SA "ARM_Q_BIT_READ")])
+
 ;; Mode attribute for vshll.
 (define_mode_attr V_innermode [(V8QI "QI") (V4HI "HI") (V2SI "SI")])
 
