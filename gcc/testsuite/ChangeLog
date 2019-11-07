@@ -1,3 +1,14 @@
+2019-11-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/addsub-signed-overflow-1.c: Expect lochi
+	instructions to be used.
+	* gcc.target/s390/addsub-signed-overflow-2.c: Likewise.
+	* gcc.target/s390/mul-signed-overflow-1.c: Likewise.
+	* gcc.target/s390/mul-signed-overflow-2.c: Likewise.
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Check for 32 and 64
+	bit variant of lochi.  Swap the values for the lochi's.
+	* gcc.target/s390/zvector/vec-cmp-1.c: Likewise.
+
 2019-11-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/70929
