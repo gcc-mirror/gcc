@@ -1,3 +1,9 @@
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
+	* merge.sh: Update to use llvm-project git repository.
+	* all source files: Merge from upstream
+	82588e05cc32bb30807e480abd4e689b0dee132a.
+
 2019-11-05  Martin Liska  <mliska@suse.cz>
 
 	* ubsan/ubsan_flags.cpp (InitializeFlags): Trunk decided to print

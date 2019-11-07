@@ -82,7 +82,7 @@ const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__mips__)
 const unsigned struct_kernel_stat_sz = SANITIZER_ANDROID
                                            ? FIRST_32_SECOND_64(104, 128)
-                                           : FIRST_32_SECOND_64(144, 216);
+                                           : FIRST_32_SECOND_64(160, 216);
 const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__s390__) && !defined(__s390x__)
 const unsigned struct_kernel_stat_sz = 64;
@@ -97,6 +97,9 @@ const unsigned struct_kernel_stat64_sz = 144;
 #elif defined(__sparc__) && !defined(__arch64__)
 const unsigned struct___old_kernel_stat_sz = 0;
 const unsigned struct_kernel_stat_sz = 64;
+const unsigned struct_kernel_stat64_sz = 104;
+#elif defined(__riscv) && __riscv_xlen == 64
+const unsigned struct_kernel_stat_sz = 128;
 const unsigned struct_kernel_stat64_sz = 104;
 #endif
 struct __sanitizer_perf_event_attr {
