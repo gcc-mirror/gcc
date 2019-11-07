@@ -146,6 +146,12 @@
   UNSPEC_UASX		; Represent the UASX operation.
   UNSPEC_USAX		; Represent the USAX operation.
   UNSPEC_USUB16		; Represent the USUB16 operation.
+  UNSPEC_SMLAD		; Represent the SMLAD operation.
+  UNSPEC_SMLADX		; Represent the SMLADX operation.
+  UNSPEC_SMLSD		; Represent the SMLSD operation.
+  UNSPEC_SMLSDX		; Represent the SMLSDX operation.
+  UNSPEC_SMUAD		; Represent the SMUAD operation.
+  UNSPEC_SMUADX		; Represent the SMUADX operation.
 ])
 
 

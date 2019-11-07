@@ -107,3 +107,10 @@ VAR1 (UBINOP, usax, si)
 VAR1 (UBINOP, usub16, si)
 
 VAR1 (UBINOP, sel, si)
+
+VAR1 (TERNOP, smlad, si)
+VAR1 (TERNOP, smladx, si)
+VAR1 (TERNOP, smlsd, si)
+VAR1 (TERNOP, smlsdx, si)
+VAR1 (BINOP, smuad, si)
+VAR1 (BINOP, smuadx, si)

@@ -372,3 +372,51 @@ test_usub16 (uint16x2_t a, uint16x2_t b)
 }
 
 /* { dg-final { scan-assembler-times "\tusub16\t...?, ...?, ...?" 1 } } */
+
+int32_t
+test_smlad (int16x2_t a, int16x2_t b, int32_t c)
+{
+  return __smlad (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmlad\t...?, ...?, ...?, ...?" 1 } } */
+
+int32_t
+test_smladx (int16x2_t a, int16x2_t b, int32_t c)
+{
+  return __smladx (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmladx\t...?, ...?, ...?, ...?" 1 } } */
+
+int32_t
+test_smlsd (int16x2_t a, int16x2_t b, int32_t c)
+{
+  return __smlsd (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmlsd\t...?, ...?, ...?, ...?" 1 } } */
+
+int32_t
+test_smlsdx (int16x2_t a, int16x2_t b, int32_t c)
+{
+  return __smlsdx (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmlsdx\t...?, ...?, ...?, ...?" 1 } } */
+
+int32_t
+test_smuad (int16x2_t a, int16x2_t b)
+{
+  return __smuad (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tsmuad\t...?, ...?, ...?" 1 } } */
+
+int32_t
+test_smuadx (int16x2_t a, int16x2_t b)
+{
+  return __smuadx (a, b);
+}
+
+/* { dg-final { scan-assembler-times "\tsmuadx\t...?, ...?, ...?" 1 } } */
