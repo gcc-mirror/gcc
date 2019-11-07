@@ -61,6 +61,7 @@ extern bool arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
 extern void arm_emit_speculation_barrier_function (void);
 extern void arm_decompose_di_binop (rtx, rtx, rtx *, rtx *, rtx *, rtx *);
 extern bool arm_q_bit_access (void);
+extern bool arm_ge_bits_access (void);
 
 #ifdef RTX_CODE
 extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,

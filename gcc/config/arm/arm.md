@@ -40,6 +40,7 @@
    (CC_REGNUM       100)	; Condition code pseudo register
    (VFPCC_REGNUM    101)	; VFP Condition code pseudo register
    (APSRQ_REGNUM    104)	; Q bit pseudo register
+   (APSRGE_REGNUM   105)	; GE bits pseudo register
   ]
 )
 ;; 3rd operand to select_dominance_cc_mode
@@ -5834,8 +5835,8 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI
 	  [(match_operand:SI 1 "s_register_operand" "r")
-	   (match_operand:SI 2 "s_register_operand" "r")
-	   (match_operand:SI 3 "s_register_operand" "r")] UNSPEC_USADA8))]
+	  (match_operand:SI 2 "s_register_operand" "r")
+	  (match_operand:SI 3 "s_register_operand" "r")] UNSPEC_USADA8))]
   "TARGET_INT_SIMD"
   "usada8%?\\t%0, %1, %2, %3"
   [(set_attr "predicable" "yes")
@@ -5851,6 +5852,29 @@
   "<simd32_op>%?\\t%Q0, %R0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "smlald")])
+
+(define_insn "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")] SIMD32_GE))
+   (set (reg:CC APSRGE_REGNUM)
+	(unspec:CC [(reg:CC APSRGE_REGNUM)] UNSPEC_GE_SET))]
+  "TARGET_INT_SIMD"
+  "<simd32_op>%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
+
+(define_insn "arm_sel"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")
+	   (reg:CC APSRGE_REGNUM)] UNSPEC_SEL))]
+  "TARGET_INT_SIMD"
+  "sel%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
 
 (define_expand "extendsfdf2"
   [(set (match_operand:DF                  0 "s_register_operand")

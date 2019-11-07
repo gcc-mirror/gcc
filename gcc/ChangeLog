@@ -1,3 +1,36 @@
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aout.h (REGISTER_NAMES): Add apsrge.
+	* config/arm/arm.md (APSRGE_REGNUM): Define.
+	(arm_<simd32_op>): New define_insn.
+	(arm_sel): Likewise.
+	* config/arm/arm.h (FIXED_REGISTERS): Add entry for apsrge.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER): Likewise.
+	(FIRST_PSEUDO_REGISTER): Update value.
+	(ARM_GE_BITS_READ): Define.
+	* config/arm/arm.c (arm_conditional_register_usage): Clear
+	APSRGE_REGNUM from operand_reg_set.
+	(arm_ge_bits_access): Define.
+	* config/arm/arm-builtins.c (arm_check_builtin_call): Handle
+	ARM_BUIILTIN_sel.
+	* config/arm/arm-protos.h (arm_ge_bits_access): Declare prototype.
+	* config/arm/arm-fixed.md (add<mode>3): Convert to define_expand.
+	FAIL if ARM_GE_BITS_READ.
+	(*arm_add<mode>3): New define_insn.
+	(sub<mode>3): Convert to define_expand.  FAIL if ARM_GE_BITS_READ.
+	(*arm_sub<mode>3): New define_insn.
+	* config/arm/arm_acle.h (__sel, __sadd8, __ssub8, __uadd8, __usub8,
+	__sadd16, __sasx, __ssax, __ssub16, __uadd16, __uasx, __usax,
+	__usub16): Define.
+	* config/arm/arm_acle_builtins.def: Define builtins for the above.
+	* config/arm/iterators.md (SIMD32_GE): New int_iterator.
+	(simd32_op): Handle the above.
+	* config/arm/unspecs.md (UNSPEC_GE_SET): Define.
+	(UNSPEC_SEL, UNSPEC_SADD8, UNSPEC_SSUB8, UNSPEC_UADD8, UNSPEC_USUB8,
+	UNSPEC_SADD16, UNSPEC_SASX, UNSPEC_SSAX, UNSPEC_SSUB16, UNSPEC_UADD16,
+	UNSPEC_UASX, UNSPEC_USAX, UNSPEC_USUB16): Define.
+
 2019-11-07  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_smlabb_setq): New define_insn.

@@ -29144,8 +29144,9 @@ arm_conditional_register_usage (void)
 	global_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;
     }
 
-  /* The Q bit is only accessed via special ACLE patterns.  */
+  /* The Q and GE bits are only accessed via special ACLE patterns.  */
   CLEAR_HARD_REG_BIT (operand_reg_set, APSRQ_REGNUM);
+  CLEAR_HARD_REG_BIT (operand_reg_set, APSRGE_REGNUM);
 
   SUBTARGET_CONDITIONAL_REGISTER_USAGE
 }
@@ -32388,6 +32389,16 @@ arm_q_bit_access (void)
 {
   if (cfun && cfun->decl)
     return lookup_attribute ("acle qbit",
+			     DECL_ATTRIBUTES (cfun->decl));
+  return true;
+}
+
+/* Have we recorded an explicit access to the GE bits of PSTATE?.  */
+bool
+arm_ge_bits_access (void)
+{
+  if (cfun && cfun->decl)
+    return lookup_attribute ("acle gebits",
 			     DECL_ATTRIBUTES (cfun->decl));
   return true;
 }
