@@ -1,3 +1,15 @@
+2019-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-in.c: Include alloc-pool.h.
+	(freeing_string_slot_hasher): Remove.
+	(string_slot_allocator): New object allocator.
+	(file_name_hash_table): Turn to hash_table<string_slot_hasher>.
+	(file_name_obstack): New obstack.
+	(canon_file_name): Allocate in obstack and allocator.
+	(lto_reader_init): Initialize obstack and allocator.
+	(lto_free_file_name_hash): New function.
+	* lto-streamer.h (lto_free_file_name_hash): New.
+
 2019-11-07  Feng Xue <fxue@os.amperecomputing.com>
 
 	PR tree-optimization/89134
