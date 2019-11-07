@@ -1,5 +1,11 @@
 2019-11-07  Jan Hubicka  <jh@suse.cz>
 
+	PR ipa/92406
+	* ipa-fnsummary.c (analyze_function_body): Use get_create to copy
+	summary.
+
+2019-11-07  Jan Hubicka  <jh@suse.cz>
+
 	* optc-save-gen.awk: Generate cl_target_option_free
 	and cl_optimization_option_free.
 	* opth-en.awk: Declare cl_target_option_free

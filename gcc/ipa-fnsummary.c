@@ -2483,7 +2483,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		  edge->speculative_call_info (direct, indirect, ref);
 		  gcc_assert (direct == edge);
 	          ipa_call_summary *es2
-			 = ipa_call_summaries->get (indirect);
+			 = ipa_call_summaries->get_create (indirect);
 		  ipa_call_summaries->duplicate (edge, indirect,
 						 es, es2);
 		}
