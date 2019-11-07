@@ -10402,6 +10402,13 @@ any_template_parm_r (tree t, void *data)
       if (TREE_TYPE (t))
         WALK_SUBTREE (TREE_TYPE (t));
       break;
+
+    case PARM_DECL:
+      /* A parameter or constraint variable may also depend on a template
+	 parameter without explicitly naming it.  */
+      WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
     default:
       break;
     }
@@ -12071,7 +12078,23 @@ use_pack_expansion_extra_args_p (tree parm_packs,
   if (parm_packs == NULL_TREE)
     return false;
   else if (has_empty_arg)
-    return true;
+    {
+      /* If all the actual packs are pack expansions, we can still
+	 subsitute directly.  */
+      for (tree p = parm_packs; p; p = TREE_CHAIN (p))
+	{
+	  tree a = TREE_VALUE (p);
+	  if (TREE_CODE (a) == ARGUMENT_PACK_SELECT)
+	    a = ARGUMENT_PACK_SELECT_FROM_PACK (a);
+	  a = ARGUMENT_PACK_ARGS (a);
+	  if (TREE_VEC_LENGTH (a) == 1)
+	    a = TREE_VEC_ELT (a, 0);
+	  if (PACK_EXPANSION_P (a))
+	    continue;
+	  return true;
+	}
+      return false;
+    }
 
   bool has_expansion_arg = false;
   for (int i = 0 ; i < arg_pack_len; ++i)
@@ -12551,7 +12574,22 @@ add_extra_args (tree extra, tree args)
       gcc_assert (!TREE_PURPOSE (extra));
       extra = TREE_VALUE (extra);
     }
-  return add_to_template_args (extra, args);
+#if 1
+  /* I think we should always be able to substitute dependent args into the
+     pattern.  If that turns out to be incorrect in some cases, enable the
+     alternate code (and add complain/in_decl parms to this function).  */
+  gcc_checking_assert (!uses_template_parms (extra));
+#else
+  if (!uses_template_parms (extra))
+    {
+      gcc_unreachable ();
+      extra = tsubst_template_args (extra, args, complain, in_decl);
+      args = add_outermost_template_args (args, extra);
+    }
+  else
+#endif
+    args = add_to_template_args (extra, args);
+  return args;
 }
 
 /* Substitute ARGS into T, which is an pack expansion
