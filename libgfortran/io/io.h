@@ -132,6 +132,20 @@ typedef struct format_hash_entry
 }
 format_hash_entry;
 
+/* Format tokens.  Only about half of these can be stored in the
+   format nodes.  */
+
+typedef enum
+{
+  FMT_NONE = 0, FMT_UNKNOWN, FMT_SIGNED_INT, FMT_ZERO, FMT_POSINT, FMT_PERIOD,
+  FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_T, FMT_TR, FMT_TL,
+  FMT_LPAREN, FMT_RPAREN, FMT_X, FMT_S, FMT_SS, FMT_SP, FMT_STRING,
+  FMT_BADSTRING, FMT_P, FMT_I, FMT_B, FMT_BN, FMT_BZ, FMT_O, FMT_Z, FMT_F,
+  FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_DC,
+  FMT_DP, FMT_STAR, FMT_RC, FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ, FMT_DT
+}
+format_token;
+
 /* Representation of a namelist object in libgfortran
 
    Namelist Records
@@ -928,8 +942,8 @@ internal_proto(write_o);
 extern void write_real (st_parameter_dt *, const char *, int);
 internal_proto(write_real);
 
-extern void write_real_g0 (st_parameter_dt *, const char *, int, int);
-internal_proto(write_real_g0);
+extern void write_real_w0 (st_parameter_dt *, const char *, int, format_token, int);
+internal_proto(write_real_w0);
 
 extern void write_x (st_parameter_dt *, int, int);
 internal_proto(write_x);

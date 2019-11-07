@@ -1,3 +1,10 @@
+2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io.c (check_format): Allow zero width for D, E, EN, and ES
+	specifiers as default and when -std=F2018 is given. Retain
+	existing errors when using the -fdec family of flags.
+	
 2019-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92113
