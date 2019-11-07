@@ -4011,6 +4011,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       using _Cat = typename iterator_traits<_InputIterator>::iterator_category;
       if constexpr (is_base_of_v<random_access_iterator_tag, _Cat>)
 	{
+	  if (__n2 <= 0)
+	    return __first;
 	  auto __last = __first + __n2;
 	  std::for_each(__first, __last, std::move(__f));
 	  return __last;
