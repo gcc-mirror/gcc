@@ -5921,6 +5921,33 @@
   }
 )
 
+(define_insn "arm_<simd32_op><add_clobber_q_name>_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "<sup>sat16_imm" "i")] USSAT16))]
+  "TARGET_INT_SIMD && <add_clobber_q_pred>"
+  "<simd32_op>%?\\t%0, %2, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
+
+(define_expand "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand")
+	   (match_operand:SI 2 "<sup>sat16_imm")] USSAT16))]
+  "TARGET_INT_SIMD"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_<simd32_op>_setq_insn (operands[0], operands[1],
+						operands[2]));
+    else
+      emit_insn (gen_arm_<simd32_op>_insn (operands[0], operands[1],
+					   operands[2]));
+    DONE;
+  }
+)
+
 (define_insn "arm_sel"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI

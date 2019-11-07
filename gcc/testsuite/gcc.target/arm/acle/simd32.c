@@ -420,3 +420,19 @@ test_smuadx (int16x2_t a, int16x2_t b)
 }
 
 /* { dg-final { scan-assembler-times "\tsmuadx\t...?, ...?, ...?" 1 } } */
+
+int16x2_t
+test_ssat16 (int16x2_t a)
+{
+  return __ssat16 (a, 13);
+}
+
+/* { dg-final { scan-assembler-times "\tssat16\t...?, #13, ...?" 1 } } */
+
+int16x2_t
+test_usat16 (int16x2_t a)
+{
+  return __usat16 (a, 15);
+}
+
+/* { dg-final { scan-assembler-times "\tusat16\t...?, #15, ...?" 1 } } */

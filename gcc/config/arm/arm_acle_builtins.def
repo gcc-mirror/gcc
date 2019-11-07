@@ -114,3 +114,6 @@ VAR1 (TERNOP, smlsd, si)
 VAR1 (TERNOP, smlsdx, si)
 VAR1 (BINOP, smuad, si)
 VAR1 (BINOP, smuadx, si)
+
+VAR1 (SAT_BINOP_UNSIGNED_IMM, ssat16, si)
+VAR1 (SAT_BINOP_UNSIGNED_IMM, usat16, si)

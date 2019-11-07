@@ -1,5 +1,18 @@
 2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (arm_<simd32_op>): New define_expand.
+	(arm_<simd32_op><add_clobber_q_name>_insn): New define_insn.
+	* config/arm/arm_acle.h (__ssat16, __usat16): Define.
+	* config/arm/arm_acle_builtins.def: Define builtins for the above.
+	* config/arm/iterators.md (USSAT16): New int_iterator.
+	(simd32_op): Handle UNSPEC_SSAT16, UNSPEC_USAT16.
+	(sup): Likewise.
+	* config/arm/predicates.md (ssat16_imm): New predicate.
+	(usat16_imm): Likewise.
+	* config/arm/unspecs.md (UNSPEC_SSAT16, UNSPEC_USAT16): Define.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (arm_<simd32_op><add_clobber_q_name>_insn):
 	New define_insns.
 	(arm_<simd32_op>): New define_expands.
