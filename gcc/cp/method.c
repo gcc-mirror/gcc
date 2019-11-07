@@ -882,8 +882,6 @@ do_build_copy_assign (tree fndecl)
 
 enum comp_cat_tag
 {
-  cc_weak_equality,
-  cc_strong_equality,
   cc_partial_ordering,
   cc_weak_ordering,
   cc_strong_ordering,
@@ -901,8 +899,6 @@ struct comp_cat_info_t
 };
 static const comp_cat_info_t comp_cat_info[cc_last]
 = {
-   { "weak_equality", "equivalent", "nonequivalent" },
-   { "strong_equality", "equal", "nonequal" },
    { "partial_ordering", "equivalent", "greater", "less", "unordered" },
    { "weak_ordering", "equivalent", "greater", "less" },
    { "strong_ordering", "equal", "greater", "less" }
@@ -1028,21 +1024,8 @@ spaceship_comp_cat (tree optype)
     return cc_strong_ordering;
   else if (TREE_CODE (optype) == REAL_TYPE)
     return cc_partial_ordering;
-  else if (TYPE_PTRFN_P (optype) || TYPE_PTRMEM_P (optype)
-	   || NULLPTR_TYPE_P (optype))
-    return cc_strong_equality;
-  else if (TREE_CODE (optype) == COMPLEX_TYPE)
-    {
-      tree intype = optype;
-      while (TREE_CODE (intype) == COMPLEX_TYPE)
-	intype = TREE_TYPE (intype);
-      if (TREE_CODE (intype) == REAL_TYPE)
-	return cc_weak_equality;
-      else
-	return cc_strong_equality;
-    }
 
-  /* FIXME should vector <=> produce a vector of one of the above?  */
+  /* ??? should vector <=> produce a vector of one of the above?  */
   gcc_unreachable ();
 }
 
@@ -1065,18 +1048,11 @@ genericize_spaceship (tree type, tree op0, tree op1)
   comp_cat_tag tag = cat_tag_for (type);
   gcc_checking_assert (tag < cc_last);
 
-  tree eq = lookup_comparison_result (tag, type, 0);
-  tree negt = lookup_comparison_result (tag, type, 1);
-
-  if (tag == cc_strong_equality || tag == cc_weak_equality)
-    {
-      tree comp = fold_build2 (EQ_EXPR, boolean_type_node, op0, op1);
-      return fold_build3 (COND_EXPR, type, comp, eq, negt);
-    }
-
   tree r;
   op0 = save_expr (op0);
   op1 = save_expr (op1);
+
+  tree gt = lookup_comparison_result (tag, type, 1);
 
   if (tag == cc_partial_ordering)
     {
@@ -1084,16 +1060,17 @@ genericize_spaceship (tree type, tree op0, tree op1)
 	 op0 > op1 ? greater : unordered */
       tree uo = lookup_comparison_result (tag, type, 3);
       tree comp = fold_build2 (GT_EXPR, boolean_type_node, op0, op1);
-      r = fold_build3 (COND_EXPR, type, comp, negt, uo);
+      r = fold_build3 (COND_EXPR, type, comp, gt, uo);
     }
   else
     /* op0 == op1 ? equal : op0 < op1 ? less : greater */
-    r = negt;
+    r = gt;
 
   tree lt = lookup_comparison_result (tag, type, 2);
   tree comp = fold_build2 (LT_EXPR, boolean_type_node, op0, op1);
   r = fold_build3 (COND_EXPR, type, comp, lt, r);
 
+  tree eq = lookup_comparison_result (tag, type, 0);
   comp = fold_build2 (EQ_EXPR, boolean_type_node, op0, op1);
   r = fold_build3 (COND_EXPR, type, comp, eq, r);
 
@@ -1177,18 +1154,6 @@ common_comparison_type (vec<tree> &comps)
 	/* If any Ti is not a comparison category type, U is void.  */
 	return void_type_node;
     }
-
-  /* Otherwise, if at least one T i is std::weak_equality, or at least one T i
-     is std::strong_equality and at least one T j is std::partial_ordering or
-     std::weak_ordering, U is std::weak_equality.  */
-  if (tree t = seen[cc_weak_equality]) return t;
-  if (seen[cc_strong_equality]
-      && (seen[cc_partial_ordering] || seen[cc_weak_ordering]))
-    return lookup_comparison_category (cc_weak_equality);
-
-  /* Otherwise, if at least one T i is std::strong_equality, U is
-     std::strong_equality.  */
-  if (tree t = seen[cc_strong_equality]) return t;
 
   /* Otherwise, if at least one T i is std::partial_ordering, U is
      std::partial_ordering.  */

@@ -1,3 +1,11 @@
+2019-11-07  Jason Merrill  <jason@redhat.com>
+
+	Implement D1959R0, remove weak_equality and strong_equality.
+	* method.c (enum comp_cat_tag, comp_cat_info): Remove *_equality.
+	(genericize_spaceship, common_comparison_type): Likewise.
+	* typeck.c (cp_build_binary_op): Move SPACESHIP_EXPR to be with the
+	relational operators, exclude other types no longer supported.
+
 2019-11-06  Jason Merrill  <jason@redhat.com>
 
 	Implement D1907R1 "structural type".

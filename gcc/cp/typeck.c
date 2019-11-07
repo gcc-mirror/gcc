@@ -4889,7 +4889,6 @@ cp_build_binary_op (const op_location_t &location,
 
     case EQ_EXPR:
     case NE_EXPR:
-    case SPACESHIP_EXPR:
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
 	goto vector_compare;
       if ((complain & tf_warning)
@@ -4966,9 +4965,7 @@ cp_build_binary_op (const op_location_t &location,
 	  warn_for_null_address (location, op1, complain);
 	}
       else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
-	       || (code == SPACESHIP_EXPR
-		   ? TYPE_PTRMEM_P (type0) && TYPE_PTRMEM_P (type1)
-		   : TYPE_PTRDATAMEM_P (type0) && TYPE_PTRDATAMEM_P (type1)))
+	       || (TYPE_PTRDATAMEM_P (type0) && TYPE_PTRDATAMEM_P (type1)))
 	result_type = composite_pointer_type (location,
 					      type0, type1, op0, op1,
 					      CPO_COMPARISON, complain);
@@ -5172,6 +5169,7 @@ cp_build_binary_op (const op_location_t &location,
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
+    case SPACESHIP_EXPR:
       if (TREE_CODE (orig_op0) == STRING_CST
 	  || TREE_CODE (orig_op1) == STRING_CST)
 	{
@@ -5369,7 +5367,9 @@ cp_build_binary_op (const op_location_t &location,
       tree_code orig_code0 = TREE_CODE (orig_type0);
       tree orig_type1 = TREE_TYPE (orig_op1);
       tree_code orig_code1 = TREE_CODE (orig_type1);
-      if ((orig_code0 == BOOLEAN_TYPE) != (orig_code1 == BOOLEAN_TYPE))
+      if (!result_type)
+	/* Nope.  */;
+      else if ((orig_code0 == BOOLEAN_TYPE) != (orig_code1 == BOOLEAN_TYPE))
 	/* "If one of the operands is of type bool and the other is not, the
 	   program is ill-formed."  */
 	result_type = NULL_TREE;
@@ -5377,6 +5377,9 @@ cp_build_binary_op (const op_location_t &location,
 	       && code1 == POINTER_TYPE && orig_code1 != POINTER_TYPE)
 	/* We only do array/function-to-pointer conversion if "at least one of
 	   the operands is of pointer type".  */
+	result_type = NULL_TREE;
+      else if (TYPE_PTRFN_P (result_type) || NULLPTR_TYPE_P (result_type))
+	/* <=> no longer supports equality relations.  */
 	result_type = NULL_TREE;
       else if (orig_code0 == ENUMERAL_TYPE && orig_code1 == ENUMERAL_TYPE
 	       && !(same_type_ignoring_top_level_qualifiers_p

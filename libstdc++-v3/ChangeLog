@@ -1,3 +1,7 @@
+2019-11-07  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/compare: Remove strong_equality and weak_equality.
+
 2019-11-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.in: Regenerate.

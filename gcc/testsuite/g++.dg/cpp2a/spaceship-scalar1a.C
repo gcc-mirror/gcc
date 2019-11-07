@@ -4,9 +4,6 @@
 
 #define assert(X) do { if (!(X)) __builtin_abort(); } while(0)
 
-void f(){}
-void g(){}
-
 template <class T, class U, class R>
 constexpr bool check(T a, U b, R expected)
 {
@@ -29,13 +26,4 @@ int main()
   static_assert (check (&ar[1], &ar[0], std::strong_ordering::greater));
 
   static_assert (check (3.14, 3.14, std::partial_ordering::equivalent));
-
-  // GCC doesn't consider &f == &g to be a constant expression (PR 69681)
-  assert (check (&f, &g, std::strong_equality::nonequal));
-
-  struct A { int i; int j; };
-  static_assert (check (&A::i, &A::j, std::strong_equality::nonequal));
-
-  struct A2 { void f(); };
-  static_assert (check (&A2::f, &A2::f, std::strong_equality::equal));
 }
