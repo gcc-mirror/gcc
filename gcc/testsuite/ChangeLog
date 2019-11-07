@@ -1,3 +1,12 @@
+2019-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91370 - Implement P1041R4 and P1139R2 - Stronger Unicode reqs
+	* g++.dg/cpp1z/utf8-neg.C: Expect errors rather than -Wmultichar
+	warnings.
+	* g++.dg/ext/utf16-4.C: Expect errors rather than warnings.
+	* g++.dg/ext/utf32-4.C: Likewise.
+	* g++.dg/cpp2a/ucn2.C: New test.
+
 2019-11-07  Peter Bergner <bergner@linux.ibm.com>
 
 	PR other/92090
