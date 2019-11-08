@@ -1,3 +1,22 @@
+2019-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/92095
+	* config/sparc/sparc-protos.h (output_load_pcrel_sym): Declare.
+	* config/sparc/sparc.c (sparc_cannot_force_const_mem): Revert latest
+ 	change.
+	(got_helper_needed): New static variable.
+	(output_load_pcrel_sym): New function.
+	(get_pc_thunk_name): Remove after inlining...
+	(load_got_register): ...here.  Rework the initialization of the GOT
+	register and of the GOT helper.
+	(save_local_or_in_reg_p): Test the REGNO of the GOT register.
+	(sparc_file_end): Test got_helper_needed to decide whether the GOT
+	helper must be emitted.  Use output_asm_insn instead of fprintf.
+	(sparc_init_pic_reg): In PIC mode, always initialize the PIC register
+	if optimization is enabled.
+	* config/sparc/sparc.md (load_pcrel_sym<P:mode>): Emit the assembly
+	by calling output_load_pcrel_sym.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-sra.c (create_access): Delay disqualifying the base
