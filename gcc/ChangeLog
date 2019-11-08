@@ -1,5 +1,9 @@
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_BH, SVE_BHS): Delete.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_builtin_vectorized_function): Remove bswap handling.
 
