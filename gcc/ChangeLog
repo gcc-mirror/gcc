@@ -1,3 +1,10 @@
+2019-11-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/92055
+	* config/avr/avr.opt (-mdouble=, -mlong-double=):
+	Fix a missing '-' when displaying these options in the
+	help screen.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/iterators.md (SVE_BH, SVE_BHS): Delete.
@@ -411,7 +418,7 @@
 	(HAVE_DOUBLE_MULTILIB, HAVE_LONG_DOUBLE_MULTILIB): New variables.
 	Pass them down to...
 	* config/avr/genmultilib.awk: ...here and handle them.
-	* gcc/config/avr/avr.opt (-mdouble=, avr_double). New option and var.
+	* config/avr/avr.opt (-mdouble=, avr_double). New option and var.
 	(-mlong-double=, avr_long_double). New option and var.
 	* common/config/avr/avr-common.c (opts.h, diagnostic.h): Include.
 	(TARGET_OPTION_OPTIMIZATION_TABLE) <-mdouble=, -mlong-double=>:
