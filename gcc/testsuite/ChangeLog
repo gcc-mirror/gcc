@@ -1,5 +1,11 @@
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/general/deref_2.c: New test.
+	* gcc.target/aarch64/sve/acle/general/whilele_8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilelt_4.c: Likewise.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/general/inline_1.c: New test.
 
 2019-11-08  Richard Biener  <rguenther@suse.de>

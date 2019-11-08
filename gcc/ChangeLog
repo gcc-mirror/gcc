@@ -1,5 +1,10 @@
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle
+	POLY_INT_CST.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-inline.c (declare_return_variable): Check for poly_int_tree_p
 	instead of INTEGER_CST.
 
