@@ -16,6 +16,7 @@ contains
     !$acc host_data use_device (a) ! { dg-error "Assumed size" }
     !$acc end host_data
     !$acc parallel loop reduction(+:a) ! { dg-error "Assumed size" }
+    ! { dg-error "Array 'a' is not permitted in reduction" "" { target "*-*-*" } .-1 }
     do i = 1,5
     enddo
     !$acc end parallel loop
@@ -37,6 +38,7 @@ contains
     !$acc host_data use_device (a) ! { dg-error "Assumed rank" }
     !$acc end host_data
     !$acc parallel loop reduction(+:a) ! { dg-error "Assumed rank" }
+    ! { dg-error "Array 'a' is not permitted in reduction" "" { target "*-*-*" } .-1 }
     do i = 1,5
     enddo
     !$acc end parallel loop
@@ -45,6 +47,3 @@ contains
     !$acc update self (a) ! { dg-error "Assumed rank" }
   end subroutine assumed_rank
 end module test
-
-! { dg-error "Array 'a' is not permitted in reduction" "" { target "*-*-*" } 18 }
-! { dg-error "Array 'a' is not permitted in reduction" "" { target "*-*-*" } 39 }
