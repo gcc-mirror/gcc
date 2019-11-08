@@ -380,6 +380,8 @@ struct def_pragma_macro {
 
   /* Mark if we save an undefined macro.  */
   unsigned int is_undef : 1;
+  /* Nonzero if it was a builtin macro.  */
+  unsigned int is_builtin : 1;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
@@ -712,6 +714,8 @@ extern void *_cpp_commit_buff (cpp_reader *pfile, size_t size);
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
 extern const char *cpp_named_operator2name (enum cpp_ttype type);
+extern void _cpp_restore_special_builtin (cpp_reader *pfile,
+					  struct def_pragma_macro *);
 
 /* In directives.c */
 extern int _cpp_test_assertion (cpp_reader *, unsigned int *);
