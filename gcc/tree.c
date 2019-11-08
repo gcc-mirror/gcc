@@ -5777,7 +5777,8 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
       while (*nextp)
 	{
 	  tree var = *nextp;
-	  if (fndecl_built_in_p (var))
+	  if (TREE_CODE (var) == FUNCTION_DECL
+	      && fndecl_built_in_p (var))
 	    *nextp = TREE_CHAIN (var);
 	  else
 	    nextp = &TREE_CHAIN (var);
