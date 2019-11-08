@@ -1,3 +1,12 @@
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (neutral_op_for_slp_reduction): Take the
+	vector type as an argument rather than reading it from the
+	stmt_vec_info.
+	(vect_create_epilog_for_reduction): Update accordingly.
+	(vectorizable_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+
 2019-11-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/predicates.md (branch_comparison_operator): Allow only
