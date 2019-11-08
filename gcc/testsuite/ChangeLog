@@ -1,3 +1,11 @@
+2019-11-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92351
+	* gcc.dg/vect/vect-peel-2.c: Disable epilogue vectorization and
+	split the source of this test to...
+	* gcc.dg/vect/vect-peel-2-src.c: ... This.
+	* gcc.dg/vect/vect-peel-2-epilogues.c: New test.
+
 2019-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20191108-1.c: New test.

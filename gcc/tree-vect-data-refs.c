@@ -938,6 +938,18 @@ vect_compute_data_ref_alignment (dr_vec_info *dr_info)
     = exact_div (vect_calculate_target_alignment (dr_info), BITS_PER_UNIT);
   DR_TARGET_ALIGNMENT (dr_info) = vector_alignment;
 
+  /* If the main loop has peeled for alignment we have no way of knowing
+     whether the data accesses in the epilogues are aligned.  We can't at
+     compile time answer the question whether we have entered the main loop or
+     not.  Fixes PR 92351.  */
+  if (loop_vinfo)
+    {
+      loop_vec_info orig_loop_vinfo = LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo);
+      if (orig_loop_vinfo
+	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (orig_loop_vinfo) != 0)
+	return;
+    }
+
   unsigned HOST_WIDE_INT vect_align_c;
   if (!vector_alignment.is_constant (&vect_align_c))
     return;
