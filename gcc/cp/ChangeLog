@@ -1,6 +1,12 @@
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85887
+	* decl.c (expand_static_init): Drop ECF_LEAF from __cxa_guard_acquire
+	and __cxa_guard_release.
+
 	2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92015
