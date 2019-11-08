@@ -1,6 +1,12 @@
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92343
+	* constexpr.c (potential_constant_expression_1): Return true rather
+	than false for PREDICT_EXPR.
+
 	2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90947
