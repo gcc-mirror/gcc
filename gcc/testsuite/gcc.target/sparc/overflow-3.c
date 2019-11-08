@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-O -fno-pie" } */
 /* { dg-require-effective-target lp64 } */
 
 #include <stdbool.h>

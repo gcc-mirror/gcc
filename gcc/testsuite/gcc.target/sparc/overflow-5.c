@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mvis3" } */
+/* { dg-options "-O -fno-pie -mvis3" } */
 /* { dg-require-effective-target lp64 } */
 
 #include <stdbool.h>

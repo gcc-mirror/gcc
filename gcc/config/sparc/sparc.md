@@ -1601,10 +1601,7 @@
    (clobber (reg:P O7_REG))]
   "REGNO (operands[0]) == INTVAL (operands[3])"
 {
-  if (flag_delayed_branch)
-    return "sethi\t%%hi(%a1-4), %0\n\tcall\t%a2\n\t add\t%0, %%lo(%a1+4), %0";
-  else
-    return "sethi\t%%hi(%a1-8), %0\n\tadd\t%0, %%lo(%a1-4), %0\n\tcall\t%a2\n\t nop";
+  return output_load_pcrel_sym (operands);
 }
   [(set (attr "type") (const_string "multi"))
    (set (attr "length")
