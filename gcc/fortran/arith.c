@@ -2534,8 +2534,7 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 static void
 character2representation (gfc_expr *result, gfc_expr *src)
 {
-  size_t src_len, result_len;
-  int i;
+  size_t src_len, result_len, i;
   src_len = src->value.character.length;
   gfc_target_expr_size (result, &result_len);
 

@@ -1,11 +1,16 @@
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* arith.c (character2representation): Change i type to size_t.
+
 2019-11-08  Mark Eggleston  <mark.eggleston@codethink.com>
-	Jim MacArthur  <jim.macarthur@codethink.co.uk>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
 
 	* arith.c (hollerith2representation): Use OPT_Wcharacter_truncation in
-	call to gfc_warning.  Add character2representation, gfc_character2int,
-	gfc_character2real, gfc_character2complex and gfc_character2logical.
-	* arith.h: Add prototypes for gfc_character2int, gfc_character2real,
-	gfc_character2complex and gfc_character2logical.
+	call to gfc_warning.
+	(character2representation, gfc_character2int, gfc_character2real,
+	gfc_character2complex and gfc_character2logical): New.
+	* arith.h (gfc_character2int, gfc_character2real, gfc_character2complex,
+	gfc_character2logical): Declare.
 	* expr.c (gfc_check_assign): Return true if left hand side is numeric
 	or logical and the right hand side is character and of kind=1.
 	* gfortran.texi: Add -fdec-char-conversions.
