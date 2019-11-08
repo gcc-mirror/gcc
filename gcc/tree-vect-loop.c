@@ -2590,17 +2590,17 @@ reduction_fn_for_scalar_code (enum tree_code code, internal_fn *reduc_fn)
 
 /* If there is a neutral value X such that SLP reduction NODE would not
    be affected by the introduction of additional X elements, return that X,
-   otherwise return null.  CODE is the code of the reduction.  REDUC_CHAIN
-   is true if the SLP statements perform a single reduction, false if each
-   statement performs an independent reduction.  */
+   otherwise return null.  CODE is the code of the reduction and VECTOR_TYPE
+   is the vector type that would hold element X.  REDUC_CHAIN is true if
+   the SLP statements perform a single reduction, false if each statement
+   performs an independent reduction.  */
 
 static tree
-neutral_op_for_slp_reduction (slp_tree slp_node, tree_code code,
-			      bool reduc_chain)
+neutral_op_for_slp_reduction (slp_tree slp_node, tree vector_type,
+			      tree_code code, bool reduc_chain)
 {
   vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   stmt_vec_info stmt_vinfo = stmts[0];
-  tree vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
   tree scalar_type = TREE_TYPE (vector_type);
   class loop *loop = gimple_bb (stmt_vinfo->stmt)->loop_father;
   gcc_assert (loop);
@@ -4220,11 +4220,6 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
     = as_a <gphi *> (STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))->stmt);
   enum tree_code code = STMT_VINFO_REDUC_CODE (reduc_info);
   internal_fn reduc_fn = STMT_VINFO_REDUC_FN (reduc_info);
-  tree neutral_op = NULL_TREE;
-  if (slp_node)
-    neutral_op
-      = neutral_op_for_slp_reduction (slp_node_instance->reduc_phis, code,
-				      REDUC_GROUP_FIRST_ELEMENT (stmt_info));
   stmt_vec_info prev_phi_info;
   tree vectype;
   machine_mode mode;
@@ -4822,6 +4817,14 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 scalar value if we have one, otherwise the initial scalar value
 	 is itself a neutral value.  */
       tree vector_identity = NULL_TREE;
+      tree neutral_op = NULL_TREE;
+      if (slp_node)
+	{
+	  stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (stmt_info);
+	  neutral_op
+	    = neutral_op_for_slp_reduction (slp_node_instance->reduc_phis,
+					    vectype, code, first != NULL);
+	}
       if (neutral_op)
 	vector_identity = gimple_build_vector_from_val (&seq, vectype,
 							neutral_op);
@@ -6214,7 +6217,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
   tree neutral_op = NULL_TREE;
   if (slp_node)
     neutral_op = neutral_op_for_slp_reduction
-      (slp_node_instance->reduc_phis, orig_code,
+      (slp_node_instance->reduc_phis, vectype_out, orig_code,
        REDUC_GROUP_FIRST_ELEMENT (stmt_info) != NULL);
 
   if (double_reduc && reduction_type == FOLD_LEFT_REDUCTION)
@@ -6797,7 +6800,7 @@ vect_transform_cycle_phi (stmt_vec_info stmt_info, stmt_vec_info *vec_stmt,
       gcc_assert (slp_node == slp_node_instance->reduc_phis);
       stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info);
       tree neutral_op
-	= neutral_op_for_slp_reduction (slp_node,
+	= neutral_op_for_slp_reduction (slp_node, vectype_out,
 					STMT_VINFO_REDUC_CODE (reduc_info),
 					first != NULL);
       get_initial_defs_for_reduction (slp_node_instance->reduc_phis,
