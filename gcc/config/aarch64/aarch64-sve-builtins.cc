@@ -2996,6 +2996,7 @@ register_builtin_types ()
       gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
       SET_TYPE_STRUCTURAL_EQUALITY (vectype);
       TYPE_ARTIFICIAL (vectype) = 1;
+      TYPE_INDIVISIBLE_P (vectype) = 1;
       abi_vector_types[i] = vectype;
       lang_hooks.types.register_builtin_type (vectype,
 					      vector_types[i].abi_name);
