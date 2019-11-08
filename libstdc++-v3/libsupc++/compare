@@ -385,18 +385,81 @@ namespace std
   is_gteq(partial_ordering __cmp) noexcept
   { return __cmp >= 0; }
 
+#if __cpp_lib_concepts
+  namespace __detail
+  {
+    template<typename _Tp>
+      inline constexpr unsigned __cmp_cat_id = 1;
+    template<>
+      inline constexpr unsigned __cmp_cat_id<strong_ordering> = 2;
+    template<>
+      inline constexpr unsigned __cmp_cat_id<weak_ordering> = 4;
+    template<>
+      inline constexpr unsigned __cmp_cat_id<partial_ordering> = 8;
+
+    template<typename... _Ts>
+      constexpr unsigned __cmp_cat_ids()
+      { return (__cmp_cat_id<_Ts> | ...); }
+
+    template<unsigned>
+      struct __common_cmp_cat;
+
+    // If any Ti is not a comparison category type, U is void.
+    template<unsigned _Bits>
+      requires ((_Bits & 1) == 1)
+      struct __common_cmp_cat<_Bits> { using type = void; };
+
+    // Otherwise, if at least one Ti is std::partial_ordering,
+    // U is std::partial_ordering.
+    template<unsigned _Bits>
+      requires ((_Bits & 0b1001) == 0b1000)
+      struct __common_cmp_cat<_Bits> { using type = partial_ordering; };
+
+    // Otherwise, if at least one Ti is std::weak_ordering,
+    // U is std::weak_ordering.
+    template<unsigned _Bits>
+      requires ((_Bits & 0b1101) == 0b0100)
+      struct __common_cmp_cat<_Bits> { using type = weak_ordering; };
+
+    // Otherwise, U is std::strong_ordering.
+    template<>
+      struct __common_cmp_cat<0b0010> { using type = strong_ordering; };
+  } // namespace __detail
+
   // [cmp.common], common comparison category type
   template<typename... _Ts>
     struct common_comparison_category
     {
-      // using type = TODO
+      using type
+	= __detail::__common_cmp_cat<__detail::__cmp_cat_ids<_Ts...>()>::type;
     };
+
+  // Partial specializations for one and zero argument cases.
+
+  template<typename _Tp>
+    struct common_comparison_category<_Tp>
+    { using type = void; };
+
+  template<>
+    struct common_comparison_category<partial_ordering>
+    { using type = partial_ordering; };
+
+  template<>
+    struct common_comparison_category<weak_ordering>
+    { using type = weak_ordering; };
+
+  template<>
+    struct common_comparison_category<strong_ordering>
+    { using type = strong_ordering; };
+
+  template<>
+    struct common_comparison_category<>
+    { using type = strong_ordering; };
 
   template<typename... _Ts>
     using common_comparison_category_t
       = typename common_comparison_category<_Ts...>::type;
 
-#if __cpp_lib_concepts
   namespace __detail
   {
     template<typename _Tp, typename _Cat>
@@ -493,22 +556,22 @@ namespace std
     template<typename _Tp, typename _Up>
       requires (three_way_comparable_with<_Tp, _Up>
 	  || __detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
-    constexpr auto
-    operator()(_Tp&& __t, _Up&& __u) const noexcept
-    {
-      if constexpr (__detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
-	{
-	  auto __pt = static_cast<const volatile void*>(__t);
-	  auto __pu = static_cast<const volatile void*>(__u);
-	  if (__builtin_is_constant_evaluated())
-	    return __pt <=> __pu;
-	  auto __it = reinterpret_cast<__UINTPTR_TYPE__>(__pt);
-	  auto __iu = reinterpret_cast<__UINTPTR_TYPE__>(__pu);
-	  return __it <=> __iu;
-	}
-      else
-	return static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u);
-    }
+      constexpr auto
+      operator()(_Tp&& __t, _Up&& __u) const noexcept
+      {
+	if constexpr (__detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
+	  {
+	    auto __pt = static_cast<const volatile void*>(__t);
+	    auto __pu = static_cast<const volatile void*>(__u);
+	    if (__builtin_is_constant_evaluated())
+	      return __pt <=> __pu;
+	    auto __it = reinterpret_cast<__UINTPTR_TYPE__>(__pt);
+	    auto __iu = reinterpret_cast<__UINTPTR_TYPE__>(__pu);
+	    return __it <=> __iu;
+	  }
+	else
+	  return static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u);
+      }
 
     using is_transparent = void;
   };
