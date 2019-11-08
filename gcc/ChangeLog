@@ -1,3 +1,16 @@
+2019-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* symtab.c: Fix comment typos.
+	* cgraphunit.c: Likewise.
+	* cgraph.h: Likewise.
+	* cgraphclones.c: Likewise.
+	* cgraph.c: Likewise.
+	* varpool.c: Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* ipa-sra.c: Likewise.
+	(scan_expr_access, check_all_callers_for_issues): Fix typo
+	in a dump message.
+
 2019-11-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin-protos.h: Add include quard.
