@@ -1,3 +1,11 @@
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92015
+	* g++.dg/cpp0x/constexpr-92015.C: New test.
+
 2019-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20191108-1.c: New test.
