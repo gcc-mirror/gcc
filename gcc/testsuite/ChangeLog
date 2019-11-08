@@ -1,3 +1,8 @@
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_2.c: Likewise.
+
 2019-11-08  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR target/92132

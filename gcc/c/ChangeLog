@@ -1,3 +1,21 @@
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-convert.c (convert): Only handle vector conversions if one of
+	the types satisfies gnu_vector_type_p or if -flax-vector-conversions
+	allows it.
+	* c-typeck.c (build_array_ref): Only allow vector indexing if the
+	vectors satisfy gnu_vector_type_p.
+	(build_unary_op): Only allow unary operators to be applied to
+	vectors if they satisfy gnu_vector_type_p.
+	(digest_init): Only allow by-element initialization of vectors
+	if they satisfy gnu_vector_type_p.
+	(really_start_incremental_init): Likewise.
+	(push_init_level): Likewise.
+	(pop_init_level): Likewise.
+	(process_init_element): Likewise.
+	(build_binary_op): Only allow binary operators to be applied to
+	vectors if they satisfy gnu_vector_type_p.
+
 2019-11-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (grokparms): Convert () in a function definition to

@@ -1,3 +1,14 @@
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.h (gnu_vector_type_p): New function.
+	* c-common.c (c_build_vec_perm_expr): Require __builtin_shuffle
+	vectors to satisfy gnu_vector_type_p.
+	(c_build_vec_convert): Likewise __builtin_convertvector.
+	(convert_vector_to_array_for_subscript): Likewise when applying
+	implicit vector to array conversion.
+	(scalar_to_vector): Likewise when converting vector-scalar
+	operations to vector-vector operations.
+
 2019-11-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (Wold-style-definition): Initialize to -1.

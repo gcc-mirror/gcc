@@ -1,5 +1,12 @@
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-core.h (tree_type_common::indivisible_p): New member variable.
+	* tree.h (TYPE_INDIVISIBLE_P): New macro.
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types):
+	Treat the vector types as indivisible.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* optabs.def (gather_load_optab, mask_gather_load_optab)
 	(scatter_store_optab, mask_scatter_store_optab): Turn into
 	conversion optabs, with the offset mode given explicitly.
