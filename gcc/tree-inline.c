@@ -3593,7 +3593,9 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
      vs. the call expression.  */
   if (modify_dest)
     caller_type = TREE_TYPE (modify_dest);
-  else
+  else if (return_slot)
+    caller_type = TREE_TYPE (return_slot);
+  else /* No LHS on the call.  */
     caller_type = TREE_TYPE (TREE_TYPE (callee));
 
   /* We don't need to do anything for functions that don't return anything.  */
@@ -3634,6 +3636,10 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	  && !DECL_GIMPLE_REG_P (result)
 	  && DECL_P (var))
 	DECL_GIMPLE_REG_P (var) = 0;
+
+      if (!useless_type_conversion_p (callee_type, caller_type))
+	var = build1 (VIEW_CONVERT_EXPR, callee_type, var);
+
       use = NULL;
       goto done;
     }
