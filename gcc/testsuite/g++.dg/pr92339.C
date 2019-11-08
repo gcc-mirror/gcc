@@ -1,10 +1,19 @@
 /* PR c++/92339  */
 /* { dg-options "-std=c++11" } */
 
-class a {
-  template <typename b, b a::*> struct c { c(a *); };
+class classA
+{
+  template <typename typeB, typeB classA::*> struct typeC
+  {
+    typeC (classA *);
+  };
   int m_fn1();
-  unsigned long d;
-  using e = c<unsigned long, &a::d>;
+  unsigned long fieldD;
+  using typeE = typeC<unsigned long, &classA::fieldD>;
 };
-int a::m_fn1() { e(this); return 0; }
+int
+classA::m_fn1 ()
+{
+  typeE (this);
+  return 0;
+}
