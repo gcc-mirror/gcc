@@ -1,3 +1,13 @@
+2019-11-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (memory_barrier): Revise to use ldcw barriers.
+	Enhance comment.
+	(memory_barrier_coherent, memory_barrier_64, memory_barrier_32): New
+	insn patterns using ldcw instruction.
+	(memory_barrier): Remove insn pattern using sync instruction.
+	* config/pa/pa.opt (coherent-ldcw): New option.
+	(ordered): New option.
+
 2019-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (validate_condition_mode): Don't assert for
