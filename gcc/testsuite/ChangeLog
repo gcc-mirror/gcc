@@ -1,3 +1,8 @@
+2019-11-07  Peter Bergner <bergner@linux.ibm.com>
+
+	PR other/92090
+	* gcc.target/powerpc/pr92090-2.c: New test.
+
 2019-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/tm/attrs-1.c: New test.
