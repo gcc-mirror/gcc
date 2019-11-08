@@ -1,5 +1,8 @@
 2019-11-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/user.cfg.in (INPUT): Add <compare> header.
+	* include/precompiled/stdc++.h: Include <compare> header.
+
 	* libsupc++/compare (common_comparison_category)
 	(common_comparison_category_t): Define for C++20.
 	* testsuite/18_support/comparisons/common/1.cc: New test.
