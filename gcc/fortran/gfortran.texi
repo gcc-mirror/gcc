@@ -1600,6 +1600,7 @@ additional compatibility extensions along with those enabled by
 * Unary operators::
 * Implicitly convert LOGICAL and INTEGER values::
 * Hollerith constants support::
+* Character conversion::
 * Cray pointers::
 * CONVERT specifier::
 * OpenMP::
@@ -1952,6 +1953,30 @@ obtained by using the @code{TRANSFER} statement, as in this example.
 @smallexample
       INTEGER(KIND=4) :: a
       a = TRANSFER ("abcd", a)     ! equivalent to: a = 4Habcd
+@end smallexample
+
+
+@node Character conversion
+@subsection Character conversion
+@cindex conversion, to character
+
+Allowing character literals to be used in a similar way to Hollerith constants
+is a non-standard extension.  This feature is enabled using
+-fdec-char-conversions and only applies to character literals of @code{kind=1}.
+
+Character literals can be used in @code{DATA} statements and assignments with
+numeric (@code{INTEGER}, @code{REAL}, or @code{COMPLEX}) or @code{LOGICAL}
+variables. Like Hollerith constants they are copied byte-wise fashion. The
+constant will be padded with spaces or truncated to fit the size of the
+variable in which it is stored.
+
+Examples:
+@smallexample
+      integer*4 x
+      data x / 'abcd' /
+
+      x = 'A'       ! Will be padded.
+      x = 'ab1234'  ! Will be truncated.
 @end smallexample
 
 
