@@ -2455,11 +2455,15 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	    delete loop_vinfo;
 
 	  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is
-	     enabled, this is not a simd loop and it is the innermost loop.  */
-	  vect_epilogues = (!loop->simdlen
+	     enabled, SIMDUID is not set, it is the innermost loop and we have
+	     either already found the loop's SIMDLEN or there was no SIMDLEN to
+	     begin with.
+	     TODO: Enable epilogue vectorization for loops with SIMDUID set.  */
+	  vect_epilogues = (!simdlen
 			    && loop->inner == NULL
 			    && PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK)
 			    && LOOP_VINFO_PEELING_FOR_NITER (first_loop_vinfo)
+			    && !loop->simduid
 			    /* For now only allow one epilogue loop.  */
 			    && first_loop_vinfo->epilogue_vinfos.is_empty ());
 
