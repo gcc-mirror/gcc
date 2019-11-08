@@ -1,5 +1,10 @@
-2019-11-08 Mark Eggleston <mark.eggleston@codethink.com>
-	Jim MacArthur <jim.macarthur@codethink.co.uk>
+2019-11-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92058 - constinit malfunction in static data member.
+	* g++.dg/cpp2a/constinit15.C: New test.
+
+2019-11-08  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
 
 	* gfortran.dg/dec_char_conversion_in_assignment_1.f90: New test.
 	* gfortran.dg/dec_char_conversion_in_assignment_2.f90: New test.
