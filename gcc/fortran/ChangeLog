@@ -1,3 +1,33 @@
+2019-11-08  Mark Eggleston  <mark.eggleston@codethink.com>
+	Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* arith.c (hollerith2representation): Use OPT_Wcharacter_truncation in
+	call to gfc_warning.  Add character2representation, gfc_character2int,
+	gfc_character2real, gfc_character2complex and gfc_character2logical.
+	* arith.h: Add prototypes for gfc_character2int, gfc_character2real,
+	gfc_character2complex and gfc_character2logical.
+	* expr.c (gfc_check_assign): Return true if left hand side is numeric
+	or logical and the right hand side is character and of kind=1.
+	* gfortran.texi: Add -fdec-char-conversions.
+	* intrinsic.c (add_conversions): Add conversions from character to
+	integer, real, complex and logical types for their supported kinds.
+	(gfc_convert_type_warn): Reorder if..else if.. sequence so that warnings
+	are produced for conversion to logical.
+	* invoke.texi: Add option to list of options.
+	* invoke.texi: Add Character conversion subsection to Extensions
+	section.
+	* lang.opt: Add new option.
+	* options.c (set_dec_flags): Add SET_BITFLAG for
+	flag_dec_char_conversions.
+	* resolve.c (resolve_ordindary_assign): Issue error if the left hand
+	side is numeric or logical and the right hand side is a character
+	variable.
+	* simplify.c (gfc_convert_constant): Assign the conversion function
+	depending on destination type.
+	* trans-const.c (gfc_constant_to_tree): Use OPT_Wsurprising in
+	gfc_warning allowing the warning to be switched off only if
+	flag_dec_char_conversions is enabled.
+
 2019-11-08  Tobias Burnus  <tobias@codesourcery.com
 
 	PR fortran/91253

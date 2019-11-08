@@ -10689,6 +10689,18 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   lhs = code->expr1;
   rhs = code->expr2;
 
+  if ((gfc_numeric_ts (&lhs->ts) || lhs->ts.type == BT_LOGICAL)
+      && rhs->ts.type == BT_CHARACTER
+      && rhs->expr_type != EXPR_CONSTANT)
+    {
+      /* Use of -fdec-char-conversions allows assignment of character data
+	 to non-character variables.  This not permited for nonconstant
+	 strings.  */
+      gfc_error ("Cannot convert %s to %s at %L", gfc_typename (rhs),
+		 gfc_typename (lhs), &rhs->where);
+      return false;
+    }
+
   /* Handle the case of a BOZ literal on the RHS.  */
   if (rhs->ts.type == BT_BOZ)
     {

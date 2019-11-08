@@ -460,6 +460,11 @@ fdec-blank-format-item
 Fortran Var(flag_dec_blank_format_item)
 Enable the use of blank format items in format strings.
 
+fdec-char-conversions
+Fortran Var(flag_dec_char_conversions)
+Enable the use of character literals in assignments and data statements
+for non-character variables.
+
 fdec-include
 Fortran Var(flag_dec_include)
 Enable legacy parsing of INCLUDE as statement.

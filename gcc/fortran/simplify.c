@@ -8522,10 +8522,31 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
       break;
 
     case BT_CHARACTER:
-      if (type == BT_CHARACTER)
-	f = gfc_character2character;
-      else
-	goto oops;
+      switch (type)
+	{
+	case BT_INTEGER:
+	  f = gfc_character2int;
+	  break;
+
+	case BT_REAL:
+	  f = gfc_character2real;
+	  break;
+
+	case BT_COMPLEX:
+	  f = gfc_character2complex;
+	  break;
+
+	case BT_CHARACTER:
+	  f = gfc_character2character;
+	  break;
+
+	case BT_LOGICAL:
+	  f = gfc_character2logical;
+	  break;
+
+	default:
+	  goto oops;
+	}
       break;
 
     default:

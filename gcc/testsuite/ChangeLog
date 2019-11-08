@@ -1,3 +1,25 @@
+2019-11-08 Mark Eggleston <mark.eggleston@codethink.com>
+	Jim MacArthur <jim.macarthur@codethink.co.uk>
+
+	* gfortran.dg/dec_char_conversion_in_assignment_1.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_2.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_3.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_4.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_5.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_6.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_7.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_8.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_1.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_2.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_3.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_4.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_5.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_6.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_7.f90: New test.
+	* gfortran.dg/hollerith5.f90: Add -Wsurprising to options.
+	* gfortran.dg/hollerith_legacy.f90: Add -Wsurprising to options.
+	* gfortran.dg/no_char_to_numeric_assign.f90: New test.
+
 2019-11-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR tree-optimization/92351
