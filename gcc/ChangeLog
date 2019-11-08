@@ -1,3 +1,8 @@
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-sra.c (create_access): Delay disqualifying the base
+	for poly_int values until we know we have a base.
+
 2019-11-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* tree-vect-loop.c (vect_analyze_loop): Disable epilogue vectorization
