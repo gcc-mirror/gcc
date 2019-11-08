@@ -1,5 +1,10 @@
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/92038
+	* g++.dg/opt/store-merging-1.C: New test.
+	* g++.dg/opt/store-merging-2.C: New test.
+	* g++.dg/opt/store-merging-3.C: New test.
+
 	PR c++/92384
 	* g++.dg/torture/pr92384.C: New test.
 

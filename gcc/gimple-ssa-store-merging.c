@@ -3110,7 +3110,8 @@ split_store::split_store (unsigned HOST_WIDE_INT bp,
 /* Record all stores in GROUP that write to the region starting at BITPOS and
    is of size BITSIZE.  Record infos for such statements in STORES if
    non-NULL.  The stores in GROUP must be sorted by bitposition.  Return INFO
-   if there is exactly one original store in the range.  */
+   if there is exactly one original store in the range (in that case ignore
+   clobber stmts, unless there are only clobber stmts).  */
 
 static store_immediate_info *
 find_constituent_stores (class merged_store_group *group,
@@ -3146,16 +3147,24 @@ find_constituent_stores (class merged_store_group *group,
       if (stmt_start >= end)
 	return ret;
 
+      if (gimple_clobber_p (info->stmt))
+	{
+	  if (stores)
+	    stores->safe_push (info);
+	  if (ret == NULL)
+	    ret = info;
+	  continue;
+	}
       if (stores)
 	{
 	  stores->safe_push (info);
-	  if (ret)
+	  if (ret && !gimple_clobber_p (ret->stmt))
 	    {
 	      ret = NULL;
 	      second = true;
 	    }
 	}
-      else if (ret)
+      else if (ret && !gimple_clobber_p (ret->stmt))
 	return NULL;
       if (!second)
 	ret = info;
@@ -3347,13 +3356,17 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 
   if (bzero_first)
     {
-      first = 1;
+      store_immediate_info *gstore;
+      FOR_EACH_VEC_ELT (group->stores, first, gstore)
+	if (!gimple_clobber_p (gstore->stmt))
+	  break;
+      ++first;
       ret = 1;
       if (split_stores)
 	{
 	  split_store *store
-	    = new split_store (bytepos, group->stores[0]->bitsize, align_base);
-	  store->orig_stores.safe_push (group->stores[0]);
+	    = new split_store (bytepos, gstore->bitsize, align_base);
+	  store->orig_stores.safe_push (gstore);
 	  store->orig = true;
 	  any_orig = true;
 	  split_stores->safe_push (store);
@@ -3377,6 +3390,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
       unsigned HOST_WIDE_INT align_bitpos
 	= (try_bitpos - align_base) & (group_align - 1);
       unsigned HOST_WIDE_INT align = group_align;
+      bool found_orig = false;
       if (align_bitpos)
 	align = least_bit_hwi (align_bitpos);
       if (!allow_unaligned_store)
@@ -3408,7 +3422,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	}
       store_immediate_info *info
 	= find_constituent_stores (group, NULL, &first, try_bitpos, try_size);
-      if (info)
+      if (info && !gimple_clobber_p (info->stmt))
 	{
 	  /* If there is just one original statement for the range, see if
 	     we can just reuse the original store which could be even larger
@@ -3419,8 +3433,30 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 					  stmt_end - try_bitpos);
 	  if (info && info->bitpos >= try_bitpos)
 	    {
-	      try_size = stmt_end - try_bitpos;
-	      goto found;
+	      store_immediate_info *info2 = NULL;
+	      unsigned int first_copy = first;
+	      if (info->bitpos > try_bitpos
+		  && stmt_end - try_bitpos <= try_size)
+		{
+		  info2 = find_constituent_stores (group, NULL, &first_copy,
+						   try_bitpos,
+						   info->bitpos - try_bitpos);
+		  gcc_assert (info2 == NULL || gimple_clobber_p (info2->stmt));
+		}
+	      if (info2 == NULL && stmt_end - try_bitpos < try_size)
+		{
+		  info2 = find_constituent_stores (group, NULL, &first_copy,
+						   stmt_end,
+						   (try_bitpos + try_size)
+						   - stmt_end);
+		  gcc_assert (info2 == NULL || gimple_clobber_p (info2->stmt));
+		}
+	      if (info2 == NULL)
+		{
+		  try_size = stmt_end - try_bitpos;
+		  found_orig = true;
+		  goto found;
+		}
 	    }
 	}
 
@@ -3435,7 +3471,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	    && (!bzero_first
 		|| group->val[try_pos - bytepos + nonmasked - 1] != 0))
 	  break;
-      if (nonmasked == 0)
+      if (nonmasked == 0 || (info && gimple_clobber_p (info->stmt)))
 	{
 	  /* If entire try_size range is padding, skip it.  */
 	  try_pos += try_size / BITS_PER_UNIT;
@@ -3483,8 +3519,14 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	  info = find_constituent_stores (group, &store->orig_stores,
 					  &first, try_bitpos, try_size);
 	  if (info
+	      && !gimple_clobber_p (info->stmt)
 	      && info->bitpos >= try_bitpos
-	      && info->bitpos + info->bitsize <= try_bitpos + try_size)
+	      && info->bitpos + info->bitsize <= try_bitpos + try_size
+	      && (store->orig_stores.length () == 1
+		  || found_orig
+		  || (info->bitpos == try_bitpos
+		      && (info->bitpos + info->bitsize
+			  == try_bitpos + try_size))))
 	    {
 	      store->orig = true;
 	      any_orig = true;
@@ -3671,14 +3713,32 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
     = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
   bool allow_unaligned_load = allow_unaligned_store;
   bool bzero_first = false;
-  if (group->stores[0]->rhs_code == INTEGER_CST
-      && TREE_CODE (gimple_assign_rhs1 (group->stores[0]->stmt)) == CONSTRUCTOR
-      && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (group->stores[0]->stmt)) == 0
-      && group->start == group->stores[0]->bitpos
-      && group->width == group->stores[0]->bitsize
-      && (group->start % BITS_PER_UNIT) == 0
-      && (group->width % BITS_PER_UNIT) == 0)
-    bzero_first = true;
+  store_immediate_info *store;
+  unsigned int num_clobber_stmts = 0;
+  if (group->stores[0]->rhs_code == INTEGER_CST)
+    {
+      FOR_EACH_VEC_ELT (group->stores, i, store)
+	if (gimple_clobber_p (store->stmt))
+	  num_clobber_stmts++;
+	else if (TREE_CODE (gimple_assign_rhs1 (store->stmt)) == CONSTRUCTOR
+		 && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (store->stmt)) == 0
+		 && group->start == store->bitpos
+		 && group->width == store->bitsize
+		 && (group->start % BITS_PER_UNIT) == 0
+		 && (group->width % BITS_PER_UNIT) == 0)
+	  {
+	    bzero_first = true;
+	    break;
+	  }
+	else
+	  break;
+      FOR_EACH_VEC_ELT_FROM (group->stores, i, store, i)
+	if (gimple_clobber_p (store->stmt))
+	  num_clobber_stmts++;
+      if (num_clobber_stmts == orig_num_stmts)
+	return false;
+      orig_num_stmts -= num_clobber_stmts;
+    }
   if (allow_unaligned_store || bzero_first)
     {
       /* If unaligned stores are allowed, see how many stores we'd emit
@@ -3710,8 +3770,35 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
   split_group (group, allow_unaligned_store, allow_unaligned_load, bzero_first,
 	       &split_stores, &total_orig, &total_new);
 
-  if (split_stores.length () >= orig_num_stmts)
+  /* Determine if there is a clobber covering the whole group at the start,
+     followed by proposed split stores that cover the whole group.  In that
+     case, prefer the transformation even if
+     split_stores.length () == orig_num_stmts.  */
+  bool clobber_first = false;
+  if (num_clobber_stmts
+      && gimple_clobber_p (group->stores[0]->stmt)
+      && group->start == group->stores[0]->bitpos
+      && group->width == group->stores[0]->bitsize
+      && (group->start % BITS_PER_UNIT) == 0
+      && (group->width % BITS_PER_UNIT) == 0)
     {
+      clobber_first = true;
+      unsigned HOST_WIDE_INT pos = group->start / BITS_PER_UNIT;
+      FOR_EACH_VEC_ELT (split_stores, i, split_store)      
+	if (split_store->bytepos != pos)
+	  {
+	    clobber_first = false;
+	    break;
+	  }
+	else
+	  pos += split_store->size / BITS_PER_UNIT;
+      if (pos != (group->start + group->width) / BITS_PER_UNIT)
+	clobber_first = false;
+    }
+
+  if (split_stores.length () >= orig_num_stmts + clobber_first)
+    {
+
       /* We didn't manage to reduce the number of statements.  Bail out.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Exceeded original number of stmts (%u)."
@@ -3734,6 +3821,36 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	delete split_store;
       return false;
     }
+  if (group->stores[0]->rhs_code == INTEGER_CST)
+    {
+      bool all_orig = true;
+      FOR_EACH_VEC_ELT (split_stores, i, split_store)
+	if (!split_store->orig)
+	  {
+	    all_orig = false;
+	    break;
+	  }
+      if (all_orig)
+	{
+	  unsigned int cnt = split_stores.length ();
+	  store_immediate_info *store;
+	  FOR_EACH_VEC_ELT (group->stores, i, store)
+	    if (gimple_clobber_p (store->stmt))
+	      ++cnt;
+	  /* Punt if we wouldn't make any real changes, i.e. keep all
+	     orig stmts + all clobbers.  */
+	  if (cnt == group->stores.length ())
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Exceeded original number of stmts (%u)."
+				    "  Not profitable to emit new sequence.\n",
+			 orig_num_stmts);
+	      FOR_EACH_VEC_ELT (split_stores, i, split_store)
+		delete split_store;
+	      return false;
+	    }
+	}
+    }
 
   gimple_stmt_iterator last_gsi = gsi_for_stmt (group->last_stmt);
   gimple_seq seq = NULL;
@@ -3741,6 +3858,13 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
   last_vdef = gimple_vdef (group->last_stmt);
   new_vuse = gimple_vuse (group->last_stmt);
   tree bswap_res = NULL_TREE;
+
+  /* Clobbers are not removed.  */
+  if (gimple_clobber_p (group->last_stmt))
+    {
+      new_vuse = make_ssa_name (gimple_vop (cfun), group->last_stmt);
+      gimple_set_vdef (group->last_stmt, new_vuse);
+    }
 
   if (group->stores[0]->rhs_code == LROTATE_EXPR
       || group->stores[0]->rhs_code == NOP_EXPR)
@@ -3865,9 +3989,17 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
       location_t loc;
       if (split_store->orig)
 	{
-	  /* If there is just a single constituent store which covers
-	     the whole area, just reuse the lhs and rhs.  */
-	  gimple *orig_stmt = split_store->orig_stores[0]->stmt;
+	  /* If there is just a single non-clobber constituent store
+	     which covers the whole area, just reuse the lhs and rhs.  */
+	  gimple *orig_stmt = NULL;
+	  store_immediate_info *store;
+	  unsigned int j;
+	  FOR_EACH_VEC_ELT (split_store->orig_stores, j, store)
+	    if (!gimple_clobber_p (store->stmt))
+	      {
+		orig_stmt = store->stmt;
+		break;
+	      }
 	  dest = gimple_assign_lhs (orig_stmt);
 	  src = gimple_assign_rhs1 (orig_stmt);
 	  loc = gimple_location (orig_stmt);
@@ -4194,6 +4326,9 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	print_gimple_seq (dump_file, seq, 0, TDF_VOPS | TDF_MEMSYMS);
     }
 
+  if (gimple_clobber_p (group->last_stmt))
+    update_stmt (group->last_stmt);
+
   if (group->lp_nr > 0)
     {
       /* We're going to insert a sequence of (potentially) throwing stores
@@ -4279,6 +4414,10 @@ imm_store_chain_info::output_merged_stores ()
 	    {
 	      gimple *stmt = store->stmt;
 	      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	      /* Don't remove clobbers, they are still useful even if
+		 everything is overwritten afterwards.  */
+	      if (gimple_clobber_p (stmt))
+		continue;
 	      gsi_remove (&gsi, true);
 	      if (store->lp_nr)
 		remove_stmt_from_eh_lp (stmt);
@@ -4361,7 +4500,6 @@ rhs_valid_for_store_merging_p (tree rhs)
 {
   unsigned HOST_WIDE_INT size;
   if (TREE_CODE (rhs) == CONSTRUCTOR
-      && !TREE_CLOBBER_P (rhs)
       && CONSTRUCTOR_NELTS (rhs) == 0
       && TYPE_SIZE_UNIT (TREE_TYPE (rhs))
       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (rhs))))
@@ -4794,7 +4932,7 @@ store_valid_for_store_merging_p (gimple *stmt)
   return gimple_assign_single_p (stmt)
 	 && gimple_vdef (stmt)
 	 && lhs_valid_for_store_merging_p (gimple_assign_lhs (stmt))
-	 && !gimple_has_volatile_ops (stmt);
+	 && (!gimple_has_volatile_ops (stmt) || gimple_clobber_p (stmt));
 }
 
 enum basic_block_status { BB_INVALID, BB_VALID, BB_EXTENDED_VALID };
@@ -4875,7 +5013,7 @@ pass_store_merging::execute (function *fun)
 	  if (is_gimple_debug (stmt))
 	    continue;
 
-	  if (gimple_has_volatile_ops (stmt))
+	  if (gimple_has_volatile_ops (stmt) && !gimple_clobber_p (stmt))
 	    {
 	      /* Terminate all chains.  */
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5022,7 +5160,7 @@ verify_clear_bit_region (void)
   verify_array_eq (in, expected, sizeof in);
 }
 
-/* Test verify_clear_bit_region_be that it clears exactly the bits asked and
+/* Test clear_bit_region_be that it clears exactly the bits asked and
    nothing more.  */
 
 static void

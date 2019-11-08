@@ -1,5 +1,27 @@
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/92038
+	* gimple-ssa-store-merging.c (find_constituent_stores): For return
+	value only, return non-NULL if there is a single non-clobber
+	constituent store even if there are constituent clobbers and return
+	one of clobber constituent stores if all constituent stores are
+	clobbers.
+	(split_group): Handle clobbers.
+	(imm_store_chain_info::output_merged_store): When computing
+	bzero_first, look after all clobbers at the start.  Don't count
+	clobber stmts in orig_num_stmts, except if the first orig store is
+	a clobber covering the whole area and split_stores cover the whole
+	area, consider equal number of stmts ok.  Punt if split_stores
+	contains only ->orig stores and their number plus number of original
+	clobbers is equal to original number of stmts.  For ->orig, look past
+	clobbers in the constituent stores.
+	(imm_store_chain_info::output_merged_stores): Don't remove clobber
+	stmts.
+	(rhs_valid_for_store_merging_p): Don't return false for clobber stmt
+	rhs.
+	(store_valid_for_store_merging_p): Allow clobber stmts.
+	(verify_clear_bit_region_be): Fix up a thinko in function comment.
+
 	PR c++/92384
 	* function.c (assign_parm_setup_block, assign_parm_setup_stack): Don't
 	copy TYPE_EMPTY_P arguments from data->entry_parm to data->stack_parm
