@@ -1,3 +1,9 @@
+2019-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (Wold-style-definition): Initialize to -1.
+	* c-opts.c (c_common_post_options): Set warn_old_style_definition
+	to flag_isoc2x if not set explicitly.
+
 2019-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-attribs.c (parse_tm_stmt_attr): Handle scoped attributes.

@@ -1,3 +1,8 @@
+2019-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-Wold-style-definition): Document () not being
+	considered an old-style definition for C2x.
+
 2019-11-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (memory_barrier): Revise to use ldcw barriers.
