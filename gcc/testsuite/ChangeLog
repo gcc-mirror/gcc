@@ -1,3 +1,9 @@
+2019-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/dec_char_conversion_in_assignment_4.f90: Use
+	dg-do compile instead of dg-do run.
+	* gfortran.dg/dec_char_conversion_in_data_3.f90: Likewise.
+
 2019-11-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92215 - flawed diagnostic for bit-field with non-integral type.

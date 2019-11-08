@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do compile }
 ! { dg-options "-fdec -fno-dec-char-conversions" }
 !
 ! Modified by Mark Eggleston <mark.eggleston@codethink.com>
@@ -17,4 +17,3 @@ include "dec_char_conversion_in_assignment_1.f90"
 ! { dg-error "Cannot convert" " " { target *-*-* } 47 }
 ! { dg-error "Cannot convert" " " { target *-*-* } 48 }
 ! { dg-error "Cannot convert" " " { target *-*-* } 49 }
-
