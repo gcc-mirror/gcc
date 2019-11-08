@@ -1048,8 +1048,8 @@ cgraph_edge::remove (void)
      call call_dest
 
    At this time the function just creates the direct call,
-   the referencd representing the if conditional and attaches
-   them all to the orginal indirect call statement.  
+   the reference representing the if conditional and attaches
+   them all to the original indirect call statement.  
 
    Return direct edge created.  */
 
@@ -1143,7 +1143,7 @@ cgraph_edge::speculative_call_info (cgraph_edge *&direct,
   gcc_assert (e && e2 && ref);
 }
 
-/* Speculative call edge turned out to be direct call to CALLE_DECL.
+/* Speculative call edge turned out to be direct call to CALLEE_DECL.
    Remove the speculative call sequence and return edge representing the call.
    It is up to caller to redirect the call as appropriate. */
 
@@ -2337,7 +2337,7 @@ set_nothrow_flag_1 (cgraph_node *node, bool nothrow, bool non_call,
   if (nothrow && !TREE_NOTHROW (node->decl))
     {
       /* With non-call exceptions we can't say for sure if other function body
-	 was not possibly optimized to stil throw.  */
+	 was not possibly optimized to still throw.  */
       if (!non_call || node->binds_to_current_def_p ())
 	{
 	  TREE_NOTHROW (node->decl) = true;
@@ -2545,7 +2545,7 @@ set_const_flag_1 (cgraph_node *node, bool set_const, bool looping,
    If SET_CONST if false, clear the flag.
 
    When setting the flag be careful about possible interposition and
-   do not set the flag for functions that can be interposet and set pure
+   do not set the flag for functions that can be interposed and set pure
    flag for functions that can bind to other definition. 
 
    Return true if any change was done. */
@@ -2739,7 +2739,7 @@ cgraph_node::can_remove_if_no_direct_calls_p (bool will_inline)
   if (will_inline && address_taken)
     return false;
 
-  /* Otheriwse check if we can remove the symbol itself and then verify
+  /* Otherwise check if we can remove the symbol itself and then verify
      that only uses of the comdat groups are direct call to THIS
      or its aliases.   */
   if (!can_remove_if_no_direct_calls_and_refs_p ())
@@ -3615,7 +3615,7 @@ cgraph_c_finalize (void)
   version_info_node = NULL;
 }
 
-/* A wroker for call_for_symbol_and_aliases.  */
+/* A worker for call_for_symbol_and_aliases.  */
 
 bool
 cgraph_node::call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
@@ -3670,13 +3670,14 @@ cgraph_edge::possibly_call_in_translation_unit_p (void)
   if (flag_incremental_link == INCREMENTAL_LINK_LTO)
     return true;
 
-  /* We may be smarter here and avoid stremaing in indirect calls we can't
-     track, but that would require arranging stremaing the indirect call
+  /* We may be smarter here and avoid streaming in indirect calls we can't
+     track, but that would require arranging streaming the indirect call
      summary first.  */
   if (!callee)
     return true;
 
-  /* If calle is local to the original translation unit, it will be defined.  */
+  /* If callee is local to the original translation unit, it will be
+     defined.  */
   if (!TREE_PUBLIC (callee->decl) && !DECL_EXTERNAL (callee->decl))
     return true;
 
