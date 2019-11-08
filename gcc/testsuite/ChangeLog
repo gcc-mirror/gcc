@@ -1,3 +1,11 @@
+2019-11-08  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92132
+	* gcc.target/powerpc/pr92132-fp-1.c: New test.
+	* gcc.target/powerpc/pr92132-fp-2.c: New test.
+	* gcc.target/powerpc/pr92132-int-1.c: New test.
+	* gcc.target/powerpc/pr92132-int-2.c: New test.
+
 2019-11-08  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr92295.c: New test.

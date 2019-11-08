@@ -1,3 +1,30 @@
+2019-11-08  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92132
+	* config/rs6000/predicates.md
+	(signed_or_equality_comparison_operator): New predicate.
+	(unsigned_or_equality_comparison_operator): Likewise.
+	* config/rs6000/rs6000.md (one_cmpl<mode>2): Remove expand.
+	(one_cmpl<mode>3_internal): Rename to one_cmpl<mode>2.
+	* config/rs6000/vector.md
+	(vcond_mask_<mode><mode> for VEC_I and VEC_I): New expand.
+	(vec_cmp<mode><mode> for VEC_I and VEC_I): Likewise.
+	(vec_cmpu<mode><mode> for VEC_I and VEC_I): Likewise.
+	(vcond_mask_<mode><VEC_int> for VEC_F): New expand for float
+	vector modes and same-size integer vector modes.
+	(vec_cmp<mode><VEC_int> for VEC_F): Likewise.
+	(vector_lt<mode> for VEC_F): New expand.
+	(vector_le<mode> for VEC_F): Likewise.
+	(vector_ne<mode> for VEC_F): Likewise.
+	(vector_unge<mode> for VEC_F): Likewise.
+	(vector_ungt<mode> for VEC_F): Likewise.
+	(vector_unle<mode> for VEC_F): Likewise.
+	(vector_unlt<mode> for VEC_F): Likewise.
+	(vector_uneq<mode>): Expose name.
+	(vector_ltgt<mode>): Likewise.
+	(vector_unordered<mode>): Likewise.
+	(vector_ordered<mode>): Likewise.
+
 2019-11-08  Hongtao Liu  <Hongtao.liu@intel.com>
 
 	PR target/92295
