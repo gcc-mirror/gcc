@@ -1,3 +1,10 @@
+2019-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92324
+	* gcc.dg/vect/pr92205.c: XFAIL.
+	* gcc.dg/vect/pr92324-1.c: New testcase.
+	* gcc.dg/vect/pr92324-2.c: Likewise.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_1.c: New test.

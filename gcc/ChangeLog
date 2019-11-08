@@ -1,3 +1,17 @@
+2019-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92324
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	STMT_VINFO_REDUC_VECTYPE for all computations, inserting
+	sign-conversions as necessary.
+	(vectorizable_reduction): Reject conversions in the chain
+	that are not sign-conversions, base analysis on a non-converting
+	stmt and its operation sign.  Set STMT_VINFO_REDUC_VECTYPE.
+	* tree-vect-stmts.c (vect_stmt_relevant_p): Don't dump anything
+	for debug stmts.
+	* tree-vectorizer.h (_stmt_vec_info::reduc_vectype): New.
+	(STMT_VINFO_REDUC_VECTYPE): Likewise.
+
 2019-11-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/92055
