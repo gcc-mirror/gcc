@@ -3654,7 +3654,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       /* ??? If we're assigning to a variable sized type, then we must
 	 reuse the destination variable, because we've no good way to
 	 create variable sized temporaries at this point.  */
-      else if (TREE_CODE (TYPE_SIZE_UNIT (caller_type)) != INTEGER_CST)
+      else if (!poly_int_tree_p (TYPE_SIZE_UNIT (caller_type)))
 	use_it = true;
 
       /* If the callee cannot possibly modify MODIFY_DEST, then we can
@@ -3689,7 +3689,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	}
     }
 
-  gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (callee_type)) == INTEGER_CST);
+  gcc_assert (poly_int_tree_p (TYPE_SIZE_UNIT (callee_type)));
 
   var = copy_result_decl_to_var (result, id);
   DECL_SEEN_IN_BIND_EXPR_P (var) = 1;

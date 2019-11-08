@@ -1,3 +1,8 @@
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-inline.c (declare_return_variable): Check for poly_int_tree_p
+	instead of INTEGER_CST.
+
 2019-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92324
