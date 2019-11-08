@@ -330,12 +330,12 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	  basic_block bb = gimple_bb (USE_STMT (use_p));
 	  if (!flow_bb_inside_loop_p (loop, bb))
 	    {
+	      if (is_gimple_debug (USE_STMT (use_p)))
+		continue;
+
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
                                  "vec_stmt_relevant_p: used out of loop.\n");
-
-	      if (is_gimple_debug (USE_STMT (use_p)))
-		continue;
 
 	      /* We expect all such uses to be in the loop exit phis
 		 (because of loop closed form)   */
