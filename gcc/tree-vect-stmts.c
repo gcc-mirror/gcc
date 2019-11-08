@@ -1910,10 +1910,9 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
       internal_fn ifn = (is_load
 			 ? IFN_MASK_GATHER_LOAD
 			 : IFN_MASK_SCATTER_STORE);
-      tree offset_type = TREE_TYPE (gs_info->offset);
       if (!internal_gather_scatter_fn_supported_p (ifn, vectype,
 						   gs_info->memory_type,
-						   TYPE_SIGN (offset_type),
+						   gs_info->offset_vectype,
 						   gs_info->scale))
 	{
 	  if (dump_enabled_p ())
@@ -2046,35 +2045,33 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
       if (!wi::multiple_of_p (wi::to_widest (step), scale, SIGNED, &factor))
 	continue;
 
-      /* See whether we can calculate (COUNT - 1) * STEP / SCALE
-	 in OFFSET_BITS bits.  */
+      /* Determine the minimum precision of (COUNT - 1) * STEP / SCALE.  */
       widest_int range = wi::mul (count, factor, SIGNED, &overflow);
       if (overflow)
 	continue;
       signop sign = range >= 0 ? UNSIGNED : SIGNED;
-      if (wi::min_precision (range, sign) > element_bits)
-	{
-	  overflow = wi::OVF_UNKNOWN;
-	  continue;
-	}
+      unsigned int min_offset_bits = wi::min_precision (range, sign);
 
-      /* See whether the target supports the operation.  */
-      tree memory_type = TREE_TYPE (DR_REF (dr));
-      if (!vect_gather_scatter_fn_p (DR_IS_READ (dr), masked_p, vectype,
-				     memory_type, element_bits, sign, scale,
-				     &gs_info->ifn, &gs_info->element_type))
-	continue;
-
-      tree offset_type = build_nonstandard_integer_type (element_bits,
+      /* Find the narrowest viable offset type.  */
+      unsigned int offset_bits = 1U << ceil_log2 (min_offset_bits);
+      tree offset_type = build_nonstandard_integer_type (offset_bits,
 							 sign == UNSIGNED);
+
+      /* See whether the target supports the operation with an offset
+	 no narrower than OFFSET_TYPE.  */
+      tree memory_type = TREE_TYPE (DR_REF (dr));
+      if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
+				     vectype, memory_type, offset_type, scale,
+				     &gs_info->ifn, &gs_info->offset_vectype))
+	continue;
 
       gs_info->decl = NULL_TREE;
       /* Logically the sum of DR_BASE_ADDRESS, DR_INIT and DR_OFFSET,
 	 but we don't need to store that here.  */
       gs_info->base = NULL_TREE;
+      gs_info->element_type = TREE_TYPE (vectype);
       gs_info->offset = fold_convert (offset_type, step);
       gs_info->offset_dt = vect_constant_def;
-      gs_info->offset_vectype = NULL_TREE;
       gs_info->scale = scale;
       gs_info->memory_type = memory_type;
       return true;
@@ -2104,22 +2101,12 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
     return vect_truncate_gather_scatter_offset (stmt_info, loop_vinfo,
 						masked_p, gs_info);
 
-  scalar_mode element_mode = SCALAR_TYPE_MODE (gs_info->element_type);
-  unsigned int element_bits = GET_MODE_BITSIZE (element_mode);
-  tree offset_type = TREE_TYPE (gs_info->offset);
-  unsigned int offset_bits = TYPE_PRECISION (offset_type);
+  tree old_offset_type = TREE_TYPE (gs_info->offset);
+  tree new_offset_type = TREE_TYPE (gs_info->offset_vectype);
 
-  /* Enforced by vect_check_gather_scatter.  */
-  gcc_assert (element_bits >= offset_bits);
-
-  /* If the elements are wider than the offset, convert the offset to the
-     same width, without changing its sign.  */
-  if (element_bits > offset_bits)
-    {
-      bool unsigned_p = TYPE_UNSIGNED (offset_type);
-      offset_type = build_nonstandard_integer_type (element_bits, unsigned_p);
-      gs_info->offset = fold_convert (offset_type, gs_info->offset);
-    }
+  gcc_assert (TYPE_PRECISION (new_offset_type)
+	      >= TYPE_PRECISION (old_offset_type));
+  gs_info->offset = fold_convert (new_offset_type, gs_info->offset);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2963,7 +2950,6 @@ vect_get_gather_scatter_ops (class loop *loop, stmt_vec_info stmt_info,
 			     gather_scatter_info *gs_info,
 			     tree *dataref_ptr, tree *vec_offset)
 {
-  vec_info *vinfo = stmt_info->vinfo;
   gimple_seq stmts = NULL;
   *dataref_ptr = force_gimple_operand (gs_info->base, &stmts, true, NULL_TREE);
   if (stmts != NULL)
@@ -2973,10 +2959,8 @@ vect_get_gather_scatter_ops (class loop *loop, stmt_vec_info stmt_info,
       new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
       gcc_assert (!new_bb);
     }
-  tree offset_type = TREE_TYPE (gs_info->offset);
-  tree offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
   *vec_offset = vect_get_vec_def_for_operand (gs_info->offset, stmt_info,
-					      offset_vectype);
+					      gs_info->offset_vectype);
 }
 
 /* Prepare to implement a grouped or strided load or store using
@@ -3009,8 +2993,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   /* The offset given in GS_INFO can have pointer type, so use the element
      type of the vector instead.  */
   tree offset_type = TREE_TYPE (gs_info->offset);
-  tree offset_vectype = get_vectype_for_scalar_type (loop_vinfo, offset_type);
-  offset_type = TREE_TYPE (offset_vectype);
+  offset_type = TREE_TYPE (gs_info->offset_vectype);
 
   /* Calculate X = DR_STEP / SCALE and convert it to the appropriate type.  */
   tree step = size_binop (EXACT_DIV_EXPR, DR_STEP (dr),
@@ -3019,7 +3002,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   step = force_gimple_operand (step, &stmts, true, NULL_TREE);
 
   /* Create {0, X, X*2, X*3, ...}.  */
-  *vec_offset = gimple_build (&stmts, VEC_SERIES_EXPR, offset_vectype,
+  *vec_offset = gimple_build (&stmts, VEC_SERIES_EXPR, gs_info->offset_vectype,
 			      build_zero_cst (offset_type), step);
   if (stmts)
     gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
@@ -9442,16 +9425,17 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
 		    if (memory_access_type == VMAT_GATHER_SCATTER)
 		      {
+			tree zero = build_zero_cst (vectype);
 			tree scale = size_int (gs_info.scale);
 			gcall *call;
 			if (loop_masks)
 			  call = gimple_build_call_internal
-			    (IFN_MASK_GATHER_LOAD, 4, dataref_ptr,
-			     vec_offset, scale, final_mask);
+			    (IFN_MASK_GATHER_LOAD, 5, dataref_ptr,
+			     vec_offset, scale, zero, final_mask);
 			else
 			  call = gimple_build_call_internal
-			    (IFN_GATHER_LOAD, 3, dataref_ptr,
-			     vec_offset, scale);
+			    (IFN_GATHER_LOAD, 4, dataref_ptr,
+			     vec_offset, scale, zero);
 			gimple_call_set_nothrow (call, true);
 			new_stmt = call;
 			data_ref = NULL_TREE;

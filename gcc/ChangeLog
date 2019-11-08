@@ -1,3 +1,69 @@
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* optabs.def (gather_load_optab, mask_gather_load_optab)
+	(scatter_store_optab, mask_scatter_store_optab): Turn into
+	conversion optabs, with the offset mode given explicitly.
+	* doc/md.texi: Update accordingly.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svld1_gather_impl::expand): Likewise.
+	(svst1_scatter_impl::expand): Likewise.
+	* internal-fn.c (gather_load_direct, scatter_store_direct): Likewise.
+	(expand_scatter_store_optab_fn): Likewise.
+	(direct_gather_load_optab_supported_p): Likewise.
+	(direct_scatter_store_optab_supported_p): Likewise.
+	(expand_gather_load_optab_fn): Likewise.  Expect the mask argument
+	to be argument 4.
+	(internal_fn_mask_index): Return 4 for IFN_MASK_GATHER_LOAD.
+	(internal_gather_scatter_fn_supported_p): Replace the offset sign
+	argument with the offset vector type.  Require the two vector
+	types to have the same number of elements but allow their element
+	sizes to be different.  Treat the optabs as conversion optabs.
+	* internal-fn.h (internal_gather_scatter_fn_supported_p): Update
+	prototype accordingly.
+	* optabs-query.c (supports_at_least_one_mode_p): Replace with...
+	(supports_vec_convert_optab_p): ...this new function.
+	(supports_vec_gather_load_p): Update accordingly.
+	(supports_vec_scatter_store_p): Likewise.
+	* tree-vectorizer.h (vect_gather_scatter_fn_p): Take a vec_info.
+	Replace the offset sign and bits parameters with a scalar type tree.
+	* tree-vect-data-refs.c (vect_gather_scatter_fn_p): Likewise.
+	Pass back the offset vector type instead of the scalar element type.
+	Allow the offset to be wider than the memory elements.  Search for
+	an offset type that the target supports, stopping once we've
+	reached the maximum of the element size and pointer size.
+	Update call to internal_gather_scatter_fn_supported_p.
+	(vect_check_gather_scatter): Update calls accordingly.
+	When testing a new scale before knowing the final offset type,
+	check whether the scale is supported for any signed or unsigned
+	offset type.  Check whether the target supports the source and
+	target types of a conversion before deciding whether to look
+	through the conversion.  Record the chosen offset_vectype.
+	* tree-vect-patterns.c (vect_get_gather_scatter_offset_type): Delete.
+	(vect_recog_gather_scatter_pattern): Get the scalar offset type
+	directly from the gs_info's offset_vectype instead.  Pass a zero
+	of the result type to IFN_GATHER_LOAD and IFN_MASK_GATHER_LOAD.
+	* tree-vect-stmts.c (check_load_store_masking): Update call to
+	internal_gather_scatter_fn_supported_p, passing the offset vector
+	type recorded in the gs_info.
+	(vect_truncate_gather_scatter_offset): Update call to
+	vect_check_gather_scatter, leaving it to search for a valid
+	offset vector type.
+	(vect_use_strided_gather_scatters_p): Convert the offset to the
+	element type of the gs_info's offset_vectype.
+	(vect_get_gather_scatter_ops): Get the offset vector type directly
+	from the gs_info.
+	(vect_get_strided_load_store_ops): Likewise.
+	(vectorizable_load): Pass a zero of the result type to IFN_GATHER_LOAD
+	and IFN_MASK_GATHER_LOAD.
+	* config/aarch64/aarch64-sve.md (gather_load<mode>): Rename to...
+	(gather_load<mode><v_int_equiv>): ...this.
+	(mask_gather_load<mode>): Rename to...
+	(mask_gather_load<mode><v_int_equiv>): ...this.
+	(scatter_store<mode>): Rename to...
+	(scatter_store<mode><v_int_equiv>): ...this.
+	(mask_scatter_store<mode>): Rename to...
+	(mask_scatter_store<mode><v_int_equiv>): ...this.
+
 2019-11-08  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR target/92132

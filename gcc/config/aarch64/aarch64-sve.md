@@ -1336,7 +1336,7 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated gather loads.
-(define_expand "gather_load<mode>"
+(define_expand "gather_load<mode><v_int_equiv>"
   [(set (match_operand:SVE_SD 0 "register_operand")
 	(unspec:SVE_SD
 	  [(match_dup 5)
@@ -1354,7 +1354,7 @@
 
 ;; Predicated gather loads for 32-bit elements.  Operand 3 is true for
 ;; unsigned extension and false for signed extension.
-(define_insn "mask_gather_load<mode>"
+(define_insn "mask_gather_load<mode><v_int_equiv>"
   [(set (match_operand:SVE_S 0 "register_operand" "=w, w, w, w, w, w")
 	(unspec:SVE_S
 	  [(match_operand:VNx4BI 5 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
@@ -1376,7 +1376,7 @@
 
 ;; Predicated gather loads for 64-bit elements.  The value of operand 3
 ;; doesn't matter in this case.
-(define_insn "mask_gather_load<mode>"
+(define_insn "mask_gather_load<mode><v_int_equiv>"
   [(set (match_operand:SVE_D 0 "register_operand" "=w, w, w, w")
 	(unspec:SVE_D
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl, Upl, Upl")
@@ -1395,7 +1395,7 @@
 )
 
 ;; Likewise, but with the offset being sign-extended from 32 bits.
-(define_insn "*mask_gather_load<mode>_sxtw"
+(define_insn "*mask_gather_load<mode><v_int_equiv>_sxtw"
   [(set (match_operand:SVE_D 0 "register_operand" "=w, w")
 	(unspec:SVE_D
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl")
@@ -1417,7 +1417,7 @@
 )
 
 ;; Likewise, but with the offset being zero-extended from 32 bits.
-(define_insn "*mask_gather_load<mode>_uxtw"
+(define_insn "*mask_gather_load<mode><v_int_equiv>_uxtw"
   [(set (match_operand:SVE_D 0 "register_operand" "=w, w")
 	(unspec:SVE_D
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl")
@@ -2054,7 +2054,7 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated scatter stores.
-(define_expand "scatter_store<mode>"
+(define_expand "scatter_store<mode><v_int_equiv>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_dup 5)
@@ -2072,7 +2072,7 @@
 
 ;; Predicated scatter stores for 32-bit elements.  Operand 2 is true for
 ;; unsigned extension and false for signed extension.
-(define_insn "mask_scatter_store<mode>"
+(define_insn "mask_scatter_store<mode><v_int_equiv>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:VNx4BI 5 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
@@ -2094,7 +2094,7 @@
 
 ;; Predicated scatter stores for 64-bit elements.  The value of operand 2
 ;; doesn't matter in this case.
-(define_insn "mask_scatter_store<mode>"
+(define_insn "mask_scatter_store<mode><v_int_equiv>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl, Upl, Upl")
@@ -2113,7 +2113,7 @@
 )
 
 ;; Likewise, but with the offset being sign-extended from 32 bits.
-(define_insn_and_rewrite "*mask_scatter_store<mode>_sxtw"
+(define_insn_and_rewrite "*mask_scatter_store<mode><v_int_equiv>_sxtw"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl")
@@ -2139,7 +2139,7 @@
 )
 
 ;; Likewise, but with the offset being zero-extended from 32 bits.
-(define_insn "*mask_scatter_store<mode>_uxtw"
+(define_insn "*mask_scatter_store<mode><v_int_equiv>_uxtw"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl")
