@@ -117,11 +117,11 @@ Assume that all data in static storage can be accessed by LDS / STS.  This optio
 
 mdouble=
 Target Report Joined RejectNegative Var(avr_double) Init(0) Enum(avr_bits_e)
-mdouble=<BITS>	Use <BITS> bits wide double type.
+-mdouble=<BITS>	Use <BITS> bits wide double type.
 
 mlong-double=
 Target Report Joined RejectNegative Var(avr_long_double) Init(0) Enum(avr_bits_e)
-mlong-double=<BITS>	Use <BITS> bits wide long double type.
+-mlong-double=<BITS>	Use <BITS> bits wide long double type.
 
 nodevicelib
 Driver Target Report RejectNegative
