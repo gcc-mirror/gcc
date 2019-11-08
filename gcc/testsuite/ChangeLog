@@ -1,7 +1,9 @@
 2019-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20191108-1.c: New test.
-	* gcc.target/sparc/overflow-3.c: Add -fno-pie to the options.
+	* gcc.target/sparc/overflow-1.c: Add -fno-pie to the options.
+	* gcc.target/sparc/overflow-2.c: Likewise.
+	* gcc.target/sparc/overflow-3.c: Likewise.
 	* gcc.target/sparc/overflow-4.c: Likewise.
 	* gcc.target/sparc/overflow-5.c: Likewise.
 
