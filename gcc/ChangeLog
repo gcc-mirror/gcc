@@ -1,6 +1,12 @@
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90947
+	* tree.h (type_initializer_zero_p): Remove.
+	* tree.c (type_initializer_zero_p): Remove.
+
 	2019-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/install.texi (--enable-offload-targets): Fix up a typo in the
