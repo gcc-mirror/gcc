@@ -1,5 +1,10 @@
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Remove bswap handling.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-core.h (tree_type_common::indivisible_p): New member variable.
 	* tree.h (TYPE_INDIVISIBLE_P): New macro.
 	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types):
