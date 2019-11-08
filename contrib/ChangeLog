@@ -1,3 +1,8 @@
+2019-11-08  Martin Liska  <mliska@suse.cz>
+
+	* mklog: The script fails for patches that contain:
+	'---param=foo=bar xyz'.
+
 2019-09-18  Martin Liska  <mliska@suse.cz>
 
 	* clang-format: Tweak configuration based on new
