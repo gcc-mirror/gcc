@@ -1,6 +1,11 @@
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92343
+	* g++.dg/cpp2a/attr-likely6.C: New test.
+
 	2019-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/92296

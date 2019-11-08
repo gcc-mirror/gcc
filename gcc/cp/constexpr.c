@@ -5925,6 +5925,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case LABEL_DECL:
     case LABEL_EXPR:
     case CASE_LABEL_EXPR:
+    case PREDICT_EXPR:
     case CONST_DECL:
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
@@ -6759,7 +6760,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     case CLEANUP_STMT:
     case EMPTY_CLASS_EXPR:
-    case PREDICT_EXPR:
       return false;
 
     case GOTO_EXPR:
