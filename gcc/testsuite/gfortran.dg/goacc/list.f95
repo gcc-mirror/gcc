@@ -100,14 +100,14 @@ program test
   !$acc host_data use_device(10) ! { dg-error "Syntax error" }
 
   !$acc host_data use_device(/b/, /b/)
+  ! { dg-error "neither a POINTER nor an array" "" { target *-*-* } .-1 }
+  ! { dg-error "present on multiple clauses" "" { target *-*-* } .-2 }
   !$acc end host_data
-  ! { dg-error "neither a POINTER nor an array" "" { target *-*-* } 102 }
-  ! { dg-error "present on multiple clauses" "" { target *-*-* } 102 }
 
   !$acc host_data use_device(i, j, i)
+  ! { dg-error "neither a POINTER nor an array" "" { target *-*-* } .-1 }
+  ! { dg-error "present on multiple clauses" "" { target *-*-* } .-2 }
   !$acc end host_data
-  ! { dg-error "neither a POINTER nor an array" "" { target *-*-* } 107 }
-  ! { dg-error "present on multiple clauses" "" { target *-*-* } 107 }
 
   !$acc host_data use_device(p1)
   !$acc end host_data

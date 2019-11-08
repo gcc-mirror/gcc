@@ -148,8 +148,8 @@ subroutine test1
     !$acc parallel loop collapse(2)
     do i = 1, 3
         do r = 4, 6
+           ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } .-1 }
         end do
-        ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 150 }
     end do
 
   !$acc loop independent seq
