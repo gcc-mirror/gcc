@@ -1,3 +1,9 @@
+2019-11-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (branch_comparison_operator): Allow only
+	the comparison codes that make sense for the mode used, and only the
+	codes that can be done with a single branch instruction.
+
 2019-11-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR tree-optimization/92351
