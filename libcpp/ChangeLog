@@ -1,3 +1,17 @@
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/92296
+	* internal.h (struct def_pragma_macro): Add is_builtin bitfield.
+	(_cpp_restore_special_builtin): Declare.
+	* init.c (_cpp_restore_special_builtin): New function.
+	* directives.c (do_pragma_push_macro): For NT_BUILTIN_MACRO
+	set is_builtin and don't try to grab definition.
+	(cpp_pop_definition): Use _cpp_restore_special_builtin to restore
+	builtin macros.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.
