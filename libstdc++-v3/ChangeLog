@@ -1,5 +1,9 @@
 2019-11-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/compare (common_comparison_category)
+	(common_comparison_category_t): Define for C++20.
+	* testsuite/18_support/comparisons/common/1.cc: New test.
+
 	* include/bits/stl_algo.h (for_each_n): Handle negative count.
 	* testsuite/25_algorithms/for_each/for_each_n_debug.cc: New test.
 
