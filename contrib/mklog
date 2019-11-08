@@ -178,8 +178,8 @@ class Hunk:
 def is_file_diff_start(s):
   # Don't be fooled by context diff line markers:
   #   *** 385,391 ****
-  return ((s.startswith('***') and not s.endswith('***'))
-          or (s.startswith('---') and not s.endswith('---')))
+  return ((s.startswith('*** ') and not s.endswith('***'))
+          or (s.startswith('--- ') and not s.endswith('---')))
 
 def is_ctx_hunk_start(s):
   return re.match(r'^\*\*\*\*\*\**', s)
