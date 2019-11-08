@@ -1,3 +1,8 @@
+2019-11-08  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/pr92339.C: Rename identifiers to something
+	more readable.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/deref_2.c: New test.
