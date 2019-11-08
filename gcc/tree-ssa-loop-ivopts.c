@@ -131,6 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "builtins.h"
 #include "tree-vectorizer.h"
+#include "dbgcnt.h"
 
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
@@ -8043,6 +8044,9 @@ tree_ssa_iv_optimize (void)
   /* Optimize the loops starting with the innermost ones.  */
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
+      if (!dbg_cnt (ivopts_loop))
+	continue;
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loop_dump (loop, dump_file, NULL, 1);
 

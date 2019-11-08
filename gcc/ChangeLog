@@ -1,5 +1,11 @@
 2019-11-08  Richard Biener  <rguenther@suse.de>
 
+	* dbgcnt.def (ivopts_loop): Add.
+	* tree-ssa-loop-ivopts.c (tree_ssa_iv_optimize): Check
+	ivopts_loop before optimizing a loop.
+
+2019-11-08  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/92409
 	* tree-inline.c (declare_return_variable): Properly handle
 	type mismatches for the return slot.
