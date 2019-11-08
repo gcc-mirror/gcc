@@ -1,3 +1,14 @@
+2019-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-old-style-definition-1.c,
+	gcc.dg/c11-old-style-definition-2.c,
+	gcc.dg/c2x-old-style-definition-1.c,
+	gcc.dg/c2x-old-style-definition-2.c,
+	gcc.dg/c2x-old-style-definition-3.c,
+	gcc.dg/c2x-old-style-definition-4.c,
+	gcc.dg/c2x-old-style-definition-5.c,
+	gcc.dg/c2x-old-style-definition-6.c: New tests.
+
 2019-11-07  Peter Bergner <bergner@linux.ibm.com>
 
 	PR other/92090

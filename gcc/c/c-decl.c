@@ -7416,6 +7416,13 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       tree parm, type, typelt;
       unsigned int parmno;
 
+      /* In C2X, convert () in a function definition to (void).  */
+      if (flag_isoc2x
+	  && funcdef_flag
+	  && !arg_types
+	  && !arg_info->parms)
+	arg_types = arg_info->types = void_list_node;
+
       /* If there is a parameter of incomplete type in a definition,
 	 this is an error.  In a declaration this is valid, and a
 	 struct or union type may be completed later, before any calls
@@ -9261,8 +9268,15 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
   hash_set<tree> seen_args;
 
   if (!in_system_header_at (input_location))
-    warning_at (DECL_SOURCE_LOCATION (fndecl),
-		OPT_Wold_style_definition, "old-style function definition");
+    {
+      if (flag_isoc2x)
+	pedwarn (DECL_SOURCE_LOCATION (fndecl),
+		 OPT_Wold_style_definition, "old-style function definition");
+      else
+	warning_at (DECL_SOURCE_LOCATION (fndecl),
+		    OPT_Wold_style_definition,
+		    "old-style function definition");
+    }
 
   /* Match each formal parameter name with its declaration.  Save each
      decl in the appropriate TREE_PURPOSE slot of the parmids chain.  */
@@ -9578,11 +9592,10 @@ store_parm_decls (void)
   struct c_arg_info *arg_info = current_function_arg_info;
   current_function_arg_info = 0;
 
-  /* True if this definition is written with a prototype.  Note:
-     despite C99 6.7.5.3p14, we can *not* treat an empty argument
-     list in a function definition as equivalent to (void) -- an
-     empty argument list specifies the function has no parameters,
-     but only (void) sets up a prototype for future calls.  */
+  /* True if this definition is written with a prototype.  In C2X, an
+     empty argument list was converted to (void) in grokparms; in
+     older C standard versions, it does not give the function a type
+     with a prototype for future calls.  */
   proto = arg_info->types != 0;
 
   if (proto)

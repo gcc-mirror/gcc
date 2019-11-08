@@ -904,6 +904,10 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_int == -1)
     warn_implicit_int = flag_isoc99;
 
+  /* -Wold-style-definition is enabled by default for C2X.  */
+  if (warn_old_style_definition == -1)
+    warn_old_style_definition = flag_isoc2x;
+
   /* -Wshift-overflow is enabled by default in C99 and C++11 modes.  */
   if (warn_shift_overflow == -1)
     warn_shift_overflow = cxx_dialect >= cxx11 || flag_isoc99;

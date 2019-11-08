@@ -1,3 +1,11 @@
+2019-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (grokparms): Convert () in a function definition to
+	(void) for C2x.
+	(store_parm_decls_oldstyle): Pedwarn for C2x.
+	(store_parm_decls): Update comment about () not generating a
+	prototype.
+
 2019-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_attribute_arguments): New function.

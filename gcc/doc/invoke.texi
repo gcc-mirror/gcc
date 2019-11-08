@@ -7334,7 +7334,10 @@ is also enabled by @option{-Wextra}.
 @opindex Wold-style-definition
 @opindex Wno-old-style-definition
 Warn if an old-style function definition is used.  A warning is given
-even if there is a previous prototype.
+even if there is a previous prototype.  A definition using @samp{()}
+is not considered an old-style definition in C2X mode, because it is
+equivalent to @samp{(void)} in that case, but is considered an
+old-style definition for older standards.
 
 @item -Wmissing-parameter-type @r{(C and Objective-C only)}
 @opindex Wmissing-parameter-type
