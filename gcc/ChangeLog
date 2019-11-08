@@ -1,3 +1,9 @@
+2019-11-08  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (expr::gen_transform): Use the resimplify
+	member function instead of hard-coding the gimple_resimplifyN variant.
+	(dt_simplify::gen_1): Likewise.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle
