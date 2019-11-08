@@ -1,3 +1,69 @@
+2019-11-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.h (range_operator::fold_range): Return result in a
+	reference parameter instead of by value.
+	(range_operator::wi_fold): Same.
+	* range-op.cc (range_operator::wi_fold): Return result in a reference
+	parameter instead of by value.
+	(range_operator::fold_range): Same.
+	(value_range_from_overflowed_bounds): Same.
+	(value_range_with_overflow): Same
+	(create_possibly_reversed_range): Same.
+	(operator_equal::fold_range): Same.
+	(operator_not_equal::fold_range): Same.
+	(operator_lt::fold_range): Same.
+	(operator_le::fold_range): Same.
+	(operator_gt::fold_range): Same.
+	(operator_ge::fold_range): Same.
+	(operator_plus::wi_fold): Same.
+	(operator_plus::op1_range): Change call to fold_range.
+	(operator_plus::op2_range): Change call to fold_range.
+	(operator_minus::wi_fold): Return result via reference parameter.
+	(operator_minus::op1_range): Change call to fold_range.
+	(operator_minus::op2_range): Change call to fold_range.
+	(operator_min::wi_fold): Return result via reference parameter.
+	(operator_max::wi_fold): Same.
+	(cross_product_operator::wi_cross_product): Same.
+	(operator_mult::wi_fold): Same.
+	(operator_div::wi_fold): Same.
+	(operator_div op_floor_div): Fix whitespace.
+	(operator_exact_divide::op1_range): Change call to fold_range.
+	(operator_lshift::fold_range): Return result via reference parameter.
+	(operator_lshift::wi_fold): Same.
+	(operator_rshift::fold_range): Same.
+	(operator_rshift::wi_fold): Same.
+	(operator_cast::fold_range): Same.
+	(operator_cast::op1_range): Change calls to fold_range.
+	(operator_logical_and::fold_range): Return result via reference.
+	(wi_optimize_and_or): Adjust call to value_range_with_overflow.
+	(operator_bitwise_and::wi_fold): Return result via reference.
+	(operator_logical_or::fold_range): Same.
+	(operator_bitwise_or::wi_fold): Same.
+	(operator_bitwise_xor::wi_fold): Same.
+	(operator_trunc_mod::wi_fold): Same.
+	(operator_logical_not::fold_range): Same.
+	(operator_bitwise_not::fold_range): Same.
+	(operator_bitwise_not::op1_range): Change call to fold_range.
+	(operator_cst::fold_range): Return result via reference.
+	(operator_identity::fold_range): Same.
+	(operator_abs::wi_fold): Same.
+	(operator_absu::wi_fold): Same.
+	(operator_negate::fold_range): Same.
+	(operator_negate::op1_range): Change call to fold_range.
+	(operator_addr_expr::fold_range): Return result via reference.
+	(operator_addr_expr::op1_range): Change call to fold_range.
+	(operator_pointer_plus::wi_fold): Return result via reference.
+	(operator_pointer_min_max::wi_fold): Same.
+	(operator_pointer_and::wi_fold): Same.
+	(operator_pointer_or::wi_fold): Same.
+	(range_op_handler): Change call to fold_range.
+	(range_cast): Same.
+	* tree-vrp.c (range_fold_binary_symbolics_p): Change call to
+	fold_range.
+	(range_fold_unary_symbolics_p): Same.
+	(range_fold_binary_expr): Same.
+	(range_fold_unary_expr): Same.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop.c (neutral_op_for_slp_reduction): Take the

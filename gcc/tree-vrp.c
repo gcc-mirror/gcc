@@ -1781,9 +1781,8 @@ range_fold_binary_symbolics_p (value_range *vr,
 	  return true;
 	}
       const range_operator *op = get_range_op_handler (vr, code, expr_type);
-      *vr = op->fold_range (expr_type,
-			    vr0->normalize_symbolics (),
-			    vr1->normalize_symbolics ());
+      op->fold_range (*vr, expr_type, vr0->normalize_symbolics (),
+		      vr1->normalize_symbolics ());
       return true;
     }
   return false;
@@ -1817,9 +1816,8 @@ range_fold_unary_symbolics_p (value_range *vr,
 	  return true;
 	}
       const range_operator *op = get_range_op_handler (vr, code, expr_type);
-      *vr = op->fold_range (expr_type,
-			    vr0->normalize_symbolics (),
-			    value_range (expr_type));
+      op->fold_range (*vr, expr_type, vr0->normalize_symbolics (),
+		      value_range (expr_type));
       return true;
     }
   return false;
@@ -1846,9 +1844,8 @@ range_fold_binary_expr (value_range *vr,
   if (range_fold_binary_symbolics_p (vr, code, expr_type, &vr0, &vr1))
     return;
 
-  *vr = op->fold_range (expr_type,
-			vr0.normalize_addresses (),
-			vr1.normalize_addresses ());
+  op->fold_range (*vr, expr_type, vr0.normalize_addresses (),
+		  vr1.normalize_addresses ());
 }
 
 /* Perform a unary operation on a range.  */
@@ -1869,9 +1866,8 @@ range_fold_unary_expr (value_range *vr,
   if (range_fold_unary_symbolics_p (vr, code, expr_type, vr0))
     return;
 
-  *vr = op->fold_range (expr_type,
-			vr0->normalize_addresses (),
-			value_range (expr_type));
+  op->fold_range (*vr, expr_type, vr0->normalize_addresses (),
+		  value_range (expr_type));
 }
 
 /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,

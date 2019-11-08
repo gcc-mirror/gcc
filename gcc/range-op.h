@@ -50,9 +50,9 @@ class range_operator
 {
 public:
   // Perform an operation between 2 ranges and return it.
-  virtual value_range fold_range (tree type,
-				  const value_range &lh,
-				  const value_range &rh) const;
+  virtual void fold_range (value_range &r, tree type,
+			   const value_range &lh,
+			   const value_range &rh) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -74,11 +74,11 @@ public:
 
 protected:
   // Perform an operation between 2 sub-ranges and return it.
-  virtual value_range wi_fold (tree type,
-				    const wide_int &lh_lb,
-				    const wide_int &lh_ub,
-				    const wide_int &rh_lb,
-				    const wide_int &rh_ub) const;
+  virtual void wi_fold (value_range &r, tree type,
+		        const wide_int &lh_lb,
+		        const wide_int &lh_ub,
+		        const wide_int &rh_lb,
+		        const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler (enum tree_code code, tree type);
