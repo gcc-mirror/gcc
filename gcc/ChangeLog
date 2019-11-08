@@ -1,3 +1,10 @@
+2019-11-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92351
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): When we are
+	peeling the main loop for alignment, make sure to set the misalignment
+	of the epilogue's data references to DR_MISALIGNMENT_UNKNOWN.
+
 2019-11-08  Richard Biener  <rguenther@suse.de>
 
 	* dbgcnt.def (ivopts_loop): Add.
