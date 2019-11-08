@@ -3087,7 +3087,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	move_block_from_reg (REGNO (entry_parm), mem,
 			     size_stored / UNITS_PER_WORD);
     }
-  else if (data->stack_parm == 0)
+  else if (data->stack_parm == 0 && !TYPE_EMPTY_P (data->arg.type))
     {
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       emit_block_move (stack_parm, data->entry_parm, GEN_INT (size),
@@ -3488,7 +3488,9 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
       dest = validize_mem (copy_rtx (data->stack_parm));
       src = validize_mem (copy_rtx (data->entry_parm));
 
-      if (MEM_P (src))
+      if (TYPE_EMPTY_P (data->arg.type))
+	/* Empty types don't really need to be copied.  */;
+      else if (MEM_P (src))
 	{
 	  /* Use a block move to handle potentially misaligned entry_parm.  */
 	  if (!to_conversion)
@@ -3643,6 +3645,16 @@ assign_parms (tree fndecl)
 	{
 	  assign_parm_find_stack_rtl (parm, &data);
 	  assign_parm_adjust_entry_rtl (&data);
+	  /* For arguments that occupy no space in the parameter
+	     passing area, have non-zero size and have address taken,
+	     force creation of a stack slot so that they have distinct
+	     address from other parameters.  */
+	  if (TYPE_EMPTY_P (data.arg.type)
+	      && TREE_ADDRESSABLE (parm)
+	      && data.entry_parm == data.stack_parm
+	      && MEM_P (data.entry_parm)
+	      && int_size_in_bytes (data.arg.type))
+	    data.stack_parm = NULL_RTX;
 	}
       /* Record permanently how this parm was passed.  */
       if (data.arg.pass_by_reference)

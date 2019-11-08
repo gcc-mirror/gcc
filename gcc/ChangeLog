@@ -1,3 +1,12 @@
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92384
+	* function.c (assign_parm_setup_block, assign_parm_setup_stack): Don't
+	copy TYPE_EMPTY_P arguments from data->entry_parm to data->stack_parm
+	slot.
+	(assign_parms): For TREE_ADDRESSABLE parms with TYPE_EMPTY_P type
+	force creation of a unique data.stack_parm slot.
+
 2019-11-08  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (expr::gen_transform): Use the resimplify
