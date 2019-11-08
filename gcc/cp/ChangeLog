@@ -1,3 +1,9 @@
+2019-11-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92215 - flawed diagnostic for bit-field with non-integral type.
+	* parser.c (cp_parser_member_declaration): Add a diagnostic for
+	bit-fields with non-integral types.
+
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (build_vec_delete_1): Fix a comment typo - mist -> must.

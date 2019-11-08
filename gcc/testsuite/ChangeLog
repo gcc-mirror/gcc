@@ -1,5 +1,10 @@
 2019-11-08  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92215 - flawed diagnostic for bit-field with non-integral type.
+	* g++.dg/diagnostic/bitfld4.C: New test.
+
+2019-11-08  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92058 - constinit malfunction in static data member.
 	* g++.dg/cpp2a/constinit15.C: New test.
 

@@ -25037,6 +25037,31 @@ cp_parser_member_declaration (cp_parser* parser)
 		  else
 		    initializer = cp_parser_initializer (parser, &x, &x);
 		}
+	      /* Detect invalid bit-field cases such as
+
+		   int *p : 4;
+		   int &&r : 3;
+
+		 and similar.  */
+	      else if (cp_lexer_next_token_is (parser->lexer, CPP_COLON)
+		       /* If there were no type specifiers, it was a
+			  constructor.  */
+		       && decl_specifiers.any_type_specifiers_p)
+		{
+		  /* This is called for a decent diagnostic only.  */
+		  tree d = grokdeclarator (declarator, &decl_specifiers,
+					   BITFIELD, /*initialized=*/false,
+					   &attributes);
+		  error_at (DECL_SOURCE_LOCATION (d),
+			    "bit-field %qD has non-integral type %qT",
+			    d, TREE_TYPE (d));
+		  cp_parser_skip_to_end_of_statement (parser);
+		  /* Avoid "extra ;" pedwarns.  */
+		  if (cp_lexer_next_token_is (parser->lexer,
+					      CPP_SEMICOLON))
+		    cp_lexer_consume_token (parser->lexer);
+		  goto out;
+		}
 	      /* Otherwise, there is no initializer.  */
 	      else
 		initializer = NULL_TREE;
