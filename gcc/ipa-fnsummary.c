@@ -3243,6 +3243,7 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 
   sreal nonspecialized_time = time;
 
+  min_size += (*info->size_time_table)[0].size;
   for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
     {
       bool exec = e->exec_predicate.evaluate (m_nonspec_possible_truths);
@@ -3288,7 +3289,7 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
      }
   gcc_checking_assert ((*info->size_time_table)[0].exec_predicate == true);
   gcc_checking_assert ((*info->size_time_table)[0].nonconst_predicate == true);
-  min_size = (*info->size_time_table)[0].size;
+  gcc_checking_assert (min_size >= 0);
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
   /* nonspecialized_time should be always bigger than specialized time.
@@ -3685,12 +3686,13 @@ ipa_update_overall_fn_summary (struct cgraph_node *node)
       size_info->size += e->size;
       info->time += e->time;
     }
+  info->min_size = (*info->size_time_table)[0].size;
   estimate_calls_size_and_time (node, &size_info->size, &info->min_size,
 				&info->time, NULL,
 				~(clause_t) (1 << predicate::false_condition),
 				vNULL, vNULL, vNULL);
-  size_info->size = (size_info->size + ipa_fn_summary::size_scale / 2)
-		    / ipa_fn_summary::size_scale;
+  size_info->size = RDIV (size_info->size, ipa_fn_summary::size_scale);
+  info->min_size = RDIV (info->min_size, ipa_fn_summary::size_scale);
 }
 
 

@@ -1,5 +1,11 @@
 2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (ipa_call_context::estimate_size_and_time): Fix
+	calculation of min_size.
+	(ipa_update_overall_fn_summary): Likewise.
+
+2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (estimate_edge_size_and_time): Do not call
 	estimate_edge_devirt_benefit when not computing hints;
 	do not compute time when not asked for.
