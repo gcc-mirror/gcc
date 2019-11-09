@@ -1,3 +1,13 @@
+2019-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92401
+	* gimple-match-head.c (gimple_resimplify1): Call const_unop only
+	if res_op->code is an expression with code length 1.
+	* gimple-match-head.c (gimple_resimplify2): Call const_binop only
+	if res_op->code is an expression with code length 2.
+	* gimple-match-head.c (gimple_resimplify3): Call fold_ternary only
+	if res_op->code is an expression with code length 3.
+
 2019-11-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_mcount_stub_name): Validate the

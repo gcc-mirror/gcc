@@ -1,3 +1,8 @@
+2019-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92401
+	* g++.dg/opt/pr92401.C: New test.
+
 2019-11-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92321
