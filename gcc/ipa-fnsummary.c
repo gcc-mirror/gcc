@@ -2894,16 +2894,17 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   int call_size = es->call_stmt_size;
   int call_time = es->call_stmt_time;
   int cur_size;
-  if (!e->callee
+  if (!e->callee && hints && e->maybe_hot_p ()
       && estimate_edge_devirt_benefit (e, &call_size, &call_time,
-				       known_vals, known_contexts, known_aggs)
-      && hints && e->maybe_hot_p ())
+				       known_vals, known_contexts, known_aggs))
     *hints |= INLINE_HINT_indirect_call;
   cur_size = call_size * ipa_fn_summary::size_scale;
   *size += cur_size;
   if (min_size)
     *min_size += cur_size;
-  if (prob == REG_BR_PROB_BASE)
+  if (!time)
+    ;
+  else if (prob == REG_BR_PROB_BASE)
     *time += ((sreal)call_time) * e->sreal_frequency ();
   else
     *time += ((sreal)call_time * prob) * e->sreal_frequency ();
@@ -3235,8 +3236,11 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 	  }
     }
 
-  estimate_calls_size_and_time (m_node, &size, &min_size, &time, &hints, m_possible_truths,
+  estimate_calls_size_and_time (m_node, &size, &min_size,
+				ret_time ? &time : NULL,
+				ret_hints ? &hints : NULL, m_possible_truths,
 				m_known_vals, m_known_contexts, m_known_aggs);
+
   sreal nonspecialized_time = time;
 
   for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
@@ -3260,6 +3264,8 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 	     known to be constant in a specialized setting.  */
 	  if (nonconst)
 	    size += e->size;
+	  if (!ret_time)
+	    continue;
 	  nonspecialized_time += e->time;
 	  if (!nonconst)
 	    ;
@@ -3295,16 +3301,19 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
   if (time > nonspecialized_time)
     time = nonspecialized_time;
 
-  if (info->loop_iterations
-      && !info->loop_iterations->evaluate (m_possible_truths))
-    hints |= INLINE_HINT_loop_iterations;
-  if (info->loop_stride
-      && !info->loop_stride->evaluate (m_possible_truths))
-    hints |= INLINE_HINT_loop_stride;
-  if (info->scc_no)
-    hints |= INLINE_HINT_in_scc;
-  if (DECL_DECLARED_INLINE_P (m_node->decl))
-    hints |= INLINE_HINT_declared_inline;
+  if (ret_hints)
+    {
+      if (info->loop_iterations
+	  && !info->loop_iterations->evaluate (m_possible_truths))
+	hints |= INLINE_HINT_loop_iterations;
+      if (info->loop_stride
+	  && !info->loop_stride->evaluate (m_possible_truths))
+	hints |= INLINE_HINT_loop_stride;
+      if (info->scc_no)
+	hints |= INLINE_HINT_in_scc;
+      if (DECL_DECLARED_INLINE_P (m_node->decl))
+	hints |= INLINE_HINT_declared_inline;
+    }
 
   size = RDIV (size, ipa_fn_summary::size_scale);
   min_size = RDIV (min_size, ipa_fn_summary::size_scale);
@@ -3604,6 +3613,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 	  gcc_assert (map < ipa_get_param_count (params_summary));
 	}
     }
+  sreal freq =  edge->sreal_frequency ();
   for (i = 0; vec_safe_iterate (callee_info->size_time_table, i, &e); i++)
     {
       predicate p;
@@ -3620,7 +3630,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 				      toplev_predicate);
       if (p != false && nonconstp != false)
 	{
-	  sreal add_time = ((sreal)e->time * edge->sreal_frequency ());
+	  sreal add_time = ((sreal)e->time * freq);
 	  int prob = e->nonconst_predicate.probability (callee_info->conds,
 							clause, es->param);
 	  add_time = add_time * prob / REG_BR_PROB_BASE;

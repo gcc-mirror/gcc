@@ -1,3 +1,14 @@
+2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (estimate_edge_size_and_time): Do not call
+	estimate_edge_devirt_benefit when not computing hints;
+	do not compute time when not asked for.
+	(estimate_calls_size_and_time): Pass NULL hints and time when
+	these are not computed; do not evaluate hint predicates when these are
+	not computed.
+	(ipa_merge_fn_summary_after_inlining): Do not re-evaluate edge
+	frequency.
+
 2019-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92401
