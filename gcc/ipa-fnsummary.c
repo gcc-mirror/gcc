@@ -474,7 +474,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	caller_parms_info = IPA_NODE_REF (e->caller->inlined_to);
       else
 	caller_parms_info = IPA_NODE_REF (e->caller);
-      callee_pi = IPA_NODE_REF (e->callee);
+      callee_pi = IPA_NODE_REF (callee);
 
       if (count && (info->conds || known_vals_ptr))
 	known_vals.safe_grow_cleared (count);
