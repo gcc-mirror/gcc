@@ -1,3 +1,7 @@
+2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/pr46076.c: Make tested code hot.
+
 2019-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92401
