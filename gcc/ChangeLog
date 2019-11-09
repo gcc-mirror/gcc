@@ -1,5 +1,21 @@
 2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (do_estimate_growth_1): Add support for
+	capping the growth cumulated.
+	(offline_size): Break out from ...
+	(estimate_growth): ... here.
+	(check_callers): Add N, OFFLINE and MIN_SIZE and KNOWN_EDGE
+	parameters.
+	(growth_likely_positive): Turn to ...
+	(growth_positive_p): Re-implement.
+	* ipa-inline.h (growth_likely_positive): Remove.
+	(growth_positive_p): Declare.
+	* ipa-inline.c (want_inline_small_function_p): Use
+	growth_positive_p.
+	(want_inline_function_to_all_callers_p): Likewise.
+
+2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (ipa_call_context::estimate_size_and_time): Fix
 	calculation of min_size.
 	(ipa_update_overall_fn_summary): Likewise.

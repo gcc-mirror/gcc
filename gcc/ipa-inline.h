@@ -44,7 +44,7 @@ extern fast_call_summary<edge_growth_cache_entry *, va_heap> *edge_growth_cache;
 /* In ipa-inline-analysis.c  */
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_growth (struct cgraph_node *);
-bool growth_likely_positive (struct cgraph_node *, int);
+bool growth_positive_p (struct cgraph_node *, struct cgraph_edge *, int);
 int do_estimate_edge_size (struct cgraph_edge *edge);
 sreal do_estimate_edge_time (struct cgraph_edge *edge);
 ipa_hints do_estimate_edge_hints (struct cgraph_edge *edge);
