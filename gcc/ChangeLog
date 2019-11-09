@@ -1,5 +1,12 @@
 2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (fld_incomplete_type_of): Clear TYPE_FINAL_P, TYPE_EMPTY_P,
+	ENUM_IS_OPAQUE and ENUM_IS_SCOPED.
+	(free_lang_data_in_binfo): Clear TREE_PUBLIC in BINFO
+	(free_lang_data_in_type): Clear ENUM_IS_OPAQUE and ENUM_IS_SCOPED.
+
+2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (do_estimate_growth_1): Add support for
 	capping the growth cumulated.
 	(offline_size): Break out from ...
