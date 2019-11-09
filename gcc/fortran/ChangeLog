@@ -1,3 +1,9 @@
+2019-11-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92321
+	* frontend-passes.c (call_external_blas): Commit symbol for
+	external BLAS routine.
+
 2019-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* arith.c (character2representation): Change i type to size_t.
