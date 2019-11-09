@@ -5387,9 +5387,15 @@ fld_incomplete_type_of (tree t, class free_lang_data_d *fld)
 	      TYPE_TYPELESS_STORAGE (copy) = 0;
 	      TYPE_FIELDS (copy) = NULL;
 	      TYPE_BINFO (copy) = NULL;
+	      TYPE_FINAL_P (copy) = 0;
+	      TYPE_EMPTY_P (copy) = 0;
 	    }
 	  else
-	    TYPE_VALUES (copy) = NULL;
+	    {
+	      TYPE_VALUES (copy) = NULL;
+	      ENUM_IS_OPAQUE (copy) = 0;
+	      ENUM_IS_SCOPED (copy) = 0;
+	    }
 
 	  /* Build copy of TYPE_DECL in TYPE_NAME if necessary.
 	     This is needed for ODR violation warnings to come out right (we
@@ -5472,6 +5478,7 @@ free_lang_data_in_binfo (tree binfo)
   BINFO_INHERITANCE_CHAIN (binfo) = NULL_TREE;
   BINFO_SUBVTT_INDEX (binfo) = NULL_TREE;
   BINFO_VPTR_FIELD (binfo) = NULL_TREE;
+  TREE_PUBLIC (binfo) = 0;
 
   FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (binfo), i, t)
     free_lang_data_in_binfo (t);
@@ -5573,6 +5580,8 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
     {
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
+	  ENUM_IS_OPAQUE (type) = 0;
+	  ENUM_IS_SCOPED (type) = 0;
 	  /* Type values are used only for C++ ODR checking.  Drop them
 	     for all type variants and non-ODR types.
 	     For ODR types the data is freed in free_odr_warning_data.  */
