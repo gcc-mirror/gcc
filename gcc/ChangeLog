@@ -1,3 +1,16 @@
+2019-11-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2019-11-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (memory_barrier): Revise to use ldcw barriers.
+	Enhance comment.
+	(memory_barrier_coherent, memory_barrier_64, memory_barrier_32): New
+	insn patterns using ldcw instruction.
+	(memory_barrier): Remove insn pattern using sync instruction.
+	* config/pa/pa.opt (coherent-ldcw): New option.
+	(ordered): New option.
+
 2019-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/92095
