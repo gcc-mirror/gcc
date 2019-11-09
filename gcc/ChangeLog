@@ -1,3 +1,10 @@
+2019-11-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_mcount_stub_name): Validate the
+	symbol stub name when it is created.
+	* config/i386/darwin.h (FUNCTION_PROFILER): Remove the symbol
+	stub validation.
+
 2019-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* symtab.c: Fix comment typos.
