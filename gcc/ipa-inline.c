@@ -883,9 +883,9 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && !opt_for_fn (e->caller->decl, flag_inline_functions)
 	       && growth >= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SMALL))
 	{
-	  /* growth_likely_positive is expensive, always test it last.  */
+	  /* growth_positive_p is expensive, always test it last.  */
           if (growth >= inline_insns_single (e->caller, false)
-	      || growth_likely_positive (callee, growth))
+	      || growth_positive_p (callee, e, growth))
 	    {
               e->inline_failed = CIF_NOT_DECLARED_INLINED;
 	      want_inline = false;
@@ -899,9 +899,9 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 		   || growth >= inline_insns_auto (e->caller, true)
 		   || !big_speedup_p (e)))
 	{
-	  /* growth_likely_positive is expensive, always test it last.  */
+	  /* growth_positive_p is expensive, always test it last.  */
           if (growth >= inline_insns_single (e->caller, false)
-	      || growth_likely_positive (callee, growth))
+	      || growth_positive_p (callee, e, growth))
 	    {
 	      if (opt_for_fn (e->caller->decl, optimize) >= 3)
 		e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
@@ -913,7 +913,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       /* If call is cold, do not inline when function body would grow. */
       else if (!e->maybe_hot_p ()
 	       && (growth >= inline_insns_single (e->caller, false)
-		   || growth_likely_positive (callee, growth)))
+		   || growth_positive_p (callee, e, growth)))
 	{
           e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;
@@ -1075,7 +1075,7 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
   if (!node->call_for_symbol_and_aliases (has_caller_p, NULL, true))
     return false;
   /* Inlining into all callers would increase size?  */
-  if (estimate_growth (node) > 0)
+  if (growth_positive_p (node, NULL, INT_MIN) > 0)
     return false;
   /* All inlines must be possible.  */
   if (node->call_for_symbol_and_aliases (check_callers, &has_hot_call,

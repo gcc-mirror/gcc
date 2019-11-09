@@ -387,6 +387,7 @@ struct growth_data
   bool self_recursive;
   bool uninlinable;
   int growth;
+  int cap;
 };
 
 
@@ -406,29 +407,57 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
 	  || !opt_for_fn (e->caller->decl, optimize))
 	{
 	  d->uninlinable = true;
+	  if (d->cap < INT_MAX)
+	    return true;
           continue;
 	}
 
       if (e->recursive_p ())
 	{
 	  d->self_recursive = true;
+	  if (d->cap < INT_MAX)
+	    return true;
 	  continue;
 	}
       d->growth += estimate_edge_growth (e);
+      if (d->growth > d->cap)
+	return true;
     }
   return false;
 }
 
+/* Return estimated savings for eliminating offline copy of NODE by inlining
+   it everywhere.  */
+
+static int
+offline_size (struct cgraph_node *node, ipa_size_summary *info)
+{
+  if (!DECL_EXTERNAL (node->decl))
+    {
+      if (node->will_be_removed_from_program_if_no_direct_calls_p ())
+	return info->size;
+      /* COMDAT functions are very often not shared across multiple units
+         since they come from various template instantiations.
+         Take this into account.  */
+      else if (DECL_COMDAT (node->decl)
+	       && node->can_remove_if_no_direct_calls_p ())
+	return (info->size
+	        * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY))
+	        + 50) / 100;
+    }
+  return 0;
+}
 
 /* Estimate the growth caused by inlining NODE into all callees.  */
 
 int
 estimate_growth (struct cgraph_node *node)
 {
-  struct growth_data d = { node, false, false, 0 };
-  class ipa_size_summary *info = ipa_size_summaries->get (node);
+  struct growth_data d = { node, false, false, 0, INT_MAX };
+  ipa_size_summary *info = ipa_size_summaries->get (node);
 
-  node->call_for_symbol_and_aliases (do_estimate_growth_1, &d, true);
+  if (node->call_for_symbol_and_aliases (do_estimate_growth_1, &d, true))
+    return 1;
 
   /* For self recursive functions the growth estimation really should be
      infinity.  We don't want to return very large values because the growth
@@ -436,21 +465,8 @@ estimate_growth (struct cgraph_node *node)
      return zero or negative growths. */
   if (d.self_recursive)
     d.growth = d.growth < info->size ? info->size : d.growth;
-  else if (DECL_EXTERNAL (node->decl) || d.uninlinable)
-    ;
-  else
-    {
-      if (node->will_be_removed_from_program_if_no_direct_calls_p ())
-	d.growth -= info->size;
-      /* COMDAT functions are very often not shared across multiple units
-         since they come from various template instantiations.
-         Take this into account.  */
-      else if (DECL_COMDAT (node->decl)
-	       && node->can_remove_if_no_direct_calls_p ())
-	d.growth -= (info->size
-		     * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY))
-		     + 50) / 100;
-    }
+  else if (!d.uninlinable)
+    d.growth -= offline_size (node, info);
 
   return d.growth;
 }
@@ -458,7 +474,8 @@ estimate_growth (struct cgraph_node *node)
 /* Verify if there are fewer than MAX_CALLERS.  */
 
 static bool
-check_callers (cgraph_node *node, int *max_callers)
+check_callers (cgraph_node *node, int *growth, int *n, int offline,
+	       int min_size, struct cgraph_edge *known_edge)
 {
   ipa_ref *ref;
 
@@ -467,70 +484,96 @@ check_callers (cgraph_node *node, int *max_callers)
 
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
     {
-      (*max_callers)--;
-      if (!*max_callers
-	  || cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+      edge_growth_cache_entry *entry;
+
+      if (e == known_edge)
+	continue;
+      if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+	return true;
+      if (edge_growth_cache != NULL
+	  && (entry = edge_growth_cache->get (e)) != NULL
+	  && entry->size != 0)
+	*growth += entry->size - (entry->size > 0);
+      else
+	{
+	  class ipa_call_summary *es = ipa_call_summaries->get (e);
+	  if (!es)
+	    return true;
+	  *growth += min_size - es->call_stmt_size;
+	  if (--(*n) < 0)
+	    return false;
+	}
+      if (*growth > offline)
 	return true;
     }
 
-  FOR_EACH_ALIAS (node, ref)
-    if (check_callers (dyn_cast <cgraph_node *> (ref->referring), max_callers))
-      return true;
+  if (*n > 0)
+    FOR_EACH_ALIAS (node, ref)
+      if (check_callers (dyn_cast <cgraph_node *> (ref->referring), growth, n,
+			 offline, min_size, known_edge))
+	return true;
 
   return false;
 }
 
 
-/* Make cheap estimation if growth of NODE is likely positive knowing
-   EDGE_GROWTH of one particular edge. 
-   We assume that most of other edges will have similar growth
-   and skip computation if there are too many callers.  */
+/* Decide if growth of NODE is positive.  This is cheaper than calculating
+   actual growth.  If edge growth of KNOWN_EDGE is known
+   it is passed by EDGE_GROWTH.  */
 
 bool
-growth_likely_positive (struct cgraph_node *node,
-		        int edge_growth)
+growth_positive_p (struct cgraph_node *node,
+		   struct cgraph_edge * known_edge, int edge_growth)
 {
-  int max_callers;
   struct cgraph_edge *e;
-  gcc_checking_assert (edge_growth > 0);
+
+  ipa_size_summary *s = ipa_size_summaries->get (node);
 
   /* First quickly check if NODE is removable at all.  */
-  if (DECL_EXTERNAL (node->decl))
-    return true;
-  if (!node->can_remove_if_no_direct_calls_and_refs_p ()
-      || node->address_taken)
+  int offline = offline_size (node, s);
+  if (offline <= 0 && known_edge && edge_growth > 0)
     return true;
 
-  max_callers = ipa_size_summaries->get (node)->size * 4 / edge_growth + 2;
+  int min_size = ipa_fn_summaries->get (node)->min_size;
+  int n = 10;
 
+  int min_growth = known_edge ? edge_growth : 0;
   for (e = node->callers; e; e = e->next_caller)
     {
-      max_callers--;
-      if (!max_callers
-	  || cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+      edge_growth_cache_entry *entry;
+
+      if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+	return true;
+      if (e == known_edge)
+	continue;
+      if (edge_growth_cache != NULL
+	  && (entry = edge_growth_cache->get (e)) != NULL
+	  && entry->size != 0)
+	min_growth += entry->size - (entry->size > 0);
+      else
+	{
+	  class ipa_call_summary *es = ipa_call_summaries->get (e);
+	  if (!es)
+	    return true;
+	  min_growth += min_size - es->call_stmt_size;
+	  if (--n <= 0)
+	    break;
+	}
+      if (min_growth > offline)
 	return true;
     }
 
   ipa_ref *ref;
-  FOR_EACH_ALIAS (node, ref)
-    if (check_callers (dyn_cast <cgraph_node *> (ref->referring), &max_callers))
-      return true;
-
-  /* Unlike for functions called once, we play unsafe with
-     COMDATs.  We can allow that since we know functions
-     in consideration are small (and thus risk is small) and
-     moreover grow estimates already accounts that COMDAT
-     functions may or may not disappear when eliminated from
-     current unit. With good probability making aggressive
-     choice in all units is going to make overall program
-     smaller.  */
-  if (DECL_COMDAT (node->decl))
-    {
-      if (!node->can_remove_if_no_direct_calls_p ())
+  if (n > 0)
+    FOR_EACH_ALIAS (node, ref)
+      if (check_callers (dyn_cast <cgraph_node *> (ref->referring),
+			 &min_growth, &n, offline, min_size, known_edge))
 	return true;
-    }
-  else if (!node->will_be_removed_from_program_if_no_direct_calls_p ())
-    return true;
 
-  return estimate_growth (node) > 0;
+  struct growth_data d = { node, false, false, 0, offline };
+  if (node->call_for_symbol_and_aliases (do_estimate_growth_1, &d, true))
+    return true;
+  if (d.self_recursive || d.uninlinable)
+    return true;
+  return (d.growth > offline);
 }
