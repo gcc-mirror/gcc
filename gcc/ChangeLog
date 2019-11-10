@@ -1,5 +1,10 @@
 2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* profile-count.c (profile_count::to_sreal_scale): Short circuit
+	case where profiles are same.
+
+2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.c (cgraph_edge::maybe_hot_p): Do not use sreal_frequency.
 
 2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
