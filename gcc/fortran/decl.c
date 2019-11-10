@@ -1560,15 +1560,6 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 				  sym->ns->proc_name->name))
 	    retval = false;
 
-	  if ((sym->attr.allocatable || sym->attr.pointer) && !sym->as)
-	    {
-	      gfc_error ("Scalar variable %qs at %L with POINTER or "
-			 "ALLOCATABLE in procedure %qs with BIND(C) is not yet"
-			 " supported", sym->name, &(sym->declared_at),
-			 sym->ns->proc_name->name);
-	      retval = false;
-	    }
-
 	  if (sym->attr.optional == 1 && sym->attr.value)
 	    {
 	      gfc_error ("Variable %qs at %L cannot have both the OPTIONAL "
@@ -7567,7 +7558,7 @@ gfc_match_entry (void)
       entry->attr.is_bind_c = 0;
 
       loc = entry->old_symbol != NULL
-	? entry->old_symbol->declared_at : gfc_current_locus; 
+	? entry->old_symbol->declared_at : gfc_current_locus;
       gfc_error_now ("BIND(C) attribute at %L can only be used for "
 		     "variables or common blocks", &loc);
      }
@@ -10313,7 +10304,7 @@ gfc_match_derived_decl (void)
     }
 
   /*  In free source form, need to check for TYPE XXX as oppose to TYPEXXX.
-      But, we need to simply return for TYPE(.  */ 
+      But, we need to simply return for TYPE(.  */
   if (m == MATCH_NO && gfc_current_form == FORM_FREE)
     {
       char c = gfc_peek_ascii_char ();
