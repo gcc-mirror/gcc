@@ -2697,14 +2697,18 @@ cgraph_edge::maybe_hot_p (void)
     return false;
   if (caller->frequency == NODE_FREQUENCY_HOT)
     return true;
-  /* If profile is now known yet, be conservative.
-     FIXME: this predicate is used by early inliner and can do better there.  */
-  if (symtab->state < IPA_SSA)
+  if (!count.initialized_p ())
     return true;
-  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && sreal_frequency () * 2 < 3)
+  cgraph_node *where = caller->inlined_to ? caller->inlined_to : caller;
+  if (!where->count.initialized_p ())
     return false;
-  if (sreal_frequency () * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) <= 1)
+  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE)
+    {
+      if (count.apply_scale (2, 1) < where->count.apply_scale (3, 1))
+	return false;
+    }
+  else if (count.apply_scale (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION), 1)
+	   < where->count)
     return false;
   return true;
 }
