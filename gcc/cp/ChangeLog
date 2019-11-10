@@ -1,3 +1,9 @@
+2019-11-10  Jason Merrill  <jason@redhat.com>
+
+	Implement D1957R0, T* to bool should be considered narrowing.
+	* typeck2.c (check_narrowing): Treat pointer->bool as a narrowing
+	conversion with -std=c++2a.
+
 2019-11-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92215 - flawed diagnostic for bit-field with non-integral type.
