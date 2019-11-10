@@ -483,36 +483,39 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       if (count && known_contexts_ptr)
 	known_contexts_ptr->safe_grow_cleared (count);
 
-      for (i = 0; i < count; i++)
-	{
-	  struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
-	  tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
-					   ipa_get_type (callee_pi, i));
+      if (callee_pi)
+	for (i = 0; i < count; i++)
+	  {
+	    struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
+	    tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
+					     ipa_get_type (callee_pi, i));
 
-	  if (!cst && e->call_stmt
-	      && i < (int)gimple_call_num_args (e->call_stmt))
-	    {
-	      cst = gimple_call_arg (e->call_stmt, i);
-	      if (!is_gimple_min_invariant (cst))
-		cst = NULL;
-	    }
-	  if (cst)
-	    {
-	      gcc_checking_assert (TREE_CODE (cst) != TREE_BINFO);
-	      if (known_vals.exists ())
-		known_vals[i] = cst;
-	    }
-	  else if (inline_p && !es->param[i].change_prob)
-	    known_vals[i] = error_mark_node;
+	    if (!cst && e->call_stmt
+		&& i < (int)gimple_call_num_args (e->call_stmt))
+	      {
+		cst = gimple_call_arg (e->call_stmt, i);
+		if (!is_gimple_min_invariant (cst))
+		  cst = NULL;
+	      }
+	    if (cst)
+	      {
+		gcc_checking_assert (TREE_CODE (cst) != TREE_BINFO);
+		if (known_vals.exists ())
+		  known_vals[i] = cst;
+	      }
+	    else if (inline_p && !es->param[i].change_prob)
+	      known_vals[i] = error_mark_node;
 
-	  if (known_contexts_ptr)
-	    (*known_contexts_ptr)[i]
-	      = ipa_context_from_jfunc (caller_parms_info, e, i, jf);
-	  /* TODO: When IPA-CP starts propagating and merging aggregate jump
-	     functions, use its knowledge of the caller too, just like the
-	     scalar case above.  */
-	  known_aggs[i] = &jf->agg;
-	}
+	    if (known_contexts_ptr)
+	      (*known_contexts_ptr)[i]
+		= ipa_context_from_jfunc (caller_parms_info, e, i, jf);
+	    /* TODO: When IPA-CP starts propagating and merging aggregate jump
+	       functions, use its knowledge of the caller too, just like the
+	       scalar case above.  */
+	    known_aggs[i] = &jf->agg;
+	  }
+	else
+	  gcc_assert (callee->thunk.thunk_p);
     }
   else if (e->call_stmt && !e->call_stmt_cannot_inline_p
 	   && ((clause_ptr && info->conds) || known_vals_ptr))
@@ -3004,7 +3007,8 @@ ipa_call_context::duplicate_from (const ipa_call_context &ctx)
   m_possible_truths = ctx.m_possible_truths;
   m_nonspec_possible_truths = ctx.m_nonspec_possible_truths;
   class ipa_node_params *params_summary = IPA_NODE_REF (m_node);
-  unsigned int nargs = ipa_get_param_count (params_summary);
+  unsigned int nargs = params_summary
+		       ? ipa_get_param_count (params_summary) : 0;
 
   m_inline_param_summary = vNULL;
   /* Copy the info only if there is at least one useful entry.  */
@@ -3093,7 +3097,8 @@ ipa_call_context::equal_to (const ipa_call_context &ctx)
     return false;
 
   class ipa_node_params *params_summary = IPA_NODE_REF (m_node);
-  unsigned int nargs = ipa_get_param_count (params_summary);
+  unsigned int nargs = params_summary
+		       ? ipa_get_param_count (params_summary) : 0;
 
   if (m_inline_param_summary.exists () || ctx.m_inline_param_summary.exists ())
     {
@@ -3404,7 +3409,7 @@ inline_update_callee_summaries (struct cgraph_node *node, int depth)
 }
 
 /* Update change_prob of EDGE after INLINED_EDGE has been inlined.
-   When functoin A is inlined in B and A calls C with parameter that
+   When function A is inlined in B and A calls C with parameter that
    changes with probability PROB1 and C is known to be passthroug
    of argument if B that change with probability PROB2, the probability
    of change is now PROB1*PROB2.  */
@@ -3472,12 +3477,12 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
   struct cgraph_edge *e, *next;
   for (e = node->callees; e; e = next)
     {
-      class ipa_call_summary *es = ipa_call_summaries->get (e);
       predicate p;
       next = e->next_callee;
 
       if (e->inline_failed)
 	{
+          class ipa_call_summary *es = ipa_call_summaries->get (e);
 	  remap_edge_change_prob (inlined_edge, e);
 
 	  if (es->predicate)

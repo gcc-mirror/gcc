@@ -656,7 +656,7 @@ determine_versionability (struct cgraph_node *node,
 static bool
 ipcp_versionable_function_p (struct cgraph_node *node)
 {
-  return IPA_NODE_REF (node)->versionable;
+  return IPA_NODE_REF (node) && IPA_NODE_REF (node)->versionable;
 }
 
 /* Structure holding accumulated information about callers of a node.  */
@@ -817,6 +817,7 @@ ignore_edge_p (cgraph_edge *e)
     = e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
 
   return (avail <= AVAIL_INTERPOSABLE
+	  || !opt_for_fn (e->caller->decl, flag_ipa_cp)
 	  || !opt_for_fn (ultimate_target->decl, flag_ipa_cp));
 }
 
@@ -1471,6 +1472,8 @@ ipcp_verify_propagated_values (void)
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
       class ipa_node_params *info = IPA_NODE_REF (node);
+      if (!opt_for_fn (node->decl, flag_ipa_cp))
+	continue;
       int i, count = ipa_get_param_count (info);
 
       for (i = 0; i < count; i++)
@@ -2307,6 +2310,8 @@ propagate_constants_across_call (struct cgraph_edge *cs)
     return false;
   gcc_checking_assert (callee->has_gimple_body_p ());
   callee_info = IPA_NODE_REF (callee);
+  if (!callee_info)
+    return false;
 
   args = IPA_EDGE_REF (cs);
   parms_count = ipa_get_param_count (callee_info);
@@ -3233,7 +3238,17 @@ propagate_constants_topo (class ipa_topo_info *topo)
 	 until all lattices stabilize.  */
       FOR_EACH_VEC_ELT (cycle_nodes, j, v)
 	if (v->has_gimple_body_p ())
-	  push_node_to_stack (topo, v);
+	  {
+	    if (opt_for_fn (v->decl, flag_ipa_cp))
+	      push_node_to_stack (topo, v);
+	    /* When V is not optimized, we can not push it to stac, but
+	       still we need to set all its callees lattices to bottom.  */
+	    else
+	      {
+		for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
+	           propagate_constants_across_call (cs);
+	      }
+	  }
 
       v = pop_node_from_stack (topo);
       while (v)
@@ -3254,7 +3269,8 @@ propagate_constants_topo (class ipa_topo_info *topo)
 	 the local effects of the discovered constants and all valid values to
 	 their topological sort.  */
       FOR_EACH_VEC_ELT (cycle_nodes, j, v)
-	if (v->has_gimple_body_p ())
+	if (v->has_gimple_body_p ()
+	    && opt_for_fn (v->decl, flag_ipa_cp))
 	  {
 	    struct cgraph_edge *cs;
 
@@ -3333,11 +3349,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 
   FOR_EACH_DEFINED_FUNCTION (node)
   {
-    class ipa_node_params *info = IPA_NODE_REF (node);
-
-    determine_versionability (node, info);
-    if (node->has_gimple_body_p ())
+    if (node->has_gimple_body_p () && opt_for_fn (node->decl, flag_ipa_cp))
       {
+        class ipa_node_params *info = IPA_NODE_REF (node);
+        determine_versionability (node, info);
 	info->lattices = XCNEWVEC (class ipcp_param_lattices,
 				   ipa_get_param_count (info));
 	initialize_node_lattices (node);
@@ -3526,8 +3541,8 @@ cgraph_edge_brings_value_p (cgraph_edge *cs, ipcp_value_source<tree> *src,
   enum availability availability;
   cgraph_node *real_dest = cs->callee->function_symbol (&availability);
 
-  if (!same_node_or_its_all_contexts_clone_p (real_dest, dest)
-      || availability <= AVAIL_INTERPOSABLE
+  if (availability <= AVAIL_INTERPOSABLE
+      || !same_node_or_its_all_contexts_clone_p (real_dest, dest)
       || caller_info->node_dead)
     return false;
 
@@ -3583,9 +3598,11 @@ cgraph_edge_brings_value_p (cgraph_edge *cs,
 			    ipcp_value<ipa_polymorphic_call_context> *)
 {
   class ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-  cgraph_node *real_dest = cs->callee->function_symbol ();
+  enum availability avail;
+  cgraph_node *real_dest = cs->callee->function_symbol (&avail);
 
-  if (!same_node_or_its_all_contexts_clone_p (real_dest, dest)
+  if (avail <= AVAIL_INTERPOSABLE
+      || !same_node_or_its_all_contexts_clone_p (real_dest, dest)
       || caller_info->node_dead)
     return false;
   if (!src->val)
@@ -4018,6 +4035,7 @@ create_specialized_node (struct cgraph_node *node,
   update_profiling_info (node, new_node);
   new_info = IPA_NODE_REF (new_node);
   new_info->ipcp_orig_node = node;
+  new_node->ipcp_clone = true;
   new_info->known_csts = known_csts;
   new_info->known_contexts = known_contexts;
 
@@ -5053,7 +5071,7 @@ ipcp_store_bits_results (void)
       bool dumped_sth = false;
       bool found_useful_result = false;
 
-      if (!opt_for_fn (node->decl, flag_ipa_bit_cp))
+      if (!opt_for_fn (node->decl, flag_ipa_bit_cp) || !info)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not considering %s for ipa bitwise propagation "

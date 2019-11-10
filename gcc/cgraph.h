@@ -1484,6 +1484,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned redefined_extern_inline : 1;
   /* True if the function may enter serial irrevocable mode.  */
   unsigned tm_may_enter_irr : 1;
+  /* True if this was a clone created by ipa-cp.  */
+  unsigned ipcp_clone : 1;
 
 private:
   /* Unique id of the node.  */
