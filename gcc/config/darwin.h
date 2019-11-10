@@ -843,6 +843,13 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #define MACHO_SYMBOL_HIDDEN_VIS_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_HIDDEN_VIS) != 0)
 
+/* Set on a symbol that should be made visible to the linker (overriding
+   'L' symbol prefixes).  */
+
+#define MACHO_SYMBOL_FLAG_LINKER_VIS ((SYMBOL_FLAG_SUBT_DEP) << 4)
+#define MACHO_SYMBOL_LINKER_VIS_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_LINKER_VIS) != 0)
+
 /* Set on a symbol that is a pic stub or symbol indirection (i.e. the
    L_xxxxx${stub,non_lazy_ptr,lazy_ptr}.  */
 
