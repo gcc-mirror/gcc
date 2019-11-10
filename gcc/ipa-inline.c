@@ -735,13 +735,13 @@ want_early_inline_function_p (struct cgraph_edge *e)
 
 inline sreal
 compute_uninlined_call_time (struct cgraph_edge *edge,
-			     sreal uninlined_call_time)
+			     sreal uninlined_call_time,
+			     sreal freq)
 {
   cgraph_node *caller = (edge->caller->inlined_to
 			 ? edge->caller->inlined_to
 			 : edge->caller);
 
-  sreal freq = edge->sreal_frequency ();
   if (freq > 0)
     uninlined_call_time *= freq;
   else
@@ -756,14 +756,14 @@ compute_uninlined_call_time (struct cgraph_edge *edge,
 
 inline sreal
 compute_inlined_call_time (struct cgraph_edge *edge,
-			   sreal time)
+			   sreal time,
+			   sreal freq)
 {
   cgraph_node *caller = (edge->caller->inlined_to
 			 ? edge->caller->inlined_to
 			 : edge->caller);
   sreal caller_time = ipa_fn_summaries->get (caller)->time;
 
-  sreal freq = edge->sreal_frequency ();
   if (freq > 0)
     time *= freq;
   else
@@ -787,8 +787,9 @@ big_speedup_p (struct cgraph_edge *e)
 {
   sreal unspec_time;
   sreal spec_time = estimate_edge_time (e, &unspec_time);
-  sreal time = compute_uninlined_call_time (e, unspec_time);
-  sreal inlined_time = compute_inlined_call_time (e, spec_time);
+  sreal freq = e->sreal_frequency ();
+  sreal time = compute_uninlined_call_time (e, unspec_time, freq);
+  sreal inlined_time = compute_inlined_call_time (e, spec_time, freq);
   cgraph_node *caller = (e->caller->inlined_to
 			 ? e->caller->inlined_to
 			 : e->caller);
@@ -1164,9 +1165,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     {
       sreal numerator, denominator;
       int overall_growth;
-      sreal inlined_time = compute_inlined_call_time (edge, edge_time);
+      sreal freq = edge->sreal_frequency ();
+      sreal inlined_time = compute_inlined_call_time (edge, edge_time, freq);
 
-      numerator = (compute_uninlined_call_time (edge, unspec_edge_time)
+      numerator = (compute_uninlined_call_time (edge, unspec_edge_time, freq)
 		   - inlined_time);
       if (numerator <= 0)
 	numerator = ((sreal) 1 >> 8);
@@ -1198,14 +1200,14 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  && callee_info->single_caller
 	  && !edge->caller->inlined_to
 	  /* ... and edges executed only conditionally ... */
-	  && edge->sreal_frequency () < 1
+	  && freq < 1
 	  /* ... consider case where callee is not inline but caller is ... */
 	  && ((!DECL_DECLARED_INLINE_P (edge->callee->decl)
 	       && DECL_DECLARED_INLINE_P (caller->decl))
 	      /* ... or when early optimizers decided to split and edge
 		 frequency still indicates splitting is a win ... */
 	      || (callee->split_part && !caller->split_part
-		  && edge->sreal_frequency () * 100
+		  && freq * 100
 		     < PARAM_VALUE
 			  (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY)
 		  /* ... and do not overwrite user specified hints.   */
@@ -1256,11 +1258,11 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   " overall growth %i (current) %i (original)"
 		   " %i (compensated)\n",
 		   badness.to_double (),
-		   edge->sreal_frequency ().to_double (),
+		   freq.to_double (),
 		   edge->count.ipa ().initialized_p () ? edge->count.ipa ().to_gcov_type () : -1,
 		   caller->count.ipa ().initialized_p () ? caller->count.ipa ().to_gcov_type () : -1,
 		   compute_uninlined_call_time (edge,
-						unspec_edge_time).to_double (),
+						unspec_edge_time, freq).to_double (),
 		   inlined_time.to_double (),
 		   estimate_growth (callee),
 		   callee_info->growth, overall_growth);
