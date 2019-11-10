@@ -1,6 +1,13 @@
 2019-11-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/92113
+	* trans-decl.c (gfc_get_symbol_decl): If __def_init actually
+	contains a value, put it into  the read-only section.
+
+2019-11-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/92321
 	* frontend-passes.c (call_external_blas): Commit symbol for
 	external BLAS routine.
