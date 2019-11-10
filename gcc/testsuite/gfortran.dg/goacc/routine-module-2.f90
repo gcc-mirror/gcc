@@ -8,6 +8,7 @@ program main
 
   integer :: i
 
+
   !$acc parallel loop gang
   do i = 1, 10
      call g_1 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
@@ -34,4 +35,33 @@ program main
      call v_1_nh ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
   end do
   !$acc end parallel loop
+
+
+  !$acc serial loop gang
+  do i = 1, 10
+     call g_1 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call g_1_nh ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+  end do
+  !$acc end serial loop
+
+  !$acc serial loop worker
+  do i = 1, 10
+     call g_1 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call g_1_nh ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call w_1 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call w_1_nh ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+  end do
+  !$acc end serial loop
+
+  !$acc serial loop vector
+  do i = 1, 10
+     call g_1 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call g_1_nh ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call w_1 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call w_1_nh ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call v_1 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+     call v_1_nh ! { dg-error "routine call uses same OpenACC parallelism as containing loop" }
+  end do
+  !$acc end serial loop
+
 end program main

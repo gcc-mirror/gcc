@@ -62,3 +62,16 @@ f_acc_parallel (void)
     i = 0;
   }
 }
+
+void
+f_acc_serial (void)
+{
+#pragma acc serial
+  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-1 }
+     { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } .-2 } */
+  {
+    int i;
+#pragma omp atomic write
+    i = 0;
+  }
+}

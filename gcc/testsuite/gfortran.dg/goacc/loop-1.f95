@@ -82,6 +82,13 @@ subroutine test1
   do i = 1,10
   enddo
   !$acc end kernels loop
+  !$acc serial loop
+  do i = 1,10
+  enddo
+  !$acc serial loop
+  do i = 1,10
+  enddo
+  !$acc end serial loop
 
   !$acc kernels loop reduction(max:i)
   do i = 1,10

@@ -147,13 +147,101 @@ oacc_kernels_copy (T a)
   return b;
 }
 
+template<typename T, int I> T
+oacc_serial_copy (T a)
+{
+  T b = 0;
+  char w = 1;
+  int x = 2;
+  float y = 3;
+  double z = 4;
+
+#pragma acc serial default (none) copyout (b) copyin (a)
+#pragma acc loop gang worker vector
+  for (int i = 0; i < 1; i++)
+    b = a;
+
+#pragma acc serial copy (w, x, y, z)
+#pragma acc loop
+  for (int i = 0; i < 1; i++)
+    {
+      w = accDouble<char>(w);
+      x = accDouble<int>(x);
+      y = accDouble<float>(y);
+      z = accDouble<double>(z);
+    }
+
+#pragma acc serial if (1)
+  {
+#pragma acc loop independent collapse (2)
+    for (int i = 0; i < a; i++)
+      for (int j = 0; j < 5; j++)
+	b = a;
+
+#pragma acc loop auto tile (I, 3)
+    for (int i = 0; i < a; i++)
+      for (int j = 0; j < 5; j++)
+	b = a;
+
+#pragma acc loop seq
+    for (int i = 0; i < a; i++)
+      b = a;
+  }
+
+  T c;
+
+#pragma acc serial
+#pragma acc loop worker
+  for (int i = 0; i < 1; i++)
+    {
+#pragma acc atomic capture
+      c = b++;
+
+#pragma atomic update
+      c++;
+
+#pragma acc atomic read
+      b = a;
+
+#pragma acc atomic write
+      b = a;
+    }
+
+#pragma acc serial reduction (+:c)
+  c = 1;
+
+#pragma acc data if (1) copy (b)
+  {
+#pragma acc serial
+    {
+      b = a;
+    }
+  }
+
+#pragma acc enter data copyin (b)
+#pragma acc serial present (b)
+  {
+    b = a;
+  }
+
+#pragma acc update host (b)
+#pragma acc update self (b)
+#pragma acc update device (b)
+#pragma acc exit data delete (b)
+#pragma acc exit data finalize copyout (b)
+#pragma acc exit data delete (b) finalize
+
+  return b;
+}
+
 int
 main ()
 {
   int b = oacc_parallel_copy<int, 4> (5);
   int c = oacc_kernels_copy<int> (5);
+  int d = oacc_serial_copy<int, 6> (5);
 
-  return b + c;
+  return b + c + d;
 }
 
 /* { dg-final { scan-tree-dump-times {(?n)^OpenACC routine '[^']+' has 'nohost' clause\.$} 4 oaccloops } }

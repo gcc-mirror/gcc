@@ -60,6 +60,12 @@ program test
   !$acc parallel firstprivate(/blockA/, /blockB/, e, v)
   !$acc end parallel
 
+  !$acc serial private(/blockA/, /blockB/, e, v)
+  !$acc end serial
+
+  !$acc serial firstprivate(/blockA/, /blockB/, e, v)
+  !$acc end serial
+
   !$acc update device(/blockA/)
   !$acc update self(/blockB/, v)
   !$acc update host(/blockA/, e, /blockB/)

@@ -20,6 +20,11 @@ void f1 ()
     {
       f1_b[0] = f1_a;
     }
+#pragma acc serial
+    /* { dg-final { scan-tree-dump-times "omp target oacc_serial map\\(tofrom:f1_b \[^\\)\]+\\) map\\(tofrom:f1_a" 1 "gimple" } } */
+    {
+      f1_b[0] = f1_a;
+    }
   }
 }
 
@@ -38,6 +43,11 @@ void f2 ()
     }
 #pragma acc parallel default (none)
     /* { dg-final { scan-tree-dump-times "omp target oacc_parallel default\\(none\\) map\\(tofrom:f2_b \[^\\)\]+\\) map\\(tofrom:f2_a" 1 "gimple" } } */
+    {
+      f2_b[0] = f2_a;
+    }
+#pragma acc serial default (none)
+    /* { dg-final { scan-tree-dump-times "omp target oacc_serial default\\(none\\) map\\(tofrom:f2_b \[^\\)\]+\\) map\\(tofrom:f2_a" 1 "gimple" } } */
     {
       f2_b[0] = f2_a;
     }
@@ -62,6 +72,11 @@ void f2_ ()
     {
       f2__b[0] = f2__a;
     }
+#pragma acc serial
+    /* { dg-final { scan-tree-dump-times "omp target oacc_serial map\\(tofrom:f2__b \[^\\)\]+\\) map\\(tofrom:f2__a" 1 "gimple" } } */
+    {
+      f2__b[0] = f2__a;
+    }
   }
 }
 
@@ -83,6 +98,11 @@ void f3 ()
     {
       f3_b[0] = f3_a;
     }
+#pragma acc serial default (present)
+    /* { dg-final { scan-tree-dump-times "omp target oacc_serial default\\(present\\) map\\(tofrom:f3_b \[^\\)\]+\\) map\\(tofrom:f3_a" 1 "gimple" } } */
+    {
+      f3_b[0] = f3_a;
+    }
   }
 }
 
@@ -101,6 +121,11 @@ void f3_ ()
     }
 #pragma acc parallel
     /* { dg-final { scan-tree-dump-times "omp target oacc_parallel map\\(tofrom:f3__b \[^\\)\]+\\) map\\(tofrom:f3__a" 1 "gimple" } } */
+    {
+      f3__b[0] = f3__a;
+    }
+#pragma acc serial
+    /* { dg-final { scan-tree-dump-times "omp target oacc_serial map\\(tofrom:f3__b \[^\\)\]+\\) map\\(tofrom:f3__a" 1 "gimple" } } */
     {
       f3__b[0] = f3__a;
     }

@@ -1,4 +1,5 @@
-! Check invalid calls to 'external' OpenACC routines.
+! Check invalid calls to 'external' OpenACC routines from OpenACC
+! 'parallel' constructs.
 
 ! { dg-additional-options "-fopt-info-optimized-omp" }
 

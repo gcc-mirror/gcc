@@ -66,6 +66,35 @@ program test
   !$acc kernels async("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end kernels
 
+  !$acc serial async
+  !$acc end serial
+
+  !$acc serial async(3)
+  !$acc end serial
+
+  !$acc serial async(i)
+  !$acc end serial
+
+  !$acc serial async(i+1)
+  !$acc end serial
+
+  !$acc serial async(-1) 
+  !$acc end serial
+
+  !$acc serial async(0) 
+  !$acc end serial
+
+  !$acc serial async() ! { dg-error "Invalid character in name" }
+
+  !$acc serial async(1.5) ! { dg-error "scalar INTEGER expression" }
+  !$acc end serial
+
+  !$acc serial async(.true.) ! { dg-error "scalar INTEGER expression" }
+  !$acc end serial
+
+  !$acc serial async("1") ! { dg-error "scalar INTEGER expression" }
+  !$acc end serial
+
 
   !$acc parallel num_gangs ! { dg-error "Expected '\\(' after 'num_gangs'" }
 

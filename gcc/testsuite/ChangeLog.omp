@@ -3,6 +3,126 @@
 	Backported from trunk:
 	2025-01-16  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/goacc-gomp/nesting-1.c: Extend OpenACC 'serial'
+	testing.
+	* c-c++-common/goacc-gomp/nesting-fail-1.c: Likewise.
+	* c-c++-common/goacc/Wparentheses-1.c: Likewise.
+	* c-c++-common/goacc/builtin-goacc-parlevel-id-size.c: Likewise.
+	* c-c++-common/goacc/combined-directives-2.c: Likewise.
+	* c-c++-common/goacc/combined-directives-3.c: Likewise.
+	* c-c++-common/goacc/combined-directives.c: Likewise.
+	* c-c++-common/goacc/combined-reduction.c: Likewise.
+	* c-c++-common/goacc/data-clause-duplicate-1.c: Likewise.
+	* c-c++-common/goacc/default-1.c: Likewise.
+	* c-c++-common/goacc/default-2.c: Likewise.
+	* c-c++-common/goacc/default-3.c: Likewise.
+	* c-c++-common/goacc/default-4.c: Likewise.
+	* c-c++-common/goacc/default-5.c: Likewise.
+	* c-c++-common/goacc/if-clause-2.c: Likewise.
+	* c-c++-common/goacc/kernels-1.c: Likewise.
+	* c-c++-common/goacc/loop-1.c: Likewise.
+	* c-c++-common/goacc/loop-clauses.c: Likewise.
+	* c-c++-common/goacc/nesting-1.c: Likewise.
+	* c-c++-common/goacc/nesting-data-1.c: Likewise.
+	* c-c++-common/goacc/nesting-fail-1.c: Likewise.
+	* c-c++-common/goacc/parallel-1.c: Likewise.
+	* c-c++-common/goacc/private-reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-promotions.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/sb-1.c: Likewise.
+	* c-c++-common/goacc/sb-2.c: Likewise.
+	* c-c++-common/goacc/uninit-firstprivate-clause.c: Likewise.
+	* c-c++-common/goacc/uninit-if-clause.c: Likewise.
+	* c-c++-common/goacc/update-if_present-2.c: Likewise.
+	* g++.dg/goacc/template.C: Likewise.
+	* gfortran.dg/goacc/array-reduction.f90: Likewise.
+	* gfortran.dg/goacc/assumed.f95: Likewise.
+	* gfortran.dg/goacc/branch.f95: Likewise.
+	* gfortran.dg/goacc/coarray.f95: Likewise.
+	* gfortran.dg/goacc/coarray_2.f90: Likewise.
+	* gfortran.dg/goacc/combined-directives-3.f90: Likewise.
+	* gfortran.dg/goacc/combined-directives.f90: Likewise.
+	* gfortran.dg/goacc/common-block-1.f90: Likewise.
+	* gfortran.dg/goacc/common-block-2.f90: Likewise.
+	* gfortran.dg/goacc/common-block-3.f90: Likewise.
+	* gfortran.dg/goacc/cray-2.f95: Likewise.
+	* gfortran.dg/goacc/cray.f95: Likewise.
+	* gfortran.dg/goacc/critical.f95: Likewise.
+	* gfortran.dg/goacc/data-clauses.f95: Likewise.
+	* gfortran.dg/goacc/default-1.f95: Likewise.
+	* gfortran.dg/goacc/default-2.f: Likewise.
+	* gfortran.dg/goacc/default-3.f95: Likewise.
+	* gfortran.dg/goacc/default-4.f: Likewise.
+	* gfortran.dg/goacc/default-5.f: Likewise.
+	* gfortran.dg/goacc/default_none.f95: Likewise.
+	* gfortran.dg/goacc/derived-types.f90: Likewise.
+	* gfortran.dg/goacc/firstprivate-1.f95: Likewise.
+	* gfortran.dg/goacc/gang-static.f95: Likewise.
+	* gfortran.dg/goacc/if.f95: Likewise.
+	* gfortran.dg/goacc/list.f95: Likewise.
+	* gfortran.dg/goacc/literal.f95: Likewise.
+	* gfortran.dg/goacc/loop-1-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-parallel-3.f95: Likewise.
+	* gfortran.dg/goacc/loop-3-2.f95: Likewise.
+	* gfortran.dg/goacc/loop-3.f95: Likewise.
+	* gfortran.dg/goacc/multi-clause.f90: Likewise.
+	* gfortran.dg/goacc/nested-parallelism.f90: Likewise.
+	* gfortran.dg/goacc/parameter.f95: Likewise.
+	* gfortran.dg/goacc/pr71704.f90: Likewise.
+	* gfortran.dg/goacc/private-3.f95: Likewise.
+	* gfortran.dg/goacc/pure-elemental-procedures.f95: Likewise.
+	* gfortran.dg/goacc/reduction-2.f95: Likewise.
+	* gfortran.dg/goacc/reduction-3.f95: Likewise.
+	* gfortran.dg/goacc/reduction-promotions.f90: Likewise.
+	* gfortran.dg/goacc/reduction.f95: Likewise.
+	* gfortran.dg/goacc/routine-3.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-2.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+	* gfortran.dg/goacc/sie.f95: Likewise.
+	* gfortran.dg/goacc/subarrays.f95: Likewise.
+	* gfortran.dg/goacc/uninit-firstprivate-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-if-clause.f95: Likewise.
+	* gfortran.dg/goacc/update-if_present-2.f90: Likewise.
+	* c-c++-common/goacc/loop-3.c: Rename to...
+	* c-c++-common/goacc/loop-3-parallel.c: ... this.
+	* gfortran.dg/goacc/parallel-kernels-clauses.f95: Rename to...
+	* gfortran.dg/goacc/compute_construct-clauses.f95: ... this.
+	Extend OpenACC 'serial' testing.
+	* gfortran.dg/goacc/parallel-kernels-regions.f95: Rename to...
+	* gfortran.dg/goacc/nesting-fail-1.f95: ... this.  Extend OpenACC
+	'serial' testing.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-1.f:
+	Rename to...
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-1-parallel.f:
+	... this.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f:
+	Rename to...
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2-parallel.f:
+	... this.
+	* c-c++-common/goacc/loop-2-serial.c: New.
+	* c-c++-common/goacc/loop-3-serial.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-serial.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-serial.c: Likewise.
+	* c-c++-common/goacc/serial-1.c: Likewise.
+	* gfortran.dg/goacc/loop-2-serial-3.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-serial-nested.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-serial-tile.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-serial.f95: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-serial.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-serial.f90: Likewise.
+	* gfortran.dg/goacc/private-explicit-serial-1.f95: Likewise.
+	* gfortran.dg/goacc/private-predetermined-serial-1.f95: Likewise.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-1-serial.f:
+	Likewise.
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2-serial.f:
+	Likewise.
+	* gfortran.dg/goacc/serial-tree.f95: Likewise.
+
+	Backported from trunk:
+	2025-01-16  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* gfortran.dg/goacc/assumed.f95: Use relative line numbers for a
 	few DejaGnu directives.
 	* gfortran.dg/goacc/list.f95: Likewise.

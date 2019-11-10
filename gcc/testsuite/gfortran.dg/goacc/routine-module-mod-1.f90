@@ -140,4 +140,29 @@ contains
        call g_1_nh ! { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" }
     end do
   end subroutine pl_1
+
+  subroutine sl_1
+    implicit none
+
+    integer :: i
+
+    !$acc serial loop ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+    ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
+    ! { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } .-2 }
+    ! { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } .-3 }
+    ! { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } .-4 }
+    do i = 1, 3
+       call s_1 ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+       call s_1_nh ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+       call s_2 ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+       call s_2_nh ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+       call v_1 ! { dg-message "optimized: assigned OpenACC vector loop parallelism" }
+       call v_1_nh ! { dg-message "optimized: assigned OpenACC vector loop parallelism" }
+       call w_1 ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
+       call w_1_nh ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
+       call g_1 ! { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" }
+       call g_1_nh ! { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" }
+    end do
+  end subroutine sl_1
+
 end module routine_module_mod_1

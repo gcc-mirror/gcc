@@ -18,11 +18,20 @@ contains
     do i = 1,5
     enddo
     !$acc end parallel loop ! { dg-error "Unexpected" }
+    !$acc serial loop reduction(+:10) ! { dg-error "Syntax error" }
+    do i = 1,5
+    enddo
+    !$acc end serial loop ! { dg-error "Unexpected" }
     !$acc parallel loop
     do i = 1,5
       !$acc cache (10) ! { dg-error "Syntax error" }
     enddo
     !$acc end parallel loop
+    !$acc serial loop
+    do i = 1,5
+      !$acc cache (10) ! { dg-error "Syntax error" }
+    enddo
+    !$acc end serial loop
     !$acc update device (10) ! { dg-error "Syntax error" }
     !$acc update host (10) ! { dg-error "Syntax error" }
     !$acc update self (10) ! { dg-error "Syntax error" }

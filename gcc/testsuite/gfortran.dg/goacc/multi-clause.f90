@@ -10,4 +10,10 @@ program combined
   do i = 1, 100
   end do
   !$acc end parallel loop
+
+  !$acc serial loop reduction (+:j) copy (j) copyout(j) ! { dg-error "Symbol 'j' present on multiple clauses" }
+  do i = 1, 100
+  end do
+  !$acc end serial loop
+
 end program combined

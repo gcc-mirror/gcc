@@ -15,5 +15,12 @@ CONTAINS
        un(i) = ua(i)
     END DO
     !$acc end parallel
+
+    !$acc serial
+    DO jj = 1, 100
+       un(i) = ua(i)
+    END DO
+    !$acc end serial
+
   END SUBROUTINE gwv
 END PROGRAM nested_gwv
