@@ -1,5 +1,37 @@
 2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.h (struct cgraph_node): Add ipcp_clone flag.
+	(cgraph_node::create_virtual_clone): Copy it.
+	* ipa-cp.c (ipcp_versionable_function_p): Watch for missing
+	summaries.
+	(ignore_edge_p): If caller has ipa-cp disabled, skip the edge, too.
+	(ipcp_verify_propagated_values): Do not verify nodes where ipcp
+	is disabled.
+	(propagate_constants_across_call): If callee is not analyzed, give up.
+	(propagate_constants_topo): Lower to bottom latties of all callees of
+	functions with ipa-cp disabled.
+	(ipcp_propagate_stage): Skip functions with ipa-cp disabled.
+	(cgraph_edge_brings_value_p): Check for availability first.
+	(create_specialized_node): Set ipcp_clone.
+	(ipcp_store_bits_results): Check that info is present.
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Do not analyze
+	thunks.
+	(ipa_call_context::duplicate_from, ipa_call_context::equal_to): Be
+	conservative when callee summary is missing.
+	(remap_edge_summaries): Lookup call summary only when needed.
+	* ipa-icf.c (sem_function::param_used_p): Be ready for missing summary.
+	* ipa-prpo.c (ipa_alloc_node_params, ipa_initialize_node_params):
+	Use get_create.
+	(ipa_analyze_node): Use get_create.
+	(propagate_controlled_uses): Do not propagate when function is not
+	analyzed.
+	(ipa_propagate_indirect_call_infos): Remove summary of inline clone.
+	(ipa_read_node_info): Use get_create.
+	* ipa-prop.h (IPA_NODE_REF): Use get.
+	(IPA_NODE_REF_GET_CREATE): New.
+
+2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (evaluate_properties_for_edge): Call IPA_NODE_REF
 	on function symbol.
 

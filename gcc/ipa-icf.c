@@ -484,7 +484,7 @@ sem_function::param_used_p (unsigned int i)
 
   class ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
 
-  if (vec_safe_length (parms_info->descriptors) <= i)
+  if (!parms_info || vec_safe_length (parms_info->descriptors) <= i)
     return true;
 
   return ipa_is_param_used (IPA_NODE_REF (get_node ()), i);

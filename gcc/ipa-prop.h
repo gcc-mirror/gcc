@@ -766,7 +766,8 @@ extern GTY(()) function_summary <ipcp_transformation *> *ipcp_transformation_sum
 
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
-#define IPA_NODE_REF(NODE) (ipa_node_params_sum->get_create (NODE))
+#define IPA_NODE_REF(NODE) (ipa_node_params_sum->get (NODE))
+#define IPA_NODE_REF_GET_CREATE(NODE) (ipa_node_params_sum->get_create (NODE))
 #define IPA_EDGE_REF(EDGE) (ipa_edge_args_sum->get (EDGE))
 #define IPA_EDGE_REF_GET_CREATE(EDGE) (ipa_edge_args_sum->get_create (EDGE))
 /* This macro checks validity of index returned by

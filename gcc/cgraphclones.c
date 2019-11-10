@@ -570,6 +570,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
   set_new_clone_decl_and_node_flags (new_node);
+  new_node->ipcp_clone = ipcp_clone;
   new_node->clone.tree_map = tree_map;
   if (!implicit_section)
     new_node->set_section (get_section ());

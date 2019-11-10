@@ -271,7 +271,7 @@ ipa_dump_param (FILE *file, class ipa_node_params *info, int i)
 static bool
 ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 {
-  class ipa_node_params *info = IPA_NODE_REF (node);
+  class ipa_node_params *info = IPA_NODE_REF_GET_CREATE (node);
 
   if (!info->descriptors && param_count)
     {
@@ -289,7 +289,7 @@ ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 void
 ipa_initialize_node_params (struct cgraph_node *node)
 {
-  class ipa_node_params *info = IPA_NODE_REF (node);
+  class ipa_node_params *info = IPA_NODE_REF_GET_CREATE (node);
 
   if (!info->descriptors
       && ipa_alloc_node_params (node, count_formal_params (node->decl)))
@@ -2605,7 +2605,7 @@ ipa_analyze_node (struct cgraph_node *node)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
-  info = IPA_NODE_REF (node);
+  info = IPA_NODE_REF_GET_CREATE (node);
 
   if (info->analysis_done)
     return;
@@ -3601,6 +3601,9 @@ propagate_controlled_uses (struct cgraph_edge *cs)
   class ipa_node_params *old_root_info = IPA_NODE_REF (cs->callee);
   int count, i;
 
+  if (!old_root_info)
+    return;
+
   count = MIN (ipa_get_cs_argument_count (args),
 	       ipa_get_param_count (old_root_info));
   for (i = 0; i < count; i++)
@@ -3662,8 +3665,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 
 		  clone = cs->caller;
 		  while (clone->inlined_to
-			 && clone != rdesc->cs->caller
-			 && IPA_NODE_REF (clone)->ipcp_orig_node)
+			 && clone->ipcp_clone
+			 && clone != rdesc->cs->caller)
 		    {
 		      struct ipa_ref *ref;
 		      ref = clone->find_reference (n, NULL, 0);
@@ -3722,6 +3725,7 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 
   propagate_controlled_uses (cs);
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+  ipa_node_params_sum->remove (cs->callee);
 
   return changed;
 }
@@ -4507,7 +4511,8 @@ ipa_read_node_info (class lto_input_block *ib, struct cgraph_node *node,
   struct cgraph_edge *e;
   struct bitpack_d bp;
   bool prevails = node->prevailing_p ();
-  class ipa_node_params *info = prevails ? IPA_NODE_REF (node) : NULL;
+  class ipa_node_params *info = prevails
+				? IPA_NODE_REF_GET_CREATE (node) : NULL;
 
   int param_count = streamer_read_uhwi (ib);
   if (prevails)
