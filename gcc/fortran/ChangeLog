@@ -1,3 +1,10 @@
+2019-11-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/92113
+	* trans-decl.c (gfc_get_symbol_decl): If __def_init actually
+	contains a value, put it into  the read-only section.
+
 2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
