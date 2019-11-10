@@ -312,6 +312,8 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     *known = true;
   if (*this == zero ())
     return 0;
+  if (m_val == in.m_val)
+    return 1;
 
   if (!in.m_val)
     {
