@@ -1,3 +1,25 @@
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/load_1.c (f1): Cast to
+	int32_t * rather than int *.
+	* gcc.target/aarch64/sve/acle/general-c/load_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_replicate_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_1.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c
+	(f1): Likewise.
+
 2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/92424

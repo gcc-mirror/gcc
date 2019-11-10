@@ -1,5 +1,10 @@
 2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve-builtins.def: Use get_typenode_from_name
+	to get the integer element types.
+
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve-builtins.h
 	(function_expander::convert_to_pmode): Declare.
 	* config/aarch64/aarch64-sve-builtins.cc

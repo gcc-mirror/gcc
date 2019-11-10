@@ -18,7 +18,7 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
   svld1_gather_index (pg, s32_ptr, s32, 0); /* { dg-error {too many arguments to function 'svld1_gather_index'} } */
   svld1_gather_index (0, s32_ptr, s32); /* { dg-error {passing 'int' to argument 1 of 'svld1_gather_index', which expects 'svbool_t'} } */
   svld1_gather_index (pg, 0, s32); /* { dg-error {passing 'int' to argument 2 of 'svld1_gather_index', which expects a pointer type} } */
-  svld1_gather_index (pg, (int *) 0, s32);
+  svld1_gather_index (pg, (int32_t *) 0, s32);
   svld1_gather_index (pg, void_ptr, s32); /* { dg-error {passing 'void \*' to argument 2 of 'svld1_gather_index', but 'void' is not a valid SVE element type} } */
   svld1_gather_index (pg, s_ptr, s32); /* { dg-error {passing 'struct s \*' to argument 2 of 'svld1_gather_index', but 'struct s' is not a valid SVE element type} } */
   svld1_gather_index (pg, f32_ptr, s32);
