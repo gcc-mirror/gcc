@@ -1,5 +1,9 @@
 2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_edge::maybe_hot_p): Do not use sreal_frequency.
+
+2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-prop.c (ipa_propagate_indirect_call_infos): Remove ipa edge
 	args summaries of inlined edge unless it holds info about
 	described reference.
