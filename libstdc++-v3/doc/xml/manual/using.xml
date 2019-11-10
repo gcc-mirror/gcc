@@ -1849,7 +1849,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 
       <para>For further details of the C++11 memory model see Hans-J. Boehm's
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/">Threads
-      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.hboehm.info/c++mm/threadsintro.html">introduction</link> 
+      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/threadsintro.html">introduction</link> 
       and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/user-faq.html">FAQ</link>.
       </para>
 
