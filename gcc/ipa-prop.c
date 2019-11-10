@@ -3727,6 +3727,26 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
   ipa_node_params_sum->remove (cs->callee);
 
+  class ipa_edge_args *args = IPA_EDGE_REF (cs);
+  if (args)
+    {
+      bool ok = true;
+      if (args->jump_functions)
+	{
+	  struct ipa_jump_func *jf;
+	  int i;
+	  FOR_EACH_VEC_ELT (*args->jump_functions, i, jf)
+	    if (jf->type == IPA_JF_CONST
+		&& ipa_get_jf_constant_rdesc (jf))
+	      {
+		ok = false;
+		break;
+	      }
+	}
+      if (ok)
+        ipa_edge_args_sum->remove (cs);
+    }
+
   return changed;
 }
 
