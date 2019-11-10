@@ -1,3 +1,8 @@
+2019-11-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lra-spills.c (assign_spill_hard_regs): Do not spill into
+	registers in eliminable_regset.
+
 2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (compute_uninlined_call_time,
