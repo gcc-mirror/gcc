@@ -1,7 +1,8 @@
 extern int i;
 
-/* While the OpenACC specification does allow for certain kinds of
-   nesting, we don't support many of these yet.  */
+/* The OpenACC specification allows nested compute constructs, but we don't
+   support that yet.  */
+
 void
 f_acc_parallel (void)
 {
@@ -11,6 +12,8 @@ f_acc_parallel (void)
     ;
 #pragma acc kernels /* { dg-bogus ".kernels. construct inside of .parallel. region" "not implemented" { xfail *-*-* } } */
     ;
+#pragma acc serial /* { dg-bogus ".serial. construct inside of .parallel. region" "not implemented" { xfail *-*-* } } */
+    ;
 #pragma acc data /* { dg-error ".data. construct inside of .parallel. region" } */
     ;
 #pragma acc update host(i) /* { dg-error ".update. construct inside of .parallel. region" } */
@@ -19,8 +22,6 @@ f_acc_parallel (void)
   }
 }
 
-/* While the OpenACC specification does allow for certain kinds of
-   nesting, we don't support many of these yet.  */
 void
 f_acc_kernels (void)
 {
@@ -30,11 +31,32 @@ f_acc_kernels (void)
     ;
 #pragma acc kernels /* { dg-bogus ".kernels. construct inside of .kernels. region" "not implemented" { xfail *-*-* } } */
     ;
+#pragma acc serial /* { dg-bogus ".serial. construct inside of .kernels. region" "not implemented" { xfail *-*-* } } */
+    ;
 #pragma acc data /* { dg-error ".data. construct inside of .kernels. region" } */
     ;
 #pragma acc update host(i) /* { dg-error ".update. construct inside of .kernels. region" } */
 #pragma acc enter data copyin(i) /* { dg-error ".enter data. construct inside of .kernels. region" } */
 #pragma acc exit data delete(i) /* { dg-error ".exit data. construct inside of .kernels. region" } */
+  }
+}
+
+void
+f_acc_serial (void)
+{
+#pragma acc serial
+  {
+#pragma acc parallel /* { dg-bogus ".parallel. construct inside of .serial. region" "not implemented" { xfail *-*-* } } */
+    ;
+#pragma acc kernels /* { dg-bogus ".kernels. construct inside of .serial. region" "not implemented" { xfail *-*-* } } */
+    ;
+#pragma acc serial /* { dg-bogus ".serial. construct inside of .serial. region" "not implemented" { xfail *-*-* } } */
+    ;
+#pragma acc data /* { dg-error ".data. construct inside of .serial. region" } */
+    ;
+#pragma acc update host(i) /* { dg-error ".update. construct inside of .serial. region" } */
+#pragma acc enter data copyin(i) /* { dg-error ".enter data. construct inside of .serial. region" } */
+#pragma acc exit data delete(i) /* { dg-error ".exit data. construct inside of .serial. region" } */
   }
 }
 

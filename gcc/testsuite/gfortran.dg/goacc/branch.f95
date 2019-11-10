@@ -17,6 +17,12 @@ program test
   !$acc end kernels 
   end if
 
+  if (.true.) then
+    !$acc serial 
+  end if ! { dg-error "Unexpected" }
+  !$acc end serial 
+  end if
+
   !$acc parallel
   if (.true.) then
     !$acc end parallel ! { dg-error "Unexpected" }
@@ -29,6 +35,12 @@ program test
   end if 
   !$acc end kernels
 
+  !$acc serial
+  if (.true.) then
+    !$acc end serial ! { dg-error "Unexpected" }
+  end if 
+  !$acc end serial
+
   !$acc parallel
   if (.true.) then
   end if
@@ -38,6 +50,11 @@ program test
   if (.true.) then
   end if
   !$acc end kernels
+
+  !$acc serial
+  if (.true.) then
+  end if
+  !$acc end serial
 
   if (.true.) then
     !$acc parallel
@@ -49,5 +66,9 @@ program test
     !$acc end kernels
   end if
 
+  if (.true.) then
+    !$acc serial
+    !$acc end serial
+  end if
 
 end program test 

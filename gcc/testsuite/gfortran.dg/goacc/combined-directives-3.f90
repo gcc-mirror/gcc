@@ -23,4 +23,25 @@ subroutine test
      end do
   end do
   !$acc end parallel loop
+
+
+  !$acc serial loop seq auto ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+  do x = 0, 10
+     !$acc loop
+     do y = 0, 10
+     end do
+  end do
+  !$acc end serial loop
+
+  !$acc serial loop gang auto ! { dg-error "'auto' conflicts with other OpenACC loop specifiers" }
+  do x = 0, 10
+     !$acc loop worker auto ! { dg-error "'auto' conflicts with other OpenACC loop specifiers" }
+     do y = 0, 10
+        !$acc loop vector
+        do z = 0, 10
+        end do
+     end do
+  end do
+  !$acc end serial loop
+
 end subroutine test

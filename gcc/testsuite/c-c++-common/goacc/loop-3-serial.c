@@ -1,10 +1,10 @@
-/* See also "../../gfortran.dg/goacc/loop-2-parallel-3.f95".  */
+/* See also "../../gfortran.dg/goacc/loop-2-serial-3.f95".  */
 
-void par1 (void)
+void f1 (void)
 {
   int i, j;
 
-#pragma acc parallel
+#pragma acc serial
   {
 #pragma acc loop gang(5) // { dg-error "argument not permitted" }
     for (i = 0; i < 10; i++)
@@ -33,28 +33,28 @@ void par1 (void)
    }
 }
 
-void p2 (void)
+void f2 (void)
 {
   int i, j;
 
-#pragma acc parallel loop gang(5) // { dg-error "argument not permitted" }
+#pragma acc serial loop gang(5) // { dg-error "argument not permitted" }
   for (i = 0; i < 10; i++)
     { }
-#pragma acc parallel loop gang(num:5) // { dg-error "argument not permitted" }
-  for (i = 0; i < 10; i++)
-    { }
-
-#pragma acc parallel loop worker(5) // { dg-error "argument not permitted" }
-  for (i = 0; i < 10; i++)
-    { }
-#pragma acc parallel loop worker(num:5) // { dg-error "argument not permitted" }
+#pragma acc serial loop gang(num:5) // { dg-error "argument not permitted" }
   for (i = 0; i < 10; i++)
     { }
 
-#pragma acc parallel loop vector(5) // { dg-error "argument not permitted" }
+#pragma acc serial loop worker(5) // { dg-error "argument not permitted" }
   for (i = 0; i < 10; i++)
     { }
-#pragma acc parallel loop vector(length:5) // { dg-error "argument not permitted" }
+#pragma acc serial loop worker(num:5) // { dg-error "argument not permitted" }
+  for (i = 0; i < 10; i++)
+    { }
+
+#pragma acc serial loop vector(5) // { dg-error "argument not permitted" }
+  for (i = 0; i < 10; i++)
+    { }
+#pragma acc serial loop vector(length:5) // { dg-error "argument not permitted" }
   for (i = 0; i < 10; i++)
     { }
 }

@@ -1,3 +1,5 @@
+// See also 'kernels-1.c', 'serial-1.c'.
+
 int
 parallel_empty (void)
 {

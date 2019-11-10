@@ -48,6 +48,22 @@ f_acc_kernels (void)
 
 
 void
+f_acc_serial (void)
+{
+#pragma acc serial
+  {
+#pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
+    /* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i }
+       { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
+    for (i = 0; i < 2; ++i)
+      ;
+  }
+}
+
+
+void
 f_acc_data (void)
 {
 #pragma acc data
@@ -78,6 +94,20 @@ f_acc_data (void)
       /* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
+      for (i = 0; i < 2; ++i)
+	;
+    }
+
+#pragma acc serial
+    ;
+
+#pragma acc serial
+    {
+#pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
+      /* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+      /* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i }
+	 { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} {} { target *-*-* } l_loop_i$c_loop_i } */
+      /* { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
       for (i = 0; i < 2; ++i)
 	;
     }
@@ -119,6 +149,20 @@ f_acc_data (void)
 	/* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
 	/* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i } */
 	/* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
+	for (i = 0; i < 2; ++i)
+	  ;
+      }
+
+#pragma acc serial
+      ;
+
+#pragma acc serial
+      {
+#pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
+	/* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+	/* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i }
+	   { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} {} { target *-*-* } l_loop_i$c_loop_i } */
+	/* { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
 	for (i = 0; i < 2; ++i)
 	  ;
       }

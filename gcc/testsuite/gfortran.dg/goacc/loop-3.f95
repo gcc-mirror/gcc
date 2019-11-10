@@ -24,6 +24,14 @@ subroutine test1
   !$acc end parallel
   !$acc end loop ! { dg-error "Unexpected" }
 
+  !$acc serial
+  !$acc loop
+  do i = 1,5
+  enddo
+  !$acc end serial
+  !$acc end loop ! { dg-error "Unexpected" }
+
+
   ! OpenACC does not support Fortran 2008 do concurrent statement
   !$acc loop
   do concurrent (i = 1:5) ! { dg-error "ACC LOOP cannot be a DO CONCURRENT loop" }

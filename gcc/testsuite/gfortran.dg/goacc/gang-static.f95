@@ -9,6 +9,7 @@ program main
      b(i) = i
   end do
 
+
   !$acc parallel loop gang (static:*) num_gangs (10)
   do i = 1, n
      a(i) = b(i) + 0
@@ -47,6 +48,9 @@ program main
   end do
   !$acc end parallel loop
 
+  call test (a, b, 20, n)
+
+
   !$acc kernels loop gang (num:5, static:*)
   do i = 1, n
      a(i) = b(i) + 20
@@ -58,6 +62,45 @@ program main
      a(i) = b(i) + 20
   end do
   !$acc end kernels loop
+
+
+  !$acc serial loop gang (static:*)
+  do i = 1, n
+     a(i) = b(i) + 0
+  end do
+  !$acc end serial loop
+
+  call test (a, b, 0, n)
+
+  !$acc serial loop gang (static:1)
+  do i = 1, n
+     a(i) = b(i) + 1
+  end do
+  !$acc end serial loop
+
+  call test (a, b, 1, n)
+
+  !$acc serial loop gang (static:2)
+  do i = 1, n
+     a(i) = b(i) + 2
+  end do
+  !$acc end serial loop
+
+  call test (a, b, 2, n)
+
+  !$acc serial loop gang (static:5)
+  do i = 1, n
+     a(i) = b(i) + 5
+  end do
+  !$acc end serial loop
+
+  call test (a, b, 5, n)
+
+  !$acc serial loop gang (static:20)
+  do i = 1, n
+     a(i) = b(i) + 20
+  end do
+  !$acc end serial loop
 
   call test (a, b, 20, n)
 
@@ -73,10 +116,10 @@ subroutine test (a, b, sarg, n)
   end do
 end subroutine test
 
-! { dg-final { scan-tree-dump-times "gang\\(static:\\\*\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "gang\\(static:1\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "gang\\(static:2\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "gang\\(static:5\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "gang\\(static:20\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "gang\\(static:\\\*\\)" 2 "omplower" } }
+! { dg-final { scan-tree-dump-times "gang\\(static:1\\)" 2 "omplower" } }
+! { dg-final { scan-tree-dump-times "gang\\(static:2\\)" 2 "omplower" } }
+! { dg-final { scan-tree-dump-times "gang\\(static:5\\)" 2 "omplower" } }
+! { dg-final { scan-tree-dump-times "gang\\(static:20\\)" 2 "omplower" } }
 ! { dg-final { scan-tree-dump-times "gang\\(num: 5 static:\\\*\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "gang\\(num: 30 static:20\\)" 1 "omplower" } }

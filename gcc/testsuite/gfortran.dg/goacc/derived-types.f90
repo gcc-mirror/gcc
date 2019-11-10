@@ -74,4 +74,22 @@ program derived_acc
   do i = 1, 10
   end do
   !$acc end kernels loop
+
+  !$acc serial loop pcopyout(var)
+  do i = 1, 10
+  end do  
+  !$acc end serial loop
+
+  !$acc serial loop copyout(var%a)
+  do i = 1, 10
+  end do
+  !$acc end serial loop
+
+  !$acc serial pcopy(var)
+  !$acc end serial
+
+  !$acc serial pcopy(var%a)
+  do i = 1, 10
+  end do
+  !$acc end serial
 end program derived_acc

@@ -44,6 +44,7 @@ main ()
       { }
   }
 
+
 #pragma acc kernels default (none)
   {
 #pragma acc loop auto
@@ -77,6 +78,49 @@ main ()
     for (i = 0; i < 10; i++)
       { }
   }
+
+
+#pragma acc serial firstprivate (j) private (i)
+  {
+#pragma acc loop seq
+    for (i = 0; i < 10; i++)
+      { }
+  }
+
+#pragma acc serial default (none)
+  {
+#pragma acc loop auto private (j)
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop gang
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop gang(static:5)
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop gang(static:*)
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop vector
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop worker
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop auto
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop independent
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop seq
+    for (i = 0; i < 10; i++)
+      { }
+#pragma acc loop gang worker vector
+    for (i = 0; i < 10; i++)
+      { }
+  }
+
 
   return 0;
 }
