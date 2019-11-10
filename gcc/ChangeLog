@@ -1,5 +1,13 @@
 2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (compute_uninlined_call_time,
+	compute_inlined_call_time): Take edge frequency as
+	parameter rather than computing it by itself.
+	(big_speedup_p, edge_badness): Manually CSE sreal
+	frequency calculations.
+
+2019-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* profile-count.c (profile_count::to_sreal_scale): Short circuit
 	case where profiles are same.
 
