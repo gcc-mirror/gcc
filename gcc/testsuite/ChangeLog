@@ -1,3 +1,10 @@
+2019-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92123
+	* gfortran.dg/bind_c_procs_3.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_15.c : New test.
+	* gfortran.dg/ISO_Fortran_binding_15.f90 : Additional source.
+
 2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/pr46076.c: Make tested code hot.

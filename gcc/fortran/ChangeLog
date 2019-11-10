@@ -1,3 +1,13 @@
+2019-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92123
+	*decl.c (gfc_verify_c_interop_param): Remove error asserting
+	that pointer or allocatable variables in a bind C procedure are
+	not supported. Delete some trailing spaces.
+	* trans-stmt.c (trans_associate_var): Correct the attempt to
+	treat scalar pointer or allocatable temporaries as if they are
+	array descriptors.
+
 2019-11-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92321
@@ -53,7 +63,7 @@
 	* io.c (check_format): Allow zero width for D, E, EN, and ES
 	specifiers as default and when -std=F2018 is given. Retain
 	existing errors when using the -fdec family of flags.
-	
+
 2019-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92113
