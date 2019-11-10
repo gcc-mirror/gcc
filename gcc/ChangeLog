@@ -1,3 +1,9 @@
+2019-11-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (CC_any): New mode iterator.
+	(*movcc_internal1): Rename to...
+	(*movcc_<mode> for CC_any): ... this.  Support moves of all CC modes.
+
 2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.h (struct cgraph_node): Add ipcp_clone flag.
