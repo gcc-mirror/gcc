@@ -1,3 +1,5 @@
+! { dg-do run }
+
 ! Comprehensive run-time test for use_device_addr
 !
 ! Tests array with array descriptor
