@@ -1,3 +1,12 @@
+2019-11-11  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	* gcc.dg/tree-ssa/reassoc-24.c: Adjust.
+	* gcc.dg/tree-ssa/reassoc-25.c: Likewise.
+
 2019-11-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
