@@ -1,3 +1,9 @@
+2019-11-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/87833
+	* config/i386/intelmic-mkoffload.c (prepare_target_image): Put
+	-fPIC and -shared the last to create offload image.
+
 2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Assert 'offset2' instead
