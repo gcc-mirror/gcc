@@ -1,3 +1,9 @@
+2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/common-block-1.f90: Fix OpenACC directives
+	nesting.
+	* gfortran.dg/goacc/common-block-2.f90: Likewise.
+
 2019-11-11  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR tree-optimization/88760

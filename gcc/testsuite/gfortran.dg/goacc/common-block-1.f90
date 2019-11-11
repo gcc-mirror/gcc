@@ -55,10 +55,11 @@ program test
   !$acc end parallel
 
   !$acc parallel firstprivate(/blockA/, /blockB/, e, v)
+  !$acc end parallel
+
   !$acc update device(/blockA/)
   !$acc update self(/blockB/, v)
   !$acc update host(/blockA/, e, /blockB/)
-  !$acc end parallel
 
   !$acc enter data pcopyin(/blockA/, /blockB/, e, v)
   !$acc exit data delete(/blockA/, /blockB/, e, v)
