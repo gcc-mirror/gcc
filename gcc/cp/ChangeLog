@@ -1,3 +1,8 @@
+2019-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_translation_unit): Diagnose declare target
+	without corresponding end declare target.
+
 2019-11-10  Jason Merrill  <jason@redhat.com>
 
 	Implement D1957R0, T* to bool should be considered narrowing.
