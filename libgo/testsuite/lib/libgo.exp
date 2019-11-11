@@ -14,12 +14,15 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
-if {$gccdir != ""} {
-    set gccdir [file dirname $gccdir]
-}
-set GOC_UNDER_TEST "$gccdir/gccgo -B$gccdir/"
 set TESTING_IN_BUILD_TREE 1
+
+if ![info exists GOC_UNDER_TEST] then {
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+    }
+    set GOC_UNDER_TEST "$gccdir/gccgo -B$gccdir/"
+}
 
 if [info exists GOTEST_TMPDIR] {
     set tmpdir $GOTEST_TMPDIR
