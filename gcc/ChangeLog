@@ -1,3 +1,8 @@
+2019-11-11  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.def (DEBUG_COUNTER): Sort counters
+	alphabetically.
+
 2019-11-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* tree-vect-loop-manip.c (vect_do_peeling): Take epilogue gaps into
