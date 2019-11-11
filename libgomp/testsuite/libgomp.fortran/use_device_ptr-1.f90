@@ -1,3 +1,5 @@
+! { dg-do run }
+
 module target_procs
   use iso_c_binding
   implicit none (type, external)

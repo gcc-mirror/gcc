@@ -1,3 +1,10 @@
+2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_addr-3.f90: Specify 'dg-do
+	run'.
+	* testsuite/libgomp.fortran/use_device_addr-4.f90: Likewise.
+	* testsuite/libgomp.fortran/use_device_ptr-1.f90: Likewise.
+
 2019-11-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-1.c:
