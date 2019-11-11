@@ -6076,14 +6076,14 @@ altivec_build_resolved_builtin (tree *args, int n,
      condition (LT vs. EQ, which is recognizable by bit 1 of the first
      argument) is reversed.  Patch the arguments here before building
      the resolved CALL_EXPR.  */
-  if (desc->code == ALTIVEC_BUILTIN_VEC_VCMPGE_P
+  if (n == 3
+      && desc->code == ALTIVEC_BUILTIN_VEC_VCMPGE_P
       && desc->overloaded_code != ALTIVEC_BUILTIN_VCMPGEFP_P
       && desc->overloaded_code != VSX_BUILTIN_XVCMPGEDP_P)
     {
-      tree t;
-      t = args[2], args[2] = args[1], args[1] = t;
-      t = arg_type[2], arg_type[2] = arg_type[1], arg_type[1] = t;
-      
+      std::swap (args[1], args[2]);
+      std::swap (arg_type[1], arg_type[2]);
+
       args[0] = fold_build2 (BIT_XOR_EXPR, TREE_TYPE (args[0]), args[0],
 			     build_int_cst (NULL_TREE, 2));
     }
