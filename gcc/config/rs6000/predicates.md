@@ -1828,3 +1828,10 @@
 (define_predicate "pcrel_local_or_external_address"
   (ior (match_operand 0 "pcrel_local_address")
        (match_operand 0 "pcrel_external_address")))
+
+;; Return true if the operand is a memory address that uses a prefixed address.
+(define_predicate "prefixed_memory"
+  (match_code "mem")
+{
+  return address_is_prefixed (XEXP (op, 0), mode, NON_PREFIXED_DEFAULT);
+})
