@@ -1,3 +1,10 @@
+2019-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/92433
+	* config/rs6000/rs6000-c.c (altivec_build_resolved_builtin): Guard
+	ALTIVEC_BUILTIN_VEC_VCMPGE_P argument swapping with n == 3 check.  Use
+	std::swap.
+
 2019-11-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/92420
