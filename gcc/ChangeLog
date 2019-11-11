@@ -1,3 +1,11 @@
+2019-11-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (prefixed_memory): New predicate.
+	* config/rs6000/rs6000.md (stack_protect_setdi): Deal with either
+	address being a prefixed load/store.
+	(stack_protect_testdi): Deal with either address being a prefixed
+	load.
+
 2019-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/92433
