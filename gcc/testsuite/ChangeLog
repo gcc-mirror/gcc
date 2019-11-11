@@ -1,3 +1,10 @@
+2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/92142
+	* gcc/testsuite/gfortran.dg/ISO_Fortran_binding_16.f90:
+	Correct dg-additional-sources.
+
 2019-11-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.dg/vect/vect-reduc-epilogue-gaps.c: New test.

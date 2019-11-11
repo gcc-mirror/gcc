@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-options "-fbounds-check" }
-! { dg-additional-sources ISO_Fortran_binding_15.c }
+! { dg-additional-sources ISO_Fortran_binding_16.c }
 !
 ! Test the fix for PR92142.
 !
