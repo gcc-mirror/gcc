@@ -6219,6 +6219,22 @@ arc_legitimize_pic_address (rtx addr)
 
   switch (GET_CODE (addr))
     {
+    case UNSPEC:
+      /* Can be one or our GOT or GOTOFFPC unspecs.  This situation
+	 happens when an address is not a legitimate constant and we
+	 need the resolve it via force_reg in
+	 prepare_move_operands.  */
+      switch (XINT (addr, 1))
+	{
+	case ARC_UNSPEC_GOT:
+	case ARC_UNSPEC_GOTOFFPC:
+	  /* Recover the symbol ref.  */
+	  addr = XVECEXP (addr, 0, 0);
+	  break;
+	default:
+	  return addr;
+	}
+      /* Fall through.  */
     case SYMBOL_REF:
       /* TLS symbols are handled in different place.  */
       if (SYMBOL_REF_TLS_MODEL (addr))

@@ -1,3 +1,9 @@
+2019-11-11  Claudiu Zissulescu <claziss@gmail.com>
+
+	* config/arc/arc.c (arc_legitimize_pic_address): Consider UNSPECs
+	as well, if interesting recover the symbol and re-legitimize the
+	pic address.
+
 2019-11-11  Martin Liska  <mliska@suse.cz>
 
 	* dbgcnt.def (DEBUG_COUNTER): Sort counters

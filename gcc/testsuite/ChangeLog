@@ -1,3 +1,7 @@
+2019-11-11  Claudiu Zissulescu <claziss@gmail.com>
+
+	* gcc.target/arc/pic-2.c: New file.
+
 2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
 	    Mark Eggleston  <mark.eggleston@codethink.com>
 
