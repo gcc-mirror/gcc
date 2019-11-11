@@ -501,6 +501,10 @@ moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
 
+munroll-only-small-loops
+Target Undocumented Var(unroll_only_small_loops) Init(0) Save
+; Use conservative small loop unrolling.
+
 mpower9-misc
 Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)
 Use certain scalar instructions added in ISA 3.0.
