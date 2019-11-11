@@ -1,5 +1,10 @@
 2019-11-11  Claudiu Zissulescu <claziss@gmail.com>
 
+	* config/arc/arc.md (movsi_ne): Reorder instruction variants and
+	use new register constraint letters.
+
+2019-11-11  Claudiu Zissulescu <claziss@gmail.com>
+
 	* config/arc/arc.c (arc_legitimize_pic_address): Consider UNSPECs
 	as well, if interesting recover the symbol and re-legitimize the
 	pic address.
