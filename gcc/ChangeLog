@@ -1,3 +1,10 @@
+2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (LANG_CONFIGUREFRAGS): Define.
+	(config.status): Use/depend on it.
+	* configure.ac (all_lang_configurefrags): Track, 'AC_SUBST'.
+	* configure: Regenerate.
+
 2019-11-11  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR tree-optimization/88760

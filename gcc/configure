@@ -701,6 +701,7 @@ build_exeext
 all_selected_languages
 all_languages
 all_lang_makefrags
+all_lang_configurefrags
 all_gtfiles
 all_compilers
 srcdir
@@ -18937,7 +18938,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18940 "configure"
+#line 18941 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19043,7 +19044,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19046 "configure"
+#line 19047 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -29928,7 +29929,8 @@ lang_tree_files=
 all_languages=
 all_compilers=
 all_outputs='Makefile'
-# List of language makefile fragments.
+# List of language configure and makefile fragments.
+all_lang_configurefrags=
 all_lang_makefrags=
 # Additional files for gengtype
 all_gtfiles="$target_gtfiles"
@@ -30014,6 +30016,7 @@ do
 	esac
 	$ok || continue
 
+	all_lang_configurefrags="$all_lang_configurefrags \$(srcdir)/$gcc_subdir/config-lang.in"
 	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
 	if test -f $srcdir/$gcc_subdir/lang.opt; then
 	    lang_opt_files="$lang_opt_files $srcdir/$gcc_subdir/lang.opt"
@@ -30120,6 +30123,7 @@ fi
 
 
 # Substitute configuration variables
+
 
 
 
