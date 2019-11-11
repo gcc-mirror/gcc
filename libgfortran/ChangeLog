@@ -1,3 +1,10 @@
+2019-11-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/92142
+	* runtime/ISO_Fortran_binding.c (CFI_setpointer): Don't
+	override descriptor attribute; with -fcheck, check that
+	it is a pointer.
+
 2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
 
 	PR fortran/90374
