@@ -1,3 +1,17 @@
+2019-11-11  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/88760
+	* gcc/config/rs6000/rs6000.opt (-munroll-only-small-loops): New option.
+	* gcc/common/config/rs6000/rs6000-common.c
+	(rs6000_option_optimization_table) [OPT_LEVELS_2_PLUS_SPEED_ONLY]:
+	Turn on -funroll-loops and -munroll-only-small-loops.
+	[OPT_LEVELS_ALL]: Turn off -fweb and -frename-registers.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove
+	set of PARAM_MAX_UNROLL_TIMES and PARAM_MAX_UNROLLED_INSNS.
+	Turn off -munroll-only-small-loops for explicit -funroll-loops.
+	(TARGET_LOOP_UNROLL_ADJUST): Add loop unroll adjust hook.
+	(rs6000_loop_unroll_adjust): Define it.  Use -munroll-only-small-loops.
+
 2019-11-11  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost):

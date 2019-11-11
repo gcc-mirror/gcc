@@ -1428,6 +1428,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_VECTORIZE_DESTROY_COST_DATA
 #define TARGET_VECTORIZE_DESTROY_COST_DATA rs6000_destroy_cost_data
 
+#undef TARGET_LOOP_UNROLL_ADJUST
+#define TARGET_LOOP_UNROLL_ADJUST rs6000_loop_unroll_adjust
+
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
 #undef TARGET_BUILTIN_DECL
@@ -4540,25 +4543,12 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
-      /* unroll very small loops 2 time if no -funroll-loops.  */
-      if (!global_options_set.x_flag_unroll_loops
-	  && !global_options_set.x_flag_unroll_all_loops)
-	{
-	  maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 2,
-				 global_options.x_param_values,
-				 global_options_set.x_param_values);
-
-	  maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 20,
-				 global_options.x_param_values,
-				 global_options_set.x_param_values);
-
-	  /* If fweb or frename-registers are not specificed in command-line,
-	     do not turn them on implicitly.  */
-	  if (!global_options_set.x_flag_web)
-	    global_options.x_flag_web = 0;
-	  if (!global_options_set.x_flag_rename_registers)
-	    global_options.x_flag_rename_registers = 0;
-	}
+      /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
+      if (((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
+	   || (global_options_set.x_flag_unroll_all_loops
+	       && flag_unroll_all_loops))
+	  && !global_options_set.x_unroll_only_small_loops)
+	unroll_only_small_loops = 0;
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
@@ -5103,6 +5093,25 @@ static void
 rs6000_destroy_cost_data (void *data)
 {
   free (data);
+}
+
+/* Implement targetm.loop_unroll_adjust.  */
+
+static unsigned
+rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+{
+   if (unroll_only_small_loops)
+    {
+      /* TODO: This is hardcoded to 10 right now.  It can be refined, for
+	 example we may want to unroll very small loops more times (4 perhaps).
+	 We also should use a PARAM for this.  */
+      if (loop->ninsns <= 10)
+	return MIN (2, nunroll);
+      else
+	return 0;
+    }
+
+  return nunroll;
 }
 
 /* Handler for the Mathematical Acceleration Subsystem (mass) interface to a

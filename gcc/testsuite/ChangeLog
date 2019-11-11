@@ -1,3 +1,8 @@
+2019-11-11  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/88760
+	* gcc.dg/pr59643.c: Update back to r277550.
+
 2019-11-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/92123
