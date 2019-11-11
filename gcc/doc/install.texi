@@ -384,7 +384,7 @@ and @option{--with-gmp-include}.
 The in-tree build is only supported with the GMP version that
 download_prerequisites installs.
 
-@item MPFR Library version 2.4.2 (or later)
+@item MPFR Library version 3.1.0 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
 @uref{https://www.mpfr.org}.  If an MPFR source distribution is found
