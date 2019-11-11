@@ -1,3 +1,8 @@
+2019-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_translation_unit): Diagnose declare target
+	without corresponding end declare target.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-convert.c (convert): Only handle vector conversions if one of

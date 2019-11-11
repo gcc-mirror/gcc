@@ -3048,6 +3048,14 @@ finish_translation_unit (void)
 
   /* Do file scope __FUNCTION__ et al.  */
   finish_fname_decls ();
+
+  if (scope_chain->omp_declare_target_attribute)
+    {
+      if (!errorcount)
+	error ("%<#pragma omp declare target%> without corresponding "
+	       "%<#pragma omp end declare target%>");
+      scope_chain->omp_declare_target_attribute = 0;
+    }
 }
 
 /* Finish a template type parameter, specified as AGGR IDENTIFIER.

@@ -1554,6 +1554,14 @@ c_parser_translation_unit (c_parser *parser)
   FOR_EACH_VEC_ELT (incomplete_record_decls, i, decl)
     if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node)
       error ("storage size of %q+D isn%'t known", decl);
+
+  if (current_omp_declare_target_attribute)
+    {
+      if (!errorcount)
+        error ("%<#pragma omp declare target%> without corresponding "
+	       "%<#pragma omp end declare target%>");
+      current_omp_declare_target_attribute = 0;
+    }
 }
 
 /* Parse an external declaration (C90 6.7, C99 6.9, C11 6.9).
