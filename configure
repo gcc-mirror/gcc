@@ -5755,7 +5755,7 @@ int
 main ()
 {
 
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,4,0)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
     choke me
     #endif
 
@@ -5772,7 +5772,7 @@ int
 main ()
 {
 
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,4,2)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,6)
     choke me
     #endif
 
@@ -5898,7 +5898,7 @@ rm -f core conftest.err conftest.$ac_objext \
 # The library versions listed in the error message below should match
 # the HARD-minimums enforced above.
   if test x$have_gmp != xyes; then
-    as_fn_error $? "Building GCC requires GMP 4.2+, MPFR 2.4.0+ and MPC 0.8.0+.
+    as_fn_error $? "Building GCC requires GMP 4.2+, MPFR 3.1.0+ and MPC 0.8.0+.
 Try the --with-gmp, --with-mpfr and/or --with-mpc options to specify
 their locations.  Source code for these libraries can be found at
 their respective hosting sites as well as at

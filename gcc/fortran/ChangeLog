@@ -1,3 +1,9 @@
+2019-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/91828
+        * simplify.c (gfc_simplify_fraction): Remove fallback path for
+        MPFR < 3.1.0.
+
 2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 

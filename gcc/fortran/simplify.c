@@ -3076,12 +3076,7 @@ gfc_expr *
 gfc_simplify_fraction (gfc_expr *x)
 {
   gfc_expr *result;
-
-#if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
-  mpfr_t absv, exp, pow2;
-#else
   mpfr_exp_t e;
-#endif
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -3095,40 +3090,8 @@ gfc_simplify_fraction (gfc_expr *x)
       return result;
     }
 
-#if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
-
-  /* MPFR versions before 3.1.0 do not include mpfr_frexp.
-     TODO: remove the kludge when MPFR 3.1.0 or newer will be required */
-
-  if (mpfr_sgn (x->value.real) == 0)
-    {
-      mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
-      return result;
-    }
-
-  gfc_set_model_kind (x->ts.kind);
-  mpfr_init (exp);
-  mpfr_init (absv);
-  mpfr_init (pow2);
-
-  mpfr_abs (absv, x->value.real, GFC_RND_MODE);
-  mpfr_log2 (exp, absv, GFC_RND_MODE);
-
-  mpfr_trunc (exp, exp);
-  mpfr_add_ui (exp, exp, 1, GFC_RND_MODE);
-
-  mpfr_ui_pow (pow2, 2, exp, GFC_RND_MODE);
-
-  mpfr_div (result->value.real, x->value.real, pow2, GFC_RND_MODE);
-
-  mpfr_clears (exp, absv, pow2, NULL);
-
-#else
-
   /* mpfr_frexp() correctly handles zeros and NaNs.  */
   mpfr_frexp (&e, result->value.real, x->value.real, GFC_RND_MODE);
-
-#endif
 
   return range_check (result, "FRACTION");
 }
