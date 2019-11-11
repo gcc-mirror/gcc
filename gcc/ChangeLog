@@ -1,3 +1,10 @@
+2019-11-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backport from trunk:
+	PR target/87833
+	* config/i386/intelmic-mkoffload.c (prepare_target_image): Put
+	-fPIC and -shared the last to create offload image.
+
 2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport from trunk:
