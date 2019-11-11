@@ -4783,15 +4783,17 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
   switch (type_of_cost)
     {
       case scalar_stmt:
-      case scalar_load:
       case scalar_store:
       case vector_stmt:
-      case vector_load:
       case vector_store:
       case vec_to_scalar:
       case scalar_to_vec:
       case cond_branch_not_taken:
         return 1;
+      case scalar_load:
+      case vector_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	  return 2;
 
       case vec_perm:
 	/* Power7 has only one permute unit, make it a bit expensive.  */
@@ -4812,42 +4814,44 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case unaligned_load:
       case vector_gather_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
-	  return 1;
+	  return 2;
 
-        if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
-          {
-            elements = TYPE_VECTOR_SUBPARTS (vectype);
-            if (elements == 2)
-              /* Double word aligned.  */
-              return 2;
+	if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
+	  {
+	    elements = TYPE_VECTOR_SUBPARTS (vectype);
+	    if (elements == 2)
+	      /* Double word aligned.  */
+	      return 4;
 
-            if (elements == 4)
-              {
-                switch (misalign)
-                  {
-                    case 8:
-                      /* Double word aligned.  */
-                      return 2;
+	    if (elements == 4)
+	      {
+		switch (misalign)
+		  {
+		  case 8:
+		    /* Double word aligned.  */
+		    return 4;
 
-                    case -1:
-                      /* Unknown misalignment.  */
-                    case 4:
-                    case 12:
-                      /* Word aligned.  */
-                      return 22;
+		  case -1:
+		    /* Unknown misalignment.  */
+		  case 4:
+		  case 12:
+		    /* Word aligned.  */
+		    return 33;
 
-                    default:
-                      gcc_unreachable ();
-                  }
-              }
-          }
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	  }
 
-        if (TARGET_ALTIVEC)
-          /* Misaligned loads are not supported.  */
-          gcc_unreachable ();
+	if (TARGET_ALTIVEC)
+	  /* Misaligned loads are not supported.  */
+	  gcc_unreachable ();
 
-        return 2;
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	return 4;
 
       case unaligned_store:
       case vector_scatter_store:

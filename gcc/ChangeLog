@@ -1,3 +1,10 @@
+2019-11-11  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost):
+	Make scalar_load, vector_load, unaligned_load and
+	vector_gather_load cost more to conform hardware latency and
+	insn cost settings.
+
 2019-11-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (MACHO_SYMBOL_FLAG_LINKER_VIS): New.
