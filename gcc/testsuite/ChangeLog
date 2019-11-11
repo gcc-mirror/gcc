@@ -1,5 +1,8 @@
 2019-11-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92447
+	* g++.dg/cpp0x/pr92447.C: New test.
+
 	* c-c++-common/gomp/declare-target-5.c: New test.
 
 2019-11-11  Richard Sandiford  <richard.sandiford@arm.com>

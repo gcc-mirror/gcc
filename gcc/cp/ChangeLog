@@ -1,5 +1,9 @@
 2019-11-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92447
+	* decl.c (finish_function): Move ctype initialization before
+	DECL_DELETED_FN handling.
+
 	* semantics.c (finish_translation_unit): Diagnose declare target
 	without corresponding end declare target.
 
