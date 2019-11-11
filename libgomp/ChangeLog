@@ -1,5 +1,7 @@
 2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.fortran/target9.f90: Specify 'dg-do run'.
+
 	* testsuite/libgomp.fortran/use_device_addr-3.f90: Specify 'dg-do
 	run'.
 	* testsuite/libgomp.fortran/use_device_addr-4.f90: Likewise.
