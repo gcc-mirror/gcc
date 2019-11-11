@@ -58,17 +58,70 @@ gfc_omp_is_allocatable_or_ptr (const_tree decl)
 	      || GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)));
 }
 
-/* True if OpenMP should treat this DECL as an optional argument;  note: for
-   arguments with VALUE attribute, the DECL is identical to nonoptional
-   arguments; hence, we return false here.  To check whether the variable is
-   present, use the DECL which is passed as hidden argument.  */
+/* True if the argument is an optional argument; except that false is also
+   returned for arguments with the value attribute (nonpointers) and for
+   assumed-shape variables (decl is a local variable containing arg->data).  */
 
-bool
+static bool
 gfc_omp_is_optional_argument (const_tree decl)
 {
   return (TREE_CODE (decl) == PARM_DECL
 	  && DECL_LANG_SPECIFIC (decl)
+	  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	  && GFC_DECL_OPTIONAL_ARGUMENT (decl));
+}
+
+/* Check whether this DECL belongs to a Fortran optional argument.
+   With 'for_present_check' set to false, decls which are optional parameters
+   themselve are returned as tree - or a NULL_TREE otherwise. Those decls are
+   always pointers.  With 'for_present_check' set to true, the decl for checking
+   whether an argument is present is returned; for arguments with value
+   attribute this is the hidden argument and of BOOLEAN_TYPE.  If the decl is
+   unrelated to optional arguments, NULL_TREE is returned.  */
+
+tree
+gfc_omp_check_optional_argument (tree decl, bool for_present_check)
+{
+  if (!for_present_check)
+    return gfc_omp_is_optional_argument (decl) ? decl : NULL_TREE;
+
+  if (!DECL_LANG_SPECIFIC (decl))
+    return NULL_TREE;
+
+  /* For assumed-shape arrays, a local decl with arg->data is used.  */
+  if (TREE_CODE (decl) != PARM_DECL
+      && (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl))
+	  || GFC_ARRAY_TYPE_P (TREE_TYPE (decl))))
+    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+
+  if (TREE_CODE (decl) != PARM_DECL
+      || !DECL_LANG_SPECIFIC (decl)
+      || !GFC_DECL_OPTIONAL_ARGUMENT (decl))
+    return NULL_TREE;
+
+  /* For VALUE, the scalar variable is passed as is but a hidden argument
+     denotes the value.  Cf. trans-expr.c.  */
+  if (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE)
+    {
+      char name[GFC_MAX_SYMBOL_LEN + 2];
+      tree tree_name;
+
+      name[0] = '_';
+      strcpy (&name[1], IDENTIFIER_POINTER (DECL_NAME (decl)));
+      tree_name = get_identifier (name);
+
+      /* Walk function argument list to find the hidden arg.  */
+      decl = DECL_ARGUMENTS (DECL_CONTEXT (decl));
+      for ( ; decl != NULL_TREE; decl = TREE_CHAIN (decl))
+	if (DECL_NAME (decl) == tree_name
+	    && DECL_ARTIFICIAL (decl))
+	  break;
+
+      gcc_assert (decl);
+      return decl;
+    }
+
+  return decl;
 }
 
 

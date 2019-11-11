@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mcpu=v8" } */
+/* { dg-options "-O -fno-pie -mcpu=v8" } */
 /* { dg-require-effective-target ilp32 } */
 
 #include <stdbool.h>

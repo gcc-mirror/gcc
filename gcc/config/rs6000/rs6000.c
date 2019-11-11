@@ -1428,6 +1428,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_VECTORIZE_DESTROY_COST_DATA
 #define TARGET_VECTORIZE_DESTROY_COST_DATA rs6000_destroy_cost_data
 
+#undef TARGET_LOOP_UNROLL_ADJUST
+#define TARGET_LOOP_UNROLL_ADJUST rs6000_loop_unroll_adjust
+
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
 #undef TARGET_BUILTIN_DECL
@@ -4540,25 +4543,12 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
-      /* unroll very small loops 2 time if no -funroll-loops.  */
-      if (!global_options_set.x_flag_unroll_loops
-	  && !global_options_set.x_flag_unroll_all_loops)
-	{
-	  maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 2,
-				 global_options.x_param_values,
-				 global_options_set.x_param_values);
-
-	  maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 20,
-				 global_options.x_param_values,
-				 global_options_set.x_param_values);
-
-	  /* If fweb or frename-registers are not specificed in command-line,
-	     do not turn them on implicitly.  */
-	  if (!global_options_set.x_flag_web)
-	    global_options.x_flag_web = 0;
-	  if (!global_options_set.x_flag_rename_registers)
-	    global_options.x_flag_rename_registers = 0;
-	}
+      /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
+      if (((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
+	   || (global_options_set.x_flag_unroll_all_loops
+	       && flag_unroll_all_loops))
+	  && !global_options_set.x_unroll_only_small_loops)
+	unroll_only_small_loops = 0;
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
@@ -4783,15 +4773,17 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
   switch (type_of_cost)
     {
       case scalar_stmt:
-      case scalar_load:
       case scalar_store:
       case vector_stmt:
-      case vector_load:
       case vector_store:
       case vec_to_scalar:
       case scalar_to_vec:
       case cond_branch_not_taken:
         return 1;
+      case scalar_load:
+      case vector_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	  return 2;
 
       case vec_perm:
 	/* Power7 has only one permute unit, make it a bit expensive.  */
@@ -4812,42 +4804,44 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case unaligned_load:
       case vector_gather_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
-	  return 1;
+	  return 2;
 
-        if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
-          {
-            elements = TYPE_VECTOR_SUBPARTS (vectype);
-            if (elements == 2)
-              /* Double word aligned.  */
-              return 2;
+	if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
+	  {
+	    elements = TYPE_VECTOR_SUBPARTS (vectype);
+	    if (elements == 2)
+	      /* Double word aligned.  */
+	      return 4;
 
-            if (elements == 4)
-              {
-                switch (misalign)
-                  {
-                    case 8:
-                      /* Double word aligned.  */
-                      return 2;
+	    if (elements == 4)
+	      {
+		switch (misalign)
+		  {
+		  case 8:
+		    /* Double word aligned.  */
+		    return 4;
 
-                    case -1:
-                      /* Unknown misalignment.  */
-                    case 4:
-                    case 12:
-                      /* Word aligned.  */
-                      return 22;
+		  case -1:
+		    /* Unknown misalignment.  */
+		  case 4:
+		  case 12:
+		    /* Word aligned.  */
+		    return 33;
 
-                    default:
-                      gcc_unreachable ();
-                  }
-              }
-          }
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	  }
 
-        if (TARGET_ALTIVEC)
-          /* Misaligned loads are not supported.  */
-          gcc_unreachable ();
+	if (TARGET_ALTIVEC)
+	  /* Misaligned loads are not supported.  */
+	  gcc_unreachable ();
 
-        return 2;
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	return 4;
 
       case unaligned_store:
       case vector_scatter_store:
@@ -5099,6 +5093,25 @@ static void
 rs6000_destroy_cost_data (void *data)
 {
   free (data);
+}
+
+/* Implement targetm.loop_unroll_adjust.  */
+
+static unsigned
+rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+{
+   if (unroll_only_small_loops)
+    {
+      /* TODO: This is hardcoded to 10 right now.  It can be refined, for
+	 example we may want to unroll very small loops more times (4 perhaps).
+	 We also should use a PARAM for this.  */
+      if (loop->ninsns <= 10)
+	return MIN (2, nunroll);
+      else
+	return 0;
+    }
+
+  return nunroll;
 }
 
 /* Handler for the Mathematical Acceleration Subsystem (mass) interface to a
@@ -10249,14 +10262,6 @@ validate_condition_mode (enum rtx_code code, machine_mode mode)
 		  && code != UNEQ && code != LTGT
 		  && code != UNGT && code != UNLT
 		  && code != UNGE && code != UNLE));
-
-  /* These should never be generated except for
-     flag_finite_math_only.  */
-  gcc_assert (mode != CCFPmode
-	      || flag_finite_math_only
-	      || (code != LE && code != GE
-		  && code != UNEQ && code != LTGT
-		  && code != UNGT && code != UNLT));
 
   /* These are invalid; the information is not there.  */
   gcc_assert (mode != CCEQmode || code == EQ || code == NE);

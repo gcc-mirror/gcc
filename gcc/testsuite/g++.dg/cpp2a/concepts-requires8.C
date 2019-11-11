@@ -13,5 +13,5 @@ int main()
 {
   // FIXME: This diagnostic is being emitted twice, when it should
   // be emitted just once.
-  using U = decltype(f(42, non_addable{})); // { dg-error "cannot call function" }
+  using U = decltype(f(42, non_addable{})); // { dg-error "" }
 }

@@ -677,15 +677,6 @@ namespace __gnu_test
 
 	  friend bool operator==(const sentinel& s, const I& i)
 	  { return s.end == i.ptr; }
-
-	  friend bool operator!=(const sentinel& s, const I& i)
-	  { return !(s == i); }
-
-	  friend bool operator==(const I& i, const sentinel& s)
-	  { return s == i; }
-
-	  friend bool operator!=(const I& i, const sentinel& s)
-	  { return !(s == i); }
 	};
 
       auto

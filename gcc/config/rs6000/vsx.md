@@ -2987,6 +2987,17 @@
   "xxpermdi %x0,%x1,%x1,2"
   [(set_attr "type" "vecperm")])
 
+(define_insn "xxswapd_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wa")
+	(vec_select:VSX_D
+	  (match_operand:VSX_D 1 "vsx_register_operand" "wa")
+	  (parallel [(const_int 1) (const_int 0)])))]
+  "TARGET_VSX"
+;; AIX does not support extended mnemonic xxswapd.  Use the basic
+;; mnemonic xxpermdi instead.
+  "xxpermdi %x0,%x1,%x1,2"
+  [(set_attr "type" "vecperm")])
+
 ;; lxvd2x for little endian loads.  We need several of
 ;; these since the form of the PARALLEL differs by mode.
 (define_insn "*vsx_lxvd2x2_le_<mode>"

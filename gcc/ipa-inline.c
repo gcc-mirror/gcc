@@ -735,13 +735,13 @@ want_early_inline_function_p (struct cgraph_edge *e)
 
 inline sreal
 compute_uninlined_call_time (struct cgraph_edge *edge,
-			     sreal uninlined_call_time)
+			     sreal uninlined_call_time,
+			     sreal freq)
 {
   cgraph_node *caller = (edge->caller->inlined_to
 			 ? edge->caller->inlined_to
 			 : edge->caller);
 
-  sreal freq = edge->sreal_frequency ();
   if (freq > 0)
     uninlined_call_time *= freq;
   else
@@ -756,14 +756,14 @@ compute_uninlined_call_time (struct cgraph_edge *edge,
 
 inline sreal
 compute_inlined_call_time (struct cgraph_edge *edge,
-			   sreal time)
+			   sreal time,
+			   sreal freq)
 {
   cgraph_node *caller = (edge->caller->inlined_to
 			 ? edge->caller->inlined_to
 			 : edge->caller);
   sreal caller_time = ipa_fn_summaries->get (caller)->time;
 
-  sreal freq = edge->sreal_frequency ();
   if (freq > 0)
     time *= freq;
   else
@@ -787,8 +787,9 @@ big_speedup_p (struct cgraph_edge *e)
 {
   sreal unspec_time;
   sreal spec_time = estimate_edge_time (e, &unspec_time);
-  sreal time = compute_uninlined_call_time (e, unspec_time);
-  sreal inlined_time = compute_inlined_call_time (e, spec_time);
+  sreal freq = e->sreal_frequency ();
+  sreal time = compute_uninlined_call_time (e, unspec_time, freq);
+  sreal inlined_time = compute_inlined_call_time (e, spec_time, freq);
   cgraph_node *caller = (e->caller->inlined_to
 			 ? e->caller->inlined_to
 			 : e->caller);
@@ -883,9 +884,9 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && !opt_for_fn (e->caller->decl, flag_inline_functions)
 	       && growth >= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SMALL))
 	{
-	  /* growth_likely_positive is expensive, always test it last.  */
+	  /* growth_positive_p is expensive, always test it last.  */
           if (growth >= inline_insns_single (e->caller, false)
-	      || growth_likely_positive (callee, growth))
+	      || growth_positive_p (callee, e, growth))
 	    {
               e->inline_failed = CIF_NOT_DECLARED_INLINED;
 	      want_inline = false;
@@ -899,9 +900,9 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 		   || growth >= inline_insns_auto (e->caller, true)
 		   || !big_speedup_p (e)))
 	{
-	  /* growth_likely_positive is expensive, always test it last.  */
+	  /* growth_positive_p is expensive, always test it last.  */
           if (growth >= inline_insns_single (e->caller, false)
-	      || growth_likely_positive (callee, growth))
+	      || growth_positive_p (callee, e, growth))
 	    {
 	      if (opt_for_fn (e->caller->decl, optimize) >= 3)
 		e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
@@ -913,7 +914,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       /* If call is cold, do not inline when function body would grow. */
       else if (!e->maybe_hot_p ()
 	       && (growth >= inline_insns_single (e->caller, false)
-		   || growth_likely_positive (callee, growth)))
+		   || growth_positive_p (callee, e, growth)))
 	{
           e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;
@@ -1075,7 +1076,7 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
   if (!node->call_for_symbol_and_aliases (has_caller_p, NULL, true))
     return false;
   /* Inlining into all callers would increase size?  */
-  if (estimate_growth (node) > 0)
+  if (growth_positive_p (node, NULL, INT_MIN) > 0)
     return false;
   /* All inlines must be possible.  */
   if (node->call_for_symbol_and_aliases (check_callers, &has_hot_call,
@@ -1164,9 +1165,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     {
       sreal numerator, denominator;
       int overall_growth;
-      sreal inlined_time = compute_inlined_call_time (edge, edge_time);
+      sreal freq = edge->sreal_frequency ();
+      sreal inlined_time = compute_inlined_call_time (edge, edge_time, freq);
 
-      numerator = (compute_uninlined_call_time (edge, unspec_edge_time)
+      numerator = (compute_uninlined_call_time (edge, unspec_edge_time, freq)
 		   - inlined_time);
       if (numerator <= 0)
 	numerator = ((sreal) 1 >> 8);
@@ -1198,14 +1200,14 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  && callee_info->single_caller
 	  && !edge->caller->inlined_to
 	  /* ... and edges executed only conditionally ... */
-	  && edge->sreal_frequency () < 1
+	  && freq < 1
 	  /* ... consider case where callee is not inline but caller is ... */
 	  && ((!DECL_DECLARED_INLINE_P (edge->callee->decl)
 	       && DECL_DECLARED_INLINE_P (caller->decl))
 	      /* ... or when early optimizers decided to split and edge
 		 frequency still indicates splitting is a win ... */
 	      || (callee->split_part && !caller->split_part
-		  && edge->sreal_frequency () * 100
+		  && freq * 100
 		     < PARAM_VALUE
 			  (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY)
 		  /* ... and do not overwrite user specified hints.   */
@@ -1256,11 +1258,11 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   " overall growth %i (current) %i (original)"
 		   " %i (compensated)\n",
 		   badness.to_double (),
-		   edge->sreal_frequency ().to_double (),
+		   freq.to_double (),
 		   edge->count.ipa ().initialized_p () ? edge->count.ipa ().to_gcov_type () : -1,
 		   caller->count.ipa ().initialized_p () ? caller->count.ipa ().to_gcov_type () : -1,
 		   compute_uninlined_call_time (edge,
-						unspec_edge_time).to_double (),
+						unspec_edge_time, freq).to_double (),
 		   inlined_time.to_double (),
 		   estimate_growth (callee),
 		   callee_info->growth, overall_growth);
@@ -2290,9 +2292,9 @@ flatten_function (struct cgraph_node *node, bool early, bool update)
     }
 
   node->aux = NULL;
-  if (update)
-    ipa_update_overall_fn_summary (node->inlined_to
-				   ? node->inlined_to : node);
+  cgraph_node *where = node->inlined_to ? node->inlined_to : node;
+  if (update && opt_for_fn (where->decl, optimize))
+    ipa_update_overall_fn_summary (where);
 }
 
 /* Inline NODE to all callers.  Worker for cgraph_for_node_and_aliases.
@@ -2367,7 +2369,7 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
      we have a lot of calls to the same function.  */
   for (hash_set<cgraph_node *>::iterator i = callers.begin ();
        i != callers.end (); ++i)
-    ipa_update_overall_fn_summary (*i);
+    ipa_update_overall_fn_summary ((*i)->inlined_to ? (*i)->inlined_to : *i);
   return res;
 }
 
@@ -2913,14 +2915,6 @@ early_inliner (function *fun)
 		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
-
-	      if (edge->callee->decl
-		  && !gimple_check_call_matching_types (
-		      edge->call_stmt, edge->callee->decl, false))
-		{
- 		  edge->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-		  edge->call_stmt_cannot_inline_p = true;
-		}
 	    }
 	  if (iterations < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS) - 1)
 	    ipa_update_overall_fn_summary (node);

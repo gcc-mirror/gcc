@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "builtins.h"
 #include "tree-ssa-sccvn.h"
+#include "dbgcnt.h"
 
 /* Specifies types of loops that may be unrolled.  */
 
@@ -884,6 +885,9 @@ try_unroll_loop_completely (class loop *loop,
 	    }
 	}
 
+      if (!dbg_cnt (gimple_unroll))
+	return false;
+
       initialize_original_copy_tables ();
       auto_sbitmap wont_exit (n_unroll + 1);
       if (exit && niter
@@ -1073,6 +1077,9 @@ try_peel_loop (class loop *loop,
 		 "(%i insns > --param max-peel-insns)", peeled_size);
       return false;
     }
+
+  if (!dbg_cnt (gimple_unroll))
+    return false;
 
   /* Duplicate possibly eliminating the exits.  */
   initialize_original_copy_tables ();

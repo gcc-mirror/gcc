@@ -19,5 +19,5 @@ int g(int (*)() requires true); // { dg-error "" }
 int
 main()
 {
-  f1(); // { dg-error "cannot call" }
+  f1(); // { dg-error "" }
 }

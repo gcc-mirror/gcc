@@ -938,7 +938,8 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
    constants.  */
 
 bool
-check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
+check_narrowing (tree type, tree init, tsubst_flags_t complain,
+		 bool const_only/*= false*/)
 {
   tree ftype = unlowered_expr_type (init);
   bool ok = true;
@@ -1017,6 +1018,11 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
 	    ok = true;
 	}
     }
+  else if (TREE_CODE (type) == BOOLEAN_TYPE
+	   && (TYPE_PTR_P (ftype) || TYPE_PTRMEM_P (ftype)))
+    /* This hasn't actually made it into C++20 yet, but let's add it now to get
+       an idea of the impact.  */
+    ok = (cxx_dialect < cxx2a);
 
   bool almost_ok = ok;
   if (!ok && !CONSTANT_CLASS_P (init) && (complain & tf_warning_or_error))

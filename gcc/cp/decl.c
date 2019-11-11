@@ -7099,8 +7099,12 @@ static bool
 omp_declare_variant_finalize_one (tree decl, tree attr)
 {
   if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-    walk_tree (&TREE_VALUE (TREE_VALUE (attr)), declare_simd_adjust_this,
-	       DECL_ARGUMENTS (decl), NULL);
+    {
+      walk_tree (&TREE_VALUE (TREE_VALUE (attr)), declare_simd_adjust_this,
+		 DECL_ARGUMENTS (decl), NULL);
+      walk_tree (&TREE_PURPOSE (TREE_VALUE (attr)), declare_simd_adjust_this,
+		 DECL_ARGUMENTS (decl), NULL);
+    }
 
   tree ctx = TREE_VALUE (TREE_VALUE (attr));
   tree simd = omp_get_context_selector (ctx, "construct", "simd");
@@ -7179,7 +7183,16 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (variant == error_mark_node && !processing_template_decl)
     return true;
 
-  variant = cp_get_callee_fndecl_nofold (variant);
+  variant = cp_get_callee (variant);
+  if (variant)
+    {
+      if (TREE_CODE (variant) == FUNCTION_DECL)
+	;
+      else if (TREE_TYPE (variant) && INDIRECT_TYPE_P (TREE_TYPE (variant)))
+	variant = cp_get_fndecl_from_callee (variant, false);
+      else
+	variant = NULL_TREE;
+    }
 
   input_location = save_loc;
 
@@ -7211,7 +7224,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
     }
   else if (!processing_template_decl)
     {
-      error_at (varid_loc, "could not find variant %qD declaration", variant);
+      error_at (varid_loc, "could not find variant declaration");
       return true;
     }
 
@@ -9249,7 +9262,9 @@ grokfndecl (tree ctype,
   if (flag_concepts)
     {
       tree tmpl_reqs = NULL_TREE;
-      if (processing_template_decl > template_class_depth (ctype))
+      tree ctx = friendp ? current_class_type : ctype;
+      bool memtmpl = (processing_template_decl > template_class_depth (ctx));
+      if (memtmpl)
         tmpl_reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
       tree ci = build_constraints (tmpl_reqs, decl_reqs);
       if (concept_p && ci)
@@ -9257,6 +9272,14 @@ grokfndecl (tree ctype,
           error_at (location, "a function concept cannot be constrained");
           ci = NULL_TREE;
         }
+      /* C++20 CA378: Remove non-templated constrained functions.  */
+      if (ci && !flag_concepts_ts
+	  && (!processing_template_decl
+	      || (friendp && !memtmpl && !funcdef_flag)))
+	{
+	  error_at (location, "constraints on a non-templated function");
+	  ci = NULL_TREE;
+	}
       set_constraints (decl, ci);
     }
 
@@ -16822,6 +16845,13 @@ finish_function (bool inline_p)
 	}
     }
 
+  if (DECL_DELETED_FN (fndecl))
+    {
+      DECL_INITIAL (fndecl) = error_mark_node;
+      DECL_SAVED_TREE (fndecl) = NULL_TREE;
+      goto cleanup;
+    }
+
   // If this is a concept, check that the definition is reasonable.
   if (DECL_DECLARED_CONCEPT_P (fndecl))
     check_function_concept (fndecl);
@@ -16975,6 +17005,7 @@ finish_function (bool inline_p)
       emit_coro_helper (destroyer);
     }
 
+ cleanup:
   /* We're leaving the context of this function, so zap cfun.  It's still in
      DECL_STRUCT_FUNCTION, and we'll restore it in tree_rest_of_compilation.  */
   set_cfun (NULL);

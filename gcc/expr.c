@@ -3571,11 +3571,13 @@ emit_move_complex (machine_mode mode, rtx x, rtx y)
       rtx_insn *ret;
 
       /* For memory to memory moves, optimal behavior can be had with the
-	 existing block move logic.  */
+	 existing block move logic.  But use normal expansion if optimizing
+	 for size.  */
       if (MEM_P (x) && MEM_P (y))
 	{
 	  emit_block_move (x, y, gen_int_mode (GET_MODE_SIZE (mode), Pmode),
-			   BLOCK_OP_NO_LIBCALL);
+			   (optimize_insn_for_speed_p()
+			    ? BLOCK_OP_NO_LIBCALL : BLOCK_OP_NORMAL));
 	  return get_last_insn ();
 	}
 
@@ -6809,6 +6811,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    && n_elts.is_constant (&const_n_elts))
 	  {
 	    machine_mode emode = eltmode;
+	    bool vector_typed_elts_p = false;
 
 	    if (CONSTRUCTOR_NELTS (exp)
 		&& (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value))
@@ -6819,13 +6822,14 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 				      * TYPE_VECTOR_SUBPARTS (etype),
 				      n_elts));
 		emode = TYPE_MODE (etype);
+		vector_typed_elts_p = true;
 	      }
 	    icode = convert_optab_handler (vec_init_optab, mode, emode);
 	    if (icode != CODE_FOR_nothing)
 	      {
 		unsigned int n = const_n_elts;
 
-		if (emode != eltmode)
+		if (vector_typed_elts_p)
 		  {
 		    n = CONSTRUCTOR_NELTS (exp);
 		    vec_vec_init_p = true;
@@ -12552,7 +12556,8 @@ build_personality_function (const char *lang)
 
   name = ACONCAT (("__", lang, "_personality", unwind_and_version, NULL));
 
-  type = build_function_type_list (integer_type_node, integer_type_node,
+  type = build_function_type_list (unsigned_type_node,
+				   integer_type_node, integer_type_node,
 				   long_long_unsigned_type_node,
 				   ptr_type_node, ptr_type_node, NULL_TREE);
   decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,

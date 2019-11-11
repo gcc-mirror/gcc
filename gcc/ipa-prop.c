@@ -107,12 +107,12 @@ static GTY ((cache)) hash_table<ipa_bit_ggc_hash_traits> *ipa_bits_hash_table;
 /* Traits for a hash table for reusing value_ranges used for IPA.  Note that
    the equiv bitmap is not hashed and is expected to be NULL.  */
 
-struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range_base *>
+struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
 {
-  typedef value_range_base *value_type;
-  typedef value_range_base *compare_type;
+  typedef value_range *value_type;
+  typedef value_range *compare_type;
   static hashval_t
-  hash (const value_range_base *p)
+  hash (const value_range *p)
     {
       inchash::hash hstate (p->kind ());
       inchash::add_expr (p->min (), hstate);
@@ -120,29 +120,29 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range_base *>
       return hstate.end ();
     }
   static bool
-  equal (const value_range_base *a, const value_range_base *b)
+  equal (const value_range *a, const value_range *b)
     {
       return a->equal_p (*b);
     }
   static void
-  mark_empty (value_range_base *&p)
+  mark_empty (value_range *&p)
     {
       p = NULL;
     }
   static bool
-  is_empty (const value_range_base *p)
+  is_empty (const value_range *p)
     {
       return p == NULL;
     }
   static bool
-  is_deleted (const value_range_base *p)
+  is_deleted (const value_range *p)
     {
-      return p == reinterpret_cast<const value_range_base *> (1);
+      return p == reinterpret_cast<const value_range *> (1);
     }
   static void
-  mark_deleted (value_range_base *&p)
+  mark_deleted (value_range *&p)
     {
-      p = reinterpret_cast<value_range_base *> (1);
+      p = reinterpret_cast<value_range *> (1);
     }
 };
 
@@ -271,7 +271,7 @@ ipa_dump_param (FILE *file, class ipa_node_params *info, int i)
 static bool
 ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 {
-  class ipa_node_params *info = IPA_NODE_REF (node);
+  class ipa_node_params *info = IPA_NODE_REF_GET_CREATE (node);
 
   if (!info->descriptors && param_count)
     {
@@ -289,7 +289,7 @@ ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 void
 ipa_initialize_node_params (struct cgraph_node *node)
 {
-  class ipa_node_params *info = IPA_NODE_REF (node);
+  class ipa_node_params *info = IPA_NODE_REF_GET_CREATE (node);
 
   if (!info->descriptors
       && ipa_alloc_node_params (node, count_formal_params (node->decl)))
@@ -1802,14 +1802,14 @@ ipa_set_jfunc_bits (ipa_jump_func *jf, const widest_int &value,
 /* Return a pointer to a value_range just like *TMP, but either find it in
    ipa_vr_hash_table or allocate it in GC memory.  TMP->equiv must be NULL.  */
 
-static value_range_base *
-ipa_get_value_range (value_range_base *tmp)
+static value_range *
+ipa_get_value_range (value_range *tmp)
 {
-  value_range_base **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
+  value_range **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
   if (*slot)
     return *slot;
 
-  value_range_base *vr = ggc_alloc<value_range_base> ();
+  value_range *vr = ggc_alloc<value_range> ();
   *vr = *tmp;
   *slot = vr;
 
@@ -1820,10 +1820,10 @@ ipa_get_value_range (value_range_base *tmp)
    equiv set. Use hash table in order to avoid creating multiple same copies of
    value_ranges.  */
 
-static value_range_base *
+static value_range *
 ipa_get_value_range (enum value_range_kind type, tree min, tree max)
 {
-  value_range_base tmp (type, min, max);
+  value_range tmp (type, min, max);
   return ipa_get_value_range (&tmp);
 }
 
@@ -1842,7 +1842,7 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, enum value_range_kind type,
    copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
 
 static void
-ipa_set_jfunc_vr (ipa_jump_func *jf, value_range_base *tmp)
+ipa_set_jfunc_vr (ipa_jump_func *jf, value_range *tmp)
 {
   jf->m_vr = ipa_get_value_range (tmp);
 }
@@ -1919,8 +1919,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && (type = get_range_info (arg, &min, &max))
 	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
 	    {
-	      value_range_base resvr;
-	      value_range_base tmpvr (type,
+	      value_range resvr;
+	      value_range tmpvr (type,
 				      wide_int_to_tree (TREE_TYPE (arg), min),
 				      wide_int_to_tree (TREE_TYPE (arg), max));
 	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
@@ -2605,7 +2605,7 @@ ipa_analyze_node (struct cgraph_node *node)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
-  info = IPA_NODE_REF (node);
+  info = IPA_NODE_REF_GET_CREATE (node);
 
   if (info->analysis_done)
     return;
@@ -3492,11 +3492,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       else if (new_direct_edge)
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
-	  if (new_direct_edge->call_stmt)
-	    new_direct_edge->call_stmt_cannot_inline_p
-	      = !gimple_check_call_matching_types (
-		  new_direct_edge->call_stmt,
-		  new_direct_edge->callee->decl, false);
 	  if (new_edges)
 	    {
 	      new_edges->safe_push (new_direct_edge);
@@ -3606,6 +3601,9 @@ propagate_controlled_uses (struct cgraph_edge *cs)
   class ipa_node_params *old_root_info = IPA_NODE_REF (cs->callee);
   int count, i;
 
+  if (!old_root_info)
+    return;
+
   count = MIN (ipa_get_cs_argument_count (args),
 	       ipa_get_param_count (old_root_info));
   for (i = 0; i < count; i++)
@@ -3667,8 +3665,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 
 		  clone = cs->caller;
 		  while (clone->inlined_to
-			 && clone != rdesc->cs->caller
-			 && IPA_NODE_REF (clone)->ipcp_orig_node)
+			 && clone->ipcp_clone
+			 && clone != rdesc->cs->caller)
 		    {
 		      struct ipa_ref *ref;
 		      ref = clone->find_reference (n, NULL, 0);
@@ -3727,6 +3725,27 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 
   propagate_controlled_uses (cs);
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
+  ipa_node_params_sum->remove (cs->callee);
+
+  class ipa_edge_args *args = IPA_EDGE_REF (cs);
+  if (args)
+    {
+      bool ok = true;
+      if (args->jump_functions)
+	{
+	  struct ipa_jump_func *jf;
+	  int i;
+	  FOR_EACH_VEC_ELT (*args->jump_functions, i, jf)
+	    if (jf->type == IPA_JF_CONST
+		&& ipa_get_jf_constant_rdesc (jf))
+	      {
+		ok = false;
+		break;
+	      }
+	}
+      if (ok)
+        ipa_edge_args_sum->remove (cs);
+    }
 
   return changed;
 }
@@ -3756,8 +3775,7 @@ ipa_free_all_edge_args (void)
   if (!ipa_edge_args_sum)
     return;
 
-  ipa_edge_args_sum->~ipa_edge_args_sum_t ();
-  ggc_free (ipa_edge_args_sum);
+  ggc_delete (ipa_edge_args_sum);
   ipa_edge_args_sum = NULL;
 }
 
@@ -3766,8 +3784,7 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_all_node_params (void)
 {
-  ipa_node_params_sum->~ipa_node_params_t ();
-  ggc_free (ipa_node_params_sum);
+  ggc_delete (ipa_node_params_sum);
   ipa_node_params_sum = NULL;
 }
 
@@ -4514,7 +4531,8 @@ ipa_read_node_info (class lto_input_block *ib, struct cgraph_node *node,
   struct cgraph_edge *e;
   struct bitpack_d bp;
   bool prevails = node->prevailing_p ();
-  class ipa_node_params *info = prevails ? IPA_NODE_REF (node) : NULL;
+  class ipa_node_params *info = prevails
+				? IPA_NODE_REF_GET_CREATE (node) : NULL;
 
   int param_count = streamer_read_uhwi (ib);
   if (prevails)

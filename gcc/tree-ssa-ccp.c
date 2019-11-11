@@ -2222,7 +2222,25 @@ fold_builtin_alloca_with_align (gimple *stmt)
   elem_type = build_nonstandard_integer_type (BITS_PER_UNIT, 1);
   n_elem = size * 8 / BITS_PER_UNIT;
   array_type = build_array_type_nelts (elem_type, n_elem);
-  var = create_tmp_var (array_type);
+
+  if (tree ssa_name = SSA_NAME_IDENTIFIER (lhs))
+    {
+      /* Give the temporary a name derived from the name of the VLA
+	 declaration so it can be referenced in diagnostics.  */
+      const char *name = IDENTIFIER_POINTER (ssa_name);
+      var = create_tmp_var (array_type, name);
+    }
+  else
+    var = create_tmp_var (array_type);
+
+  if (gimple *lhsdef = SSA_NAME_DEF_STMT (lhs))
+    {
+      /* Set the temporary's location to that of the VLA declaration
+	 so it can be pointed to in diagnostics.  */
+      location_t loc = gimple_location (lhsdef);
+      DECL_SOURCE_LOCATION (var) = loc;
+    }
+
   SET_DECL_ALIGN (var, TREE_INT_CST_LOW (gimple_call_arg (stmt, 1)));
   if (uid != 0)
     SET_DECL_PT_UID (var, uid);

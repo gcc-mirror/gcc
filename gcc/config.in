@@ -1688,6 +1688,13 @@
 #endif
 
 
+/* Define if GCC has been configured with --enable-newlib-nano-formatted-io.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_NEWLIB_NANO_FORMATTED_IO
+#endif
+
+
 /* Define to 1 if you have the `nl_langinfo' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_NL_LANGINFO

@@ -874,6 +874,7 @@ extern void lto_streamer_hooks_init (void);
 /* In lto-streamer-in.c */
 extern void lto_input_cgraph (struct lto_file_decl_data *, const char *);
 extern void lto_reader_init (void);
+extern void lto_free_file_name_hash (void);
 extern void lto_input_function_body (struct lto_file_decl_data *,
 				     struct cgraph_node *,
 				     const char *);

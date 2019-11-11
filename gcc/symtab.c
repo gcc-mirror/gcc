@@ -253,7 +253,7 @@ symbol_table::symtab_prevail_in_asm_name_hash (symtab_node *node)
   insert_to_assembler_name_hash (node, false);
 }
 
-/* Initalize asm name hash unless.  */
+/* Initialize asm name hash unless.  */
 
 void
 symbol_table::symtab_initialize_asm_name_hash (void)
@@ -551,7 +551,7 @@ symtab_node::dump_asm_name () const
 }
 
 /* Return ipa reference from this symtab_node to
-   REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+   REFERRED_NODE or REFERRED_VARPOOL_NODE. USE_TYPE specify type
    of the use.  */
 
 ipa_ref *
@@ -563,7 +563,7 @@ symtab_node::create_reference (symtab_node *referred_node,
 
 
 /* Return ipa reference from this symtab_node to
-   REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+   REFERRED_NODE or REFERRED_VARPOOL_NODE. USE_TYPE specify type
    of the use and STMT the statement (if it exists).  */
 
 ipa_ref *
@@ -732,7 +732,7 @@ symtab_node::remove_stmt_references (gimple *stmt)
 }
 
 /* Remove all stmt references in non-speculative references.
-   Those are not maintained during inlining & clonning.
+   Those are not maintained during inlining & cloning.
    The exception are speculative references that are updated along
    with callgraph edges associated with them.  */
 
@@ -1453,7 +1453,7 @@ symtab_node::ultimate_alias_target_1 (enum availability *availability,
      availability prevails the availability of its target (i.e. static alias of
      weak definition is available.
 
-     Transaparent alias is just alternative anme of a given symbol used within
+     Transparent alias is just alternative name of a given symbol used within
      one compilation unit and is translated prior hitting the object file.  It
      inherits the visibility of its target.
      Weakref is a different animal (and noweak definition is weak).
@@ -1670,7 +1670,7 @@ symtab_node::set_init_priority (priority_type priority)
   h->init = priority;
 }
 
-/* Set fialization priority to PRIORITY.  */
+/* Set finalization priority to PRIORITY.  */
 
 void
 cgraph_node::set_fini_priority (priority_type priority)
@@ -1915,7 +1915,7 @@ enum symbol_partitioning_class
 symtab_node::get_partitioning_class (void)
 {
   /* Inline clones are always duplicated.
-     This include external delcarations.   */
+     This include external declarations.   */
   cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
 
   if (DECL_ABSTRACT_P (decl))
@@ -2040,7 +2040,7 @@ symtab_node::nonzero_address ()
 
    If MEMORY_ACCESSED is true, assume that both memory pointer to THIS
    and S2 is going to be accessed.  This eliminates the situations when
-   either THIS or S2 is NULL and is seful for comparing bases when deciding
+   either THIS or S2 is NULL and is useful for comparing bases when deciding
    about memory aliasing.  */
 int
 symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
@@ -2074,7 +2074,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
      code and are used only within speculation.  In this case we may make
      symbol equivalent to its alias even if interposition may break this
      rule.  Doing so will allow us to turn speculative inlining into
-     non-speculative more agressively.  */
+     non-speculative more aggressively.  */
   if (DECL_VIRTUAL_P (this->decl) && avail1 >= AVAIL_AVAILABLE)
     binds_local1 = true;
   if (DECL_VIRTUAL_P (s2->decl) && avail2 >= AVAIL_AVAILABLE)
@@ -2130,7 +2130,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
 
   /* TODO: Alias oracle basically assume that addresses of global variables
      are different unless they are declared as alias of one to another while
-     the code folding comparsions doesn't.
+     the code folding comparisons doesn't.
      We probably should be consistent and use this fact here, too, but for
      the moment return false only when we are called from the alias oracle.  */
 
@@ -2389,8 +2389,8 @@ symtab_node::output_to_lto_symbol_table_p (void)
     }
 
   /* We have real symbol that should be in symbol table.  However try to trim
-     down the refernces to libraries bit more because linker will otherwise
-     bring unnecesary object files into the final link.
+     down the references to libraries bit more because linker will otherwise
+     bring unnecessary object files into the final link.
      FIXME: The following checks can easily be confused i.e. by self recursive
      function or self-referring variable.  */
 

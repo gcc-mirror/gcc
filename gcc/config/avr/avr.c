@@ -768,6 +768,9 @@ avr_option_override (void)
   if (!avr_set_core_architecture())
     return;
 
+  /* Sould be set by avr-common.c */
+  gcc_assert (avr_long_double >= avr_double && avr_double >= 32);
+
   /* RAM addresses of some SFRs common to all devices in respective arch. */
 
   /* SREG: Status Register containing flags like I (global IRQ) */

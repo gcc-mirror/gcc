@@ -112,10 +112,14 @@ LIB2FUNCS_EXCLUDE = \
 	_clrsbdi2 \
 
 
-# We do not have the DF type.
+ifeq ($(long_double_type_size),32)
+# We do not have the DFtype.
+HOST_LIBGCC2_CFLAGS += -DDF=SF
+endif
+
 # Most of the C functions in libgcc2 use almost all registers,
 # so use -mcall-prologues for smaller code size.
-HOST_LIBGCC2_CFLAGS += -DDF=SF -Dinhibit_libc -mcall-prologues -Os
+HOST_LIBGCC2_CFLAGS += -Dinhibit_libc -mcall-prologues -Os
 
 # Extra 16-bit integer functions.
 intfuncs16 = _absvXX2 _addvXX3 _subvXX3 _mulvXX3 _negvXX2 _clrsbXX2

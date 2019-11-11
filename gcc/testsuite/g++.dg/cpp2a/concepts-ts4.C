@@ -23,12 +23,12 @@ Pos{N} void fn();
 void driver()
 {
   f1(0);
-  f2(0); // { dg-error "cannot call function" }
+  f2(0); // { dg-error "" }
 
   same<int, int>();
-  same<int, char>(); // { dg-error "cannot call function" }
+  same<int, char>(); // { dg-error "" }
 
   fn<0>(); // OK
-  fn<-1>(); // { dg-error "cannot call function" }
+  fn<-1>(); // { dg-error "" }
   fn<int>(); // { dg-error "no matching function" }
 }

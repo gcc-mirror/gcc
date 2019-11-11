@@ -1881,10 +1881,11 @@ cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
 /* Subroutine of cpp_interpret_charconst which performs the conversion
    to a number, for narrow strings.  STR is the string structure returned
    by cpp_interpret_string.  PCHARS_SEEN and UNSIGNEDP are as for
-   cpp_interpret_charconst.  */
+   cpp_interpret_charconst.  TYPE is the token type.  */
 static cppchar_t
 narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
-			 unsigned int *pchars_seen, int *unsignedp)
+			 unsigned int *pchars_seen, int *unsignedp,
+			 enum cpp_ttype type)
 {
   size_t width = CPP_OPTION (pfile, char_precision);
   size_t max_chars = CPP_OPTION (pfile, int_precision) / width;
@@ -1913,10 +1914,12 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
 	result = c;
     }
 
+  if (type == CPP_UTF8CHAR)
+    max_chars = 1;
   if (i > max_chars)
     {
       i = max_chars;
-      cpp_error (pfile, CPP_DL_WARNING,
+      cpp_error (pfile, type == CPP_UTF8CHAR ? CPP_DL_ERROR : CPP_DL_WARNING,
 		 "character constant too long for its type");
     }
   else if (i > 1 && CPP_OPTION (pfile, warn_multichar))
@@ -1980,7 +1983,9 @@ wide_str_to_charconst (cpp_reader *pfile, cpp_string str,
      character exactly fills a wchar_t, so a multi-character wide
      character constant is guaranteed to overflow.  */
   if (str.len > nbwc * 2)
-    cpp_error (pfile, CPP_DL_WARNING,
+    cpp_error (pfile, (CPP_OPTION (pfile, cplusplus)
+		       && (type == CPP_CHAR16 || type == CPP_CHAR32))
+		      ? CPP_DL_ERROR : CPP_DL_WARNING,
 	       "character constant too long for its type");
 
   /* Truncate the constant to its natural width, and simultaneously
@@ -2038,7 +2043,8 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
     result = wide_str_to_charconst (pfile, str, pchars_seen, unsignedp,
 				    token->type);
   else
-    result = narrow_str_to_charconst (pfile, str, pchars_seen, unsignedp);
+    result = narrow_str_to_charconst (pfile, str, pchars_seen, unsignedp,
+				      token->type);
 
   if (str.text != token->val.str.text)
     free ((void *)str.text);

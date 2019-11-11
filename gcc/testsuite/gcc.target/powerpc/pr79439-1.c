@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-linux* && lp64 } } } */
-/* { dg-options "-O2 -fpic -fno-reorder-blocks" } */
+/* { dg-options "-O2 -fpic -fno-reorder-blocks -fno-inline-functions" } */
 
 /* On the Linux 64-bit ABIs, we eliminate NOP in the 'rec' call even if
    -fpic is used.  The recursive call should call the local alias.  The

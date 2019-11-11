@@ -1,3 +1,8 @@
+2019-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+	    Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/misc.c (callgraph_info_file): Delete.
+
 2019-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* locales.c (iso_3166): Add missing comma after "United-States".

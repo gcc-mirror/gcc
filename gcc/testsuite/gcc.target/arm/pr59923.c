@@ -1,5 +1,6 @@
 /* PR target/59923 */
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-O2 -mcpu=cortex-a15 -fno-strict-aliasing -mthumb -g" } */
 

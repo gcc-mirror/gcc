@@ -205,7 +205,7 @@ struct GTY (()) ipa_jump_func
   /* Information about value range, containing valid data only when vr_known is
      true.  The pointed to structure is shared betweed different jump
      functions.  Use ipa_set_jfunc_vr to set this field.  */
-  class value_range_base *m_vr;
+  class value_range *m_vr;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
@@ -766,7 +766,8 @@ extern GTY(()) function_summary <ipcp_transformation *> *ipcp_transformation_sum
 
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
-#define IPA_NODE_REF(NODE) (ipa_node_params_sum->get_create (NODE))
+#define IPA_NODE_REF(NODE) (ipa_node_params_sum->get (NODE))
+#define IPA_NODE_REF_GET_CREATE(NODE) (ipa_node_params_sum->get_create (NODE))
 #define IPA_EDGE_REF(EDGE) (ipa_edge_args_sum->get (EDGE))
 #define IPA_EDGE_REF_GET_CREATE(EDGE) (ipa_edge_args_sum->get_create (EDGE))
 /* This macro checks validity of index returned by

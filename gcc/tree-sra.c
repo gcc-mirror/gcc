@@ -789,19 +789,11 @@ create_access (tree expr, gimple *stmt, bool write)
 {
   struct access *access;
   poly_int64 poffset, psize, pmax_size;
-  HOST_WIDE_INT offset, size, max_size;
   tree base = expr;
   bool reverse, unscalarizable_region = false;
 
   base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
 				  &reverse);
-  if (!poffset.is_constant (&offset)
-      || !psize.is_constant (&size)
-      || !pmax_size.is_constant (&max_size))
-    {
-      disqualify_candidate (base, "Encountered a polynomial-sized access.");
-      return NULL;
-    }
 
   /* For constant-pool entries, check we can substitute the constant value.  */
   if (constant_decl_p (base))
@@ -823,6 +815,15 @@ create_access (tree expr, gimple *stmt, bool write)
 
   if (!DECL_P (base) || !bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
     return NULL;
+
+  HOST_WIDE_INT offset, size, max_size;
+  if (!poffset.is_constant (&offset)
+      || !psize.is_constant (&size)
+      || !pmax_size.is_constant (&max_size))
+    {
+      disqualify_candidate (base, "Encountered a polynomial-sized access.");
+      return NULL;
+    }
 
   if (size != max_size)
     {
@@ -3067,6 +3068,13 @@ get_access_for_expr (tree expr)
       || !poffset.is_constant (&offset)
       || !DECL_P (base))
     return NULL;
+
+  if (tree basesize = DECL_SIZE (base))
+    {
+      poly_int64 sz = tree_to_poly_int64 (basesize);
+      if (offset < 0 || known_le (sz, offset))
+	return NULL;
+    }
 
   if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
     return NULL;

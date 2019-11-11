@@ -928,6 +928,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  break;
 	case STRING_CST:
 	case INTEGER_CST:
+	case POLY_INT_CST:
 	case COMPLEX_CST:
 	case VECTOR_CST:
 	case REAL_CST:

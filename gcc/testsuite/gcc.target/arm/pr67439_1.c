@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code supports M-profile without Neon only" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-O1 -mfp16-format=ieee -march=armv7-a -mfpu=neon -mthumb -mrestrict-it" } */
 

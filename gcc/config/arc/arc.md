@@ -816,8 +816,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    st%U0%V0\\t%1,%0	;26
    st%U0%V0\\t%1,%0	;37
    st%U0%V0\\t%1,%0	;28"
-  "reload_completed && satisfies_constraint_Cax (operands[1])
-   && register_operand (operands[0], SImode)"
+  "reload_completed
+   && GET_CODE (PATTERN (insn)) != COND_EXEC
+   && register_operand (operands[0], SImode)
+   && IN_RANGE (REGNO (operands[0]) ^ 4, 4, 11)
+   && satisfies_constraint_Cax (operands[1])"
   [(const_int 0)]
   "
    arc_split_mov_const (operands);
@@ -1801,18 +1804,22 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set_attr "type" "cmove,cmove")
    (set_attr "length" "8,16")])
 
+;; -------------------------------------------------------------------
+;; Sign/Zero extension
+;; -------------------------------------------------------------------
 
 (define_insn "*zero_extendqihi2_i"
-  [(set (match_operand:HI 0 "dest_reg_operand" "=Rcq,Rcq#q,Rcw,w,r,r")
-	(zero_extend:HI (match_operand:QI 1 "nonvol_nonimm_operand" "0,Rcq#q,0,c,Ucm,m")))]
+  [(set (match_operand:HI 0 "dest_reg_operand" "=q,q,r,r,r,r")
+	(zero_extend:HI
+	 (match_operand:QI 1 "nonvol_nonimm_operand" "0,q,0,r,Ucm,m")))]
   ""
   "@
-   extb%? %0,%1%&
-   extb%? %0,%1%&
-   bmsk%? %0,%1,7
-   extb %0,%1
-   xldb%U1 %0,%1
-   ldb%U1 %0,%1"
+   extb%?\\t%0,%1
+   extb%?\\t%0,%1
+   bmsk%?\\t%0,%1,7
+   extb\\t%0,%1
+   xldb%U1\\t%0,%1
+   ldb%U1\\t%0,%1"
   [(set_attr "type" "unary,unary,unary,unary,load,load")
    (set_attr "iscompact" "maybe,true,false,false,false,false")
    (set_attr "predicable" "no,no,yes,no,no,no")])
@@ -1825,18 +1832,19 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 )
 
 (define_insn "*zero_extendqisi2_ac"
-  [(set (match_operand:SI 0 "dest_reg_operand"    "=Rcq,Rcq#q,Rcw,w,qRcq,!*x,r,r")
-	(zero_extend:SI (match_operand:QI 1 "nonvol_nonimm_operand" "0,Rcq#q,0,c,T,Usd,Ucm,m")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"    "=q,q,r,r,q,!*x,r,r")
+	(zero_extend:SI
+	 (match_operand:QI 1 "nonvol_nonimm_operand" "0,q,0,r,T,Usd,Ucm,m")))]
   ""
   "@
-   extb%? %0,%1%&
-   extb%? %0,%1%&
-   bmsk%? %0,%1,7
-   extb %0,%1
-   ldb%? %0,%1%&
-   ldb%? %0,%1%&
-   xldb%U1 %0,%1
-   ldb%U1 %0,%1"
+   extb%?\\t%0,%1
+   extb%?\\t%0,%1
+   bmsk%?\\t%0,%1,7
+   extb\\t%0,%1
+   ldb%?\\t%0,%1
+   ldb%?\\t%0,%1
+   xldb%U1\\t%0,%1
+   ldb%U1\\t%0,%1"
   [(set_attr "type" "unary,unary,unary,unary,load,load,load,load")
    (set_attr "iscompact" "maybe,true,false,false,true,true,false,false")
    (set_attr "predicable" "no,no,yes,no,no,no,no,no")])
@@ -1849,22 +1857,22 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 )
 
 (define_insn "*zero_extendhisi2_i"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcq,q,Rcw,w,!x,Rcqq,r,r")
-	(zero_extend:SI (match_operand:HI 1 "nonvol_nonimm_operand" "0,q,0,c,Usd,T,Ucm,m")))]
+  [(set (match_operand:SI 0 "dest_reg_operand" "=q,q,r,r,!x,q,r,r")
+	(zero_extend:SI
+	 (match_operand:HI 1 "nonvol_nonimm_operand" "0,q,0,r,Usd,T,Ucm,m")))]
   ""
   "@
-   ext%_%? %0,%1%&
-   ext%_%? %0,%1%&
-   bmsk%? %0,%1,15
-   ext%_ %0,%1
-   ld%_%? %0,%1
-   ld%_%? %0,%1
-   * return TARGET_EM ? \"xldh%U1%V1 %0,%1\" : \"xldw%U1 %0,%1\";
-   ld%_%U1%V1 %0,%1"
+   ext%_%?\\t%0,%1
+   ext%_%?\\t%0,%1
+   bmsk%?\\t%0,%1,15
+   ext%_\\t%0,%1
+   ld%_%?\\t%0,%1
+   ld%_%?\\t%0,%1
+   xldw%U1\\t%0,%1
+   ld%_%U1%V1\\t%0,%1"
   [(set_attr "type" "unary,unary,unary,unary,load,load,load,load")
    (set_attr "iscompact" "maybe,true,false,false,true,true,false,false")
    (set_attr "predicable" "no,no,yes,no,no,no,no,no")])
-
 
 (define_expand "zero_extendhisi2"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
@@ -1876,18 +1884,18 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ;; Sign extension instructions.
 
 (define_insn "*extendqihi2_i"
-  [(set (match_operand:HI 0 "dest_reg_operand" "=Rcqq,r,r,r")
-	(sign_extend:HI (match_operand:QI 1 "nonvol_nonimm_operand" "Rcqq,r,Uex,m")))]
+  [(set (match_operand:HI 0 "dest_reg_operand" "=q,r,r,r")
+	(sign_extend:HI
+	 (match_operand:QI 1 "nonvol_nonimm_operand" "q,r,Uex,m")))]
   ""
   "@
-   sexb%? %0,%1%&
-   sexb %0,%1
-   ldb.x%U1 %0,%1
-   ldb.x%U1 %0,%1"
+   sexb%?\\t%0,%1
+   sexb\\t%0,%1
+   ldb.x%U1\\t%0,%1
+   ldb.x%U1\\t%0,%1"
   [(set_attr "type" "unary,unary,load,load")
    (set_attr "iscompact" "true,false,false,false")
    (set_attr "length" "*,*,*,8")])
-
 
 (define_expand "extendqihi2"
   [(set (match_operand:HI 0 "dest_reg_operand" "")
@@ -1897,14 +1905,15 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 )
 
 (define_insn "*extendqisi2_ac"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,w,r,r")
-	(sign_extend:SI (match_operand:QI 1 "nonvol_nonimm_operand" "Rcqq,c,Uex,m")))]
+  [(set (match_operand:SI 0 "dest_reg_operand" "=q,r,r,r")
+	(sign_extend:SI
+	 (match_operand:QI 1 "nonvol_nonimm_operand" "q,r,Uex,m")))]
   ""
   "@
-   sexb%? %0,%1%&
-   sexb %0,%1
-   ldb.x%U1 %0,%1
-   ldb.x%U1 %0,%1"
+   sexb%?\\t%0,%1
+   sexb\\t%0,%1
+   ldb.x%U1\\t%0,%1
+   ldb.x%U1\\t%0,%1"
   [(set_attr "type" "unary,unary,load,load")
    (set_attr "iscompact" "true,false,false,false")
    (set_attr "length" "*,*,*,8")])
@@ -1917,15 +1926,16 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 )
 
 (define_insn "*extendhisi2_i"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,w,Rcqq,r,r")
-	(sign_extend:SI (match_operand:HI 1 "nonvol_nonimm_operand" "Rcqq,c,Ucd,Uex,m")))]
+  [(set (match_operand:SI 0 "dest_reg_operand" "=q,r,q,r,r")
+	(sign_extend:SI
+	 (match_operand:HI 1 "nonvol_nonimm_operand" "q,r,Ucd,Uex,m")))]
   ""
   "@
-   sex%_%? %0,%1%&
-   sex%_ %0,%1
-   ldh%?.x %0,%1%&
-   ld%_.x%U1%V1 %0,%1
-   ld%_.x%U1%V1 %0,%1"
+   sex%_%?\\t%0,%1
+   sex%_\\t%0,%1
+   ldh%?.x\\t%0,%1%&
+   ld%_.x%U1%V1\\t%0,%1
+   ld%_.x%U1%V1\\t%0,%1"
   [(set_attr "type" "unary,unary,load,load,load")
    (set_attr "iscompact" "true,false,true,false,false")
    (set_attr "length" "*,*,*,4,8")])
@@ -3363,7 +3373,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    #
    or%?\\t%0,%1,%2
    or%?\\t%0,%1,%2"
-  "reload_completed && satisfies_constraint_C0x (operands[2])"
+  "reload_completed
+   && GET_CODE (PATTERN (insn)) != COND_EXEC
+   && register_operand (operands[0], SImode)
+   && IN_RANGE (REGNO (operands[0]) ^ 4, 4, 11)
+   && satisfies_constraint_C0x (operands[2])"
   [(const_int 0)]
   "
    arc_split_ior (operands);

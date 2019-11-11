@@ -42,21 +42,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cfgloop.h"
 #include "debug.h"
+#include "alloc-pool.h"
 
-
-struct freeing_string_slot_hasher : string_slot_hasher
-{
-  static inline void remove (value_type *);
-};
-
-inline void
-freeing_string_slot_hasher::remove (value_type *v)
-{
-  free (v);
-}
+/* Allocator used to hold string slot entries for line map streaming.  */
+static struct object_allocator<struct string_slot> *string_slot_allocator;
 
 /* The table to hold the file names.  */
-static hash_table<freeing_string_slot_hasher> *file_name_hash_table;
+static hash_table<string_slot_hasher> *file_name_hash_table;
+
+/* This obstack holds file names used in locators. Line map datastructures
+   points here and thus it needs to be kept allocated as long as linemaps
+   exists.  */
+static struct obstack file_name_obstack;
 
 
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
@@ -113,8 +110,8 @@ canon_file_name (const char *string)
       char *saved_string;
       struct string_slot *new_slot;
 
-      saved_string = (char *) xmalloc (len + 1);
-      new_slot = XCNEW (struct string_slot);
+      saved_string = XOBNEWVEC (&file_name_obstack, char, len + 1);
+      new_slot = string_slot_allocator->allocate ();
       memcpy (saved_string, string, len + 1);
       new_slot->s = saved_string;
       new_slot->len = len;
@@ -1722,7 +1719,23 @@ lto_reader_init (void)
 {
   lto_streamer_init ();
   file_name_hash_table
-    = new hash_table<freeing_string_slot_hasher> (37);
+    = new hash_table<string_slot_hasher> (37);
+  string_slot_allocator = new object_allocator <struct string_slot>
+				("line map file name hash");
+  gcc_obstack_init (&file_name_obstack);
+}
+
+/* Free hash table used to stream in location file names.  */
+
+void
+lto_free_file_name_hash (void)
+{
+  delete file_name_hash_table;
+  file_name_hash_table = NULL;
+  delete string_slot_allocator;
+  string_slot_allocator = NULL;
+  /* file_name_obstack must stay allocated since it is referred to by
+     line map table.  */
 }
 
 

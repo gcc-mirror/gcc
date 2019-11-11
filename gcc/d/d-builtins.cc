@@ -197,20 +197,23 @@ build_frontend_type (tree type)
       break;
 
     case VECTOR_TYPE:
+    {
+      unsigned HOST_WIDE_INT nunits;
+      if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nunits))
+	break;
+
       dtype = build_frontend_type (TREE_TYPE (type));
-      if (dtype)
-	{
-	  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
-	  dtype = dtype->sarrayOf (nunits.to_constant ())->addMod (mod);
+      if (!dtype)
+	break;
 
-	  if (dtype->nextOf ()->isTypeBasic () == NULL)
-	    break;
+      dtype = dtype->sarrayOf (nunits)->addMod (mod);
+      if (dtype->nextOf ()->isTypeBasic () == NULL)
+	break;
 
-	  dtype = (TypeVector::create (Loc (), dtype))->addMod (mod);
-	  builtin_converted_decls.safe_push (builtin_data (dtype, type));
-	  return dtype;
-	}
-      break;
+      dtype = (TypeVector::create (Loc (), dtype))->addMod (mod);
+      builtin_converted_decls.safe_push (builtin_data (dtype, type));
+      return dtype;
+    }
 
     case RECORD_TYPE:
     {

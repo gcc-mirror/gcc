@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=legacy" }
+! { dg-options "-std=legacy -Wsurprising" }
 ! PR15966, PR18781 & PR16531
 implicit none
 complex(kind=8) x(2) 

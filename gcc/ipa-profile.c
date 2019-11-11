@@ -613,7 +613,7 @@ ipa_profile (void)
 		      if (dump_file)
 			fprintf (dump_file,
 				 "Not speculating: "
-				 "parameter count mistmatch\n");
+				 "parameter count mismatch\n");
 		    }
 		  else if (e->indirect_info->polymorphic
 			   && !opt_for_fn (n->decl, flag_devirtualize)

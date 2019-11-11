@@ -3234,6 +3234,17 @@ add_implicitly_declared_members (tree t, tree* access_decls,
      a virtual function from a base class.  */
   declare_virt_assop_and_dtor (t);
 
+  /* If the class definition does not explicitly declare an == operator
+     function, but declares a defaulted three-way comparison operator function,
+     an == operator function is declared implicitly.  */
+  if (!classtype_has_op (t, EQ_EXPR))
+    if (tree space = classtype_has_defaulted_op (t, SPACESHIP_EXPR))
+      {
+	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
+					 NULL_TREE);
+	add_method (t, eq, false);
+      }
+
   while (*access_decls)
     {
       tree using_decl = TREE_VALUE (*access_decls);
@@ -4342,15 +4353,18 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
    fields at NEXT_FIELD, and return it.  */
 
 static tree
-build_base_field_1 (tree t, tree basetype, tree *&next_field)
+build_base_field_1 (tree t, tree binfo, tree *&next_field)
 {
   /* Create the FIELD_DECL.  */
+  tree basetype = BINFO_TYPE (binfo);
   gcc_assert (CLASSTYPE_AS_BASE (basetype));
   tree decl = build_decl (input_location,
 			  FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
+  TREE_PRIVATE (decl) = TREE_PRIVATE (binfo);
+  TREE_PROTECTED (decl) = TREE_PROTECTED (binfo);
   if (is_empty_class (basetype))
     /* CLASSTYPE_SIZE is one byte, but the field needs to have size zero.  */
     DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = size_zero_node;
@@ -4403,7 +4417,7 @@ build_base_field (record_layout_info rli, tree binfo,
       CLASSTYPE_EMPTY_P (t) = 0;
 
       /* Create the FIELD_DECL.  */
-      decl = build_base_field_1 (t, basetype, next_field);
+      decl = build_base_field_1 (t, binfo, next_field);
 
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
@@ -4437,7 +4451,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	 aggregate bases.  */
       if (cxx_dialect >= cxx17 && !BINFO_VIRTUAL_P (binfo))
 	{
-	  tree decl = build_base_field_1 (t, basetype, next_field);
+	  tree decl = build_base_field_1 (t, binfo, next_field);
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
 	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
 	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
@@ -5383,6 +5397,44 @@ classtype_has_depr_implicit_copy (tree t)
 	return fn;
     }
 
+  return NULL_TREE;
+}
+
+/* True iff T has a member or friend declaration of operator OP.  */
+
+bool
+classtype_has_op (tree t, tree_code op)
+{
+  tree name = ovl_op_identifier (op);
+  if (get_class_binding (t, name))
+    return true;
+  for (tree f = DECL_FRIENDLIST (TYPE_MAIN_DECL (t)); f; f = TREE_CHAIN (f))
+    if (FRIEND_NAME (f) == name)
+      return true;
+  return false;
+}
+
+
+/* If T has a defaulted member or friend declaration of OP, return it.  */
+
+tree
+classtype_has_defaulted_op (tree t, tree_code op)
+{
+  tree name = ovl_op_identifier (op);
+  for (ovl_iterator oi (get_class_binding (t, name)); oi; ++oi)
+    {
+      tree fn = *oi;
+      if (DECL_DEFAULTED_FN (fn))
+	return fn;
+    }
+  for (tree f = DECL_FRIENDLIST (TYPE_MAIN_DECL (t)); f; f = TREE_CHAIN (f))
+    if (FRIEND_NAME (f) == name)
+      for (tree l = FRIEND_DECLS (f); l; l = TREE_CHAIN (l))
+	{
+	  tree fn = TREE_VALUE (l);
+	  if (DECL_DEFAULTED_FN (fn))
+	    return fn;
+	}
   return NULL_TREE;
 }
 

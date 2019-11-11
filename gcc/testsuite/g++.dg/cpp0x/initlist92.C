@@ -1,26 +1,13 @@
 // PR c++/64665, DR 1467 
-// { dg-do run { target c++11 } }
+// { dg-do compile { target c++11 } }
 
 #include <string>
-#include <cassert>
 
-bool Test1(bool) 
-{
-  return true;
-}
-bool Test1(std::string)
-{
-  return false;
-}
+bool Test1(bool);
+bool Test1(std::string) = delete;
 
-bool Test2(int)
-{
-  return false;
-}
-bool Test2(std::initializer_list<int>)
-{
-  return true;
-}
+bool Test2(int) = delete;
+bool Test2(std::initializer_list<int>);
 
 struct S 
 { 
@@ -28,28 +15,16 @@ struct S
 private:
     int a;
 };
-bool Test3(int)
-{
-  return true;
-}
-bool Test3(S)
-{
-  return false;
-}
+bool Test3(int);
+bool Test3(S) = delete;
 
-bool Test4(bool) 
-{
-  return false;
-}
-bool Test4(std::initializer_list<std::string>)
-{
-  return true;
-}
+bool Test4(bool) = delete;
+bool Test4(std::initializer_list<std::string>);
 
 int main () 
 {
-  assert ( Test1({"false"}) );
-  assert ( Test2({123}) );
-  assert ( Test3({456}) );
-  assert ( Test4({"false"}) );
+  ( Test1({"false"}) );	// { dg-error "narrowing" "" { target c++2a } }
+  ( Test2({123}) );
+  ( Test3({456}) );
+  ( Test4({"false"}) );
 }

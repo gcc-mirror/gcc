@@ -4060,7 +4060,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   else if (!body)
     body = deallocate_expr;
   else
-    /* The delete operator mist be called, even if a destructor
+    /* The delete operator must be called, even if a destructor
        throws.  */
     body = build2 (TRY_FINALLY_EXPR, void_type_node, body, deallocate_expr);
 

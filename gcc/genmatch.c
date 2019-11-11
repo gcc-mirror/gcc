@@ -2534,12 +2534,9 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", _o%d[%u]", depth, i);
       fprintf (f, ");\n");
+      fprintf_indent (f, indent, "tem_op.resimplify (lseq, valueize);\n");
       fprintf_indent (f, indent,
-		      "gimple_resimplify%d (lseq, &tem_op, valueize);\n",
-		      ops.length ());
-      fprintf_indent (f, indent,
-		      "_r%d = maybe_push_res_to_seq (&tem_op, lseq);\n",
-		      depth);
+		      "_r%d = maybe_push_res_to_seq (&tem_op, lseq);\n", depth);
       fprintf_indent (f, indent,
 		      "if (!_r%d) return false;\n",
 		      depth);
@@ -3413,8 +3410,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	     gimple_build w/o actually building the stmt.  */
 	  if (!is_predicate)
 	    fprintf_indent (f, indent,
-			    "gimple_resimplify%d (lseq, res_op,"
-			    " valueize);\n", e->ops.length ());
+			    "res_op->resimplify (lseq, valueize);\n");
 	}
       else if (result->type == operand::OP_CAPTURE
 	       || result->type == operand::OP_C_EXPR)

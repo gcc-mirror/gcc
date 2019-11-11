@@ -28,8 +28,10 @@ class function_summary_base
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  function_summary_base (symbol_table *symtab): m_symtab (symtab),
-  m_insertion_enabled (true)
+  function_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
+  m_symtab (symtab),
+  m_insertion_enabled (true),
+  m_allocator ("function summary" PASS_MEM_STAT)
   {}
 
   /* Basic implementation of insert operation.  */
@@ -59,19 +61,17 @@ protected:
   {
     /* Call gcc_internal_because we do not want to call finalizer for
        a type T.  We call dtor explicitly.  */
-    return is_ggc () ? new (ggc_internal_alloc (sizeof (T))) T () : new T () ;
+    return is_ggc () ? new (ggc_internal_alloc (sizeof (T))) T ()
+		     : m_allocator.allocate () ;
   }
 
   /* Release an item that is stored within map.  */
   void release (T *item)
   {
     if (is_ggc ())
-      {
-	item->~T ();
-	ggc_free (item);
-      }
+      ggc_delete (item);
     else
-      delete item;
+      m_allocator.remove (item);
   }
 
   /* Unregister all call-graph hooks.  */
@@ -92,6 +92,9 @@ protected:
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
   virtual bool is_ggc () = 0;
+
+  /* Object allocator for heap allocation.  */
+  object_allocator<T> m_allocator;
 };
 
 template <typename T>
@@ -215,9 +218,8 @@ private:
 template <typename T>
 function_summary<T *>::function_summary (symbol_table *symtab, bool ggc
 					 MEM_STAT_DECL):
-  function_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc, true,
-							 GATHER_STATISTICS
-							 PASS_MEM_STAT)
+  function_summary_base<T> (symtab PASS_MEM_STAT), m_ggc (ggc),
+  m_map (13, ggc, true, GATHER_STATISTICS PASS_MEM_STAT)
 {
   this->m_symtab_insertion_hook
     = this->m_symtab->add_cgraph_insertion_hook (function_summary::symtab_insertion,
@@ -411,7 +413,7 @@ private:
 
 template <typename T, typename V>
 fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab MEM_STAT_DECL):
-  function_summary_base<T> (symtab), m_vector (NULL)
+  function_summary_base<T> (symtab PASS_MEM_STAT), m_vector (NULL)
 {
   vec_alloc (m_vector, 13 PASS_MEM_STAT);
   this->m_symtab_insertion_hook
@@ -531,8 +533,10 @@ class call_summary_base
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  call_summary_base (symbol_table *symtab): m_symtab (symtab),
-  m_initialize_when_cloning (true)
+  call_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
+  m_symtab (symtab),
+  m_initialize_when_cloning (false),
+  m_allocator ("call summary" PASS_MEM_STAT)
   {}
 
   /* Basic implementation of removal operation.  */
@@ -547,19 +551,17 @@ protected:
   {
     /* Call gcc_internal_because we do not want to call finalizer for
        a type T.  We call dtor explicitly.  */
-    return is_ggc () ? new (ggc_internal_alloc (sizeof (T))) T () : new T () ;
+    return is_ggc () ? new (ggc_internal_alloc (sizeof (T))) T ()
+		     : m_allocator.allocate ();
   }
 
   /* Release an item that is stored within map.  */
   void release (T *item)
   {
     if (is_ggc ())
-      {
-	item->~T ();
-	ggc_free (item);
-      }
+      ggc_delete (item);
     else
-      delete item;
+      m_allocator.remove (item);
   }
 
   /* Unregister all call-graph hooks.  */
@@ -578,6 +580,9 @@ protected:
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
   virtual bool is_ggc () = 0;
+
+  /* Object allocator for heap allocation.  */
+  object_allocator<T> m_allocator;
 };
 
 template <typename T>
@@ -607,9 +612,8 @@ public:
   /* Default construction takes SYMTAB as an argument.  */
   call_summary (symbol_table *symtab, bool ggc = false
 		CXX_MEM_STAT_INFO)
-  : call_summary_base<T> (symtab), m_ggc (ggc), m_map (13, ggc, true,
-						       GATHER_STATISTICS
-						       PASS_MEM_STAT)
+  : call_summary_base<T> (symtab PASS_MEM_STAT), m_ggc (ggc),
+    m_map (13, ggc, true, GATHER_STATISTICS PASS_MEM_STAT)
   {
     this->m_symtab_removal_hook
       = this->m_symtab->add_edge_removal_hook (call_summary::symtab_removal,
@@ -775,7 +779,7 @@ class GTY((user)) fast_call_summary <T *, V>: public call_summary_base<T>
 public:
   /* Default construction takes SYMTAB as an argument.  */
   fast_call_summary (symbol_table *symtab CXX_MEM_STAT_INFO)
-  : call_summary_base<T> (symtab), m_vector (NULL)
+  : call_summary_base<T> (symtab PASS_MEM_STAT), m_vector (NULL)
   {
     vec_alloc (m_vector, 13 PASS_MEM_STAT);
     this->m_symtab_removal_hook

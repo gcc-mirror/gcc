@@ -1698,6 +1698,10 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   t = build2 (MODIFY_EXPR, TREE_TYPE (addr), addr, t);
 
   gimplify_and_add (t, seq_p);
+
+  /* Record the dynamic allocation associated with DECL if requested.  */
+  if (flag_callgraph_info & CALLGRAPH_INFO_DYNAMIC_ALLOC)
+    record_dynamic_alloc (decl);
 }
 
 /* A helper function to be called via walk_tree.  Mark all labels under *TP
@@ -6235,8 +6239,13 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  is_inout = false;
 	}
 
-      /* If we can't make copies, we can only accept memory.  */
-      if (TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (link))))
+      /* If we can't make copies, we can only accept memory.
+	 Similarly for VLAs.  */
+      tree outtype = TREE_TYPE (TREE_VALUE (link));
+      if (outtype != error_mark_node
+	  && (TREE_ADDRESSABLE (outtype)
+	      || !COMPLETE_TYPE_P (outtype)
+	      || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (outtype))))
 	{
 	  if (allows_mem)
 	    allows_reg = 0;
@@ -6392,7 +6401,11 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			      oconstraints, &allows_mem, &allows_reg);
 
       /* If we can't make copies, we can only accept memory.  */
-      if (TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (link))))
+      tree intype = TREE_TYPE (TREE_VALUE (link));
+      if (intype != error_mark_node
+	  && (TREE_ADDRESSABLE (intype)
+	      || !COMPLETE_TYPE_P (intype)
+	      || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (intype))))
 	{
 	  if (allows_mem)
 	    allows_reg = 0;
@@ -8877,8 +8890,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			      break;
 			    if (scp)
 			      continue;
-			    gcc_assert (offset == NULL_TREE
-					|| poly_int_tree_p (offset));
+			    gcc_assert (offset2 == NULL_TREE
+					|| poly_int_tree_p (offset2));
 			    tree d1 = OMP_CLAUSE_DECL (*sc);
 			    tree d2 = OMP_CLAUSE_DECL (c);
 			    while (TREE_CODE (d1) == ARRAY_REF)

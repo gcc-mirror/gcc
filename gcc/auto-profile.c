@@ -606,8 +606,6 @@ function_instance::find_icall_target_map (gcall *stmt,
           get_identifier (afdo_string_table->get_name (callee)));
       if (node == NULL)
         continue;
-      if (!check_ic_target (stmt, node))
-        continue;
       (*map)[callee] = iter->second->total_count ();
       ret += iter->second->total_count ();
     }
@@ -1034,7 +1032,7 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
     }
 
-  if (direct_call == NULL || !check_ic_target (stmt, direct_call))
+  if (direct_call == NULL)
     {
       if (dump_file)
         fprintf (dump_file, " not transforming\n");

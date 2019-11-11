@@ -7,8 +7,8 @@ concept Class = __is_class(T);
 template<typename T>
 concept C = requires { typename T::type; };
 
-void f1(int a) requires true;         // OK
-auto f2(int a) -> bool requires true; // OK
+void f1(int a) requires true;         // { dg-error "non-templated" }
+auto f2(int a) -> bool requires true; // { dg-error "non-templated" }
 auto f3(int a) requires true -> bool; // { dg-error "" } requires-clause precedes trailing-return-type
 typedef void fn_t() requires true;    // { dg-error "typedef" }
 void (*pf)() requires true;           // { dg-error "non-function" }
@@ -26,7 +26,7 @@ void driver_1() {
   struct S { } s;
   f4(s);
   f5(0);
-  f5((void*)0); // { dg-error "cannot call" }
+  f5((void*)0); // { dg-error "" }
   test.f(s);
 }
 
@@ -67,5 +67,5 @@ void print2(const T& x) { }
 
 void driver_3()
 {
-  print2("hello"); // { dg-error "cannot call" }
+  print2("hello"); // { dg-error "" }
 }

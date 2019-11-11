@@ -714,6 +714,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Used to indicate that this TYPE represents a compiler-generated entity.  */
 #define TYPE_ARTIFICIAL(NODE) (TYPE_CHECK (NODE)->base.nowarning_flag)
 
+/* True if the type is indivisible at the source level, i.e. if its
+   component parts cannot be accessed directly.  This is used to suppress
+   normal GNU extensions for target-specific vector types.  */
+#define TYPE_INDIVISIBLE_P(NODE) (TYPE_CHECK (NODE)->type_common.indivisible_p)
+
 /* In an IDENTIFIER_NODE, this means that assemble_name was called with
    this string as an argument.  */
 #define TREE_SYMBOL_REFERENCED(NODE) \

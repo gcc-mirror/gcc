@@ -2,6 +2,7 @@
 /* { dg-skip-if "incompatible options" { arm_thumb1 } } */
 /* { dg-options "-march=armv7-a -mfloat-abi=hard -mfpu=neon -marm -O2" } */
 /* { dg-skip-if "need hardfp ABI" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
+/* { dg-skip-if "-mpure-code supports M-profile without Neon only" { *-*-* } { "-mpure-code" } } */
 
 
 typedef struct __attribute__ ((__packed__))

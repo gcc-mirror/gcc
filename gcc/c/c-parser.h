@@ -185,6 +185,7 @@ c_parser_next_token_is_keyword (c_parser *parser, enum rid keyword)
   return c_parser_peek_token (parser)->keyword == keyword;
 }
 
+struct c_expr c_parser_string_literal (c_parser *, bool, bool);
 extern struct c_declarator *
 c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 		     bool *seen_id);

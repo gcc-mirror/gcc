@@ -4498,28 +4498,6 @@ vect_get_load_store_mask (stmt_vec_info stmt_info)
   gcc_unreachable ();
 }
 
-/* Return the scalar offset type that an internal gather/scatter function
-   should use.  GS_INFO describes the gather/scatter operation.  */
-
-static tree
-vect_get_gather_scatter_offset_type (gather_scatter_info *gs_info)
-{
-  tree offset_type = TREE_TYPE (gs_info->offset);
-  unsigned int element_bits = tree_to_uhwi (TYPE_SIZE (gs_info->element_type));
-
-  /* Enforced by vect_check_gather_scatter.  */
-  unsigned int offset_bits = TYPE_PRECISION (offset_type);
-  gcc_assert (element_bits >= offset_bits);
-
-  /* If the offset is narrower than the elements, extend it according
-     to its sign.  */
-  if (element_bits > offset_bits)
-    return build_nonstandard_integer_type (element_bits,
-					   TYPE_UNSIGNED (offset_type));
-
-  return offset_type;
-}
-
 /* Return MASK if MASK is suitable for masking an operation on vectors
    of type VECTYPE, otherwise convert it into such a form and return
    the result.  Associate any conversion statements with STMT_INFO's
@@ -4604,7 +4582,7 @@ vect_recog_gather_scatter_pattern (stmt_vec_info stmt_info, tree *type_out)
   /* Get the invariant base and non-invariant offset, converting the
      latter to the same width as the vector elements.  */
   tree base = gs_info.base;
-  tree offset_type = vect_get_gather_scatter_offset_type (&gs_info);
+  tree offset_type = TREE_TYPE (gs_info.offset_vectype);
   tree offset = vect_add_conversion_to_pattern (offset_type, gs_info.offset,
 						stmt_info);
 
@@ -4613,12 +4591,13 @@ vect_recog_gather_scatter_pattern (stmt_vec_info stmt_info, tree *type_out)
   gcall *pattern_stmt;
   if (DR_IS_READ (dr))
     {
+      tree zero = build_zero_cst (gs_info.element_type);
       if (mask != NULL)
-	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 4, base,
-						   offset, scale, mask);
+	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 5, base,
+						   offset, scale, zero, mask);
       else
-	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 3, base,
-						   offset, scale);
+	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 4, base,
+						   offset, scale, zero);
       tree load_lhs = vect_recog_temp_ssa_var (gs_info.element_type, NULL);
       gimple_call_set_lhs (pattern_stmt, load_lhs);
     }

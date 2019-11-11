@@ -14,7 +14,7 @@ main (int argc, char *argv[])
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
 		       reduction(^:res)
   {
-    #pragma acc loop gang
+    #pragma acc loop gang /* { dg-warning "nested loop in reduction needs reduction clause for 'res'" "TODO" } */
     for (j = 0; j < 32; j++)
       {
 	#pragma acc loop worker vector reduction(^:res)

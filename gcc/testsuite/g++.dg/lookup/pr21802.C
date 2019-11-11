@@ -60,6 +60,7 @@ struct Y : virtual X
   template <typename T>
   int operator&(T x) { return m + x + 1; }
   friend int operator==(Y o, int x) { return o.m + x + 1; }
+  int operator!=(int x) { return m + x + 1; }
 };
 
 /* The folloiwng "FooN" functions each contain a different way to call and to
@@ -81,7 +82,6 @@ Foo1 (T)
   { int t = x | I; assert (t == 7); }
   { int t = x && I; assert (t == 7); }
   { int t = x || I; assert (t == 7); }
-  { int t = x != I; assert (t == 7); }
   { int t = x < I; assert (t == 7); }
   { int t = x <= I; assert (t == 7); }
   { int t = x > I; assert (t == 7); }
@@ -104,6 +104,7 @@ Foo1 (T)
   { int t = x & I; assert (t == 8); }
   { int t = &x; assert (t == 8); }
   { int t = x == I; assert (t == 8); }
+  { int t = x != I; assert (t == 8); }
 }
 
 template <typename T>
@@ -204,7 +205,6 @@ Foo4 (T)
   { int t = x.operator| (I); assert (t == 7); }
   { int t = x.operator&& (I); assert (t == 7); }
   { int t = x.operator|| (I); assert (t == 7); }
-  { int t = x.operator!= (I); assert (t == 7); }
   { int t = x.operator< (I); assert (t == 7); }
   { int t = x.operator<= (I); assert (t == 7); }
   { int t = x.operator> (I); assert (t == 7); }
@@ -227,6 +227,7 @@ Foo4 (T)
   { int t = x.operator& (); assert (t == 8); }
   { int t = x.operator& (I); assert (t == 8); }
   { int t = operator== (x, I); assert (t == 8); }
+  { int t = x.operator!= (I); assert (t == 8); }
 }
 
 

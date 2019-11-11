@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "ipa-utils.h"
 #include "ipa-reference.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 
 /* The static variables defined within the compilation unit that are
@@ -492,6 +493,7 @@ init_function_info (struct cgraph_node *fn)
 
   info->local.statics_read = BITMAP_ALLOC (&local_info_obstack);
   info->local.statics_written = BITMAP_ALLOC (&local_info_obstack);
+  info->global.statics_read = NULL;
 
   return &info->local;
 }

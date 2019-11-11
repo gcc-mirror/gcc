@@ -1,3 +1,499 @@
+2019-11-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-reduc-epilogue-gaps.c: New test.
+
+2019-11-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/92142
+	* gcc/testsuite/gfortran.dg/ISO_Fortran_binding_16.c: New.
+	* gcc/testsuite/gfortran.dg/ISO_Fortran_binding_16.f90: New.
+	* gcc/testsuite/gfortran.dg/ISO_Fortran_binding_10.c: Correct
+	upper bounds for case 0.
+
+2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/common-block-1.f90: Fix OpenACC directives
+	nesting.
+	* gfortran.dg/goacc/common-block-2.f90: Likewise.
+
+2019-11-11  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/88760
+	* gcc.dg/pr59643.c: Update back to r277550.
+
+2019-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92123
+	* gfortran.dg/bind_c_procs_3.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_15.c : New test.
+	* gfortran.dg/ISO_Fortran_binding_15.f90 : Additional source.
+
+2019-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/pr46076.c: Make tested code hot.
+
+2019-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92401
+	* g++.dg/opt/pr92401.C: New test.
+
+2019-11-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92321
+	* gfortran.dg/matmul_blas_2.f90: New test.
+
+2019-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/dec_char_conversion_in_assignment_4.f90: Use
+	dg-do compile instead of dg-do run.
+	* gfortran.dg/dec_char_conversion_in_data_3.f90: Likewise.
+
+2019-11-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92215 - flawed diagnostic for bit-field with non-integral type.
+	* g++.dg/diagnostic/bitfld4.C: New test.
+
+2019-11-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92058 - constinit malfunction in static data member.
+	* g++.dg/cpp2a/constinit15.C: New test.
+
+2019-11-08  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* gfortran.dg/dec_char_conversion_in_assignment_1.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_2.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_3.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_4.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_5.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_6.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_7.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_assignment_8.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_1.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_2.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_3.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_4.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_5.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_6.f90: New test.
+	* gfortran.dg/dec_char_conversion_in_data_7.f90: New test.
+	* gfortran.dg/hollerith5.f90: Add -Wsurprising to options.
+	* gfortran.dg/hollerith_legacy.f90: Add -Wsurprising to options.
+	* gfortran.dg/no_char_to_numeric_assign.f90: New test.
+
+2019-11-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92351
+	* gcc.dg/vect/vect-peel-2.c: Disable epilogue vectorization and
+	split the source of this test to...
+	* gcc.dg/vect/vect-peel-2-src.c: ... This.
+	* gcc.dg/vect/vect-peel-2-epilogues.c: New test.
+
+2019-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/compile/20191108-1.c: New test.
+	* gcc.target/sparc/overflow-1.c: Add -fno-pie to the options.
+	* gcc.target/sparc/overflow-2.c: Likewise.
+	* gcc.target/sparc/overflow-3.c: Likewise.
+	* gcc.target/sparc/overflow-4.c: Likewise.
+	* gcc.target/sparc/overflow-5.c: Likewise.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/inline_2.c: New test.
+
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92038
+	* g++.dg/opt/store-merging-1.C: New test.
+	* g++.dg/opt/store-merging-2.C: New test.
+	* g++.dg/opt/store-merging-3.C: New test.
+
+	PR c++/92384
+	* g++.dg/torture/pr92384.C: New test.
+
+2019-11-08  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/pr92339.C: Rename identifiers to something
+	more readable.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/deref_2.c: New test.
+	* gcc.target/aarch64/sve/acle/general/whilele_8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilelt_4.c: Likewise.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/inline_1.c: New test.
+
+2019-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92324
+	* gcc.dg/vect/pr92205.c: XFAIL.
+	* gcc.dg/vect/pr92324-1.c: New testcase.
+	* gcc.dg/vect/pr92324-2.c: Likewise.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_2.c: Likewise.
+
+2019-11-08  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92132
+	* gcc.target/powerpc/pr92132-fp-1.c: New test.
+	* gcc.target/powerpc/pr92132-fp-2.c: New test.
+	* gcc.target/powerpc/pr92132-int-1.c: New test.
+	* gcc.target/powerpc/pr92132-int-2.c: New test.
+
+2019-11-08  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92295.c: New test.
+
+2019-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-old-style-definition-1.c,
+	gcc.dg/c11-old-style-definition-2.c,
+	gcc.dg/c2x-old-style-definition-1.c,
+	gcc.dg/c2x-old-style-definition-2.c,
+	gcc.dg/c2x-old-style-definition-3.c,
+	gcc.dg/c2x-old-style-definition-4.c,
+	gcc.dg/c2x-old-style-definition-5.c,
+	gcc.dg/c2x-old-style-definition-6.c: New tests.
+
+2019-11-07  Peter Bergner <bergner@linux.ibm.com>
+
+	PR other/92090
+	* gcc.target/powerpc/pr92090-2.c: New test.
+
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/tm/attrs-1.c: New test.
+	* gcc.dg/tm/props-5.c: New test.  Based on props-4.c.
+
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-scalar1-neg.C: Change dg-do from run to
+	compile.
+
+2019-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr92258.c: Add dg-requires for masm_intel.
+
+2019-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91370 - Implement P1041R4 and P1139R2 - Stronger Unicode reqs
+	* g++.dg/cpp1z/utf8-neg.C: Expect errors rather than -Wmultichar
+	warnings.
+	* g++.dg/ext/utf16-4.C: Expect errors rather than warnings.
+	* g++.dg/ext/utf32-4.C: Likewise.
+	* g++.dg/cpp2a/ucn2.C: New test.
+
+2019-11-07  Peter Bergner <bergner@linux.ibm.com>
+
+	PR other/92090
+	* gcc.target/powerpc/pr92090.c: New test.
+
+2019-11-07  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/89134
+	* gcc.dg/tree-ssa/loop-cond-split-1.c: New test.
+	* g++.dg/tree-ssa/loop-cond-split-1.C: New test.
+	* gcc.dg/torture/pr55107.c: Add -fno-split-loops.
+
+2019-11-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/addsub-signed-overflow-1.c: Expect lochi
+	instructions to be used.
+	* gcc.target/s390/addsub-signed-overflow-2.c: Likewise.
+	* gcc.target/s390/mul-signed-overflow-1.c: Likewise.
+	* gcc.target/s390/mul-signed-overflow-2.c: Likewise.
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Check for 32 and 64
+	bit variant of lochi.  Swap the values for the lochi's.
+	* gcc.target/s390/zvector/vec-cmp-1.c: Likewise.
+
+2019-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/70929
+	* g++.dg/lto/pr70929_[01].C: New test.
+	* gcc.dg/winline-10.c: Adjust for the fact that inlining happens.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/simd32.c: Update test.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/simd32.c: Update test.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/simd32.c: Update test.
+	* gcc.target/arm/acle/simd32_sel.c: New test.
+
+2019-11-07  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/dsp_arith.c: Update test.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/dsp_arith.c: New test.
+
+2019-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/saturation.c: New test.
+	* gcc.target/arm/acle/sat_no_smlatb.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_arm_qbit_ok_nocache):
+	Define..
+	(check_effective_target_arm_qbit_ok): Likewise.
+	(add_options_for_arm_qbit): Likewise.
+
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92354
+	* g++.target/i386/pr92354.C: New test.
+
+2019-11-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/tree-ssa/pr92163.c: Add dg-require-effective-target fopenacc.
+
+2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* gfortran.dg/fmt_error_10.f: Modify for new constraints.
+	* gfortran.dg/fmt_error_7.f: Add dg-options "-std=f95".
+	* gfortran.dg/fmt_error_9.f: Modify for new constraints.
+	* gfortran.dg/fmt_zero_width.f90: New test.
+
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/asm-wide-1.c, gcc.dg/diagnostic-token-ranges.c,
+	gcc.dg/plugin/diagnostic-test-string-literals-1.c,
+	gcc.dg/plugin/diagnostic-test-string-literals-2.c: Update expected
+	diagnostics.
+
+2019-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/framework-1.c: Adjust test header path.
+
+2019-11-06  Claudiu Zissulescu  <claziss@synopsys.com>
+	Sahahb Vahedi  <shahab@synopsys.com>
+	Cupertino Miranda  <cmiranda@synopsys.com
+
+	* gcc.target/arc/or-cnst-size2.c: New test.
+
+2019-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/slp-9.c: Use scan-tree-dump rather than
+	scan-tree-dump-times.
+	* gcc.dg/vect/slp-widen-mult-s16.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-u8.c: Likewise.
+
+2019-11-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92317
+	* gcc/testsuite/g++.dg/opt/pr92317.C: New test.
+
+2019-11-06  Gergö Barany  <gergo@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/nested-reductions-warn.c: New test.
+	* c-c++-common/goacc/nested-reductions.c: New test.
+	* gfortran.dg/goacc/nested-reductions-warn.f90: New test.
+	* gfortran.dg/goacc/nested-reductions.f90: New test.
+
+2019-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/92352
+	* c-c++-common/pr92352.c: New test.
+
+2019-11-06  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR92090
+	* gcc.target/powerpc/pr72804.c: Add -fno-inline-functions --param
+	max-inline-insns-single-O2=200.
+	* gcc.target/powerpc/pr79439-1.c: Add -fno-inline-functions.
+	* gcc.target/powerpc/vsx-builtin-7.c: Likewise.
+
+2019-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92373
+	* gcc.dg/Warray-bounds-55.c: New test.
+	* gcc.dg/Wzero-length-array-bounds-2.c: New test.
+
+2019-11-05  Jim Wilson  <jimw@sifive.com>
+
+	PR middle-end/92263
+	* gcc.dg/pr92263.c: New.
+
+2019-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92333
+	PR middle-end/82608
+	* gcc.dg/Warray-bounds-51.c: New test.
+
+2019-11-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/92370
+	* g++.dg/pr92370.C: New.
+
+2019-11-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92341
+	PR middle-end/82612
+	* g++.dg/warn/Warray-bounds-4.C: Adjust text of expected warning.
+	* gcc.dg/Warray-bounds-53.c: New test.
+	* gcc.dg/Warray-bounds-54.c: New test.
+
+2019-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92371
+	* gcc.dg/torture/pr92371.c: New testcase.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/ptr-overflow-2.c: Update based on changed
+	run-time reporting format.
+
+2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/gen-vect-26.c: Disable loop peeling check for
+	IBM Z.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+
+2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/gen-vect-11.c: Add --param min-vect-loop-bound=0
+	for IBM Z.
+	* gcc.dg/tree-ssa/gen-vect-11.c: Likewise.
+
+2019-11-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp
+	(check_effective_target_s390_useable_hw): Add inline asm for z14
+	and z15. Replace instruction for z13 with lochiz. Add register
+	clobbers. Check also for __zarch__ when doing the __VX__ test.
+
+2019-11-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/attr-crypto.c: Skip if -mpure-code is used.
+	* gcc.target/arm/attr-neon-fp16.c: Likewise.
+	* gcc.target/arm/combine-cmp-shift.c: Likewise.
+	* gcc.target/arm/data-rel-1.c: Likewise.
+	* gcc.target/arm/data-rel-2.c: Likewise.
+	* gcc.target/arm/data-rel-3.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7ve-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7ve-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
+	* gcc.target/arm/lceil-vcvt_1.c: Likewise.
+	* gcc.target/arm/lfloor-vcvt_1.c: Likewise.
+	* gcc.target/arm/lround-vcvt_1.c: Likewise.
+	* gcc.target/arm/memset-inline-10.c: Likewise.
+	* gcc.target/arm/mod_2.c: Likewise.
+	* gcc.target/arm/mod_256.c: Likewise.
+	* gcc.target/arm/pr40657-1.c: Likewise.
+	* gcc.target/arm/pr44788.c: Likewise.
+	* gcc.target/arm/pr50305.c: Likewise.
+	* gcc.target/arm/pr51835.c: Likewise.
+	* gcc.target/arm/pr51915.c: Likewise.
+	* gcc.target/arm/pr52006.c: Likewise.
+	* gcc.target/arm/pr53187.c: Likewise.
+	* gcc.target/arm/pr58784.c: Likewise.
+	* gcc.target/arm/pr59575.c: Likewise.
+	* gcc.target/arm/pr59923.c: Likewise.
+	* gcc.target/arm/pr60650-2.c: Likewise.
+	* gcc.target/arm/pr60657.c: Likewise.
+	* gcc.target/arm/pr60663.c: Likewise.
+	* gcc.target/arm/pr67439_1.c: Likewise.
+	* gcc.target/arm/pr68620.c: Likewise.
+	* gcc.target/arm/pr7676.c: Likewise.
+	* gcc.target/arm/pr79239.c: Likewise.
+	* gcc.target/arm/pr81863.c: Likewise.
+	* gcc.target/arm/pragma_attribute.c: Likewise.
+	* gcc.target/arm/pragma_cpp_fma.c: Likewise.
+	* gcc.target/arm/require-pic-register-loc.c: Likewise.
+	* gcc.target/arm/thumb-ltu.c: Likewise.
+	* gcc.target/arm/thumb1-pic-high-reg.c: Likewise.
+	* gcc.target/arm/thumb1-pic-single-base.c: Likewise.
+	* gcc.target/arm/tlscall.c: Likewise.
+	* gcc.target/arm/unsigned-float.c: Likewise.
+	* gcc.target/arm/vrinta-ce.c: Likewise.
+
+2019-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92324
+	* gcc.dg/vect/pr92324-3.c: New testcase.
+
+2019-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91945
+	* gfortran.dg/pr91945.f90: New test.
+
+	PR c++/92343
+	* g++.dg/cpp2a/attr-likely6.C: New test.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92339
+	* g++.dg/pr92339.C: New test.
+
+2019-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/declare-variant-7.C: New test.
+	* g++.dg/gomp/declare-variant-8.C: New test.
+
+2019-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/92302
+	* gcc.target/sparc/sparc-ret-3.c: Accept more registers in address.
+
+2019-11-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92349
+	* gcc.dg/Warray-bounds-50.c: New test.
+
+2019-11-04  Joel Hutton  <Joel.Hutton@arm.com>
+
+	* gcc.dg/vect/bb-slp-40.c: New test.
+	* gcc.dg/vect/bb-slp-41.c: New test.
+
+2019-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92345
+	* gcc.dg/torture/pr92345.c: New testcase.
+
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/tiny-printf.c: New test.
+
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/devices/csv-using-env-var.c: New test.
+	* gcc.target/msp430/devices/csv-using-installed.c: New test.
+	* gcc.target/msp430/devices/csv-using-option.c: New test.
+	* gcc.target/msp430/devices/devices-main.c: New test source file.
+	* gcc.target/msp430/devices/msp430-devices.h: New test.
+	* gcc.target/msp430/msp430.exp (msp430_device_permutations_runtest):
+	Add special cases for csv-using* tests.
+	Define TESTING_HARD_DATA when running tests that use hard-coded device
+	data.
+	(get_installed_device_data_path): New.
+	(msp430_hide_installed_devices_data): New.
+	(msp430_restore_installed_devices_data): New.
+	(msp430_test_installed_device_data): New.
+	(msp430_install_device_data): New.
+
+2019-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92301
+	* gcc.dg/pr92301.c: New testcase.
+
 2019-11-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/88565

@@ -951,6 +951,8 @@ Driver Undocumented
 ; 13: Fixes the accidental change in 12 to the calling convention for classes
 ;     with deleted copy constructor and trivial move constructor.
 ;     Default in G++ 8.2.
+; 14: Corrects the mangling of nullptr expression.
+;     Default in G++ 10.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -1090,6 +1092,14 @@ Does nothing.  Preserved for backward compatibility.
 fbtr-bb-exclusive
 Common Ignore
 Does nothing.  Preserved for backward compatibility.
+
+fcallgraph-info
+Common Report RejectNegative Var(flag_callgraph_info) Init(NO_CALLGRAPH_INFO);
+Output callgraph information on a per-file basis.
+
+fcallgraph-info=
+Common Report RejectNegative Joined
+Output callgraph information on a per-file basis with decorations.
 
 fcall-saved-
 Common Joined RejectNegative Var(common_deferred_options) Defer

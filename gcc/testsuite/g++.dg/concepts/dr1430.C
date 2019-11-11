@@ -41,6 +41,6 @@ requires Similar<Args...> // { dg-error "pack expansion" }
 
 int main()
 {
-  foo(1, 2, 3); // { dg-error "cannot call" }
-  bar(1, 2, 3); // { dg-error "cannot call" }
+  foo(1, 2, 3); // { dg-error "" }
+  bar(1, 2, 3); // { dg-error "" }
 }

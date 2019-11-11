@@ -70,6 +70,10 @@
 			; that.
   UNSPEC_UNALIGNED_STORE ; Same for str/strh.
   UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
+  UNSPEC_Q_SET          ; Represent setting the Q bit.
+  UNSPEC_GE_SET         ; Represent setting the GE bits.
+  UNSPEC_APSR_READ      ; Represent reading the APSR.
+
   UNSPEC_LL		; Represent an unpaired load-register-exclusive.
   UNSPEC_VRINTZ         ; Represent a float to integral float rounding
                         ; towards zero.
@@ -127,6 +131,29 @@
   UNSPEC_SMLALDX	; Represent the SMLALDX operation.
   UNSPEC_SMLSLD		; Represent the SMLSLD operation.
   UNSPEC_SMLSLDX	; Represent the SMLSLDX operation.
+  UNSPEC_SMLAWB		; Represent the SMLAWB operation.
+  UNSPEC_SMLAWT		; Represent the SMLAWT operation.
+  UNSPEC_SEL		; Represent the SEL operation.
+  UNSPEC_SADD8		; Represent the SADD8 operation.
+  UNSPEC_SSUB8		; Represent the SSUB8 operation.
+  UNSPEC_UADD8		; Represent the UADD8 operation.
+  UNSPEC_USUB8		; Represent the USUB8 operation.
+  UNSPEC_SADD16		; Represent the SADD16 operation.
+  UNSPEC_SASX		; Represent the SASX operation.
+  UNSPEC_SSAX		; Represent the SSAX operation.
+  UNSPEC_SSUB16		; Represent the SSUB16 operation.
+  UNSPEC_UADD16		; Represent the UADD16 operation.
+  UNSPEC_UASX		; Represent the UASX operation.
+  UNSPEC_USAX		; Represent the USAX operation.
+  UNSPEC_USUB16		; Represent the USUB16 operation.
+  UNSPEC_SMLAD		; Represent the SMLAD operation.
+  UNSPEC_SMLADX		; Represent the SMLADX operation.
+  UNSPEC_SMLSD		; Represent the SMLSD operation.
+  UNSPEC_SMLSDX		; Represent the SMLSDX operation.
+  UNSPEC_SMUAD		; Represent the SMUAD operation.
+  UNSPEC_SMUADX		; Represent the SMUADX operation.
+  UNSPEC_SSAT16		; Represent the SSAT16 operation.
+  UNSPEC_USAT16		; Represent the USAT16 operation.
 ])
 
 
@@ -211,6 +238,7 @@
   VUNSPEC_MRRC		; Represent the coprocessor mrrc instruction.
   VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
   VUNSPEC_SPECULATION_BARRIER ; Represents an unconditional speculation barrier.
+  VUNSPEC_APSR_WRITE     ; Represent writing the APSR.
 ])
 
 ;; Enumerators for NEON unspecs.

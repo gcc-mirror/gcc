@@ -584,8 +584,9 @@ Objective-C and Objective-C++ Dialects}.
 @item Developer Options
 @xref{Developer Options,,GCC Developer Options}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--dumpfullversion  -fchecking  -fchecking=@var{n}  -fdbg-cnt-list @gol
--fdbg-cnt=@var{counter-value-list} @gol
+-dumpfullversion  -fcallgraph-info@r{[}=su,da@r{]}
+-fchecking  -fchecking=@var{n}
+-fdbg-cnt-list @gol  -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
@@ -722,6 +723,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
 -mbranch-cost=@var{cost} @gol
 -mcall-prologues  -mgas-isr-prologues  -mint8 @gol
+-mdouble=@var{bits} -mlong-double=@var{bits} @gol
 -mn_flash=@var{size}  -mno-interrupts @gol
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
 -mfract-convert-truncate @gol
@@ -1010,7 +1012,7 @@ Objective-C and Objective-C++ Dialects}.
 -mwarn-mcu @gol
 -mcode-region=  -mdata-region= @gol
 -msilicon-errata=  -msilicon-errata-warn= @gol
--mhwmult=  -minrt}
+-mhwmult=  -minrt  -mtiny-printf}
 
 @emph{NDS32 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian @gol
@@ -2412,6 +2414,9 @@ trivial move constructor.
 
 Version 13, which first appeared in G++ 8.2, fixes the accidental
 change in version 12.
+
+Version 14, which first appeared in G++ 10, corrects the mangling of
+the nullptr expression.
 
 See also @option{-Wabi}.
 
@@ -7333,7 +7338,10 @@ is also enabled by @option{-Wextra}.
 @opindex Wold-style-definition
 @opindex Wno-old-style-definition
 Warn if an old-style function definition is used.  A warning is given
-even if there is a previous prototype.
+even if there is a previous prototype.  A definition using @samp{()}
+is not considered an old-style definition in C2X mode, because it is
+equivalent to @samp{(void)} in that case, but is considered an
+old-style definition for older standards.
 
 @item -Wmissing-parameter-type @r{(C and Objective-C only)}
 @opindex Wmissing-parameter-type
@@ -11516,6 +11524,11 @@ The maximum number of branches unswitched in a single loop.
 @item lim-expensive
 The minimum cost of an expensive expression in the loop invariant motion.
 
+@item min-loop-cond-split-prob
+When FDO profile information is available, @option{min-loop-cond-split-prob}
+specifies minimum threshold for probability of semi-invariant condition
+statement to trigger loop split.
+
 @item iv-consider-all-candidates-bound
 Bound on number of candidates for induction variables, below which
 all candidates are considered for each use in induction variable
@@ -14568,6 +14581,24 @@ The files are created in the directory of the output file.
 
 @table @gcctabopt
 
+@item -fcallgraph-info
+@itemx -fcallgraph-info=@var{MARKERS}
+@opindex fcallgraph-info
+Makes the compiler output callgraph information for the program, on a
+per-object-file basis.  The information is generated in the common VCG
+format.  It can be decorated with additional, per-node and/or per-edge
+information, if a list of comma-separated markers is additionally
+specified.  When the @code{su} marker is specified, the callgraph is
+decorated with stack usage information; it is equivalent to
+@option{-fstack-usage}.  When the @code{da} marker is specified, the
+callgraph is decorated with information about dynamically allocated
+objects.
+
+When compiling with @option{-flto}, no callgraph information is output
+along with the object file.  At LTO link time, @option{-fcallgraph-info}
+may generate multiple callgraph information files next to intermediate
+LTO output files.
+
 @item -d@var{letters}
 @itemx -fdump-rtl-@var{pass}
 @itemx -fdump-rtl-@var{pass}=@var{filename}
@@ -16609,7 +16640,7 @@ aux registers.
 @opindex mea
 Generate extended arithmetic instructions.  Currently only
 @code{divaw}, @code{adds}, @code{subs}, and @code{sat16} are
-supported.  This is always enabled for @option{-mcpu=ARC700}.
+supported.  Only valid for @option{-mcpu=ARC700}.
 
 @item -mno-mpy
 @opindex mno-mpy
@@ -18260,6 +18291,17 @@ integers. The default branch cost is 0.
 @opindex mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@item -mdouble=@var{bits}
+@itemx -mlong-double=@var{bits}
+@opindex mdouble
+@opindex mlong-double
+Set the size (in bits) of the @code{double} or @code{long double} type,
+respectively.  Possible values for @var{bits} are 32 an 64.
+Whether or not a specific value for @var{bits} is allowed depends on
+the @code{--with--double=} and @code{--with-long-double=}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure options}},
+and the same applies for the default values of the options.
 
 @item -mgas-isr-prologues
 @opindex mgas-isr-prologues
@@ -23235,8 +23277,33 @@ The ISA and hardware multiply supported for the different MCUs is hard-coded
 into GCC.  However, an external @samp{devices.csv} file can be used to
 extend device support beyond those that have been hard-coded.
 
-GCC searches for the @samp{devices.csv} file on the paths specified
-with the @code{-I} and @code{-L} options.
+GCC searches for the @samp{devices.csv} file using the following methods in the
+given precedence order, where the first method takes precendence over the
+second which takes precedence over the third.
+
+@table @asis
+@item Include path specified with @code{-I} and @code{-L}
+@samp{devices.csv} will be searched for in each of the directories specified by
+include paths and linker library search paths.
+@item Path specified by the environment variable @samp{MSP430_GCC_INCLUDE_DIR}
+Define the value of the global environment variable
+@samp{MSP430_GCC_INCLUDE_DIR}
+to the full path to the directory containing devices.csv, and GCC will search
+this directory for devices.csv.  If devices.csv is found, this directory will
+also be registered as an include path, and linker library path.  Header files
+and linker scripts in this directory can therefore be used without manually
+specifying @code{-I} and @code{-L} on the command line.
+@item The @samp{msp430-elf/include/devices} directory
+Finally, GCC will examine @samp{msp430-elf/include/devices} from the
+toolchain root directory.  This directory does not exist in a default
+installation, but if the user has created it and copied @samp{devices.csv}
+there, then the MCU data will be read.  As above, this directory will
+also be registered as an include path, and linker library path.
+
+@end table
+If none of the above search methods find @samp{devices.csv}, then the
+hard-coded MCU data is used.
+
 
 @item -mwarn-mcu
 @itemx -mno-warn-mcu
@@ -23301,6 +23368,19 @@ Enable the use of a minimum runtime environment - no static
 initializers or constructors.  This is intended for memory-constrained
 devices.  The compiler includes special symbols in some objects
 that tell the linker and runtime which code fragments are required.
+
+@item -mtiny-printf
+@opindex mtiny-printf
+Enable reduced code size @code{printf} and @code{puts} library functions.
+The @samp{tiny} implementations of these functions are not reentrant, so
+must be used with caution in multi-threaded applications.
+
+Support for streams has been removed and the string to be printed will
+always be sent to stdout via the @code{write} syscall.  The string is not
+buffered before it is sent to write.
+
+This option requires Newlib Nano IO, so GCC must be configured with
+@samp{--enable-newlib-nano-formatted-io}.
 
 @item -mcode-region=
 @itemx -mdata-region=

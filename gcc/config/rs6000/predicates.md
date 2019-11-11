@@ -1047,8 +1047,7 @@
     return 1;
 
   /* Allow any integer constant.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && CONST_SCALAR_INT_P (op))
+  if (SCALAR_INT_MODE_P (mode) && CONST_SCALAR_INT_P (op))
     return 1;
 
   /* Allow easy vector constants.  */
@@ -1135,10 +1134,14 @@
 ;; validate_condition_mode is an assertion.
 (define_predicate "branch_comparison_operator"
    (and (match_operand 0 "comparison_operator")
-	(and (match_test "GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC")
-	     (match_test "validate_condition_mode (GET_CODE (op),
-						   GET_MODE (XEXP (op, 0))),
-			  1"))))
+	(match_test "GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC")
+	(if_then_else (match_test "GET_MODE (XEXP (op, 0)) == CCFPmode
+				   && !flag_finite_math_only")
+		      (match_code "lt,gt,eq,unordered,unge,unle,ne,ordered")
+		      (match_code "lt,ltu,le,leu,gt,gtu,ge,geu,eq,ne"))
+	(match_test "validate_condition_mode (GET_CODE (op),
+					      GET_MODE (XEXP (op, 0))),
+		     1")))
 
 ;; Return 1 if OP is an unsigned comparison operator.
 (define_predicate "unsigned_comparison_operator"
@@ -1147,6 +1150,16 @@
 ;; Return 1 if OP is a signed comparison operator.
 (define_predicate "signed_comparison_operator"
   (match_code "lt,gt,le,ge"))
+
+;; Return 1 if OP is a signed comparison or an equality operator.
+(define_predicate "signed_or_equality_comparison_operator"
+  (ior (match_operand 0 "equality_operator")
+       (match_operand 0 "signed_comparison_operator")))
+
+;; Return 1 if OP is an unsigned comparison or an equality operator.
+(define_predicate "unsigned_or_equality_comparison_operator"
+  (ior (match_operand 0 "equality_operator")
+       (match_operand 0 "unsigned_comparison_operator")))
 
 ;; Return 1 if OP is a comparison operation that is valid for an SCC insn --
 ;; it must be a positive comparison.

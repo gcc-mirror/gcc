@@ -17,9 +17,9 @@ template <typename T>
   requires C1<T>
 constexpr bool f1() { return true; }
 
-static_assert(f1<char>()); // { dg-error "cannot call" }
-static_assert(f1<int>()); // { dg-error "cannot call" }
-static_assert(f1<double>()); // { dg-error "cannot call" }
+static_assert(f1<char>()); // { dg-error "" }
+static_assert(f1<int>()); // { dg-error "" }
+static_assert(f1<double>()); // { dg-error "" }
 
 
 template <typename T>

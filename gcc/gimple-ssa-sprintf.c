@@ -1021,7 +1021,7 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	  && TYPE_PRECISION (argtype) <= TYPE_PRECISION (type))
 	{
 	  /* Try to determine the range of values of the integer argument.  */
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, vr_values)->get_value_range (arg);
 
 	  if (range_int_cst_p (vr))
@@ -1323,7 +1323,7 @@ format_integer (const directive &dir, tree arg, const vr_values *vr_values)
     {
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
-      const value_range *vr
+      const value_range_equiv *vr
 	= CONST_CAST (class vr_values *, vr_values)->get_value_range (arg);
 
       if (range_int_cst_p (vr))
@@ -4087,7 +4087,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, const vr_values *vr_values)
 	  /* Try to determine the range of values of the argument
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, vr_values)->get_value_range (size);
 
 	  if (range_int_cst_p (vr))

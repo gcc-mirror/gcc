@@ -904,6 +904,10 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_int == -1)
     warn_implicit_int = flag_isoc99;
 
+  /* -Wold-style-definition is enabled by default for C2X.  */
+  if (warn_old_style_definition == -1)
+    warn_old_style_definition = flag_isoc2x;
+
   /* -Wshift-overflow is enabled by default in C99 and C++11 modes.  */
   if (warn_shift_overflow == -1)
     warn_shift_overflow = cxx_dialect >= cxx11 || flag_isoc99;
@@ -937,7 +941,7 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 13;
+  const int latest_abi_version = 14;
   /* Generate compatibility aliases for ABI v11 (7.1) by default.  */
   const int abi_compat_default = 11;
 
@@ -1038,7 +1042,7 @@ c_common_post_options (const char **pfilename)
      to know when concepts are enabled. Note that -fconcepts-ts can
      be used to include additional features, although modified to
      work with the standard.  */
-  if (cxx_dialect >= cxx2a)
+  if (cxx_dialect >= cxx2a || flag_concepts_ts)
     flag_concepts = 1;
   else if (flag_concepts)
     /* For -std=c++17 -fconcepts, imply -fconcepts-ts.  */

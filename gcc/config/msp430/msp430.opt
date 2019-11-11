@@ -2,6 +2,10 @@ msim
 Target
 Use simulator runtime.
 
+mtiny-printf
+Target Report Mask(TINY_PRINTF)
+Use a lightweight configuration of printf and puts to reduce code size. For single-threaded applications, not requiring reentrant I/O only. Requires Newlib Nano IO.
+
 masm-hex
 Target Mask(ASM_HEX)
 Force assembly output to always use hex constants.

@@ -225,7 +225,7 @@ compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off,
   if (!rvals || TREE_CODE (si->nonzero_chars) != SSA_NAME)
     return -1;
 
-  const value_range *vr
+  const value_range_equiv *vr
     = (CONST_CAST (class vr_values *, rvals)
        ->get_value_range (si->nonzero_chars));
 
@@ -799,7 +799,7 @@ dump_strlen_info (FILE *fp, gimple *stmt, const vr_values *rvals)
 		  wide_int min, max;
 		  if (rvals)
 		    {
-		      const value_range *vr
+		      const value_range_equiv *vr
 			= CONST_CAST (class vr_values *, rvals)
 			->get_value_range (si->nonzero_chars);
 		      rng = vr->kind ();
@@ -991,7 +991,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	    pdata->minlen = si->nonzero_chars;
 	  else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	    {
-	      const value_range *vr
+	      const value_range_equiv *vr
 		= CONST_CAST (class vr_values *, rvals)
 		->get_value_range (si->nonzero_chars);
 	      if (vr->kind () == VR_RANGE
@@ -1031,7 +1031,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	}
       else if (pdata->minlen && TREE_CODE (pdata->minlen) == SSA_NAME)
 	{
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, rvals)
 	    ->get_value_range (si->nonzero_chars);
 	  if (vr->kind () == VR_RANGE
@@ -1882,7 +1882,7 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 		  tree adj = fold_build2_loc (loc, MINUS_EXPR,
 					      TREE_TYPE (lhs), lhs, old);
 		  adjust_related_strinfos (loc, si, adj);
-		  /* Use the constant minimim length as the lower bound
+		  /* Use the constant minimum length as the lower bound
 		     of the non-constant length.  */
 		  wide_int min = wi::to_wide (old);
 		  wide_int max
@@ -2145,7 +2145,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       strinfo *chainsi;
 
       /* If string length of src is unknown, use delayed length
-	 computation.  If string lenth of dst will be needed, it
+	 computation.  If string length of dst will be needed, it
 	 can be computed by transforming this strcpy call into
 	 stpcpy and subtracting dst from the return value.  */
 
@@ -2665,7 +2665,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 
   if (tree dstsize = compute_objsize (dst, 1))
     {
-      /* The source length is uknown.  Try to determine the destination
+      /* The source length is unknown.  Try to determine the destination
 	 size and see if it matches the specified bound.  If not, bail.
 	 Otherwise go on to see if it should be diagnosed for possible
 	 truncation.  */
@@ -2764,7 +2764,7 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
     }
 
   /* If the length argument was computed from strlen(S) for some string
-     S retrieve the strinfo index for the string (PSS->FIRST) alonng with
+     S retrieve the strinfo index for the string (PSS->FIRST) along with
      the location of the strlen() call (PSS->SECOND).  */
   stridx_strlenloc *pss = strlen_to_stridx->get (len);
   if (!pss || pss->first <= 0)
@@ -3267,7 +3267,7 @@ handle_builtin_malloc (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 /* Handle a call to memset.
    After a call to calloc, memset(,0,) is unnecessary.
    memset(malloc(n),0,n) is calloc(n,1).
-   return true when the call is transfomred, false otherwise.  */
+   return true when the call is transformed, false otherwise.  */
 
 static bool
 handle_builtin_memset (gimple_stmt_iterator *gsi, bool *zero_write)
@@ -4040,7 +4040,7 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	       && si->nonzero_chars
 	       && TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, rvals)
 	    ->get_value_range (si->nonzero_chars);
 	  if (vr->kind () != VR_RANGE
@@ -4463,7 +4463,7 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rval
 	     statement and return to signal the caller that it shouldn't
 	     invalidate anything.
 
-	     This is benefical for cases like:
+	     This is beneficial for cases like:
 
 	     char p[20];
 	     void foo (char *q)

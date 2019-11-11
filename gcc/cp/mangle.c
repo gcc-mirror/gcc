@@ -3400,7 +3400,9 @@ write_template_arg_literal (const tree value)
       case INTEGER_CST:
 	gcc_assert (!same_type_p (TREE_TYPE (value), boolean_type_node)
 		    || integer_zerop (value) || integer_onep (value));
-	write_integer_cst (value);
+	if (!(abi_version_at_least (14)
+	      && NULLPTR_TYPE_P (TREE_TYPE (value))))
+	  write_integer_cst (value);
 	break;
 
       case REAL_CST:

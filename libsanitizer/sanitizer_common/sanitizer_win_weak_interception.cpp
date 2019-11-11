@@ -38,6 +38,7 @@ int interceptWhenPossible(uptr dll_function, const char *real_function) {
 
 // Declare weak hooks.
 extern "C" {
+void __sanitizer_on_print(const char *str);
 void __sanitizer_weak_hook_memcmp(uptr called_pc, const void *s1,
                                   const void *s2, uptr n, int result);
 void __sanitizer_weak_hook_strcmp(uptr called_pc, const char *s1,
@@ -53,8 +54,8 @@ void __sanitizer_weak_hook_strstr(uptr called_pc, const char *s1,
 #define INTERFACE_WEAK_FUNCTION(Name) INTERCEPT_SANITIZER_WEAK_FUNCTION(Name)
 #include "sanitizer_common_interface.inc"
 
-#pragma section(".WEAK$A", read)  // NOLINT
-#pragma section(".WEAK$Z", read)  // NOLINT
+#pragma section(".WEAK$A", read)
+#pragma section(".WEAK$Z", read)
 
 typedef void (*InterceptCB)();
 extern "C" {
@@ -77,7 +78,7 @@ static int weak_intercept_init() {
   return 0;
 }
 
-#pragma section(".CRT$XIB", long, read)  // NOLINT
+#pragma section(".CRT$XIB", long, read)
 __declspec(allocate(".CRT$XIB")) int (*__weak_intercept_preinit)() =
     weak_intercept_init;
 
@@ -86,7 +87,7 @@ static void WINAPI weak_intercept_thread_init(void *mod, unsigned long reason,
   if (reason == /*DLL_PROCESS_ATTACH=*/1) weak_intercept_init();
 }
 
-#pragma section(".CRT$XLAB", long, read)  // NOLINT
+#pragma section(".CRT$XLAB", long, read)
 __declspec(allocate(".CRT$XLAB")) void(WINAPI *__weak_intercept_tls_init)(
     void *, unsigned long, void *) = weak_intercept_thread_init;
 

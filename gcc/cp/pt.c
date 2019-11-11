@@ -10402,6 +10402,13 @@ any_template_parm_r (tree t, void *data)
       if (TREE_TYPE (t))
         WALK_SUBTREE (TREE_TYPE (t));
       break;
+
+    case PARM_DECL:
+      /* A parameter or constraint variable may also depend on a template
+	 parameter without explicitly naming it.  */
+      WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
     default:
       break;
     }
@@ -11118,6 +11125,76 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 	val = build_tree_list (NULL_TREE, clauses);
       else
 	val = NULL_TREE;
+    }
+  else if (flag_openmp
+	   && is_attribute_p ("omp declare variant base",
+			      get_attribute_name (t)))
+    {
+      ++cp_unevaluated_operand;
+      tree varid
+	= tsubst_expr (TREE_PURPOSE (val), args, complain,
+		       in_decl, /*integral_constant_expression_p=*/false);
+      --cp_unevaluated_operand;
+      tree chain = TREE_CHAIN (val);
+      location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
+      tree ctx = copy_list (TREE_VALUE (val));
+      tree simd = get_identifier ("simd");
+      tree score = get_identifier (" score");
+      tree condition = get_identifier ("condition");
+      for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+	{
+	  const char *set = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
+	  TREE_VALUE (t1) = copy_list (TREE_VALUE (t1));
+	  for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	    {
+	      if (TREE_PURPOSE (t2) == simd && set[0] == 'c')
+		{
+		  tree clauses = TREE_VALUE (t2);
+		  clauses = tsubst_omp_clauses (clauses,
+						C_ORT_OMP_DECLARE_SIMD, args,
+						complain, in_decl);
+		  c_omp_declare_simd_clauses_to_decls (*decl_p, clauses);
+		  clauses = finish_omp_clauses (clauses, C_ORT_OMP_DECLARE_SIMD);
+		  TREE_VALUE (t2) = clauses;
+		}
+	      else
+		{
+		  TREE_VALUE (t2) = copy_list (TREE_VALUE (t2));
+		  for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		    if (TREE_VALUE (t3))
+		      {
+			bool allow_string
+			  = ((TREE_PURPOSE (t2) != condition || set[0] != 'u')
+			     && TREE_PURPOSE (t3) != score);
+			if (TREE_CODE (t3) == STRING_CST && allow_string)
+			  continue;
+			tree v = TREE_VALUE (t3);
+			v = tsubst_expr (v, args, complain, in_decl, true);
+			v = fold_non_dependent_expr (v);
+			if (!INTEGRAL_TYPE_P (TREE_TYPE (v))
+			    || !tree_fits_shwi_p (v))
+			  {
+			    location_t loc
+			      = cp_expr_loc_or_loc (TREE_VALUE (t3),
+						    match_loc);
+			    if (TREE_PURPOSE (t3) == score)
+			      error_at (loc, "score argument must be "
+					     "constant integer expression");
+			    else if (allow_string)
+			      error_at (loc, "property must be constant "
+					     "integer expression or string "
+					     "literal");
+			    else
+			      error_at (loc, "property must be constant "
+					     "integer expression");
+			    return NULL_TREE;
+			  }
+			TREE_VALUE (t3) = v;
+		      }
+		}
+	    }
+	}
+      val = tree_cons (varid, ctx, chain);
     }
   /* If the first attribute argument is an identifier, don't
      pass it through tsubst.  Attributes like mode, format,
@@ -12001,7 +12078,23 @@ use_pack_expansion_extra_args_p (tree parm_packs,
   if (parm_packs == NULL_TREE)
     return false;
   else if (has_empty_arg)
-    return true;
+    {
+      /* If all the actual packs are pack expansions, we can still
+	 subsitute directly.  */
+      for (tree p = parm_packs; p; p = TREE_CHAIN (p))
+	{
+	  tree a = TREE_VALUE (p);
+	  if (TREE_CODE (a) == ARGUMENT_PACK_SELECT)
+	    a = ARGUMENT_PACK_SELECT_FROM_PACK (a);
+	  a = ARGUMENT_PACK_ARGS (a);
+	  if (TREE_VEC_LENGTH (a) == 1)
+	    a = TREE_VEC_ELT (a, 0);
+	  if (PACK_EXPANSION_P (a))
+	    continue;
+	  return true;
+	}
+      return false;
+    }
 
   bool has_expansion_arg = false;
   for (int i = 0 ; i < arg_pack_len; ++i)
@@ -12481,7 +12574,22 @@ add_extra_args (tree extra, tree args)
       gcc_assert (!TREE_PURPOSE (extra));
       extra = TREE_VALUE (extra);
     }
-  return add_to_template_args (extra, args);
+#if 1
+  /* I think we should always be able to substitute dependent args into the
+     pattern.  If that turns out to be incorrect in some cases, enable the
+     alternate code (and add complain/in_decl parms to this function).  */
+  gcc_checking_assert (!uses_template_parms (extra));
+#else
+  if (!uses_template_parms (extra))
+    {
+      gcc_unreachable ();
+      extra = tsubst_template_args (extra, args, complain, in_decl);
+      args = add_outermost_template_args (args, extra);
+    }
+  else
+#endif
+    args = add_to_template_args (extra, args);
+  return args;
 }
 
 /* Substitute ARGS into T, which is an pack expansion
@@ -13579,6 +13687,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 
   apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
 				  args, complain, in_decl);
+  if (flag_openmp)
+    if (tree attr = lookup_attribute ("omp declare variant base",
+				      DECL_ATTRIBUTES (r)))
+      omp_declare_variant_finalize (r, attr);
+
   return r;
 }
 
@@ -18949,6 +19062,7 @@ tsubst_copy_and_build (tree t,
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
+    case SPACESHIP_EXPR:
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       {
@@ -22478,8 +22592,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
   /* I don't think this will do the right thing with respect to types.
      But the only case I've seen it in so far has been array bounds, where
      signedness is the only information lost, and I think that will be
-     okay.  */
-  while (CONVERT_EXPR_P (parm))
+     okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
+     finish_id_expression_1, and are also OK.  */
+  while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR)
     parm = TREE_OPERAND (parm, 0);
 
   if (arg == error_mark_node)
@@ -24808,14 +24923,14 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
       if (orig_fn)
 	TREE_TYPE (orig_fn) = TREE_TYPE (fn);
-    }
 
-  FOR_EACH_CLONE (clone, fn)
-    {
-      if (TREE_TYPE (clone) == fntype)
-	TREE_TYPE (clone) = TREE_TYPE (fn);
-      else
-	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
+      FOR_EACH_CLONE (clone, fn)
+	{
+	  if (TREE_TYPE (clone) == fntype)
+	    TREE_TYPE (clone) = TREE_TYPE (fn);
+	  else
+	    TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
+	}
     }
 
   return true;
@@ -25654,21 +25769,15 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 	return false;
       if (!complete_type_or_else (type, NULL_TREE))
 	return true;
-      if (!literal_type_p (type))
+      if (!structural_type_p (type))
 	{
-	  error ("%qT is not a valid type for a template non-type parameter "
-		 "because it is not literal", type);
-	  explain_non_literal_class (type);
+	  auto_diagnostic_group d;
+	  if (complain & tf_error)
+	    error ("%qT is not a valid type for a template non-type parameter "
+		   "because it is not structural", type);
+	  structural_type_p (type, true);
 	  return true;
 	}
-      if (cp_has_mutable_p (type))
-	{
-	  error ("%qT is not a valid type for a template non-type parameter "
-		 "because it has a mutable member", type);
-	  return true;
-	}
-      /* FIXME check op<=> and strong structural equality once spaceship is
-	 implemented.  */
       return false;
     }
 
