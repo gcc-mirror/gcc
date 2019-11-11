@@ -1,3 +1,9 @@
+2019-11-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop-manip.c (vect_do_peeling): Take epilogue gaps into
+	account when checking if there are enough iterations to vectorize
+	epilogue.
+
 2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
