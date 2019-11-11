@@ -8890,8 +8890,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			      break;
 			    if (scp)
 			      continue;
-			    gcc_assert (offset == NULL_TREE
-					|| poly_int_tree_p (offset));
+			    gcc_assert (offset2 == NULL_TREE
+					|| poly_int_tree_p (offset2));
 			    tree d1 = OMP_CLAUSE_DECL (*sc);
 			    tree d2 = OMP_CLAUSE_DECL (c);
 			    while (TREE_CODE (d1) == ARRAY_REF)

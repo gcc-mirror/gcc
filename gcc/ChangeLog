@@ -1,5 +1,8 @@
 2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gimplify.c (gimplify_scan_omp_clauses): Assert 'offset2' instead
+	of 'offset'.
+
 	* Makefile.in (LANG_CONFIGUREFRAGS): Define.
 	(config.status): Use/depend on it.
 	* configure.ac (all_lang_configurefrags): Track, 'AC_SUBST'.
