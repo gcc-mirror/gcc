@@ -6188,7 +6188,8 @@ lang_tree_files=
 all_languages=
 all_compilers=
 all_outputs='Makefile'
-# List of language makefile fragments.
+# List of language configure and makefile fragments.
+all_lang_configurefrags=
 all_lang_makefrags=
 # Additional files for gengtype
 all_gtfiles="$target_gtfiles"
@@ -6276,6 +6277,7 @@ changequote([,])dnl
 	esac
 	$ok || continue
 
+	all_lang_configurefrags="$all_lang_configurefrags \$(srcdir)/$gcc_subdir/config-lang.in"
 	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
 	if test -f $srcdir/$gcc_subdir/lang.opt; then
 	    lang_opt_files="$lang_opt_files $srcdir/$gcc_subdir/lang.opt"
@@ -6383,6 +6385,7 @@ AC_SUBST(subdirs)
 AC_SUBST(srcdir)
 AC_SUBST(all_compilers)
 AC_SUBST(all_gtfiles)
+AC_SUBST(all_lang_configurefrags)
 AC_SUBST(all_lang_makefrags)
 AC_SUBST(all_languages)
 AC_SUBST(all_selected_languages)
