@@ -3746,6 +3746,8 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
       if (ok)
         ipa_edge_args_sum->remove (cs);
     }
+  if (ipcp_transformation_sum)
+    ipcp_transformation_sum->remove (cs->callee);
 
   return changed;
 }
@@ -3986,27 +3988,28 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 	}
       ipa_set_node_agg_value_chain (dst, new_av);
     }
+}
 
-  ipcp_transformation *src_trans = ipcp_get_transformation_summary (src);
+/* Duplication of ipcp transformation summaries.  */
 
-  if (src_trans)
+void
+ipcp_transformation_t::duplicate(cgraph_node *, cgraph_node *dst,
+			         ipcp_transformation *src_trans,
+			         ipcp_transformation *dst_trans)
+{
+  /* Avoid redundant work of duplicating vectors we will never use.  */
+  if (dst->inlined_to)
+    return;
+  dst_trans->bits = vec_safe_copy (src_trans->bits);
+  dst_trans->m_vr = vec_safe_copy (src_trans->m_vr);
+  ipa_agg_replacement_value *agg = src_trans->agg_values,
+			    **aggptr = &dst_trans->agg_values;
+  while (agg)
     {
-      ipcp_transformation_initialize ();
-      src_trans = ipcp_transformation_sum->get_create (src);
-      ipcp_transformation *dst_trans
-	= ipcp_transformation_sum->get_create (dst);
-
-      dst_trans->bits = vec_safe_copy (src_trans->bits);
-
-      const vec<ipa_vr, va_gc> *src_vr = src_trans->m_vr;
-      vec<ipa_vr, va_gc> *&dst_vr
-	= ipcp_get_transformation_summary (dst)->m_vr;
-      if (vec_safe_length (src_trans->m_vr) > 0)
-	{
-	  vec_safe_reserve_exact (dst_vr, src_vr->length ());
-	  for (unsigned i = 0; i < src_vr->length (); ++i)
-	    dst_vr->quick_push ((*src_vr)[i]);
-	}
+      *aggptr = ggc_alloc<ipa_agg_replacement_value> ();
+      **aggptr = *agg;
+      agg = agg->next;
+      aggptr = &(*aggptr)->next;
     }
 }
 
