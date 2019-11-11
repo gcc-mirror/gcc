@@ -1,5 +1,9 @@
-2019-11-10  Gerald Pfeifer  <gerald@pfeifer.com>
+2019-11-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/gnu/gpl-3.0.xml: Adjust link to "Why not LGPL".
+
+2019-11-10  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/xml/manual/using.xml: Switch www.hboehm.info to https.
 
 2019-11-07  Jonathan Wakely  <jwakely@redhat.com>
