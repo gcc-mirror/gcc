@@ -1,3 +1,7 @@
+2019-11-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-reduc-epilogue-gaps.c: New test.
+
 2019-11-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/92142

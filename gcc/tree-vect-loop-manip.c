@@ -2530,9 +2530,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	= eiters % lowest_vf + LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
 
       unsigned int ratio;
+      unsigned int epilogue_gaps
+	= LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
       while (!(constant_multiple_p (loop_vinfo->vector_size,
 				    epilogue_vinfo->vector_size, &ratio)
-	       && eiters >= lowest_vf / ratio))
+	       && eiters >= lowest_vf / ratio + epilogue_gaps))
 	{
 	  delete epilogue_vinfo;
 	  epilogue_vinfo = NULL;
@@ -2543,6 +2545,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	    }
 	  epilogue_vinfo = loop_vinfo->epilogue_vinfos[0];
 	  loop_vinfo->epilogue_vinfos.ordered_remove (0);
+	  epilogue_gaps = LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
 	}
     }
   /* Prolog loop may be skipped.  */
