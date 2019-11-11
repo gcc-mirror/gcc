@@ -1,6 +1,16 @@
 2020-02-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
+	2019-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/92420
+	* tree-vect-stmts.c (get_negative_load_store_type): Move further
+	up file.
+	(get_group_load_store_type): Use it for reversed SLP accesses.
+
+2020-02-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
 	2019-08-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/90313
