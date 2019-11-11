@@ -26084,7 +26084,7 @@ cp_parser_yield_expression (cp_parser* parser)
 
   cp_token *token = cp_lexer_peek_token (parser->lexer);
   location_t kw_loc = token->location; /* Save for later.  */
-  
+
   cp_parser_require_keyword (parser, RID_CO_YIELD, RT_CO_YIELD);
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))

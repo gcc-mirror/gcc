@@ -588,7 +588,7 @@ DEFTREECODE (CO_AWAIT_EXPR, "co_await", tcc_expression, 5)
 /* The co_yield expression is used to support coroutines.
 
    Op0 is the original expr (for use in diagnostics)
-   Op2 is the co_await derived from this. */   
+   Op2 is the co_await derived from this. */
 DEFTREECODE (CO_YIELD_EXPR, "co_yield", tcc_expression, 2)
 
 /* The co_return expression is used to support coroutines.

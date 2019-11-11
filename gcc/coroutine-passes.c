@@ -459,7 +459,7 @@ execute_early_expand_coro_ifns (void)
 	  }
 
       /* Sledgehammer fix up to DOM, however attempts to do it more cheaply
-         were not terribly successful.  */
+	 were not terribly successful.  */
       free_dominance_info (CDI_DOMINATORS);
       calculate_dominance_info (CDI_DOMINATORS);
 

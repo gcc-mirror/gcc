@@ -1,5 +1,27 @@
 2019-11-11  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-passes.c (execute_early_expand_coro_ifns):
+	Fix whitespace.
+
+	gcc/cp/
+	* coroutines.cc (find_coro_traits_template_decl): Fix whitespace.
+	(build_co_await): Likewise.
+	(finish_co_await_expr): Likewise.
+	(co_return_expander): Likewise.
+	(co_await_expander): Likewise.
+	(struct __await_xform_data): Likewise.
+	(transform_await_expr): Likewise.
+	(transform_local_var_uses): Likewise.
+	(build_destroy_fn): Likewise.
+	(captures_temporary): Likewise.
+	(morph_fn_to_coro): Likewise.
+	* cp-tree.def: Likewise.
+	* decl.c (finish_function): Likewise.
+	* parser.c (cp_parser_yield_expression): Likewise.
+
+2019-11-11  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r278049.
 	* gcc/configure: Regenerate.
 

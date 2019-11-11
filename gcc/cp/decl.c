@@ -16747,11 +16747,11 @@ finish_function (bool inline_p)
   if (coro_p)
     {
       if (!morph_fn_to_coro (fndecl, &resumer, &destroyer))
-        {
+	{
 	  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
 	  poplevel (1, 0, 1);
 	  return fndecl;
-        }
+	}
 
       if (use_eh_spec_block (fndecl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS

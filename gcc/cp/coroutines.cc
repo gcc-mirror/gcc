@@ -94,7 +94,7 @@ find_coro_traits_template_decl (location_t kw)
   TREE_VEC_ELT (targ, 0) = TYPE_MAIN_VARIANT (TREE_TYPE (functyp));
   unsigned p = 1;
   while (arg_node != NULL_TREE
-         && !VOID_TYPE_P (TREE_VALUE (arg_node)))
+	 && !VOID_TYPE_P (TREE_VALUE (arg_node)))
     {
       TREE_VEC_ELT (targ, p++) = TREE_VALUE (arg_node);
       arg_node = TREE_CHAIN (arg_node);
@@ -332,10 +332,10 @@ build_co_await (location_t loc, tree a, tree mode)
 			tf_warning_or_error);
       /* If no viable functions are found, o is a.  */
       if (!o || o == error_mark_node)
-        o = a;
+	o = a;
     }
   else
-    o = a; /* This is most likely about to fail anyway.  */    
+    o = a; /* This is most likely about to fail anyway.  */
 
   tree o_type = complete_type_or_else (TREE_TYPE (o), o);
   if (TREE_CODE (o_type) != RECORD_TYPE)
@@ -475,7 +475,7 @@ finish_co_await_expr (location_t kw, tree expr)
 
   /* The incoming cast expression might be transformed by a promise
      'await_transform()'.  */
-  tree at_meth = lookup_promise_member (current_function_decl, 
+  tree at_meth = lookup_promise_member (current_function_decl,
 					"await_transform", kw,
 					false /*musthave*/);
   if (at_meth == error_mark_node)
@@ -830,7 +830,7 @@ co_return_expander (tree *stmt, int *do_subtree, void *d)
 	      tsi_delink (&i);
 	      /* Maybe, even likely, we replaced the last in the list.  */
 	      if (tsi_end_p (i))
-	        break;
+		break;
 	    }
 	  else /* Continue the walk.  */
 	    cp_walk_tree (new_stmt, co_return_expander, d, NULL);
@@ -935,7 +935,7 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
       sub_code = TREE_CODE (TREE_OPERAND (stripped_stmt, 1));
       if (sub_code == CO_AWAIT_EXPR)
 	saved_co_await = TREE_OPERAND (stripped_stmt, 1); /* Get the RHS.  */
-      else if (tree r = cp_walk_tree 
+      else if (tree r = cp_walk_tree
 			 (&TREE_OPERAND (stripped_stmt, 1),
 			  co_await_find_in_subtree, &buried_stmt, NULL))
 	{
@@ -1079,10 +1079,10 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
     append_to_statement_list (dtor, &body_list);
   r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cleanup);
   append_to_statement_list (r, &body_list);
-  
+
   r = build3_loc (loc, COND_EXPR, void_type_node,
 		  ready_cond, body_list, empty_list);
-  
+
   append_to_statement_list (r, &stmt_list);
 
   /* Resume point.  */
@@ -1153,7 +1153,7 @@ struct suspend_point_info {
 static hash_map<tree, struct suspend_point_info> *suspend_points;
 
 struct __await_xform_data {
-  tree actor_frame; 
+  tree actor_frame;
   tree promise_proxy;
   tree real_promise;
   tree self_h_proxy;
@@ -1176,9 +1176,9 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
 
   /* So, on entry, we have:
      in : CO_AWAIT_EXPR (a, e_proxy, o, awr_call_vector, mode)
-          We no longer need a [it had diagnostic value, maybe?]
-          We need to replace the promise proxy in all elements
-          We need to replace the e_proxy in the awr_call.
+	  We no longer need a [it had diagnostic value, maybe?]
+	  We need to replace the promise proxy in all elements
+	  We need to replace the e_proxy in the awr_call.
   */
 
   tree coro_frame_type = TREE_TYPE (xform->actor_frame);
@@ -1226,11 +1226,11 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
   data.from = xform->promise_proxy;
   data.to = xform->real_promise;
   cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
-  
+
   return await_expr;
 }
 
-/* A wrapper for the routine above so that it can be a callback from 
+/* A wrapper for the routine above so that it can be a callback from
    cp_walk_tree.  */
 static tree
 transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
@@ -1295,17 +1295,17 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  /* we need to walk some of the decl trees, which might contain
 	     references to vars replaced at a higher level.  */
 	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses,
-		        d, NULL);
+			d, NULL);
 	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses,
-		        d, NULL);
+			d, NULL);
 	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses,
-		        d, NULL);
+			d, NULL);
 
 	  /* TODO: implement selective generation of fields when vars are
 	     known not-used.  */
 	  if (local_var.field_id == NULL_TREE)
 	    continue; /* Wasn't used.  */
-	    
+
 	  tree fld_ref = lookup_member (lvd->coro_frame_type,
 					local_var.field_id,
 					/*protect*/1,  /*want_type*/ 0,
@@ -1772,7 +1772,7 @@ build_destroy_fn (location_t loc, tree coro_frame_type,
   /* One param, the coro frame pointer.  */
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
   tree destr_fp = build_lang_decl (PARM_DECL, get_identifier ("frame_ptr"),
-  				   coro_frame_ptr);
+				   coro_frame_ptr);
   DECL_CONTEXT (destr_fp) = destroy;
   DECL_ARG_TYPE (destr_fp) = type_passed_as (coro_frame_ptr);
   DECL_ARGUMENTS (destroy) = destr_fp;
@@ -2025,7 +2025,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	      tree res = cp_walk_tree (&TREE_OPERAND (parm, 1),
 				       captures_temporary, d, &visited);
 	      if (res)
-	        return res;
+		return res;
 	    }
 	  else
 	    /* This wouldn't be broken, and we assume no need to replace it
@@ -2592,10 +2592,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  gcc_checking_assert (!existed);
 	  parm.field_id = NULL_TREE;
 	  parm.body_uses = NULL;
-        }
+	}
 
       struct __param_frame_data param_data =
-        { &field_list, param_uses, fn_start, false };
+	{ &field_list, param_uses, fn_start, false };
       /* We want to record every instance of param's use, so don't include
 	 a 'visited' hash_set.  */
       cp_walk_tree (&fnbody, register_param_uses, &param_data, NULL);
@@ -2842,8 +2842,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					/*protect*/1,  /*want_type*/ 0,
 					tf_warning_or_error);
 	  tree fld_idx = build_class_member_access_expr (deref_fp, fld_ref,
-						         NULL_TREE, false,
-						         tf_warning_or_error);
+							 NULL_TREE, false,
+							 tf_warning_or_error);
 
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
@@ -2860,7 +2860,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					    tf_warning_or_error);
 	      release_tree_vector (p_in);
 	      if (param_dtor_list == NULL)
-	        param_dtor_list = make_tree_vector ();
+		param_dtor_list = make_tree_vector ();
 	      vec_safe_push (param_dtor_list, parm.field_id);
 	    }
 	  else
