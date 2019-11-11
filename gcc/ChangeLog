@@ -1,3 +1,13 @@
+2019-11-11  Jan Hubicka  <hubcika@ucw.cz>
+
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): Remove ipcp
+	summary.
+	(ipcp_transformation_t::duplicate): Break out from ...
+	(ipa_node_params_t::duplicate): ... here; add copying of agg
+	replacements.
+	* ipa-prop.h (ipcp_transformation): Add constructor and destructor.
+	(ipcp_transformation_t): Add duplicate.
+
 2019-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR fortran/91828

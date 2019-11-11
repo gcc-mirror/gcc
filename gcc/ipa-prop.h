@@ -639,6 +639,25 @@ struct GTY(()) ipcp_transformation
   vec<ipa_bits *, va_gc> *bits;
   /* Value range information.  */
   vec<ipa_vr, va_gc> *m_vr;
+
+  /* Default constructor.  */
+  ipcp_transformation ()
+  : agg_values (NULL), bits (NULL), m_vr (NULL)
+  { }
+
+  /* Default destructor.  */
+  ~ipcp_transformation ()
+  {
+    ipa_agg_replacement_value *agg = agg_values;
+    while (agg)
+      {
+	ipa_agg_replacement_value *next = agg->next;
+	ggc_free (agg);
+	agg = next;
+      }
+    vec_free (bits);
+    vec_free (m_vr);
+  }
 };
 
 void ipa_set_node_agg_value_chain (struct cgraph_node *node,
@@ -759,6 +778,11 @@ public:
       ipcp_transformation_t (symtab, true);
     return summary;
   }
+  /* Hook that is called by summary when a node is duplicated.  */
+  virtual void duplicate (cgraph_node *node,
+			  cgraph_node *node2,
+			  ipcp_transformation *data,
+			  ipcp_transformation *data2);
 };
 
 /* Function summary where the IPA CP transformations are actually stored.  */
