@@ -1,3 +1,8 @@
+2019-11-11  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Relax dependency of lto-dump.o to
+	LTO_OBJS which will allow faster linking (mainly with LTO).
+
 2019-11-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (do_whole_program_analysis): Call lto_free_file_name_hash.
