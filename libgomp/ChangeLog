@@ -1,3 +1,9 @@
+2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_ptr-optional-1.f90: Extend.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: New.
+
 2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.fortran/target9.f90: Specify 'dg-do run'.

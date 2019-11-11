@@ -11,6 +11,9 @@ program test_it
 
   ptr_null => null()
   call bar(ptr_null)
+
+  call foo_absent()
+  call bar_absent()
 contains
   subroutine foo(ii)
     integer, pointer, optional :: ii
@@ -34,4 +37,23 @@ contains
    if (associated(jj)) stop 8
     !$omp end target data
   end subroutine bar
+
+  subroutine foo_absent(ii)
+    integer, pointer, optional :: ii
+
+    if (present(ii)) STOP 31
+    !$omp target data map(to:ixx) use_device_ptr(ii)
+    if (present(ii)) STOP 32
+    !$omp end target data
+  end subroutine foo_absent
+
+  ! For bar, it is assumed that a NULL ptr on the host maps to NULL on the device
+  subroutine bar_absent(jj)
+    integer, pointer, optional :: jj
+
+    if (present(jj)) STOP 41
+    !$omp target data map(to:ixx) use_device_ptr(jj)
+    if (present(jj)) STOP 42
+    !$omp end target data
+  end subroutine bar_absent
 end program test_it

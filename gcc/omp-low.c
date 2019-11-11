@@ -11796,12 +11796,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM
 			 || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO)
 			&& (omp_is_allocatable_or_ptr (var)
-			    && omp_is_optional_argument (var)))
+			    && omp_check_optional_argument (var, false)))
 		      var = build_fold_indirect_ref (var);
 		    else if ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FROM
 			      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TO)
 			     || (!omp_is_allocatable_or_ptr (var)
-				 && !omp_is_optional_argument (var)))
+				 && !omp_check_optional_argument (var, false)))
 		      var = build_fold_addr_expr (var);
 		    gimplify_assign (x, var, &ilist);
 		  }
@@ -11975,6 +11975,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
+	    bool do_optional_check;
+	    do_optional_check = false;
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
 
@@ -11996,7 +11998,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
-	      var = lang_hooks.decls.omp_array_data (ovar, false);
+	      {
+		var = lang_hooks.decls.omp_array_data (ovar, false);
+		do_optional_check = true;
+	      }
 	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 		      && !omp_is_reference (ovar)
 		      && !omp_is_allocatable_or_ptr (ovar))
@@ -12005,7 +12010,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    else
 	      {
 		if (omp_is_reference (ovar)
-		    || omp_is_optional_argument (ovar)
+		    || omp_check_optional_argument (ovar, false)
 		    || omp_is_allocatable_or_ptr (ovar))
 		  {
 		    type = TREE_TYPE (type);
@@ -12014,11 +12019,39 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			    && !omp_is_allocatable_or_ptr (ovar))
 			   || (omp_is_reference (ovar)
 			       && omp_is_allocatable_or_ptr (ovar))))
-		      var = build_simple_mem_ref (var);
+		      {
+			var = build_simple_mem_ref (var);
+			do_optional_check = true;
+		      }
 		    var = fold_convert (TREE_TYPE (x), var);
 		  }
 	      }
-	    gimplify_assign (x, var, &ilist);
+	    tree present;
+	    present = (do_optional_check
+		       ? omp_check_optional_argument (ovar, true) : NULL_TREE);
+	    if (present)
+	      {
+		tree null_label = create_artificial_label (UNKNOWN_LOCATION);
+		tree notnull_label = create_artificial_label (UNKNOWN_LOCATION);
+		tree opt_arg_label = create_artificial_label (UNKNOWN_LOCATION);
+		tree new_x = unshare_expr (x);
+		gimplify_expr (&present, &ilist, NULL, is_gimple_val,
+			       fb_rvalue);
+		gcond *cond = gimple_build_cond_from_tree (present,
+							   notnull_label,
+							   null_label);
+		gimple_seq_add_stmt (&ilist, cond);
+		gimple_seq_add_stmt (&ilist, gimple_build_label (null_label));
+		gimplify_assign (new_x, null_pointer_node, &ilist);
+		gimple_seq_add_stmt (&ilist, gimple_build_goto (opt_arg_label));
+		gimple_seq_add_stmt (&ilist,
+				     gimple_build_label (notnull_label));
+		gimplify_assign (x, var, &ilist);
+		gimple_seq_add_stmt (&ilist,
+				     gimple_build_label (opt_arg_label));
+	      }
+	    else
+	      gimplify_assign (x, var, &ilist);
 	    s = size_int (0);
 	    purpose = size_int (map_idx++);
 	    CONSTRUCTOR_APPEND_ELT (vsize, purpose, s);
@@ -12167,8 +12200,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
-	    var = OMP_CLAUSE_DECL (c);
+	    tree new_var;
+	    gimple_seq assign_body;
 	    bool is_array_data;
+	    bool do_optional_check;
+	    assign_body = NULL;
+	    do_optional_check = false;
+	    var = OMP_CLAUSE_DECL (c);
 	    is_array_data = lang_hooks.decls.omp_array_data (var, true) != NULL;
 
 	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
@@ -12181,34 +12219,35 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    if (is_array_data)
 	      {
 		bool is_ref = omp_is_reference (var);
+		do_optional_check = true;
 		/* First, we copy the descriptor data from the host; then
 		   we update its data to point to the target address.  */
-		tree new_var = lookup_decl (var, ctx);
+		new_var = lookup_decl (var, ctx);
 		new_var = DECL_VALUE_EXPR (new_var);
 		tree v = new_var;
 
 		if (is_ref)
 		  {
 		    var = build_fold_indirect_ref (var);
-		    gimplify_expr (&var, &new_body, NULL, is_gimple_val,
+		    gimplify_expr (&var, &assign_body, NULL, is_gimple_val,
 				   fb_rvalue);
 		    v = create_tmp_var_raw (TREE_TYPE (var), get_name (var));
 		    gimple_add_tmp_var (v);
 		    TREE_ADDRESSABLE (v) = 1;
-		    gimple_seq_add_stmt (&new_body,
+		    gimple_seq_add_stmt (&assign_body,
 					 gimple_build_assign (v, var));
 		    tree rhs = build_fold_addr_expr (v);
-		    gimple_seq_add_stmt (&new_body,
+		    gimple_seq_add_stmt (&assign_body,
 					 gimple_build_assign (new_var, rhs));
 		  }
 		else
-		  gimple_seq_add_stmt (&new_body,
+		  gimple_seq_add_stmt (&assign_body,
 				       gimple_build_assign (new_var, var));
 
 		tree v2 = lang_hooks.decls.omp_array_data (unshare_expr (v), false);
 		gcc_assert (v2);
-		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
-		gimple_seq_add_stmt (&new_body,
+		gimplify_expr (&x, &assign_body, NULL, is_gimple_val, fb_rvalue);
+		gimple_seq_add_stmt (&assign_body,
 				     gimple_build_assign (v2, x));
 	      }
 	    else if (is_variable_sized (var))
@@ -12217,9 +12256,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		gcc_assert (TREE_CODE (pvar) == INDIRECT_REF);
 		pvar = TREE_OPERAND (pvar, 0);
 		gcc_assert (DECL_P (pvar));
-		tree new_var = lookup_decl (pvar, ctx);
-		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
-		gimple_seq_add_stmt (&new_body,
+		new_var = lookup_decl (pvar, ctx);
+		gimplify_expr (&x, &assign_body, NULL, is_gimple_val, fb_rvalue);
+		gimple_seq_add_stmt (&assign_body,
 				     gimple_build_assign (new_var, x));
 	      }
 	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
@@ -12227,19 +12266,19 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		      && !omp_is_allocatable_or_ptr (var))
 		     || TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
 	      {
-		tree new_var = lookup_decl (var, ctx);
+		new_var = lookup_decl (var, ctx);
 		new_var = DECL_VALUE_EXPR (new_var);
 		gcc_assert (TREE_CODE (new_var) == MEM_REF);
 		new_var = TREE_OPERAND (new_var, 0);
 		gcc_assert (DECL_P (new_var));
-		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
-		gimple_seq_add_stmt (&new_body,
+		gimplify_expr (&x, &assign_body, NULL, is_gimple_val, fb_rvalue);
+		gimple_seq_add_stmt (&assign_body,
 				     gimple_build_assign (new_var, x));
 	      }
 	    else
 	      {
 		tree type = TREE_TYPE (var);
-		tree new_var = lookup_decl (var, ctx);
+		new_var = lookup_decl (var, ctx);
 		if (omp_is_reference (var))
 		  {
 		    type = TREE_TYPE (type);
@@ -12252,19 +12291,50 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			gimple_add_tmp_var (v);
 			TREE_ADDRESSABLE (v) = 1;
 			x = fold_convert (type, x);
-			gimplify_expr (&x, &new_body, NULL, is_gimple_val,
+			gimplify_expr (&x, &assign_body, NULL, is_gimple_val,
 				       fb_rvalue);
-			gimple_seq_add_stmt (&new_body,
+			gimple_seq_add_stmt (&assign_body,
 					     gimple_build_assign (v, x));
 			x = build_fold_addr_expr (v);
+			do_optional_check = true;
 		      }
 		  }
 		new_var = DECL_VALUE_EXPR (new_var);
 		x = fold_convert (TREE_TYPE (new_var), x);
-		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
-		gimple_seq_add_stmt (&new_body,
+		gimplify_expr (&x, &assign_body, NULL, is_gimple_val, fb_rvalue);
+		gimple_seq_add_stmt (&assign_body,
 				     gimple_build_assign (new_var, x));
 	      }
+	    tree present;
+	    present = (do_optional_check
+		       ? omp_check_optional_argument (OMP_CLAUSE_DECL (c), true)
+		       : NULL_TREE);
+	    if (present)
+	      {
+		tree null_label = create_artificial_label (UNKNOWN_LOCATION);
+		tree notnull_label = create_artificial_label (UNKNOWN_LOCATION);
+		tree opt_arg_label = create_artificial_label (UNKNOWN_LOCATION);
+		glabel *null_glabel = gimple_build_label (null_label);
+		glabel *notnull_glabel = gimple_build_label (notnull_label);
+		ggoto *opt_arg_ggoto = gimple_build_goto (opt_arg_label);
+		gimplify_expr (&x, &new_body, NULL, is_gimple_val,
+					   fb_rvalue);
+		gimplify_expr (&present, &new_body, NULL, is_gimple_val,
+			       fb_rvalue);
+		gcond *cond = gimple_build_cond_from_tree (present,
+							   notnull_label,
+							   null_label);
+		gimple_seq_add_stmt (&new_body, cond);
+		gimple_seq_add_stmt (&new_body, null_glabel);
+		gimplify_assign (new_var, null_pointer_node, &new_body);
+		gimple_seq_add_stmt (&new_body, opt_arg_ggoto);
+		gimple_seq_add_stmt (&new_body, notnull_glabel);
+		gimple_seq_add_seq (&new_body, assign_body);
+		gimple_seq_add_stmt (&new_body,
+				     gimple_build_label (opt_arg_label));
+	      }
+	    else
+	      gimple_seq_add_seq (&new_body, assign_body);
 	    break;
 	  }
       /* Handle GOMP_MAP_FIRSTPRIVATE_{POINTER,REFERENCE} in second pass,

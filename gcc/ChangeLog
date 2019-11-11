@@ -1,3 +1,17 @@
+2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* langhooks-def.h (LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT):
+	Renamed from LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT; update define.
+	(LANG_HOOKS_DECLS): Rename also here.
+	* langhooks.h (lang_hooks_for_decls): Rename
+	omp_is_optional_argument to omp_check_optional_argument; take
+	additional bool argument.
+	* omp-general.h (omp_check_optional_argument): Likewise.
+	* omp-general.h (omp_check_optional_argument): Likewise.
+	* omp-low.c (lower_omp_target): Update calls; handle absent
+	Fortran optional arguments with USE_DEVICE_ADDR/USE_DEVICE_PTR.
+
 2019-11-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/87833
