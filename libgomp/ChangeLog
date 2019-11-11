@@ -1,3 +1,8 @@
+2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: Add
+	'dg-do run'.
+
 2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR other/94629
