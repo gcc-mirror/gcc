@@ -235,11 +235,14 @@ struct lang_hooks_for_decls
      allocatable or pointer attribute.  */
   bool (*omp_is_allocatable_or_ptr) (const_tree);
 
-  /* True if OpenMP should treat DECL as a Fortran optional argument;  note: for
-     arguments with VALUE attribute, the DECL is identical to nonoptional
-     arguments; hence, we return false here.  To check whether the variable is
-     present, use the DECL which is passed as hidden argument.  */
-  bool (*omp_is_optional_argument) (const_tree);
+  /* Check whether this DECL belongs to a Fortran optional argument.
+     With 'for_present_check' set to false, decls which are optional parameters
+     themselve are returned as tree - or a NULL_TREE otherwise. Those decls are
+     always pointers.  With 'for_present_check' set to true, the decl for
+     checking whether an argument is present is returned; for arguments with
+     value attribute this is the hidden argument and of BOOLEAN_TYPE.  If the
+     decl is unrelated to optional arguments, NULL_TREE is returned.  */
+  tree (*omp_check_optional_argument) (tree, bool);
 
   /* True if OpenMP should privatize what this DECL points to rather
      than the DECL itself.  */

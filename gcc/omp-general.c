@@ -63,12 +63,18 @@ omp_is_allocatable_or_ptr (tree decl)
   return lang_hooks.decls.omp_is_allocatable_or_ptr (decl);
 }
 
-/* Return true if DECL is a Fortran optional argument.  */
+/* Check whether this DECL belongs to a Fortran optional argument.
+   With 'for_present_check' set to false, decls which are optional parameters
+   themselve are returned as tree - or a NULL_TREE otherwise. Those decls are
+   always pointers.  With 'for_present_check' set to true, the decl for checking
+   whether an argument is present is returned; for arguments with value
+   attribute this is the hidden argument and of BOOLEAN_TYPE.  If the decl is
+   unrelated to optional arguments, NULL_TREE is returned.  */
 
-bool
-omp_is_optional_argument (tree decl)
+tree
+omp_check_optional_argument (tree decl, bool for_present_check)
 {
-  return lang_hooks.decls.omp_is_optional_argument (decl);
+  return lang_hooks.decls.omp_check_optional_argument (decl, for_present_check);
 }
 
 /* Return true if DECL is a reference type.  */

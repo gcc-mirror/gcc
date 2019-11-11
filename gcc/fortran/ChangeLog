@@ -1,3 +1,18 @@
+2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_expr_present): Check for DECL_ARTIFICIAL
+	for the VALUE hidden argument avoiding -fallow-underscore issues.
+	* trans-decl.c (create_function_arglist): Also set
+	GFC_DECL_OPTIONAL_ARGUMENT for per-value arguments.
+	* f95-lang.c (LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT):
+	Renamed from LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT; point
+	to gfc_omp_check_optional_argument.
+	* trans.h (gfc_omp_check_optional_argument): Subsitutes
+	gfc_omp_is_optional_argument declaration.
+	* trans-openmp.c (gfc_omp_is_optional_argument): Make static.
+	(gfc_omp_check_optional_argument): New function.
+
 2019-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/91413

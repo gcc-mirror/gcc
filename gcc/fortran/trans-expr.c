@@ -1725,7 +1725,8 @@ gfc_conv_expr_present (gfc_symbol * sym)
       /* Walk function argument list to find hidden arg.  */
       cond = DECL_ARGUMENTS (DECL_CONTEXT (decl));
       for ( ; cond != NULL_TREE; cond = TREE_CHAIN (cond))
-	if (DECL_NAME (cond) == tree_name)
+	if (DECL_NAME (cond) == tree_name
+	    && DECL_ARTIFICIAL (cond))
 	  break;
 
       gcc_assert (cond);
