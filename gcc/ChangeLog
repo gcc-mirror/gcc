@@ -1,3 +1,10 @@
+2019-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92452
+	* tree-vrp.c (vrp_prop::check_array_ref): If TRUNC_DIV_EXPR folds
+	into NULL_TREE, set up_bound to NULL_TREE instead of computing
+	MINUS_EXPR on it.
+
 2019-11-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* tree-vect-loop.c (vect_transform_loop): Don't overwrite epilogues

@@ -4150,8 +4150,11 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 
 	  up_bound_p1 = int_const_binop (TRUNC_DIV_EXPR, maxbound, eltsize);
 
-	  up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
-				      build_int_cst (ptrdiff_type_node, 1));
+	  if (up_bound_p1 != NULL_TREE)
+	    up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
+					build_int_cst (ptrdiff_type_node, 1));
+	  else
+	    up_bound = NULL_TREE;
 	}
     }
   else
