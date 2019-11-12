@@ -758,14 +758,6 @@ options are changed via @code{#pragma GCC optimize} or by using the
 Set target-dependent initial values of fields in @var{opts}.
 @end deftypefn
 
-@deftypefn {Common Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
-Set target-dependent default values for @option{--param} settings.
-@end deftypefn
-
-@deftypefn {Common Target Hook} bool TARGET_OPTION_VALIDATE_PARAM (int, @var{int})
-Validate target-dependent value for @option{--param} settings.
-@end deftypefn
-
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for

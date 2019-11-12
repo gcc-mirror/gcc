@@ -49,18 +49,6 @@ DEFHOOKPOD
  "",
  const struct default_options *, empty_optimization_table)
 
-DEFHOOK
-(option_default_params,
-"Set target-dependent default values for @option{--param} settings.",
- void, (void),
- hook_void_void)
-
-DEFHOOK
-(option_validate_param,
-"Validate target-dependent value for @option{--param} settings.",
- bool, (int, int),
- default_option_validate_param)
-
 /* The initial value of target_flags.  */
 DEFHOOKPOD
 (default_target_flags,

@@ -35,6 +35,14 @@ static const struct default_options ia64_option_optimization_table[] =
 #ifdef SUBTARGET_OPTIMIZATION_OPTIONS
     SUBTARGET_OPTIMIZATION_OPTIONS,
 #endif
+
+    /* Let the scheduler form additional regions.  */
+    { OPT_LEVELS_ALL, OPT__param_max_sched_extend_regions_iters_, NULL, 2 },
+      /* Set the default values for cache-related parameters.  */
+    { OPT_LEVELS_ALL, OPT__param_simultaneous_prefetches_, NULL, 6 },
+    { OPT_LEVELS_ALL, OPT__param_l1_cache_line_size_ , NULL, 32},
+    { OPT_LEVELS_ALL, OPT__param_sched_mem_true_dep_cost_, NULL, 4 },
+
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
@@ -81,25 +89,8 @@ ia64_except_unwind_info (struct gcc_options *opts)
   return UI_TARGET;
 }
 
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-
-static void
-ia64_option_default_params (void)
-{
-  /* Let the scheduler form additional regions.  */
-  param_max_sched_extend_regions_iters = 2;
-
-  /* Set the default values for cache-related parameters.  */
-  param_simultaneous_prefetches = 6;
-  param_l1_cache_line_size = 32;
-
-  param_sched_mem_true_dep_cost = 4;
-}
-
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE ia64_option_optimization_table
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS ia64_option_default_params
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO  ia64_except_unwind_info

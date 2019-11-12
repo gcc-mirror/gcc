@@ -13340,15 +13340,13 @@ aarch64_override_options_internal (struct gcc_options *opts)
 		       param_sched_pressure_algorithm,
 		       SCHED_PRESSURE_MODEL);
 
-  /* If the user hasn't changed it via configure then set the default to 64 KB
-     for the backend.  */
-  SET_OPTION_IF_UNSET (opts, &global_options_set,
-		       param_stack_clash_protection_guard_size,
-		       (DEFAULT_STK_CLASH_GUARD_SIZE == 0
-			? 16 : DEFAULT_STK_CLASH_GUARD_SIZE));
-
   /* Validate the guard size.  */
   int guard_size = param_stack_clash_protection_guard_size;
+
+  if (guard_size != 12 && guard_size != 16)
+    error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
+	   "size.  Given value %d (%llu KB) is out of range",
+	   guard_size, (1ULL << guard_size) / 1024ULL);
 
   /* Enforce that interval is the same size as size so the mid-end does the
      right thing.  */

@@ -1,5 +1,33 @@
 2019-11-12  Martin Liska  <mliska@suse.cz>
 
+	* common/common-target.def: Remove option_validate_param and
+	option_default_params.
+	* common/common-targhooks.c (default_option_validate_param):
+	Remove.
+	* common/common-targhooks.h (default_option_validate_param):
+	Remove.
+	* common/config/aarch64/aarch64-common.c (TARGET_OPTION_DEFAULT_PARAMS):
+	Remove usage of this.
+	(TARGET_OPTION_VALIDATE_PARAM): Likewise.
+	(aarch64_option_validate_param): Likewise.
+	(aarch64_option_default_params): Likewise
+	* common/config/bpf/bpf-common.c (bpf_option_default_params): Likewise.
+	(TARGET_OPTION_DEFAULT_PARAMS): Likewise.
+	* common/config/ia64/ia64-common.c (ia64_option_default_params): Likewise.
+	(TARGET_OPTION_DEFAULT_PARAMS): Likewise.
+	* common/config/powerpcspe/powerpcspe-common.c (rs6000_option_default_params): Likewise.
+	(TARGET_OPTION_DEFAULT_PARAMS): Likewise.
+	* common/config/rs6000/rs6000-common.c (rs6000_option_default_params): Likewise.
+	(TARGET_OPTION_DEFAULT_PARAMS): Likewise.
+	* common/config/sh/sh-common.c (sh_option_default_params): Likewise.
+	(TARGET_OPTION_DEFAULT_PARAMS): Likewise.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal): Validate
+	guard_size here.
+	* doc/tm.texi: Remove option_default_params and option_validate_param.
+	* doc/tm.texi.in: Likewise.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
 	* common/common-target.def:
 	Do not mention set_default_param_value
 	and set_param_value.
