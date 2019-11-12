@@ -986,9 +986,9 @@
   if (CONST_INT_P (op))
     return 1;
   if (XINT (op, 1) == UNSPEC_TLSGD)
-    return REG_P (XVECEXP (op, 0, 1));
+    return REG_P (XVECEXP (op, 0, 1)) || XVECEXP (op, 0, 1) == const0_rtx;
   if (XINT (op, 1) == UNSPEC_TLSLD)
-    return REG_P (XVECEXP (op, 0, 0));
+    return REG_P (XVECEXP (op, 0, 0)) || XVECEXP (op, 0, 0) == const0_rtx;
   return 0;
 })
 
