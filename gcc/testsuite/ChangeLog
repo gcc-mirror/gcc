@@ -1,5 +1,10 @@
 2019-11-12  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/92412
+	* gcc.dg/strlenopt-91.c: New test.
+
+2019-11-12  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/35503
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-23.c: New test.
 
