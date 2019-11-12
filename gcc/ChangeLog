@@ -1,5 +1,11 @@
 2019-11-12  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/92412
+	* targhooks.c (default_ref_may_alias_errno): Errono can only alias
+	extern variables.
+
+2019-11-12  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/83688
 	* gimple-ssa-sprintf.c (format_result::alias_info): New struct.
 	(directive::argno): New member.

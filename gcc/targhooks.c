@@ -1414,9 +1414,11 @@ default_ref_may_alias_errno (ao_ref *ref)
   if (TYPE_UNSIGNED (TREE_TYPE (base))
       || TYPE_MODE (TREE_TYPE (base)) != TYPE_MODE (integer_type_node))
     return false;
-  /* The default implementation assumes an errno location
-     declaration is never defined in the current compilation unit.  */
+  /* The default implementation assumes an errno location declaration
+     is never defined in the current compilation unit and may not be
+     aliased by a local variable.  */
   if (DECL_P (base)
+      && DECL_EXTERNAL (base)
       && !TREE_STATIC (base))
     return true;
   else if (TREE_CODE (base) == MEM_REF
