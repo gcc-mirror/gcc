@@ -25,7 +25,7 @@ template <class T> struct B2 {};
 template <class T>
 struct C : B1, B2<T>
 {
-    using B1::x; // { dg-error "no member" }
+    using B1::x; // { dg-error "has not been declared" }
     using B2<T>::y;
     using typename B2<T>::type;
 };

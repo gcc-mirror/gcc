@@ -1,3 +1,13 @@
+2019-11-12  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/using-enum-2.C: Adjust expected error text.
+	* g++.dg/cpp0x/using-enum-3.C: Likewise.
+	* g++.dg/lookup/using4.C: Likewise.
+	* g++.dg/lookup/using7.C: Likewise.
+	* g++.dg/template/using12.C: Likewise.
+	* g++.dg/template/using18.C: Likewise.
+	* g++.dg/template/using22.C: Likewise.
+
 2019-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/92449
