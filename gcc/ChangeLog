@@ -1,5 +1,11 @@
 2019-11-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92460
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Unshare
+	expression before gimplifying.
+
+2019-11-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92461
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Update
 	stmt after propagation.
