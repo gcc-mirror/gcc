@@ -739,7 +739,7 @@ try_unroll_loop_completely (class loop *loop,
     return false;
 
   if (!loop->unroll
-      && n_unroll > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES))
+      && n_unroll > (unsigned) param_max_completely_peel_times)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Not unrolling loop %d "
@@ -780,7 +780,7 @@ try_unroll_loop_completely (class loop *loop,
 	  bool large
 	    = tree_estimate_loop_size
 		(loop, remove_exit ? exit : NULL, edge_to_cancel, &size,
-		 PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS));
+		 param_max_completely_peeled_insns);
 	  if (large)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -864,7 +864,7 @@ try_unroll_loop_completely (class loop *loop,
 	     blow the branch predictor tables.  Limit number of
 	     branches on the hot path through the peeled sequence.  */
 	  else if (size.num_branches_on_hot_path * (int)n_unroll
-		   > PARAM_VALUE (PARAM_MAX_PEEL_BRANCHES))
+		   > param_max_peel_branches)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Not unrolling loop %d: "
@@ -874,7 +874,7 @@ try_unroll_loop_completely (class loop *loop,
 	      return false;
 	    }
 	  else if (unr_insns
-		   > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS))
+		   > (unsigned) param_max_completely_peeled_insns)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Not unrolling loop %d: "
@@ -998,7 +998,7 @@ try_peel_loop (class loop *loop,
   int peeled_size;
 
   if (!flag_peel_loops
-      || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
+      || param_max_peel_times <= 0
       || !peeled_loops)
     return false;
 
@@ -1057,7 +1057,7 @@ try_peel_loop (class loop *loop,
   /* We want to peel estimated number of iterations + 1 (so we never
      enter the loop on quick path).  Check against PARAM_MAX_PEEL_TIMES
      and be sure to avoid overflows.  */
-  if (npeel > PARAM_VALUE (PARAM_MAX_PEEL_TIMES) - 1)
+  if (npeel > param_max_peel_times - 1)
     {
       if (dump_file)
 	fprintf (dump_file, "Not peeling: rolls too much "
@@ -1068,9 +1068,9 @@ try_peel_loop (class loop *loop,
 
   /* Check peeled loops size.  */
   tree_estimate_loop_size (loop, exit, NULL, &size,
-			   PARAM_VALUE (PARAM_MAX_PEELED_INSNS));
+			   param_max_peeled_insns);
   if ((peeled_size = estimated_peeled_sequence_size (&size, (int) npeel))
-      > PARAM_VALUE (PARAM_MAX_PEELED_INSNS))
+      > param_max_peeled_insns)
     {
       if (dump_file)
 	fprintf (dump_file, "Not peeling: peeled sequence size is too large "
@@ -1502,7 +1502,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
         BITMAP_FREE (loop_closed_ssa_invalidated);
     }
   while (changed
-	 && ++iteration <= PARAM_VALUE (PARAM_MAX_UNROLL_ITERATIONS));
+	 && ++iteration <= param_max_unroll_iterations);
 
   BITMAP_FREE (father_bbs);
 

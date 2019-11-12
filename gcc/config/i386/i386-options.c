@@ -2618,22 +2618,14 @@ ix86_option_override_internal (bool main_args_p,
   if (!TARGET_SCHEDULE)
     opts->x_flag_schedule_insns_after_reload = opts->x_flag_schedule_insns = 0;
 
-  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			 ix86_tune_cost->simultaneous_prefetches,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			 ix86_tune_cost->prefetch_block,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			 ix86_tune_cost->l1_cache_size,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE,
-			 ix86_tune_cost->l2_cache_size,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_simultaneous_prefetches,
+		       ix86_tune_cost->simultaneous_prefetches);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_line_size,
+		       ix86_tune_cost->prefetch_block);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_size,
+		       ix86_tune_cost->l1_cache_size);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l2_cache_size,
+		       ix86_tune_cost->l2_cache_size);
 
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
@@ -2868,13 +2860,9 @@ ix86_option_override_internal (bool main_args_p,
       = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
 
   if (ix86_tune_features [X86_TUNE_AVOID_256FMA_CHAINS])
-    maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 256,
-			   opts->x_param_values,
-			   opts_set->x_param_values);
+    SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 256);
   else if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])
-    maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 128,
-			   opts->x_param_values,
-			   opts_set->x_param_values);
+    SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 128);
 
   /* PR86952: jump table usage with retpolines is slow.
      The PR provides some numbers about the slowness.  */

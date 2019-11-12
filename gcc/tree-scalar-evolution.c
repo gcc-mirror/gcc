@@ -1149,7 +1149,7 @@ tail_recurse:
 	return t_false;
 
       /* Give up if the path is longer than the MAX that we allow.  */
-      if (limit > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_COMPLEXITY))
+      if (limit > param_scev_max_expr_complexity)
 	{
 	  *evolution_of_loop = chrec_dont_know;
 	  return t_dont_know;
@@ -2623,7 +2623,7 @@ instantiate_scev_r (edge instantiate_below,
 		    bool *fold_conversions, int size_expr)
 {
   /* Give up if the expression is larger than the MAX that we allow.  */
-  if (size_expr++ > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+  if (size_expr++ > param_scev_max_expr_size)
     return chrec_dont_know;
 
   if (chrec == NULL_TREE

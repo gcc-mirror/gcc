@@ -2863,7 +2863,7 @@ finite_loop_p (class loop *loop)
 /* Bound on the number of iterations we try to evaluate.  */
 
 #define MAX_ITERATIONS_TO_TRACK \
-  ((unsigned) PARAM_VALUE (PARAM_MAX_ITERATIONS_TO_TRACK))
+  ((unsigned) param_max_iterations_to_track)
 
 /* Returns the loop phi node of LOOP such that ssa name X is derived from its
    result by a chain of operations such that all but exactly one of their

@@ -5844,7 +5844,7 @@ add_uses_1 (rtx *x, void *cui)
    compile time for ridiculously complex expressions, although they're
    seldom useful, and they may often have to be discarded as not
    representable anyway.  */
-#define EXPR_USE_DEPTH (PARAM_VALUE (PARAM_MAX_VARTRACK_EXPR_DEPTH))
+#define EXPR_USE_DEPTH (param_max_vartrack_expr_depth)
 
 /* Attempt to reverse the EXPR operation in the debug info and record
    it in the cselib table.  Say for reg1 = reg2 + 6 even when reg2 is
@@ -5904,7 +5904,7 @@ reverse_op (rtx val, const_rtx expr, rtx_insn *insn)
 	&& (GET_CODE (l->loc) != CONST || !references_value_p (l->loc, 0)))
       return;
     /* Avoid creating too large locs lists.  */
-    else if (count == PARAM_VALUE (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE))
+    else if (count == param_max_vartrack_reverse_op_size)
       return;
 
   switch (GET_CODE (src))
@@ -7054,7 +7054,7 @@ vt_find_locations (void)
   int *rc_order;
   int i;
   int htabsz = 0;
-  int htabmax = PARAM_VALUE (PARAM_MAX_VARTRACK_SIZE);
+  int htabmax = param_max_vartrack_size;
   bool success = true;
 
   timevar_push (TV_VAR_TRACKING_DATAFLOW);

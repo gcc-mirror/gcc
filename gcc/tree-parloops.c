@@ -890,7 +890,7 @@ parloops_force_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info
 
 /* Minimal number of iterations of a loop that should be executed in each
    thread.  */
-#define MIN_PER_THREAD PARAM_VALUE (PARAM_PARLOOPS_MIN_PER_THREAD)
+#define MIN_PER_THREAD param_parloops_min_per_thread
 
 /* Element of the hashtable, representing a
    reduction in the current loop.  */
@@ -2875,25 +2875,23 @@ create_parallel_loop (class loop *loop, tree loop_fn, tree data,
   else
     {
       t = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
-      int chunk_size = PARAM_VALUE (PARAM_PARLOOPS_CHUNK_SIZE);
-      enum PARAM_PARLOOPS_SCHEDULE_KIND schedule_type \
-	= (enum PARAM_PARLOOPS_SCHEDULE_KIND) PARAM_VALUE (PARAM_PARLOOPS_SCHEDULE);
-      switch (schedule_type)
+      int chunk_size = param_parloops_chunk_size;
+      switch (param_parloops_schedule)
 	{
-	case PARAM_PARLOOPS_SCHEDULE_KIND_static:
+	case PARLOOPS_SCHEDULE_STATIC:
 	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_STATIC;
 	  break;
-	case PARAM_PARLOOPS_SCHEDULE_KIND_dynamic:
+	case PARLOOPS_SCHEDULE_DYNAMIC:
 	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_DYNAMIC;
 	  break;
-	case PARAM_PARLOOPS_SCHEDULE_KIND_guided:
+	case PARLOOPS_SCHEDULE_GUIDED:
 	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_GUIDED;
 	  break;
-	case PARAM_PARLOOPS_SCHEDULE_KIND_auto:
+	case PARLOOPS_SCHEDULE_AUTO:
 	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_AUTO;
 	  chunk_size = 0;
 	  break;
-	case PARAM_PARLOOPS_SCHEDULE_KIND_runtime:
+	case PARLOOPS_SCHEDULE_RUNTIME:
 	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_RUNTIME;
 	  chunk_size = 0;
 	  break;

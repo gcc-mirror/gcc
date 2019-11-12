@@ -3289,7 +3289,7 @@ vect_slp_bb (basic_block bb)
 
       gimple_stmt_iterator region_end = gsi;
 
-      if (insns > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
+      if (insns > param_slp_max_insns_in_bb)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

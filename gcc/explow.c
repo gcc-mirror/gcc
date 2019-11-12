@@ -1837,7 +1837,7 @@ compute_stack_clash_protection_loop_data (rtx *rounded_size, rtx *last_addr,
 {
   /* Round SIZE down to STACK_CLASH_PROTECTION_PROBE_INTERVAL */
   *probe_interval
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+    = 1 << param_stack_clash_protection_probe_interval;
   *rounded_size = simplify_gen_binary (AND, Pmode, size,
 				        GEN_INT (-*probe_interval));
 

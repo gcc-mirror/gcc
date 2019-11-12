@@ -1548,7 +1548,7 @@ defer_stack_allocation (tree var, bool toplevel)
   bool smallish
     = (poly_int_tree_p (size_unit, &size)
        && (estimated_poly_value (size)
-	   < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING)));
+	   < param_min_size_for_stack_sharing));
 
   /* If stack protection is enabled, *all* stack variables must be deferred,
      so that we can re-order the strings to the top of the frame.
@@ -1788,7 +1788,7 @@ stack_protect_classify_type (tree type)
 	  || t == signed_char_type_node
 	  || t == unsigned_char_type_node)
 	{
-	  unsigned HOST_WIDE_INT max = PARAM_VALUE (PARAM_SSP_BUFFER_SIZE);
+	  unsigned HOST_WIDE_INT max = param_ssp_buffer_size;
 	  unsigned HOST_WIDE_INT len;
 
 	  if (!TYPE_SIZE_UNIT (type)
@@ -6435,7 +6435,7 @@ pass_expand::execute (function *fun)
 	warning (OPT_Wstack_protector,
 		 "stack protector not protecting function: "
 		 "all local arrays are less than %d bytes long",
-		 (int) PARAM_VALUE (PARAM_SSP_BUFFER_SIZE));
+		 (int) param_ssp_buffer_size);
     }
 
   /* Set up parameters and prepare for return, for the function.  */
@@ -6545,7 +6545,7 @@ pass_expand::execute (function *fun)
 
   /* If the function has too many markers, drop them while expanding.  */
   if (cfun->debug_marker_count
-      >= PARAM_VALUE (PARAM_MAX_DEBUG_MARKER_COUNT))
+      >= param_max_debug_marker_count)
     cfun->debug_nonbind_markers = false;
 
   lab_rtx_for_bb = new hash_map<basic_block, rtx_code_label *>;

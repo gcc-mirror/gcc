@@ -238,7 +238,7 @@ setup_live_bytes_from_ref (ao_ref *ref, sbitmap live_bytes)
   if (valid_ao_ref_for_dse (ref)
       && ref->size.is_constant (&const_size)
       && (const_size / BITS_PER_UNIT
-	  <= PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)))
+	  <= param_dse_max_object_size))
     {
       bitmap_clear (live_bytes);
       bitmap_set_range (live_bytes, 0, const_size / BITS_PER_UNIT);
@@ -611,7 +611,7 @@ dse_optimize_redundant_stores (gimple *stmt)
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
     {
       /* Limit stmt walking.  */
-      if (++cnt > PARAM_VALUE (PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE))
+      if (++cnt > param_dse_max_alias_queries_per_store)
 	BREAK_FROM_IMM_USE_STMT (ui);
 
       /* If USE_STMT stores 0 into one or more of the same locations
@@ -704,7 +704,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  /* Limit stmt walking.  */
-	  if (++cnt > PARAM_VALUE (PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE))
+	  if (++cnt > param_dse_max_alias_queries_per_store)
 	    {
 	      fail = true;
 	      BREAK_FROM_IMM_USE_STMT (ui);
@@ -853,7 +853,7 @@ class dse_dom_walker : public dom_walker
 public:
   dse_dom_walker (cdi_direction direction)
     : dom_walker (direction),
-    m_live_bytes (PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)),
+    m_live_bytes (param_dse_max_object_size),
     m_byte_tracking_enabled (false) {}
 
   virtual edge before_dom_children (basic_block);

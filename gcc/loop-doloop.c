@@ -651,7 +651,7 @@ doloop_optimize (class loop *loop)
     }
 
   max_cost
-    = COSTS_N_INSNS (PARAM_VALUE (PARAM_MAX_ITERATIONS_COMPUTATION_COST));
+    = COSTS_N_INSNS (param_max_iterations_computation_cost);
   if (set_src_cost (desc->niter_expr, mode, optimize_loop_for_speed_p (loop))
       > max_cost)
     {

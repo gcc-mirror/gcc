@@ -1400,7 +1400,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
 static inline bool
 csftc_abort_walking_p (unsigned speculative)
 {
-  unsigned max = PARAM_VALUE (PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS);
+  unsigned max = param_max_speculative_devirt_maydefs;
   return speculative > max ? true : false;
 }
 

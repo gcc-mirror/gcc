@@ -3454,7 +3454,7 @@ process_pipelined_exprs (av_set_t *av_ptr)
   FOR_EACH_EXPR_1 (expr, si, av_ptr)
     {
       if (EXPR_SCHED_TIMES (expr)
-	  >= PARAM_VALUE (PARAM_SELSCHED_MAX_SCHED_TIMES))
+	  >= param_selsched_max_sched_times)
 	av_set_iter_remove (&si);
     }
 }
@@ -6806,7 +6806,7 @@ sel_setup_region_sched_flags (void)
                   && (flag_sel_sched_pipelining != 0)
 		  && current_loop_nest != NULL
 		  && loop_has_exit_edges (current_loop_nest));
-  max_insns_to_rename = PARAM_VALUE (PARAM_SELSCHED_INSNS_TO_RENAME);
+  max_insns_to_rename = param_selsched_insns_to_rename;
   max_ws = MAX_WS;
 }
 

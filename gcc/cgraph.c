@@ -2707,7 +2707,7 @@ cgraph_edge::maybe_hot_p (void)
       if (count.apply_scale (2, 1) < where->count.apply_scale (3, 1))
 	return false;
     }
-  else if (count.apply_scale (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION), 1)
+  else if (count.apply_scale (param_hot_bb_frequency_fraction , 1)
 	   < where->count)
     return false;
   return true;

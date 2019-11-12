@@ -605,8 +605,8 @@ unsigned int
 loop_versioning::max_insns_for_loop (class loop *loop)
 {
   return (loop->inner
-	  ? PARAM_VALUE (PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS)
-	  : PARAM_VALUE (PARAM_LOOP_VERSIONING_MAX_INNER_INSNS));
+	  ? param_loop_versioning_max_outer_insns
+	  : param_loop_versioning_max_inner_insns);
 }
 
 /* Return true if for cost reasons we should avoid versioning any loop

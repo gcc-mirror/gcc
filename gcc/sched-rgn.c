@@ -485,9 +485,9 @@ find_single_block_region (bool ebbs_p)
   if (ebbs_p) {
     int probability_cutoff;
     if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
-      probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
+      probability_cutoff = param_tracer_min_branch_probability_feedback;
     else
-      probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);
+      probability_cutoff = param_tracer_min_branch_probability;
     probability_cutoff = REG_BR_PROB_BASE / 100 * probability_cutoff;
 
     FOR_EACH_BB_FN (ebb_start, cfun)
@@ -569,8 +569,8 @@ too_large (int block, int *num_bbs, int *num_insns)
   (*num_insns) += (common_sched_info->estimate_number_of_insns
                    (BASIC_BLOCK_FOR_FN (cfun, block)));
 
-  return ((*num_bbs > PARAM_VALUE (PARAM_MAX_SCHED_REGION_BLOCKS))
-	  || (*num_insns > PARAM_VALUE (PARAM_MAX_SCHED_REGION_INSNS)));
+  return ((*num_bbs > param_max_sched_region_blocks)
+	  || (*num_insns > param_max_sched_region_insns));
 }
 
 /* Update_loop_relations(blk, hdr): Check if the loop headed by max_hdr[blk]
@@ -800,7 +800,7 @@ haifa_find_rgns (void)
 
       queue = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
 
-      extend_regions_p = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS) > 0;
+      extend_regions_p = param_max_sched_extend_regions_iters > 0;
       if (extend_regions_p)
         {
           degree1 = XNEWVEC (int, last_basic_block_for_fn (cfun));
@@ -1161,7 +1161,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
   int *order, i, rescan = 0, idx = *idxp, iter = 0, max_iter, *max_hdr;
   int nblocks = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
-  max_iter = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS);
+  max_iter = param_max_sched_extend_regions_iters;
 
   max_hdr = XNEWVEC (int, last_basic_block_for_fn (cfun));
 
@@ -2224,7 +2224,7 @@ new_ready (rtx_insn *next, ds_t ts)
 	  || (IS_SPECULATIVE_INSN (next)
 	      && ((recog_memoized (next) >= 0
 		   && min_insn_conflict_delay (curr_state, next, next)
-                   > PARAM_VALUE (PARAM_MAX_SCHED_INSN_CONFLICT_DELAY))
+		   > param_max_sched_insn_conflict_delay)
                   || IS_SPECULATION_CHECK_P (next)
 		  || !check_live (next, INSN_BB (next))
 		  || (not_ex_free = !is_exception_free (next, INSN_BB (next),
@@ -3188,8 +3188,9 @@ schedule_region (int rgn)
 	  f = find_fallthru_edge (last_bb->succs);
 	  if (f
 	      && (!f->probability.initialized_p ()
-		  || f->probability.to_reg_br_prob_base () * 100 / REG_BR_PROB_BASE >=
-	             PARAM_VALUE (PARAM_SCHED_STATE_EDGE_PROB_CUTOFF)))
+		  || (f->probability.to_reg_br_prob_base () * 100
+		      / REG_BR_PROB_BASE
+		      >= param_sched_state_edge_prob_cutoff)))
 	    {
 	      memcpy (bb_state[f->dest->index], curr_state,
 		      dfa_state_size);
@@ -3229,7 +3230,7 @@ schedule_region (int rgn)
 void
 sched_rgn_init (bool single_blocks_p)
 {
-  min_spec_prob = ((PARAM_VALUE (PARAM_MIN_SPEC_PROB) * REG_BR_PROB_BASE)
+  min_spec_prob = ((param_min_spec_prob * REG_BR_PROB_BASE)
 		    / 100);
 
   nr_inter = 0;

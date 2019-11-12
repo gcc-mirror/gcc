@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "flags.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -484,17 +485,14 @@ alpha_option_override (void)
     }
 
   if (line_size)
-    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, line_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_line_size, line_size);
   if (l1_size)
-    maybe_set_param_value (PARAM_L1_CACHE_SIZE, l1_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_size, l1_size);
   if (l2_size)
-    maybe_set_param_value (PARAM_L2_CACHE_SIZE, l2_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l2_cache_size, l2_size);
 
   /* Do some sanity checks on the above options.  */
 

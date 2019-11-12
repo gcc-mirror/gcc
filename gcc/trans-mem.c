@@ -1108,7 +1108,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple *stmt)
 	  && TYPE_SIZE_UNIT (type) != NULL
 	  && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
 	  && ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE_UNIT (type))
-	      < PARAM_VALUE (PARAM_TM_MAX_AGGREGATE_SIZE))
+	      < param_tm_max_aggregate_size)
 	  /* We must be able to copy this type normally.  I.e., no
 	     special constructors and the like.  */
 	  && !TREE_ADDRESSABLE (type))

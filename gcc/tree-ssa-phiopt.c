@@ -2469,7 +2469,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
   /* If either vectorization or if-conversion is disabled then do
      not sink any stores.  */
-  if (MAX_STORES_TO_SINK == 0
+  if (param_max_stores_to_sink == 0
       || (!flag_tree_loop_vectorize && !flag_tree_slp_vectorize)
       || !flag_tree_loop_if_convert)
     return false;
@@ -2528,7 +2528,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
   /* No pairs of stores found.  */
   if (!then_stores.length ()
-      || then_stores.length () > (unsigned) MAX_STORES_TO_SINK)
+      || then_stores.length () > (unsigned) param_max_stores_to_sink)
     {
       free_data_refs (then_datarefs);
       free_data_refs (else_datarefs);
@@ -2658,7 +2658,7 @@ static void
 hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 		      basic_block bb2, basic_block bb3)
 {
-  int param_align = PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE);
+  int param_align = param_l1_cache_line_size;
   unsigned param_align_bits = (unsigned) (param_align * BITS_PER_UNIT);
   gphi_iterator gsi;
 
@@ -2808,7 +2808,7 @@ static bool
 gate_hoist_loads (void)
 {
   return (flag_hoist_adjacent_loads == 1
-	  && PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE)
+	  && param_l1_cache_line_size
 	  && HAVE_conditional_move);
 }
 

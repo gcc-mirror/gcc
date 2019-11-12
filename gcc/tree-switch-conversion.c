@@ -194,7 +194,7 @@ switch_conversion::check_range ()
     }
 
   if (tree_to_uhwi (m_range_size)
-      > ((unsigned) m_count * SWITCH_CONVERSION_BRANCH_RATIO))
+      > ((unsigned) m_count * param_switch_conversion_branch_ratio))
     {
       m_reason = "the maximum range-branch ratio exceeded";
       return false;
@@ -1268,8 +1268,8 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
 
   unsigned HOST_WIDE_INT max_ratio
     = (optimize_insn_for_size_p ()
-       ? PARAM_VALUE (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SIZE)
-       : PARAM_VALUE (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SPEED));
+       ? param_jump_table_max_growth_ratio_for_size
+       : param_jump_table_max_growth_ratio_for_speed);
   unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
 					    clusters[end]->get_high ());
   /* Check overflow.  */

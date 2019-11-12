@@ -679,7 +679,7 @@ print_version (FILE *file, const char *indent, bool show_global_state)
       fprintf (file,
 	       file == stderr ? _(fmt4) : fmt4,
 	       indent, *indent != 0 ? " " : "",
-	       PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
+	       param_ggc_min_expand, param_ggc_min_heapsize);
 
       print_plugins_versions (file, indent);
     }
@@ -1863,7 +1863,7 @@ process_options (void)
 
   if (flag_checking >= 2)
     hash_table_sanitize_eq_limit
-      = PARAM_VALUE (PARAM_HASH_TABLE_VERIFICATION_LIMIT);
+      = param_hash_table_verification_limit;
 
   /* Please don't change global_options after this point, those changes won't
      be reflected in optimization_{default,current}_node.  */

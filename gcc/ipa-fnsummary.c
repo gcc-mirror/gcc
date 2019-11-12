@@ -1204,7 +1204,7 @@ decompose_param_expr (struct ipa_func_body_info *fbi,
 		      struct agg_position_info *aggpos,
 		      expr_eval_ops *param_ops_p = NULL)
 {
-  int op_limit = PARAM_VALUE (PARAM_IPA_MAX_PARAM_EXPR_OPS);
+  int op_limit = param_ipa_max_param_expr_ops;
   int op_count = 0;
 
   if (param_ops_p)
@@ -1435,7 +1435,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 
   auto_vec<std::pair<tree, tree> > ranges;
   tree type = TREE_TYPE (op);
-  int bound_limit = PARAM_VALUE (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS);
+  int bound_limit = param_ipa_max_switch_predicate_bounds;
   int bound_count = 0;
   wide_int vr_wmin, vr_wmax;
   value_range_kind vr_type = get_range_info (op, &vr_wmin, &vr_wmax);
@@ -2280,9 +2280,9 @@ fp_expression_p (gimple *stmt)
 static void
 analyze_function_body (struct cgraph_node *node, bool early)
 {
-  sreal time = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME);
+  sreal time = param_uninlined_function_time;
   /* Estimate static overhead for function prologue/epilogue and alignment. */
-  int size = PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS);
+  int size = param_uninlined_function_insns;
   /* Benefits are scaled by probability of elimination that is in range
      <0,2>.  */
   basic_block bb;
@@ -2331,7 +2331,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  fbi.bb_infos = vNULL;
 	  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
 	  fbi.param_count = count_formal_params (node->decl);
-	  fbi.aa_walk_budget = PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
+	  fbi.aa_walk_budget = param_ipa_max_aa_steps;
 
 	  nonconstant_names.safe_grow_cleared
 	    (SSANAMES (my_function)->length ());
@@ -2348,9 +2348,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
   info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  info->account_size_time (PARAM_VALUE (PARAM_UNINLINED_FUNCTION_INSNS)
+  info->account_size_time (param_uninlined_function_insns
 			   * ipa_fn_summary::size_scale,
-			   PARAM_VALUE (PARAM_UNINLINED_FUNCTION_TIME),
+			   param_uninlined_function_time,
 			   bb_predicate,
 		           bb_predicate);
 
@@ -2748,10 +2748,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
       info->account_size_time (ipa_fn_summary::size_scale
-			       * PARAM_VALUE
-				 (PARAM_UNINLINED_FUNCTION_THUNK_INSNS),
-			       PARAM_VALUE
-				 (PARAM_UNINLINED_FUNCTION_THUNK_TIME), t, t);
+			       * param_uninlined_function_thunk_insns,
+			       param_uninlined_function_thunk_time, t, t);
       t = predicate::not_inlined ();
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);

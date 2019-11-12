@@ -1156,7 +1156,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (gimple_bb (phi) != phiblock)
     return vuse;
 
-  unsigned int cnt = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
+  unsigned int cnt = param_sccvn_max_alias_queries_per_access;
   use_oracle = ao_ref_init_from_vn_reference (&ref, set, type, operands);
 
   /* Use the alias-oracle to find either the PHI node in this block,
@@ -2235,7 +2235,7 @@ compute_partial_antic_aux (basic_block block,
   bitmap_set_t PA_OUT;
   edge e;
   edge_iterator ei;
-  unsigned long max_pa = PARAM_VALUE (PARAM_MAX_PARTIAL_ANTIC_LENGTH);
+  unsigned long max_pa = param_max_partial_antic_length;
 
   old_PA_IN = PA_OUT = NULL;
 

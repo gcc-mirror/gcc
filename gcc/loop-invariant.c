@@ -1491,7 +1491,7 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
 	  if ((int) new_regs[pressure_class]
 	      + (int) regs_needed[pressure_class]
 	      + LOOP_DATA (curr_loop)->max_reg_pressure[pressure_class]
-	      + IRA_LOOP_RESERVED_REGS
+	      + param_ira_loop_reserved_regs
 	      > ira_class_hard_regs_num[pressure_class])
 	    break;
 	}
@@ -2279,7 +2279,7 @@ move_loop_invariants (void)
       /* move_single_loop_invariants for very large loops is time consuming
 	 and might need a lot of memory.  For -O1 only do loop invariant
 	 motion for very small loops.  */
-      unsigned max_bbs = LOOP_INVARIANT_MAX_BBS_IN_LOOP;
+      unsigned max_bbs = param_loop_invariant_max_bbs_in_loop;
       if (optimize < 2)
 	max_bbs /= 10;
       if (loop->num_nodes <= max_bbs)

@@ -80,6 +80,7 @@
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "rs6000-internal.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -4514,34 +4515,29 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (global_init_p)
     {
-      maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			     rs6000_cost->simultaneous_prefetches,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L1_CACHE_SIZE, rs6000_cost->l1_cache_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			     rs6000_cost->cache_line_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L2_CACHE_SIZE, rs6000_cost->l2_cache_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_simultaneous_prefetches,
+			   rs6000_cost->simultaneous_prefetches);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l1_cache_size,
+			   rs6000_cost->l1_cache_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l1_cache_line_size,
+			   rs6000_cost->cache_line_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l2_cache_size,
+			   rs6000_cost->l2_cache_size);
 
       /* Increase loop peeling limits based on performance analysis. */
-      maybe_set_param_value (PARAM_MAX_PEELED_INSNS, 400,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 400,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_max_peeled_insns, 400);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_max_completely_peeled_insns, 400);
 
       /* Use the 'model' -fsched-pressure algorithm by default.  */
-      maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM,
-			     SCHED_PRESSURE_MODEL,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_sched_pressure_algorithm,
+			   SCHED_PRESSURE_MODEL);
 
       /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
       if (((global_options_set.x_flag_unroll_loops && flag_unroll_loops)

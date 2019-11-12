@@ -5691,9 +5691,9 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
     return false;
 
   /* If the vector of fields is growing too big, bail out early.
-     Callers check for vec::length <= MAX_FIELDS_FOR_FIELD_SENSITIVE, make
+     Callers check for vec::length <= param_max_fields_for_field_sensitive, make
      sure this fails.  */
-  if (fieldstack->length () > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+  if (fieldstack->length () > (unsigned)param_max_fields_for_field_sensitive)
     return false;
 
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -6114,7 +6114,7 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
   /* If we didn't end up collecting sub-variables create a full
      variable for the decl.  */
   if (fieldstack.length () == 0
-      || fieldstack.length () > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+      || fieldstack.length () > (unsigned)param_max_fields_for_field_sensitive)
     {
       vi = new_var_info (decl, name, add_id);
       vi->offset = 0;
@@ -7179,7 +7179,7 @@ init_base_vars (void)
 static void
 init_alias_vars (void)
 {
-  use_field_sensitive = (MAX_FIELDS_FOR_FIELD_SENSITIVE > 1);
+  use_field_sensitive = (param_max_fields_for_field_sensitive > 1);
 
   bitmap_obstack_initialize (&pta_obstack);
   bitmap_obstack_initialize (&oldpta_obstack);

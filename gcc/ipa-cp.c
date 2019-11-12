@@ -1612,7 +1612,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	return false;
       }
 
-  if (values_count == PARAM_VALUE (PARAM_IPA_CP_VALUE_LIST_SIZE))
+  if (values_count == param_ipa_cp_value_list_size)
     {
       /* We can only free sources, not the values themselves, because sources
 	 of other values in this SCC might point to them.   */
@@ -2089,7 +2089,7 @@ merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 	  set_agg_lats_to_bottom (dest_plats);
 	  return false;
 	}
-      if (dest_plats->aggs_count == PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS))
+      if (dest_plats->aggs_count == param_ipa_max_agg_items)
 	return false;
       dest_plats->aggs_count++;
       new_al = ipcp_agg_lattice_pool.allocate ();
@@ -2644,11 +2644,11 @@ devirtualization_time_bonus (struct cgraph_node *node,
       int size = ipa_size_summaries->get (callee)->size;
       /* FIXME: The values below need re-considering and perhaps also
 	 integrating into the cost metrics, at lest in some very basic way.  */
-      if (size <= MAX_INLINE_INSNS_AUTO / 4)
+      if (size <= param_max_inline_insns_auto / 4)
 	res += 31 / ((int)speculative + 1);
-      else if (size <= MAX_INLINE_INSNS_AUTO / 2)
+      else if (size <= param_max_inline_insns_auto / 2)
 	res += 15 / ((int)speculative + 1);
-      else if (size <= MAX_INLINE_INSNS_AUTO
+      else if (size <= param_max_inline_insns_auto
 	       || DECL_DECLARED_INLINE_P (callee->decl))
 	res += 7 / ((int)speculative + 1);
     }
@@ -2663,7 +2663,7 @@ hint_time_bonus (ipa_hints hints)
 {
   int result = 0;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
-    result += PARAM_VALUE (PARAM_IPA_CP_LOOP_HINT_BONUS);
+    result += param_ipa_cp_loop_hint_bonus;
   return result;
 }
 
@@ -2675,11 +2675,11 @@ incorporate_penalties (ipa_node_params *info, int64_t evaluation)
 {
   if (info->node_within_scc)
     evaluation = (evaluation
-		  * (100 - PARAM_VALUE (PARAM_IPA_CP_RECURSION_PENALTY))) / 100;
+		  * (100 - param_ipa_cp_recursion_penalty)) / 100;
 
   if (info->node_calling_single_call)
     evaluation = (evaluation
-		  * (100 - PARAM_VALUE (PARAM_IPA_CP_SINGLE_CALL_PENALTY)))
+		  * (100 - param_ipa_cp_single_call_penalty))
       / 100;
 
   return evaluation;
@@ -2719,10 +2719,10 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 ", threshold: %i\n",
 		 info->node_within_scc ? ", scc" : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
+		 evaluation, param_ipa_cp_eval_threshold);
 	}
 
-      return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
+      return evaluation >= param_ipa_cp_eval_threshold;
     }
   else
     {
@@ -2737,9 +2737,9 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 time_benefit, size_cost, freq_sum,
 		 info->node_within_scc ? ", scc" : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
+		 evaluation, param_ipa_cp_eval_threshold);
 
-      return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
+      return evaluation >= param_ipa_cp_eval_threshold;
     }
 }
 
@@ -3364,9 +3364,9 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
   }
 
   max_new_size = overall_size;
-  if (max_new_size < PARAM_VALUE (PARAM_LARGE_UNIT_INSNS))
-    max_new_size = PARAM_VALUE (PARAM_LARGE_UNIT_INSNS);
-  max_new_size += max_new_size * PARAM_VALUE (PARAM_IPCP_UNIT_GROWTH) / 100 + 1;
+  if (max_new_size < param_large_unit_insns)
+    max_new_size = param_large_unit_insns;
+  max_new_size += max_new_size * param_ipcp_unit_growth / 100 + 1;
 
   if (dump_file)
     fprintf (dump_file, "\noverall_size: %li, max_new_size: %li\n",

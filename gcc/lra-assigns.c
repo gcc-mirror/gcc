@@ -1008,7 +1008,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	}
       n = 0;
       if (sparseset_cardinality (live_range_reload_inheritance_pseudos)
-	  <= (unsigned)LRA_MAX_CONSIDERED_RELOAD_PSEUDOS)
+	  <= (unsigned)param_lra_max_considered_reload_pseudos)
 	EXECUTE_IF_SET_IN_SPARSESET (live_range_reload_inheritance_pseudos,
 				     reload_regno)
 	  if ((int) reload_regno != regno

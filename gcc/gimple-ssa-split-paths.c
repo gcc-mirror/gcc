@@ -366,7 +366,7 @@ is_feasible_trace (basic_block bb)
 
   /* Upper Hard limit on the number statements to copy.  */
   if (num_stmts_in_join
-      >= PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS))
+      >= param_max_jump_thread_duplication_stmts)
     return false;
 
   return true;

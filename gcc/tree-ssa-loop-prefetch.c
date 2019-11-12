@@ -167,7 +167,7 @@ along with GCC; see the file COPYING3.  If not see
    of cache hierarchy).  */
 
 #ifndef PREFETCH_BLOCK
-#define PREFETCH_BLOCK L1_CACHE_LINE_SIZE
+#define PREFETCH_BLOCK param_l1_cache_line_size
 #endif
 
 /* Do we have a forward hardware sequential prefetching?  */
@@ -191,8 +191,8 @@ along with GCC; see the file COPYING3.  If not see
 #define ACCEPTABLE_MISS_RATE 50
 #endif
 
-#define L1_CACHE_SIZE_BYTES ((unsigned) (L1_CACHE_SIZE * 1024))
-#define L2_CACHE_SIZE_BYTES ((unsigned) (L2_CACHE_SIZE * 1024))
+#define L1_CACHE_SIZE_BYTES ((unsigned) (param_l1_cache_size * 1024))
+#define L2_CACHE_SIZE_BYTES ((unsigned) (param_l2_cache_size * 1024))
 
 /* We consider a memory access nontemporal if it is not reused sooner than
    after L2_CACHE_SIZE_BYTES of memory are accessed.  However, we ignore
@@ -993,7 +993,8 @@ static bool
 should_issue_prefetch_p (struct mem_ref *ref)
 {
   /* Do we want to issue prefetches for non-constant strides?  */
-  if (!cst_and_fits_in_hwi (ref->group->step) && PREFETCH_DYNAMIC_STRIDES == 0)
+  if (!cst_and_fits_in_hwi (ref->group->step)
+      && param_prefetch_dynamic_strides == 0)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -1008,14 +1009,14 @@ should_issue_prefetch_p (struct mem_ref *ref)
      range.  */
   if (cst_and_fits_in_hwi (ref->group->step)
       && abs_hwi (int_cst_value (ref->group->step))
-	  < (HOST_WIDE_INT) PREFETCH_MINIMUM_STRIDE)
+	  < (HOST_WIDE_INT) param_prefetch_minimum_stride)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Step for reference %u:%u (" HOST_WIDE_INT_PRINT_DEC
 		 ") is less than the mininum required stride of %d\n",
 		 ref->group->uid, ref->uid, int_cst_value (ref->group->step),
-		 PREFETCH_MINIMUM_STRIDE);
+		 param_prefetch_minimum_stride);
       return false;
     }
 
@@ -1055,8 +1056,9 @@ schedule_prefetches (struct mem_ref_group *groups, unsigned unroll_factor,
   struct mem_ref *ref;
   bool any = false;
 
-  /* At most SIMULTANEOUS_PREFETCHES should be running at the same time.  */
-  remaining_prefetch_slots = SIMULTANEOUS_PREFETCHES;
+  /* At most param_simultaneous_prefetches should be running
+     at the same time.  */
+  remaining_prefetch_slots = param_simultaneous_prefetches;
 
   /* The prefetch will run for AHEAD iterations of the original loop, i.e.,
      AHEAD / UNROLL_FACTOR iterations of the unrolled loop.  In each iteration,
@@ -1406,7 +1408,7 @@ determine_unroll_factor (class loop *loop, struct mem_ref_group *refs,
      us from unrolling the loops too many times in cases where we only expect
      gains from better scheduling and decreasing loop overhead, which is not
      the case here.  */
-  upper_bound = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / ninsns;
+  upper_bound = param_max_unrolled_insns / ninsns;
 
   /* If we unrolled the loop more times than it iterates, the unrolled version
      of the loop would be never entered.  */
@@ -1459,7 +1461,7 @@ volume_of_references (struct mem_ref_group *refs)
 	   accessed in each iteration.  TODO -- in the latter case, we should
 	   take the size of the reference into account, rounding it up on cache
 	   line size multiple.  */
-	volume += L1_CACHE_LINE_SIZE / ref->prefetch_mod;
+	volume += param_l1_cache_line_size / ref->prefetch_mod;
       }
   return volume;
 }
@@ -1512,7 +1514,7 @@ add_subscript_strides (tree access_fn, unsigned stride,
       if (tree_fits_shwi_p (step))
 	astep = tree_to_shwi (step);
       else
-	astep = L1_CACHE_LINE_SIZE;
+	astep = param_l1_cache_line_size;
 
       strides[n - 1 - loop_depth (loop) + loop_depth (aloop)] += astep * stride;
 
@@ -1562,7 +1564,7 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
 	  if (tree_fits_uhwi_p (stride))
 	    astride = tree_to_uhwi (stride);
 	  else
-	    astride = L1_CACHE_LINE_SIZE;
+	    astride = param_l1_cache_line_size;
 
 	  ref = TREE_OPERAND (ref, 0);
 	}
@@ -1578,7 +1580,7 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
 
       s = strides[i] < 0 ?  -strides[i] : strides[i];
 
-      if (s < (unsigned) L1_CACHE_LINE_SIZE
+      if (s < (unsigned) param_l1_cache_line_size
 	  && (loop_sizes[i]
 	      > (unsigned) (L1_CACHE_SIZE_BYTES / NONTEMPORAL_FRACTION)))
 	{
@@ -1825,7 +1827,7 @@ mem_ref_count_reasonable_p (unsigned ninsns, unsigned mem_ref_count)
      should account for cache misses.  */
   insn_to_mem_ratio = ninsns / mem_ref_count;
 
-  if (insn_to_mem_ratio < PREFETCH_MIN_INSN_TO_MEM_RATIO)
+  if (insn_to_mem_ratio < param_prefetch_min_insn_to_mem_ratio)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
         fprintf (dump_file,
@@ -1862,7 +1864,7 @@ insn_to_prefetch_ratio_too_small_p (unsigned ninsns, unsigned prefetch_count,
      and the exit branches will get eliminated), so it might be better to use
      tree_estimate_loop_size + estimated_unrolled_size.  */
   insn_to_prefetch_ratio = (unroll_factor * ninsns) / prefetch_count;
-  if (insn_to_prefetch_ratio < MIN_INSN_TO_PREFETCH_RATIO)
+  if (insn_to_prefetch_ratio < param_min_insn_to_prefetch_ratio)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
         fprintf (dump_file,
@@ -1902,7 +1904,7 @@ loop_prefetch_arrays (class loop *loop)
   if (time == 0)
     return false;
 
-  ahead = (PREFETCH_LATENCY + time - 1) / time;
+  ahead = (param_prefetch_latency + time - 1) / time;
   est_niter = estimated_stmt_executions_int (loop);
   if (est_niter == -1)
     est_niter = likely_max_stmt_executions_int (loop);
@@ -1998,17 +2000,19 @@ tree_ssa_prefetch_arrays (void)
     {
       fprintf (dump_file, "Prefetching parameters:\n");
       fprintf (dump_file, "    simultaneous prefetches: %d\n",
-	       SIMULTANEOUS_PREFETCHES);
-      fprintf (dump_file, "    prefetch latency: %d\n", PREFETCH_LATENCY);
+	       param_simultaneous_prefetches);
+      fprintf (dump_file, "    prefetch latency: %d\n", param_prefetch_latency);
       fprintf (dump_file, "    prefetch block size: %d\n", PREFETCH_BLOCK);
       fprintf (dump_file, "    L1 cache size: %d lines, %d kB\n",
-	       L1_CACHE_SIZE_BYTES / L1_CACHE_LINE_SIZE, L1_CACHE_SIZE);
-      fprintf (dump_file, "    L1 cache line size: %d\n", L1_CACHE_LINE_SIZE);
-      fprintf (dump_file, "    L2 cache size: %d kB\n", L2_CACHE_SIZE);
+	       L1_CACHE_SIZE_BYTES / param_l1_cache_line_size,
+	       param_l1_cache_size);
+      fprintf (dump_file, "    L1 cache line size: %d\n",
+	       param_l1_cache_line_size);
+      fprintf (dump_file, "    L2 cache size: %d kB\n", param_l2_cache_size);
       fprintf (dump_file, "    min insn-to-prefetch ratio: %d \n",
-	       MIN_INSN_TO_PREFETCH_RATIO);
+	       param_min_insn_to_prefetch_ratio);
       fprintf (dump_file, "    min insn-to-mem ratio: %d \n",
-	       PREFETCH_MIN_INSN_TO_MEM_RATIO);
+	       param_prefetch_min_insn_to_mem_ratio);
       fprintf (dump_file, "\n");
     }
 

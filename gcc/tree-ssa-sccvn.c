@@ -3074,7 +3074,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
       && vr1.vuse)
     {
       ao_ref r;
-      unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
+      unsigned limit = param_sccvn_max_alias_queries_per_access;
       vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true);
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
@@ -3125,7 +3125,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
     {
       vn_reference_t wvnresult;
       ao_ref r;
-      unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
+      unsigned limit = param_sccvn_max_alias_queries_per_access;
       /* Make sure to use a valueized reference if we valueized anything.
          Otherwise preserve the full reference for advanced TBAA.  */
       if (!valuezied_anything
@@ -6985,7 +6985,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   if (iterate)
     {
       loop_p loop;
-      unsigned max_depth = PARAM_VALUE (PARAM_RPO_VN_MAX_LOOP_DEPTH);
+      unsigned max_depth = param_rpo_vn_max_loop_depth;
       FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
 	if (loop_depth (loop) > max_depth)
 	  for (unsigned i = 2;

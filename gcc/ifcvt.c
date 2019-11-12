@@ -3311,7 +3311,7 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb)
 {
   rtx_insn *insn;
   unsigned count = 0;
-  unsigned param = PARAM_VALUE (PARAM_MAX_RTL_IF_CONVERSION_INSNS);
+  unsigned param = param_max_rtl_if_conversion_insns;
 
   FOR_BB_INSNS (test_bb, insn)
     {
@@ -3838,7 +3838,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   vec<rtx> else_regs = vNULL;
   unsigned int i;
   int success_p = FALSE;
-  int limit = PARAM_VALUE (PARAM_MAX_RTL_IF_CONVERSION_INSNS);
+  int limit = param_max_rtl_if_conversion_insns;
 
   /* Build a mapping for each block to the value used for each
      register.  */

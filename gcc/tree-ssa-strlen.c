@@ -528,7 +528,7 @@ static int
 new_stridx (tree exp)
 {
   int idx;
-  if (max_stridx >= PARAM_VALUE (PARAM_MAX_TRACKED_STRLENS))
+  if (max_stridx >= param_max_tracked_strlens)
     return 0;
   if (TREE_CODE (exp) == SSA_NAME)
     {
@@ -557,7 +557,7 @@ static int
 new_addr_stridx (tree exp)
 {
   int *pidx;
-  if (max_stridx >= PARAM_VALUE (PARAM_MAX_TRACKED_STRLENS))
+  if (max_stridx >= param_max_tracked_strlens)
     return 0;
   pidx = addr_stridxptr (exp);
   if (pidx != NULL)
@@ -1082,7 +1082,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata,
   bitmap visited = NULL;
   tree maxbound = pdata->maxbound;
 
-  unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
+  unsigned limit = param_ssa_name_def_chain_limit;
   if (!get_range_strlen_dynamic (src, pdata, &visited, rvals, &limit))
     {
       /* On failure extend the length range to an impossible maximum
@@ -3972,7 +3972,7 @@ class ssa_name_limit_t
 
   ssa_name_limit_t ()
     : visited (NULL),
-    ssa_def_max (PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT)) { }
+    ssa_def_max (param_ssa_name_def_chain_limit) { }
 
   int next_ssa_name (tree);
 

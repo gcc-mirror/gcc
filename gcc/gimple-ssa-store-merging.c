@@ -2502,7 +2502,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
     return false;
 
   bool allow_unaligned
-    = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
+    = !STRICT_ALIGNMENT && param_store_merging_allow_unaligned;
   /* Punt if the combined store would not be aligned and we need alignment.  */
   if (!allow_unaligned)
     {
@@ -2762,7 +2762,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 
       if (info->order >= merged_store->first_nonmergeable_order
 	  || (((new_bitregion_end - new_bitregion_start + 1) / BITS_PER_UNIT)
-	      > (unsigned) PARAM_VALUE (PARAM_STORE_MERGING_MAX_SIZE)))
+	      > (unsigned) param_store_merging_max_size))
 	;
 
       /* |---store 1---|
@@ -3710,7 +3710,7 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 
   auto_vec<class split_store *, 32> split_stores;
   bool allow_unaligned_store
-    = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
+    = !STRICT_ALIGNMENT && param_store_merging_allow_unaligned;
   bool allow_unaligned_load = allow_unaligned_store;
   bool bzero_first = false;
   store_immediate_info *store;
@@ -4890,7 +4890,7 @@ pass_store_merging::process_store (gimple *stmt)
       /* If we reach the limit of stores to merge in a chain terminate and
 	 process the chain now.  */
       if ((*chain_info)->m_store_info.length ()
-	  == (unsigned int) PARAM_VALUE (PARAM_MAX_STORES_TO_MERGE))
+	  == (unsigned int) param_max_stores_to_merge)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,

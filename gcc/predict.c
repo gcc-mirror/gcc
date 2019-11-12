@@ -132,7 +132,7 @@ get_hot_bb_threshold ()
 {
   if (min_count == -1)
     {
-      const int hot_frac = PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      const int hot_frac = param_hot_bb_count_fraction;
       const gcov_type min_hot_count
 	= hot_frac
 	  ? profile_info->sum_max / hot_frac
@@ -177,7 +177,7 @@ maybe_hot_count_p (struct function *fun, profile_count count)
       if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
 	  && count < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.apply_scale (2, 3)))
 	return false;
-      if (count.apply_scale (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION), 1)
+      if (count.apply_scale (param_hot_bb_frequency_fraction, 1)
 	  < ENTRY_BLOCK_PTR_FOR_FN (fun)->count)
 	return false;
       return true;
@@ -223,7 +223,7 @@ probably_never_executed (struct function *fun, profile_count count)
      desirable.  */
   if (count.precise_p () && profile_status_for_fn (fun) == PROFILE_READ)
     {
-      const int unlikely_frac = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
+      const int unlikely_frac = param_unlikely_bb_count_fraction;
       if (count.apply_scale (unlikely_frac, 1) >= profile_info->runs)
 	return false;
       return true;
@@ -412,9 +412,9 @@ predictable_edge_p (edge e)
   if (!e->probability.initialized_p ())
     return false;
   if ((e->probability.to_reg_br_prob_base ()
-       <= PARAM_VALUE (PARAM_PREDICTABLE_BRANCH_OUTCOME) * REG_BR_PROB_BASE / 100)
+       <= param_predictable_branch_outcome * REG_BR_PROB_BASE / 100)
       || (REG_BR_PROB_BASE - e->probability.to_reg_br_prob_base ()
-          <= PARAM_VALUE (PARAM_PREDICTABLE_BRANCH_OUTCOME) * REG_BR_PROB_BASE / 100))
+	  <= param_predictable_branch_outcome * REG_BR_PROB_BASE / 100))
     return true;
   return false;
 }
@@ -1963,7 +1963,7 @@ predict_loops (void)
 	{
 	  tree niter = NULL;
 	  HOST_WIDE_INT nitercst;
-	  int max = PARAM_VALUE (PARAM_MAX_PREDICTED_ITERATIONS);
+	  int max = param_max_predicted_iterations;
 	  int probability;
 	  enum br_predictor predictor;
 	  widest_int nit;
@@ -2443,7 +2443,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  *predictor = (enum br_predictor) tree_to_uhwi (val2);
 		  if (*predictor == PRED_BUILTIN_EXPECT)
 		    *probability
-		      = HITRATE (PARAM_VALUE (BUILTIN_EXPECT_PROBABILITY));
+		      = HITRATE (param_builtin_expect_probability);
 		  return gimple_call_arg (def, 1);
 		}
 	      return NULL;
@@ -2469,7 +2469,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		    return val;
 		  *predictor = PRED_BUILTIN_EXPECT;
 		  *probability
-		    = HITRATE (PARAM_VALUE (BUILTIN_EXPECT_PROBABILITY));
+		    = HITRATE (param_builtin_expect_probability);
 		  return gimple_call_arg (def, 1);
 		}
 	      case BUILT_IN_EXPECT_WITH_PROBABILITY:
@@ -2660,7 +2660,7 @@ tree_predict_by_opcode (basic_block bb)
 	  edge e = find_taken_edge_switch_expr (sw, val);
 	  if (predictor == PRED_BUILTIN_EXPECT)
 	    {
-	      int percent = PARAM_VALUE (BUILTIN_EXPECT_PROBABILITY);
+	      int percent = param_builtin_expect_probability;
 	      gcc_assert (percent >= 0 && percent <= 100);
 	      predict_edge (e, PRED_BUILTIN_EXPECT,
 			    HITRATE (percent));
@@ -3531,7 +3531,7 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
 void
 handle_missing_profiles (void)
 {
-  const int unlikely_frac = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
+  const int unlikely_frac = param_unlikely_bb_count_fraction;
   struct cgraph_node *node;
   auto_vec<struct cgraph_node *, 64> worklist;
 
