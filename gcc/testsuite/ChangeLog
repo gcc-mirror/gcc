@@ -1,3 +1,12 @@
+2019-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92470
+	* gfortran.dg/ISO_Fortran_binding_17.c: New.
+	* gfortran.dg/ISO_Fortran_binding_17.f90: New.
+	* gfortran.dg/ISO_Fortran_binding_1.c (elemental_mult_c, allocate_c,
+	section_c, select_part_c): Update for CFI_{address} changes;
+	add asserts.
+
 2019-11-12  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92412
