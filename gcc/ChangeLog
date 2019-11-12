@@ -1,3 +1,10 @@
+2019-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (xscmpexpdp_<code> for CMP_TEST): Handle
+	UNORDERED if !HONOR_NANS (DFmode).
+	(xscmpexpqp_<code>_<mode> for CMP_TEST and IEEE128): Handle UNORDERED
+	if !HONOR_NANS (<MODE>mode).
+
 2019-11-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (ignore_edge_p): Also look for optimize flag.
