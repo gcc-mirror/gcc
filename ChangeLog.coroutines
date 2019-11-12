@@ -1,5 +1,11 @@
 2019-11-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	libstdc++-v3/
+	* include/experimental/coroutine: Adjust to use spaceship operator
+	when it's available.
+
+2019-11-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/c-family/
 	* c-cppbuiltin.c (c_cpp_builtins): Adjust value for
 	__cpp_coroutines.

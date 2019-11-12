@@ -38,7 +38,14 @@
 #if __cplusplus >= 201402L
 
 #include <bits/c++config.h>
-#include <bits/stl_function.h>
+
+#if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
+#  include <compare>
+#  define THE_SPACESHIP_HAS_LANDED 1
+#else
+#  include <bits/stl_function.h>
+#  define THE_SPACESHIP_HAS_LANDED 0
+#endif
 
 namespace std _GLIBCXX_VISIBILITY (default)
 {
@@ -105,18 +112,18 @@ namespace std _GLIBCXX_VISIBILITY (default)
     }
   };
 
-  // 4830 17.12.3.6 Comparison operators
+  // [coroutine.handle.compare]
+  // 4835 17.12.3.6 
   constexpr bool operator== (coroutine_handle<> __a,
 			     coroutine_handle<> __b) noexcept
   {
     return __a.address () == __b.address ();
   }
 
-  // We do not have spaceship yet, so this is...
-  // TODO:
-  // constexpr strong_ordering
-  // operator<=> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
-
+#if THE_SPACESHIP_HAS_LANDED
+  constexpr strong_ordering
+  operator<=> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
+#else
   constexpr bool operator!= (coroutine_handle<> __a,
 			     coroutine_handle<> __b) noexcept
   {
@@ -146,6 +153,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
   {
     return !(__a < __b);
   }
+#endif
 
   template <class _Promise> struct coroutine_handle : coroutine_handle<>
   {
