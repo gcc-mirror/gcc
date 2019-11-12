@@ -1,3 +1,7 @@
+2019-11-12  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/pr6936.C: Delete, identical to using38.C
+
 2019-11-12  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR rtl-optimization/92430
