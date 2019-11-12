@@ -816,6 +816,8 @@ ignore_edge_p (cgraph_edge *e)
     = e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
 
   return (avail <= AVAIL_INTERPOSABLE
+	  || !opt_for_fn (e->caller->decl, optimize)
+	  || !opt_for_fn (ultimate_target->decl, optimize)
 	  || !opt_for_fn (e->caller->decl, flag_ipa_cp)
 	  || !opt_for_fn (ultimate_target->decl, flag_ipa_cp));
 }
@@ -1471,7 +1473,8 @@ ipcp_verify_propagated_values (void)
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
       class ipa_node_params *info = IPA_NODE_REF (node);
-      if (!opt_for_fn (node->decl, flag_ipa_cp))
+      if (!opt_for_fn (node->decl, flag_ipa_cp)
+	  || !opt_for_fn (node->decl, optimize))
 	continue;
       int i, count = ipa_get_param_count (info);
 
@@ -2316,7 +2319,9 @@ propagate_constants_across_call (struct cgraph_edge *cs)
   parms_count = ipa_get_param_count (callee_info);
   if (parms_count == 0)
     return false;
-  if (!args)
+  if (!args
+      || !opt_for_fn (cs->caller->decl, flag_ipa_cp)
+      || !opt_for_fn (cs->caller->decl, optimize))
     {
       for (i = 0; i < parms_count; i++)
 	ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
@@ -3238,7 +3243,8 @@ propagate_constants_topo (class ipa_topo_info *topo)
       FOR_EACH_VEC_ELT (cycle_nodes, j, v)
 	if (v->has_gimple_body_p ())
 	  {
-	    if (opt_for_fn (v->decl, flag_ipa_cp))
+	    if (opt_for_fn (v->decl, flag_ipa_cp)
+		&& opt_for_fn (v->decl, optimize))
 	      push_node_to_stack (topo, v);
 	    /* When V is not optimized, we can not push it to stac, but
 	       still we need to set all its callees lattices to bottom.  */
@@ -3269,7 +3275,8 @@ propagate_constants_topo (class ipa_topo_info *topo)
 	 their topological sort.  */
       FOR_EACH_VEC_ELT (cycle_nodes, j, v)
 	if (v->has_gimple_body_p ()
-	    && opt_for_fn (v->decl, flag_ipa_cp))
+	    && opt_for_fn (v->decl, flag_ipa_cp)
+	    && opt_for_fn (v->decl, optimize))
 	  {
 	    struct cgraph_edge *cs;
 
@@ -3348,7 +3355,9 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 
   FOR_EACH_DEFINED_FUNCTION (node)
   {
-    if (node->has_gimple_body_p () && opt_for_fn (node->decl, flag_ipa_cp))
+    if (node->has_gimple_body_p ()
+	&& opt_for_fn (node->decl, flag_ipa_cp)
+	&& opt_for_fn (node->decl, optimize))
       {
         class ipa_node_params *info = IPA_NODE_REF (node);
         determine_versionability (node, info);

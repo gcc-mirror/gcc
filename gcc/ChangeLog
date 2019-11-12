@@ -1,5 +1,13 @@
 2019-11-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-cp.c (ignore_edge_p): Also look for optimize flag.
+	(ipcp_verify_propagated_values): Likewise.
+	(propagate_constants_across_call): Likewise.
+	(propagate_constants_topo): Likewise.
+	(ipcp_propagate_stage): Likewise.
+
+2019-11-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/92471
 	* ipa-profile.c (check_argument_count): Break out from ...;
 	watch for missing summaries.
