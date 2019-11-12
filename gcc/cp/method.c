@@ -1094,38 +1094,54 @@ early_check_defaulted_comparison (tree fn)
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {
-      error_at (loc, "defaulted %qD must return %<bool%>", fn);
-      ok = false;
+      diagnostic_t kind = DK_UNSPECIFIED;
+      int opt = 0;
+      if (is_auto (TREE_TYPE (fn)))
+	kind = DK_PEDWARN;
+      else
+	kind = DK_ERROR;
+      emit_diagnostic (kind, loc, opt,
+		       "defaulted %qD must return %<bool%>", fn);
+      if (kind == DK_ERROR)
+	ok = false;
     }
 
-  int i = DECL_NONSTATIC_MEMBER_FUNCTION_P (fn);
-  if (i && type_memfn_quals (TREE_TYPE (fn)) != TYPE_QUAL_CONST)
+  bool mem = DECL_NONSTATIC_MEMBER_FUNCTION_P (fn);
+  if (mem && type_memfn_quals (TREE_TYPE (fn)) != TYPE_QUAL_CONST)
     {
       error_at (loc, "defaulted %qD must be %<const%>", fn);
       ok = false;
     }
   tree parmnode = FUNCTION_FIRST_USER_PARMTYPE (fn);
+  bool saw_byval = false;
+  bool saw_byref = mem;
+  bool saw_bad = false;
   for (; parmnode != void_list_node; parmnode = TREE_CHAIN (parmnode))
     {
-      ++i;
       tree parmtype = TREE_VALUE (parmnode);
-      diagnostic_t kind = DK_UNSPECIFIED;
-      int opt = 0;
       if (same_type_p (parmtype, ctx))
-	/* The draft specifies const reference, but let's also allow by-value
-	   unless -Wpedantic, hopefully it will be added soon. */
-	kind = DK_PEDWARN,
-	  opt = OPT_Wpedantic;
+	saw_byval = true;
       else if (TREE_CODE (parmtype) != REFERENCE_TYPE
 	       || TYPE_QUALS (TREE_TYPE (parmtype)) != TYPE_QUAL_CONST
 	       || !(same_type_ignoring_top_level_qualifiers_p
 		    (TREE_TYPE (parmtype), ctx)))
-	kind = DK_ERROR;
-      if (kind)
-	emit_diagnostic (kind, loc, opt, "defaulted %qD must have "
-			 "parameter type %<const %T&%>", fn, ctx);
-      if (kind == DK_ERROR)
-	ok = false;
+	saw_bad = true;
+      else
+	saw_byref = true;
+    }
+
+  if (saw_bad || (saw_byval && saw_byref))
+    {
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	error_at (loc, "defaulted member %qD must have parameter type "
+		  "%<const %T&%>", fn, ctx);
+      else if (saw_bad)
+	error_at (loc, "defaulted %qD must have parameters of either type "
+		  "%<const %T&%> or %qT", fn, ctx, ctx);
+      else
+	error_at (loc, "defaulted %qD must have parameters of either type "
+		  "%<const %T&%> or %qT, not both", fn, ctx, ctx);
+      ok = false;
     }
 
   /* We still need to deduce deleted/constexpr/noexcept and maybe return. */
