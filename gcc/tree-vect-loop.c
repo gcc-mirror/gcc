@@ -8587,7 +8587,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
       epilogue->simduid = loop->simduid;
       epilogue->force_vectorize = loop->force_vectorize;
-      epilogue->safelen = loop->safelen;
       epilogue->dont_vectorize = false;
     }
 
