@@ -961,6 +961,15 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	  continue;
 	}
 
+      /* Interpret "--param" "key=name" as "--param=key=name".  */
+      const char *needle = "--param";
+      if (i + 1 < argc && strcmp (opt, needle) == 0)
+	{
+	  const char *replacement
+	    = opts_concat (needle, "=", argv[i + 1], NULL);
+	  argv[++i] = replacement;
+	}
+
       n = decode_cmdline_option (argv + i, lang_mask,
 				 &opt_array[num_decoded_options]);
       num_decoded_options++;

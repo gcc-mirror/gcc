@@ -461,4 +461,14 @@ extern bool parse_and_check_align_values (const char *flag,
 					  bool report_error,
 					  location_t loc);
 
+/* Set OPTION in OPTS to VALUE if the option is not set in OPTS_SET.  */
+
+#define SET_OPTION_IF_UNSET(OPTS, OPTS_SET, OPTION, VALUE) \
+  do \
+  { \
+    if (!(OPTS_SET)->x_ ## OPTION) \
+      (OPTS)->x_ ## OPTION = VALUE; \
+  } \
+  while (false)
+
 #endif

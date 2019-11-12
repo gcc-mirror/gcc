@@ -437,13 +437,6 @@ Common Driver Alias(-target-help)
 fversion
 Common Driver Alias(-version)
 
--param
-Common Separate
---param <param>=<value>	Set parameter <param> to value.  See below for a complete list of parameters.
-
--param=
-Common Joined Alias(-param)
-
 -sysroot
 Driver Separate Alias(-sysroot=)
 
