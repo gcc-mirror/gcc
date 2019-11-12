@@ -927,10 +927,6 @@ grokfield (const cp_declarator *declarator,
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {
-	      if (friendp)
-		/* ??? do_friend doesn't set this because funcdef_flag is false
-		   for in-class defaulted functions.  So set it here.  */
-		SET_DECL_FRIEND_CONTEXT (value, current_class_type);
 	      if (defaultable_fn_check (value))
 		{
 		  DECL_DEFAULTED_FN (value) = 1;

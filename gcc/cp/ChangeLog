@@ -1,5 +1,11 @@
 2019-11-11  Jason Merrill  <jason@redhat.com>
 
+	Implement P1946R0, Allow defaulting comparisons by value.
+	* method.c (early_check_defaulted_comparison): Accept by-value,
+	reject mixed by-value and by-reference parms.
+	* decl.c (grokdeclarator): Set funcdef_flag for defaulted friend.
+	* decl2.c (grokfield): Don't SET_DECL_FRIEND_CONTEXT.
+
 	* typeck.c (cp_build_binary_op): Sorry about <=> on VECTOR_TYPE.
 
 2019-11-11  Jakub Jelinek  <jakub@redhat.com>

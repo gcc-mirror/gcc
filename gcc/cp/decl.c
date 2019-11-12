@@ -13202,6 +13202,11 @@ grokdeclarator (const cp_declarator *declarator,
 	      ;  /* We already issued a permerror.  */
 	    else if (decl && DECL_NAME (decl))
 	      {
+		if (initialized)
+		  /* Kludge: We need funcdef_flag to be true in do_friend for
+		     in-class defaulted functions, but that breaks grokfndecl.
+		     So set it here.  */
+		  funcdef_flag = true;
 		if (template_class_depth (current_class_type) == 0)
 		  {
 		    decl = check_explicit_specialization
