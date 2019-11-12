@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "tree-inline.h"
 #include "gimple-iterator.h"
 #include "cfghooks.h"

@@ -111,7 +111,6 @@
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "cselib.h"
-#include "params.h"
 #include "tree-pretty-print.h"
 #include "rtl-iter.h"
 #include "fibonacci_heap.h"

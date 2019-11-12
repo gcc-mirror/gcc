@@ -100,7 +100,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "tree-inline.h"
-#include "params.h"
 #include "gimple-pretty-print.h"
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"

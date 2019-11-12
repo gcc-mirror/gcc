@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "ipa-utils.h"
 #include "profile.h"
-#include "params.h"
 #include "value-prof.h"
 #include "tree-inline.h"
 #include "symbol-summary.h"

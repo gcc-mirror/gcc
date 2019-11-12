@@ -91,7 +91,6 @@ along with GCC; see the file COPYING3.	If not see
 #include "recog.h"
 #include "rtl-error.h"
 #include "sparseset.h"
-#include "params.h"
 #include "lra.h"
 #include "lra-int.h"
 #include "function-abi.h"

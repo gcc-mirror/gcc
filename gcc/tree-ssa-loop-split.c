@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-cfgcleanup.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-iterator.h"
 #include "gimple-pretty-print.h"

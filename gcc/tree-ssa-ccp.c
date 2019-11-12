@@ -136,7 +136,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-ssa-propagate.h"
 #include "dbgcnt.h"
-#include "params.h"
 #include "builtins.h"
 #include "cfgloop.h"
 #include "stor-layout.h"

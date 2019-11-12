@@ -154,7 +154,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "lcm.h"
 #include "cfgcleanup.h"
 #include "expr.h"
-#include "params.h"
 #include "intl.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"

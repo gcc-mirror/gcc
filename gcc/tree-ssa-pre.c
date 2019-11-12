@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "tree-ssa-propagate.h"

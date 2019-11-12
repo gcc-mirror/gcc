@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify.h"
 #include "tree-dfa.h"
-#include "params.h"
 #include "langhooks-def.h"
 #include "tree-diagnostic.h"
 #include "except.h"

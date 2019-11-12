@@ -41,7 +41,6 @@ compilation is specified by a string called a "spec".  */
 #include "diagnostic.h"
 #include "flags.h"
 #include "opts.h"
-#include "params.h"
 #include "filenames.h"
 #include "spellcheck.h"
 

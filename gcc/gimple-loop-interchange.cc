@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "tree-ssa.h"
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-loop-manip.h"

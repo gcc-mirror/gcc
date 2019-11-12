@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "graphds.h"
-#include "params.h"
 #include "sreal.h"
 #include "regs.h"
 #include "function-abi.h"

@@ -79,7 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "gimplify.h"
 #include "predict.h"
-#include "params.h"
 #include "real.h"
 #include "langhooks.h"
 #include "sbitmap.h"

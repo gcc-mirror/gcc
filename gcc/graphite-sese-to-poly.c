@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
-#include "params.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "gimplify.h"

@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-cfg.h"
 #include "domwalk.h"
-#include "params.h"
 #include "tree-ssa-address.h"
 #include "tree-affine.h"
 #include "tree-eh.h"

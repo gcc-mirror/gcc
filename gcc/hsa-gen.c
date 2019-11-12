@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "cfganal.h"
 #include "builtins.h"
-#include "params.h"
 #include "gomp-constants.h"
 #include "internal-fn.h"
 #include "builtins.h"

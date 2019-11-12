@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "toplev.h"
 #include "debug.h"
-#include "params.h"
 #include "tree-inline.h"
 #include "value-prof.h"
 #include "tree-ssa-live.h"

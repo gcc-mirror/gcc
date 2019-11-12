@@ -51,7 +51,6 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "cfgrtl.h"
-#include "params.h"
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"

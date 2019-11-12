@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-builder.h"
 #include "gimple-fold.h"
 #include "ubsan.h"
-#include "params.h"
 #include "builtins.h"
 #include "fnmatch.h"
 #include "tree-inline.h"

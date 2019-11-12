@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
-#include "params.h"
 
 /* TODO:
    1. Sinking store only using scalar promotion (IE without moving the RHS):

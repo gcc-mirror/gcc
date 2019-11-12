@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "intl.h"
 #include "tree-diagnostic.h"
-#include "params.h"
 #include "reload.h"
 #include "lra.h"
 #include "dwarf2asm.h"

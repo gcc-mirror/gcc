@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
-#include "params.h"
 #include "alias.h"
 #include "tree-ssa-loop.h"
 #include "tree-ssa-dse.h"

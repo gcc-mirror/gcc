@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-inline.h"
 #include "tree-cfgcleanup.h"
 #include "builtins.h"

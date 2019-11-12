@@ -141,7 +141,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgbuild.h"
 #include "sched-int.h"
 #include "common/common-target.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "cfgloop.h"
 #include "dumpfile.h"

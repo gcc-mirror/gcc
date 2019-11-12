@@ -36,7 +36,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "optabs-tree.h"
 #include "cgraph.h"
 #include "gimple-pretty-print.h"
-#include "params.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"

@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-strlen.h"
-#include "params.h"
 #include "tree-hash-traits.h"
 #include "tree-object-size.h"
 #include "builtins.h"

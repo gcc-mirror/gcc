@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "cfgloop.h"
 #include "tree-data-ref.h"
-#include "params.h"
 #include "dumpfile.h"
 #include "tree-vectorizer.h"
 #include "graphite.h"

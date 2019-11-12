@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "opts.h"
-#include "params.h"
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 #include "common/common-target.h"

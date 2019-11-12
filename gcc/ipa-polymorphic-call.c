@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "gimple-pretty-print.h"
 #include "tree-into-ssa.h"
-#include "params.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
    for devirtualization machinery.  */

@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "cfgloop.h"
 #include "expr.h"
-#include "params.h"
 #include "ddg.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"

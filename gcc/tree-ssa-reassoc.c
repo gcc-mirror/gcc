@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "langhooks.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "builtins.h"
 #include "gimplify.h"
 #include "case-cfn-macros.h"

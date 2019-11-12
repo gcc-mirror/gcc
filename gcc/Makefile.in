@@ -928,7 +928,6 @@ RTL_BASE_H = $(CORETYPES_H) rtl.h rtl.def reg-notes.def \
 FIXED_VALUE_H = fixed-value.h
 RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
-PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
 	gtm-builtins.def sanitizer.def \
 	hsa-builtins.def
@@ -1631,7 +1630,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
-OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
+OBJS-libcommon-target = $(common_out_object_file) prefix.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
 	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o
 
@@ -2653,7 +2652,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
-       params.list params.options case-cfn-macros.h \
+       case-cfn-macros.h \
        cfn-operators.pd omp-device-properties.h
 
 #
@@ -3513,19 +3512,6 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(infodir)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
-
-params.list: s-params.list; @true
-s-params.list: $(srcdir)/params-list.h $(srcdir)/params.def
-	$(CPP) $(srcdir)/params-list.h | sed 's/^#.*//;/^$$/d' > tmp-params.list
-	$(SHELL) $(srcdir)/../move-if-change tmp-params.list params.list
-	$(STAMP) s-params.list
-
-params.options: s-params.options; @true
-s-params.options: $(srcdir)/params-options.h $(srcdir)/params.def
-	$(CPP) $(srcdir)/params-options.h | sed 's/^#.*//;/^$$/d' > tmp-params.options
-	$(SHELL) $(srcdir)/../move-if-change tmp-params.options params.options
-	$(STAMP) s-params.options
-
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \

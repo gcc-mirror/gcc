@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "tree-ssa-propagate.h"
 #include "tree-cfg.h"
 #include "domwalk.h"

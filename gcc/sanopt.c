@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "ubsan.h"
-#include "params.h"
 #include "tree-hash-traits.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"

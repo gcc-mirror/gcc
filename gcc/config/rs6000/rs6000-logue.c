@@ -45,7 +45,6 @@
 #include "langhooks.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "params.h"
 #include "alias.h"
 #include "rs6000-internal.h"
 #if TARGET_MACHO

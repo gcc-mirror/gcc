@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 #include "cfgrtl.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "dojump.h"
 #include "expr.h"
 #include "dumpfile.h"
