@@ -1,3 +1,35 @@
+2019-11-12  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.opt (mtls-markers): Delete.
+	* config/rs6000/rs6000.h (TARGET_TLS_MARKERS): Don't define.
+	(IS_NOMARK_TLSGETADDR): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_output_tlsargs): Delete.
+	* config/rs6000/rs6000.c (rs6000_output_tlsargs): Delete.
+	(rs6000_legitimize_tls_address): Remove !TARGET_TLS_MARKERS code.
+	(rs6000_call_template_1): Delete TARGET_TLS_MARKERS test and
+	allow other UNSPECs besides UNSPEC_TLSGD and UNSPEC_TLSLD.
+	(rs6000_indirect_call_template_1): Likewise.
+	(rs6000_pltseq_template): Likewise.
+	(rs6000_opt_vars): Remove "tls-markers" entry.
+	* config/rs6000/rs6000.md (tls_gd<bits>): Replace TARGET_TLS_MARKERS
+	with TARGET_ELF.
+	(tls_gd_high<bits>, tls_gd_low<bits>): Likewise.
+	(tls_ld<bits>, tls_ld_high<bits>, tls_ld_low<bits>): Likewise.
+	(pltseq_plt_pcrel<mode>): Likewise.
+	(call_value_local32): Remove IS_NOMARK_TLSGETADDR predicate test.
+	(call_value_local64): Likewise.
+	(call_value_indirect_nonlocal_sysv<mode>): Remove IS_NOMARK_TLSGETADDR
+	output and length attribute sub-expression.
+	(call_value_nonlocal_sysv<mode>),
+	(call_value_nonlocal_sysv_secure<mode>),
+	(call_value_local_aix<mode>, call_value_nonlocal_aix<mode>),
+	(call_value_indirect_aix<mode>, call_value_indirect_elfv2<mode>),
+	(call_value_indirect_pcrel<mode>): Likewise.
+	* doc/install.texi (powerpc-*-*): Require binutils-2.20.
+	* configure.ac (HAVE_AS_TLS_MARKERS): Delete test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2019-11-11  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (prefixed_memory): New predicate.
