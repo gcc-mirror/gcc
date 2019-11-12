@@ -4390,7 +4390,7 @@ The OpenRISC 1000 32-bit processor with delay slots.
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
-You will need GNU binutils 2.15 or newer.
+You will need GNU binutils 2.20 or newer.
 
 @html
 <hr />

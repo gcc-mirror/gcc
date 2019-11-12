@@ -246,10 +246,6 @@ mavoid-indexed-addresses
 Target Report Var(TARGET_AVOID_XFORM) Init(-1) Save
 Avoid generation of indexed load/store instructions when possible.
 
-mtls-markers
-Target Report Var(tls_markers) Init(1) Save
-Mark __tls_get_addr calls with argument info.
-
 msched-epilog
 Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1) Save
 
