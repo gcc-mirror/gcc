@@ -1,3 +1,13 @@
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/c/
+	* c-parser.c (OACC_SERIAL_CLAUSE_MASK): New macro.
+	(c_parser_oacc_kernels_parallel): Rename function to...
+	(c_parser_oacc_compute): ... this.  Handle PRAGMA_OACC_SERIAL.
+	(c_parser_omp_construct): Update accordingly.
+
+
 2019-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_translation_unit): Diagnose declare target

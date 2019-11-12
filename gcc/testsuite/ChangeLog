@@ -1,3 +1,12 @@
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	gcc/testsuite/
+	* c-c++-common/goacc/parallel-dims.c: New test.
+	* gfortran.dg/goacc/parallel-dims.f90: New test.
+
 2019-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92452
