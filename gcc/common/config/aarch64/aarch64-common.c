@@ -41,10 +41,6 @@
 
 #undef	TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE aarch_option_optimization_table
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS aarch64_option_default_params
-#undef TARGET_OPTION_VALIDATE_PARAM
-#define TARGET_OPTION_VALIDATE_PARAM aarch64_option_validate_param
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT aarch64_option_init_struct
 
@@ -63,48 +59,11 @@ static const struct default_options aarch_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_fasynchronous_unwind_tables, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_funwind_tables, NULL, 1},
 #endif
+    { OPT_LEVELS_ALL, OPT__param_stack_clash_protection_guard_size_, NULL,
+      DEFAULT_STK_CLASH_GUARD_SIZE == 0 ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE },
+
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
-
-/* Implement target validation TARGET_OPTION_DEFAULT_PARAM.  */
-
-static bool
-aarch64_option_validate_param (const int value, const int param)
-{
-  /* Check that both parameters are the same.  */
-  if (param == param_stack_clash_protection_guard_size)
-    {
-      if (value != 12 && value != 16)
-	{
-	  error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
-		 "size.  Given value %d (%llu KB) is out of range",
-		 value, (1ULL << value) / 1024ULL);
-	  return false;
-	}
-    }
-
-  return true;
-}
-
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-
-static void
-aarch64_option_default_params (void)
-{
-  /* We assume the guard page is 64k.  */
-  int index = (int) param_stack_clash_protection_guard_size;
-  param_stack_clash_protection_guard_size
-    = (DEFAULT_STK_CLASH_GUARD_SIZE == 0 ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE);
-
-  int guard_size = param_stack_clash_protection_guard_size;
-
-  /* Set the interval parameter to be the same as the guard size.  This way the
-     mid-end code does the right thing for us.  */
-  param_stack_clash_protection_probe_interval = guard_size;
-
-  /* Validate the options.  */
-  aarch64_option_validate_param (guard_size, index);
-}
 
 /* Implement TARGET_HANDLE_OPTION.
    This function handles the target specific options for CPU/target selection.

@@ -42,6 +42,9 @@ static const struct default_options rs6000_option_optimization_table[] =
        turn them off.  */
     { OPT_LEVELS_ALL, OPT_fweb, NULL, 0 },
     { OPT_LEVELS_ALL, OPT_frename_registers, NULL, 0 },
+
+    /* Double growth factor to counter reduced min jump length.  */
+    { OPT_LEVELS_ALL, OPT__param_max_grow_copy_bb_insns_, NULL, 16 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
@@ -67,15 +70,6 @@ rs6000_option_init_struct (struct gcc_options *opts)
 #ifdef OBJECT_FORMAT_ELF
   opts->x_flag_asynchronous_unwind_tables = 1;
 #endif
-}
-
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-
-static void
-rs6000_option_default_params (void)
-{
-  /* Double growth factor to counter reduced min jump length.  */
-  param_max_grow_copy_bb_insns = 16;
 }
 
 /* If not otherwise specified by a target, make 'long double' equivalent to
@@ -270,9 +264,6 @@ rs6000_supports_split_stack (bool report,
 
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT rs6000_option_init_struct
-
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS rs6000_option_default_params
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE rs6000_option_optimization_table

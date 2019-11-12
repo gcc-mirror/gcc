@@ -31,6 +31,7 @@ static const struct default_options sh_option_optimization_table[] =
   {
     { OPT_LEVELS_SIZE, OPT_mdiv_, SH_DIV_STR_FOR_SIZE, 1 },
     { OPT_LEVELS_0_ONLY, OPT_mdiv_, "", 1 },
+    { OPT_LEVELS_ALL, OPT__param_simultaneous_prefetches_, NULL, 2 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
@@ -144,17 +145,8 @@ sh_handle_option (struct gcc_options *opts,
     }
 }
 
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-static void
-sh_option_default_params (void)
-{
-  param_simultaneous_prefetches = 2;
-}
-
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE sh_option_optimization_table
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS sh_option_default_params
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION
