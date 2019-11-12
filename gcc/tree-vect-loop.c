@@ -5299,8 +5299,11 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
           orig_name = PHI_RESULT (exit_phi);
           scalar_result = scalar_results[k];
           FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, orig_name)
-            FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-              SET_USE (use_p, scalar_result);
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+		SET_USE (use_p, scalar_result);
+	      update_stmt (use_stmt);
+	    }
         }
 
       phis.release ();
