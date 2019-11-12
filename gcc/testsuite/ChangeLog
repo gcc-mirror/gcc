@@ -1,3 +1,9 @@
+2019-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/92449
+	* gcc.c-torture/compile/pr92449.c: New test.
+	* gcc.target/powerpc/pr92449-1.c: New test.
+
 2019-11-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92470
