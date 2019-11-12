@@ -63,9 +63,6 @@ int flag_complex_method = 1
 Variable
 bool flag_warn_unused_result = false
 
-Variable
-int *param_values
-
 ; Nonzero if we should write GIMPLE bytecode for link-time optimization.
 Variable
 int flag_generate_lto

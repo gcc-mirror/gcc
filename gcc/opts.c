@@ -188,9 +188,6 @@ static const char use_diagnosed_msg[] = N_("Uses of this option are diagnosed.")
 
 typedef char *char_p; /* For DEF_VEC_P.  */
 
-static void handle_param (struct gcc_options *opts,
-			  struct gcc_options *opts_set, location_t loc,
-			  const char *carg);
 static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg, struct gcc_options *opts,
 			     struct gcc_options *opts_set,
@@ -283,8 +280,6 @@ init_opts_obstack (void)
 void
 init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 {
-  size_t num_params = get_num_compiler_params ();
-
   /* Ensure that opts_obstack has already been initialized by the time
      that we initialize any gcc_options instances (PR jit/68446).  */
   gcc_assert (opts_obstack.chunk_size > 0);
@@ -293,13 +288,6 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 
   if (opts_set)
     memset (opts_set, 0, sizeof (*opts_set));
-
-  opts->x_param_values = XNEWVEC (int, num_params);
-
-  if (opts_set)
-    opts_set->x_param_values = XCNEWVEC (int, num_params);
-
-  init_param_values (opts->x_param_values);
 
   /* Initialize whether `char' is signed.  */
   opts->x_flag_signed_char = DEFAULT_SIGNED_CHAR;
@@ -316,14 +304,6 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 
   /* Some targets have other target-specific initialization.  */
   targetm_common.option_init_struct (opts);
-}
-
-/* Release any allocations owned by OPTS.  */
-
-void
-finalize_options_struct (struct gcc_options *opts)
-{
-  XDELETEVEC (opts->x_param_values);
 }
 
 /* If indicated by the optimization level LEVEL (-Os if SIZE is set,
@@ -2465,10 +2445,10 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_finline_limit_:
-      set_param_value ("max-inline-insns-single", value / 2,
-		       opts->x_param_values, opts_set->x_param_values);
-      set_param_value ("max-inline-insns-auto", value / 2,
-		       opts->x_param_values, opts_set->x_param_values);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_max_inline_insns_single,
+			   value / 2);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_max_inline_insns_auto,
+			   value / 2);
       break;
 
     case OPT_finstrument_functions_exclude_function_list_:
@@ -2834,49 +2814,6 @@ common_handle_option (struct gcc_options *opts,
   common_handle_option_auto (opts, opts_set, decoded, lang_mask, kind,
                              loc, handlers, dc);
   return true;
-}
-
-/* Handle --param NAME=VALUE.  */
-static void
-handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
-	      location_t loc, const char *carg)
-{
-  char *equal, *arg;
-  int value;
-
-  arg = xstrdup (carg);
-  equal = strchr (arg, '=');
-  if (!equal)
-    error_at (loc, "%s: %qs arguments should be of the form NAME=VALUE",
-	      arg, "--param");
-  else
-    {
-      *equal = '\0';
-
-      enum compiler_param index;
-      if (!find_param (arg, &index))
-	{
-	  const char *suggestion = find_param_fuzzy (arg);
-	  if (suggestion)
-	    error_at (loc, "invalid %qs name %qs; did you mean %qs?",
-		      "--param", arg, suggestion);
-	  else
-	    error_at (loc, "invalid %qs name %qs", "--param", arg);
-	}
-      else
-	{
-	  if (!param_string_value_p (index, equal + 1, &value))
-	    value = integral_argument (equal + 1);
-
-	  if (value == -1)
-	    error_at (loc, "invalid %qs value %qs", "--param", equal + 1);
-	  else
-	    set_param_value (arg, value,
-			     opts->x_param_values, opts_set->x_param_values);
-	}
-    }
-
-  free (arg);
 }
 
 /* Used to set the level of strict aliasing warnings in OPTS,

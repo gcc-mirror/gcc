@@ -510,6 +510,17 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
 	  candidates->safe_push (alternative);
 	}
     }
+
+  /* For all params (e.g. --param=key=value),
+     include also '--param key=value'.  */
+  const char *prefix = "--param=";
+  if (strstr (opt_text, prefix) == opt_text)
+    {
+      char *param = xstrdup (opt_text + 1);
+      gcc_assert (param[6] == '=');
+      param[6] = ' ';
+      candidates->safe_push (param);
+    }
 }
 
 /* Decode the switch beginning at ARGV for the language indicated by

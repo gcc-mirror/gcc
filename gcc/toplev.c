@@ -1240,9 +1240,6 @@ general_init (const char *argv0, bool init_signals)
   /* Initialize register usage now so switches may override.  */
   init_reg_sets ();
 
-  /* Register the language-independent parameters.  */
-  global_init_params ();
-
   /* This must be done after global_init_params but before argument
      processing.  */
   init_ggc_heuristics ();
@@ -1262,7 +1259,6 @@ general_init (const char *argv0, bool init_signals)
 
   statistics_early_init ();
   debuginfo_early_init ();
-  finish_params ();
 }
 
 /* Return true if the current target supports -fsection-anchors.  */
@@ -2468,10 +2464,6 @@ toplev::finalize (void)
   gcse_c_finalize ();
   ipa_cp_c_finalize ();
   ira_costs_c_finalize ();
-  params_c_finalize ();
-
-  finalize_options_struct (&global_options);
-  finalize_options_struct (&global_options_set);
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */
