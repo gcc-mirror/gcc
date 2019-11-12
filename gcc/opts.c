@@ -1278,38 +1278,6 @@ print_filtered_help (unsigned int include_flags,
   bool displayed = false;
   char new_help[256];
 
-  if (include_flags == CL_PARAMS)
-    {
-      for (i = 0; i < LAST_PARAM; i++)
-	{
-	  const char *param = compiler_params[i].option;
-
-	  help = compiler_params[i].help;
-	  if (help == NULL || *help == '\0')
-	    {
-	      if (exclude_flags & CL_UNDOCUMENTED)
-		continue;
-	      help = undocumented_msg;
-	    }
-
-	  /* Get the translation.  */
-	  help = _(help);
-
-	  if (!opts->x_quiet_flag)
-	    {
-	      snprintf (new_help, sizeof (new_help),
-			_("default %d minimum %d maximum %d"),
-			compiler_params[i].default_value,
-			compiler_params[i].min_value,
-			compiler_params[i].max_value);
-	      help = new_help;
-	    }
-	  wrap_help (help, param, strlen (param), columns);
-	}
-      putchar ('\n');
-      return;
-    }
-
   if (!opts->x_help_printed)
     opts->x_help_printed = XCNEWVAR (char, cl_options_count);
 
@@ -1679,7 +1647,7 @@ print_specific_help (unsigned int include_flags,
 	  description = _("The following options are language-independent");
 	  break;
 	case CL_PARAMS:
-	  description = _("The --param option recognizes the following as parameters");
+	  description = _("The following options control parameters");
 	  break;
 	default:
 	  if (i >= cl_lang_count)
@@ -2241,10 +2209,6 @@ common_handle_option (struct gcc_options *opts,
 
   switch (code)
     {
-    case OPT__param:
-      handle_param (opts, opts_set, loc, arg);
-      break;
-
     case OPT__help:
       {
 	unsigned int all_langs_mask = (1U << cl_lang_count) - 1;
