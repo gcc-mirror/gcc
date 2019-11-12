@@ -5224,6 +5224,13 @@ cp_build_binary_op (const op_location_t &location,
 			  "types %qT and %qT", type0, type1);
 	    }
 
+	  if (resultcode == SPACESHIP_EXPR)
+	    {
+	      if (complain & tf_error)
+		sorry_at (location, "three-way comparison of vectors");
+	      return error_mark_node;
+	    }
+
 	  /* Always construct signed integer vector type.  */
 	  intt = c_common_type_for_size
 	    (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type0))), 0);
