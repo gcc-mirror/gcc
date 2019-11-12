@@ -1,3 +1,17 @@
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/cp/
+	* constexpr.c (potential_constant_expression_1): Handle
+	OACC_SERIAL.
+	* parser.c (OACC_SERIAL_CLAUSE_MASK): New macro.
+	(cp_parser_oacc_kernels_parallel): Rename function to...
+	(cp_parser_oacc_compute): ... this.  Handle PRAGMA_OACC_SERIAL.
+	(cp_parser_omp_construct): Update accordingly.
+	(cp_parser_pragma): Handle PRAGMA_OACC_SERIAL.  Fix alphabetic
+	order.
+	* pt.c (tsubst_expr): Handle OACC_SERIAL.
+
 2019-11-11  Jason Merrill  <jason@redhat.com>
 
 	Implement P1946R0, Allow defaulting comparisons by value.

@@ -359,7 +359,7 @@ DEFGSCODE(GIMPLE_OMP_SECTIONS_SWITCH, "gimple_omp_sections_switch", GSS_BASE)
 DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE_LAYOUT)
 
 /* GIMPLE_OMP_TARGET <BODY, CLAUSES, CHILD_FN> represents
-   #pragma acc {kernels,parallel,data,enter data,exit data,update}
+   #pragma acc {kernels,parallel,serial,data,enter data,exit data,update}
    #pragma omp target {,data,update}
    BODY is the sequence of statements inside the construct
    (NULL for some variants).

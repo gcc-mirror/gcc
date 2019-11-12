@@ -1,3 +1,11 @@
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/c-family/
+	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_SERIAL enumeration
+	constant.
+	* c-pragma.c (oacc_pragmas): Add "serial" entry.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.h (gnu_vector_type_p): New function.

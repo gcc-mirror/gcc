@@ -1,3 +1,13 @@
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	libgomp/
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: New test.
+	* testsuite/libgomp.oacc-fortran/parallel-dims-aux.c: New test.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f89: New test.
+
 2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 

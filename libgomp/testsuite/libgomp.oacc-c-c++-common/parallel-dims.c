@@ -1,6 +1,8 @@
 /* OpenACC parallelism dimensions clauses: num_gangs, num_workers,
    vector_length.  */
 
+/* See also '../libgomp.oacc-fortran/parallel-dims.f90'.  */
+
 #include <limits.h>
 #include <openacc.h>
 #include <gomp-constants.h>
@@ -44,6 +46,8 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_vector ()
 int main ()
 {
   acc_init (acc_device_default);
+
+  /* OpenACC parallel construct.  */
 
   /* Non-positive value.  */
 
@@ -478,6 +482,8 @@ int main ()
   }
 
 
+  /* OpenACC kernels construct.  */
+
   /* We can't test parallelized OpenACC kernels constructs in this way: use of
      the acc_gang, acc_worker, acc_vector functions will make the construct
      unparallelizable.  */
@@ -541,6 +547,73 @@ int main ()
       __builtin_abort ();
 #undef VECTORS
 #undef WORKERS
+  }
+
+
+  /* OpenACC serial construct.  */
+
+  /* GR, WS, VS.  */
+  {
+    int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
+    gangs_min = workers_min = vectors_min = INT_MAX;
+    gangs_max = workers_max = vectors_max = INT_MIN;
+#pragma acc serial /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */ \
+  reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
+    {
+      for (int i = 100; i > -100; i--)
+	{
+	  gangs_min = gangs_max = acc_gang ();
+	  workers_min = workers_max = acc_worker ();
+	  vectors_min = vectors_max = acc_vector ();
+	}
+    }
+    if (gangs_min != 0 || gangs_max != 1 - 1
+	|| workers_min != 0 || workers_max != 1 - 1
+	|| vectors_min != 0 || vectors_max != 1 - 1)
+      __builtin_abort ();
+  }
+
+  /* Composition of GP, WP, VP.  */
+  {
+    int vectors_actual = 1;  /* Implicit 'vector_length (1)' clause.  */
+    int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
+    gangs_min = workers_min = vectors_min = INT_MAX;
+    gangs_max = workers_max = vectors_max = INT_MIN;
+#pragma acc serial copy (vectors_actual) /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */ \
+  copy (gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max)
+    {
+      if (acc_on_device (acc_device_nvidia))
+	{
+	  /* The GCC nvptx back end enforces vector_length (32).  */
+	  /* It's unclear if that's actually permissible here;
+	     <https://github.com/OpenACC/openacc-spec/issues/238> "OpenACC
+	     'serial' construct might not actually be serial".  */
+	  vectors_actual = 32;
+	}
+#pragma acc loop gang reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
+      for (int i = 100; i > -100; i--)
+#pragma acc loop worker reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
+	for (int j = 100; j > -100; j--)
+#pragma acc loop vector reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
+	  for (int k = 100 * vectors_actual; k > -100 * vectors_actual; k--)
+	    {
+	      gangs_min = gangs_max = acc_gang ();
+	      workers_min = workers_max = acc_worker ();
+	      vectors_min = vectors_max = acc_vector ();
+	    }
+    }
+    if (acc_get_device_type () == acc_device_nvidia)
+      {
+	if (vectors_actual != 32)
+	  __builtin_abort ();
+      }
+    else
+      if (vectors_actual != 1)
+	__builtin_abort ();
+    if (gangs_min != 0 || gangs_max != 1 - 1
+	|| workers_min != 0 || workers_max != 1 - 1
+	|| vectors_min != 0 || vectors_max != vectors_actual - 1)
+      __builtin_abort ();
   }
 
 
