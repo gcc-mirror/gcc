@@ -1,5 +1,9 @@
 2019-11-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/92449
+	* tree-complex.c (expand_complex_multiplication): If !HONOR_NANS,
+	don't emit UNORDERED_EXPR guarded libcall.  Formatting fixes.
+
 	PR tree-optimization/92452
 	* tree-vrp.c (vrp_prop::check_array_ref): If TRUNC_DIV_EXPR folds
 	into NULL_TREE, set up_bound to NULL_TREE instead of computing
