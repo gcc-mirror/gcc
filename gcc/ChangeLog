@@ -1,5 +1,16 @@
 2019-11-12  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/predicates.md (unspec_tls): Allow const0_rtx for got
+	element of unspec vec.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Support
+	PC-relative TLS.
+	* config/rs6000/rs6000.md (UNSPEC_TLSTLS_PCREL): New unspec.
+	(tls_gd_pcrel, tls_ld_pcrel): New insns.
+	(tls_dtprel, tls_tprel): Set attr prefixed when tls_size is not 16.
+	(tls_got_tprel_pcrel, tls_tls_pcrel): New insns.
+
+2019-11-12  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.opt (mtls-markers): Delete.
 	* config/rs6000/rs6000.h (TARGET_TLS_MARKERS): Don't define.
 	(IS_NOMARK_TLSGETADDR): Likewise.
