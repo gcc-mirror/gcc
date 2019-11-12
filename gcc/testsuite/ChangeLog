@@ -1,3 +1,12 @@
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/completion-3.c: Append = to all expected
+	results and sort expected output.
+	* gcc.dg/pr83620.c: Update error message.
+	* gcc.dg/spellcheck-params-2.c: Likewise.
+	* gcc.dg/spellcheck-params.c: Likewise.
+	* gcc.misc-tests/help.exp: Update expected output.
+
 2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
