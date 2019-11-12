@@ -1,5 +1,12 @@
 2019-11-12  Martin Liska  <mliska@suse.cz>
 
+	* common/common-target.def:
+	Do not mention set_default_param_value
+	and set_param_value.
+	* doc/tm.texi: Likewise.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
 	* common.opt: Remove param_values.
 	* config/i386/i386-options.c (ix86_valid_target_attribute_p):
 	Remove finalize_options_struct.
