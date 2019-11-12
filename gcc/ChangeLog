@@ -1,5 +1,12 @@
 2019-11-12  Martin Liska  <mliska@suse.cz>
 
+	* Makefile.in: Include params.opt.
+	* flag-types.h (enum parloops_schedule_type): Add
+	parloops_schedule_type used in params.opt.
+	* params.opt: New file.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
 	* common.opt: Remove --param and --param= options.
 	* opt-functions.awk: Mark CL_PARAMS for options
 	that have Param keyword.
