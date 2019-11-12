@@ -1605,12 +1605,12 @@ ix86_recompute_optlev_based_flags (struct gcc_options *opts,
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
-      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
-	opts->x_flag_omit_frame_pointer = !USE_IX86_FRAME_POINTER;
+      if (opts->x_optimize >= 1)
+	SET_OPTION_IF_UNSET (opts, opts_set, flag_omit_frame_pointer,
+			     !USE_IX86_FRAME_POINTER);
       if (opts->x_flag_asynchronous_unwind_tables
-	  && !opts_set->x_flag_unwind_tables
 	  && TARGET_64BIT_MS_ABI)
-	opts->x_flag_unwind_tables = 1;
+	SET_OPTION_IF_UNSET (opts, opts_set, flag_unwind_tables, 1);
       if (opts->x_flag_asynchronous_unwind_tables == 2)
 	opts->x_flag_unwind_tables
 	  = opts->x_flag_asynchronous_unwind_tables = 1;
@@ -1619,9 +1619,9 @@ ix86_recompute_optlev_based_flags (struct gcc_options *opts,
     }
   else
     {
-      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
-	opts->x_flag_omit_frame_pointer
-	  = !(USE_IX86_FRAME_POINTER || opts->x_optimize_size);
+      if (opts->x_optimize >= 1)
+	  SET_OPTION_IF_UNSET (opts, opts_set, flag_omit_frame_pointer,
+			       !(USE_IX86_FRAME_POINTER || opts->x_optimize_size));
       if (opts->x_flag_asynchronous_unwind_tables == 2)
 	opts->x_flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
       if (opts->x_flag_pcc_struct_return == 2)
@@ -1821,8 +1821,7 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_ix86_pmode = TARGET_LP64_P (opts->x_ix86_isa_flags)
 			 ? PMODE_DI : PMODE_SI;
 
-  if (!opts_set->x_ix86_abi)
-    opts->x_ix86_abi = DEFAULT_ABI;
+  SET_OPTION_IF_UNSET (opts, opts_set, ix86_abi, DEFAULT_ABI);
 
   if (opts->x_ix86_abi == MS_ABI && TARGET_X32_P (opts->x_ix86_isa_flags))
     error ("%<-mabi=ms%> not supported with X32 ABI");
@@ -1843,8 +1842,8 @@ ix86_option_override_internal (bool main_args_p,
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this
      option.  */
-  if (!opts_set->x_flag_ms_extensions)
-    opts->x_flag_ms_extensions = (MS_ABI == DEFAULT_ABI);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_ms_extensions,
+		       (MS_ABI == DEFAULT_ABI));
 
   if (opts_set->x_ix86_cmodel)
     {
@@ -2367,8 +2366,8 @@ ix86_option_override_internal (bool main_args_p,
   ix86_default_align (opts);
 
   /* Provide default for -mbranch-cost= value.  */
-  if (!opts_set->x_ix86_branch_cost)
-    opts->x_ix86_branch_cost = ix86_tune_cost->branch_cost;
+  SET_OPTION_IF_UNSET (opts, opts_set, ix86_branch_cost,
+		       ix86_tune_cost->branch_cost);
 
   if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
@@ -2474,8 +2473,8 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   /* Set the default value for -mstackrealign.  */
-  if (!opts_set->x_ix86_force_align_arg_pointer)
-    opts->x_ix86_force_align_arg_pointer = STACK_REALIGN_DEFAULT;
+  SET_OPTION_IF_UNSET (opts, opts_set, ix86_force_align_arg_pointer,
+		       STACK_REALIGN_DEFAULT);
 
   ix86_default_incoming_stack_boundary = PREFERRED_STACK_BOUNDARY;
 
@@ -2863,9 +2862,8 @@ ix86_option_override_internal (bool main_args_p,
 
   /* PR86952: jump table usage with retpolines is slow.
      The PR provides some numbers about the slowness.  */
-  if (ix86_indirect_branch != indirect_branch_keep
-      && !opts_set->x_flag_jump_tables)
-    opts->x_flag_jump_tables = 0;
+  if (ix86_indirect_branch != indirect_branch_keep)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_jump_tables, 0);
 
   return true;
 }

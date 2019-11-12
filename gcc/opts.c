@@ -641,9 +641,8 @@ default_options_optimization (struct gcc_options *opts,
   /* -O2 param settings.  */
   opt2 = (opts->x_optimize >= 2);
 
-  if (openacc_mode
-      && !opts_set->x_flag_ipa_pta)
-    opts->x_flag_ipa_pta = true;
+  if (openacc_mode)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_pta, true);
 
   /* Track fields in field-sensitive alias analysis.  */
   if (opt2)
@@ -1064,13 +1063,11 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
      code that calls a non-split-stack functions.  But if partitioning
      was turned on explicitly just hope for the best.  */
   if (opts->x_flag_split_stack
-      && opts->x_flag_reorder_blocks_and_partition
-      && !opts_set->x_flag_reorder_blocks_and_partition)
-    opts->x_flag_reorder_blocks_and_partition = 0;
+      && opts->x_flag_reorder_blocks_and_partition)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_reorder_blocks_and_partition, 0);
 
-  if (opts->x_flag_reorder_blocks_and_partition
-      && !opts_set->x_flag_reorder_functions)
-    opts->x_flag_reorder_functions = 1;
+  if (opts->x_flag_reorder_blocks_and_partition)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_reorder_functions, 1);
 
   /* The -gsplit-dwarf option requires -ggnu-pubnames.  */
   if (opts->x_dwarf_split_debug_info)
@@ -1127,9 +1124,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Enable -fsanitize-address-use-after-scope if address sanitizer is
      enabled.  */
-  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
-      && !opts_set->x_flag_sanitize_address_use_after_scope)
-    opts->x_flag_sanitize_address_use_after_scope = true;
+  if (opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_sanitize_address_use_after_scope,
+			 true);
 
   /* Force -fstack-reuse=none in case -fsanitize-address-use-after-scope
      is enabled.  */
@@ -1670,52 +1667,34 @@ enable_fdo_optimizations (struct gcc_options *opts,
 			  struct gcc_options *opts_set,
 			  int value)
 {
-  if (!opts_set->x_flag_branch_probabilities)
-    opts->x_flag_branch_probabilities = value;
-  if (!opts_set->x_flag_profile_values)
-    opts->x_flag_profile_values = value;
-  if (!opts_set->x_flag_unroll_loops)
-    opts->x_flag_unroll_loops = value;
-  if (!opts_set->x_flag_peel_loops)
-    opts->x_flag_peel_loops = value;
-  if (!opts_set->x_flag_tracer)
-    opts->x_flag_tracer = value;
-  if (!opts_set->x_flag_value_profile_transformations)
-    opts->x_flag_value_profile_transformations = value;
-  if (!opts_set->x_flag_inline_functions)
-    opts->x_flag_inline_functions = value;
-  if (!opts_set->x_flag_ipa_cp)
-    opts->x_flag_ipa_cp = value;
-  if (!opts_set->x_flag_ipa_cp_clone
-      && value && opts->x_flag_ipa_cp)
-    opts->x_flag_ipa_cp_clone = value;
-  if (!opts_set->x_flag_ipa_bit_cp
-      && value && opts->x_flag_ipa_cp)
-    opts->x_flag_ipa_bit_cp = value;
-  if (!opts_set->x_flag_predictive_commoning)
-    opts->x_flag_predictive_commoning = value;
-  if (!opts_set->x_flag_split_loops)
-    opts->x_flag_split_loops = value;
-  if (!opts_set->x_flag_unswitch_loops)
-    opts->x_flag_unswitch_loops = value;
-  if (!opts_set->x_flag_gcse_after_reload)
-    opts->x_flag_gcse_after_reload = value;
-  if (!opts_set->x_flag_tree_loop_vectorize)
-    opts->x_flag_tree_loop_vectorize = value;
-  if (!opts_set->x_flag_tree_slp_vectorize)
-    opts->x_flag_tree_slp_vectorize = value;
-  if (!opts_set->x_flag_version_loops_for_strides)
-    opts->x_flag_version_loops_for_strides = value;
-  if (!opts_set->x_flag_vect_cost_model)
-    opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
-  if (!opts_set->x_flag_tree_loop_distribute_patterns)
-    opts->x_flag_tree_loop_distribute_patterns = value;
-  if (!opts_set->x_flag_loop_interchange)
-    opts->x_flag_loop_interchange = value;
-  if (!opts_set->x_flag_unroll_jam)
-    opts->x_flag_unroll_jam = value;
-  if (!opts_set->x_flag_tree_loop_distribution)
-    opts->x_flag_tree_loop_distribution = value;
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_branch_probabilities, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_values, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_unroll_loops, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_peel_loops, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_tracer, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_value_profile_transformations,
+		       value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_inline_functions, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_cp, value);
+  if (value)
+    {
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_cp_clone, 1);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_bit_cp, 1);
+    }
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_predictive_commoning, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_split_loops, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_unswitch_loops, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_gcse_after_reload, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_vectorize, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_slp_vectorize, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_version_loops_for_strides, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_vect_cost_model,
+		       VECT_COST_MODEL_DYNAMIC);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_distribute_patterns,
+		       value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_loop_interchange, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_unroll_jam, value);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_tree_loop_distribution, value);
 }
 
 /* -f{,no-}sanitize{,-recover}= suboptions.  */
@@ -2531,13 +2510,13 @@ common_handle_option (struct gcc_options *opts,
       /* FALLTHRU */
     case OPT_fprofile_use:
       enable_fdo_optimizations (opts, opts_set, value);
-      if (!opts_set->x_flag_profile_reorder_functions)
-	  opts->x_flag_profile_reorder_functions = value;
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_reorder_functions,
+			   value);
 	/* Indirect call profiling should do all useful transformations
 	   speculative devirtualization does.  */
-      if (!opts_set->x_flag_devirtualize_speculatively
-	  && opts->x_flag_value_profile_transformations)
-	opts->x_flag_devirtualize_speculatively = false;
+      if (opts->x_flag_value_profile_transformations)
+	SET_OPTION_IF_UNSET (opts, opts_set, flag_devirtualize_speculatively,
+			     false);
       break;
 
     case OPT_fauto_profile_:
@@ -2548,8 +2527,7 @@ common_handle_option (struct gcc_options *opts,
       /* FALLTHRU */
     case OPT_fauto_profile:
       enable_fdo_optimizations (opts, opts_set, value);
-      if (!opts_set->x_flag_profile_correction)
-	opts->x_flag_profile_correction = value;
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_correction, value);
       SET_OPTION_IF_UNSET (opts, opts_set,
 			   param_early_inliner_max_iterations, 10);
       break;
@@ -2560,19 +2538,14 @@ common_handle_option (struct gcc_options *opts,
       /* No break here - do -fprofile-generate processing. */
       /* FALLTHRU */
     case OPT_fprofile_generate:
-      if (!opts_set->x_profile_arc_flag)
-	opts->x_profile_arc_flag = value;
-      if (!opts_set->x_flag_profile_values)
-	opts->x_flag_profile_values = value;
-      if (!opts_set->x_flag_inline_functions)
-	opts->x_flag_inline_functions = value;
-      if (!opts_set->x_flag_ipa_bit_cp)
-	opts->x_flag_ipa_bit_cp = value;
+      SET_OPTION_IF_UNSET (opts, opts_set, profile_arc_flag, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_values, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_inline_functions, value);
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_bit_cp, value);
       /* FIXME: Instrumentation we insert makes ipa-reference bitmaps
 	 quadratic.  Disable the pass until better memory representation
 	 is done.  */
-      if (!opts_set->x_flag_ipa_reference)
-        opts->x_flag_ipa_reference = false;
+      SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_reference, false);
       break;
 
     case OPT_fpatchable_function_entry_:
