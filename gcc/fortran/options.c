@@ -162,8 +162,8 @@ gfc_init_options (unsigned int decoded_options_count,
   /* ??? Wmissing-include-dirs is disabled by default in C/C++ but
      enabled by default in Fortran.  Ideally, we should express this
      in .opt, but that is not supported yet.  */
-  if (!global_options_set.x_cpp_warn_missing_include_dirs)
-    global_options.x_cpp_warn_missing_include_dirs = 1;
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       cpp_warn_missing_include_dirs, 1);
 
   set_dec_flags (0);
 

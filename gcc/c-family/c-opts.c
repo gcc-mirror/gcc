@@ -828,9 +828,9 @@ c_common_post_options (const char **pfilename)
 
   /* C2X Annex F does not permit certain built-in functions to raise
      "inexact".  */
-  if (flag_isoc2x
-      && !global_options_set.x_flag_fp_int_builtin_inexact)
-    flag_fp_int_builtin_inexact = 0;
+  if (flag_isoc2x)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_fp_int_builtin_inexact, 0);
 
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
@@ -847,9 +847,9 @@ c_common_post_options (const char **pfilename)
 
   /* If -ffreestanding, -fno-hosted or -fno-builtin then disable
      pattern recognition.  */
-  if (!global_options_set.x_flag_tree_loop_distribute_patterns
-      && flag_no_builtin)
-    flag_tree_loop_distribute_patterns = 0;
+  if (flag_no_builtin)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_tree_loop_distribute_patterns, 0);
 
   /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative
@@ -918,16 +918,17 @@ c_common_post_options (const char **pfilename)
 				 && (cxx_dialect >= cxx11 || flag_isoc99));
 
   /* -Wregister is enabled by default in C++17.  */
-  if (!global_options_set.x_warn_register)
-    warn_register = cxx_dialect >= cxx17;
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_register,
+		       cxx_dialect >= cxx17);
 
   /* -Wcomma-subscript is enabled by default in C++20.  */
-  if (!global_options_set.x_warn_comma_subscript)
-    warn_comma_subscript = (cxx_dialect >= cxx2a && warn_deprecated);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_comma_subscript,
+		       cxx_dialect >= cxx2a && warn_deprecated);
 
   /* -Wvolatile is enabled by default in C++20.  */
-  if (!global_options_set.x_warn_volatile)
-    warn_volatile = (cxx_dialect >= cxx2a && warn_deprecated);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,
+		       cxx_dialect >= cxx2a && warn_deprecated);
 
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
@@ -979,12 +980,13 @@ c_common_post_options (const char **pfilename)
   /* By default, enable the new inheriting constructor semantics along with ABI
      11.  New and old should coexist fine, but it is a change in what
      artificial symbols are generated.  */
-  if (!global_options_set.x_flag_new_inheriting_ctors)
-    flag_new_inheriting_ctors = abi_version_at_least (11);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_new_inheriting_ctors,
+		       abi_version_at_least (11));
 
   /* For GCC 7, only enable DR150 resolution by default if -std=c++17.  */
-  if (!global_options_set.x_flag_new_ttp)
-    flag_new_ttp = (cxx_dialect >= cxx17);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, flag_new_ttp,
+		       cxx_dialect >= cxx17);
 
   if (cxx_dialect >= cxx11)
     {
