@@ -4246,8 +4246,8 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 		{
 		  gimple_seq stmts;
 		  arginfo[i].op
-		    = force_gimple_operand (arginfo[i].op, &stmts, true,
-					    NULL_TREE);
+		    = force_gimple_operand (unshare_expr (arginfo[i].op),
+					    &stmts, true, NULL_TREE);
 		  if (stmts != NULL)
 		    {
 		      basic_block new_bb;
