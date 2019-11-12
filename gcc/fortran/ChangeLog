@@ -1,3 +1,10 @@
+2019-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81651
+	* module.c (gzopen_included_file, gzopen_included_file_1)
+	(gzopen_intrinsic_module, bad_module, gfc_use_module): Use fully
+	qualified module path for error reporting.
+
 2019-11-12  Martin Liska  <mliska@suse.cz>
 
 	* options.c (gfc_init_options):

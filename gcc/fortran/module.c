@@ -187,6 +187,8 @@ pointer_info;
 /* The gzFile for the module we're reading or writing.  */
 static gzFile module_fp;
 
+/* Fully qualified module path */
+static char *module_fullpath = NULL;
 
 /* The name of the module we're reading (USE'ing) or writing.  */
 static const char *module_name;
@@ -1101,6 +1103,8 @@ gzopen_included_file_1 (const char *name, gfc_directorylist *list,
          if (gfc_cpp_makedep ())
            gfc_cpp_add_dep (fullname, system);
 
+	 free (module_fullpath);
+	 module_fullpath = xstrdup (fullname);
          return f;
        }
     }
@@ -1116,8 +1120,14 @@ gzopen_included_file (const char *name, bool include_cwd, bool module)
   if (IS_ABSOLUTE_PATH (name) || include_cwd)
     {
       f = gzopen (name, "r");
-      if (f && gfc_cpp_makedep ())
-       gfc_cpp_add_dep (name, false);
+      if (f)
+	{
+	  if (gfc_cpp_makedep ())
+	    gfc_cpp_add_dep (name, false);
+
+	  free (module_fullpath);
+	  module_fullpath = xstrdup (name);
+	}
     }
 
   if (!f)
@@ -1134,8 +1144,14 @@ gzopen_intrinsic_module (const char* name)
   if (IS_ABSOLUTE_PATH (name))
     {
       f = gzopen (name, "r");
-      if (f && gfc_cpp_makedep ())
-        gfc_cpp_add_dep (name, true);
+      if (f)
+	{
+	  if (gfc_cpp_makedep ())
+	    gfc_cpp_add_dep (name, true);
+
+	  free (module_fullpath);
+	  module_fullpath = xstrdup (name);
+	}
     }
 
   if (!f)
@@ -1181,7 +1197,7 @@ bad_module (const char *msgid)
     {
     case IO_INPUT:
       gfc_fatal_error ("Reading module %qs at line %d column %d: %s",
-	  	       module_name, module_line, module_column, msgid);
+	  	       module_fullpath, module_line, module_column, msgid);
       break;
     case IO_OUTPUT:
       gfc_fatal_error ("Writing module %qs at line %d column %d: %s",
@@ -7141,7 +7157,7 @@ gfc_use_module (gfc_use_list *module)
       if ((start == 1 && strcmp (atom_name, "GFORTRAN") != 0)
 	  || (start == 2 && strcmp (atom_name, " module") != 0))
 	gfc_fatal_error ("File %qs opened at %C is not a GNU Fortran"
-			 " module file", filename);
+			 " module file", module_fullpath);
       if (start == 3)
 	{
 	  if (strcmp (atom_name, " version") != 0
@@ -7150,7 +7166,7 @@ gfc_use_module (gfc_use_list *module)
 	      || strcmp (atom_string, MOD_VERSION))
 	    gfc_fatal_error ("Cannot read module file %qs opened at %C,"
 			     " because it was created by a different"
-			     " version of GNU Fortran", filename);
+			     " version of GNU Fortran", module_fullpath);
 
 	  free (atom_string);
 	}
