@@ -1,3 +1,12 @@
+2019-11-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/c-family/
+	* c-cppbuiltin.c (c_cpp_builtins): Adjust value for
+	__cpp_coroutines.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro-pre-proc.C: Adjust test value.
+
 2019-11-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
