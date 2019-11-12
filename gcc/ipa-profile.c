@@ -476,6 +476,27 @@ ipa_propagate_frequency (struct cgraph_node *node)
   return changed;
 }
 
+/* Check that number of arguments of N agrees with E.
+   Be conservative when summaries are not present.  */
+
+static bool
+check_argument_count (struct cgraph_node *n, struct cgraph_edge *e)
+{
+  if (!ipa_node_params_sum || !ipa_edge_args_sum)
+    return true;
+  class ipa_node_params *info = IPA_NODE_REF (n->function_symbol ());
+  if (!info)
+    return true;
+  ipa_edge_args *e_info = IPA_EDGE_REF (e);
+  if (!e)
+    return true;
+  if (ipa_get_param_count (info) != ipa_get_cs_argument_count (e_info)
+      && (ipa_get_param_count (info) >= ipa_get_cs_argument_count (e_info)
+	  || !stdarg_p (TREE_TYPE (n->decl))))
+    return false;
+  return true;
+}
+
 /* Simple ipa profile pass propagating frequencies across the callgraph.  */
 
 static unsigned int
@@ -599,14 +620,7 @@ ipa_profile (void)
 				 "Not speculating: target is overwritable "
 				 "and can be discarded.\n");
 		    }
-		  else if (ipa_node_params_sum && ipa_edge_args_sum
-			   && (!vec_safe_is_empty
-			       (IPA_NODE_REF (n2)->descriptors))
-			   && ipa_get_param_count (IPA_NODE_REF (n2))
-			      != ipa_get_cs_argument_count (IPA_EDGE_REF (e))
-			    && (ipa_get_param_count (IPA_NODE_REF (n2))
-				>= ipa_get_cs_argument_count (IPA_EDGE_REF (e))
-				|| !stdarg_p (TREE_TYPE (n2->decl))))
+		  else if (check_argument_count (n2, e))
 		    {
 		      nmismatch++;
 		      if (dump_file)
