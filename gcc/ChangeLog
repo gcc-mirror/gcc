@@ -1,3 +1,23 @@
+2019-11-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/83688
+	* gimple-ssa-sprintf.c (format_result::alias_info): New struct.
+	(directive::argno): New member.
+	(format_result::aliases, format_result::alias_count): New data members.
+	(format_result::append_alias): New member function.
+	(fmtresult::dst_offset): New data member.
+	(pass_sprintf_length::call_info::dst_origin): New data member.
+	(pass_sprintf_length::call_info::dst_field, dst_offset): Same.
+	(char_type_p, array_elt_at_offset, field_at_offset): New functions.
+	(get_origin_and_offset): Same.
+	(format_string): Call it.
+	(format_directive): Call append_alias and set directive argument
+	number.
+	(maybe_warn_overlap): New function.
+	(pass_sprintf_length::compute_format_length): Call it.
+	(pass_sprintf_length::handle_gimple_call): Initialize new members.
+	* gcc/tree-ssa-strlen.c (): Also enable when -Wrestrict is on.
+
 2019-11-12  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR rtl-optimization/92430
