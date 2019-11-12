@@ -1,3 +1,10 @@
+2019-11-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/92471
+	* ipa-profile.c (check_argument_count): Break out from ...;
+	watch for missing summaries.
+	(ipa_profile): Here.
+
 2019-11-12  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92412
