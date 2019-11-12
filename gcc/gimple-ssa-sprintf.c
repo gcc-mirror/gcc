@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "vr-values.h"
 #include "tree-ssa-strlen.h"
+#include "tree-dfa.h"
 
 /* The likely worst case value of MB_LEN_MAX for the target, large enough
    for UTF-8.  Ideally, this would be obtained by a target hook if it were
@@ -104,9 +105,6 @@ namespace {
    warn_format_overflow otherwise.  */
 
 static int warn_level;
-
-struct call_info;
-struct format_result;
 
 /* The minimum, maximum, likely, and unlikely maximum number of bytes
    of output either a formatting function or an individual directive
@@ -131,80 +129,6 @@ struct result_range
      optimization but not in diagnostics.  */
   unsigned HOST_WIDE_INT unlikely;
 };
-
-/* The result of a call to a formatted function.  */
-
-struct format_result
-{
-  /* Range of characters written by the formatted function.
-     Setting the minimum to HOST_WIDE_INT_MAX disables all
-     length tracking for the remainder of the format string.  */
-  result_range range;
-
-  /* True when the range above is obtained from known values of
-     directive arguments, or bounds on the amount of output such
-     as width and precision, and not the result of  heuristics that
-     depend on warning levels.  It's used to issue stricter diagnostics
-     in cases where strings of unknown lengths are bounded by the arrays
-     they are determined to refer to.  KNOWNRANGE must not be used for
-     the return value optimization.  */
-  bool knownrange;
-
-  /* True if no individual directive could fail or result in more than
-     4095 bytes of output (the total NUMBER_CHARS_{MIN,MAX} might be
-     greater).  Implementations are not required to handle directives
-     that produce more than 4K bytes (leading to undefined behavior)
-     and so when one is found it disables the return value optimization.
-     Similarly, directives that can fail (such as wide character
-     directives) disable the optimization.  */
-  bool posunder4k;
-
-  /* True when a floating point directive has been seen in the format
-     string.  */
-  bool floating;
-
-  /* True when an intermediate result has caused a warning.  Used to
-     avoid issuing duplicate warnings while finishing the processing
-     of a call.  WARNED also disables the return value optimization.  */
-  bool warned;
-
-  /* Preincrement the number of output characters by 1.  */
-  format_result& operator++ ()
-  {
-    return *this += 1;
-  }
-
-  /* Postincrement the number of output characters by 1.  */
-  format_result operator++ (int)
-  {
-    format_result prev (*this);
-    *this += 1;
-    return prev;
-  }
-
-  /* Increment the number of output characters by N.  */
-  format_result& operator+= (unsigned HOST_WIDE_INT);
-};
-
-format_result&
-format_result::operator+= (unsigned HOST_WIDE_INT n)
-{
-  gcc_assert (n < HOST_WIDE_INT_MAX);
-
-  if (range.min < HOST_WIDE_INT_MAX)
-    range.min += n;
-
-  if (range.max < HOST_WIDE_INT_MAX)
-    range.max += n;
-
-  if (range.likely < HOST_WIDE_INT_MAX)
-    range.likely += n;
-
-  if (range.unlikely < HOST_WIDE_INT_MAX)
-    range.unlikely += n;
-
-  return *this;
-}
 
 /* Return the value of INT_MIN for the target.  */
 
@@ -460,7 +384,7 @@ public:
   /* Construct a FMTRESULT object with all counters initialized
      to MIN.  KNOWNRANGE is set when MIN is valid.  */
   fmtresult (unsigned HOST_WIDE_INT min = HOST_WIDE_INT_MAX)
-  : argmin (), argmax (), nonstr (),
+  : argmin (), argmax (), dst_offset (HOST_WIDE_INT_MIN), nonstr (),
     knownrange (min < HOST_WIDE_INT_MAX),
     mayfail (), nullp ()
   {
@@ -474,7 +398,7 @@ public:
      KNOWNRANGE is set when both MIN and MAX are valid.   */
   fmtresult (unsigned HOST_WIDE_INT min, unsigned HOST_WIDE_INT max,
 	     unsigned HOST_WIDE_INT likely = HOST_WIDE_INT_MAX)
-  : argmin (), argmax (), nonstr (),
+  : argmin (), argmax (), dst_offset (HOST_WIDE_INT_MIN), nonstr (),
     knownrange (min < HOST_WIDE_INT_MAX && max < HOST_WIDE_INT_MAX),
     mayfail (), nullp ()
   {
@@ -496,6 +420,11 @@ public:
 
   /* The range a directive's argument is in.  */
   tree argmin, argmax;
+
+  /* The starting offset into the destination of the formatted function
+     call of the %s argument that points into (aliases with) the same
+     destination array.  */
+  HOST_WIDE_INT dst_offset;
 
   /* The minimum and maximum number of bytes that a directive
      results in on output for an argument in the range above.  */
@@ -620,13 +549,28 @@ static bool
 get_int_range (tree, HOST_WIDE_INT *, HOST_WIDE_INT *, bool, HOST_WIDE_INT,
 	       const vr_values *);
 
+struct call_info;
+
 /* Description of a format directive.  A directive is either a plain
    string or a conversion specification that starts with '%'.  */
 
 struct directive
 {
+  directive (const call_info *inf, unsigned dno)
+    : info (inf), dirno (dno), argno (), beg (), len (), flags (),
+    width (), prec (),  modifier (), specifier (), arg (), fmtfunc ()
+  { }
+
+  /* Reference to the info structure describing the call that this
+     directive is a part of.  */
+  const call_info *info;
+
   /* The 1-based directive number (for debugging).  */
   unsigned dirno;
+
+  /* The zero-based argument number of the directive's argument ARG in
+     the function's argument list.  */
+  unsigned argno;
 
   /* The first character of the directive and its length.  */
   const char *beg;
@@ -722,6 +666,130 @@ struct directive
   }
 };
 
+/* The result of a call to a formatted function.  */
+
+struct format_result
+{
+  format_result ()
+    : range (), aliases (), alias_count (), knownrange (), posunder4k (),
+    floating (), warned () { /* No-op.  */ }
+
+  ~format_result ()
+  {
+    XDELETEVEC (aliases);
+  }
+
+  /* Range of characters written by the formatted function.
+     Setting the minimum to HOST_WIDE_INT_MAX disables all
+     length tracking for the remainder of the format string.  */
+  result_range range;
+
+  struct alias_info
+  {
+    directive dir;          /* The directive that aliases the destination.  */
+    HOST_WIDE_INT offset;   /* The offset at which it aliases it.  */
+    result_range range;     /* The raw result of the directive.  */
+  };
+
+  /* An array of directives whose pointer argument aliases a part
+     of the destination object of the formatted function.  */
+  alias_info *aliases;
+  unsigned alias_count;
+
+  /* True when the range above is obtained from known values of
+     directive arguments, or bounds on the amount of output such
+     as width and precision, and not the result of  heuristics that
+     depend on warning levels.  It's used to issue stricter diagnostics
+     in cases where strings of unknown lengths are bounded by the arrays
+     they are determined to refer to.  KNOWNRANGE must not be used for
+     the return value optimization.  */
+  bool knownrange;
+
+  /* True if no individual directive could fail or result in more than
+     4095 bytes of output (the total NUMBER_CHARS_{MIN,MAX} might be
+     greater).  Implementations are not required to handle directives
+     that produce more than 4K bytes (leading to undefined behavior)
+     and so when one is found it disables the return value optimization.
+     Similarly, directives that can fail (such as wide character
+     directives) disable the optimization.  */
+  bool posunder4k;
+
+  /* True when a floating point directive has been seen in the format
+     string.  */
+  bool floating;
+
+  /* True when an intermediate result has caused a warning.  Used to
+     avoid issuing duplicate warnings while finishing the processing
+     of a call.  WARNED also disables the return value optimization.  */
+  bool warned;
+
+  /* Preincrement the number of output characters by 1.  */
+  format_result& operator++ ()
+  {
+    return *this += 1;
+  }
+
+  /* Postincrement the number of output characters by 1.  */
+  format_result operator++ (int)
+  {
+    format_result prev (*this);
+    *this += 1;
+    return prev;
+  }
+
+  /* Increment the number of output characters by N.  */
+  format_result& operator+= (unsigned HOST_WIDE_INT);
+
+  /* Add a directive to the sequence of those with potentially aliasing
+     arguments.  */
+  void append_alias (const directive &, HOST_WIDE_INT, const result_range &);
+
+private:
+  /* Not copyable or assignable.  */
+  format_result (format_result&);
+  void operator= (format_result&);
+};
+
+format_result&
+format_result::operator+= (unsigned HOST_WIDE_INT n)
+{
+  gcc_assert (n < HOST_WIDE_INT_MAX);
+
+  if (range.min < HOST_WIDE_INT_MAX)
+    range.min += n;
+
+  if (range.max < HOST_WIDE_INT_MAX)
+    range.max += n;
+
+  if (range.likely < HOST_WIDE_INT_MAX)
+    range.likely += n;
+
+  if (range.unlikely < HOST_WIDE_INT_MAX)
+    range.unlikely += n;
+
+  return *this;
+}
+
+void
+format_result::append_alias (const directive &d, HOST_WIDE_INT off,
+			     const result_range &resrng)
+{
+  unsigned cnt = alias_count + 1;
+  alias_info *ar = XNEWVEC (alias_info, cnt);
+
+  for (unsigned i = 0; i != alias_count; ++i)
+    ar[i] = aliases[i];
+
+  ar[alias_count].dir = d;
+  ar[alias_count].offset = off;
+  ar[alias_count].range = resrng;
+
+  XDELETEVEC (aliases);
+
+  alias_count = cnt;
+  aliases = ar;
+}
+
 /* Return the logarithm of X in BASE.  */
 
 static int
@@ -803,39 +871,6 @@ tree_digits (tree x, int base, HOST_WIDE_INT prec, bool plus, bool prefix)
   return res;
 }
 
-/* Given the formatting result described by RES and NAVAIL, the number
-   of available in the destination, return the range of bytes remaining
-   in the destination.  */
-
-static inline result_range
-bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
-{
-  result_range range;
-
-  if (HOST_WIDE_INT_MAX <= navail)
-    {
-      range.min = range.max = range.likely = range.unlikely = navail;
-      return range;
-    }
-
-  /* The lower bound of the available range is the available size
-     minus the maximum output size, and the upper bound is the size
-     minus the minimum.  */
-  range.max = res.range.min < navail ? navail - res.range.min : 0;
-
-  range.likely = res.range.likely < navail ? navail - res.range.likely : 0;
-
-  if (res.range.max < HOST_WIDE_INT_MAX)
-    range.min = res.range.max < navail ? navail - res.range.max : 0;
-  else
-    range.min = range.likely;
-
-  range.unlikely = (res.range.unlikely < navail
-		    ? navail - res.range.unlikely : 0);
-
-  return range;
-}
-
 /* Description of a call to a formatted function.  */
 
 struct call_info
@@ -848,6 +883,18 @@ struct call_info
 
   /* Called built-in function code.  */
   built_in_function fncode;
+
+  /* The "origin" of the destination pointer argument, which is either
+     the DECL of the destination buffer being written into or a pointer
+     that points to it, plus some offset.  */
+  tree dst_origin;
+
+  /* For a destination pointing to a struct array member, the offset of
+     the member.  */
+  HOST_WIDE_INT dst_field;
+
+  /* The offset into the destination buffer.  */
+  HOST_WIDE_INT dst_offset;
 
   /* Format argument and format string extracted from it.  */
   tree format;
@@ -2146,6 +2193,240 @@ format_character (const directive &dir, tree arg, const vr_values *vr_values)
   return res.adjust_for_width_or_precision (dir.width);
 }
 
+/* Determine the offset *INDEX of the first byte of an array element of
+   TYPE (possibly recursively) into which the byte offset OFF points.
+   On success set *INDEX to the offset of the first byte and return type.
+   Otherwise, if no such element can be found, return null.  */
+
+static tree
+array_elt_at_offset (tree type, HOST_WIDE_INT off, HOST_WIDE_INT *index)
+{
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+  tree eltype = type;
+  while (TREE_CODE (TREE_TYPE (eltype)) == ARRAY_TYPE)
+    eltype = TREE_TYPE (eltype);
+
+  if (TYPE_MODE (TREE_TYPE (eltype)) != TYPE_MODE (char_type_node))
+    eltype = TREE_TYPE (eltype);
+
+  if (eltype == type)
+    {
+      *index = 0;
+      return type;
+    }
+
+  HOST_WIDE_INT typsz = int_size_in_bytes (type);
+  HOST_WIDE_INT eltsz = int_size_in_bytes (eltype);
+  if (off < typsz * eltsz)
+    {
+      *index = (off / eltsz) * eltsz;
+      return TREE_CODE (eltype) == ARRAY_TYPE ? TREE_TYPE (eltype) : eltype;
+    }
+
+  return NULL_TREE;
+}
+
+/* Determine the offset *INDEX of the first byte of a struct member of TYPE
+   (possibly recursively) into which the byte offset OFF points.  On success
+   set *INDEX to the offset of the first byte and return true.  Otherwise,
+   if no such member can be found, return false.  */
+
+static bool
+field_at_offset (tree type, HOST_WIDE_INT off, HOST_WIDE_INT *index)
+{
+  gcc_assert (RECORD_OR_UNION_TYPE_P (type));
+
+  for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+    {
+      if (TREE_CODE (fld) != FIELD_DECL || DECL_ARTIFICIAL (fld))
+	continue;
+
+      tree fldtype = TREE_TYPE (fld);
+      HOST_WIDE_INT fldoff = int_byte_position (fld);
+
+      /* If the size is not available the field is a flexible array
+	 member.  Treat this case as success.  */
+      tree typesize = TYPE_SIZE_UNIT (fldtype);
+      HOST_WIDE_INT fldsize = (tree_fits_uhwi_p (typesize)
+			       ? tree_to_uhwi (typesize)
+			       : off);
+
+      if (fldoff + fldsize < off)
+	continue;
+
+      if (TREE_CODE (fldtype) == ARRAY_TYPE)
+	{
+	  HOST_WIDE_INT idx = 0;
+	  if (tree ft = array_elt_at_offset (fldtype, off, &idx))
+	    fldtype = ft;
+	  else
+	    break;
+
+	  *index += idx;
+	  fldoff -= idx;
+	  off -= idx;
+	}
+
+      if (RECORD_OR_UNION_TYPE_P (fldtype))
+	{
+	  *index += fldoff;
+	  return field_at_offset (fldtype, off - fldoff, index);
+	}
+
+      *index += fldoff;
+      return true;
+    }
+
+  return false;
+}
+
+/* For an expression X of pointer type, recursively try to find the same
+   origin (object or pointer) as Y it references and return such an X.
+   When X refers to a struct member, set *FLDOFF to the offset of the
+   member from the beginning of the "most derived" object.  */
+
+static tree
+get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
+{
+  if (!x)
+    return NULL_TREE;
+
+  switch (TREE_CODE (x))
+    {
+    case ADDR_EXPR:
+      x = TREE_OPERAND (x, 0);
+      return get_origin_and_offset (x, fldoff, off);
+
+    case ARRAY_REF:
+      {
+	tree offset = TREE_OPERAND (x, 1);
+	HOST_WIDE_INT idx = (tree_fits_uhwi_p (offset)
+			     ? tree_to_uhwi (offset) : HOST_WIDE_INT_MAX);
+
+	tree eltype = TREE_TYPE (x);
+	if (TREE_CODE (eltype) == INTEGER_TYPE)
+	  {
+	    if (off)
+	      *off = idx;
+	  }
+	else if (idx < HOST_WIDE_INT_MAX)
+	  *fldoff += idx * int_size_in_bytes (eltype);
+	else
+	  *fldoff = idx;
+
+	x = TREE_OPERAND (x, 0);
+	return get_origin_and_offset (x, fldoff, NULL);
+      }
+
+    case MEM_REF:
+      if (off)
+	{
+	  tree offset = TREE_OPERAND (x, 1);
+	  *off = (tree_fits_uhwi_p (offset)
+		  ? tree_to_uhwi (offset) : HOST_WIDE_INT_MAX);
+	}
+
+      x = TREE_OPERAND (x, 0);
+
+      if (off)
+	{
+	  tree xtype = TREE_TYPE (TREE_TYPE (x));
+
+	  /* The byte offset of the most basic struct member the byte
+	     offset *OFF corresponds to, or for a (multidimensional)
+	     array member, the byte offset of the array element.  */
+	  HOST_WIDE_INT index = 0;
+
+	  if ((RECORD_OR_UNION_TYPE_P (xtype)
+	       && field_at_offset (xtype, *off, &index))
+	      || (TREE_CODE (xtype) == ARRAY_TYPE
+		  && TREE_CODE (TREE_TYPE (xtype)) == ARRAY_TYPE
+		  && array_elt_at_offset (xtype, *off, &index)))
+	    {
+	      *fldoff += index;
+	      *off -= index;
+	      fldoff = NULL;
+	    }
+	}
+
+      return get_origin_and_offset (x, fldoff, NULL);
+
+    case COMPONENT_REF:
+      {
+	tree fld = TREE_OPERAND (x, 1);
+	*fldoff += int_byte_position (fld);
+
+	get_origin_and_offset (fld, fldoff, off);
+	x = TREE_OPERAND (x, 0);
+	return get_origin_and_offset (x, fldoff, off);
+      }
+
+    case SSA_NAME:
+      {
+	gimple *def = SSA_NAME_DEF_STMT (x);
+	if (is_gimple_assign (def))
+	  {
+	    tree_code code = gimple_assign_rhs_code (def);
+	    if (code == ADDR_EXPR)
+	      {
+		x = gimple_assign_rhs1 (def);
+		return get_origin_and_offset (x, fldoff, off);
+	      }
+
+	    if (code == POINTER_PLUS_EXPR)
+	      {
+		tree offset = gimple_assign_rhs2 (def);
+		if (off)
+		  *off = (tree_fits_uhwi_p (offset)
+			  ? tree_to_uhwi (offset) : HOST_WIDE_INT_MAX);
+
+		x = gimple_assign_rhs1 (def);
+		return get_origin_and_offset (x, fldoff, NULL);
+	      }
+	    else if (code == VAR_DECL)
+	      {
+		x = gimple_assign_rhs1 (def);
+		return get_origin_and_offset (x, fldoff, off);
+	      }
+	  }
+	else if (gimple_nop_p (def) && SSA_NAME_VAR (x))
+	  x = SSA_NAME_VAR (x);
+      }
+
+    default:
+      break;
+    }
+
+  return x;
+}
+
+/* If ARG refers to the same (sub)object or array element as described
+   by DST and DST_FLD, return the byte offset into the struct member or
+   array element referenced by ARG.  Otherwise return HOST_WIDE_INT_MIN
+   to indicate that ARG and DST do not refer to the same object.  */
+
+static HOST_WIDE_INT
+alias_offset (tree arg, tree dst, HOST_WIDE_INT dst_fld)
+{
+  /* See if the argument refers to the same base object as the destination
+     of the formatted function call, and if so, try to determine if they
+     can alias.  */
+  if (!arg || !dst || !ptr_derefs_may_alias_p (arg, dst))
+    return HOST_WIDE_INT_MIN;
+
+  /* The two arguments may refer to the same object.  If they both refer
+     to a struct member, see if the members are one and the same.  */
+  HOST_WIDE_INT arg_off = 0, arg_fld = 0;
+
+  tree arg_orig = get_origin_and_offset (arg, &arg_fld, &arg_off);
+
+  if (arg_orig == dst && arg_fld == dst_fld)
+    return arg_off;
+
+  return HOST_WIDE_INT_MIN;
+}
+
 /* Return the minimum and maximum number of characters formatted
    by the '%s' format directive and its wide character form for
    the argument ARG.  ARG can be null (for functions such as
@@ -2155,6 +2436,17 @@ static fmtresult
 format_string (const directive &dir, tree arg, const vr_values *vr_values)
 {
   fmtresult res;
+
+  if (warn_restrict)
+    {
+      /* See if ARG might alias the destination of the call with
+	 DST_ORIGIN and DST_FIELD.  If so, store the starting offset
+	 so that the overlap can be determined for certain later,
+	 when the amount of output of the call (including subsequent
+	 directives) has been computed.  Otherwise, store HWI_MIN.  */
+      res.dst_offset = alias_offset (arg, dir.info->dst_origin,
+				     dir.info->dst_field);
+    }
 
   /* Compute the range the argument's length can be in.  */
   int count_by = 1;
@@ -2166,7 +2458,7 @@ format_string (const directive &dir, tree arg, const vr_values *vr_values)
 
       /* Now that we have a suitable node, get the number of
 	 bytes it occupies.  */
-      count_by = int_size_in_bytes (node); 
+      count_by = int_size_in_bytes (node);
       gcc_checking_assert (count_by == 2 || count_by == 4);
     }
 
@@ -2698,6 +2990,39 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
 		  res.min, avail_range.min, avail_range.max);
 }
 
+/* Given the formatting result described by RES and NAVAIL, the number
+   of available in the destination, return the range of bytes remaining
+   in the destination.  */
+
+static inline result_range
+bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
+{
+  result_range range;
+
+  if (HOST_WIDE_INT_MAX <= navail)
+    {
+      range.min = range.max = range.likely = range.unlikely = navail;
+      return range;
+    }
+
+  /* The lower bound of the available range is the available size
+     minus the maximum output size, and the upper bound is the size
+     minus the minimum.  */
+  range.max = res.range.min < navail ? navail - res.range.min : 0;
+
+  range.likely = res.range.likely < navail ? navail - res.range.likely : 0;
+
+  if (res.range.max < HOST_WIDE_INT_MAX)
+    range.min = res.range.max < navail ? navail - res.range.max : 0;
+  else
+    range.min = range.likely;
+
+  range.unlikely = (res.range.unlikely < navail
+		    ? navail - res.range.unlikely : 0);
+
+  return range;
+}
+
 /* Compute the length of the output resulting from the directive DIR
    in a call described by INFO and update the overall result of the call
    in *RES.  Return true if the directive has been handled.  */
@@ -2795,6 +3120,12 @@ format_directive (const call_info &info,
      must always be at least one byte of space for the terminating
      NUL that's appended after the format string has been processed.  */
   result_range avail_range = bytes_remaining (info.objsize, *res);
+
+  /* If the argument aliases a part of the destination of the formatted
+     call at offset FMTRES.DST_OFFSET append the directive and its result
+     to the set of aliases for later processing.  */
+  if (fmtres.dst_offset != HOST_WIDE_INT_MIN)
+    res->append_alias (dir, fmtres.dst_offset, fmtres.range);
 
   bool warned = res->warned;
 
@@ -3080,6 +3411,10 @@ parse_directive (call_info &info,
 
       return len - !*str;
     }
+
+  /* Set the directive argument's number to correspond to its position
+     in the formatted function call's argument list.  */
+  dir.argno = *argno;
 
   const char *pf = pcnt + 1;
 
@@ -3485,6 +3820,136 @@ parse_directive (call_info &info,
   return dir.len;
 }
 
+/* Diagnose overlap between destination and %s directive arguments.  */
+
+static void
+maybe_warn_overlap (call_info &info, format_result *res)
+{
+  /* Two vectors of 1-based indices corresponding to either certainly
+     or possibly aliasing arguments.  */
+  auto_vec<int, 16> aliasarg[2];
+
+  /* Go through the array of potentially aliasing directives and collect
+     argument numbers of those that do or may overlap the destination
+     object given the full result.  */
+  for (unsigned i = 0; i != res->alias_count; ++i)
+    {
+      const format_result::alias_info &alias = res->aliases[i];
+
+      enum { possible = -1, none = 0, certain = 1 } overlap = none;
+
+      /* If the precision is zero there is no overlap.  (This only
+	 considers %s directives and ignores %n.)  */
+      if (alias.dir.prec[0] == 0 && alias.dir.prec[1] == 0)
+	continue;
+
+      if (alias.offset == HOST_WIDE_INT_MAX
+	  || info.dst_offset == HOST_WIDE_INT_MAX)
+	overlap = possible;
+      else if (alias.offset == info.dst_offset)
+	overlap = alias.dir.prec[0] == 0 ? possible : certain;
+      else
+	{
+	  /* Determine overlap from the range of output and offsets
+	     into the same destination as the source, and rule out
+	     impossible overlap.  */
+	  unsigned HOST_WIDE_INT albeg = alias.offset;
+	  unsigned HOST_WIDE_INT dstbeg = info.dst_offset;
+
+	  unsigned HOST_WIDE_INT alend = albeg + alias.range.min;
+	  unsigned HOST_WIDE_INT dstend = dstbeg + res->range.min - 1;
+
+	  if ((albeg <= dstbeg && alend > dstbeg)
+	      || (albeg >= dstbeg && albeg < dstend))
+	    overlap = certain;
+	  else
+	    {
+	      alend = albeg + alias.range.max;
+	      if (alend < albeg)
+		alend = HOST_WIDE_INT_M1U;
+
+	      dstend = dstbeg + res->range.max - 1;
+	      if (dstend < dstbeg)
+		dstend = HOST_WIDE_INT_M1U;
+
+	      if ((albeg >= dstbeg && albeg <= dstend)
+		  || (alend >= dstbeg && alend <= dstend))
+		overlap = possible;
+	    }
+	}
+
+      if (overlap == none)
+	continue;
+
+      /* Append the 1-based argument number.  */
+      aliasarg[overlap != certain].safe_push (alias.dir.argno + 1);
+
+      /* Disable any kind of optimization.  */
+      res->range.unlikely = HOST_WIDE_INT_M1U;
+    }
+
+  tree arg0 = gimple_call_arg (info.callstmt, 0);
+  location_t loc = gimple_location (info.callstmt);
+
+  bool aliaswarn = false;
+
+  unsigned ncertain = aliasarg[0].length ();
+  unsigned npossible = aliasarg[1].length ();
+  if (ncertain && npossible)
+    {
+      /* If there are multiple arguments that overlap, some certainly
+	 and some possibly, handle both sets in a single diagnostic.  */
+      aliaswarn
+	= warning_at (loc, OPT_Wrestrict,
+		      "%qE arguments %Z and maybe %Z overlap destination "
+		      "object %qE",
+		      info.func, aliasarg[0].address (), ncertain,
+		      aliasarg[1].address (), npossible,
+		      info.dst_origin);
+    }
+  else if (ncertain)
+    {
+      /* There is only one set of two or more arguments and they all
+	 certainly overlap the destination.  */
+      aliaswarn
+	= warning_n (loc, OPT_Wrestrict, ncertain,
+		     "%qE argument %Z overlaps destination object %qE",
+		     "%qE arguments %Z overlap destination object %qE",
+		     info.func, aliasarg[0].address (), ncertain,
+		     info.dst_origin);
+    }
+  else if (npossible)
+    {
+      /* There is only one set of two or more arguments and they all
+	 may overlap (but need not).  */
+      aliaswarn
+	= warning_n (loc, OPT_Wrestrict, npossible,
+		     "%qE argument %Z may overlap destination object %qE",
+		     "%qE arguments %Z may overlap destination object %qE",
+		     info.func, aliasarg[1].address (), npossible,
+		     info.dst_origin);
+    }
+
+  if (aliaswarn)
+    {
+      res->warned = true;
+
+      if (info.dst_origin != arg0)
+	{
+	  /* If its location is different from the first argument of the call
+	     point either at the destination object itself or at the expression
+	     that was used to determine the overlap.  */
+	  loc = (DECL_P (info.dst_origin)
+		 ? DECL_SOURCE_LOCATION (info.dst_origin)
+		 : EXPR_LOCATION (info.dst_origin));
+	  if (loc != UNKNOWN_LOCATION)
+	    inform (loc,
+		    "destination object referenced by %<restrict%>-qualified "
+		    "argument 1 was declared here");
+	}
+    }
+}
+
 /* Compute the length of the output resulting from the call to a formatted
    output function described by INFO and store the result of the call in
    *RES.  Issue warnings for detected past the end writes.  Return true
@@ -3524,10 +3989,11 @@ compute_format_length (call_info &info, format_result *res, const vr_values *vr)
   /* The variadic argument counter.  */
   unsigned argno = info.argidx;
 
+  bool success = true;
+
   for (const char *pf = info.fmtstr; ; ++dirno)
     {
-      directive dir = directive ();
-      dir.dirno = dirno;
+      directive dir (&info, dirno);
 
       size_t n = parse_directive (info, dir, res, pf, &argno, vr);
 
@@ -3535,18 +4001,23 @@ compute_format_length (call_info &info, format_result *res, const vr_values *vr)
       if (!format_directive (info, res, dir, vr))
 	return false;
 
-      /* Return success the directive is zero bytes long and it's
-	 the last think in the format string (i.e., it's the terminating
+      /* Return success when the directive is zero bytes long and it's
+	 the last thing in the format string (i.e., it's the terminating
 	 nul, which isn't really a directive but handling it as one makes
 	 things simpler).  */
       if (!n)
-	return *pf == '\0';
+	{
+	  success = *pf == '\0';
+	  break;
+	}
 
       pf += n;
     }
 
+  maybe_warn_overlap (info, res);
+
   /* The complete format string was processed (with or without warnings).  */
-  return true;
+  return success;
 }
 
 /* Return the size of the object referenced by the expression DEST if
@@ -4187,9 +4658,18 @@ handle_printf_call (gimple_stmt_iterator *gsi, const vr_values *vr_values)
   if (!info.fmtstr)
     return false;
 
+  if (warn_restrict)
+    {
+      /* Compute the origin of the destination pointer and its offset
+	 from the base object/pointer if possible.  */
+      info.dst_offset = 0;
+      info.dst_origin = get_origin_and_offset (dstptr, &info.dst_field,
+					       &info.dst_offset);
+    }
+
   /* The result is the number of bytes output by the formatted function,
      including the terminating NUL.  */
-  format_result res = format_result ();
+  format_result res;
 
   /* I/O functions with no destination argument (i.e., all forms of fprintf
      and printf) may fail under any conditions.  Others (i.e., all forms of

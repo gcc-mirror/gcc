@@ -5344,6 +5344,7 @@ pass_strlen::gate (function *)
 {
   return ((warn_format_overflow > 0
 	   || warn_format_trunc > 0
+	   || warn_restrict > 0
 	   || flag_optimize_strlen > 0
 	   || flag_printf_return_value)
 	  && optimize > 0);
