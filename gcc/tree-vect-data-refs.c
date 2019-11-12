@@ -185,7 +185,7 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  if ((unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) == 0)
+  if ((unsigned) param_vect_max_version_for_alias_checks == 0)
     return opt_result::failure_at (vect_location,
 				   "will not create alias checks, as"
 				   " --param vect-max-version-for-alias-checks"
@@ -2086,7 +2086,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       if (do_peeling)
         {
           unsigned max_allowed_peel
-            = PARAM_VALUE (PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT);
+	    = param_vect_max_peeling_for_alignment;
 	  if (flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
 	    max_allowed_peel = 0;
           if (max_allowed_peel != (unsigned)-1)
@@ -2227,7 +2227,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
               if (known_alignment_for_access_p (dr_info)
                   || LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).length ()
-                     >= (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS))
+		  >= (unsigned) param_vect_max_version_for_alignment_checks)
                 {
                   do_versioning = false;
                   break;
@@ -3656,10 +3656,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "improved number of alias checks from %d to %d\n",
 		     may_alias_ddrs.length (), count);
-  unsigned limit = PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS);
+  unsigned limit = param_vect_max_version_for_alias_checks;
   if (flag_simd_cost_model == VECT_COST_MODEL_CHEAP)
-    limit = default_param_value
-	      (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) * 6 / 10;
+    limit = param_vect_max_version_for_alias_checks * 6 / 10;
   if (count > limit)
     return opt_result::failure_at
       (vect_location,

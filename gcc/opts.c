@@ -667,25 +667,18 @@ default_options_optimization (struct gcc_options *opts,
     opts->x_flag_ipa_pta = true;
 
   /* Track fields in field-sensitive alias analysis.  */
-  maybe_set_param_value
-    (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE,
-     opt2 ? 100 : default_param_value (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE),
-     opts->x_param_values, opts_set->x_param_values);
+  if (opt2)
+    SET_OPTION_IF_UNSET (opts, opts_set, param_max_fields_for_field_sensitive,
+			 100);
 
   if (opts->x_optimize_size)
     /* We want to crossjump as much as possible.  */
-    maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS, 1,
-			   opts->x_param_values, opts_set->x_param_values);
-  else
-    maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS,
-			   default_param_value (PARAM_MIN_CROSSJUMP_INSNS),
-			   opts->x_param_values, opts_set->x_param_values);
+    SET_OPTION_IF_UNSET (opts, opts_set, param_min_crossjump_insns, 1);
 
   /* Restrict the amount of work combine does at -Og while retaining
      most of its useful transforms.  */
   if (opts->x_optimize_debug)
-    maybe_set_param_value (PARAM_MAX_COMBINE_INSNS, 2,
-			   opts->x_param_values, opts_set->x_param_values);
+    SET_OPTION_IF_UNSET (opts, opts_set, param_max_combine_insns, 2);
 
   /* Allow default optimizations to be specified on a per-machine basis.  */
   maybe_default_options (opts, opts_set,
@@ -1036,10 +1029,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   if (opts->x_flag_conserve_stack)
     {
-      maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 100,
-			     opts->x_param_values, opts_set->x_param_values);
-      maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 40,
-			     opts->x_param_values, opts_set->x_param_values);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_large_stack_frame, 100);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_stack_frame_growth, 40);
     }
 
   if (opts->x_flag_lto)
@@ -2272,19 +2263,13 @@ common_handle_option (struct gcc_options *opts,
 	 all features.  */
       if (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS)
 	{
-	  maybe_set_param_value (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD,
-				 0, opts->x_param_values,
-				 opts_set->x_param_values);
-	  maybe_set_param_value (PARAM_ASAN_GLOBALS, 0, opts->x_param_values,
-				 opts_set->x_param_values);
-	  maybe_set_param_value (PARAM_ASAN_STACK, 0, opts->x_param_values,
-				 opts_set->x_param_values);
-	  maybe_set_param_value (PARAM_ASAN_PROTECT_ALLOCAS, 0,
-				 opts->x_param_values,
-				 opts_set->x_param_values);
-	  maybe_set_param_value (PARAM_ASAN_USE_AFTER_RETURN, 0,
-				 opts->x_param_values,
-				 opts_set->x_param_values);
+	  SET_OPTION_IF_UNSET (opts, opts_set,
+			       param_asan_instrumentation_with_call_threshold,
+			       0);
+	  SET_OPTION_IF_UNSET (opts, opts_set, param_asan_globals, 0);
+	  SET_OPTION_IF_UNSET (opts, opts_set, param_asan_stack, 0);
+	  SET_OPTION_IF_UNSET (opts, opts_set, param_asan_protect_allocas, 0);
+	  SET_OPTION_IF_UNSET (opts, opts_set, param_asan_use_after_return, 0);
 	}
       break;
 
@@ -2586,9 +2571,8 @@ common_handle_option (struct gcc_options *opts,
       enable_fdo_optimizations (opts, opts_set, value);
       if (!opts_set->x_flag_profile_correction)
 	opts->x_flag_profile_correction = value;
-      maybe_set_param_value (
-	PARAM_EARLY_INLINER_MAX_ITERATIONS, 10,
-	opts->x_param_values, opts_set->x_param_values);
+      SET_OPTION_IF_UNSET (opts, opts_set,
+			   param_early_inliner_max_iterations, 10);
       break;
 
     case OPT_fprofile_generate_:

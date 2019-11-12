@@ -436,14 +436,14 @@ do_whole_program_analysis (void)
 
   /* TODO: jobserver communication is not supported, yet.  */
   if (!strcmp (flag_wpa, "jobserver"))
-    lto_parallelism = PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM);
+    lto_parallelism = param_max_lto_streaming_parallelism;
   else
     {
       lto_parallelism = atoi (flag_wpa);
       if (lto_parallelism <= 0)
 	lto_parallelism = 0;
-      if (lto_parallelism >= PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM))
-	lto_parallelism = PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM);
+      if (lto_parallelism >= param_max_lto_streaming_parallelism)
+	lto_parallelism = param_max_lto_streaming_parallelism;
     }
 
   timevar_start (TV_PHASE_OPT_GEN);
@@ -496,8 +496,8 @@ do_whole_program_analysis (void)
   else if (flag_lto_partition == LTO_PARTITION_ONE)
     lto_balanced_map (1, INT_MAX);
   else if (flag_lto_partition == LTO_PARTITION_BALANCED)
-    lto_balanced_map (PARAM_VALUE (PARAM_LTO_PARTITIONS),
-		      PARAM_VALUE (MAX_PARTITION_SIZE));
+    lto_balanced_map (param_lto_partitions,
+		      param_max_partition_size);
   else
     gcc_unreachable ();
 

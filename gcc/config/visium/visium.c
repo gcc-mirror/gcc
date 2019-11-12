@@ -57,6 +57,7 @@
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -457,9 +458,8 @@ visium_option_override (void)
       /* Allow the size of compilation units to double because of inlining.
 	 In practice the global size of the object code is hardly affected
 	 because the additional instructions will take up the padding.  */
-      maybe_set_param_value (PARAM_INLINE_UNIT_GROWTH, 100,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_inline_unit_growth, 100);
     }
 
   /* Likewise for loops.  */

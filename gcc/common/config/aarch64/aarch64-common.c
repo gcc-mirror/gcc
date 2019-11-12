@@ -73,7 +73,7 @@ static bool
 aarch64_option_validate_param (const int value, const int param)
 {
   /* Check that both parameters are the same.  */
-  if (param == (int) PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE)
+  if (param == param_stack_clash_protection_guard_size)
     {
       if (value != 12 && value != 16)
 	{
@@ -93,18 +93,15 @@ static void
 aarch64_option_default_params (void)
 {
   /* We assume the guard page is 64k.  */
-  int index = (int) PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE;
-  set_default_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
-			   DEFAULT_STK_CLASH_GUARD_SIZE == 0
-			     ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE);
+  int index = (int) param_stack_clash_protection_guard_size;
+  param_stack_clash_protection_guard_size
+    = (DEFAULT_STK_CLASH_GUARD_SIZE == 0 ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE);
 
-  int guard_size
-    = default_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+  int guard_size = param_stack_clash_protection_guard_size;
 
   /* Set the interval parameter to be the same as the guard size.  This way the
      mid-end code does the right thing for us.  */
-  set_default_param_value (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL,
-			   guard_size);
+  param_stack_clash_protection_probe_interval = guard_size;
 
   /* Validate the options.  */
   aarch64_option_validate_param (guard_size, index);

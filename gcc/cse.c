@@ -6414,7 +6414,7 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
   if (follow_jumps)
     {
       bb = data->path[path_size - 1].bb;
-      while (bb && path_size < PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH))
+      while (bb && path_size < param_max_cse_path_length)
 	{
 	  if (single_succ_p (bb))
 	    e = single_succ_edge (bb);
@@ -6592,7 +6592,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	     FIXME: This is a real kludge and needs to be done some other
 		    way.  */
 	  if (NONDEBUG_INSN_P (insn)
-	      && num_insns++ > PARAM_VALUE (PARAM_MAX_CSE_INSNS))
+	      && num_insns++ > param_max_cse_insns)
 	    {
 	      flush_hash_table ();
 	      num_insns = 0;
@@ -6736,7 +6736,7 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
   init_cse_reg_info (nregs);
 
   ebb_data.path = XNEWVEC (struct branch_path,
-			   PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
+			   param_max_cse_path_length);
 
   cse_cfg_altered = false;
   cse_jumps_altered = false;

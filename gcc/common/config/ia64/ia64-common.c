@@ -88,13 +88,13 @@ static void
 ia64_option_default_params (void)
 {
   /* Let the scheduler form additional regions.  */
-  set_default_param_value (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS, 2);
+  param_max_sched_extend_regions_iters = 2;
 
   /* Set the default values for cache-related parameters.  */
-  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6);
-  set_default_param_value (PARAM_L1_CACHE_LINE_SIZE, 32);
+  param_simultaneous_prefetches = 6;
+  param_l1_cache_line_size = 32;
 
-  set_default_param_value (PARAM_SCHED_MEM_TRUE_DEP_COST, 4);
+  param_sched_mem_true_dep_cost = 4;
 }
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE

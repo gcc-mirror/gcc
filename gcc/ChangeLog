@@ -1,5 +1,287 @@
 2019-11-12  Martin Liska  <mliska@suse.cz>
 
+	* asan.c (asan_sanitize_stack_p): Replace old parameter syntax
+	with the new one, include opts.h if needed.  Use SET_OPTION_IF_UNSET
+	macro.
+	(asan_sanitize_allocas_p): Likewise.
+	(asan_emit_stack_protection): Likewise.
+	(asan_protect_global): Likewise.
+	(instrument_derefs): Likewise.
+	(instrument_builtin_call): Likewise.
+	(asan_expand_mark_ifn): Likewise.
+	* auto-profile.c (auto_profile): Likewise.
+	* bb-reorder.c (copy_bb_p): Likewise.
+	(duplicate_computed_gotos): Likewise.
+	* builtins.c (inline_expand_builtin_string_cmp): Likewise.
+	* cfgcleanup.c (try_crossjump_to_edge): Likewise.
+	(try_crossjump_bb): Likewise.
+	* cfgexpand.c (defer_stack_allocation): Likewise.
+	(stack_protect_classify_type): Likewise.
+	(pass_expand::execute): Likewise.
+	* cfgloopanal.c (expected_loop_iterations_unbounded): Likewise.
+	(estimate_reg_pressure_cost): Likewise.
+	* cgraph.c (cgraph_edge::maybe_hot_p): Likewise.
+	* combine.c (combine_instructions): Likewise.
+	(record_value_for_reg): Likewise.
+	* common/config/aarch64/aarch64-common.c (aarch64_option_validate_param): Likewise.
+	(aarch64_option_default_params): Likewise.
+	* common/config/ia64/ia64-common.c (ia64_option_default_params): Likewise.
+	* common/config/powerpcspe/powerpcspe-common.c (rs6000_option_default_params): Likewise.
+	* common/config/rs6000/rs6000-common.c (rs6000_option_default_params): Likewise.
+	* common/config/sh/sh-common.c (sh_option_default_params): Likewise.
+	* config/aarch64/aarch64.c (aarch64_output_probe_stack_range): Likewise.
+	(aarch64_allocate_and_probe_stack_space): Likewise.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_override_options_internal): Likewise.
+	* config/alpha/alpha.c (alpha_option_override): Likewise.
+	* config/arm/arm.c (arm_option_override): Likewise.
+	(arm_valid_target_attribute_p): Likewise.
+	* config/i386/i386-options.c (ix86_option_override_internal): Likewise.
+	* config/i386/i386.c (get_probe_interval): Likewise.
+	(ix86_adjust_stack_and_probe_stack_clash): Likewise.
+	(ix86_max_noce_ifcvt_seq_cost): Likewise.
+	* config/ia64/ia64.c (ia64_adjust_cost): Likewise.
+	* config/rs6000/rs6000-logue.c (get_stack_clash_protection_probe_interval): Likewise.
+	(get_stack_clash_protection_guard_size): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Likewise.
+	* config/s390/s390.c (allocate_stack_space): Likewise.
+	(s390_emit_prologue): Likewise.
+	(s390_option_override_internal): Likewise.
+	* config/sparc/sparc.c (sparc_option_override): Likewise.
+	* config/visium/visium.c (visium_option_override): Likewise.
+	* coverage.c (get_coverage_counts): Likewise.
+	(coverage_compute_profile_id): Likewise.
+	(coverage_begin_function): Likewise.
+	(coverage_end_function): Likewise.
+	* cse.c (cse_find_path): Likewise.
+	(cse_extended_basic_block): Likewise.
+	(cse_main): Likewise.
+	* cselib.c (cselib_invalidate_mem): Likewise.
+	* dse.c (dse_step1): Likewise.
+	* emit-rtl.c (set_new_first_and_last_insn): Likewise.
+	(get_max_insn_count): Likewise.
+	(make_debug_insn_raw): Likewise.
+	(init_emit): Likewise.
+	* explow.c (compute_stack_clash_protection_loop_data): Likewise.
+	* final.c (compute_alignments): Likewise.
+	* fold-const.c (fold_range_test): Likewise.
+	(fold_truth_andor): Likewise.
+	(tree_single_nonnegative_warnv_p): Likewise.
+	(integer_valued_real_single_p): Likewise.
+	* gcse.c (want_to_gcse_p): Likewise.
+	(prune_insertions_deletions): Likewise.
+	(hoist_code): Likewise.
+	(gcse_or_cprop_is_too_expensive): Likewise.
+	* ggc-common.c: Likewise.
+	* ggc-page.c (ggc_collect): Likewise.
+	* gimple-loop-interchange.cc (MAX_NUM_STMT): Likewise.
+	(MAX_DATAREFS): Likewise.
+	(OUTER_STRIDE_RATIO): Likewise.
+	* gimple-loop-jam.c (tree_loop_unroll_and_jam): Likewise.
+	* gimple-loop-versioning.cc (loop_versioning::max_insns_for_loop): Likewise.
+	* gimple-ssa-split-paths.c (is_feasible_trace): Likewise.
+	* gimple-ssa-store-merging.c (imm_store_chain_info::try_coalesce_bswap): Likewise.
+	(imm_store_chain_info::coalesce_immediate_stores): Likewise.
+	(imm_store_chain_info::output_merged_store): Likewise.
+	(pass_store_merging::process_store): Likewise.
+	* gimple-ssa-strength-reduction.c (find_basis_for_base_expr): Likewise.
+	* graphite-isl-ast-to-gimple.c (class translate_isl_ast_to_gimple): Likewise.
+	(scop_to_isl_ast): Likewise.
+	* graphite-optimize-isl.c (get_schedule_for_node_st): Likewise.
+	(optimize_isl): Likewise.
+	* graphite-scop-detection.c (build_scops): Likewise.
+	* haifa-sched.c (set_modulo_params): Likewise.
+	(rank_for_schedule): Likewise.
+	(model_add_to_worklist): Likewise.
+	(model_promote_insn): Likewise.
+	(model_choose_insn): Likewise.
+	(queue_to_ready): Likewise.
+	(autopref_multipass_dfa_lookahead_guard): Likewise.
+	(schedule_block): Likewise.
+	(sched_init): Likewise.
+	* hsa-gen.c (init_prologue): Likewise.
+	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): Likewise.
+	(cond_move_process_if_block): Likewise.
+	* ipa-cp.c (ipcp_lattice::add_value): Likewise.
+	(merge_agg_lats_step): Likewise.
+	(devirtualization_time_bonus): Likewise.
+	(hint_time_bonus): Likewise.
+	(incorporate_penalties): Likewise.
+	(good_cloning_opportunity_p): Likewise.
+	(ipcp_propagate_stage): Likewise.
+	* ipa-fnsummary.c (decompose_param_expr): Likewise.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(analyze_function_body): Likewise.
+	(compute_fn_summary): Likewise.
+	* ipa-inline-analysis.c (estimate_growth): Likewise.
+	* ipa-inline.c (caller_growth_limits): Likewise.
+	(inline_insns_single): Likewise.
+	(inline_insns_auto): Likewise.
+	(can_inline_edge_by_limits_p): Likewise.
+	(want_early_inline_function_p): Likewise.
+	(big_speedup_p): Likewise.
+	(want_inline_small_function_p): Likewise.
+	(want_inline_self_recursive_call_p): Likewise.
+	(edge_badness): Likewise.
+	(recursive_inlining): Likewise.
+	(compute_max_insns): Likewise.
+	(early_inliner): Likewise.
+	* ipa-polymorphic-call.c (csftc_abort_walking_p): Likewise.
+	* ipa-profile.c (ipa_profile): Likewise.
+	* ipa-prop.c (determine_known_aggregate_parts): Likewise.
+	(ipa_analyze_node): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-split.c (consider_split): Likewise.
+	* ipa-sra.c (allocate_access): Likewise.
+	(process_scan_results): Likewise.
+	(ipa_sra_summarize_function): Likewise.
+	(pull_accesses_from_callee): Likewise.
+	* ira-build.c (loop_compare_func): Likewise.
+	(mark_loops_for_removal): Likewise.
+	* ira-conflicts.c (build_conflict_bit_table): Likewise.
+	* loop-doloop.c (doloop_optimize): Likewise.
+	* loop-invariant.c (gain_for_invariant): Likewise.
+	(move_loop_invariants): Likewise.
+	* loop-unroll.c (decide_unroll_constant_iterations): Likewise.
+	(decide_unroll_runtime_iterations): Likewise.
+	(decide_unroll_stupid): Likewise.
+	(expand_var_during_unrolling): Likewise.
+	* lra-assigns.c (spill_for): Likewise.
+	* lra-constraints.c (EBB_PROBABILITY_CUTOFF): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise.
+	(DFA_HISTORY): Likewise.
+	* opts.c (default_options_optimization): Likewise.
+	(finish_options): Likewise.
+	(common_handle_option): Likewise.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Likewise.
+	(if): Likewise.
+	* predict.c (get_hot_bb_threshold): Likewise.
+	(maybe_hot_count_p): Likewise.
+	(probably_never_executed): Likewise.
+	(predictable_edge_p): Likewise.
+	(predict_loops): Likewise.
+	(expr_expected_value_1): Likewise.
+	(tree_predict_by_opcode): Likewise.
+	(handle_missing_profiles): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	* reorg.c (redundant_insn): Likewise.
+	* resource.c (mark_target_live_regs): Likewise.
+	(incr_ticks_for_insn): Likewise.
+	* sanopt.c (pass_sanopt::execute): Likewise.
+	* sched-deps.c (sched_analyze_1): Likewise.
+	(sched_analyze_2): Likewise.
+	(sched_analyze_insn): Likewise.
+	(deps_analyze_insn): Likewise.
+	* sched-ebb.c (schedule_ebbs): Likewise.
+	* sched-rgn.c (find_single_block_region): Likewise.
+	(too_large): Likewise.
+	(haifa_find_rgns): Likewise.
+	(extend_rgns): Likewise.
+	(new_ready): Likewise.
+	(schedule_region): Likewise.
+	(sched_rgn_init): Likewise.
+	* sel-sched-ir.c (make_region_from_loop): Likewise.
+	* sel-sched-ir.h (MAX_WS): Likewise.
+	* sel-sched.c (process_pipelined_exprs): Likewise.
+	(sel_setup_region_sched_flags): Likewise.
+	* shrink-wrap.c (try_shrink_wrapping): Likewise.
+	* targhooks.c (default_max_noce_ifcvt_seq_cost): Likewise.
+	* toplev.c (print_version): Likewise.
+	(process_options): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	* trans-mem.c (tm_log_add): Likewise.
+	* tree-chrec.c (chrec_fold_plus_1): Likewise.
+	* tree-data-ref.c (split_constant_offset): Likewise.
+	(compute_all_dependences): Likewise.
+	* tree-if-conv.c (MAX_PHI_ARG_NUM): Likewise.
+	* tree-inline.c (remap_gimple_stmt): Likewise.
+	* tree-loop-distribution.c (MAX_DATAREFS_NUM): Likewise.
+	* tree-parloops.c (MIN_PER_THREAD): Likewise.
+	(create_parallel_loop): Likewise.
+	* tree-predcom.c (determine_unroll_factor): Likewise.
+	* tree-scalar-evolution.c (instantiate_scev_r): Likewise.
+	* tree-sra.c (analyze_all_variable_accesses): Likewise.
+	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Likewise.
+	* tree-ssa-dse.c (setup_live_bytes_from_ref): Likewise.
+	(dse_optimize_redundant_stores): Likewise.
+	(dse_classify_store): Likewise.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Likewise.
+	* tree-ssa-loop-im.c (LIM_EXPENSIVE): Likewise.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Likewise.
+	(try_peel_loop): Likewise.
+	(tree_unroll_loops_completely): Likewise.
+	* tree-ssa-loop-ivopts.c (avg_loop_niter): Likewise.
+	(CONSIDER_ALL_CANDIDATES_BOUND): Likewise.
+	(MAX_CONSIDERED_GROUPS): Likewise.
+	(ALWAYS_PRUNE_CAND_SET_BOUND): Likewise.
+	* tree-ssa-loop-manip.c (can_unroll_loop_p): Likewise.
+	* tree-ssa-loop-niter.c (MAX_ITERATIONS_TO_TRACK): Likewise.
+	* tree-ssa-loop-prefetch.c (PREFETCH_BLOCK): Likewise.
+	(L1_CACHE_SIZE_BYTES): Likewise.
+	(L2_CACHE_SIZE_BYTES): Likewise.
+	(should_issue_prefetch_p): Likewise.
+	(schedule_prefetches): Likewise.
+	(determine_unroll_factor): Likewise.
+	(volume_of_references): Likewise.
+	(add_subscript_strides): Likewise.
+	(self_reuse_distance): Likewise.
+	(mem_ref_count_reasonable_p): Likewise.
+	(insn_to_prefetch_ratio_too_small_p): Likewise.
+	(loop_prefetch_arrays): Likewise.
+	(tree_ssa_prefetch_arrays): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Likewise.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Likewise.
+	(convert_mult_to_fma): Likewise.
+	(math_opts_dom_walker::after_dom_children): Likewise.
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Likewise.
+	(hoist_adjacent_loads): Likewise.
+	(gate_hoist_loads): Likewise.
+	* tree-ssa-pre.c (translate_vuse_through_block): Likewise.
+	(compute_partial_antic_aux): Likewise.
+	* tree-ssa-reassoc.c (get_reassociation_width): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_lookup_pieces): Likewise.
+	(vn_reference_lookup): Likewise.
+	(do_rpo_vn): Likewise.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr): Likewise.
+	* tree-ssa-sink.c (select_best_block): Likewise.
+	* tree-ssa-strlen.c (new_stridx): Likewise.
+	(new_addr_stridx): Likewise.
+	(get_range_strlen_dynamic): Likewise.
+	(class ssa_name_limit_t): Likewise.
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Likewise.
+	(create_variable_info_for_1): Likewise.
+	(init_alias_vars): Likewise.
+	* tree-ssa-tail-merge.c (find_clusters_1): Likewise.
+	(tail_merge_optimize): Likewise.
+	* tree-ssa-threadbackward.c (thread_jumps::profitable_jump_thread_path): Likewise.
+	(thread_jumps::fsm_find_control_statement_thread_paths): Likewise.
+	(thread_jumps::find_jump_threads_backwards): Likewise.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_stmts_at_dest): Likewise.
+	* tree-ssa-uninit.c (compute_control_dep_chain): Likewise.
+	* tree-switch-conversion.c (switch_conversion::check_range): Likewise.
+	(jump_table_cluster::can_be_handled): Likewise.
+	* tree-switch-conversion.h (jump_table_cluster::case_values_threshold): Likewise.
+	(SWITCH_CONVERSION_BRANCH_RATIO): Likewise.
+	(param_switch_conversion_branch_ratio): Likewise.
+	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_costing): Likewise.
+	(vect_get_datarefs_in_loop): Likewise.
+	(vect_analyze_loop): Likewise.
+	* tree-vect-slp.c (vect_slp_bb): Likewise.
+	* tree-vectorizer.h: Likewise.
+	* tree-vrp.c (find_switch_asserts): Likewise.
+	(vrp_prop::check_mem_ref): Likewise.
+	* tree.c (wide_int_to_tree_1): Likewise.
+	(cache_integer_cst): Likewise.
+	* var-tracking.c (EXPR_USE_DEPTH): Likewise.
+	(reverse_op): Likewise.
+	(vt_find_locations): Likewise.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
 	* Makefile.in: Include params.opt.
 	* flag-types.h (enum parloops_schedule_type): Add
 	parloops_schedule_type used in params.opt.

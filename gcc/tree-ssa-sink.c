@@ -215,7 +215,7 @@ select_best_block (basic_block early_bb,
   /* Get the sinking threshold.  If the statement to be moved has memory
      operands, then increase the threshold by 7% as those are even more
      profitable to avoid, clamping at 100%.  */
-  threshold = PARAM_VALUE (PARAM_SINK_FREQUENCY_THRESHOLD);
+  threshold = param_sink_frequency_threshold;
   if (gimple_vuse (stmt) || gimple_vdef (stmt))
     {
       threshold += 7;

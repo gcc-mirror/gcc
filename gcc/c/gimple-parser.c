@@ -354,7 +354,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
   if (cfun->curr_properties & PROP_cfg)
     {
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = entry_bb_count;
-      gcov_type t = PARAM_VALUE (PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD);
+      gcov_type t = param_gimple_fe_computed_hot_bb_threshold;
       set_hot_bb_threshold (t);
       update_max_bb_count ();
       cgraph_node::get_create (cfun->decl);

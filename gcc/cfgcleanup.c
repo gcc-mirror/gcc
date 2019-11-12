@@ -2022,7 +2022,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
      of matching instructions or the 'from' block was totally matched
      (such that its predecessors will hopefully be redirected and the
      block removed).  */
-  if ((nmatch < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
+  if ((nmatch < param_min_crossjump_insns)
       && (newpos1 != BB_HEAD (src1)))
     return false;
 
@@ -2215,7 +2215,7 @@ try_crossjump_bb (int mode, basic_block bb)
      a block that falls through into BB, as that adds no branches to the
      program.  We'll try that combination first.  */
   fallthru = NULL;
-  max = PARAM_VALUE (PARAM_MAX_CROSSJUMP_EDGES);
+  max = param_max_crossjump_edges;
 
   if (EDGE_COUNT (bb->preds) > max)
     return false;

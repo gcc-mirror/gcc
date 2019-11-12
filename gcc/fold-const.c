@@ -5929,9 +5929,9 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
   bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
-  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+  if (param_logical_op_non_short_circuit != -1)
     logical_op_non_short_circuit
-      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+      = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && lhs != 0 && rhs != 0
@@ -8600,9 +8600,9 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
     return tem;
 
   bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
-  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+  if (param_logical_op_non_short_circuit != -1)
     logical_op_non_short_circuit
-      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+      = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && (code == TRUTH_AND_EXPR
@@ -13365,7 +13365,7 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 	 would not, passes that need this information could be revised
 	 to provide it through dataflow propagation.  */
       return (!name_registered_for_update_p (t)
-	      && depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH)
+	      && depth < param_max_ssa_name_query_depth
 	      && gimple_stmt_nonnegative_warnv_p (SSA_NAME_DEF_STMT (t),
 						  strict_overflow_p, depth));
 
@@ -14013,7 +14013,7 @@ integer_valued_real_single_p (tree t, int depth)
 	 would not, passes that need this information could be revised
 	 to provide it through dataflow propagation.  */
       return (!name_registered_for_update_p (t)
-	      && depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH)
+	      && depth < param_max_ssa_name_query_depth
 	      && gimple_stmt_integer_valued_real_p (SSA_NAME_DEF_STMT (t),
 						    depth));
 

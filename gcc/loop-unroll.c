@@ -364,13 +364,13 @@ decide_unroll_constant_iterations (class loop *loop, int flags)
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once).  */
-  nunroll = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / loop->ninsns;
+  nunroll = param_max_unrolled_insns / loop->ninsns;
   nunroll_by_av
-    = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
+    = param_max_average_unrolled_insns / loop->av_ninsns;
   if (nunroll > nunroll_by_av)
     nunroll = nunroll_by_av;
-  if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
-    nunroll = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
+  if (nunroll > (unsigned) param_max_unroll_times)
+    nunroll = param_max_unroll_times;
 
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
@@ -684,12 +684,12 @@ decide_unroll_runtime_iterations (class loop *loop, int flags)
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
-  nunroll = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / loop->ninsns;
-  nunroll_by_av = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
+  nunroll = param_max_unrolled_insns / loop->ninsns;
+  nunroll_by_av = param_max_average_unrolled_insns / loop->av_ninsns;
   if (nunroll > nunroll_by_av)
     nunroll = nunroll_by_av;
-  if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
-    nunroll = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
+  if (nunroll > (unsigned) param_max_unroll_times)
+    nunroll = param_max_unroll_times;
 
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
@@ -1167,13 +1167,13 @@ decide_unroll_stupid (class loop *loop, int flags)
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
-  nunroll = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / loop->ninsns;
+  nunroll = param_max_unrolled_insns / loop->ninsns;
   nunroll_by_av
-    = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
+    = param_max_average_unrolled_insns / loop->av_ninsns;
   if (nunroll > nunroll_by_av)
     nunroll = nunroll_by_av;
-  if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
-    nunroll = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
+  if (nunroll > (unsigned) param_max_unroll_times)
+    nunroll = param_max_unroll_times;
 
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
@@ -1824,7 +1824,7 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx_insn *insn)
 
   /* Generate a new register only if the expansion limit has not been
      reached.  Else reuse an already existing expansion.  */
-  if (PARAM_VALUE (PARAM_MAX_VARIABLE_EXPANSIONS) > ve->expansion_count)
+  if (param_max_variable_expansions > ve->expansion_count)
     {
       really_new_expansion = true;
       new_reg = gen_reg_rtx (GET_MODE (ve->reg));

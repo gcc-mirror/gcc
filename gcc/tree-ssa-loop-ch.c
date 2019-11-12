@@ -368,7 +368,7 @@ ch_base::copy_headers (function *fun)
 
   FOR_EACH_LOOP (loop, 0)
     {
-      int initial_limit = PARAM_VALUE (PARAM_MAX_LOOP_HEADER_INSNS);
+      int initial_limit = param_max_loop_header_insns;
       int remaining_limit = initial_limit;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,

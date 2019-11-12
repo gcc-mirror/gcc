@@ -230,7 +230,7 @@ static bool ref_indep_loop_p (class loop *, im_mem_ref *);
 static bool ref_always_accessed_p (class loop *, im_mem_ref *, bool);
 
 /* Minimum cost of an expensive expression.  */
-#define LIM_EXPENSIVE ((unsigned) PARAM_VALUE (PARAM_LIM_EXPENSIVE))
+#define LIM_EXPENSIVE ((unsigned) param_lim_expensive)
 
 /* The outermost loop for which execution of the header guarantees that the
    block will be executed.  */

@@ -546,7 +546,7 @@ find_basis_for_base_expr (slsr_cand_t c, tree base_expr)
 
   // Limit potential of N^2 behavior for long candidate chains.
   int iters = 0;
-  int max_iters = PARAM_VALUE (PARAM_MAX_SLSR_CANDIDATE_SCAN);
+  int max_iters = param_max_slsr_candidate_scan;
 
   mapping_key.base_expr = base_expr;
   chain = base_cand_map->find (&mapping_key);

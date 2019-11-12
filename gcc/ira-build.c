@@ -2217,7 +2217,7 @@ loop_compare_func (const void *v1p, const void *v2p)
    hardly helps (for irregular register file architecture it could
    help by choosing a better hard register in the loop but we prefer
    faster allocation even in this case).  We also remove cheap loops
-   if there are more than IRA_MAX_LOOPS_NUM of them.  Loop with EH
+   if there are more than param_ira_max_loops_num of them.  Loop with EH
    exit or enter edges are removed too because the allocation might
    require put pseudo moves on the EH edges (we could still do this
    for pseudos with caller saved hard registers in some cases but it
@@ -2253,7 +2253,7 @@ mark_loops_for_removal (void)
 	     );
       }
   qsort (sorted_loops, n, sizeof (ira_loop_tree_node_t), loop_compare_func);
-  for (i = 0; i < n - IRA_MAX_LOOPS_NUM; i++)
+  for (i = 0; i < n - param_ira_max_loops_num; i++)
     {
       sorted_loops[i]->to_remove_p = true;
       if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)

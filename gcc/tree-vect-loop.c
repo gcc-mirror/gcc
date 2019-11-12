@@ -1665,7 +1665,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
       return -1;
     }
 
-  int min_scalar_loop_bound = (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
+  int min_scalar_loop_bound = (param_min_vect_loop_bound
 			       * assumed_vf);
 
   /* Use the cost model only if it is more conservative than user specified
@@ -1775,7 +1775,7 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	/* If dependence analysis will give up due to the limit on the
 	   number of datarefs stop here and fail fatally.  */
 	if (datarefs->length ()
-	    > (unsigned)PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+	    > (unsigned)param_loop_max_datarefs_for_datadeps)
 	  return opt_result::failure_at (stmt, "exceeded param "
 					 "loop-max-datarefs-for-datadeps\n");
       }
@@ -2461,7 +2461,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	     TODO: Enable epilogue vectorization for loops with SIMDUID set.  */
 	  vect_epilogues = (!simdlen
 			    && loop->inner == NULL
-			    && PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK)
+			    && param_vect_epilogues_nomask
 			    && LOOP_VINFO_PEELING_FOR_NITER (first_loop_vinfo)
 			    && !loop->simduid
 			    /* For now only allow one epilogue loop.  */

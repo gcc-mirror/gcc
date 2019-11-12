@@ -7214,7 +7214,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   /* If the length of the comparision is larger than the threshold,
      do nothing.  */
   if (length > (unsigned HOST_WIDE_INT)
-	       PARAM_VALUE (BUILTIN_STRING_CMP_INLINE_LENGTH))
+	       param_builtin_string_cmp_inline_length)
     return NULL_RTX;
 
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));

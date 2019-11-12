@@ -57,7 +57,7 @@ static void
 rs6000_option_default_params (void)
 {
   /* Double growth factor to counter reduced min jump length.  */
-  set_default_param_value (PARAM_MAX_GROW_COPY_BB_INSNS, 16);
+  param_max_grow_copy_bb_insns = 16;
 }
 
 /* If not otherwise specified by a target, make 'long double' equivalent to

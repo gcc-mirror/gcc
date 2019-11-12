@@ -584,7 +584,7 @@ set_modulo_params (int ii, int max_stages, int insns, int max_uid)
   modulo_max_stages = max_stages;
   modulo_n_insns = insns;
   modulo_iter0_max_uid = max_uid;
-  modulo_backtracks_left = PARAM_VALUE (PARAM_MAX_MODULO_BACKTRACK_ATTEMPTS);
+  modulo_backtracks_left = param_max_modulo_backtrack_attempts;
 }
 
 /* A structure to record a pair of insns where the first one is a real
@@ -2712,7 +2712,7 @@ rank_for_schedule (const void *x, const void *y)
   if (flag_sched_critical_path_heuristic && priority_val)
     return rfs_result (RFS_PRIORITY, priority_val, tmp, tmp2);
 
-  if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) >= 0)
+  if (param_sched_autopref_queue_depth >= 0)
     {
       int autopref = autopref_rank_for_schedule (tmp, tmp2);
       if (autopref != 0)
@@ -3413,7 +3413,7 @@ model_remove_from_worklist (struct model_insn_info *insn)
 }
 
 /* Add INSN to the model worklist.  Start looking for a suitable position
-   between neighbors PREV and NEXT, testing at most MAX_SCHED_READY_INSNS
+   between neighbors PREV and NEXT, testing at most param_max_sched_ready_insns
    insns either side.  A null PREV indicates the beginning of the list and
    a null NEXT indicates the end.  */
 
@@ -3424,7 +3424,7 @@ model_add_to_worklist (struct model_insn_info *insn,
 {
   int count;
 
-  count = MAX_SCHED_READY_INSNS;
+  count = param_max_sched_ready_insns;
   if (count > 0 && prev && model_order_p (insn, prev))
     do
       {
@@ -3452,7 +3452,7 @@ model_promote_insn (struct model_insn_info *insn)
   int count;
 
   prev = insn->prev;
-  count = MAX_SCHED_READY_INSNS;
+  count = param_max_sched_ready_insns;
   while (count > 0 && prev && model_order_p (insn, prev))
     {
       count--;
@@ -3738,7 +3738,7 @@ model_choose_insn (void)
     {
       fprintf (sched_dump, ";;\t+--- worklist:\n");
       insn = model_worklist;
-      count = MAX_SCHED_READY_INSNS;
+      count = param_max_sched_ready_insns;
       while (count > 0 && insn)
 	{
 	  fprintf (sched_dump, ";;\t+---   %d [%d, %d, %d, %d]\n",
@@ -3770,7 +3770,7 @@ model_choose_insn (void)
 
      Failing that, just pick the highest-priority instruction in the
      worklist.  */
-  count = MAX_SCHED_READY_INSNS;
+  count = param_max_sched_ready_insns;
   insn = model_worklist;
   fallback = 0;
   for (;;)
@@ -5147,12 +5147,12 @@ queue_to_ready (struct ready_list *ready)
       /* If the ready list is full, delay the insn for 1 cycle.
 	 See the comment in schedule_block for the rationale.  */
       if (!reload_completed
-	  && (ready->n_ready - ready->n_debug > MAX_SCHED_READY_INSNS
+	  && (ready->n_ready - ready->n_debug > param_max_sched_ready_insns
 	      || (sched_pressure == SCHED_PRESSURE_MODEL
-		  /* Limit pressure recalculations to MAX_SCHED_READY_INSNS
-		     instructions too.  */
+		  /* Limit pressure recalculations to
+		     param_max_sched_ready_insns instructions too.  */
 		  && model_index (insn) > (model_curr_point
-					   + MAX_SCHED_READY_INSNS)))
+					   + param_max_sched_ready_insns)))
 	  && !(sched_pressure == SCHED_PRESSURE_MODEL
 	       && model_curr_point < model_num_insns
 	       /* Always allow the next model instruction to issue.  */
@@ -5743,7 +5743,7 @@ autopref_multipass_dfa_lookahead_guard (rtx_insn *insn1, int ready_index)
   /* Exit early if the param forbids this or if we're not entering here through
      normal haifa scheduling.  This can happen if selective scheduling is
      explicitly enabled.  */
-  if (!insn_queue || PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) <= 0)
+  if (!insn_queue || param_sched_autopref_queue_depth <= 0)
     return 0;
 
   if (sched_verbose >= 2 && ready_index == 0)
@@ -5796,14 +5796,14 @@ autopref_multipass_dfa_lookahead_guard (rtx_insn *insn1, int ready_index)
 	    }
 	}
 
-      if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) == 1)
+      if (param_sched_autopref_queue_depth == 1)
 	continue;
 
       /* Everything from the current queue slot should have been moved to
 	 the ready list.  */
       gcc_assert (insn_queue[NEXT_Q_AFTER (q_ptr, 0)] == NULL_RTX);
 
-      int n_stalls = PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) - 1;
+      int n_stalls = param_sched_autopref_queue_depth - 1;
       if (n_stalls > max_insn_queue_index)
 	n_stalls = max_insn_queue_index;
 
@@ -6552,14 +6552,15 @@ schedule_block (basic_block *target_bb, state_t init_state)
      time in the worst case.  Before reload we are more likely to have
      big lists so truncate them to a reasonable size.  */
   if (!reload_completed
-      && ready.n_ready - ready.n_debug > MAX_SCHED_READY_INSNS)
+      && ready.n_ready - ready.n_debug > param_max_sched_ready_insns)
     {
       ready_sort_debug (&ready);
       ready_sort_real (&ready);
 
-      /* Find first free-standing insn past MAX_SCHED_READY_INSNS.
+      /* Find first free-standing insn past param_max_sched_ready_insns.
          If there are debug insns, we know they're first.  */
-      for (i = MAX_SCHED_READY_INSNS + ready.n_debug; i < ready.n_ready; i++)
+      for (i = param_max_sched_ready_insns + ready.n_debug; i < ready.n_ready;
+	   i++)
 	if (!SCHED_GROUP_P (ready_element (&ready, i)))
 	  break;
 
@@ -7258,7 +7259,7 @@ sched_init (void)
 	   && !reload_completed
 	   && common_sched_info->sched_pass_id == SCHED_RGN_PASS)
     sched_pressure = ((enum sched_pressure_algorithm)
-		      PARAM_VALUE (PARAM_SCHED_PRESSURE_ALGORITHM));
+		      param_sched_pressure_algorithm);
   else
     sched_pressure = SCHED_PRESSURE_NONE;
 
@@ -7273,11 +7274,10 @@ sched_init (void)
 
       if (spec_info->mask != 0)
         {
-          spec_info->data_weakness_cutoff =
-            (PARAM_VALUE (PARAM_SCHED_SPEC_PROB_CUTOFF) * MAX_DEP_WEAK) / 100;
-          spec_info->control_weakness_cutoff =
-            (PARAM_VALUE (PARAM_SCHED_SPEC_PROB_CUTOFF)
-             * REG_BR_PROB_BASE) / 100;
+	  spec_info->data_weakness_cutoff
+	    = (param_sched_spec_prob_cutoff * MAX_DEP_WEAK) / 100;
+	  spec_info->control_weakness_cutoff
+	    = (param_sched_spec_prob_cutoff * REG_BR_PROB_BASE) / 100;
         }
       else
 	/* So we won't read anything accidentally.  */

@@ -78,14 +78,14 @@ along with GCC; see the file COPYING3.  If not see
    simple reduction of inner loop and double reduction of the loop nest.  */
 
 /* Maximum number of stmts in each loop that should be interchanged.  */
-#define MAX_NUM_STMT    (PARAM_VALUE (PARAM_LOOP_INTERCHANGE_MAX_NUM_STMTS))
+#define MAX_NUM_STMT    (param_loop_interchange_max_num_stmts)
 /* Maximum number of data references in loop nest.  */
-#define MAX_DATAREFS    (PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+#define MAX_DATAREFS    (param_loop_max_datarefs_for_datadeps)
 
 /* Comparison ratio of access stride between inner/outer loops to be
    interchanged.  This is the minimum stride ratio for loop interchange
    to be profitable.  */
-#define OUTER_STRIDE_RATIO  (PARAM_VALUE (PARAM_LOOP_INTERCHANGE_STRIDE_RATIO))
+#define OUTER_STRIDE_RATIO  (param_loop_interchange_stride_ratio)
 /* The same as above, but we require higher ratio for interchanging the
    innermost two loops.  */
 #define INNER_STRIDE_RATIO  ((OUTER_STRIDE_RATIO) + 1)

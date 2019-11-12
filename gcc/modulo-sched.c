@@ -1433,7 +1433,7 @@ sms_schedule (void)
       if ( latch_edge->count () > profile_count::zero ()
           && (latch_edge->count()
 	      < single_exit (loop)->count ().apply_scale
-				 (SMS_LOOP_AVERAGE_COUNT_THRESHOLD, 1)))
+				 (param_sms_loop_average_count_threshold, 1)))
 	{
 	  if (dump_file)
 	    {
@@ -1640,7 +1640,7 @@ sms_schedule (void)
 	  /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
 	     1 means that there is no interleaving between iterations thus
 	     we let the scheduling passes do the job in this case.  */
-	  if (stage_count < PARAM_VALUE (PARAM_SMS_MIN_SC)
+	  if (stage_count < param_sms_min_sc
 	      || (count_init && (loop_count <= stage_count))
 	      || (max_trip_count >= 0 && max_trip_count <= stage_count)
 	      || (trip_count >= 0 && trip_count <= stage_count))
@@ -1832,7 +1832,7 @@ sms_schedule (void)
 /* A limit on the number of cycles that resource conflicts can span.  ??? Should
    be provided by DFA, and be dependent on the type of insn scheduled.  Currently
    set to 0 to save compile time.  */
-#define DFA_HISTORY SMS_DFA_HISTORY
+#define DFA_HISTORY param_sms_dfa_history
 
 /* A threshold for the number of repeated unsuccessful attempts to insert
    an empty row, before we flush the partial schedule and start over.  */

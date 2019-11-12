@@ -1975,7 +1975,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       && !HONOR_SIGNED_ZEROS (mode))
     {
       unsigned int max_depth = speed_p
-				? PARAM_VALUE (PARAM_MAX_POW_SQRT_DEPTH)
+				? param_max_pow_sqrt_depth
 				: 2;
 
       tree expand_with_sqrts
@@ -3089,7 +3089,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
   bool check_defer
     = (state->m_deferring_p
        && (tree_to_shwi (TYPE_SIZE (type))
-	   <= PARAM_VALUE (PARAM_AVOID_FMA_MAX_BITS)));
+	   <= param_avoid_fma_max_bits));
   bool defer = check_defer;
   bool seen_negate_p = false;
   /* Make sure that the multiplication statement becomes dead after
@@ -3744,7 +3744,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 {
   gimple_stmt_iterator gsi;
 
-  fma_deferring_state fma_state (PARAM_VALUE (PARAM_AVOID_FMA_MAX_BITS) > 0);
+  fma_deferring_state fma_state (param_avoid_fma_max_bits > 0);
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
     {

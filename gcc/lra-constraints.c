@@ -6682,7 +6682,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
    a BB is not greater than the following value, we don't add the BB
    to EBB.  */
 #define EBB_PROBABILITY_CUTOFF \
-  ((REG_BR_PROB_BASE * LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF) / 100)
+  ((REG_BR_PROB_BASE * param_lra_inheritance_ebb_probability_cutoff) / 100)
 
 /* Current number of inheritance/split iteration.  */
 int lra_inheritance_iter;

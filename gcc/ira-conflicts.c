@@ -113,13 +113,13 @@ build_conflict_bit_table (void)
 	     / IRA_INT_BITS);
 	allocated_words_num += conflict_bit_vec_words_num;
 	if ((uint64_t) allocated_words_num * sizeof (IRA_INT_TYPE)
-	    > (uint64_t) IRA_MAX_CONFLICT_TABLE_SIZE * 1024 * 1024)
+	    > (uint64_t) param_ira_max_conflict_table_size * 1024 * 1024)
 	  {
 	    if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
 	      fprintf
 		(ira_dump_file,
 		 "+++Conflict table will be too big(>%dMB) -- don't use it\n",
-		 IRA_MAX_CONFLICT_TABLE_SIZE);
+		 param_ira_max_conflict_table_size);
 	    return false;
 	  }
       }

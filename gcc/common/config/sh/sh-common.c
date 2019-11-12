@@ -149,7 +149,7 @@ sh_handle_option (struct gcc_options *opts,
 static void
 sh_option_default_params (void)
 {
-  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 2);
+  param_simultaneous_prefetches = 2;
 }
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE

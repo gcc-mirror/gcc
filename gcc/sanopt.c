@@ -1289,8 +1289,8 @@ pass_sanopt::execute (function *fun)
   if (asan_sanitize_stack_p ())
     sanitize_rewrite_addressable_params (fun);
 
-  bool use_calls = ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD < INT_MAX
-    && asan_num_accesses >= ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD;
+  bool use_calls = param_asan_instrumentation_with_call_threshold < INT_MAX
+    && asan_num_accesses >= param_asan_instrumentation_with_call_threshold;
 
   hash_map<tree, tree> shadow_vars_mapping;
   bool need_commit_edge_insert = false;

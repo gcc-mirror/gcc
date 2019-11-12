@@ -10968,9 +10968,9 @@ allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
 {
   bool temp_reg_clobbered_p = false;
   HOST_WIDE_INT probe_interval
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+    = 1 << param_stack_clash_protection_probe_interval;
   HOST_WIDE_INT guard_size
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+    = 1 << param_stack_clash_protection_guard_size;
 
   if (flag_stack_clash_protection)
     {
@@ -11086,7 +11086,7 @@ s390_emit_prologue (void)
      only exception is when TARGET_BACKCHAIN is active, in which case
      we know *sp (offset 0) was written.  */
   HOST_WIDE_INT probe_interval
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+    = 1 << param_stack_clash_protection_probe_interval;
   HOST_WIDE_INT last_probe_offset
     = (TARGET_BACKCHAIN
        ? (TARGET_PACKED_STACK ? STACK_POINTER_OFFSET - UNITS_PER_LONG : 0)
@@ -15264,10 +15264,8 @@ s390_option_override_internal (struct gcc_options *opts,
      displacements.  Trim that value down to 4k if that happens.  This
      might result in too many probes being generated only on the
      oldest supported machine level z900.  */
-  if (!DISP_IN_RANGE ((1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL))))
-    set_param_value ("stack-clash-protection-probe-interval", 12,
-		     opts->x_param_values,
-		     opts_set->x_param_values);
+  if (!DISP_IN_RANGE ((1 << param_stack_clash_protection_probe_interval)))
+    param_stack_clash_protection_probe_interval = 12;
 
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128
   if (!TARGET_LONG_DOUBLE_128_P (opts_set->x_target_flags))
@@ -15276,62 +15274,37 @@ s390_option_override_internal (struct gcc_options *opts,
 
   if (opts->x_s390_tune >= PROCESSOR_2097_Z10)
     {
-      maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
-			     opts->x_param_values,
-			     opts_set->x_param_values);
-      maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 32,
-			     opts->x_param_values,
-			     opts_set->x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 2000,
-			     opts->x_param_values,
-			     opts_set->x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 64,
-			     opts->x_param_values,
-			     opts_set->x_param_values);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_max_unrolled_insns,
+			   100);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_max_unroll_times, 32);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_max_completely_peeled_insns,
+			   2000);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_max_completely_peel_times,
+			   64);
     }
 
-  maybe_set_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 256,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_max_pending_list_length,
+		       256);
   /* values for loop prefetching */
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, 256,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE, 128,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_line_size, 256);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_size, 128);
   /* s390 has more than 2 levels and the size is much larger.  Since
      we are always running virtualized assume that we only get a small
      part of the caches above l1.  */
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE, 1500,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO, 2,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l2_cache_size, 1500);
+  SET_OPTION_IF_UNSET (opts, opts_set,
+		       param_prefetch_min_insn_to_mem_ratio, 2);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_simultaneous_prefetches, 6);
 
   /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-
-  maybe_set_param_value (PARAM_MIN_VECT_LOOP_BOUND, 2,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_sched_pressure_algorithm, 2);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_min_vect_loop_bound, 2);
 
   /* Use aggressive inlining parameters.  */
   if (opts->x_s390_tune >= PROCESSOR_2964_Z13)
     {
-      maybe_set_param_value (PARAM_INLINE_MIN_SPEEDUP, 2,
-			     opts->x_param_values,
-			     opts_set->x_param_values);
-
-      maybe_set_param_value (PARAM_MAX_INLINE_INSNS_AUTO, 80,
-			     opts->x_param_values,
-			     opts_set->x_param_values);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_inline_min_speedup, 2);
+      SET_OPTION_IF_UNSET (opts, opts_set, param_max_inline_insns_auto, 80);
     }
 
   /* Set the default alignment.  */

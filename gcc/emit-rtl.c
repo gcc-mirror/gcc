@@ -2762,15 +2762,15 @@ set_new_first_and_last_insn (rtx_insn *first, rtx_insn *last)
   set_last_insn (last);
   cur_insn_uid = 0;
 
-  if (MIN_NONDEBUG_INSN_UID || MAY_HAVE_DEBUG_INSNS)
+  if (param_min_nondebug_insn_uid || MAY_HAVE_DEBUG_INSNS)
     {
       int debug_count = 0;
 
-      cur_insn_uid = MIN_NONDEBUG_INSN_UID - 1;
+      cur_insn_uid = param_min_nondebug_insn_uid - 1;
       cur_debug_insn_uid = 0;
 
       for (insn = first; insn; insn = NEXT_INSN (insn))
-	if (INSN_UID (insn) < MIN_NONDEBUG_INSN_UID)
+	if (INSN_UID (insn) < param_min_nondebug_insn_uid)
 	  cur_debug_insn_uid = MAX (cur_debug_insn_uid, INSN_UID (insn));
 	else
 	  {
@@ -2780,7 +2780,7 @@ set_new_first_and_last_insn (rtx_insn *first, rtx_insn *last)
 	  }
 
       if (debug_count)
-	cur_debug_insn_uid = MIN_NONDEBUG_INSN_UID + debug_count;
+	cur_debug_insn_uid = param_min_nondebug_insn_uid + debug_count;
       else
 	cur_debug_insn_uid++;
     }
@@ -3445,10 +3445,10 @@ get_max_insn_count (void)
      differences due to debug insns, and not be affected by
      -fmin-insn-uid, to avoid excessive table size and to simplify
      debugging of -fcompare-debug failures.  */
-  if (cur_debug_insn_uid > MIN_NONDEBUG_INSN_UID)
+  if (cur_debug_insn_uid > param_min_nondebug_insn_uid)
     n -= cur_debug_insn_uid;
   else
-    n -= MIN_NONDEBUG_INSN_UID;
+    n -= param_min_nondebug_insn_uid;
 
   return n;
 }
@@ -4085,7 +4085,7 @@ make_debug_insn_raw (rtx pattern)
 
   insn = as_a <rtx_debug_insn *> (rtx_alloc (DEBUG_INSN));
   INSN_UID (insn) = cur_debug_insn_uid++;
-  if (cur_debug_insn_uid > MIN_NONDEBUG_INSN_UID)
+  if (cur_debug_insn_uid > param_min_nondebug_insn_uid)
     INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
@@ -5860,8 +5860,8 @@ init_emit (void)
 {
   set_first_insn (NULL);
   set_last_insn (NULL);
-  if (MIN_NONDEBUG_INSN_UID)
-    cur_insn_uid = MIN_NONDEBUG_INSN_UID;
+  if (param_min_nondebug_insn_uid)
+    cur_insn_uid = param_min_nondebug_insn_uid;
   else
     cur_insn_uid = 1;
   cur_debug_insn_uid = 1;

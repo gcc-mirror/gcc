@@ -157,7 +157,7 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
       return NULL;
 
   if (m_path.length () + 1
-      > (unsigned) PARAM_VALUE (PARAM_MAX_FSM_THREAD_LENGTH))
+      > (unsigned) param_max_fsm_thread_length)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "FSM jump-thread path not considered: "
@@ -367,7 +367,7 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
      as in PR 78407 this leads to noticeable improvements.  */
   if (m_speed_p && (optimize_edge_for_speed_p (taken_edge) || contains_hot_bb))
     {
-      if (n_insns >= PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATH_INSNS))
+      if (n_insns >= param_max_fsm_thread_path_insns)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "FSM jump-thread path not considered: "
@@ -397,9 +397,9 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
      optimizer would have done anyway, so an irreducible loop is not
      so bad.  */
   if (!threaded_multiway_branch && *creates_irreducible_loop
-      && (n_insns * (unsigned) PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
+      && (n_insns * (unsigned) param_fsm_scale_path_stmts
 	  > (m_path.length () *
-	     (unsigned) PARAM_VALUE (PARAM_FSM_SCALE_PATH_BLOCKS))))
+	     (unsigned) param_fsm_scale_path_blocks)))
 
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -419,8 +419,8 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
      So for that case, drastically reduce the number of statements
      we are allowed to copy.  */
   if (!(threaded_through_latch && threaded_multiway_branch)
-      && (n_insns * PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
-	  >= PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS)))
+      && (n_insns * param_fsm_scale_path_stmts
+	  >= param_max_jump_thread_duplication_stmts))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -683,7 +683,7 @@ thread_jumps::fsm_find_control_statement_thread_paths (tree name)
 
   if (gimple_code (def_stmt) == GIMPLE_PHI
       && (gimple_phi_num_args (def_stmt)
-	  >= (unsigned) PARAM_VALUE (PARAM_FSM_MAXIMUM_PHI_ARGUMENTS)))
+	  >= (unsigned) param_fsm_maximum_phi_arguments))
     return;
 
   if (is_gimple_assign (def_stmt)
@@ -771,7 +771,7 @@ thread_jumps::find_jump_threads_backwards (basic_block bb, bool speed_p)
   m_visited_bbs.empty ();
   m_seen_loop_phi = false;
   m_speed_p = speed_p;
-  m_max_threaded_paths = PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS);
+  m_max_threaded_paths = param_max_fsm_thread_paths;
 
   fsm_find_control_statement_thread_paths (name);
 }

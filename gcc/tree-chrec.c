@@ -333,9 +333,9 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	    int size = 0;
 	    if ((tree_contains_chrecs (op0, &size)
 		 || tree_contains_chrecs (op1, &size))
-		&& size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+		&& size < param_scev_max_expr_size)
 	      return build2 (code, type, op0, op1);
-	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	    else if (size < param_scev_max_expr_size)
 	      {
 		if (code == POINTER_PLUS_EXPR)
 		  return fold_build_pointer_plus (fold_convert (type, op0),

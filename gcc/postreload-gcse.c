@@ -1146,17 +1146,18 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
 
   /* Check if it's worth applying the partial redundancy elimination.  */
   if (ok_count.to_gcov_type ()
-      < GCSE_AFTER_RELOAD_PARTIAL_FRACTION * not_ok_count.to_gcov_type ())
+      < param_gcse_after_reload_partial_fraction * not_ok_count.to_gcov_type ())
     goto cleanup;
 
   gcov_type threshold;
 #if (GCC_VERSION >= 5000)
-  if (__builtin_mul_overflow (GCSE_AFTER_RELOAD_CRITICAL_FRACTION,
+  if (__builtin_mul_overflow (param_gcse_after_reload_critical_fraction,
 			      critical_count.to_gcov_type (), &threshold))
     threshold = profile_count::max_count;
 #else
   threshold
-    = GCSE_AFTER_RELOAD_CRITICAL_FRACTION * critical_count.to_gcov_type ();
+    = (param_gcse_after_reload_critical_fraction
+       * critical_count.to_gcov_type ());
 #endif
 
   if (ok_count.to_gcov_type () < threshold)

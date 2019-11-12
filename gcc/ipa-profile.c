@@ -506,7 +506,7 @@ ipa_profile (void)
 
       gcc_assert (overall_size);
 
-      cutoff = (overall_time * PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE) + 500) / 1000;
+      cutoff = (overall_time * param_hot_bb_count_ws_permille + 500) / 1000;
       threshold = 0;
       for (i = 0; cumulated < cutoff; i++)
 	{

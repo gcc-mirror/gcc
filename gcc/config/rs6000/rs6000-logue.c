@@ -1515,14 +1515,14 @@ static HOST_WIDE_INT
 get_stack_clash_protection_probe_interval (void)
 {
   return (HOST_WIDE_INT_1U
-	  << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL));
+	  << param_stack_clash_protection_probe_interval);
 }
 
 static HOST_WIDE_INT
 get_stack_clash_protection_guard_size (void)
 {
   return (HOST_WIDE_INT_1U
-	  << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE));
+	  << param_stack_clash_protection_guard_size);
 }
 
 /* Allocate ORIG_SIZE bytes on the stack and probe the newly

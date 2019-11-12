@@ -256,7 +256,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
     {
       if (by_profile_only)
 	return -1;
-      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      expected = param_avg_loop_niter;
     }
   else if (loop->latch && (loop->latch->count.initialized_p ()
 			   || loop->header->count.initialized_p ()))
@@ -274,7 +274,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
 	{
           if (by_profile_only)
 	    return -1;
-	  expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+	  expected = param_avg_loop_niter;
 	}
       else if (!count_in.nonzero_p ())
 	{
@@ -295,7 +295,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
     {
       if (by_profile_only)
 	return -1;
-      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      expected = param_avg_loop_niter;
     }
 
   if (!by_profile_only)
@@ -427,7 +427,7 @@ estimate_reg_pressure_cost (unsigned n_new, unsigned n_old, bool speed,
 
   if (optimize && (flag_ira_region == IRA_REGION_ALL
 		   || flag_ira_region == IRA_REGION_MIXED)
-      && number_of_loops (cfun) <= (unsigned) IRA_MAX_LOOPS_NUM)
+      && number_of_loops (cfun) <= (unsigned) param_ira_max_loops_num)
     /* IRA regional allocation deals with high register pressure
        better.  So decrease the cost (to do more accurate the cost
        calculation for IRA, we need to know how many registers lives

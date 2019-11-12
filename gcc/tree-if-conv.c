@@ -125,7 +125,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
 #define MAX_PHI_ARG_NUM \
-  ((unsigned) PARAM_VALUE (PARAM_MAX_TREE_IF_CONVERSION_PHI_ARGS))
+  ((unsigned) param_max_tree_if_conversion_phi_args)
 
 /* True if we've converted a statement that was only executed when some
    condition C was true, and if for correctness we need to predicate the

@@ -5358,7 +5358,7 @@ namespace_hints::namespace_hints (location_t loc, tree name)
 
   m_candidates = vNULL;
   m_limited = false;
-  m_limit = PARAM_VALUE (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP);
+  m_limit = param_cxx_max_namespaces_for_diagnostic_help;
 
   /* Breadth-first search of namespaces.  Up to limit namespaces
      searched (limit zero == unlimited).  */

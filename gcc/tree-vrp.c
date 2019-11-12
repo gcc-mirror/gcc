@@ -3391,7 +3391,7 @@ find_switch_asserts (basic_block bb, gswitch *last)
 
   /* Now register along the default label assertions that correspond to the
      anti-range of each label.  */
-  int insertion_limit = PARAM_VALUE (PARAM_MAX_VRP_SWITCH_ASSERTIONS);
+  int insertion_limit = param_max_vrp_switch_assertions;
   if (insertion_limit == 0)
     return;
 
@@ -4305,7 +4305,7 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
      The loop computes the range of the final offset for expressions such
      as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs in
      some range.  */
-  const unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
+  const unsigned limit = param_ssa_name_def_chain_limit;
   for (unsigned n = 0; TREE_CODE (arg) == SSA_NAME && n < limit; ++n)
     {
       gimple *def = SSA_NAME_DEF_STMT (arg);

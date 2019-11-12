@@ -1489,7 +1489,7 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
 
   /* Scan backwards looking for a match.  */
   for (trial = PREV_INSN (target),
-	 insns_to_search = MAX_DELAY_SLOT_INSN_SEARCH;
+	 insns_to_search = param_max_delay_slot_insn_search;
        trial && insns_to_search > 0;
        trial = PREV_INSN (trial))
     {
@@ -1593,7 +1593,7 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
      INSN sets or sets something insn uses or sets.  */
 
   for (trial = PREV_INSN (target),
-	 insns_to_search = MAX_DELAY_SLOT_INSN_SEARCH;
+	 insns_to_search = param_max_delay_slot_insn_search;
        trial && !LABEL_P (trial) && insns_to_search > 0;
        trial = PREV_INSN (trial))
     {

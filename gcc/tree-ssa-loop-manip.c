@@ -984,7 +984,7 @@ can_unroll_loop_p (class loop *loop, unsigned factor,
 
   /* The final loop should be small enough.  */
   if (tree_num_loop_insns (loop, &eni_size_weights) * factor
-      > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS))
+      > (unsigned) param_max_unrolled_insns)
     return false;
 
   return true;

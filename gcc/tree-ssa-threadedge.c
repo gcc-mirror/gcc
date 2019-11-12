@@ -234,7 +234,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
   gimple_stmt_iterator gsi;
   int max_stmt_count;
 
-  max_stmt_count = PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS);
+  max_stmt_count = param_max_jump_thread_duplication_stmts;
 
   /* Walk through each statement in the block recording equivalences
      we discover.  Note any equivalences we discover are context
@@ -275,7 +275,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	     killed due to threading, grow the max count
 	     accordingly.  */
 	  if (max_stmt_count
-	      == PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS))
+	      == param_max_jump_thread_duplication_stmts)
 	    {
 	      max_stmt_count += estimate_threading_killed_stmts (e->dest);
 	      if (dump_file)

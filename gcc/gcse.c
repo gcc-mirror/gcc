@@ -799,10 +799,10 @@ want_to_gcse_p (rtx x, machine_mode mode, HOST_WIDE_INT *max_distance_ptr)
 		      && optimize_function_for_size_p (cfun));
 	  cost = set_src_cost (x, mode, 0);
 
-	  if (cost < COSTS_N_INSNS (GCSE_UNRESTRICTED_COST))
+	  if (cost < COSTS_N_INSNS (param_gcse_unrestricted_cost))
 	    {
 	      max_distance
-		= ((HOST_WIDE_INT)GCSE_COST_DISTANCE_RATIO * cost) / 10;
+		= ((HOST_WIDE_INT)param_gcse_cost_distance_ratio * cost) / 10;
 	      if (max_distance == 0)
 		return 0;
 
@@ -1844,7 +1844,7 @@ prune_insertions_deletions (int n_elems)
      PRUNE_EXPRS.  */
   for (j = 0; j < (unsigned) n_elems; j++)
     if (deletions[j]
-	&& ((unsigned) insertions[j] / deletions[j]) > MAX_GCSE_INSERTION_RATIO)
+	&& (insertions[j] / deletions[j]) > param_max_gcse_insertion_ratio)
       bitmap_set_bit (prune_exprs, j);
 
   /* Now prune PRE_INSERT_MAP and PRE_DELETE_MAP based on PRUNE_EXPRS.  */
@@ -3133,7 +3133,8 @@ hoist_code (void)
      expressions, nothing gets hoisted from the entry block.  */
   FOR_EACH_VEC_ELT (dom_tree_walk, dom_tree_walk_index, bb)
     {
-      domby = get_dominated_to_depth (CDI_DOMINATORS, bb, MAX_HOIST_DEPTH);
+      domby = get_dominated_to_depth (CDI_DOMINATORS, bb,
+				      param_max_hoist_depth);
 
       if (domby.length () == 0)
 	continue;
@@ -3982,9 +3983,9 @@ update_ld_motion_stores (struct gcse_expr * expr)
 bool
 gcse_or_cprop_is_too_expensive (const char *pass)
 {
-  unsigned int memory_request = (n_basic_blocks_for_fn (cfun)
-				 * SBITMAP_SET_SIZE (max_reg_num ())
-				 * sizeof (SBITMAP_ELT_TYPE));
+  int memory_request = (n_basic_blocks_for_fn (cfun)
+			* SBITMAP_SET_SIZE (max_reg_num ())
+			* sizeof (SBITMAP_ELT_TYPE));
   
   /* Trying to perform global optimizations on flow graphs which have
      a high connectivity will take a long time and is unlikely to be
@@ -4007,7 +4008,7 @@ gcse_or_cprop_is_too_expensive (const char *pass)
 
   /* If allocating memory for the dataflow bitmaps would take up too much
      storage it's better just to disable the optimization.  */
-  if (memory_request > MAX_GCSE_MEMORY)
+  if (memory_request > param_max_gcse_memory)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d registers; "

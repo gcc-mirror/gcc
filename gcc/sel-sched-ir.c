@@ -6012,7 +6012,7 @@ make_region_from_loop (class loop *loop)
   basic_block preheader_block;
 
   if (loop->num_nodes
-      > (unsigned) PARAM_VALUE (PARAM_MAX_PIPELINE_REGION_BLOCKS))
+      > (unsigned) param_max_pipeline_region_blocks)
     return -1;
 
   /* Don't pipeline loops whose latch belongs to some of its inner loops.  */
@@ -6021,7 +6021,7 @@ make_region_from_loop (class loop *loop)
       return -1;
 
   loop->ninsns = num_loop_insns (loop);
-  if ((int) loop->ninsns > PARAM_VALUE (PARAM_MAX_PIPELINE_REGION_INSNS))
+  if ((int) loop->ninsns > param_max_pipeline_region_insns)
     return -1;
 
   loop_blocks = get_loop_body_in_custom_order (loop, bb_top_order_comparator);

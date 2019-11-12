@@ -4945,7 +4945,7 @@ static int
 get_reassociation_width (int ops_num, enum tree_code opc,
 			 machine_mode mode)
 {
-  int param_width = PARAM_VALUE (PARAM_TREE_REASSOC_WIDTH);
+  int param_width = param_tree_reassoc_width;
   int width;
   int width_min;
   int cycles_best;

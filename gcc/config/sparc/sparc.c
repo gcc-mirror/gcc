@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "tree-vector-builder.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2010,7 +2011,7 @@ sparc_option_override (void)
       gcc_unreachable ();
     };
 
-  /* PARAM_SIMULTANEOUS_PREFETCHES is the number of prefetches that
+  /* param_simultaneous_prefetches is the number of prefetches that
      can run at the same time.  More important, it is the threshold
      defining when additional prefetches will be dropped by the
      hardware.
@@ -2033,21 +2034,20 @@ sparc_option_override (void)
      single-threaded program.  Experimental results show that setting
      this parameter to 32 works well when the number of threads is not
      high.  */
-  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			 ((sparc_cpu == PROCESSOR_ULTRASPARC
-			   || sparc_cpu == PROCESSOR_NIAGARA
-			   || sparc_cpu == PROCESSOR_NIAGARA2
-			   || sparc_cpu == PROCESSOR_NIAGARA3
-			   || sparc_cpu == PROCESSOR_NIAGARA4)
-			  ? 2
-			  : (sparc_cpu == PROCESSOR_ULTRASPARC3
-			     ? 8 : ((sparc_cpu == PROCESSOR_NIAGARA7
-				     || sparc_cpu == PROCESSOR_M8)
-				    ? 32 : 3))),
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_simultaneous_prefetches,
+		       ((sparc_cpu == PROCESSOR_ULTRASPARC
+			 || sparc_cpu == PROCESSOR_NIAGARA
+			 || sparc_cpu == PROCESSOR_NIAGARA2
+			 || sparc_cpu == PROCESSOR_NIAGARA3
+			 || sparc_cpu == PROCESSOR_NIAGARA4)
+			? 2
+			: (sparc_cpu == PROCESSOR_ULTRASPARC3
+			   ? 8 : ((sparc_cpu == PROCESSOR_NIAGARA7
+				   || sparc_cpu == PROCESSOR_M8)
+				  ? 32 : 3))));
 
-  /* PARAM_L1_CACHE_LINE_SIZE is the size of the L1 cache line, in
+  /* param_l1_cache_line_size is the size of the L1 cache line, in
      bytes.
 
      The Oracle SPARC Architecture (previously the UltraSPARC
@@ -2064,38 +2064,33 @@ sparc_option_override (void)
      L2 and L3, but only 32B are brought into the L1D$. (Assuming it
      is a read_n prefetch, which is the only type which allocates to
      the L1.)  */
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			 (sparc_cpu == PROCESSOR_M8
-			  ? 64 : 32),
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_l1_cache_line_size,
+		       (sparc_cpu == PROCESSOR_M8 ? 64 : 32));
 
-  /* PARAM_L1_CACHE_SIZE is the size of the L1D$ (most SPARC chips use
+  /* param_l1_cache_size is the size of the L1D$ (most SPARC chips use
      Hardvard level-1 caches) in kilobytes.  Both UltraSPARC and
      Niagara processors feature a L1D$ of 16KB.  */
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			 ((sparc_cpu == PROCESSOR_ULTRASPARC
-			   || sparc_cpu == PROCESSOR_ULTRASPARC3
-			   || sparc_cpu == PROCESSOR_NIAGARA
-			   || sparc_cpu == PROCESSOR_NIAGARA2
-			   || sparc_cpu == PROCESSOR_NIAGARA3
-			   || sparc_cpu == PROCESSOR_NIAGARA4
-			   || sparc_cpu == PROCESSOR_NIAGARA7
-			   || sparc_cpu == PROCESSOR_M8)
-			  ? 16 : 64),
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_l1_cache_size,
+		       ((sparc_cpu == PROCESSOR_ULTRASPARC
+			 || sparc_cpu == PROCESSOR_ULTRASPARC3
+			 || sparc_cpu == PROCESSOR_NIAGARA
+			 || sparc_cpu == PROCESSOR_NIAGARA2
+			 || sparc_cpu == PROCESSOR_NIAGARA3
+			 || sparc_cpu == PROCESSOR_NIAGARA4
+			 || sparc_cpu == PROCESSOR_NIAGARA7
+			 || sparc_cpu == PROCESSOR_M8)
+			? 16 : 64));
 
-
-  /* PARAM_L2_CACHE_SIZE is the size fo the L2 in kilobytes.  Note
+  /* param_l2_cache_size is the size fo the L2 in kilobytes.  Note
      that 512 is the default in params.def.  */
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE,
-			 ((sparc_cpu == PROCESSOR_NIAGARA4
-			   || sparc_cpu == PROCESSOR_M8)
-			  ? 128 : (sparc_cpu == PROCESSOR_NIAGARA7
-				   ? 256 : 512)),
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_l2_cache_size,
+		       ((sparc_cpu == PROCESSOR_NIAGARA4
+			 || sparc_cpu == PROCESSOR_M8)
+			? 128 : (sparc_cpu == PROCESSOR_NIAGARA7
+				 ? 256 : 512)));
   
 
   /* Disable save slot sharing for call-clobbered registers by default.

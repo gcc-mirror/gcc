@@ -288,7 +288,7 @@ tree_unswitch_single_loop (class loop *loop, int num)
 
       /* The loop should not be too large, to limit code growth. */
       if (tree_num_loop_insns (loop, &eni_size_weights)
-	  > (unsigned) PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
+	  > (unsigned) param_max_unswitch_insns)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, ";; Not unswitching, loop too big\n");
@@ -323,7 +323,7 @@ tree_unswitch_single_loop (class loop *loop, int num)
       if (i == loop->num_nodes)
 	{
 	  if (dump_file
-	      && num > PARAM_VALUE (PARAM_MAX_UNSWITCH_LEVEL)
+	      && num > param_max_unswitch_level
 	      && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, ";; Not unswitching anymore, hit max level\n");
 
@@ -352,7 +352,7 @@ tree_unswitch_single_loop (class loop *loop, int num)
 	  changed = true;
 	}
       /* Do not unswitch too much.  */
-      else if (num > PARAM_VALUE (PARAM_MAX_UNSWITCH_LEVEL))
+      else if (num > param_max_unswitch_level)
 	{
 	  i++;
 	  continue;
