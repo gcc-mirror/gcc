@@ -3311,6 +3311,8 @@ public:
 unsigned int
 pass_jump_after_combine::execute (function *)
 {
+  /* Jump threading does not keep dominators up-to-date.  */
+  free_dominance_info (CDI_DOMINATORS);
   cleanup_cfg (flag_thread_jumps ? CLEANUP_THREADING : 0);
   return 0;
 }

@@ -1,3 +1,8 @@
+2019-11-12  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/92430
+	* gcc.dg/pr92430.c: New test (from Arseny Solokha).
+
 2019-11-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92461
