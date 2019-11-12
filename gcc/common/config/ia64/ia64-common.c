@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
-#include "params.h"
 
 /* Implement overriding of the optimization options.  */
 static const struct default_options ia64_option_optimization_table[] =

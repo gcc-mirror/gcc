@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "ira.h"
 #include "ira-int.h"
-#include "params.h"
 #include "sparseset.h"
 #include "cfgloop.h"
 

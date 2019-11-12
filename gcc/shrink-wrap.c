@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
-#include "params.h"
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "regcprop.h"

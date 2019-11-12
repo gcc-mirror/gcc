@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
-#include "params.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"

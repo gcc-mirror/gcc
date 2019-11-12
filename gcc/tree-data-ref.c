@@ -93,7 +93,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "dumpfile.h"
 #include "tree-affine.h"
-#include "params.h"
 #include "builtins.h"
 #include "tree-eh.h"
 #include "ssa.h"

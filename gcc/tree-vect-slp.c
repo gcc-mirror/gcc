@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-tree.h"
 #include "insn-config.h"
 #include "recog.h"		/* FIXME: for insn_data */
-#include "params.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "gimple-iterator.h"

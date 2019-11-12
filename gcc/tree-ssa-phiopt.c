@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-inline.h"
-#include "params.h"
 #include "case-cfn-macros.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);

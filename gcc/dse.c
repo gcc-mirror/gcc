@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "dbgcnt.h"
-#include "params.h"
 #include "rtl-iter.h"
 #include "cfgcleanup.h"
 #include "calls.h"

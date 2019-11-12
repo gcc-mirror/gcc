@@ -105,7 +105,6 @@ a register with any other reload.  */
 #include "rtl-error.h"
 #include "reload.h"
 #include "addresses.h"
-#include "params.h"
 #include "function-abi.h"
 
 /* True if X is a constant that can be forced into the constant pool.

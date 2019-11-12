@@ -44,7 +44,6 @@
 #include "tree-pass.h"
 #include "profile.h"
 #include "cfganal.h"
-#include "params.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"

@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgrtl.h"
 #include "cfgloop.h"
 #include "expr.h"
-#include "params.h"
 #include "rtl-iter.h"
 #include "dumpfile.h"
 

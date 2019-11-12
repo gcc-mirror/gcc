@@ -105,7 +105,6 @@
 #include "emit-rtl.h"
 #include "output.h"
 #include "expr.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "cfgrtl.h"
 #include "cfganal.h"

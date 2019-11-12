@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-threadupdate.h"
-#include "params.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-dom.h"

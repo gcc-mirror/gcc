@@ -114,7 +114,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-hash-traits.h"
 #include "varasm.h"
 #include "builtins.h"
-#include "params.h"
 #include "cfganal.h"
 #include "internal-fn.h"
 #include "fold-const.h"

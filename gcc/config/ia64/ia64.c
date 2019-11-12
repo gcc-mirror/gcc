@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "intl.h"
 #include "debug.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "tm-constrs.h"
 #include "sel-sched.h"

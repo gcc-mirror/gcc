@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "explow.h"
 #include "expr.h"
-#include "params.h"
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "stor-layout.h"

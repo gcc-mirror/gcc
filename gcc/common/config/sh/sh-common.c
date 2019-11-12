@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
-#include "params.h"
 
 /* Set default optimization options.  */
 static const struct default_options sh_option_optimization_table[] =

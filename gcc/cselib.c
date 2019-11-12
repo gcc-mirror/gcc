@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "dumpfile.h"
 #include "cselib.h"
-#include "params.h"
 #include "function-abi.h"
 
 /* A list of cselib_val structures.  */

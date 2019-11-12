@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "predict.h"
 #include "tree-into-ssa.h"
-#include "params.h"
 
 namespace {
 

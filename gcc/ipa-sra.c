@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-sra.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "tree-inline.h"
 #include "ipa-utils.h"

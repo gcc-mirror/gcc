@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tm.h"
 #include "flags.h"
-#include "params.h"
 #include "diagnostic.h"
 #include "opts-diagnostic.h"
 #include "insn-attr-common.h"

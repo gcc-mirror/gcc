@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgrtl.h"
 #include "profile.h"
 #include "expr.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "intl.h"

@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "ipa-fnsummary.h"
 #include "gimple-pretty-print.h"
-#include "params.h"
 #include "ipa-utils.h"
 #include "dbgcnt.h"
 #include "domwalk.h"

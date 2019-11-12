@@ -37,7 +37,6 @@
 #include "gimple-iterator.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
-#include "params.h"
 #include "gimple-walk.h"
 #include "varasm.h"
 #include "stringpool.h"

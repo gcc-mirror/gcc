@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "expr.h"
 #include "builtins.h"
-#include "params.h"
 #include "tree-cfg.h"
 #include "tree-hash-traits.h"
 #include "vec-perm-indices.h"

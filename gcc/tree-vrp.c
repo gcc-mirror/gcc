@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "target.h"
 #include "case-cfn-macros.h"
-#include "params.h"
 #include "alloc-pool.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"

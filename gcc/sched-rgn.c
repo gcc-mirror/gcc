@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 #include "insn-attr.h"
 #include "except.h"
-#include "params.h"
 #include "cfganal.h"
 #include "sched-int.h"
 #include "sel-sched.h"

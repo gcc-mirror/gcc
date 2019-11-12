@@ -100,7 +100,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "rtlhooks-def.h"
 #include "expr.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "valtrack.h"
 #include "rtl-iter.h"

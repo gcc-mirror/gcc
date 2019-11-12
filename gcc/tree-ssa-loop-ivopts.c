@@ -125,7 +125,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-affine.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-address.h"

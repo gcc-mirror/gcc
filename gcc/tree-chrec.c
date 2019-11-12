@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-ssa-loop.h"
 #include "dumpfile.h"
-#include "params.h"
 #include "tree-scalar-evolution.h"
 
 /* Extended folder for chrecs.  */

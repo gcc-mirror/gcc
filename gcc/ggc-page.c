@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "ggc-internal.h"
 #include "timevar.h"
-#include "params.h"
 #include "cgraph.h"
 #include "cfgloop.h"
 #include "plugin.h"

@@ -71,7 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "generic-match.h"
 #include "gimple-fold.h"
-#include "params.h"
 #include "tree-into-ssa.h"
 #include "md5.h"
 #include "case-cfn-macros.h"

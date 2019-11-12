@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "common/common-target.h"
 #include "output.h"
-#include "params.h"
 
 static rtx break_out_memory_refs (rtx);
 static void anti_adjust_stack_and_probe_stack_clash (rtx);

@@ -279,7 +279,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-affine.h"
 #include "tree-scalar-evolution.h"
 #include "dumpfile.h"
-#include "params.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"

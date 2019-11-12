@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "profile.h"
 #include "insn-attr.h"
-#include "params.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "sched-int.h"

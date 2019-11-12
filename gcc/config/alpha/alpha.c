@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-stdarg.h"
 #include "tm-constrs.h"
 #include "libfuncs.h"
-#include "params.h"
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "flags.h"

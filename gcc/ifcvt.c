@@ -45,7 +45,6 @@
 #include "shrink-wrap.h"
 #include "rtl-iter.h"
 #include "ifcvt.h"
-#include "params.h"
 
 #ifndef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE \

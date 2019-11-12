@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "tree-into-ssa.h"
 #include "bitmap.h"
-#include "params.h"
 
 
 /* GIMPLE parser state.  */

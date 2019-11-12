@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa.h"
-#include "params.h"
 #include "tree-cfg.h"
 #include "builtins.h"
 #include "calls.h"

@@ -96,7 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "builtins.h"
 #include "tree-sra.h"

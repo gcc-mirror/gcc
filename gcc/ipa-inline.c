@@ -105,7 +105,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-mem.h"
 #include "calls.h"
 #include "tree-inline.h"
-#include "params.h"
 #include "profile.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"

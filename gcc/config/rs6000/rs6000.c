@@ -62,7 +62,6 @@
 #include "gimple-ssa.h"
 #include "gimple-walk.h"
 #include "intl.h"
-#include "params.h"
 #include "tm-constrs.h"
 #include "tree-vectorizer.h"
 #include "target-globals.h"

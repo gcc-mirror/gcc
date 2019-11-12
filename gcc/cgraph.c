@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "tree-dfa.h"
 #include "profile.h"
-#include "params.h"
 #include "context.h"
 #include "gimplify.h"
 #include "stringpool.h"

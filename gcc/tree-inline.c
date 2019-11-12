@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "except.h"
 #include "debug.h"
-#include "params.h"
 #include "value-prof.h"
 #include "cfgloop.h"
 #include "builtins.h"

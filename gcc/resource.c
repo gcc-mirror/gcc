@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "resource.h"
 #include "insn-attr.h"
-#include "params.h"
 #include "function-abi.h"
 
 /* This structure is used to record liveness information at the targets or

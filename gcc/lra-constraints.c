@@ -127,7 +127,6 @@
 #include "expr.h"
 #include "cfgrtl.h"
 #include "rtl-error.h"
-#include "params.h"
 #include "lra.h"
 #include "lra-int.h"
 #include "print-rtl.h"

@@ -23,7 +23,6 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
-#include "params.h"
 
 /* Set default optimization options.  */
 static const struct default_options gcn_option_optimization_table[] =

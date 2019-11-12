@@ -109,7 +109,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "builtins.h"
-#include "params.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
 #include "optabs-libfuncs.h"

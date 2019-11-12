@@ -36,7 +36,6 @@
 #include "gimple-iterator.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "params.h"
 #include "tree-cfg.h"
 #include "tree-object-size.h"
 #include "calls.h"

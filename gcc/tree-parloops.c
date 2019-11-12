@@ -52,8 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-low.h"
 #include "tree-ssa.h"
-#include "params.h"
-#include "params-enum.h"
 #include "tree-ssa-alias.h"
 #include "tree-eh.h"
 #include "gomp-constants.h"

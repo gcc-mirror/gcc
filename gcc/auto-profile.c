@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "gimple-iterator.h"
 #include "value-prof.h"
-#include "params.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"

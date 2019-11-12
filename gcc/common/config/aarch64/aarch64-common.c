@@ -30,7 +30,6 @@
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
-#include "params.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS

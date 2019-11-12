@@ -46,7 +46,6 @@
 #include "demangle.h"
 #include "output.h"
 #include "trans-mem.h"
-#include "params.h"
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-ssa-address.h"

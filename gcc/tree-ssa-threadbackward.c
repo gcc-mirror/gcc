@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-threadupdate.h"
-#include "params.h"
 #include "tree-ssa-loop.h"
 #include "cfganal.h"
 #include "tree-pass.h"

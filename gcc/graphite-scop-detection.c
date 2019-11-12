@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "cfghooks.h"
 #include "domwalk.h"
-#include "params.h"
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"

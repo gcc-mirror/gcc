@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "profile.h"
 #include "sreal.h"
-#include "params.h"
 #include "cfgloop.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"

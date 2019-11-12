@@ -1,5 +1,9 @@
 2019-11-12  Martin Liska  <mliska@suse.cz>
 
+	* gimple-parser.c: Do not include params.h.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
 	* gimple-parser.c (c_parser_parse_gimple_body): Replace old parameter syntax
 	with the new one, include opts.h if needed.  Use SET_OPTION_IF_UNSET
 	macro.

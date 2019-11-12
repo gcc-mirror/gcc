@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "gimple.h"
 #include "predict.h"
-#include "params.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"

@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "reload.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"

@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "alias.h"
 #include "toplev.h"
-#include "params.h"
 #include "rtlhooks-def.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
