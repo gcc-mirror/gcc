@@ -1,5 +1,10 @@
 2019-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (rs6000_set_fpscr_drn): Use ULL on big
+	hexadecimal literal.
+
+2019-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/vsx.md (xscmpexpdp_<code> for CMP_TEST): Handle
 	UNORDERED if !HONOR_NANS (DFmode).
 	(xscmpexpqp_<code>_<mode> for CMP_TEST and IEEE128): Handle UNORDERED
