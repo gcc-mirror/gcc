@@ -1,5 +1,14 @@
 2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_nop_conversion_p): Declare.
+	* tree-vect-stmts.c (vect_nop_conversion_p): New function.
+	(vectorizable_assignment): Don't add a cost for nop conversions.
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Likewise.
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Likewise.
+
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vect_model_promotion_demotion_cost): Take the
 	number of ncopies as an additional argument.
 	(vectorizable_conversion): Update call accordingly.  Use "modifier"

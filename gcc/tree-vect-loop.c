@@ -1125,7 +1125,9 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
              else
                kind = scalar_store;
             }
-          else
+	  else if (vect_nop_conversion_p (stmt_info))
+	    continue;
+	  else
             kind = scalar_stmt;
 
 	  record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
