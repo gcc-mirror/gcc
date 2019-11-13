@@ -259,9 +259,14 @@ builtin_define_float_constants (const char *name_prefix,
   /* Since, for the supported formats, B is always a power of 2, we
      construct the following numbers directly as a hexadecimal
      constants.  */
-  get_max_float (fmt, buf, sizeof (buf));
+  get_max_float (fmt, buf, sizeof (buf), false);
 
   sprintf (name, "__%s_MAX__", name_prefix);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
+
+  get_max_float (fmt, buf, sizeof (buf), true);
+
+  sprintf (name, "__%s_NORM_MAX__", name_prefix);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
   /* The minimum normalized positive floating-point number,
@@ -1607,10 +1612,10 @@ struct GTY(()) lazy_hex_fp_value_struct
 };
 /* Number of the expensive to compute macros we should evaluate lazily.
    Each builtin_define_float_constants invocation calls
-   builtin_define_with_hex_fp_value 4 times and builtin_define_float_constants
+   builtin_define_with_hex_fp_value 5 times and builtin_define_float_constants
    is called for FLT, DBL, LDBL and up to NUM_FLOATN_NX_TYPES times for
    FLTNN*.  */ 
-#define LAZY_HEX_FP_VALUES_CNT (4 * (3 + NUM_FLOATN_NX_TYPES))
+#define LAZY_HEX_FP_VALUES_CNT (5 * (3 + NUM_FLOATN_NX_TYPES))
 static GTY(()) struct lazy_hex_fp_value_struct
   lazy_hex_fp_values[LAZY_HEX_FP_VALUES_CNT];
 static GTY(()) unsigned lazy_hex_fp_value_count;
