@@ -1,3 +1,8 @@
+2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_print_node_jump_functions,
+	ipa_print_node_params): Print info about missing summaries.
+
 2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Include
