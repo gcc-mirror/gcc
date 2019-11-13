@@ -3,8 +3,8 @@
 #include <experimental/coroutine>
 
 #else
-#ifndef __CORO_H_N4830
-#define __CORO_H_N4830
+#ifndef __CORO_H_n4835
+#define __CORO_H_n4835
 
 // Fragments (with short-cuts) to mimic enough of the library header to
 // make some progress.
@@ -13,7 +13,7 @@
 
 namespace std {
 namespace experimental {
-inline namespace coroutines_n4830 {
+inline namespace coroutines_n4835 {
 
 // 21.11.1 coroutine traits
 template<typename _R, typename...> struct coroutine_traits {
@@ -116,8 +116,8 @@ struct suspend_never {
 }}} // namespace std::experimental::coroutines_n4775
 
 #else
-# error "coro.h requires support for coroutines TS 4775, add -fcoroutines"
+# error "coro.h requires support for coroutines, add -fcoroutines"
 #endif
-#endif // __CORO_H_N4830
+#endif // __CORO_H_n4835
 
 #endif
