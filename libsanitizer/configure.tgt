@@ -65,6 +65,8 @@ case "${target}" in
 	;;
   x86_64-*-solaris2.11* | i?86-*-solaris2.11*)
 	;;
+  riscv64-*-linux*)
+	;;
   *)
 	UNSUPPORTED=1
 	;;
