@@ -1488,7 +1488,8 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
   if (t == TYPE_CANONICAL (t))
     return t;
 
-  if (dependent_alias_template_spec_p (t))
+  if (!(flags & STF_STRIP_DEPENDENT)
+      && dependent_alias_template_spec_p (t))
     /* DR 1558: However, if the template-id is dependent, subsequent
        template argument substitution still applies to the template-id.  */
     return t;
@@ -1673,7 +1674,8 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	      && !user_facing_original_type_p (t))
 	    return t;
 	  result = strip_typedefs (DECL_ORIGINAL_TYPE (TYPE_NAME (t)),
-				   remove_attributes, flags);
+				   remove_attributes,
+				   flags | STF_STRIP_DEPENDENT);
 	}
       else
 	result = TYPE_MAIN_VARIANT (t);

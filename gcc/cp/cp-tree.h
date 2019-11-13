@@ -5759,8 +5759,13 @@ enum auto_deduction_context
 
    STF_USER_VISIBLE: use heuristics to try to avoid stripping user-facing
        aliases of internal details.  This is intended for diagnostics,
-       where it should (for example) give more useful "aka" types.  */
+       where it should (for example) give more useful "aka" types.
+
+   STF_STRIP_DEPENDENT: allow the stripping of aliases with dependent
+       template parameters, relying on code elsewhere to report any
+       appropriate diagnostics.  */
 const unsigned int STF_USER_VISIBLE = 1U;
+const unsigned int STF_STRIP_DEPENDENT = 1U << 1;
 
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */

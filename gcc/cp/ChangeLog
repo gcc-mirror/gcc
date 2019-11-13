@@ -1,3 +1,12 @@
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/92206
+	* cp-tree.h (STF_STRIP_DEPENDENT): New constant.
+	* tree.c (strip_typedefs): Add STF_STRIP_DEPENDENT to the flags
+	when calling strip_typedefs recursively on a DECL_ORIGINAL_TYPE.
+	Don't apply the fix for DR1558 in that case; allow aliases with
+	dependent template parameters to be stripped instead.
+
 2019-11-12  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (lookup_using_decl): New function, merged from ...
