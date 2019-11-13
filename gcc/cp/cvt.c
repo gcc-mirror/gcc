@@ -1201,7 +1201,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	if (DECL_DESTRUCTOR_P (fn))
 	  return expr;
 
-      maybe_warn_nodiscard (expr, implicit);
+      if (complain & tf_warning)
+	maybe_warn_nodiscard (expr, implicit);
       break;
 
     case INDIRECT_REF:
@@ -1357,7 +1358,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
                 && !is_reference)
               warning_at (loc, OPT_Wunused_value, "value computed is not used");
             expr = TREE_OPERAND (expr, 0);
-	    if (TREE_CODE (expr) == CALL_EXPR)
+	    if (TREE_CODE (expr) == CALL_EXPR
+		&& (complain & tf_warning))
 	      maybe_warn_nodiscard (expr, implicit);
           }
 
@@ -1435,7 +1437,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 					   AGGR_INIT_EXPR_ARGP (init));
 	    }
 	}
-      maybe_warn_nodiscard (expr, implicit);
+      if (complain & tf_warning)
+	maybe_warn_nodiscard (expr, implicit);
       break;
 
     default:;
