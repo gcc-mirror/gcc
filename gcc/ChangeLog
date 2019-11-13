@@ -1,5 +1,12 @@
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/92498
+	* ipa-profile.c (check_argument_count): Do not ICE when descriptors
+	is NULL.
+	(ipa_profile): Fix reversed test.
+
+2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-cp.c (ignore_edge_p): Do not check caller flags.
 	(propagate_constants_topo): Fix typo.
 
