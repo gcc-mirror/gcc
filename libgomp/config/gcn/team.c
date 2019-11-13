@@ -57,16 +57,28 @@ gomp_gcn_enter_kernel (void)
       /* Starting additional threads is not supported.  */
       gomp_global_icv.dyn_var = true;
 
+      /* Initialize the team arena for optimized memory allocation.
+         The arena has been allocated on the host side, and the address
+         passed in via the kernargs.  Each team takes a small slice of it.  */
+      register void **kernargs asm("s8");
+      void *team_arena = (kernargs[4] + TEAM_ARENA_SIZE*teamid);
+      void * __lds *arena_start = (void * __lds *)TEAM_ARENA_START;
+      void * __lds *arena_free = (void * __lds *)TEAM_ARENA_FREE;
+      void * __lds *arena_end = (void * __lds *)TEAM_ARENA_END;
+      *arena_start = team_arena;
+      *arena_free = team_arena;
+      *arena_end = team_arena + TEAM_ARENA_SIZE;
+
       /* Allocate and initialize the team-local-storage data.  */
-      struct gomp_thread *thrs = gomp_malloc_cleared (sizeof (*thrs)
+      struct gomp_thread *thrs = team_malloc_cleared (sizeof (*thrs)
 						      * numthreads);
       set_gcn_thrs (thrs);
 
       /* Allocate and initailize a pool of threads in the team.
          The threads are already running, of course, we just need to manage
          the communication between them.  */
-      struct gomp_thread_pool *pool = gomp_malloc (sizeof (*pool));
-      pool->threads = gomp_malloc (sizeof (void *) * numthreads);
+      struct gomp_thread_pool *pool = team_malloc (sizeof (*pool));
+      pool->threads = team_malloc (sizeof (void *) * numthreads);
       for (int tid = 0; tid < numthreads; tid++)
 	pool->threads[tid] = &thrs[tid];
       pool->threads_size = numthreads;
@@ -91,7 +103,7 @@ void
 gomp_gcn_exit_kernel (void)
 {
   gomp_free_thread (gcn_thrs ());
-  free (gcn_thrs ());
+  team_free (gcn_thrs ());
 }
 
 /* This function contains the idle loop in which a thread waits

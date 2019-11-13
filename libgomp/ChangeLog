@@ -1,4 +1,23 @@
 2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Set up the team arena
+	and use team_malloc variants.
+	(gomp_gcn_exit_kernel): Use team_free.
+	* libgomp.h (TEAM_ARENA_SIZE): Define.
+	(TEAM_ARENA_START): Define.
+	(TEAM_ARENA_FREE): Define.
+	(TEAM_ARENA_END): Define.
+	(team_malloc): New function.
+	(team_malloc_cleared): New function.
+	(team_free): New function.
+	* team.c (gomp_new_team): Initialize and use team_malloc.
+	(free_team): Use team_free.
+	(gomp_free_thread): Use team_free.
+	(gomp_pause_host): Use team_free.
+	* work.c (gomp_init_work_share): Use team_malloc.
+	(gomp_fini_work_share): Use team_free.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
