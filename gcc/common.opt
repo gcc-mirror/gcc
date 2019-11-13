@@ -1188,7 +1188,7 @@ List all available debugging counters with their limits and counts.
 
 fdbg-cnt=
 Common RejectNegative Joined Var(common_deferred_options) Defer
--fdbg-cnt=<counter>[:<lower_limit>]:<upper_limit>[,<counter>:...]	Set the debug counter limit.
+-fdbg-cnt=<counter>[:<lower_limit1>-]<upper_limit1>[:<lower_limit2>-<upper_limit2>:...][,<counter>:...]	Set the debug counter limit.
 
 fdebug-prefix-map=
 Common Joined RejectNegative Var(common_deferred_options) Defer
