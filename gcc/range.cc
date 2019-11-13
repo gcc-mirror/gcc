@@ -62,8 +62,8 @@ range_zero (tree type)
 value_range
 range_nonzero (tree type)
 {
-  return value_range (VR_ANTI_RANGE,
-			   build_zero_cst (type), build_zero_cst (type));
+  return value_range (build_zero_cst (type), build_zero_cst (type),
+		      VR_ANTI_RANGE);
 }
 
 value_range
