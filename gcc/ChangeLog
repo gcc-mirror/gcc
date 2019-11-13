@@ -1,3 +1,9 @@
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(unary_count::expand): Use aarch64_sve_int_mode instead of
+	mode_for_int_vector.
+
 2019-11-13  Martin Liska  <mliska@suse.cz>
 
 	* opts.c: Update comment about OPT_LEVELS_2_PLUS_SPEED_ONLY.
