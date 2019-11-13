@@ -487,10 +487,8 @@ check_argument_count (struct cgraph_node *n, struct cgraph_edge *e)
   class ipa_node_params *info = IPA_NODE_REF (n->function_symbol ());
   if (!info)
     return true;
-  if (!info->descriptors)
-    return true;
   ipa_edge_args *e_info = IPA_EDGE_REF (e);
-  if (!e)
+  if (!e_info)
     return true;
   if (ipa_get_param_count (info) != ipa_get_cs_argument_count (e_info)
       && (ipa_get_param_count (info) >= ipa_get_cs_argument_count (e_info)
