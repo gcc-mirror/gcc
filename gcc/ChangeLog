@@ -1,5 +1,10 @@
 2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Include
+	the cost of generating loop masks.
+
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_apply_runtime_profitability_check_p):
 	New function.
 	* tree-vect-loop-manip.c (vect_loop_versioning): Use it.

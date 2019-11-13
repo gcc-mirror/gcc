@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* Pick an arbitrary target for which unaligned accesses are more
    expensive.  */
-/* { dg-options "-O3 -msve-vector-bits=256 -mtune=thunderx" } */
+/* { dg-options "-O3 -msve-vector-bits=256 -mtune=thunderx -fno-vect-cost-model" } */
 
 #define N 32
 #define MAX_START 8
