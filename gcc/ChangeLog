@@ -1,3 +1,10 @@
+2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92454
+	* ipa-cp.c (spread_undeadness): Check that IPA_NODE_REF exists.
+	(identify_dead_nodes): Likewise.
+
 2019-11-13  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_function::equals_private): Do not overuse

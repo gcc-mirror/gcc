@@ -1,3 +1,9 @@
+2019-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92454
+	* ipa-cp.c (spread_undeadness): Check that IPA_NODE_REF exists.
+	(identify_dead_nodes): Likewise.
+
 2019-11-13  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/ipa-icf-39.c: Update -fdbg-cnt to the new format.
