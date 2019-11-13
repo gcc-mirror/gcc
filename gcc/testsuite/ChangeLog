@@ -1,3 +1,8 @@
+2019-11-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/params/params.exp: Restore test by parsing output
+	of --help=params -Q.
+
 2019-11-13  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/92465
