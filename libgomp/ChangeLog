@@ -1,4 +1,37 @@
 2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add oacc-target.c.
+	* Makefile.in: Regenerate.
+	* config.h.in (PLUGIN_GCN): Add new undef.
+	* config/accel/openacc.f90 (acc_device_gcn): New parameter.
+	* config/gcn/affinity-fmt.c: New file.
+	* config/gcn/bar.c: New file.
+	* config/gcn/bar.h: New file.
+	* config/gcn/doacross.h: New file.
+	* config/gcn/icv-device.c: New file.
+	* config/gcn/oacc-target.c: New file.
+	* config/gcn/simple-bar.h: New file.
+	* config/gcn/target.c: New file.
+	* config/gcn/task.c: New file.
+	* config/gcn/team.c: New file.
+	* config/gcn/time.c: New file.
+	* configure.ac: Add amdgcn*-*-*.
+	* configure: Regenerate.
+	* configure.tgt: Add amdgcn*-*-*.
+	* libgomp-plugin.h (offload_target_type): Add OFFLOAD_TARGET_TYPE_GCN.
+	* libgomp.h (gcn_thrs): Add amdgcn variant.
+	(set_gcn_thrs): Likewise.
+	(gomp_thread): Likewise.
+	* oacc-int.h (goacc_thread): Likewise.
+	* oacc-target.c: New file.
+	* openacc.f90 (acc_device_gcn): New parameter.
+	* openacc.h (acc_device_t): Add acc_device_gcn.
+	* team.c (gomp_free_pool_helper): Add amdgcn support.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
 	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_async_construct): Add int
