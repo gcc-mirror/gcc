@@ -1,3 +1,10 @@
+2019-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Do not look through typedefs.
+	(dump_forward_type): Do not generate a declaration for function types.
+	(dump_nested_type) <ARRAY_TYPE>: Do not generate a nested declaration
+	of the component type if it is declared in another file.
+
 2019-11-12  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_post_options):
