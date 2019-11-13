@@ -24,6 +24,7 @@ See dbgcnt.def for usage information.  */
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "dumpfile.h"
+#include "selftest.h"
 
 #include "dbgcnt.h"
 
@@ -245,3 +246,26 @@ dbg_cnt_list_all_counters (void)
     }
   printf ("\n");
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests.  */
+
+static void
+test_sorted_dbg_counters ()
+{
+  for (unsigned i = 0; i < debug_counter_number_of_counters - 1; i++)
+    ASSERT_LT (strcmp (map[i].name, map[i + 1].name), 0);
+}
+
+void
+dbgcnt_c_tests ()
+{
+  test_sorted_dbg_counters ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */

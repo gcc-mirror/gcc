@@ -108,6 +108,7 @@ selftest::run_tests ()
   store_merging_c_tests ();
   predict_c_tests ();
   simplify_rtx_c_tests ();
+  dbgcnt_c_tests ();
 
   /* Run any lang-specific selftests.  */
   lang_hooks.run_lang_selftests ();
