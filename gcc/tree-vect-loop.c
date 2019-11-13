@@ -4739,31 +4739,13 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
         dump_printf_loc (MSG_NOTE, vect_location,
 			 "Reduce using direct vector reduction.\n");
 
+      gimple_seq stmts = NULL;
+      new_phi_result = gimple_convert (&stmts, vectype, new_phi_result);
       vec_elem_type = TREE_TYPE (TREE_TYPE (new_phi_result));
-      if (!useless_type_conversion_p (scalar_type, vec_elem_type))
-	{
-	  tree tmp_dest
-	    = vect_create_destination_var (scalar_dest, vec_elem_type);
-	  epilog_stmt = gimple_build_call_internal (reduc_fn, 1,
-						    new_phi_result);
-	  gimple_set_lhs (epilog_stmt, tmp_dest);
-	  new_temp = make_ssa_name (tmp_dest, epilog_stmt);
-	  gimple_set_lhs (epilog_stmt, new_temp);
-	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-
-	  epilog_stmt = gimple_build_assign (new_scalar_dest, NOP_EXPR,
-					     new_temp);
-	}
-      else
-	{
-	  epilog_stmt = gimple_build_call_internal (reduc_fn, 1,
-						    new_phi_result);
-	  gimple_set_lhs (epilog_stmt, new_scalar_dest);
-	}
-
-      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-      gimple_set_lhs (epilog_stmt, new_temp);
-      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+      new_temp = gimple_build (&stmts, as_combined_fn (reduc_fn),
+			       vec_elem_type, new_phi_result);
+      new_temp = gimple_convert (&stmts, scalar_type, new_temp);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       if ((STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
 	  && induc_val)
