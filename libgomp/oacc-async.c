@@ -100,7 +100,8 @@ lookup_goacc_asyncqueue (struct goacc_thread *thr, bool create, int async)
 
   if (!dev->openacc.async.asyncqueue[async])
     {
-      dev->openacc.async.asyncqueue[async] = dev->openacc.async.construct_func ();
+      dev->openacc.async.asyncqueue[async]
+	= dev->openacc.async.construct_func (dev->target_id);
 
       if (!dev->openacc.async.asyncqueue[async])
 	{
