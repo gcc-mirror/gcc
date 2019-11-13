@@ -1,3 +1,48 @@
+2019-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-fold.c (size_must_be_zero_p): Rewrite use of value_range
+	constructors and set methods so value_range_kind is the last
+	argument and defaults to VR_RANGE.
+	* gimple-ssa-evrp-analyze.c (record_ranges_from_stmt): Same.
+	* ipa-cp.c (propagate_vr_across_jump_function): Same.
+	* ipa-prop.c (ipa_get_value_range): Same.
+	(ipa_compute_jump_functions_for_edge): Same.
+	* range-op.cc (value_range_from_overflowed_bounds): Same.
+	(operator_cast::op1_range): Same.
+	(range_tests): Same.
+	* range.cc (range_nonzero): Same.
+	* tree-ssanames.c (get_range_info): Same.
+	* tree-vrp.c (value_range_equiv::set): Same.
+	(value_range::value_range): Same.
+	(value_range_equiv::value_range_equiv): Same.
+	(value_range_equiv::update): Same.
+	(value_range_equiv::deep_copy): Same.
+	(value_range_equiv::move): Same.
+	(value_range_equiv::set_undefined): Same.
+	(value_range::set): Same.
+	(value_range::set_nonzero): Same.
+	(ranges_from_anti_range): Same.
+	(extract_range_from_plus_minus_expr): Same.
+	(value_range::intersect_helper): Same.
+	(value_range_equiv::intersect): Same.
+	(value_range::union_helper): Same.
+	(value_range_equiv::union_): Same.
+	(value_range::normalize_symbolics): Same.
+	(value_range::invert): Same.
+	(determine_value_range_1): Same.
+	* tree-vrp.h (class value_range): Same.
+	(class value_range_equiv): Same.
+	* vr-values.c (set_value_range_to_nonnegative): Same.
+	(set_value_range_to_truthvalue): Same.
+	(vr_values::update_value_range): Same.
+	(vr_values::extract_range_for_var_from_comparison_expr): Same.
+	(vr_values::extract_range_from_binary_expr): Same.
+	(vr_values::extract_range_from_comparison): Same.
+	(vr_values::extract_range_basic): Same.
+	(vr_values::adjust_range_with_scev): Same.
+	(vr_values::vrp_evaluate_conditional_warnv_with_ops): Same.
+	(vr_values::extract_range_from_phi_node): Same.
+
 2019-11-13  Ulrich Drepper  <drepper@redhat.com>
 
 	* tree-dump.c (dequeue_and_dump): Print first tree operand

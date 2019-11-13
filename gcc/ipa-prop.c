@@ -1822,9 +1822,9 @@ ipa_get_value_range (value_range *tmp)
    value_ranges.  */
 
 static value_range *
-ipa_get_value_range (enum value_range_kind type, tree min, tree max)
+ipa_get_value_range (enum value_range_kind kind, tree min, tree max)
 {
-  value_range tmp (type, min, max);
+  value_range tmp (min, max, kind);
   return ipa_get_value_range (&tmp);
 }
 
@@ -1914,16 +1914,16 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
       else
 	{
 	  wide_int min, max;
-	  value_range_kind type;
+	  value_range_kind kind;
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && (type = get_range_info (arg, &min, &max))
-	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
+	      && (kind = get_range_info (arg, &min, &max))
+	      && (kind == VR_RANGE || kind == VR_ANTI_RANGE))
 	    {
 	      value_range resvr;
-	      value_range tmpvr (type,
-				      wide_int_to_tree (TREE_TYPE (arg), min),
-				      wide_int_to_tree (TREE_TYPE (arg), max));
+	      value_range tmpvr (wide_int_to_tree (TREE_TYPE (arg), min),
+				 wide_int_to_tree (TREE_TYPE (arg), max),
+				 kind);
 	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
 				     &tmpvr, TREE_TYPE (arg));
 	      if (!resvr.undefined_p () && !resvr.varying_p ())

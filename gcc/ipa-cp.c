@@ -2005,7 +2005,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
 
-	  value_range tmpvr (VR_RANGE, val, val);
+	  value_range tmpvr (val, val);
 	  return dest_lat->meet_with (&tmpvr);
 	}
     }

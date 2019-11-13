@@ -212,7 +212,7 @@ value_range_from_overflowed_bounds (value_range &r, tree type,
   if (covers || wi::cmp (tmin, tmax, sgn) > 0)
     r = value_range (type);
   else
-    r = value_range (VR_ANTI_RANGE, type, tmin, tmax);
+    r = value_range (type, tmin, tmax, VR_ANTI_RANGE);
 }
 
 // Create and return a range from a pair of wide-ints.  MIN_OVF and
@@ -1636,11 +1636,11 @@ operator_cast::op1_range (value_range &r, tree type,
 	  // *not* in the RHS is 0 or -1.
 	  unsigned prec = TYPE_PRECISION (type);
 	  if (lhs.zero_p ())
-	    r = value_range (VR_ANTI_RANGE, type,
-			     wi::minus_one (prec), wi::minus_one (prec));
+	    r = value_range (type, wi::minus_one (prec), wi::minus_one (prec),
+			     VR_ANTI_RANGE);
 	  else
-	    r = value_range (VR_ANTI_RANGE, type,
-			     wi::zero (prec), wi::zero (prec));
+	    r = value_range (type, wi::zero (prec), wi::zero (prec),
+			     VR_ANTI_RANGE);
 	  // And intersect it with what we know about op2.
 	  r.intersect (op2);
 	}
@@ -2835,7 +2835,7 @@ range_tests ()
   value_range r0, r1, rold;
 
   // Test that NOT(255) is [0..254] in 8-bit land.
-  value_range not_255 (VR_ANTI_RANGE, UCHAR (255), UCHAR (255));
+  value_range not_255 (UCHAR (255), UCHAR (255), VR_ANTI_RANGE);
   ASSERT_TRUE (not_255 == value_range (UCHAR (0), UCHAR (254)));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
@@ -2876,17 +2876,17 @@ range_tests ()
   ASSERT_TRUE (r0 == value_range (UINT(6), maxuint));
 
   // Check that ~[10,MAX] => [0,9] for unsigned int.
-  r0 = value_range (VR_RANGE, UINT(10), maxuint);
+  r0 = value_range (UINT(10), maxuint);
   r0.invert ();
   ASSERT_TRUE (r0 == value_range (UINT (0), UINT (9)));
 
   // Check that ~[0,5] => [6,MAX] for unsigned 128-bit numbers.
-  r0 = value_range (VR_ANTI_RANGE, UINT128 (0), UINT128 (5));
+  r0 = value_range (UINT128 (0), UINT128 (5), VR_ANTI_RANGE);
   r1 = value_range (UINT128(6), build_minus_one_cst (u128_type));
   ASSERT_TRUE (r0 == r1);
 
   // Check that [~5] is really [-MIN,4][6,MAX].
-  r0 = value_range (VR_ANTI_RANGE, INT (5), INT (5));
+  r0 = value_range (INT (5), INT (5), VR_ANTI_RANGE);
   r1 = value_range (minint, INT (4));
   r1.union_ (value_range (INT (6), maxint));
   ASSERT_FALSE (r1.undefined_p ());

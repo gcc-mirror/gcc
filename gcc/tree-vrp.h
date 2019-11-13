@@ -42,14 +42,12 @@ class GTY((for_user)) value_range
   friend void range_tests ();
 public:
   value_range ();
-  value_range (value_range_kind, tree, tree);
-  value_range (tree, tree);
-  value_range (value_range_kind,
-	       tree type, const wide_int &, const wide_int &);
-  value_range (tree type, const wide_int &, const wide_int &);
+  value_range (tree, tree, value_range_kind = VR_RANGE);
+  value_range (tree type, const wide_int &, const wide_int &,
+	       value_range_kind = VR_RANGE);
   value_range (tree type);
 
-  void set (value_range_kind, tree, tree);
+  void set (tree, tree, value_range_kind = VR_RANGE);
   void set (tree);
   void set_nonzero (tree);
   void set_zero (tree);
@@ -128,7 +126,7 @@ class GTY((user)) value_range_equiv : public value_range
   value_range_equiv ();
   value_range_equiv (const value_range &);
   /* Deep-copies equiv bitmap argument.  */
-  value_range_equiv (value_range_kind, tree, tree, bitmap = NULL);
+  value_range_equiv (tree, tree, bitmap = NULL, value_range_kind = VR_RANGE);
 
   /* Shallow-copies equiv bitmap.  */
   value_range_equiv (const value_range_equiv &) /* = delete */;
@@ -139,9 +137,9 @@ class GTY((user)) value_range_equiv : public value_range
   void move (value_range_equiv *);
 
   /* Leaves equiv bitmap alone.  */
-  void update (value_range_kind, tree, tree);
+  void update (tree, tree, value_range_kind = VR_RANGE);
   /* Deep-copies equiv bitmap argument.  */
-  void set (value_range_kind, tree, tree, bitmap = NULL);
+  void set (tree, tree, bitmap = NULL, value_range_kind = VR_RANGE);
   void set (tree);
 
   bool operator== (const value_range_equiv &) const /* = delete */;
