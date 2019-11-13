@@ -1,4 +1,12 @@
 2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_goacc_validate_dims): Ensure
+	flag_worker_partitioning is not set.
+	(TARGET_GOACC_WORKER_PARTITIONING): Remove target hook definition.
+	* config/gcn/gcn.opt (macc-experimental-workers): Default to off.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-run.c (heap_region): New global variable.
 	(struct hsa_runtime_fn_info): Add hsa_memory_assign_agent_fn.
