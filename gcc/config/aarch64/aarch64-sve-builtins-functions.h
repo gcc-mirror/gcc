@@ -420,7 +420,7 @@ public:
   expand (function_expander &e) const OVERRIDE
   {
     /* The md patterns treat the operand as an integer.  */
-    machine_mode mode = mode_for_int_vector (e.vector_mode (0)).require ();
+    machine_mode mode = aarch64_sve_int_mode (e.vector_mode (0));
     e.args.last () = gen_lowpart (mode, e.args.last ());
 
     if (e.pred == PRED_x)
