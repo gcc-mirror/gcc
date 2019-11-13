@@ -1,3 +1,15 @@
+2019-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (strong_order, weak_order, partial_order)
+	(compare_strong_order_fallback, compare_weak_order_fallback)
+	(compare_partial_order_fallback): Define customization point objects
+	for C++20.
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc: New
+	test.
+	* testsuite/18_support/comparisons/algorithms/strong_order.cc: New
+	test.
+	* testsuite/18_support/comparisons/algorithms/weak_order.cc: New test.
+
 2019-11-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/gnu/gpl-3.0.xml: Adjust link to "Why not LGPL".
