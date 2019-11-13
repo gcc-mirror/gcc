@@ -487,6 +487,8 @@ check_argument_count (struct cgraph_node *n, struct cgraph_edge *e)
   class ipa_node_params *info = IPA_NODE_REF (n->function_symbol ());
   if (!info)
     return true;
+  if (!info->descriptors)
+    return true;
   ipa_edge_args *e_info = IPA_EDGE_REF (e);
   if (!e)
     return true;
@@ -620,7 +622,7 @@ ipa_profile (void)
 				 "Not speculating: target is overwritable "
 				 "and can be discarded.\n");
 		    }
-		  else if (check_argument_count (n2, e))
+		  else if (!check_argument_count (n2, e))
 		    {
 		      nmismatch++;
 		      if (dump_file)
