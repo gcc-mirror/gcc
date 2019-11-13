@@ -1,3 +1,10 @@
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/92206
+	* g++.dg/cpp0x/alias-decl-pr92206-1.C: New test.
+	* g++.dg/cpp0x/alias-decl-pr92206-2.C: Likewise.
+	* g++.dg/cpp0x/alias-decl-pr92206-3.C: Likewise.
+
 2019-11-13  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/params/params.exp: Restore test by parsing output
