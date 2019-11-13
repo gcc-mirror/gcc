@@ -1,3 +1,10 @@
+2019-11-13  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.c (test_sorted_dbg_counters): New.
+	(dbgcnt_c_tests): Likewise.
+	* selftest-run-tests.c (selftest::run_tests): Likewise.
+	* selftest.h (dbgcnt_c_tests): Likewise.
+
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 	    Martin Jambor  <mjambor@suse.cz>
 
