@@ -154,7 +154,7 @@ case "${target}" in
 	;;
 
   nvptx*-*-*)
-	config_path="nvptx"
+	config_path="nvptx accel"
 	;;
 
   *-*-rtems*)
