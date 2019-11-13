@@ -1,4 +1,16 @@
 2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* plugin/Makefrag.am: Add amdgcn plugin support.
+	* plugin/configfrag.ac: Likewise.
+	* plugin/plugin-gcn.c: New file.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/team.c (gomp_gcn_enter_kernel): Set up the team arena
 	and use team_malloc variants.

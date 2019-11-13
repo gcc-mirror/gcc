@@ -137,6 +137,15 @@ AC_SUBST(PLUGIN_HSA_CPPFLAGS)
 AC_SUBST(PLUGIN_HSA_LDFLAGS)
 AC_SUBST(PLUGIN_HSA_LIBS)
 
+PLUGIN_GCN=0
+PLUGIN_GCN_CPPFLAGS=
+PLUGIN_GCN_LDFLAGS=
+PLUGIN_GCN_LIBS=
+AC_SUBST(PLUGIN_GCN)
+AC_SUBST(PLUGIN_GCN_CPPFLAGS)
+AC_SUBST(PLUGIN_GCN_LDFLAGS)
+AC_SUBST(PLUGIN_GCN_LIBS)
+
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
 # 'offload_plugins' and 'offload_targets' will be populated in the same order.
@@ -237,6 +246,29 @@ if test x"$enable_offload_targets" != x; then
             ;;
         esac
         ;;
+
+      amdgcn*)
+	case "${target}" in
+	  x86_64-*-*)
+	    case " ${CC} ${CFLAGS} " in
+	      *" -m32 "*)
+		PLUGIN_GCN=0
+		;;
+	      *)
+		tgt_plugin=gcn
+		PLUGIN_GCN=$tgt
+		PLUGIN_GCN_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
+		PLUGIN_GCN_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
+		PLUGIN_GCN_LIBS="-ldl"
+		PLUGIN_GCN=1
+		;;
+	      esac
+	    ;;
+	  *-*-*)
+	    PLUGIN_GCN=0
+	     ;;
+	esac
+	;;
       *)
 	AC_MSG_ERROR([unknown offload target specified])
 	;;
@@ -275,6 +307,9 @@ AC_DEFINE_UNQUOTED([PLUGIN_NVPTX_DYNAMIC], [$PLUGIN_NVPTX_DYNAMIC],
 AM_CONDITIONAL([PLUGIN_HSA], [test $PLUGIN_HSA = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_HSA], [$PLUGIN_HSA],
   [Define to 1 if the HSA plugin is built, 0 if not.])
+AM_CONDITIONAL([PLUGIN_GCN], [test $PLUGIN_GCN = 1])
+AC_DEFINE_UNQUOTED([PLUGIN_GCN], [$PLUGIN_GCN],
+  [Define to 1 if the GCN plugin is built, 0 if not.])
 
 if test "$HSA_RUNTIME_LIB" != ""; then
   HSA_RUNTIME_LIB="$HSA_RUNTIME_LIB/"
