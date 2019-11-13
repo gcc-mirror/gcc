@@ -1,3 +1,18 @@
+2019-11-13  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Document change of -fdbg-cnt option.
+	* dbgcnt.c (DEBUG_COUNTER): Remove.
+	(dbg_cnt_is_enabled): Remove.
+	(dbg_cnt): Work with new intervals.
+	(dbg_cnt_set_limit_by_index): Set to new
+	list of intervals.
+	(dbg_cnt_set_limit_by_name): Likewise.
+	(dbg_cnt_process_single_pair): Process new format.
+	(dbg_cnt_process_opt): Likewise.
+	(dbg_cnt_list_all_counters): Likewise.
+	* doc/invoke.texi: Document change of -fdbg-cnt option.
+	(cmp_tuples): New.
+
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (ipa_inline): Check that function is defined before
