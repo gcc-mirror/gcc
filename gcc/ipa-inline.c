@@ -2564,8 +2564,9 @@ ipa_inline (void)
   for (i = nnodes - 1, j = i; i >= 0; i--)
     {
       node = order[i];
-      if (lookup_attribute ("flatten",
-			    DECL_ATTRIBUTES (node->decl)) != NULL)
+      if (node->definition
+	  && lookup_attribute ("flatten",
+			       DECL_ATTRIBUTES (node->decl)) != NULL)
 	order[j--] = order[i];
     }
 
