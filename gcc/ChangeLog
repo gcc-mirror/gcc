@@ -1,5 +1,10 @@
 2019-11-13  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sem_function::equals_private): Do not overuse
+	push/pop_cfun functions.
+
+2019-11-13  Martin Liska  <mliska@suse.cz>
+
 	* common.opt: Document change of -fdbg-cnt option.
 	* dbgcnt.c (DEBUG_COUNTER): Remove.
 	(dbg_cnt_is_enabled): Remove.
