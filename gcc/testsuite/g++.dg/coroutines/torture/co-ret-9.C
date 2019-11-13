@@ -2,11 +2,11 @@
 #if __clang__
 # include <experimental/coroutine>
 # include <utility>
-namespace coro = std::experimental::coroutines_v1;
 #else
 # include "../coro.h"
-namespace coro = std::experimental::coroutines_n4830;
 #endif
+
+namespace coro = std::experimental;
 
 /* boolean return from await_suspend ().  */
 

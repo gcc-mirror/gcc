@@ -2,12 +2,12 @@
 #if __clang__
 # include <experimental/coroutine>
 # include <utility>
-namespace coro = std::experimental::coroutines_v1;
 #else
 # include "../coro.h"
-namespace coro = std::experimental::coroutines_n4830;
 #endif
 #include <exception>
+
+namespace coro = std::experimental;
 
 // Test returning an int.
 // We will use the promise to contain this to avoid having to include

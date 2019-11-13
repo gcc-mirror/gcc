@@ -1,7 +1,7 @@
 #ifndef __MissingUEH_H
 #define __MissingUEH_H
 
-namespace coro = std::experimental::coroutines_n4830;
+namespace coro = std::experimental;
 
 /* Diagose missing unhandled_exception() in the promise type.  */
 struct MissingUEH {

@@ -1,16 +1,16 @@
 //  { dg-do run }
 
-#include <vector>
-#include <string>
-
 #if __clang__
 # include <experimental/coroutine>
 # include <utility>
-namespace coro = std::experimental::coroutines_v1;
 #else
 # include "../coro.h"
-namespace coro = std::experimental::coroutines_n4830;
 #endif
+
+#include <vector>
+#include <string>
+
+namespace coro = std::experimental;
 
 /* just to avoid cluttering dump files. */
 extern "C" int puts (const char *);

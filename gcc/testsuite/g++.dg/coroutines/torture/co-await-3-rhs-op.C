@@ -1,10 +1,11 @@
+//  { dg-do run }
 #if __clang__
 # include <experimental/coroutine>
-namespace coro = std::experimental::coroutines_v1;
 #else
 # include "../coro.h"
-namespace coro = std::experimental::coroutines_n4830;
 #endif
+
+namespace coro = std::experimental;
 
 /* just to avoid cluttering dump files. */
 extern "C" int puts (const char *);
@@ -132,9 +133,9 @@ int main ()
     }
   PRINT ("main: resuming [1]");
   f_coro.handle.resume();
-  if (gX != 11)
+  if (gX != 26)
     {
-      PRINTF ("main: gX is wrong : %d, should be 11\n", gX);
+      PRINTF ("main: gX is wrong : %d, should be 26\n", gX);
       abort ();
     }
   /* we should now have returned with the co_return (15) */
@@ -144,9 +145,9 @@ int main ()
       abort ();
     }
   int y = f_coro.handle.promise().get_value();
-  if (y != 42)
+  if (y != 57)
     {
-      PRINTF ("main: y is wrong : %d, should be 42\n", y);
+      PRINTF ("main: y is wrong : %d, should be 57\n", y);
       abort ();
     }
   puts ("main: done");

@@ -1,7 +1,7 @@
 //  { dg-additional-options "-fsyntax-only -w" }
 #include "coro.h"
 
-namespace coro = std::experimental::coroutines_n4830;
+namespace coro = std::experimental;
 
 /* Diagose missing return_void() in the promise type.  */
 struct MissingGRO {

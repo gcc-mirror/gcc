@@ -1,11 +1,12 @@
+//  { dg-do run }
 #if __clang__
 # include <experimental/coroutine>
 # include <utility>
-namespace coro = std::experimental::coroutines_v1;
 #else
 # include "../coro.h"
-namespace coro = std::experimental::coroutines_n4830;
 #endif
+
+namespace coro = std::experimental;
 
 // Test that we correctly re-write multiple uses of a function param
 // in the body.
