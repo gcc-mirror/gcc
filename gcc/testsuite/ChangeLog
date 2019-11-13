@@ -1,3 +1,8 @@
+2019-11-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/92465
+	* gcc.dg/pr47763.c: Add option -fweb.
+
 2019-11-12  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp0x/using-enum-2.C: Adjust expected error text.
