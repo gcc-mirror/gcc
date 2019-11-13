@@ -1,5 +1,10 @@
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (do_estimate_edge_time): Relax
+	check for ipa profiles.
+
+2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR c++/92421
 	* ipa-prop.c (update_indirect_edges_after_inlining):
 	Mark parameter as used.
