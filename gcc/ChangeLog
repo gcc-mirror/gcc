@@ -1,5 +1,13 @@
 2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vect_model_promotion_demotion_cost): Take the
+	number of ncopies as an additional argument.
+	(vectorizable_conversion): Update call accordingly.  Use "modifier"
+	to check whether a conversion is between vectors with the same
+	numbers of units.
+
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve-builtins-functions.h
 	(unary_count::expand): Use aarch64_sve_int_mode instead of
 	mode_for_int_vector.
