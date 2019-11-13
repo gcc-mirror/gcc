@@ -5750,7 +5750,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					fold_convert (TREE_TYPE (parmse.expr),
 						      integer_zero_node));
 
-			    vec_safe_push (optionalargs, tmp);
+			    vec_safe_push (optionalargs,
+					   fold_convert (boolean_type_node,
+							 tmp));
 			  }
 		      }
 		    }
