@@ -1,5 +1,9 @@
 2019-11-13  Martin Liska  <mliska@suse.cz>
 
+	* opts.c: Update comment about OPT_LEVELS_2_PLUS_SPEED_ONLY.
+
+2019-11-13  Martin Liska  <mliska@suse.cz>
+
 	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers):
 	Remove call to finalize_options_struct.
 
