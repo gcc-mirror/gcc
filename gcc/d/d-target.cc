@@ -82,7 +82,7 @@ define_float_constants (tree type)
   const real_format *fmt = REAL_MODE_FORMAT (mode);
 
   /* The largest representable value that's not infinity.  */
-  get_max_float (fmt, buf, sizeof (buf));
+  get_max_float (fmt, buf, sizeof (buf), false);
   real_from_string (&T::max.rv (), buf);
 
   /* The smallest representable normalized value that's not 0.  */

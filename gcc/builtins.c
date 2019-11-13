@@ -9038,7 +9038,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	    mode = DFmode;
 	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
 	  }
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&r, buf);
 	result = build_call_expr (isgr_fn, 2,
 				  fold_build1_loc (loc, ABS_EXPR, type, arg),
@@ -9062,7 +9062,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	    mode = DFmode;
 	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
 	  }
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&r, buf);
 	result = build_call_expr (isle_fn, 2,
 				  fold_build1_loc (loc, ABS_EXPR, type, arg),
@@ -9101,7 +9101,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	  }
 	arg = fold_build1_loc (loc, ABS_EXPR, type, arg);
 
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&rmax, buf);
 	sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (orig_mode)->emin - 1);
 	real_from_string (&rmin, buf);

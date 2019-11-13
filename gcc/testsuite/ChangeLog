@@ -1,3 +1,7 @@
+2019-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-float-3.c, gcc.dg/c2x-float-1.c: New tests.
+
 2019-11-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92454

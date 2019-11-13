@@ -1,3 +1,10 @@
+2019-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (builtin_define_float_constants): Also define
+	NORM_MAX constants.  Update call to get_max_float.
+	(LAZY_HEX_FP_VALUES_CNT): Update value to include NORM_MAX
+	constants.
+
 2019-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (get_underlying_decl): Do not look through typedefs.
