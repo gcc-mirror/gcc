@@ -1,3 +1,8 @@
+2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/92421
+	* g++.dg/torture/pr92421.C: New testcase.
+
 2019-11-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr92090.c: Limit -mbig to powerpc64le-*-*.

@@ -3537,6 +3537,11 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	      if (ici->polymorphic
 		  && !ipa_get_jf_ancestor_type_preserved (jfunc))
 		ici->vptr_changed = true;
+	      ipa_set_param_used_by_indirect_call (new_root_info,
+			     			   ici->param_index, true);
+	      if (ici->polymorphic)
+		ipa_set_param_used_by_polymorphic_call (new_root_info,
+						        ici->param_index, true);
 	    }
 	}
       else

@@ -210,6 +210,19 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 	  time = e->entry.time;
 	  nonspec_time = e->entry.nonspec_time;
 	  hints = e->entry.hints;
+	  if (flag_checking)
+	    {
+	      sreal chk_time, chk_nonspec_time;
+	      int chk_size, chk_min_size;
+
+	      ipa_hints chk_hints;
+	      ctx.estimate_size_and_time (&chk_size, &chk_min_size,
+					  &chk_time, &chk_nonspec_time,
+					  &chk_hints);
+	      gcc_assert (chk_size == size && chk_time == time
+		  	  && chk_nonspec_time == nonspec_time
+			  && chk_hints == hints);
+	    }
 	}
       else
 	{

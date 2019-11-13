@@ -1633,6 +1633,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	}
 
       inline_call (curr, false, new_edges, &overall_size, true);
+      reset_node_cache (node);
       lookup_recursive_calls (node, curr->callee, &heap);
       n++;
     }
@@ -1982,11 +1983,10 @@ inline_small_functions (void)
       if (!edge->inline_failed || !edge->callee->analyzed)
 	continue;
 
-#if CHECKING_P
       /* Be sure that caches are maintained consistent.
 	 This check is affected by scaling roundoff errors when compiling for
 	 IPA this we skip it in that case.  */
-      if (!edge->callee->count.ipa_p ()
+      if (flag_checking && !edge->callee->count.ipa_p ()
 	  && (!max_count.initialized_p () || !max_count.nonzero_p ()))
 	{
 	  sreal cached_badness = edge_badness (edge, false);
@@ -1997,6 +1997,9 @@ inline_small_functions (void)
 
 	  if (edge_growth_cache != NULL)
 	    edge_growth_cache->remove (edge);
+	  reset_node_cache (edge->caller->inlined_to
+			    ? edge->caller->inlined_to
+			    : edge->caller);
 	  gcc_assert (old_size_est == estimate_edge_size (edge));
 	  gcc_assert (old_time_est == estimate_edge_time (edge));
 	  /* FIXME:
@@ -2021,9 +2024,6 @@ inline_small_functions (void)
 	}
       else
         current_badness = edge_badness (edge, false);
-#else
-      current_badness = edge_badness (edge, false);
-#endif
       if (current_badness != badness)
 	{
 	  if (edge_heap.min () && current_badness > edge_heap.min_key ())

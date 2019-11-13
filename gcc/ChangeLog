@@ -1,5 +1,16 @@
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR c++/92421
+	* ipa-prop.c (update_indirect_edges_after_inlining):
+	Mark parameter as used.
+	* ipa-inline.c (recursive_inlining): Reset node cache
+	after inlining.
+	(inline_small_functions): Remove checking ifdef.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Verify
+	cache consistency.
+
+2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/92498
 	* ipa-profile.c (check_argument_count): Do not ICE when descriptors
 	is NULL.
