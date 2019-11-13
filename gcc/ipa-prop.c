@@ -422,20 +422,19 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
   fprintf (f, "  Jump functions of caller  %s:\n", node->dump_name ());
   for (cs = node->callees; cs; cs = cs->next_callee)
     {
-      if (!ipa_edge_args_info_available_for_edge_p (cs))
-	continue;
 
       fprintf (f, "    callsite  %s -> %s : \n",
 	       node->dump_name (),
 	       cs->callee->dump_name ());
-      ipa_print_node_jump_functions_for_edge (f, cs);
+      if (!ipa_edge_args_info_available_for_edge_p (cs))
+	fprintf (f, "       no arg info\n");
+      else
+        ipa_print_node_jump_functions_for_edge (f, cs);
     }
 
   for (cs = node->indirect_calls; cs; cs = cs->next_callee)
     {
       class cgraph_indirect_call_info *ii;
-      if (!ipa_edge_args_info_available_for_edge_p (cs))
-	continue;
 
       ii = cs->indirect_info;
       if (ii->agg_contents)
@@ -459,7 +458,10 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 	fprintf (f, "\n");
       if (ii->polymorphic)
 	ii->context.dump (f);
-      ipa_print_node_jump_functions_for_edge (f, cs);
+      if (!ipa_edge_args_info_available_for_edge_p (cs))
+	fprintf (f, "       no arg info\n");
+      else
+        ipa_print_node_jump_functions_for_edge (f, cs);
     }
 }
 
@@ -4081,6 +4083,11 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
     return;
   info = IPA_NODE_REF (node);
   fprintf (f, "  function  %s parameter descriptors:\n", node->dump_name ());
+  if (!info)
+    {
+      fprintf (f, " no params return\n");
+      return;
+    }
   count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
     {
