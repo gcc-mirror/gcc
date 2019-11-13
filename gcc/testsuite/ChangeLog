@@ -1,5 +1,15 @@
 2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/mask_struct_store_3.c: Add
+	-fno-vect-cost-model.
+	* gcc.target/aarch64/sve/mask_struct_store_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_2.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_3.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_3_run.c: Likewise.
+
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR c++/92206
 	* g++.dg/cpp0x/alias-decl-pr92206-1.C: New test.
 	* g++.dg/cpp0x/alias-decl-pr92206-2.C: Likewise.

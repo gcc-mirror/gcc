@@ -3291,6 +3291,32 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 				  si->kind, si->stmt_info, si->misalign,
 				  vect_epilogue);
 	}
+
+      /* Calculate how many masks we need to generate.  */
+      unsigned int num_masks = 0;
+      rgroup_masks *rgm;
+      unsigned int num_vectors_m1;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo), num_vectors_m1, rgm)
+	if (rgm->mask_type)
+	  num_masks += num_vectors_m1 + 1;
+      gcc_assert (num_masks > 0);
+
+      /* In the worst case, we need to generate each mask in the prologue
+	 and in the loop body.  One of the loop body mask instructions
+	 replaces the comparison in the scalar loop, and since we don't
+	 count the scalar comparison against the scalar body, we shouldn't
+	 count that vector instruction against the vector body either.
+
+	 Sometimes we can use unpacks instead of generating prologue
+	 masks and sometimes the prologue mask will fold to a constant,
+	 so the actual prologue cost might be smaller.  However, it's
+	 simpler and safer to use the worst-case cost; if this ends up
+	 being the tie-breaker between vectorizing or not, then it's
+	 probably better not to vectorize.  */
+      (void) add_stmt_cost (target_cost_data, num_masks, vector_stmt,
+			    NULL, 0, vect_prologue);
+      (void) add_stmt_cost (target_cost_data, num_masks - 1, vector_stmt,
+			    NULL, 0, vect_body);
     }
   else if (npeel < 0)
     {

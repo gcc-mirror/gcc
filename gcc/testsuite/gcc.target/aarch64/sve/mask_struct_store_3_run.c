@@ -1,5 +1,5 @@
 /* { dg-do run { target aarch64_sve_hw } } */
-/* { dg-options "-O2 -ftree-vectorize -ffast-math" } */
+/* { dg-options "-O2 -ftree-vectorize -ffast-math -fno-vect-cost-model" } */
 
 #include "mask_struct_store_3.c"
 

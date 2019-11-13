@@ -1,6 +1,6 @@
 /* { dg-do run { target aarch64_sve_hw } } */
-/* { dg-options "-O3 -mtune=thunderx" } */
-/* { dg-options "-O3 -mtune=thunderx -msve-vector-bits=256" { target aarch64_sve256_hw } } */
+/* { dg-options "-O3 -mtune=thunderx -fno-vect-cost-model" } */
+/* { dg-options "-O3 -mtune=thunderx -msve-vector-bits=256 -fno-vect-cost-model" { target aarch64_sve256_hw } } */
 
 #include "peel_ind_3.c"
 
