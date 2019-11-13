@@ -1,9 +1,30 @@
+2019-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add value-range.o.
+	(GTFILES): Add value-range.h.
+	* gengtype.c (open_base_files): Add value-range.h to list of
+	header files.
+	* tree-vrp.c: Move the following value_range related functions:
+	ranges_from_anti_range, value_range, check, equal_p, symbolic_p,
+	constant_p, set_undefined, set_varying, may_contain_p,
+	singleton_p, type, dump, dump_value_range, debug, vrp_val_max,
+	vrp_val_min, vrp_val_is_min, vrp_val_is_max, set, set_nonzero,
+	set_zero, vrp_operand_equal_p, range_has_numeric_bounds_p,
+	value_inside_range, ranges_from_anti_range, union_ranges,
+	intersect_ranges, intersect_helper, union_helper, union_,
+	normalize_addresses, normalize_symbolics, num_pairs, lower_bound,
+	upper_bound, contains_p, invert, intersect...
+	* value-range.cc: ...to here.
+	* tree-vrp.h: Move class value_range, enum_value_range_kind, and
+	associated inline methods from here...
+	* value-range.h: ...to here.
+
 2019-11-13  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	* config/mips/mips.md (rotr<mode>3): Sanitize the constant argument
 	instead of asserting its value.
 
-2019-11-13  Aldy Hernandez  <aldyh@redhat.com>
+(2019-11-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-fold.c (size_must_be_zero_p): Rewrite use of value_range
 	constructors and set methods so value_range_kind is the last
