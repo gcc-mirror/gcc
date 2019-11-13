@@ -1,5 +1,10 @@
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-cp.c (propagate_vr_across_jump_function): Propagate also across
+	binary operations.
+
+2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-profile.c (check_argument_count): Check properly that e_info
 	is non-NULL; do not check descriptors.
 
