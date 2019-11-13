@@ -5281,6 +5281,29 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Return true if we can assume from the scalar form of STMT_INFO that
+   neither the scalar nor the vector forms will generate code.  STMT_INFO
+   is known not to involve a data reference.  */
+
+bool
+vect_nop_conversion_p (stmt_vec_info stmt_info)
+{
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
+    return false;
+
+  tree lhs = gimple_assign_lhs (stmt);
+  tree_code code = gimple_assign_rhs_code (stmt);
+  tree rhs = gimple_assign_rhs1 (stmt);
+
+  if (code == SSA_NAME || code == VIEW_CONVERT_EXPR)
+    return true;
+
+  if (CONVERT_EXPR_CODE_P (code))
+    return tree_nop_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs));
+
+  return false;
+}
 
 /* Function vectorizable_assignment.
 
@@ -5396,7 +5419,9 @@ vectorizable_assignment (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_assignment");
-      vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
+      if (!vect_nop_conversion_p (stmt_info))
+	vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node,
+				cost_vec);
       return true;
     }
 

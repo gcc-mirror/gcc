@@ -2893,6 +2893,8 @@ vect_bb_slp_scalar_cost (basic_block bb,
           else
 	    kind = scalar_store;
         }
+      else if (vect_nop_conversion_p (stmt_info))
+	continue;
       else
 	kind = scalar_stmt;
       record_stmt_cost (cost_vec, 1, kind, stmt_info, 0, vect_body);
