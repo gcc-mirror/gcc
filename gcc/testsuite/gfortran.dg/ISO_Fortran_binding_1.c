@@ -109,6 +109,7 @@ int establish_c(CFI_cdesc_t * desc)
 		      CFI_attribute_pointer,
 		      CFI_type_struct,
 		      sizeof(t), 1, extent);
+  assert (desc->dim[0].lower_bound == 0);
   for (idx[0] = 0; idx[0] < extent[0]; idx[0]++)
     {
       res_addr = (t*)CFI_address (desc, idx);

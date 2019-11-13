@@ -1,3 +1,9 @@
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92470
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Set lower_bound to 0
+	also for CFI_attribute_other.
+
 2019-11-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92470

@@ -387,13 +387,7 @@ int CFI_establish (CFI_cdesc_t *dv, void *base_addr, CFI_attribute_t attribute,
 
       for (int i = 0; i < rank; i++)
 	{
-	  /* If the C Descriptor is for a pointer then the lower bounds of every
-	   * dimension are set to zero. */
-	  if (attribute == CFI_attribute_pointer)
-	    dv->dim[i].lower_bound = 0;
-	  else
-	    dv->dim[i].lower_bound = 1;
-
+	  dv->dim[i].lower_bound = 0;
 	  dv->dim[i].extent = extents[i];
 	  if (i == 0)
 	    dv->dim[i].sm = dv->elem_len;
