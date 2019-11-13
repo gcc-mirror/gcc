@@ -1,3 +1,9 @@
+2019-11-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/92055
+	* config/avr/t-avr (avr-mcus): Do not depend on
+	$(srcdir)/config/avr/t-multilib.
+
 2019-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92473
