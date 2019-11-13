@@ -1,3 +1,8 @@
+2019-11-13  Ulrich Drepper  <drepper@redhat.com>
+
+	* tree-dump.c (dequeue_and_dump): Print first tree operand
+	for VIEW_CONVERT_EXPR.
+
 2019-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* ginclude/float.c [__STDC_VERSION__ > 201710L] (FLT_NORM_MAX,
