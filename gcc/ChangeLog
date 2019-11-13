@@ -1,3 +1,8 @@
+2019-11-13  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/mips.md (rotr<mode>3): Sanitize the constant argument
+	instead of asserting its value.
+
 2019-11-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-fold.c (size_must_be_zero_p): Rewrite use of value_range
