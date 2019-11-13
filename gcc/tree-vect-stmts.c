@@ -917,26 +917,27 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 }
 
 
-/* Model cost for type demotion and promotion operations.  PWR is normally
-   zero for single-step promotions and demotions.  It will be one if 
-   two-step promotion/demotion is required, and so on.  Each additional
+/* Model cost for type demotion and promotion operations.  PWR is
+   normally zero for single-step promotions and demotions.  It will be
+   one if two-step promotion/demotion is required, and so on.  NCOPIES
+   is the number of vector results (and thus number of instructions)
+   for the narrowest end of the operation chain.  Each additional
    step doubles the number of instructions required.  */
 
 static void
 vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
-				    enum vect_def_type *dt, int pwr,
+				    enum vect_def_type *dt,
+				    unsigned int ncopies, int pwr,
 				    stmt_vector_for_cost *cost_vec)
 {
-  int i, tmp;
+  int i;
   int inside_cost = 0, prologue_cost = 0;
 
   for (i = 0; i < pwr + 1; i++)
     {
-      tmp = (STMT_VINFO_TYPE (stmt_info) == type_promotion_vec_info_type) ?
-	(i + 1) : i;
-      inside_cost += record_stmt_cost (cost_vec, vect_pow2 (tmp),
-				       vec_promote_demote, stmt_info, 0,
-				       vect_body);
+      inside_cost += record_stmt_cost (cost_vec, ncopies, vec_promote_demote,
+				       stmt_info, 0, vect_body);
+      ncopies *= 2;
     }
 
   /* FORNOW: Assuming maximum 2 args per stmts.  */
@@ -4961,7 +4962,7 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (!vec_stmt)		/* transformation not required.  */
     {
       DUMP_VECT_SCOPE ("vectorizable_conversion");
-      if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
+      if (modifier == NONE)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
 	  vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node,
@@ -4970,14 +4971,24 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       else if (modifier == NARROW)
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
-	  vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt,
-					      cost_vec);
+	  /* The final packing step produces one vector result per copy.  */
+	  unsigned int nvectors
+	    = (slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies);
+	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
+					      multi_step_cvt, cost_vec);
 	}
       else
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_promotion_vec_info_type;
-	  vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt,
-					      cost_vec);
+	  /* The initial unpacking step produces two vector results
+	     per copy.  MULTI_STEP_CVT is 0 for a single conversion,
+	     so >> MULTI_STEP_CVT divides by 2^(number of steps - 1).  */
+	  unsigned int nvectors
+	    = (slp_node
+	       ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt
+	       : ncopies * 2);
+	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
+					      multi_step_cvt, cost_vec);
 	}
       interm_types.release ();
       return true;
