@@ -1,4 +1,15 @@
 2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_async_construct): Add int
+	parameter.
+	* oacc-async.c (lookup_goacc_asyncqueue): Pass device number to the
+	queue constructor.
+	* oacc-host.c (host_openacc_async_construct): Add device parameter.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_openacc_async_construct): Add
+	device parameter.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
 
 	* configure.tgt (nvptx*-*-*): Add "accel" directory.
 	* config/nvptx/libgomp-plugin.c: Move ...
