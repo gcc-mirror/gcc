@@ -1,3 +1,9 @@
+2019-11-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89070 - bogus [[nodiscard]] warning in SFINAE.
+	* cvt.c (convert_to_void): Guard maybe_warn_nodiscard calls with
+	tf_warning.
+
 2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c++/92206
