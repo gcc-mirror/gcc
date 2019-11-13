@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-mdejagnu-cpu=power8 -Os -mbig -w" } */
+/* { dg-options "-mdejagnu-cpu=power8 -Os -w" } */
+/* { dg-additional-options "-mbig" { target powerpc64le-*-* } } */
 
 /* Verify that we don't ICE.  */
 

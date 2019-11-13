@@ -1,3 +1,8 @@
+2019-11-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr92090.c: Limit -mbig to powerpc64le-*-*.
+	* gcc.target/powerpc/pr92090-2.c: Likewise.
+
 2019-11-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89070 - bogus [[nodiscard]] warning in SFINAE.
