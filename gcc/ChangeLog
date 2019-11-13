@@ -1,3 +1,9 @@
+2019-11-13  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	Backport from mainline
+	* config/mips/mips.md (rotr<mode>3): Sanitize the constant argument
+	instead of asserting its value.
+
 2019-11-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backport from trunk:
