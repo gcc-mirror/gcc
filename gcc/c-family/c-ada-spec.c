@@ -1025,7 +1025,9 @@ get_underlying_decl (tree type)
 
   if (TYPE_P (type))
     {
-      type = TYPE_MAIN_VARIANT (type);
+      /* Strip qualifiers but do not look through typedefs.  */
+      if (TYPE_QUALS_NO_ADDR_SPACE (type))
+	type = TYPE_MAIN_VARIANT (type);
 
       /* type is a typedef.  */
       if (TYPE_NAME (type) && DECL_P (TYPE_NAME (type)))
@@ -2451,6 +2453,9 @@ dump_forward_type (pretty_printer *buffer, tree type, tree t, int spc)
   if (DECL_SOURCE_FILE (decl) != DECL_SOURCE_FILE (t))
     return;
 
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    return;
+
   /* Generate an incomplete type declaration.  */
   pp_string (buffer, "type ");
   dump_ada_node (buffer, decl, NULL_TREE, spc, false, true);
@@ -2519,7 +2524,10 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
       while (TREE_CODE (tmp) == ARRAY_TYPE)
 	tmp = TREE_TYPE (tmp);
       decl = get_underlying_decl (tmp);
-      if (decl && !DECL_NAME (decl) && !TREE_VISITED (decl))
+      if (decl
+	  && !DECL_NAME (decl)
+	  && DECL_SOURCE_FILE (decl) == DECL_SOURCE_FILE (t)
+	  && !TREE_VISITED (decl))
 	{
 	  /* Generate full declaration.  */
 	  dump_nested_type (buffer, decl, t, parent, spc);
