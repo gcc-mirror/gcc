@@ -3171,8 +3171,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
     = LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (loop_vinfo);
   unsigned th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
 
-  if (th >= vect_vf_for_cost (loop_vinfo)
-      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+  if (vect_apply_runtime_profitability_check_p (loop_vinfo)
       && !ordered_p (th, versioning_threshold))
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),

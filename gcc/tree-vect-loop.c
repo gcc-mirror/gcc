@@ -1690,6 +1690,24 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
       return 0;
     }
 
+  /* The static profitablity threshold min_profitable_estimate includes
+     the cost of having to check at runtime whether the scalar loop
+     should be used instead.  If it turns out that we don't need or want
+     such a check, the threshold we should use for the static estimate
+     is simply the point at which the vector loop becomes more profitable
+     than the scalar loop.  */
+  if (min_profitable_estimate > min_profitable_iters
+      && !LOOP_REQUIRES_VERSIONING (loop_vinfo)
+      && !LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)
+      && !LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
+      && !vect_apply_runtime_profitability_check_p (loop_vinfo))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "no need for a runtime"
+			 " choice between the scalar and vector loops\n");
+      min_profitable_estimate = min_profitable_iters;
+    }
+
   HOST_WIDE_INT estimated_niter;
 
   /* If we are vectorizing an epilogue then we know the maximum number of
@@ -2226,8 +2244,7 @@ start_over:
 
       /*  Use the same condition as vect_transform_loop to decide when to use
 	  the cost to determine a versioning threshold.  */
-      if (th >= vect_vf_for_cost (loop_vinfo)
-	  && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      if (vect_apply_runtime_profitability_check_p (loop_vinfo)
 	  && ordered_p (th, niters_th))
 	niters_th = ordered_max (poly_uint64 (th), niters_th);
 
@@ -8250,14 +8267,13 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      run at least the (estimated) vectorization factor number of times
      checking is pointless, too.  */
   th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
-  if (th >= vect_vf_for_cost (loop_vinfo)
-      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+  if (vect_apply_runtime_profitability_check_p (loop_vinfo))
     {
-	if (dump_enabled_p ())
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Profitability threshold is %d loop iterations.\n",
-			   th);
-	check_profitability = true;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Profitability threshold is %d loop iterations.\n",
+			 th);
+      check_profitability = true;
     }
 
   /* Make sure there exists a single-predecessor exit bb.  Do this before 

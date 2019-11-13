@@ -1556,6 +1556,17 @@ vect_get_scalar_dr_size (dr_vec_info *dr_info)
   return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_info->dr))));
 }
 
+/* Return true if LOOP_VINFO requires a runtime check for whether the
+   vector loop is profitable.  */
+
+inline bool
+vect_apply_runtime_profitability_check_p (loop_vec_info loop_vinfo)
+{
+  unsigned int th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
+  return (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  && th >= vect_vf_for_cost (loop_vinfo));
+}
+
 /* Source location + hotness information. */
 extern dump_user_location_t vect_location;
 

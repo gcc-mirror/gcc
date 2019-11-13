@@ -1,3 +1,14 @@
+2019-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_apply_runtime_profitability_check_p):
+	New function.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Use it.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	(vect_transform_loop): Likewise.
+	(vect_analyze_loop_costing): Don't take the cost of versioning
+	into account for the static profitability threshold if it turns
+	out that no versioning is needed.
+
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa.c (cgraph_build_static_cdtor): Pass optimization_default_node
