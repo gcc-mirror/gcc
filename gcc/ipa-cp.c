@@ -816,9 +816,7 @@ ignore_edge_p (cgraph_edge *e)
     = e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
 
   return (avail <= AVAIL_INTERPOSABLE
-	  || !opt_for_fn (e->caller->decl, optimize)
 	  || !opt_for_fn (ultimate_target->decl, optimize)
-	  || !opt_for_fn (e->caller->decl, flag_ipa_cp)
 	  || !opt_for_fn (ultimate_target->decl, flag_ipa_cp));
 }
 
@@ -3246,7 +3244,7 @@ propagate_constants_topo (class ipa_topo_info *topo)
 	    if (opt_for_fn (v->decl, flag_ipa_cp)
 		&& opt_for_fn (v->decl, optimize))
 	      push_node_to_stack (topo, v);
-	    /* When V is not optimized, we can not push it to stac, but
+	    /* When V is not optimized, we can not push it to stack, but
 	       still we need to set all its callees lattices to bottom.  */
 	    else
 	      {
