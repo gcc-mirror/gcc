@@ -1552,10 +1552,9 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
       if (hash == 0)
 	hash = spec_hasher::hash (&elt);
 
-      slot =
-	decl_specializations->find_slot_with_hash (&elt, hash, INSERT);
+      slot = decl_specializations->find_slot_with_hash (&elt, hash, INSERT);
       if (*slot)
-	fn = ((spec_entry *) *slot)->spec;
+	fn = (*slot)->spec;
       else
 	fn = NULL_TREE;
     }
@@ -28704,13 +28703,13 @@ walk_specializations (bool decls_p,
 }
 
 tree
-check_mergeable_specialization (bool decl_p, tree tmpl, tree args)
+check_mergeable_specialization (bool decl_p, spec_entry *elt)
 {
-  spec_entry elt = {tmpl, args, NULL_TREE};
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
-
-  spec_entry **slot = specializations->find_slot (&elt, NO_INSERT);
+  hashval_t hash = spec_hasher::hash (elt);
+  spec_entry **slot = specializations->find_slot_with_hash (elt,
+							    hash, NO_INSERT);
   return slot ? (*slot)->spec : NULL_TREE;
 }
 
@@ -28721,22 +28720,20 @@ check_mergeable_specialization (bool decl_p, tree tmpl, tree args)
 tree
 match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
 {
-  spec_entry elt = {tmpl, args, NULL_TREE};
+  gcc_checking_assert (spec);
+  spec_entry elt = {tmpl, args, spec};
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
-  spec_entry **slot = specializations->find_slot (&elt, INSERT);
+  hashval_t hash = spec_hasher::hash (&elt);
+  spec_entry **slot = specializations->find_slot_with_hash (&elt, hash, INSERT);
   spec_entry *entry = slot ? *slot: NULL;
   
   if (entry)
     return entry->spec;
 
-  if (spec)
-    {
-      entry = ggc_alloc<spec_entry> ();
-      *entry = elt;
-      entry->spec = spec;
-      *slot = entry;
-    }
+  entry = ggc_alloc<spec_entry> ();
+  *entry = elt;
+  *slot = entry;
 
   return NULL_TREE;
 }

@@ -7182,7 +7182,7 @@ extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
 						 void *);
-extern tree check_mergeable_specialization	(bool, tree, tree);
+extern tree check_mergeable_specialization	(bool, spec_entry *);
 extern tree match_mergeable_specialization	(bool, tree, tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
 

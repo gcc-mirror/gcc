@@ -1,6 +1,17 @@
 2019-11-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (check_mergeable_specialization): Take spec_entry arg.
+	* module.cc (trees_out::decl_node): Allow CONCEPT_DECL.
+	(trees_out::key_mergeable): Use check_mergeable_specialization).
+	(specialization_add): Adjust check_mergeable_specialization call.
+	* pt.c (register_specialization): Remove casts.
+	(check_mergeable_specialization): Take spec_entry arg.
+	(match_mergeable_specialization): Add the specialization early.
+	gcc/testsuite/
+	* g++.dg/modules/concept-4.H: New.
+
+	gcc/cp/
 	* cp-tree.h (lang_decl_base): Note 8-bits.
 	* error.c (dump_module_suffix): Bail on no DECL_CONTEXT.
 	* module.cc (trees_{in,out}::lang_decl_bools): Update for new

@@ -8010,7 +8010,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
   
   gcc_checking_assert (TREE_CODE (STRIP_TEMPLATE (decl)) == VAR_DECL
 		       || TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL
-		       || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL);
+		       || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
+		       || TREE_CODE (STRIP_TEMPLATE (decl)) == CONCEPT_DECL);
 
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
@@ -9756,11 +9757,13 @@ trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
       tree_node (entry->tmpl);
       tree_node (entry->args);
 
+      // FIXME:variable templates with concepts need constraints from
+      // the specialization -- see spec_hasher::equal
       if (CHECKING_P)
 	{
 	  /* Make sure we can locate the decl.  */
-	  tree existing = match_mergeable_specialization
-	    (bool (mk & MK_tmpl_decl_mask), entry->tmpl, entry->args, NULL);
+	  tree existing = check_mergeable_specialization
+	    (bool (mk & MK_tmpl_decl_mask), entry);
 
 	  gcc_assert (existing);
 	  if (mk & MK_tmpl_decl_mask)
@@ -11321,8 +11324,7 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
 
        /* Only alias templates can appear in both tables (and
 	  if they're in the type table they must also be in the decl table).  */
-       gcc_checking_assert (!check_mergeable_specialization
-			    (true, entry->tmpl, entry->args)
+       gcc_checking_assert (!check_mergeable_specialization (true, entry)
 			    == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
     }
 
