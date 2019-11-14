@@ -1643,12 +1643,10 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	  poly_uint64 nunits;
 	  if (!multiple_p (GET_MODE_BITSIZE (GET_MODE (op0)),
 			   GET_MODE_UNIT_BITSIZE (tmode), &nunits)
-	      || !mode_for_vector (inner_mode, nunits).exists (&new_mode)
-	      || !VECTOR_MODE_P (new_mode)
+	      || !related_vector_mode (tmode, inner_mode,
+				       nunits).exists (&new_mode)
 	      || maybe_ne (GET_MODE_SIZE (new_mode),
-			   GET_MODE_SIZE (GET_MODE (op0)))
-	      || GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode)
-	      || !targetm.vector_mode_supported_p (new_mode))
+			   GET_MODE_SIZE (GET_MODE (op0))))
 	    new_mode = VOIDmode;
 	}
       poly_uint64 pos;

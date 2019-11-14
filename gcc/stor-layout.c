@@ -530,6 +530,26 @@ mode_for_int_vector (unsigned int int_bits, poly_uint64 nunits)
   return opt_machine_mode ();
 }
 
+/* If a piece of code is using vector mode VECTOR_MODE and also wants
+   to operate on elements of mode ELEMENT_MODE, return the vector mode
+   it should use for those elements.  If NUNITS is nonzero, ensure that
+   the mode has exactly NUNITS elements, otherwise pick whichever vector
+   size pairs the most naturally with VECTOR_MODE; this may mean choosing
+   a mode with a different size and/or number of elements, depending on
+   what the target prefers.  Return an empty opt_machine_mode if there
+   is no supported vector mode with the required properties.
+
+   Unlike mode_for_vector. any returned mode is guaranteed to satisfy
+   both VECTOR_MODE_P and targetm.vector_mode_supported_p.  */
+
+opt_machine_mode
+related_vector_mode (machine_mode vector_mode, scalar_mode element_mode,
+		     poly_uint64 nunits)
+{
+  gcc_assert (VECTOR_MODE_P (vector_mode));
+  return targetm.vectorize.related_mode (vector_mode, element_mode, nunits);
+}
+
 /* Return the alignment of MODE. This will be bounded by 1 and
    BIGGEST_ALIGNMENT.  */
 

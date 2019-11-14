@@ -1924,6 +1924,33 @@ for autovectorization.  The default implementation does nothing.",
  (vector_sizes *sizes, bool all),
  default_autovectorize_vector_sizes)
 
+DEFHOOK
+(related_mode,
+ "If a piece of code is using vector mode @var{vector_mode} and also wants\n\
+to operate on elements of mode @var{element_mode}, return the vector mode\n\
+it should use for those elements.  If @var{nunits} is nonzero, ensure that\n\
+the mode has exactly @var{nunits} elements, otherwise pick whichever vector\n\
+size pairs the most naturally with @var{vector_mode}.  Return an empty\n\
+@code{opt_machine_mode} if there is no supported vector mode with the\n\
+required properties.\n\
+\n\
+There is no prescribed way of handling the case in which @var{nunits}\n\
+is zero.  One common choice is to pick a vector mode with the same size\n\
+as @var{vector_mode}; this is the natural choice if the target has a\n\
+fixed vector size.  Another option is to choose a vector mode with the\n\
+same number of elements as @var{vector_mode}; this is the natural choice\n\
+if the target has a fixed number of elements.  Alternatively, the hook\n\
+might choose a middle ground, such as trying to keep the number of\n\
+elements as similar as possible while applying maximum and minimum\n\
+vector sizes.\n\
+\n\
+The default implementation uses @code{mode_for_vector} to find the\n\
+requested mode, returning a mode with the same size as @var{vector_mode}\n\
+when @var{nunits} is zero.  This is the correct behavior for most targets.",
+ opt_machine_mode,
+ (machine_mode vector_mode, scalar_mode element_mode, poly_uint64 nunits),
+ default_vectorize_related_mode)
+
 /* Function to get a target mode for a vector mask.  */
 DEFHOOK
 (get_mask_mode,

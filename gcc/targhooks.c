@@ -1306,6 +1306,25 @@ default_autovectorize_vector_sizes (vector_sizes *, bool)
 {
 }
 
+/* The default implementation of TARGET_VECTORIZE_RELATED_MODE.  */
+
+opt_machine_mode
+default_vectorize_related_mode (machine_mode vector_mode,
+				scalar_mode element_mode,
+				poly_uint64 nunits)
+{
+  machine_mode result_mode;
+  if ((maybe_ne (nunits, 0U)
+       || multiple_p (GET_MODE_SIZE (vector_mode),
+		      GET_MODE_SIZE (element_mode), &nunits))
+      && mode_for_vector (element_mode, nunits).exists (&result_mode)
+      && VECTOR_MODE_P (result_mode)
+      && targetm.vector_mode_supported_p (result_mode))
+    return result_mode;
+
+  return opt_machine_mode ();
+}
+
 /* By default a vector of integers is used as a mask.  */
 
 opt_machine_mode
