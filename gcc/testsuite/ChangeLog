@@ -1,5 +1,14 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR testsuite/92366
+	* gcc.dg/vect/bb-slp-40.c: Use dg-additional-options instead
+	of dg-options.  Remove expected counts.
+	* gcc.dg/vect/bb-slp-41.c: Remove dg-options and explicit
+	dg-do run.  Suppress vectorization of foo.
+	* gcc.dg/vect/bb-slp-42.c: New test.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/bb-slp-div-2.c: New test.
 
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
