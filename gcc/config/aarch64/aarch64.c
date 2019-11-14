@@ -1822,6 +1822,30 @@ aarch64_sve_int_mode (machine_mode mode)
   return aarch64_sve_data_mode (int_mode, GET_MODE_NUNITS (mode)).require ();
 }
 
+/* Implement TARGET_VECTORIZE_RELATED_MODE.  */
+
+static opt_machine_mode
+aarch64_vectorize_related_mode (machine_mode vector_mode,
+				scalar_mode element_mode,
+				poly_uint64 nunits)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (vector_mode);
+
+  /* Prefer to use 1 128-bit vector instead of 2 64-bit vectors.  */
+  if ((vec_flags & VEC_ADVSIMD)
+      && known_eq (nunits, 0U)
+      && known_eq (GET_MODE_BITSIZE (vector_mode), 64U)
+      && maybe_ge (GET_MODE_BITSIZE (element_mode)
+		   * GET_MODE_NUNITS (vector_mode), 128U))
+    {
+      machine_mode res = aarch64_simd_container_mode (element_mode, 128);
+      if (VECTOR_MODE_P (res))
+	return res;
+    }
+
+  return default_vectorize_related_mode (vector_mode, element_mode, nunits);
+}
+
 /* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
    prefer to use the first arithmetic operand as the else value if
    the else value doesn't matter, since that exactly matches the SVE
@@ -15916,8 +15940,27 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_SVE)
     modes->safe_push (VNx16QImode);
+
+  /* Try using 128-bit vectors for all element types.  */
   modes->safe_push (V16QImode);
+
+  /* Try using 64-bit vectors for 8-bit elements and 128-bit vectors
+     for wider elements.  */
   modes->safe_push (V8QImode);
+
+  /* Try using 64-bit vectors for 16-bit elements and 128-bit vectors
+     for wider elements.
+
+     TODO: We could support a limited form of V4QImode too, so that
+     we use 32-bit vectors for 8-bit elements.  */
+  modes->safe_push (V4HImode);
+
+  /* Try using 64-bit vectors for 32-bit elements and 128-bit vectors
+     for 64-bit elements.
+
+     TODO: We could similarly support limited forms of V2QImode and V2HImode
+     for this case.  */
+  modes->safe_push (V2SImode);
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
@@ -21786,6 +21829,8 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_VECTORIZE_VEC_PERM_CONST \
   aarch64_vectorize_vec_perm_const
 
+#undef TARGET_VECTORIZE_RELATED_MODE
+#define TARGET_VECTORIZE_RELATED_MODE aarch64_vectorize_related_mode
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE aarch64_get_mask_mode
 #undef TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
