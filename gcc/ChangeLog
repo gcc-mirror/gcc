@@ -1,5 +1,52 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.h (vector_sizes, auto_vector_sizes): Delete.
+	(vector_modes, auto_vector_modes): New typedefs.
+	* target.def (autovectorize_vector_sizes): Replace with...
+	(autovectorize_vector_modes): ...this new hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES):
+	Replace with...
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): ...this new hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_autovectorize_vector_sizes): Delete.
+	(default_autovectorize_vector_modes): New function.
+	* targhooks.c (default_autovectorize_vector_sizes): Delete.
+	(default_autovectorize_vector_modes): New function.
+	* omp-general.c (omp_max_vf): Use autovectorize_vector_modes instead
+	of autovectorize_vector_sizes.  Use the number of units in the mode
+	to calculate the maximum VF.
+	* omp-low.c (omp_clause_aligned_alignment): Use
+	autovectorize_vector_modes instead of autovectorize_vector_sizes.
+	Use a loop based on related_mode to iterate through all supported
+	vector modes for a given scalar mode.
+	* optabs-query.c (can_vec_mask_load_store_p): Use
+	autovectorize_vector_modes instead of autovectorize_vector_sizes.
+	* tree-vect-loop.c (vect_analyze_loop, vect_transform_loop): Likewise.
+	* tree-vect-slp.c (vect_slp_bb_region): Likewise.
+	* config/aarch64/aarch64.c (aarch64_autovectorize_vector_sizes):
+	Replace with...
+	(aarch64_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/arc/arc.c (arc_autovectorize_vector_sizes): Replace with...
+	(arc_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/arm/arm.c (arm_autovectorize_vector_sizes): Replace with...
+	(arm_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes): Replace with...
+	(ix86_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/mips/mips.c (mips_autovectorize_vector_sizes): Replace with...
+	(mips_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_shift): Check the number
 	of vector elements as well as the type mode when deciding
 	whether an op1_vectype is compatible.  Reuse the result of

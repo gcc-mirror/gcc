@@ -516,13 +516,16 @@ omp_max_vf (void)
 	  && global_options_set.x_flag_tree_loop_vectorize))
     return 1;
 
-  auto_vector_sizes sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&sizes, true);
-  if (!sizes.is_empty ())
+  auto_vector_modes modes;
+  targetm.vectorize.autovectorize_vector_modes (&modes, true);
+  if (!modes.is_empty ())
     {
       poly_uint64 vf = 0;
-      for (unsigned int i = 0; i < sizes.length (); ++i)
-	vf = ordered_max (vf, sizes[i]);
+      for (unsigned int i = 0; i < modes.length (); ++i)
+	/* The returned modes use the smallest element size (and thus
+	   the largest nunits) for the vectorization approach that they
+	   represent.  */
+	vf = ordered_max (vf, GET_MODE_NUNITS (modes[i]));
       return vf;
     }
 

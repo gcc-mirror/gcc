@@ -113,7 +113,7 @@ default_builtin_support_vector_misalignment (machine_mode mode,
 					     int, bool);
 extern machine_mode default_preferred_simd_mode (scalar_mode mode);
 extern machine_mode default_split_reduction (machine_mode);
-extern void default_autovectorize_vector_sizes (vector_sizes *, bool);
+extern void default_autovectorize_vector_modes (vector_modes *, bool);
 extern opt_machine_mode default_vectorize_related_mode (machine_mode,
 							scalar_mode,
 							poly_uint64);

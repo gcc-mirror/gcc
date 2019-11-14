@@ -3172,12 +3172,12 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 		    unsigned int n_stmts)
 {
   bb_vec_info bb_vinfo;
-  auto_vector_sizes vector_sizes;
+  auto_vector_modes vector_modes;
 
   /* Autodetect first vector size we try.  */
-  poly_uint64 next_vector_size = 0;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
-  unsigned int next_size = 0;
+  machine_mode next_vector_mode = VOIDmode;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, false);
+  unsigned int mode_i = 0;
 
   vec_info_shared shared;
 
@@ -3194,7 +3194,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	bb_vinfo->shared->save_datarefs ();
       else
 	bb_vinfo->shared->check_datarefs ();
-      bb_vinfo->vector_size = next_vector_size;
+      bb_vinfo->vector_size = GET_MODE_SIZE (next_vector_mode);
 
       if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal)
 	  && dbg_cnt (vect_slp))
@@ -3221,17 +3221,18 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	  vectorized = true;
 	}
 
-      if (next_size == 0)
+      if (mode_i == 0)
 	autodetected_vector_size = bb_vinfo->vector_size;
 
       delete bb_vinfo;
 
-      if (next_size < vector_sizes.length ()
-	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
-	next_size += 1;
+      if (mode_i < vector_modes.length ()
+	  && known_eq (GET_MODE_SIZE (vector_modes[mode_i]),
+		       autodetected_vector_size))
+	mode_i += 1;
 
       if (vectorized
-	  || next_size == vector_sizes.length ()
+	  || mode_i == vector_modes.length ()
 	  || known_eq (autodetected_vector_size, 0U)
 	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
 	     vector sizes will fail do not bother iterating.  */
@@ -3239,15 +3240,11 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	return vectorized;
 
       /* Try the next biggest vector size.  */
-      next_vector_size = vector_sizes[next_size++];
+      next_vector_mode = vector_modes[mode_i++];
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "***** Re-trying analysis with "
-			   "vector size ");
-	  dump_dec (MSG_NOTE, next_vector_size);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying analysis with vector mode %s\n",
+			 GET_MODE_NAME (next_vector_mode));
     }
 }
 

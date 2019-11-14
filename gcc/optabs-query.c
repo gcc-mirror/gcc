@@ -589,11 +589,11 @@ can_vec_mask_load_store_p (machine_mode mode,
       && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
-  auto_vector_sizes vector_sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, true);
-  for (unsigned int i = 0; i < vector_sizes.length (); ++i)
+  auto_vector_modes vector_modes;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
+  for (unsigned int i = 0; i < vector_modes.length (); ++i)
     {
-      poly_uint64 cur = vector_sizes[i];
+      poly_uint64 cur = GET_MODE_SIZE (vector_modes[i]);
       poly_uint64 nunits;
       if (!multiple_p (cur, GET_MODE_SIZE (smode), &nunits))
 	continue;

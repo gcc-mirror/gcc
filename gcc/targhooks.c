@@ -1298,11 +1298,10 @@ default_split_reduction (machine_mode mode)
   return mode;
 }
 
-/* By default only the size derived from the preferred vector mode
-   is tried.  */
+/* By default only the preferred vector mode is tried.  */
 
 void
-default_autovectorize_vector_sizes (vector_sizes *, bool)
+default_autovectorize_vector_modes (vector_modes *, bool)
 {
 }
 

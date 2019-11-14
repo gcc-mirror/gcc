@@ -205,11 +205,11 @@ enum vect_cost_model_location {
 class vec_perm_indices;
 
 /* The type to use for lists of vector sizes.  */
-typedef vec<poly_uint64> vector_sizes;
+typedef vec<machine_mode> vector_modes;
 
 /* Same, but can be used to construct local lists that are
    automatically freed.  */
-typedef auto_vec<poly_uint64, 8> auto_vector_sizes;
+typedef auto_vec<machine_mode, 8> auto_vector_modes;
 
 /* First argument of targetm.omp.device_kind_arch_isa.  */
 enum omp_device_kind_arch_isa {

@@ -1909,20 +1909,28 @@ reached.  The default is @var{mode} which means no splitting.",
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
    after processing the preferred one derived from preferred_simd_mode.  */
 DEFHOOK
-(autovectorize_vector_sizes,
- "If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not\n\
-the only one that is worth considering, this hook should add all suitable\n\
-vector sizes to @var{sizes}, in order of decreasing preference.  The first\n\
-one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
-If @var{all} is true, add suitable vector sizes even when they are generally\n\
+(autovectorize_vector_modes,
+ "If using the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}\n\
+is not the only approach worth considering, this hook should add one mode to\n\
+@var{modes} for each useful alternative approach.  These modes are then\n\
+passed to @code{TARGET_VECTORIZE_RELATED_MODE} to obtain the vector mode\n\
+for a given element mode.\n\
+\n\
+The modes returned in @var{modes} should use the smallest element mode\n\
+possible for the vectorization approach that they represent, preferring\n\
+integer modes over floating-poing modes in the event of a tie.  The first\n\
+mode should be the @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} for its\n\
+element mode.\n\
+\n\
+If @var{all} is true, add suitable vector modes even when they are generally\n\
 not expected to be worthwhile.\n\
 \n\
 The hook does not need to do anything if the vector returned by\n\
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant\n\
 for autovectorization.  The default implementation does nothing.",
  void,
- (vector_sizes *sizes, bool all),
- default_autovectorize_vector_sizes)
+ (vector_modes *modes, bool all),
+ default_autovectorize_vector_modes)
 
 DEFHOOK
 (related_mode,
