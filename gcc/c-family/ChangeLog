@@ -1,5 +1,8 @@
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-omp.c (c_omp_check_context_selector): Add nvidia to the list of
+	valid vendors.
+
 	* c-omp.c (c_omp_check_context_selector): Handle name lists
 	containing string literals.  Don't diagnose atomic_default_mem_order
 	with multiple props.
