@@ -1078,8 +1078,8 @@
 )
 
 (define_insn "addsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (plus:SI (match_operand:SI 1 "s_register_operand" "r, r,r")
 		  (match_operand:SI 2 "arm_add_operand"    "I,L,r"))
 	 (const_int 0)))
@@ -1095,8 +1095,8 @@
 )
 
 (define_insn "*addsi3_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (plus:SI (match_operand:SI 0 "s_register_operand" "r, r, r")
 		  (match_operand:SI 1 "arm_add_operand"    "I,L, r"))
 	 (const_int 0)))]
@@ -2017,8 +2017,8 @@
 )
 
 (define_insn "subsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (minus:SI (match_operand:SI 1 "arm_rhs_operand" "r,r,I")
 		   (match_operand:SI 2 "arm_rhs_operand" "I,r,r"))
 	 (const_int 0)))
@@ -2256,8 +2256,8 @@
 )
 
 (define_insn "*mulsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (mult:SI
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 1 "s_register_operand" "%0,r"))
 			 (const_int 0)))
@@ -2270,8 +2270,8 @@
 )
 
 (define_insn "*mulsi3_compare0_v6"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (mult:SI
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r")
 			  (match_operand:SI 1 "s_register_operand" "r"))
 			 (const_int 0)))
@@ -2284,8 +2284,8 @@
 )
 
 (define_insn "*mulsi_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (mult:SI
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 1 "s_register_operand" "%0,r"))
 			 (const_int 0)))
@@ -2297,8 +2297,8 @@
 )
 
 (define_insn "*mulsi_compare0_scratch_v6"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (mult:SI
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r")
 			  (match_operand:SI 1 "s_register_operand" "r"))
 			 (const_int 0)))
@@ -2310,8 +2310,8 @@
 )
 
 (define_insn "*mulsi3addsi_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r,r,r,r")
 		   (match_operand:SI 1 "s_register_operand" "%0,r,0,r"))
@@ -2327,8 +2327,8 @@
 )
 
 (define_insn "*mulsi3addsi_compare0_v6"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r")
 		   (match_operand:SI 1 "s_register_operand" "r"))
@@ -2344,8 +2344,8 @@
 )
 
 (define_insn "*mulsi3addsi_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r,r,r,r")
 		   (match_operand:SI 1 "s_register_operand" "%0,r,0,r"))
@@ -2359,8 +2359,8 @@
 )
 
 (define_insn "*mulsi3addsi_compare0_scratch_v6"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r")
 		   (match_operand:SI 1 "s_register_operand" "r"))
@@ -3004,8 +3004,8 @@
 )
 
 (define_insn "*andsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:SI (match_operand:SI 1 "s_register_operand" "r,r,r")
 		 (match_operand:SI 2 "arm_not_operand" "I,K,r"))
 	 (const_int 0)))
@@ -3021,8 +3021,8 @@
 )
 
 (define_insn "*andsi3_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:SI (match_operand:SI 0 "s_register_operand" "r,r,r")
 		 (match_operand:SI 1 "arm_not_operand" "I,K,r"))
 	 (const_int 0)))
@@ -3037,8 +3037,8 @@
 )
 
 (define_insn "*zeroextractsi_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (zero_extract:SI
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (zero_extract:SI
 			  (match_operand:SI 0 "s_register_operand" "r")
 			  (match_operand 1 "const_int_operand" "n")
 			  (match_operand 2 "const_int_operand" "n"))
@@ -3078,12 +3078,12 @@
        && INTVAL (operands[2]) > 0 
        && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
        && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)"
-  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
-		   (compare:CC_NOOV (and:SI (match_dup 1) (match_dup 2))
+  [(parallel [(set (reg:CC_NZ CC_REGNUM)
+		   (compare:CC_NZ (and:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
 	      (set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 0)
-	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+	(if_then_else:SI (eq (reg:CC_NZ CC_REGNUM) (const_int 0))
 			 (match_dup 0) (const_int 1)))]
   "
   operands[2] = GEN_INT (((1 << INTVAL (operands[2])) - 1)
@@ -3108,12 +3108,12 @@
   "TARGET_ARM"
   "#"
   "TARGET_ARM"
-  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
-		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
+  [(parallel [(set (reg:CC_NZ CC_REGNUM)
+		   (compare:CC_NZ (ashift:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
 	      (set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 0)
-	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+	(if_then_else:SI (eq (reg:CC_NZ CC_REGNUM) (const_int 0))
 			 (match_dup 0) (const_int 1)))]
   "
   operands[2] = GEN_INT (32 - INTVAL (operands[2]));
@@ -3146,12 +3146,12 @@
        && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
        && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)
    && !reg_overlap_mentioned_p (operands[0], operands[4])"
-  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
-		   (compare:CC_NOOV (and:SI (match_dup 1) (match_dup 2))
+  [(parallel [(set (reg:CC_NZ CC_REGNUM)
+		   (compare:CC_NZ (and:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
 	      (set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 0)
-	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+	(if_then_else:SI (eq (reg:CC_NZ CC_REGNUM) (const_int 0))
 			 (match_dup 0) (match_dup 4)))]
   "
   operands[2] = GEN_INT (((1 << INTVAL (operands[2])) - 1)
@@ -3175,12 +3175,12 @@
   "TARGET_ARM && !reg_overlap_mentioned_p (operands[0], operands[3])"
   "#"
   "TARGET_ARM && !reg_overlap_mentioned_p (operands[0], operands[3])"
-  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
-		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
+  [(parallel [(set (reg:CC_NZ CC_REGNUM)
+		   (compare:CC_NZ (ashift:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
 	      (set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 0)
-	(if_then_else:SI (eq (reg:CC_NOOV CC_REGNUM) (const_int 0))
+	(if_then_else:SI (eq (reg:CC_NZ CC_REGNUM) (const_int 0))
 			 (match_dup 0) (match_dup 3)))]
   "
   operands[2] = GEN_INT (32 - INTVAL (operands[2]));
@@ -3498,8 +3498,8 @@
 ;; bics output.  Pattern restricts Thumb2 shift operand as bics for Thumb2
 ;; does not support shift by register.
 (define_insn "andsi_not_shiftsi_si_scc_no_reuse"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 		(and:SI (not:SI (match_operator:SI 0 "shift_operator"
 			[(match_operand:SI 1 "s_register_operand" "r,r")
 			 (match_operand:SI 2 "shift_amount_operand" "M,r")]))
@@ -3518,8 +3518,8 @@
 ;; Same as andsi_not_shiftsi_si_scc_no_reuse, but the bics result is also
 ;; getting reused later.
 (define_insn "andsi_not_shiftsi_si_scc"
-  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(parallel [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 		(and:SI (not:SI (match_operator:SI 0 "shift_operator"
 			[(match_operand:SI 1 "s_register_operand" "r,r")
 			 (match_operand:SI 2 "shift_amount_operand" "M,r")]))
@@ -3540,8 +3540,8 @@
 )
 
 (define_insn "*andsi_notsi_si_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
 		 (match_operand:SI 1 "s_register_operand" "r"))
 	 (const_int 0)))
@@ -3554,8 +3554,8 @@
 )
 
 (define_insn "*andsi_notsi_si_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
 		 (match_operand:SI 1 "s_register_operand" "r"))
 	 (const_int 0)))
@@ -3644,8 +3644,8 @@
 )
 
 (define_insn "*iorsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (ior:SI (match_operand:SI 1 "s_register_operand" "%r,0,r")
 		 (match_operand:SI 2 "arm_rhs_operand" "I,l,r"))
 	 (const_int 0)))
@@ -3660,8 +3660,8 @@
 )
 
 (define_insn "*iorsi3_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (ior:SI (match_operand:SI 1 "s_register_operand" "%r,0,r")
 		 (match_operand:SI 2 "arm_rhs_operand" "I,l,r"))
 	 (const_int 0)))
@@ -3734,8 +3734,8 @@
 )
 
 (define_insn "*xorsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (xor:SI (match_operand:SI 1 "s_register_operand" "r,r")
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (xor:SI (match_operand:SI 1 "s_register_operand" "r,r")
 				 (match_operand:SI 2 "arm_rhs_operand" "I,r"))
 			 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -3747,8 +3747,8 @@
 )
 
 (define_insn "*xorsi3_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (xor:SI (match_operand:SI 0 "s_register_operand" "r,r")
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (xor:SI (match_operand:SI 0 "s_register_operand" "r,r")
 				 (match_operand:SI 1 "arm_rhs_operand" "I,r"))
 			 (const_int 0)))]
   "TARGET_32BIT"
@@ -4524,8 +4524,8 @@
 )
 
 (define_insn "*shiftsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (match_operator:SI 3 "shift_operator"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (match_operator:SI 3 "shift_operator"
 			  [(match_operand:SI 1 "s_register_operand" "r,r")
 			   (match_operand:SI 2 "arm_rhs_operand" "M,r")])
 			 (const_int 0)))
@@ -4539,8 +4539,8 @@
 )
 
 (define_insn "*shiftsi3_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (match_operator:SI 3 "shift_operator"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (match_operator:SI 3 "shift_operator"
 			  [(match_operand:SI 1 "s_register_operand" "r,r")
 			   (match_operand:SI 2 "arm_rhs_operand" "M,r")])
 			 (const_int 0)))
@@ -4565,8 +4565,8 @@
    (set_attr "type" "mvn_shift,mvn_shift_reg")])
 
 (define_insn "*not_shiftsi_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (not:SI (match_operator:SI 3 "shift_operator"
 		  [(match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operand:SI 2 "shift_amount_operand" "M,r")]))
@@ -4581,8 +4581,8 @@
    (set_attr "type" "mvn_shift,mvn_shift_reg")])
 
 (define_insn "*not_shiftsi_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (not:SI (match_operator:SI 3 "shift_operator"
 		  [(match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operand:SI 2 "shift_amount_operand" "M,r")]))
@@ -5172,8 +5172,8 @@
 )
 
 (define_insn "*notsi_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (not:SI (match_operand:SI 1 "s_register_operand" "r"))
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (not:SI (match_operand:SI 1 "s_register_operand" "r"))
 			 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(not:SI (match_dup 1)))]
@@ -5184,8 +5184,8 @@
 )
 
 (define_insn "*notsi_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (not:SI (match_operand:SI 1 "s_register_operand" "r"))
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (not:SI (match_operand:SI 1 "s_register_operand" "r"))
 			 (const_int 0)))
    (clobber (match_scratch:SI 0 "=r"))]
   "TARGET_32BIT"
@@ -8787,7 +8787,7 @@
 
 (define_expand "return_addr_mask"
   [(set (match_dup 1)
-      (compare:CC_NOOV (unspec [(const_int 0)] UNSPEC_CHECK_ARCH)
+      (compare:CC_NZ (unspec [(const_int 0)] UNSPEC_CHECK_ARCH)
 		       (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand")
       (if_then_else:SI (eq (match_dup 1) (const_int 0))
@@ -8795,12 +8795,12 @@
 		       (const_int 67108860)))] ; 0x03fffffc
   "TARGET_ARM"
   "
-  operands[1] = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+  operands[1] = gen_rtx_REG (CC_NZmode, CC_REGNUM);
   ")
 
 (define_insn "*check_arch2"
-  [(set (match_operand:CC_NOOV 0 "cc_register" "")
-      (compare:CC_NOOV (unspec [(const_int 0)] UNSPEC_CHECK_ARCH)
+  [(set (match_operand:CC_NZ 0 "cc_register" "")
+      (compare:CC_NZ (unspec [(const_int 0)] UNSPEC_CHECK_ARCH)
 		       (const_int 0)))]
   "TARGET_ARM"
   "teq\\t%|r0, %|r0\;teq\\t%|pc, %|pc"
@@ -9336,8 +9336,8 @@
   "")
 
 (define_insn "*arith_shiftsi_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-        (compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+        (compare:CC_NZ
 	 (match_operator:SI 1 "shiftable_operator"
 	  [(match_operator:SI 3 "shift_operator"
 	    [(match_operand:SI 4 "s_register_operand" "r,r")
@@ -9355,8 +9355,8 @@
    (set_attr "type" "alus_shift_imm,alus_shift_reg")])
 
 (define_insn "*arith_shiftsi_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-        (compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+        (compare:CC_NZ
 	 (match_operator:SI 1 "shiftable_operator"
 	  [(match_operator:SI 3 "shift_operator"
 	    [(match_operand:SI 4 "s_register_operand" "r,r")
@@ -9386,8 +9386,8 @@
    (set_attr "type" "alus_shift_imm,alus_shift_reg")])
 
 (define_insn "*sub_shiftsi_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (minus:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operator:SI 2 "shift_operator"
 		    [(match_operand:SI 3 "s_register_operand" "r,r")
@@ -9404,8 +9404,8 @@
    (set_attr "type" "alus_shift_imm,alus_shift_reg")])
 
 (define_insn "*sub_shiftsi_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (minus:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		   (match_operator:SI 2 "shift_operator"
 		    [(match_operand:SI 3 "s_register_operand" "r,r")
@@ -9549,11 +9549,11 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && reload_completed"
   [(parallel
-    [(set (reg:CC_NOOV CC_REGNUM)
-	  (compare:CC_NOOV (minus:SI (match_dup 1) (match_dup 2))
+    [(set (reg:CC_NZ CC_REGNUM)
+	  (compare:CC_NZ (minus:SI (match_dup 1) (match_dup 2))
 			   (const_int 0)))
      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
-   (cond_exec (ne:CC_NOOV (reg:CC_NOOV CC_REGNUM) (const_int 0))
+   (cond_exec (ne:CC_NZ (reg:CC_NZ CC_REGNUM) (const_int 0))
 	      (set (match_dup 0) (const_int 1)))])
 
 (define_insn_and_split "*compare_scc"
@@ -10258,8 +10258,8 @@
 )
 
 (define_split
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (ior:SI
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (ior:SI
 			  (and:SI (match_operand:SI 0 "s_register_operand" "")
 				  (const_int 1))
 			  (match_operator:SI 1 "arm_comparison_operator"
@@ -10271,14 +10271,14 @@
   [(set (match_dup 4)
 	(ior:SI (match_op_dup 1 [(match_dup 2) (match_dup 3)])
 		(match_dup 0)))
-   (set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (and:SI (match_dup 4) (const_int 1))
+   (set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (and:SI (match_dup 4) (const_int 1))
 			 (const_int 0)))]
   "")
 
 (define_split
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (ior:SI
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (ior:SI
 			  (match_operator:SI 1 "arm_comparison_operator"
 			   [(match_operand:SI 2 "s_register_operand" "")
 			    (match_operand:SI 3 "arm_add_operand" "")])
@@ -10290,8 +10290,8 @@
   [(set (match_dup 4)
 	(ior:SI (match_op_dup 1 [(match_dup 2) (match_dup 3)])
 		(match_dup 0)))
-   (set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (and:SI (match_dup 4) (const_int 1))
+   (set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ (and:SI (match_dup 4) (const_int 1))
 			 (const_int 0)))]
   "")
 ;; ??? The conditional patterns above need checking for Thumb-2 usefulness
@@ -10380,8 +10380,8 @@
    "TARGET_32BIT"
    "#"
    "&& reload_completed"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (plus:SI (match_dup 3)
 		  (match_dup 4))
 	 (const_int 0)))

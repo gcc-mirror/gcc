@@ -15376,7 +15376,7 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == ROTATERT
 	  || (TARGET_32BIT && GET_CODE (x) == ZERO_EXTRACT)))
-    return CC_NOOVmode;
+    return CC_NZmode;
 
   /* A comparison of ~reg with a const is really a special
      canoncialization of compare (~const, reg), which is a reverse
@@ -15492,11 +15492,11 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	      }
 
 	    rtx clobber = gen_rtx_CLOBBER (VOIDmode, scratch);
-	    cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+	    cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
 	    rtx set
 	      = gen_rtx_SET (cc_reg,
-			     gen_rtx_COMPARE (CC_NOOVmode,
+			     gen_rtx_COMPARE (CC_NZmode,
 					      gen_rtx_IOR (SImode, x_lo, x_hi),
 					      const0_rtx));
 	    emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set,
@@ -23881,7 +23881,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	return code;
       return ARM_NV;
 
-    case E_CC_NOOVmode:
+    case E_CC_NZmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -25304,7 +25304,7 @@ thumb1_final_prescan_insn (rtx_insn *insn)
 	  cfun->machine->thumb1_cc_insn = insn;
 	  cfun->machine->thumb1_cc_op0 = SET_DEST (set);
 	  cfun->machine->thumb1_cc_op1 = const0_rtx;
-	  cfun->machine->thumb1_cc_mode = CC_NOOVmode;
+	  cfun->machine->thumb1_cc_mode = CC_NZmode;
 	  if (INSN_CODE (insn) == CODE_FOR_thumb1_subsi3_insn)
 	    {
 	      rtx src1 = XEXP (SET_SRC (set), 1);
@@ -30486,7 +30486,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
   else
     {
       /* We have a shift-by-register.  */
-      rtx cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+      rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
       /* This alternative requires the scratch registers.  */
       gcc_assert (scratch1 && REG_P (scratch1));

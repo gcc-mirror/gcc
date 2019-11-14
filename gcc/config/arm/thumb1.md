@@ -1023,9 +1023,9 @@
 	  if (!rtx_equal_p (cfun->machine->thumb1_cc_op0, operands[1])
 	      || !rtx_equal_p (cfun->machine->thumb1_cc_op1, operands[2]))
 	    t = NULL_RTX;
-	  if (cfun->machine->thumb1_cc_mode == CC_NOOVmode)
+	  if (cfun->machine->thumb1_cc_mode == CC_NZmode)
 	    {
-	      if (!noov_comparison_operator (operands[0], VOIDmode))
+	      if (!nz_comparison_operator (operands[0], VOIDmode))
 		t = NULL_RTX;
 	    }
 	  else if (cfun->machine->thumb1_cc_mode != CCmode)
@@ -1097,9 +1097,9 @@
       if (!rtx_equal_p (cfun->machine->thumb1_cc_op0, operands[1])
 	  || !rtx_equal_p (cfun->machine->thumb1_cc_op1, operands[2]))
 	t = NULL_RTX;
-      if (cfun->machine->thumb1_cc_mode == CC_NOOVmode)
+      if (cfun->machine->thumb1_cc_mode == CC_NZmode)
 	{
-	  if (!noov_comparison_operator (operands[0], VOIDmode))
+	  if (!nz_comparison_operator (operands[0], VOIDmode))
 	    t = NULL_RTX;
 	}
       else if (cfun->machine->thumb1_cc_mode != CCmode)
