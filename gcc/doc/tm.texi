@@ -6045,16 +6045,16 @@ requested mode, returning a mode with the same size as @var{vector_mode}
 when @var{nunits} is zero.  This is the correct behavior for most targets.
 @end deftypefn
 
-@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (poly_uint64 @var{nunits}, poly_uint64 @var{length})
-A vector mask is a value that holds one boolean result for every element
-in a vector.  This hook returns the machine mode that should be used to
-represent such a mask when the vector in question is @var{length} bytes
-long and contains @var{nunits} elements.  The hook returns an empty
-@code{opt_machine_mode} if no such mode exists.
+@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (machine_mode @var{mode})
+Return the mode to use for a vector mask that holds one boolean
+result for each element of vector mode @var{mode}.  The returned mask mode
+can be a vector of integers (class @code{MODE_VECTOR_INT}), a vector of
+booleans (class @code{MODE_VECTOR_BOOL}) or a scalar integer (class
+@code{MODE_INT}).  Return an empty @code{opt_machine_mode} if no such
+mask mode exists.
 
-The default implementation returns the mode of an integer vector that
-is @var{length} bytes long and that contains @var{nunits} elements,
-if such a mode exists.
+The default implementation returns a @code{MODE_VECTOR_INT} with the
+same size and number of elements as @var{mode}, if such a mode exists.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE (unsigned @var{ifn})

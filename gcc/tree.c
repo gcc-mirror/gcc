@@ -10894,15 +10894,15 @@ build_truth_vector_type_for_mode (poly_uint64 nunits, machine_mode mask_mode)
 static tree
 build_truth_vector_type_for (tree vectype)
 {
+  machine_mode vector_mode = TYPE_MODE (vectype);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  poly_uint64 vector_size = tree_to_poly_uint64 (TYPE_SIZE_UNIT (vectype));
 
   machine_mode mask_mode;
-  if (targetm.vectorize.get_mask_mode (nunits,
-				       vector_size).exists (&mask_mode))
+  if (VECTOR_MODE_P (vector_mode)
+      && targetm.vectorize.get_mask_mode (vector_mode).exists (&mask_mode))
     return build_truth_vector_type_for_mode (nunits, mask_mode);
 
-  poly_uint64 vsize = vector_size * BITS_PER_UNIT;
+  poly_uint64 vsize = tree_to_poly_uint64 (TYPE_SIZE (vectype));
   unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
   tree bool_type = build_nonstandard_boolean_type (esize);
 

@@ -1776,17 +1776,13 @@ aarch64_sve_pred_mode (unsigned int elem_nbytes)
 /* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */
 
 static opt_machine_mode
-aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
+aarch64_get_mask_mode (machine_mode mode)
 {
-  if (TARGET_SVE && known_eq (nbytes, BYTES_PER_SVE_VECTOR))
-    {
-      unsigned int elem_nbytes = vector_element_size (nbytes, nunits);
-      machine_mode pred_mode;
-      if (aarch64_sve_pred_mode (elem_nbytes).exists (&pred_mode))
-	return pred_mode;
-    }
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if (vec_flags & VEC_SVE_DATA)
+    return aarch64_sve_pred_mode (GET_MODE_UNIT_SIZE (mode));
 
-  return default_get_mask_mode (nunits, nbytes);
+  return default_get_mask_mode (mode);
 }
 
 /* Return the SVE vector mode that has NUNITS elements of mode INNER_MODE.  */
@@ -19434,9 +19430,7 @@ void
 aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
 			  rtx *ops)
 {
-  machine_mode pred_mode
-    = aarch64_get_mask_mode (GET_MODE_NUNITS (cmp_mode),
-			     GET_MODE_SIZE (cmp_mode)).require ();
+  machine_mode pred_mode = aarch64_get_mask_mode (cmp_mode).require ();
   rtx pred = gen_reg_rtx (pred_mode);
   if (FLOAT_MODE_P (cmp_mode))
     {
