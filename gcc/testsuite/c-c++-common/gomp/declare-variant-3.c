@@ -19,13 +19,13 @@ void f12 (void);
 void f13 (void);
 #pragma omp declare variant (f13) match (device={kind(any)})
 void f14 (void);
-#pragma omp declare variant (f13) match (device={kind(host)})
+#pragma omp declare variant (f13) match (device={kind("host")})
 void f15 (void);
 #pragma omp declare variant (f13) match (device={kind(nohost)})
 void f16 (void);
 #pragma omp declare variant (f13) match (device={kind(cpu)})
 void f17 (void);
-#pragma omp declare variant (f13) match (device={kind(gpu)})
+#pragma omp declare variant (f13) match (device={kind("gpu")})
 void f18 (void);
 #pragma omp declare variant (f13) match (device={kind(fpga)})
 void f19 (void);
@@ -33,27 +33,27 @@ void f19 (void);
 void f20 (void);
 #pragma omp declare variant (f13) match (device={kind(host,nohost)})
 void f21 (void);
-#pragma omp declare variant (f13) match (device={kind(cpu,gpu,fpga)})
+#pragma omp declare variant (f13) match (device={kind("cpu","gpu","fpga")})
 void f22 (void);
 #pragma omp declare variant (f13) match (device={kind(any,cpu,nohost)})
 void f23 (void);
 #pragma omp declare variant (f13) match (device={isa(avx)})
 void f24 (void);
-#pragma omp declare variant (f13) match (device={isa(sse4,avx512f,avx512vl,avx512bw)})
+#pragma omp declare variant (f13) match (device={isa(sse4,"avx512f",avx512vl,avx512bw)})
 void f25 (void);
-#pragma omp declare variant (f13) match (device={arch(x86_64)})
+#pragma omp declare variant (f13) match (device={arch("x86_64")})
 void f26 (void);
 #pragma omp declare variant (f13) match (device={arch(riscv64)})
 void f27 (void);
 #pragma omp declare variant (f13) match (device={arch(nvptx)})
 void f28 (void);
-#pragma omp declare variant (f13) match (device={arch(x86_64),isa(avx512f,avx512vl),kind(cpu)})
+#pragma omp declare variant (f13) match (device={arch(x86_64),isa("avx512f","avx512vl"),kind(cpu)})
 void f29 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(amd)})
 void f30 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(arm)})
 void f31 (void);
-#pragma omp declare variant (f13) match (implementation={vendor(bsc)})
+#pragma omp declare variant (f13) match (implementation={vendor("bsc")})
 void f32 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(cray)})
 void f33 (void);
@@ -63,7 +63,7 @@ void f34 (void);
 void f35 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(ibm)})
 void f36 (void);
-#pragma omp declare variant (f13) match (implementation={vendor(intel)})
+#pragma omp declare variant (f13) match (implementation={vendor("intel")})
 void f37 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(llvm)})
 void f38 (void);
@@ -97,7 +97,7 @@ void f51 (void);
 void f52 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(score(3):amd)})
 void f53 (void);
-#pragma omp declare variant (f13) match (implementation={vendor(score(4):arm)})
+#pragma omp declare variant (f13) match (implementation={vendor(score(4):"arm")})
 void f54 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(score(5):bsc)})
 void f55 (void);
@@ -115,7 +115,7 @@ void f60 (void);
 void f61 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(score(12):pgi)})
 void f62 (void);
-#pragma omp declare variant (f13) match (implementation={vendor(score(13):ti)})
+#pragma omp declare variant (f13) match (implementation={vendor(score(13):"ti")})
 void f63 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(score(14):unknown)})
 void f64 (void);
@@ -139,3 +139,9 @@ void f72 (void);
 void f73 (void);
 #pragma omp declare variant (f13) match (user={condition(score(25):1)})
 void f74 (void);
+#pragma omp declare variant (f13) match (device={kind(any,"any")})
+void f75 (void);
+#pragma omp declare variant (f13) match (device={kind("any","any")})
+void f76 (void);
+#pragma omp declare variant (f13) match (device={kind("any",any)})
+void f77 (void);

@@ -1,3 +1,12 @@
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_context_selector): Rename
+	CTX_PROPERTY_IDLIST to CTX_PROPERTY_NAME_LIST, add CTX_PROPERTY_ID.
+	Use CTX_PROPERTY_ID for atomic_default_mem_order, only allow a single
+	identifier in that.  For CTX_PROPERTY_NAME_LIST, allow identifiers
+	and string literals.
+	* pt.c (tsubst_attribute): Fix up STRING_CST handling if allow_string.
+
 2019-11-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89070 - bogus [[nodiscard]] warning in SFINAE.

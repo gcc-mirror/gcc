@@ -11166,9 +11166,9 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 			bool allow_string
 			  = ((TREE_PURPOSE (t2) != condition || set[0] != 'u')
 			     && TREE_PURPOSE (t3) != score);
-			if (TREE_CODE (t3) == STRING_CST && allow_string)
-			  continue;
 			tree v = TREE_VALUE (t3);
+			if (TREE_CODE (v) == STRING_CST && allow_string)
+			  continue;
 			v = tsubst_expr (v, args, complain, in_decl, true);
 			v = fold_non_dependent_expr (v);
 			if (!INTEGRAL_TYPE_P (TREE_TYPE (v))

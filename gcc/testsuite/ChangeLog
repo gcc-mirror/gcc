@@ -1,3 +1,17 @@
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Adjust expected diagnostics,
+	add a test for atomic_default_mem_order with a string literal.
+	* c-c++-common/gomp/declare-variant-3.c: Use string literal props
+	in a few random places, add a few string literal prop related tests.
+	* c-c++-common/gomp/declare-variant-8.c: Likewise.
+	* c-c++-common/gomp/declare-variant-9.c: Use string literal props
+	in a few random places.
+	* c-c++-common/gomp/declare-variant-10.c: Likewise.
+	* c-c++-common/gomp/declare-variant-11.c: Likewise.
+	* c-c++-common/gomp/declare-variant-12.c: Likewise.
+	* g++.dg/gomp/declare-variant-7.C: Likewise.
+
 2019-11-14  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR target/92464

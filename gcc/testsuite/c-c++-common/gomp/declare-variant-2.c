@@ -69,15 +69,15 @@ void f33 (void);
 void f34 (void);
 #pragma omp declare variant (f1) match(device={kind,isa,arch})	/* { dg-error "expected '\\(' before ',' token" } */
 void f35 (void);
-#pragma omp declare variant (f1) match(device={kind(})	/* { dg-error "expected identifier before '\\\}' token" } */
+#pragma omp declare variant (f1) match(device={kind(})	/* { dg-error "expected identifier or string literal before '\\\}' token" } */
 void f36 (void);
 #pragma omp declare variant (f1) match(device={kind(unknown)})	/* { dg-warning "unknown property 'unknown' of 'kind' selector" } */
 void f37 (void);
 #pragma omp declare variant (f1) match(device={kind(unknown,foobar)})	/* { dg-warning "unknown property 'unknown' of 'kind' selector" } */
 void f38 (void);							/* { dg-warning "unknown property 'foobar' of 'kind' selector" "" { target *-*-* } .-1 } */
-#pragma omp declare variant (f1) match(device={isa(1)})	/* { dg-error "expected identifier before numeric constant" } */
+#pragma omp declare variant (f1) match(device={isa(1)})	/* { dg-error "expected identifier or string literal before numeric constant" } */
 void f39 (void);
-#pragma omp declare variant (f1) match(device={arch(17)})	/* { dg-error "expected identifier before numeric constant" } */
+#pragma omp declare variant (f1) match(device={arch(17)})	/* { dg-error "expected identifier or string literal before numeric constant" } */
 void f40 (void);
 #pragma omp declare variant (f1) match(device={foobar(3)})
 void f41 (void);
@@ -89,11 +89,11 @@ void f43 (void);
 void f44 (void);
 #pragma omp declare variant (f1) match(implementation={extension})	/* { dg-error "expected '\\(' before '\\\}' token" } */
 void f45 (void);
-#pragma omp declare variant (f1) match(implementation={vendor()})	/* { dg-error "expected identifier before '\\)' token" } */
+#pragma omp declare variant (f1) match(implementation={vendor()})	/* { dg-error "expected identifier or string literal before '\\)' token" } */
 void f45 (void);
-#pragma omp declare variant (f1) match(implementation={vendor(123-234)})	/* { dg-error "expected identifier before numeric constant" } */
+#pragma omp declare variant (f1) match(implementation={vendor(123-234)})	/* { dg-error "expected identifier or string literal before numeric constant" } */
 void f46 (void);
-#pragma omp declare variant (f1) match(implementation={vendor("x86_64")})	/* { dg-error "expected identifier before string constant" } */
+#pragma omp declare variant (f1) match(implementation={vendor("foobar")})	/* { dg-warning "unknown property '.foobar.' of 'vendor' selector" } */
 void f47 (void);
 #pragma omp declare variant (f1) match(implementation={unified_address(yes)})	/* { dg-error "selector 'unified_address' does not accept any properties" } */
 void f48 (void);								/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
@@ -111,7 +111,7 @@ void f53 (void);
 void f54 (void);
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(foobar)})	/* { dg-error "incorrect property 'foobar' of 'atomic_default_mem_order' selector" } */
 void f55 (void);
-#pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(relaxed,seq_cst)})	/* { dg-error "'atomic_default_mem_order' selector must have a single property" } */
+#pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(relaxed,seq_cst)})	/* { dg-error "expected '\\)' before ',' token" } */
 void f56 (void);
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(relaxed)},implementation={atomic_default_mem_order(relaxed)})	/* { dg-error "selector set 'implementation' specified more than once" } */
 void f57 (void);
@@ -151,3 +151,5 @@ void f73 (void);
 void f74 (void);
 #pragma omp declare variant (f1),match(construct={parallel})	/* { dg-error "expected 'match' before ','" } */
 void f75 (void);
+#pragma omp declare variant (f1) match(implementation={atomic_default_mem_order("relaxed")})	/* { dg-error "expected identifier before string constant" } */
+void f76 (void);
