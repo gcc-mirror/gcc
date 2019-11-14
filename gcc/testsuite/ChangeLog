@@ -1,5 +1,10 @@
 2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
 
+	* gcc.target/aarch64/asm-flag-1.c: New test.
+	* gcc.target/aarch64/asm-flag-3.c: New test.
+	* gcc.target/aarch64/asm-flag-5.c: New test.
+	* gcc.target/aarch64/asm-flag-6.c: New test.
+
 	* gcc.target/arm/asm-flag-1.c: New test.
 	* gcc.target/arm/asm-flag-3.c: New test.
 	* gcc.target/arm/asm-flag-5.c: New test.
