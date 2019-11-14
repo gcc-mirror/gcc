@@ -329,6 +329,16 @@ case ${host} in
   ;;
 esac
 
+# Except on ARM where we do not use DWARF, table based EH on VxWorks
+# relies on specially crafted crtstuff files
+case ${host} in
+arm-*-vxworks*)
+  ;;
+*-*-vxworks*)
+  tmake_file="${tmake_file} t-vxcrtstuff"
+  ;;
+esac
+
 case ${host} in
 *-*-darwin* | *-*-dragonfly* | *-*-freebsd* | *-*-netbsd* | *-*-openbsd* | \
   *-*-solaris2*)
