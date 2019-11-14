@@ -1,4 +1,4 @@
-// { dg-require-effective-target c++11 }
+// { dg-require-effective-target c++14 }
 
 template <typename> void a();
 template <typename> struct b;
