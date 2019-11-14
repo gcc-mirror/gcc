@@ -8,8 +8,10 @@ int main ()
   int ix;
   int ondev = 0;
   int t = 0, h = 0;
-  
-#pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) copy(ondev)
+  int gangsize, workersize, vectorsize;
+
+#pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
+	copy(ondev) copyout(gangsize, workersize, vectorsize)
   {
 #pragma acc loop gang worker vector reduction(+:t)
     for (unsigned ix = 0; ix < N; ix++)
@@ -28,18 +30,22 @@ int main ()
 	  }
 	t += val;
       }
+    gangsize = __builtin_goacc_parlevel_size (GOMP_DIM_GANG);
+    workersize = __builtin_goacc_parlevel_size (GOMP_DIM_WORKER);
+    vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
 
   for (ix = 0; ix < N; ix++)
     {
       int val = ix;
-      if(ondev)
+      if (ondev)
 	{
-	  int chunk_size = (N + 32*32*32 - 1) / (32*32*32);
+	  int chunk_size = (N + gangsize * workersize * vectorsize - 1)
+			   / (gangsize * workersize * vectorsize);
 	  
-	  int g = ix / (chunk_size * 32 * 32);
-	  int w = ix / 32 % 32;
-	  int v = ix % 32;
+	  int g = ix / (chunk_size * vectorsize * workersize);
+	  int w = ix / vectorsize % workersize;
+	  int v = ix % vectorsize;
 
 	  val = (g << 16) | (w << 8) | v;
 	}
