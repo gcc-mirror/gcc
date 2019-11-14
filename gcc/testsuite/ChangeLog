@@ -1,3 +1,9 @@
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-utf8char-1.c, gcc.dg/c2x-utf8char-1.c,
+	gcc.dg/c2x-utf8char-2.c, gcc.dg/c2x-utf8char-3.c,
+	gcc.dg/gnu2x-utf8char-1.c: New tests.
+
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR testsuite/92366

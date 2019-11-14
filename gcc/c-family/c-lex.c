@@ -1376,7 +1376,9 @@ lex_charconst (const cpp_token *token)
     type = char16_type_node;
   else if (token->type == CPP_UTF8CHAR)
     {
-      if (flag_char8_t)
+      if (!c_dialect_cxx ())
+	type = unsigned_char_type_node;
+      else if (flag_char8_t)
         type = char8_type_node;
       else
         type = char_type_node;
