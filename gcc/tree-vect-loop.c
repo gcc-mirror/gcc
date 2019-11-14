@@ -4603,8 +4603,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       tree index_vec_type = TREE_TYPE (induction_index);
       gcc_checking_assert (TYPE_UNSIGNED (index_vec_type));
       tree index_scalar_type = TREE_TYPE (index_vec_type);
-      tree index_vec_cmp_type = build_same_sized_truth_vector_type
-	(index_vec_type);
+      tree index_vec_cmp_type = truth_type_for (index_vec_type);
 
       /* Get an unsigned integer version of the type of the data vector.  */
       int scalar_precision
@@ -4831,7 +4830,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       tree index = build_index_vector (vectype, 0, 1);
       tree index_type = TREE_TYPE (index);
       tree index_elt_type = TREE_TYPE (index_type);
-      tree mask_type = build_same_sized_truth_vector_type (index_type);
+      tree mask_type = truth_type_for (index_type);
 
       /* Create a vector that, for each element, identifies which of
 	 the REDUC_GROUP_SIZE results should use it.  */
@@ -7948,7 +7947,7 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
   if (rgm->max_nscalars_per_iter < nscalars_per_iter)
     {
       rgm->max_nscalars_per_iter = nscalars_per_iter;
-      rgm->mask_type = build_same_sized_truth_vector_type (vectype);
+      rgm->mask_type = truth_type_for (vectype);
     }
 }
 
@@ -7993,7 +7992,7 @@ vect_get_loop_mask (gimple_stmt_iterator *gsi, vec_loop_masks *masks,
       gcc_assert (multiple_p (TYPE_VECTOR_SUBPARTS (mask_type),
 			      TYPE_VECTOR_SUBPARTS (vectype)));
       gimple_seq seq = NULL;
-      mask_type = build_same_sized_truth_vector_type (vectype);
+      mask_type = truth_type_for (vectype);
       mask = gimple_build (&seq, VIEW_CONVERT_EXPR, mask_type, mask);
       if (seq)
 	gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);

@@ -2240,7 +2240,7 @@ tree
 gimple_folder::convert_pred (gimple_seq &stmts, tree vectype,
 			     unsigned int argno)
 {
-  tree predtype = build_same_sized_truth_vector_type (vectype);
+  tree predtype = truth_type_for (vectype);
   tree pred = gimple_call_arg (call, argno);
   return gimple_build (&stmts, VIEW_CONVERT_EXPR, predtype, pred);
 }

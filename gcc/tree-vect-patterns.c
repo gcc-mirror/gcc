@@ -4214,7 +4214,7 @@ build_mask_conversion (tree mask, tree vectype, stmt_vec_info stmt_vinfo)
   gimple *stmt;
   tree masktype, tmp;
 
-  masktype = build_same_sized_truth_vector_type (vectype);
+  masktype = truth_type_for (vectype);
   tmp = vect_recog_temp_ssa_var (TREE_TYPE (masktype), NULL);
   stmt = gimple_build_assign (tmp, CONVERT_EXPR, mask);
   append_pattern_def_seq (stmt_vinfo, stmt, masktype);

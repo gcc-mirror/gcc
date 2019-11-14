@@ -5195,7 +5195,7 @@ static tree
 fold_build_vec_cmp (tree_code code, tree type,
 		    tree arg0, tree arg1)
 {
-  tree cmp_type = build_same_sized_truth_vector_type (type);
+  tree cmp_type = truth_type_for (type);
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
   tree cmp = fold_build2 (code, cmp_type, arg0, arg1);

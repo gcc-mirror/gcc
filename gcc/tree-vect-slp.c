@@ -3497,8 +3497,7 @@ vect_get_constant_vectors (slp_tree op_node, slp_tree slp_node,
   tree stmt_vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
       && vect_mask_constant_operand_p (stmt_vinfo))
-    vector_type
-      = build_same_sized_truth_vector_type (stmt_vectype);
+    vector_type = truth_type_for (stmt_vectype);
   else
     vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op));
 
