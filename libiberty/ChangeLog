@@ -1,3 +1,7 @@
+2019-11-14  Release Manager
+
+	* GCC 7.5.0 released.
+
 2019-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR lto/90924
