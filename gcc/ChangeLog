@@ -1,3 +1,8 @@
+2019-11-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lra-spills.c (assign_spill_hard_regs): Check that the spill
+	register is suitable for the mode.
+
 2019-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* range-op.h (range_operator::fold_range): Return a bool.
