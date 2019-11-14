@@ -1412,6 +1412,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (actor) = resdecl;
+  DECL_COROUTINE_P (actor) = 1;
 
   /* We have a definition here.  */
   TREE_STATIC (actor) = 1;
@@ -1785,6 +1786,7 @@ build_destroy_fn (location_t loc, tree coro_frame_type,
 
   /* We have a definition here.  */
   TREE_STATIC (destroy) = 1;
+  DECL_COROUTINE_P (destroy) = 1;
 
   tree destr_outer = push_stmt_list ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
