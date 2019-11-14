@@ -1,5 +1,13 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (switch_conversion::switch_conversion):
+	Do not initialize m_other_count.
+	(switch_conversion::collect): Do not count m_default_count and
+	m_other_count as we use frequencies for edges.
+	* tree-switch-conversion.h: Remove m_default_count and m_other_count.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	PR other/92329
 	* doc/invoke.texi: Document -fallocation-dce.
 
