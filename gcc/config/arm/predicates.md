@@ -430,7 +430,7 @@
 		     (match_operand 0 "arm_vsel_comparison_operator"))
 		(match_operand 0 "expandable_comparison_operator")))
 
-(define_special_predicate "noov_comparison_operator"
+(define_special_predicate "nz_comparison_operator"
   (match_code "lt,ge,eq,ne"))
 
 (define_special_predicate "minmax_operator"

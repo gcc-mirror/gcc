@@ -1,5 +1,46 @@
 2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/arm/arm-modes.def (CC_NZ): Rename from CC_NOOV.
+	* config/arm/predicates.md (nz_comparison_operator): Rename
+	from noov_comparison_operator.
+	* config/arm/arm.c (arm_select_cc_mode): Use CC_NZmode name.
+	(arm_gen_dicompare_reg): Likewise.
+	(maybe_get_arm_condition_code): Likewise.
+	(thumb1_final_prescan_insn): Likewise.
+	(arm_emit_coreregs_64bit_shift): Likewise.
+	* config/arm/arm.md (addsi3_compare0): Likewise.
+	(*addsi3_compare0_scratch, subsi3_compare0): Likewise.
+	(*mulsi3_compare0, *mulsi3_compare0_v6): Likewise.
+	(*mulsi3_compare0_scratch, *mulsi3_compare0_scratch_v6): Likewise.
+	(*mulsi3addsi_compare0, *mulsi3addsi_compare0_v6): Likewise.
+	(*mulsi3addsi_compare0_scratch): Likewise.
+	(*mulsi3addsi_compare0_scratch_v6): Likewise.
+	(*andsi3_compare0, *andsi3_compare0_scratch): Likewise.
+	(*zeroextractsi_compare0_scratch): Likewise.
+	(*ne_zeroextractsi, *ne_zeroextractsi_shifted): Likewise.
+	(*ite_ne_zeroextractsi, *ite_ne_zeroextractsi_shifted): Likewise.
+	(andsi_not_shiftsi_si_scc_no_reuse): Likewise.
+	(andsi_not_shiftsi_si_scc): Likewise.
+	(*andsi_notsi_si_compare0, *andsi_notsi_si_compare0_scratch): Likewise.
+	(*iorsi3_compare0, *iorsi3_compare0_scratch): Likewise.
+	(*xorsi3_compare0, *xorsi3_compare0_scratch): Likewise.
+	(*shiftsi3_compare0, *shiftsi3_compare0_scratch): Likewise.
+	(*not_shiftsi_compare0, *not_shiftsi_compare0_scratch): Likewise.
+	(*notsi_compare0, *notsi_compare0_scratch): Likewise.
+	(return_addr_mask, *check_arch2): Likewise.
+	(*arith_shiftsi_compare0, *arith_shiftsi_compare0_scratch): Likewise.
+	(*sub_shiftsi_compare0, *sub_shiftsi_compare0_scratch): Likewise.
+	(compare_scc splitters): Likewise.
+	(movcond_addsi): Likewise.
+	* config/arm/thumb2.md (thumb2_addsi3_compare0): Likewise.
+	(*thumb2_addsi3_compare0_scratch): Likewise.
+	(*thumb2_mulsi_short_compare0): Likewise.
+	(*thumb2_mulsi_short_compare0_scratch): Likewise.
+	(compare peephole2s): Likewise.
+	* config/arm/thumb1.md (thumb1_cbz): Use CC_NZmode and
+	nz_comparison_operator names.
+	(cbranchsi4_insn): Likewise.
+
 	* config/arm/constraints.md (c): Use cc_register predicate.
 
 	* config/aarch64/constraints.md (c): New constraint.
