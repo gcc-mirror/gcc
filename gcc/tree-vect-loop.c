@@ -2382,12 +2382,12 @@ again:
 opt_loop_vec_info
 vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 {
-  auto_vector_sizes vector_sizes;
+  auto_vector_modes vector_modes;
 
   /* Autodetect first vector size we try.  */
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes,
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes,
 						loop->simdlen != 0);
-  unsigned int next_size = 0;
+  unsigned int mode_i = 0;
 
   DUMP_VECT_SCOPE ("analyze_loop_nest");
 
@@ -2406,7 +2406,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   unsigned n_stmts = 0;
   poly_uint64 autodetected_vector_size = 0;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
-  poly_uint64 next_vector_size = 0;
+  machine_mode next_vector_mode = VOIDmode;
   poly_uint64 lowest_th = 0;
   unsigned vectorized_loops = 0;
 
@@ -2425,7 +2425,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return loop_vinfo;
 	}
-      loop_vinfo->vector_size = next_vector_size;
+      loop_vinfo->vector_size = GET_MODE_SIZE (next_vector_mode);
 
       bool fatal = false;
 
@@ -2433,7 +2433,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
       res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
-      if (next_size == 0)
+      if (mode_i == 0)
 	autodetected_vector_size = loop_vinfo->vector_size;
 
       loop->aux = NULL;
@@ -2500,24 +2500,21 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	    }
 	}
 
-      if (next_size < vector_sizes.length ()
-	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
-	next_size += 1;
+      if (mode_i < vector_modes.length ()
+	  && known_eq (GET_MODE_SIZE (vector_modes[mode_i]),
+		       autodetected_vector_size))
+	mode_i += 1;
 
-      if (next_size == vector_sizes.length ()
+      if (mode_i == vector_modes.length ()
 	  || known_eq (autodetected_vector_size, 0U))
 	break;
 
       /* Try the next biggest vector size.  */
-      next_vector_size = vector_sizes[next_size++];
+      next_vector_mode = vector_modes[mode_i++];
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "***** Re-trying analysis with "
-			   "vector size ");
-	  dump_dec (MSG_NOTE, next_vector_size);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying analysis with vector mode %s\n",
+			 GET_MODE_NAME (next_vector_mode));
     }
 
   if (first_loop_vinfo)

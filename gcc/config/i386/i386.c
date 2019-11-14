@@ -21385,35 +21385,35 @@ ix86_preferred_simd_mode (scalar_mode mode)
    256bit and 128bit vectors.  */
 
 static void
-ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
+ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
     {
-      sizes->safe_push (64);
-      sizes->safe_push (32);
-      sizes->safe_push (16);
+      modes->safe_push (V64QImode);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
     }
   else if (TARGET_AVX512F && all)
     {
-      sizes->safe_push (32);
-      sizes->safe_push (16);
-      sizes->safe_push (64);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V64QImode);
     }
   else if (TARGET_AVX && !TARGET_PREFER_AVX128)
     {
-      sizes->safe_push (32);
-      sizes->safe_push (16);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
     }
   else if (TARGET_AVX && all)
     {
-      sizes->safe_push (16);
-      sizes->safe_push (32);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V32QImode);
     }
   else if (TARGET_MMX_WITH_SSE)
-    sizes->safe_push (16);
+    modes->safe_push (V16QImode);
 
   if (TARGET_MMX_WITH_SSE)
-    sizes->safe_push (8);
+    modes->safe_push (V8QImode);
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
@@ -22952,9 +22952,9 @@ ix86_run_selftests (void)
 #undef TARGET_VECTORIZE_SPLIT_REDUCTION
 #define TARGET_VECTORIZE_SPLIT_REDUCTION \
   ix86_split_reduction
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  ix86_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  ix86_autovectorize_vector_modes
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE ix86_get_mask_mode
 #undef TARGET_VECTORIZE_INIT_COST

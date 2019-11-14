@@ -15912,12 +15912,12 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 /* Return a list of possible vector sizes for the vectorizer
    to iterate over.  */
 static void
-aarch64_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_SVE)
-    sizes->safe_push (BYTES_PER_SVE_VECTOR);
-  sizes->safe_push (16);
-  sizes->safe_push (8);
+    modes->safe_push (VNx16QImode);
+  modes->safe_push (V16QImode);
+  modes->safe_push (V8QImode);
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
@@ -21751,9 +21751,9 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   aarch64_builtin_vectorized_function
 
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  aarch64_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  aarch64_autovectorize_vector_modes
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV \

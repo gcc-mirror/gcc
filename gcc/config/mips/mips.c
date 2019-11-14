@@ -13453,13 +13453,13 @@ mips_preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
-/* Implement TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
+/* Implement TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES.  */
 
 static void
-mips_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+mips_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (ISA_HAS_MSA)
-    sizes->safe_push (16);
+    modes->safe_push (V16QImode);
 }
 
 /* Implement TARGET_INIT_LIBFUNCS.  */
@@ -22716,9 +22716,9 @@ mips_starting_frame_offset (void)
 
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE mips_preferred_simd_mode
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  mips_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  mips_autovectorize_vector_modes
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS mips_init_builtins
