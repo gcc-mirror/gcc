@@ -1,3 +1,9 @@
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression)
+	(c_parser_check_literal_zero): Handle CPP_UTF8CHAR.
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Likewise.
+
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-typeck.c (build_conditional_expr): Use truth_type_for instead

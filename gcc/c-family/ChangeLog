@@ -1,3 +1,8 @@
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.c (lex_charconst): Make CPP_UTF8CHAR constants unsigned
+	char for C.
+
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_check_context_selector): Add nvidia to the list of
