@@ -1,5 +1,34 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree.h (build_truth_vector_type_for_mode): Declare.
+	* tree.c (build_truth_vector_type_for_mode): New function,
+	split out from...
+	(build_truth_vector_type): ...here.
+	(build_opaque_vector_type): Fix head comment.
+	* tree-vectorizer.h (supportable_narrowing_operation): Remove
+	vec_info parameter.
+	(vect_halve_mask_nunits): Replace vec_info parameter with the
+	mode of the new vector.
+	(vect_double_mask_nunits): Likewise.
+	* tree-vect-loop.c (vect_halve_mask_nunits): Likewise.
+	(vect_double_mask_nunits): Likewise.
+	* tree-vect-loop-manip.c: Include insn-config.h, rtl.h and recog.h.
+	(vect_maybe_permute_loop_masks): Remove vinfo parameter.  Update call
+	to vect_halve_mask_nunits, getting the required mode from the unpack
+	patterns.
+	(vect_set_loop_condition_masked): Update call accordingly.
+	* tree-vect-stmts.c (supportable_narrowing_operation): Remove vec_info
+	parameter and update call to vect_double_mask_nunits.
+	(vectorizable_conversion): Update call accordingly.
+	(simple_integer_narrowing): Likewise.  Remove vec_info parameter.
+	(vectorizable_call): Update call accordingly.
+	(supportable_widening_operation): Update call to
+	vect_halve_mask_nunits.
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types):
+	Use build_truth_vector_type_mode instead of build_truth_vector_type.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* machmode.h (mode_for_int_vector): Delete.
 	(related_int_vector_mode): Declare.
 	* stor-layout.c (mode_for_int_vector): Delete.

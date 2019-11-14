@@ -2973,8 +2973,8 @@ register_builtin_types ()
       tree vectype;
       if (eltype == boolean_type_node)
 	{
-	  vectype = build_truth_vector_type (BYTES_PER_SVE_VECTOR,
-					     BYTES_PER_SVE_VECTOR);
+	  vectype = build_truth_vector_type_for_mode (BYTES_PER_SVE_VECTOR,
+						      VNx16BImode);
 	  gcc_assert (TYPE_MODE (vectype) == VNx16BImode
 		      && TYPE_MODE (vectype) == TYPE_MODE_RAW (vectype)
 		      && TYPE_ALIGN (vectype) == 16

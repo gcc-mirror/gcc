@@ -47,6 +47,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "optabs-query.h"
 #include "vec-perm-indices.h"
+#include "insn-config.h"
+#include "rtl.h"
+#include "recog.h"
 
 /*************************************************************************
   Simple Loop Peeling Utilities
@@ -317,20 +320,24 @@ interleave_supported_p (vec_perm_indices *indices, tree vectype,
    latter.  Return true on success, adding any new statements to SEQ.  */
 
 static bool
-vect_maybe_permute_loop_masks (loop_vec_info loop_vinfo, gimple_seq *seq,
-			       rgroup_masks *dest_rgm,
+vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
 			       rgroup_masks *src_rgm)
 {
   tree src_masktype = src_rgm->mask_type;
   tree dest_masktype = dest_rgm->mask_type;
   machine_mode src_mode = TYPE_MODE (src_masktype);
+  insn_code icode1, icode2;
   if (dest_rgm->max_nscalars_per_iter <= src_rgm->max_nscalars_per_iter
-      && optab_handler (vec_unpacku_hi_optab, src_mode) != CODE_FOR_nothing
-      && optab_handler (vec_unpacku_lo_optab, src_mode) != CODE_FOR_nothing)
+      && (icode1 = optab_handler (vec_unpacku_hi_optab,
+				  src_mode)) != CODE_FOR_nothing
+      && (icode2 = optab_handler (vec_unpacku_lo_optab,
+				  src_mode)) != CODE_FOR_nothing)
     {
       /* Unpacking the source masks gives at least as many mask bits as
 	 we need.  We can then VIEW_CONVERT any excess bits away.  */
-      tree unpack_masktype = vect_halve_mask_nunits (loop_vinfo, src_masktype);
+      machine_mode dest_mode = insn_data[icode1].operand[0].mode;
+      gcc_assert (dest_mode == insn_data[icode2].operand[0].mode);
+      tree unpack_masktype = vect_halve_mask_nunits (src_masktype, dest_mode);
       for (unsigned int i = 0; i < dest_rgm->masks.length (); ++i)
 	{
 	  tree src = src_rgm->masks[i / 2];
@@ -690,8 +697,7 @@ vect_set_loop_condition_masked (class loop *loop, loop_vec_info loop_vinfo,
 	  {
 	    rgroup_masks *half_rgm = &(*masks)[nmasks / 2 - 1];
 	    if (!half_rgm->masks.is_empty ()
-		&& vect_maybe_permute_loop_masks (loop_vinfo, &header_seq,
-						  rgm, half_rgm))
+		&& vect_maybe_permute_loop_masks (&header_seq, rgm, half_rgm))
 	      continue;
 	  }
 

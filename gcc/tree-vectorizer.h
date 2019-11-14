@@ -1638,9 +1638,9 @@ extern bool supportable_widening_operation (enum tree_code, stmt_vec_info,
 					    tree, tree, enum tree_code *,
 					    enum tree_code *, int *,
 					    vec<tree> *);
-extern bool supportable_narrowing_operation (vec_info *, enum tree_code, tree,
-					     tree, enum tree_code *,
-					     int *, vec<tree> *);
+extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
+					     enum tree_code *, int *,
+					     vec<tree> *);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);
@@ -1741,8 +1741,8 @@ extern opt_loop_vec_info vect_analyze_loop (class loop *, vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
-extern tree vect_halve_mask_nunits (vec_info *, tree);
-extern tree vect_double_mask_nunits (vec_info *, tree);
+extern tree vect_halve_mask_nunits (tree, machine_mode);
+extern tree vect_double_mask_nunits (tree, machine_mode);
 extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
 				   unsigned int, tree, tree);
 extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,

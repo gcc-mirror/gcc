@@ -7900,22 +7900,24 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
   return false;
 }
 
-/* Return a mask type with half the number of elements as TYPE.  */
+/* Return a mask type with half the number of elements as OLD_TYPE,
+   given that it should have mode NEW_MODE.  */
 
 tree
-vect_halve_mask_nunits (vec_info *vinfo, tree type)
+vect_halve_mask_nunits (tree old_type, machine_mode new_mode)
 {
-  poly_uint64 nunits = exact_div (TYPE_VECTOR_SUBPARTS (type), 2);
-  return build_truth_vector_type (nunits, vinfo->vector_size);
+  poly_uint64 nunits = exact_div (TYPE_VECTOR_SUBPARTS (old_type), 2);
+  return build_truth_vector_type_for_mode (nunits, new_mode);
 }
 
-/* Return a mask type with twice as many elements as TYPE.  */
+/* Return a mask type with twice as many elements as OLD_TYPE,
+   given that it should have mode NEW_MODE.  */
 
 tree
-vect_double_mask_nunits (vec_info *vinfo, tree type)
+vect_double_mask_nunits (tree old_type, machine_mode new_mode)
 {
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type) * 2;
-  return build_truth_vector_type (nunits, vinfo->vector_size);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (old_type) * 2;
+  return build_truth_vector_type_for_mode (nunits, new_mode);
 }
 
 /* Record that a fully-masked version of LOOP_VINFO would need MASKS to

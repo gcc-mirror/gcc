@@ -3153,7 +3153,7 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
    *CONVERT_CODE.  */
 
 static bool
-simple_integer_narrowing (vec_info *vinfo, tree vectype_out, tree vectype_in,
+simple_integer_narrowing (tree vectype_out, tree vectype_in,
 			  tree_code *convert_code)
 {
   if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype_out))
@@ -3163,9 +3163,8 @@ simple_integer_narrowing (vec_info *vinfo, tree vectype_out, tree vectype_in,
   tree_code code;
   int multi_step_cvt = 0;
   auto_vec <tree, 8> interm_types;
-  if (!supportable_narrowing_operation (vinfo, NOP_EXPR, vectype_out,
-					vectype_in, &code, &multi_step_cvt,
-					&interm_types)
+  if (!supportable_narrowing_operation (NOP_EXPR, vectype_out, vectype_in,
+					&code, &multi_step_cvt, &interm_types)
       || multi_step_cvt)
     return false;
 
@@ -3347,7 +3346,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (cfn != CFN_LAST
       && (modifier == NONE
 	  || (modifier == NARROW
-	      && simple_integer_narrowing (vinfo, vectype_out, vectype_in,
+	      && simple_integer_narrowing (vectype_out, vectype_in,
 					   &convert_code))))
     ifn = vectorizable_internal_function (cfn, callee, vectype_out,
 					  vectype_in);
@@ -4931,8 +4930,8 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
     case NARROW:
       gcc_assert (op_type == unary_op);
-      if (supportable_narrowing_operation (vinfo, code, vectype_out,
-					   vectype_in, &code1, &multi_step_cvt,
+      if (supportable_narrowing_operation (code, vectype_out, vectype_in,
+					   &code1, &multi_step_cvt,
 					   &interm_types))
 	break;
 
@@ -4948,8 +4947,8 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (!supportable_convert_operation (code, cvt_type, vectype_in,
 					  &decl1, &codecvt1))
 	goto unsupported;
-      if (supportable_narrowing_operation (vinfo, NOP_EXPR, vectype_out,
-					   cvt_type, &code1, &multi_step_cvt,
+      if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
+					   &code1, &multi_step_cvt,
 					   &interm_types))
 	break;
       goto unsupported;
@@ -11454,7 +11453,6 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
                                 int *multi_step_cvt,
                                 vec<tree> *interm_types)
 {
-  vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
   class loop *vect_loop = NULL;
   machine_mode vec_mode;
@@ -11639,11 +11637,8 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
     {
       intermediate_mode = insn_data[icode1].operand[0].mode;
       if (VECTOR_BOOLEAN_TYPE_P (prev_type))
-	{
-	  intermediate_type = vect_halve_mask_nunits (vinfo, prev_type);
-	  if (intermediate_mode != TYPE_MODE (intermediate_type))
-	    return false;
-	}
+	intermediate_type
+	  = vect_halve_mask_nunits (prev_type, intermediate_mode);
       else
 	intermediate_type
 	  = lang_hooks.types.type_for_mode (intermediate_mode,
@@ -11719,7 +11714,7 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
    narrowing operation (short in the above example).   */
 
 bool
-supportable_narrowing_operation (vec_info *vinfo, enum tree_code code,
+supportable_narrowing_operation (enum tree_code code,
 				 tree vectype_out, tree vectype_in,
 				 enum tree_code *code1, int *multi_step_cvt,
                                  vec<tree> *interm_types)
@@ -11827,11 +11822,8 @@ supportable_narrowing_operation (vec_info *vinfo, enum tree_code code,
     {
       intermediate_mode = insn_data[icode1].operand[0].mode;
       if (VECTOR_BOOLEAN_TYPE_P (prev_type))
-	{
-	  intermediate_type = vect_double_mask_nunits (vinfo, prev_type);
-	  if (intermediate_mode != TYPE_MODE (intermediate_type))
-	    return false;
-	}
+	intermediate_type
+	  = vect_double_mask_nunits (prev_type, intermediate_mode);
       else
 	intermediate_type
 	  = lang_hooks.types.type_for_mode (intermediate_mode, uns);
