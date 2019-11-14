@@ -334,26 +334,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [concepts.callable], callable concepts
 
-  // [concept.invocable], concept invocable
+  /// [concept.invocable], concept invocable
   template<typename _Fn, typename... _Args>
     concept invocable = is_invocable_v<_Fn, _Args...>;
 
-  // [concept.regularinvocable], concept regular_invocable
+  /// [concept.regularinvocable], concept regular_invocable
   template<typename _Fn, typename... _Args>
     concept regular_invocable = invocable<_Fn, _Args...>;
 
-  // [concept.predicate], concept predicate
+  /// [concept.predicate], concept predicate
   template<typename _Fn, typename... _Args>
     concept predicate = regular_invocable<_Fn, _Args...>
       && boolean<invoke_result_t<_Fn, _Args...>>;
 
-  // [concept.relation], concept relation
+  /// [concept.relation], concept relation
   template<typename _Rel, typename _Tp, typename _Up>
     concept relation
       = predicate<_Rel, _Tp, _Tp> && predicate<_Rel, _Up, _Up>
       && predicate<_Rel, _Tp, _Up> && predicate<_Rel, _Up, _Tp>;
 
-  // [concept.strictweakorder], concept strict_weak_order
+  /// [concept.equiv], concept equivalence_relation
+  template<typename _Rel, typename _Tp, typename _Up>
+    concept equivalence_relation = relation<_Rel, _Tp, _Up>;
+
+  /// [concept.strictweakorder], concept strict_weak_order
   template<typename _Rel, typename _Tp, typename _Up>
     concept strict_weak_order = relation<_Rel, _Tp, _Up>;
 

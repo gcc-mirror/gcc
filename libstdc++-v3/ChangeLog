@@ -1,5 +1,15 @@
 2019-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/iterator_concepts.h (__iter_concept_impl): Add
+	comments.
+	(indirect_relation): Rename to indirect_binary_predicate and adjust
+	definition as per P1716R3.
+	(indirect_equivalence_relation): Define.
+	(indirectly_comparable): Adjust definition.
+	* include/std/concepts (equivalence_relation): Define.
+	* testsuite/std/concepts/concepts.callable/relation.cc: Add tests for
+	equivalence_relation.
+
 	* include/bits/iterator_concepts.h (disable_sized_sentinel): Rename to
 	disable_sized_sentinel_for.
 	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Adjust.

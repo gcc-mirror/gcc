@@ -420,20 +420,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
     template<typename _Iter>
-      struct __iter_concept_impl
-      { };
+      struct __iter_concept_impl;
 
+    // ITER_CONCEPT(I) is ITER_TRAITS(I)::iterator_concept if that is valid.
     template<typename _Iter>
       requires requires { typename __iter_traits<_Iter>::iterator_concept; }
       struct __iter_concept_impl<_Iter>
       { using type = typename __iter_traits<_Iter>::iterator_concept; };
 
+    // Otherwise, ITER_TRAITS(I)::iterator_category if that is valid.
     template<typename _Iter>
       requires (!requires { typename __iter_traits<_Iter>::iterator_concept; }
 	  && requires { typename __iter_traits<_Iter>::iterator_category; })
       struct __iter_concept_impl<_Iter>
       { using type = typename __iter_traits<_Iter>::iterator_category; };
 
+    // Otherwise, random_access_tag if iterator_traits<I> is not specialized.
     template<typename _Iter>
       requires (!requires { typename __iter_traits<_Iter>::iterator_concept; }
 	  && !requires { typename __iter_traits<_Iter>::iterator_category; }
@@ -441,7 +443,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __iter_concept_impl<_Iter>
       { using type = random_access_iterator_tag; };
 
-    // ITER_TRAITS
+    // Otherwise, there is no ITER_CONCEPT(I) type.
+    template<typename _Iter>
+      struct __iter_concept_impl
+      { };
+
+    // ITER_CONCEPT
     template<typename _Iter>
       using __iter_concept = typename __iter_concept_impl<_Iter>::type;
   } // namespace __detail
@@ -615,15 +622,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && predicate<_Fn&, iter_reference_t<_Iter>>
       && predicate<_Fn&, iter_common_reference_t<_Iter>>;
 
-  template<typename _Fn, typename _I1, typename _I2 = _I1>
-    concept indirect_relation = readable<_I1> && readable<_I2>
+  template<typename _Fn, typename _I1, typename _I2>
+    concept indirect_binary_predicate = readable<_I1> && readable<_I2>
       && copy_constructible<_Fn>
-      && relation<_Fn&, iter_value_t<_I1>&, iter_value_t<_I2>&>
-      && relation<_Fn&, iter_value_t<_I1>&, iter_reference_t<_I2>>
-      && relation<_Fn&, iter_reference_t<_I1>, iter_value_t<_I2>&>
-      && relation<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>
-      && relation<_Fn&, iter_common_reference_t<_I1>,
-		  iter_common_reference_t<_I2>>;
+      && predicate<_Fn&, iter_value_t<_I1>&, iter_value_t<_I2>&>
+      && predicate<_Fn&, iter_value_t<_I1>&, iter_reference_t<_I2>>
+      && predicate<_Fn&, iter_reference_t<_I1>, iter_value_t<_I2>&>
+      && predicate<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>
+      && predicate<_Fn&, iter_common_reference_t<_I1>,
+		   iter_common_reference_t<_I2>>;
+
+  template<typename _Fn, typename _I1, typename _I2 = _I1>
+    concept indirect_equivalence_relation = readable<_I1> && readable<_I2>
+      && copy_constructible<_Fn>
+      && equivalence_relation<_Fn&, iter_value_t<_I1>&, iter_value_t<_I2>&>
+      && equivalence_relation<_Fn&, iter_value_t<_I1>&, iter_reference_t<_I2>>
+      && equivalence_relation<_Fn&, iter_reference_t<_I1>, iter_value_t<_I2>&>
+      && equivalence_relation<_Fn&, iter_reference_t<_I1>,
+			      iter_reference_t<_I2>>
+      && equivalence_relation<_Fn&, iter_common_reference_t<_I1>,
+			      iter_common_reference_t<_I2>>;
 
   template<typename _Fn, typename _I1, typename _I2 = _I1>
     concept indirect_strict_weak_order = readable<_I1> && readable<_I2>
@@ -767,7 +785,8 @@ namespace ranges
   template<typename _I1, typename _I2, typename _Rel, typename _P1 = identity,
 	   typename _P2 = identity>
     concept indirectly_comparable
-      = indirect_relation<_Rel, projected<_I1, _P1>, projected<_I2, _P2>>;
+      = indirect_binary_predicate<_Rel, projected<_I1, _P1>,
+				  projected<_I2, _P2>>;
 
   /// [alg.req.permutable], concept `permutable`
   template<typename _Iter>
