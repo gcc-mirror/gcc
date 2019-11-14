@@ -224,6 +224,19 @@ vect_free_oprnd_info (vec<slp_oprnd_info> &oprnds_info)
 }
 
 
+/* Return true if STMTS contains a pattern statement.  */
+
+static bool
+vect_contains_pattern_stmt_p (vec<stmt_vec_info> stmts)
+{
+  stmt_vec_info stmt_info;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (stmts, i, stmt_info)
+    if (is_pattern_stmt_p (stmt_info))
+      return true;
+  return false;
+}
+
 /* Find the place of the data-ref in STMT_INFO in the interleaving chain
    that starts from FIRST_STMT_INFO.  Return -1 if the data-ref is not a part
    of the chain.  */
@@ -2694,6 +2707,39 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
   return vect_analyze_stmt (stmt_info, &dummy, node, node_instance, cost_vec);
 }
 
+/* Try to build NODE from scalars, returning true on success.
+   NODE_INSTANCE is the SLP instance that contains NODE.  */
+
+static bool
+vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
+			      slp_instance node_instance)
+{
+  stmt_vec_info stmt_info;
+  unsigned int i;
+
+  if (!is_a <bb_vec_info> (vinfo)
+      || node == SLP_INSTANCE_TREE (node_instance)
+      || vect_contains_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (node)))
+    return false;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Building vector operands from scalars instead\n");
+
+  /* Don't remove and free the child nodes here, since they could be
+     referenced by other structures.  The analysis and scheduling phases
+     (need to) ignore child nodes of anything that isn't vect_internal_def.  */
+  unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
+  SLP_TREE_DEF_TYPE (node) = vect_external_def;
+  SLP_TREE_SCALAR_OPS (node).safe_grow (group_size);
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
+    {
+      tree lhs = gimple_get_lhs (vect_orig_stmt (stmt_info)->stmt);
+      SLP_TREE_SCALAR_OPS (node)[i] = lhs;
+    }
+  return true;
+}
+
 /* Analyze statements contained in SLP tree NODE after recursively analyzing
    the subtree.  NODE_INSTANCE contains NODE and VINFO contains INSTANCE.
 
@@ -2720,6 +2766,13 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     {
       SLP_TREE_NUMBER_OF_VEC_STMTS (node)
 	= SLP_TREE_NUMBER_OF_VEC_STMTS (*leader);
+      /* Cope with cases in which we made a late decision to build the
+	 node from scalars.  */
+      if (SLP_TREE_DEF_TYPE (*leader) == vect_external_def
+	  && vect_slp_convert_to_external (vinfo, node, node_instance))
+	;
+      else
+	gcc_assert (SLP_TREE_DEF_TYPE (node) == SLP_TREE_DEF_TYPE (*leader));
       return true;
     }
 
@@ -2778,6 +2831,11 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_SCALAR_STMTS (child).length () != 0)
       STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0]) = dt[j];
+
+  /* If this node can't be vectorized, try pruning the tree here rather
+     than felling the whole thing.  */
+  if (!res && vect_slp_convert_to_external (vinfo, node, node_instance))
+    res = true;
 
   return res;
 }
