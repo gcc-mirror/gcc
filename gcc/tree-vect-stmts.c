@@ -1943,9 +1943,8 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
     }
 
   machine_mode mask_mode;
-  if (!(targetm.vectorize.get_mask_mode
-	(GET_MODE_NUNITS (vecmode),
-	 GET_MODE_SIZE (vecmode)).exists (&mask_mode))
+  if (!VECTOR_MODE_P (vecmode)
+      || !targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
       || !can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
     {
       if (dump_enabled_p ())

@@ -1328,21 +1328,9 @@ default_vectorize_related_mode (machine_mode vector_mode,
 /* By default a vector of integers is used as a mask.  */
 
 opt_machine_mode
-default_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
+default_get_mask_mode (machine_mode mode)
 {
-  unsigned int elem_size = vector_element_size (vector_size, nunits);
-  scalar_int_mode elem_mode
-    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
-  machine_mode vector_mode;
-
-  gcc_assert (known_eq (elem_size * nunits, vector_size));
-
-  if (mode_for_vector (elem_mode, nunits).exists (&vector_mode)
-      && VECTOR_MODE_P (vector_mode)
-      && targetm.vector_mode_supported_p (vector_mode))
-    return vector_mode;
-
-  return opt_machine_mode ();
+  return related_int_vector_mode (mode);
 }
 
 /* By default consider masked stores to be expensive.  */

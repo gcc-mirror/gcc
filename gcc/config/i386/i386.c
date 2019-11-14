@@ -21419,8 +21419,10 @@ ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
 
 static opt_machine_mode
-ix86_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
+ix86_get_mask_mode (machine_mode data_mode)
 {
+  unsigned vector_size = GET_MODE_SIZE (data_mode);
+  unsigned nunits = GET_MODE_NUNITS (data_mode);
   unsigned elem_size = vector_size / nunits;
 
   /* Scalar mask case.  */

@@ -585,8 +585,7 @@ can_vec_mask_load_store_p (machine_mode mode,
   if (!VECTOR_MODE_P (vmode))
     return false;
 
-  if ((targetm.vectorize.get_mask_mode
-       (GET_MODE_NUNITS (vmode), GET_MODE_SIZE (vmode)).exists (&mask_mode))
+  if (targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
       && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
@@ -600,7 +599,7 @@ can_vec_mask_load_store_p (machine_mode mode,
 	continue;
       if (mode_for_vector (smode, nunits).exists (&vmode)
 	  && VECTOR_MODE_P (vmode)
-	  && targetm.vectorize.get_mask_mode (nunits, cur).exists (&mask_mode)
+	  && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
 	  && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
 	return true;
     }

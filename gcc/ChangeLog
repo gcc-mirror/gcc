@@ -1,5 +1,26 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (get_mask_mode): Take a vector mode itself as argument,
+	instead of properties about the vector mode.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_get_mask_mode): Update to reflect new
+	get_mode_mask interface.
+	* targhooks.c (default_get_mask_mode): Likewise.  Use
+	related_int_vector_mode.
+	* optabs-query.c (can_vec_mask_load_store_p): Update call
+	to get_mask_mode.
+	* tree-vect-stmts.c (check_load_store_masking): Likewise, checking
+	first that the original mode really is a vector.
+	* tree.c (build_truth_vector_type_for): Likewise.
+	* config/aarch64/aarch64.c (aarch64_get_mask_mode): Update for new
+	get_mode_mask interface.
+	(aarch64_expand_sve_vcond): Update call accordingly.
+	* config/gcn/gcn.c (gcn_vectorize_get_mask_mode): Update for new
+	get_mode_mask interface.
+	* config/i386/i386.c (ix86_get_mask_mode): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree.h (build_truth_vector_type): Delete.
 	(build_same_sized_truth_vector_type): Likewise.
 	* tree.c (build_truth_vector_type): Rename to...

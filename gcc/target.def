@@ -1954,17 +1954,17 @@ when @var{nunits} is zero.  This is the correct behavior for most targets.",
 /* Function to get a target mode for a vector mask.  */
 DEFHOOK
 (get_mask_mode,
- "A vector mask is a value that holds one boolean result for every element\n\
-in a vector.  This hook returns the machine mode that should be used to\n\
-represent such a mask when the vector in question is @var{length} bytes\n\
-long and contains @var{nunits} elements.  The hook returns an empty\n\
-@code{opt_machine_mode} if no such mode exists.\n\
+ "Return the mode to use for a vector mask that holds one boolean\n\
+result for each element of vector mode @var{mode}.  The returned mask mode\n\
+can be a vector of integers (class @code{MODE_VECTOR_INT}), a vector of\n\
+booleans (class @code{MODE_VECTOR_BOOL}) or a scalar integer (class\n\
+@code{MODE_INT}).  Return an empty @code{opt_machine_mode} if no such\n\
+mask mode exists.\n\
 \n\
-The default implementation returns the mode of an integer vector that\n\
-is @var{length} bytes long and that contains @var{nunits} elements,\n\
-if such a mode exists.",
+The default implementation returns a @code{MODE_VECTOR_INT} with the\n\
+same size and number of elements as @var{mode}, if such a mode exists.",
  opt_machine_mode,
- (poly_uint64 nunits, poly_uint64 length),
+ (machine_mode mode),
  default_get_mask_mode)
 
 /* Function to say whether a masked operation is expensive when the
