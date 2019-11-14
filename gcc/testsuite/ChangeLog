@@ -1,5 +1,8 @@
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp0x/alias-decl-pr92206-3.C: Require effective target c++14
+	rather than c++11.
+
 	* gfortran.dg/ISO_Fortran_binding_17.c: Include
 	../../../libgfortran/ISO_Fortran_binding.h rather than
 	ISO_Fortran_binding.h.
