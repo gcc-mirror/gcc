@@ -26,10 +26,16 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "insn-modes.h"
 #include "tm.h"
 #include "rtl.h"
 #include "rtl-iter.h"
 #include "memmodel.h"
+#include "diagnostic.h"
+#include "tree.h"
+#include "expr.h"
+#include "function.h"
+#include "emit-rtl.h"
 
 /* Return TRUE if X is either an arithmetic shift left, or
    is a multiplication by a power of two.  */
@@ -519,4 +525,134 @@ arm_mac_accumulator_is_mul_result (rtx producer, rtx consumer)
   return (reg_overlap_mentioned_p (mul_result, mac_acc)
           && !reg_overlap_mentioned_p (mul_result, mac_op0)
           && !reg_overlap_mentioned_p (mul_result, mac_op1));
+}
+
+/* Worker function for TARGET_MD_ASM_ADJUST.
+   We implement asm flag outputs.  */
+
+rtx_insn *
+arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
+		    vec<const char *> &constraints,
+		    vec<rtx> &/*clobbers*/, HARD_REG_SET &/*clobbered_regs*/)
+{
+  bool saw_asm_flag = false;
+
+  start_sequence ();
+  for (unsigned i = 0, n = outputs.length (); i < n; ++i)
+    {
+      const char *con = constraints[i];
+      if (strncmp (con, "=@cc", 4) != 0)
+	continue;
+      con += 4;
+      if (strchr (con, ',') != NULL)
+	{
+	  error ("alternatives not allowed in %<asm%> flag output");
+	  continue;
+	}
+
+      machine_mode mode;
+      rtx_code code;
+      int con01 = 0;
+
+#define C(X, Y)  (unsigned char)(X) * 256 + (unsigned char)(Y)
+
+      /* All of the condition codes are two characters.  */
+      if (con[0] != 0 && con[1] != 0 && con[2] == 0)
+	con01 = C(con[0], con[1]);
+
+      switch (con01)
+	{
+	case C('c', 'c'):
+	case C('l', 'o'):
+	  mode = CC_Cmode, code = GEU;
+	  break;
+	case C('c', 's'):
+	case C('h', 's'):
+	  mode = CC_Cmode, code = LTU;
+	  break;
+	case C('e', 'q'):
+	  mode = CC_NZmode, code = EQ;
+	  break;
+	case C('g', 'e'):
+	  mode = CCmode, code = GE;
+	  break;
+	case C('g', 't'):
+	  mode = CCmode, code = GT;
+	  break;
+	case C('h', 'i'):
+	  mode = CCmode, code = GTU;
+	  break;
+	case C('l', 'e'):
+	  mode = CCmode, code = LE;
+	  break;
+	case C('l', 's'):
+	  mode = CCmode, code = LEU;
+	  break;
+	case C('l', 't'):
+	  mode = CCmode, code = LT;
+	  break;
+	case C('m', 'i'):
+	  mode = CC_NZmode, code = LT;
+	  break;
+	case C('n', 'e'):
+	  mode = CC_NZmode, code = NE;
+	  break;
+	case C('p', 'l'):
+	  mode = CC_NZmode, code = GE;
+	  break;
+	case C('v', 'c'):
+	  mode = CC_Vmode, code = EQ;
+	  break;
+	case C('v', 's'):
+	  mode = CC_Vmode, code = NE;
+	  break;
+	default:
+	  error ("unknown %<asm%> flag output %qs", constraints[i]);
+	  continue;
+	}
+
+#undef C
+
+      rtx dest = outputs[i];
+      machine_mode dest_mode = GET_MODE (dest);
+      if (!SCALAR_INT_MODE_P (dest_mode))
+	{
+	  error ("invalid type for %<asm%> flag output");
+	  continue;
+	}
+
+      if (!saw_asm_flag)
+	{
+	  /* This is the first asm flag output.  Here we put the flags
+	     register in as the real output and adjust the condition to
+	     allow it.  */
+	  constraints[i] = "=c";
+	  outputs[i] = gen_rtx_REG (CCmode, CC_REGNUM);
+	  saw_asm_flag = true;
+	}
+      else
+	{
+	  /* We don't need the flags register as output twice.  */
+	  constraints[i] = "=X";
+	  outputs[i] = gen_rtx_SCRATCH (word_mode);
+	}
+
+      rtx x = gen_rtx_REG (mode, CC_REGNUM);
+      x = gen_rtx_fmt_ee (code, word_mode, x, const0_rtx);
+
+      if (dest_mode == word_mode)
+	emit_insn (gen_rtx_SET (dest, x));
+      else
+	{
+	  rtx tmp = gen_reg_rtx (word_mode);
+	  emit_insn (gen_rtx_SET (tmp, x));
+
+	  tmp = convert_modes (dest_mode, word_mode, tmp, true);
+	  emit_move_insn (dest, tmp);
+	}
+    }
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+
+  return saw_asm_flag ? seq : NULL;
 }

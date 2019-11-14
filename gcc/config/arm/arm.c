@@ -816,6 +816,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;

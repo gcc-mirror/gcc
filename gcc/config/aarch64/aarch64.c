@@ -21933,6 +21933,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-aarch64.h"
