@@ -1,3 +1,8 @@
+2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/vxworks.h (TARGET_OS_CPP_BUILTINS): Use
+	_VX_CPU instead of CPU and handle arm_arch8.
+
 2019-11-14  Doug Rupp  <rupp@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 	    Jerome Lambourg  <lambourg@adacore.com>
