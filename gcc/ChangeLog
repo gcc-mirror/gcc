@@ -1,5 +1,12 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_shift): Check the number
+	of vector elements as well as the type mode when deciding
+	whether an op1_vectype is compatible.  Reuse the result of
+	this check when generating vector statements.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): If
 	targetm.vectorize.preferred_simd_mode returns an integer mode,
 	use mode_for_vector to decide what the vector type's mode

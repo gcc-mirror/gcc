@@ -5544,6 +5544,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   bool scalar_shift_arg = true;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
+  bool incompatible_op1_vectype_p = false;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -5688,8 +5689,12 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       if (!op1_vectype)
 	op1_vectype = get_same_sized_vectype (TREE_TYPE (op1), vectype_out);
-      if ((op1_vectype == NULL_TREE
-	   || TYPE_MODE (op1_vectype) != TYPE_MODE (vectype))
+      incompatible_op1_vectype_p
+	= (op1_vectype == NULL_TREE
+	   || maybe_ne (TYPE_VECTOR_SUBPARTS (op1_vectype),
+			TYPE_VECTOR_SUBPARTS (vectype))
+	   || TYPE_MODE (op1_vectype) != TYPE_MODE (vectype));
+      if (incompatible_op1_vectype_p
 	  && (!slp_node
 	      || SLP_TREE_DEF_TYPE
 		   (SLP_TREE_CHILDREN (slp_node)[1]) != vect_constant_def))
@@ -5835,9 +5840,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                     }
                 }
             }
-	  else if (slp_node
-		   && !useless_type_conversion_p (TREE_TYPE (vectype),
-						  TREE_TYPE (op1)))
+	  else if (slp_node && incompatible_op1_vectype_p)
 	    {
 	      if (was_scalar_shift_arg)
 		{
