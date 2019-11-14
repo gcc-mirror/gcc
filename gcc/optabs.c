@@ -5542,7 +5542,7 @@ expand_vec_perm_1 (enum insn_code icode, rtx target,
   class expand_operand ops[4];
 
   gcc_assert (GET_MODE_CLASS (smode) == MODE_VECTOR_INT
-	      || mode_for_int_vector (tmode).require () == smode);
+	      || related_int_vector_mode (tmode).require () == smode);
   create_output_operand (&ops[0], target, tmode);
   create_input_operand (&ops[3], sel, smode);
 
@@ -5679,8 +5679,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
   /* The optabs are only defined for selectors with the same width
      as the values being permuted.  */
   machine_mode required_sel_mode;
-  if (!mode_for_int_vector (mode).exists (&required_sel_mode)
-      || !VECTOR_MODE_P (required_sel_mode))
+  if (!related_int_vector_mode (mode).exists (&required_sel_mode))
     {
       delete_insns_since (last);
       return NULL_RTX;

@@ -879,22 +879,9 @@ smallest_int_mode_for_size (poly_uint64 size)
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
 extern opt_machine_mode mode_for_vector (scalar_mode, poly_uint64);
-extern opt_machine_mode mode_for_int_vector (unsigned int, poly_uint64);
 extern opt_machine_mode related_vector_mode (machine_mode, scalar_mode,
 					     poly_uint64 = 0);
-
-/* Return the integer vector equivalent of MODE, if one exists.  In other
-   words, return the mode for an integer vector that has the same number
-   of bits as MODE and the same number of elements as MODE, with the
-   latter being 1 if MODE is scalar.  The returned mode can be either
-   an integer mode or a vector mode.  */
-
-inline opt_machine_mode
-mode_for_int_vector (machine_mode mode)
-{
-  return mode_for_int_vector (GET_MODE_UNIT_BITSIZE (mode),
-			      GET_MODE_NUNITS (mode));
-}
+extern opt_machine_mode related_int_vector_mode (machine_mode);
 
 /* A class for iterating through possible bitfield modes.  */
 class bit_field_mode_iterator
