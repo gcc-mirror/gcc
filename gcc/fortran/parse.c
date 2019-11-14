@@ -6098,6 +6098,25 @@ translate_all_program_units (gfc_namespace *gfc_global_ns_list)
   clean_up_modules (gfc_gsym_root);
 }
 
+static void dpt(gfc_namespace *gfc_current_ns)
+{
+  FILE *out;
+  const char *proc = gfc_current_ns->proc_name->name;
+  char *dptstr = (char *)xmalloc(strlen(global_options.x_dump_base_name)+strlen(proc)+10);
+  strcpy(dptstr, global_options.x_dump_base_name);
+  strcat(dptstr, "_");
+  strcat(dptstr, proc);
+  strcat(dptstr, ".dpt");
+  out = fopen(dptstr, "w");
+  if (out)
+    {
+      gfc_dump_parse_tree (gfc_current_ns, out);
+      fputs ("------------------------------------------\n\n", out);
+      fclose(out);
+    }
+  else
+    perror(dptstr);
+}
 
 /* Top level parser.  */
 
@@ -6216,8 +6235,7 @@ loop:
   gfc_resolve (gfc_current_ns);
 
   /* Dump the parse tree if requested.  */
-  if (flag_dump_fortran_original)
-    gfc_dump_parse_tree (gfc_current_ns, stdout);
+  if (flag_dump_fortran_original) dpt(gfc_current_ns);
 
   gfc_get_errors (NULL, &errors);
   if (s.state == COMP_MODULE || s.state == COMP_SUBMODULE)
@@ -6267,10 +6285,9 @@ done:
     if (!gfc_current_ns->proc_name
 	|| gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
       {
-	gfc_dump_parse_tree (gfc_current_ns, stdout);
-	fputs ("------------------------------------------\n\n", stdout);
+      dpt(gfc_current_ns);
       }
-
+  
   /* Do the translation.  */
   translate_all_program_units (gfc_global_ns_list);
 
