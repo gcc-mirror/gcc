@@ -1,3 +1,18 @@
+2019-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (range_fold_binary_symbolics_p): Adapt for
+	normalize_symbolics and normalize_addresses working in place.
+	(range_fold_unary_symbolics_p): Same.
+	(range_fold_unary_symbolics_p): Same.
+	* value-range.cc (num_pairs): Same.
+	(lower_bound): Same.
+	(upper_bound): Same.
+	(contains_p): Same.
+	(normalize_addresses): Same.
+	(normalize_symbolics): Same.
+	* value-range.h (normalize_symbolics): Same.
+	(normalize_addresses): Same.
+
 2019-11-14  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/91682

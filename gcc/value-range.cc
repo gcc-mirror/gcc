@@ -305,7 +305,11 @@ value_range::num_pairs () const
   if (varying_p ())
     return 1;
   if (symbolic_p ())
-    return normalize_symbolics ().num_pairs ();
+    {
+      value_range numeric_range (*this);
+      numeric_range.normalize_symbolics ();
+      return numeric_range.num_pairs ();
+    }
   if (m_kind == VR_ANTI_RANGE)
     {
       // ~[MIN, X] has one sub-range of [X+1, MAX], and
@@ -324,7 +328,11 @@ wide_int
 value_range::lower_bound (unsigned pair) const
 {
   if (symbolic_p ())
-    return normalize_symbolics ().lower_bound (pair);
+    {
+      value_range numeric_range (*this);
+      numeric_range.normalize_symbolics ();
+      return numeric_range.lower_bound (pair);
+    }
 
   gcc_checking_assert (!undefined_p ());
   gcc_checking_assert (pair + 1 <= num_pairs ());
@@ -349,7 +357,11 @@ wide_int
 value_range::upper_bound (unsigned pair) const
 {
   if (symbolic_p ())
-    return normalize_symbolics ().upper_bound (pair);
+    {
+      value_range numeric_range (*this);
+      numeric_range.normalize_symbolics ();
+      return numeric_range.upper_bound (pair);
+    }
 
   gcc_checking_assert (!undefined_p ());
   gcc_checking_assert (pair + 1 <= num_pairs ());
@@ -505,57 +517,69 @@ value_range::contains_p (tree cst) const
 {
   gcc_checking_assert (TREE_CODE (cst) == INTEGER_CST);
   if (symbolic_p ())
-    return normalize_symbolics ().contains_p (cst);
+    {
+      value_range numeric_range (*this);
+      numeric_range.normalize_symbolics ();
+      return numeric_range.contains_p (cst);
+    }
   return value_inside_range (cst) == 1;
 }
 
 /* Normalize addresses into constants.  */
 
-value_range
-value_range::normalize_addresses () const
+void
+value_range::normalize_addresses ()
 {
   if (undefined_p ())
-    return *this;
+    return;
 
   if (!POINTER_TYPE_P (type ()) || range_has_numeric_bounds_p (this))
-    return *this;
+    return;
 
   if (!range_includes_zero_p (this))
     {
       gcc_checking_assert (TREE_CODE (m_min) == ADDR_EXPR
 			   || TREE_CODE (m_max) == ADDR_EXPR);
-      return range_nonzero (type ());
+      set_nonzero (type ());
+      return;
     }
-  return value_range (type ());
+  set_varying (type ());
 }
 
 /* Normalize symbolics and addresses into constants.  */
 
-value_range
-value_range::normalize_symbolics () const
+void
+value_range::normalize_symbolics ()
 {
   if (varying_p () || undefined_p ())
-    return *this;
+    return;
+
   tree ttype = type ();
   bool min_symbolic = !is_gimple_min_invariant (min ());
   bool max_symbolic = !is_gimple_min_invariant (max ());
   if (!min_symbolic && !max_symbolic)
-    return normalize_addresses ();
+    {
+      normalize_addresses ();
+      return;
+    }
 
   // [SYM, SYM] -> VARYING
   if (min_symbolic && max_symbolic)
     {
-      value_range var;
-      var.set_varying (ttype);
-      return var;
+      set_varying (ttype);
+      return;
     }
   if (kind () == VR_RANGE)
     {
       // [SYM, NUM] -> [-MIN, NUM]
       if (min_symbolic)
-	return value_range (vrp_val_min (ttype), max ());
+	{
+	  set (vrp_val_min (ttype), max ());
+	  return;
+	}
       // [NUM, SYM] -> [NUM, +MAX]
-      return value_range (min (), vrp_val_max (ttype));
+      set (min (), vrp_val_max (ttype));
+      return;
     }
   gcc_checking_assert (kind () == VR_ANTI_RANGE);
   // ~[SYM, NUM] -> [NUM + 1, +MAX]
@@ -564,21 +588,20 @@ value_range::normalize_symbolics () const
       if (!vrp_val_is_max (max ()))
 	{
 	  tree n = wide_int_to_tree (ttype, wi::to_wide (max ()) + 1);
-	  return value_range (n, vrp_val_max (ttype));
+	  set (n, vrp_val_max (ttype));
+	  return;
 	}
-      value_range var;
-      var.set_varying (ttype);
-      return var;
+      set_varying (ttype);
+      return;
     }
   // ~[NUM, SYM] -> [-MIN, NUM - 1]
   if (!vrp_val_is_min (min ()))
     {
       tree n = wide_int_to_tree (ttype, wi::to_wide (min ()) - 1);
-      return value_range (vrp_val_min (ttype), n);
+      set (vrp_val_min (ttype), n);
+      return;
     }
-  value_range var;
-  var.set_varying (ttype);
-  return var;
+  set_varying (ttype);
 }
 
 /* Intersect the two value-ranges { *VR0TYPE, *VR0MIN, *VR0MAX } and
