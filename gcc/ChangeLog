@@ -1,3 +1,16 @@
+2019-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (*operator*::*range): Remove calls to
+	range_intersect, range_invert, and range_union in favor of calling
+	the in-place API methods.
+	(range_tests): Same.
+	* range.cc (range_intersect): Remove.
+	(range_union): Remove.
+	(range_invert): Remove.
+	* range.h (range_intersect): Remove.
+	(range_union): Remove.
+	(range_intersect): Remove.
+
 2019-11-14  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR rtl-optimization/92430
