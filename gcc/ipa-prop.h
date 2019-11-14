@@ -39,6 +39,15 @@ along with GCC; see the file COPYING3.  If not see
                   argument.
    Unknown      - neither of the above.
 
+   IPA_JF_LOAD_AGG is a compound pass-through jump function, in which primary
+   operation on formal parameter is memory dereference that loads a value from
+   a part of an aggregate, which is represented or pointed to by the formal
+   parameter.  Moreover, an additional unary/binary operation can be applied on
+   the loaded value, and final result is passed as actual argument of callee
+   (e.g. *(param_1(D) + 4) op 24 ).  It is meant to describe usage of aggregate
+   parameter or by-reference parameter referenced in argument passing, commonly
+   found in C++ and Fortran.
+
    IPA_JF_ANCESTOR is a special pass-through jump function, which means that
    the result is an address of a part of the object pointed to by the formal
    parameter to which the function refers.  It is mainly intended to represent
@@ -60,6 +69,7 @@ enum jump_func_type
   IPA_JF_UNKNOWN = 0,  /* newly allocated and zeroed jump functions default */
   IPA_JF_CONST,             /* represented by field costant */
   IPA_JF_PASS_THROUGH,	    /* represented by field pass_through */
+  IPA_JF_LOAD_AGG,	    /* represented by field load_agg */
   IPA_JF_ANCESTOR	    /* represented by field ancestor */
 };
 
@@ -97,6 +107,26 @@ struct GTY(()) ipa_pass_through_data
   unsigned agg_preserved : 1;
 };
 
+/* Structure holding data required to describe a load-value-from-aggregate
+   jump function.  */
+
+struct GTY(()) ipa_load_agg_data
+{
+  /* Inherit from pass through jump function, describing unary/binary
+     operation on the value loaded from aggregate that is represented or
+     pointed to by the formal parameter, specified by formal_id in this
+     pass_through jump function data structure.  */
+  struct ipa_pass_through_data pass_through;
+  /* Type of the value loaded from the aggregate.  */
+  tree type;
+  /* Offset at which the value is located within the aggregate.  */
+  HOST_WIDE_INT offset;
+  /* True if loaded by reference (the aggregate is pointed to by the formal
+     parameter) or false if loaded by value (the aggregate is represented
+     by the formal parameter).  */
+  bool by_ref;
+};
+
 /* Structure holding data required to describe an ancestor pass-through
    jump function.  */
 
@@ -110,58 +140,139 @@ struct GTY(()) ipa_ancestor_jf_data
   unsigned agg_preserved : 1;
 };
 
-/* An element in an aggegate part of a jump function describing a known value
-   at a given offset.  When it is part of a pass-through jump function with
-   agg_preserved set or an ancestor jump function with agg_preserved set, all
-   unlisted positions are assumed to be preserved but the value can be a type
-   node, which means that the particular piece (starting at offset and having
-   the size of the type) is clobbered with an unknown value.  When
-   agg_preserved is false or the type of the containing jump function is
-   different, all unlisted parts are assumed to be unknown and all values must
-   fulfill is_gimple_ip_invariant.  */
+/* A jump function for an aggregate part at a given offset, which describes how
+   it content value is generated.  All unlisted positions are assumed to have a
+   value defined in an unknown way.  */
 
 struct GTY(()) ipa_agg_jf_item
+{
+  /* The offset for the aggregate part.  */
+  HOST_WIDE_INT offset;
+
+  /* Data type of the aggregate part.  */
+  tree type;
+
+  /* Jump function type.  */
+  enum jump_func_type jftype;
+
+  /* Represents a value of jump function. constant represents the actual constant
+     in constant jump function content.  pass_through is used only in simple pass
+     through jump function context.  load_agg is for load-value-from-aggregate
+     jump function context.  */
+  union jump_func_agg_value
+  {
+    tree GTY ((tag ("IPA_JF_CONST"))) constant;
+    struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
+    struct ipa_load_agg_data GTY ((tag ("IPA_JF_LOAD_AGG"))) load_agg;
+  } GTY ((desc ("%1.jftype"))) value;
+};
+
+/* Jump functions describing a set of aggregate contents.  */
+
+struct GTY(()) ipa_agg_jump_function
+{
+  /* Description of the individual jump function item.  */
+  vec<ipa_agg_jf_item, va_gc> *items;
+  /* True if the data was passed by reference (as opposed to by value).  */
+  bool by_ref;
+};
+
+/* An element in an aggregate part describing a known value at a given offset.
+   All unlisted positions are assumed to be unknown and all listed values must
+   fulfill is_gimple_ip_invariant.  */
+
+struct ipa_agg_value
 {
   /* The offset at which the known value is located within the aggregate.  */
   HOST_WIDE_INT offset;
 
-  /* The known constant or type if this is a clobber.  */
+  /* The known constant.  */
   tree value;
 
-  /* Return true if OTHER describes same agg item.  */
-  bool equal_to (const ipa_agg_jf_item &other);
+  /* Return true if OTHER describes same agg value.  */
+  bool equal_to (const ipa_agg_value &other);
 };
 
+/* Structure describing a set of known offset/value for aggregate.  */
 
-/* Aggregate jump function - i.e. description of contents of aggregates passed
-   either by reference or value.  */
-
-struct GTY(()) ipa_agg_jump_function
+struct ipa_agg_value_set
 {
-  /* Description of the individual items.  */
-  vec<ipa_agg_jf_item, va_gc> *items;
-  /* True if the data was passed by reference (as opposed to by value). */
+  /* Description of the individual item.  */
+  vec<ipa_agg_value> items;
+  /* True if the data was passed by reference (as opposed to by value).  */
   bool by_ref;
 
-  /* Return true if OTHER describes same agg items.  */
-  bool equal_to (const ipa_agg_jump_function &other)
+  /* Return true if OTHER describes same agg values.  */
+  bool equal_to (const ipa_agg_value_set &other)
   {
     if (by_ref != other.by_ref)
       return false;
-    if (items != NULL && other.items == NULL)
+    if (items.length () != other.items.length ())
       return false;
-    if (!items)
-      return other.items == NULL;
-    if (items->length () != other.items->length ())
-      return false;
-    for (unsigned int i = 0; i < items->length (); i++)
-      if (!(*items)[i].equal_to ((*other.items)[i]))
+    for (unsigned int i = 0; i < items.length (); i++)
+      if (!items[i].equal_to (other.items[i]))
 	return false;
     return true;
   }
+
+  /* Return true if there is any value for aggregate.  */
+  bool is_empty () const
+  {
+    return items.is_empty ();
+  }
+
+  ipa_agg_value_set copy () const
+  {
+    ipa_agg_value_set new_copy;
+
+    new_copy.items = items.copy ();
+    new_copy.by_ref = by_ref;
+
+    return new_copy;
+  }
+
+  void release ()
+  {
+    items.release ();
+  }
 };
 
-typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;
+/* Return copy of a vec<ipa_agg_value_set>.  */
+
+static inline vec<ipa_agg_value_set>
+ipa_copy_agg_values (const vec<ipa_agg_value_set> &aggs)
+{
+  vec<ipa_agg_value_set> aggs_copy = vNULL;
+
+  if (!aggs.is_empty ())
+    {
+      ipa_agg_value_set *agg;
+      int i;
+
+      aggs_copy.reserve_exact (aggs.length ());
+
+      FOR_EACH_VEC_ELT (aggs, i, agg)
+	aggs_copy.quick_push (agg->copy ());
+    }
+
+  return aggs_copy;
+}
+
+/* For vec<ipa_agg_value_set>, DO NOT call release(), use below function
+   instead.  Because ipa_agg_value_set contains a field of vector type, we
+   should release this child vector in each element before reclaiming the
+   whole vector.  */
+
+static inline void
+ipa_release_agg_values (vec<ipa_agg_value_set> &aggs)
+{
+  ipa_agg_value_set *agg;
+  int i;
+
+  FOR_EACH_VEC_ELT (aggs, i, agg)
+    agg->release ();
+  aggs.release ();
+}
 
 /* Information about zero/non-zero bits.  */
 class GTY(()) ipa_bits
@@ -193,8 +304,8 @@ public:
    types of jump functions supported.  */
 struct GTY (()) ipa_jump_func
 {
-  /* Aggregate contants description.  See struct ipa_agg_jump_function and its
-     description.  */
+  /* Aggregate jump function description.  See struct ipa_agg_jump_function
+     and its description.  */
   struct ipa_agg_jump_function agg;
 
   /* Information about zero/non-zero bits.  The pointed to structure is shared
@@ -857,9 +968,9 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 
 /* Indirect edge and binfo processing.  */
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
-				   vec<tree> ,
+				   vec<tree>,
 				   vec<ipa_polymorphic_call_context>,
-				   vec<ipa_agg_jump_function_p>,
+				   vec<ipa_agg_value_set>,
 				   bool *);
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    bool speculative = false);
@@ -872,7 +983,7 @@ ipa_bits *ipa_get_ipa_bits_for_value (const widest_int &value,
 void ipa_analyze_node (struct cgraph_node *);
 
 /* Aggregate jump function related functions.  */
-tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg, tree scalar,
+tree ipa_find_agg_cst_for_param (struct ipa_agg_value_set *agg, tree scalar,
 				 HOST_WIDE_INT offset, bool by_ref,
 				 bool *from_global_constant = NULL);
 bool ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
@@ -918,6 +1029,9 @@ ipa_polymorphic_call_context ipa_context_from_jfunc (ipa_node_params *,
 						     cgraph_edge *,
 						     int,
 						     ipa_jump_func *);
+ipa_agg_value_set ipa_agg_value_set_from_jfunc (ipa_node_params *,
+						cgraph_node *,
+						ipa_agg_jump_function *);
 void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);

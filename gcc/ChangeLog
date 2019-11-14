@@ -1,3 +1,74 @@
+2019-11-14  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/91682
+	* ipa-prop.h (jump_func_type): New value IPA_JF_LOAD_AGG.
+	(ipa_load_agg_data, ipa_agg_value, ipa_agg_value_set): New structs.
+	(ipa_agg_jf_item): Add new field jftype and type, redefine field value.
+	(ipa_agg_jump_function): Remove member function equal_to.
+	(ipa_agg_jump_function_p): Remove typedef.
+	(ipa_copy_agg_values, ipa_release_agg_values): New functions.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Dump
+	information for aggregate jump function.
+	(get_ssa_def_if_simple_copy): Add new parameter rhs_stmt to
+	record last definition statement.
+	(load_from_unmodified_param_or_agg): New function.
+	(ipa_known_agg_contents_list): Add new field type and value, remove
+	field constant.
+	(build_agg_jump_func_from_list): Rename parameter const_count to
+	value_count, build aggregate jump function from ipa_load_agg_data.
+	(analyze_agg_content_value): New function.
+	(extract_mem_content): Analyze memory store assignment to prepare
+	information for aggregate jump function generation.
+	(determine_known_aggregate_parts): Add new parameter fbi, remove
+	parameter aa_walk_budeget_p.
+	(update_jump_functions_after_inlining): Update aggregate jump function.
+	(ipa_find_agg_cst_for_param): Change type of parameter agg.
+	(try_make_edge_direct_simple_call): Add new parameter new_root.
+	(try_make_edge_direct_virtual_call): Add new parameter new_root and
+	new_root_info.
+	(update_indirect_edges_after_inlining): Pass new argument to
+	try_make_edge_direct_simple_call and try_make_edge_direct_virtual_call.
+	(ipa_write_jump_function): Write aggregate jump function to file.
+	(ipa_read_jump_function): Read aggregate jump function from file.
+	(ipa_agg_value::equal_to): Migrate from ipa_agg_jf_item::equal_to.
+	* ipa-cp.c (ipa_get_jf_arith_result): New function.
+	(ipa_agg_value_from_node): Likewise.
+	(ipa_agg_value_set_from_jfunc): Likewise.
+	(propagate_vals_across_arith_jfunc): Likewise.
+	(propagate_aggregate_lattice): Likewise.
+	(ipa_get_jf_pass_through_result): Call ipa_get_jf_arith_result.
+	(propagate_vals_across_pass_through): Call
+	propagate_vals_across_arith_jfunc.
+	(get_clone_agg_value): Move forward.
+	(propagate_aggs_across_jump_function): Handle value propagation for
+	aggregate jump function.
+	(agg_jmp_p_vec_for_t_vec): Remove.
+	(context_independent_aggregate_values): Replace vec<ipa_agg_jf_item>
+	with vec<ipa_agg_value>.
+	(copy_plats_to_inter, intersect_with_plats): Likewise.
+	(agg_replacements_to_vector, intersect_with_agg_replacements): Likewise.
+	(intersect_aggregate_with_edge): Likewise.
+	(find_aggregate_values_for_callers_subset): Likewise.
+	(cgraph_edge_brings_all_agg_vals_for_node): Likewise.
+	(estimate_local_effects): Replace vec<ipa_agg_jump_function> and
+	vec<ipa_agg_jump_function_p> with vec<ipa_agg_value_set>.
+	(gather_context_independent_values): Likewise.
+	(perform_estimation_of_a_value, decide_whether_version_node): Likewise.
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Replace
+	vec<ipa_agg_jump_function_p> with vec<ipa_agg_value_set>.
+	(evaluate_properties_for_edge): Likewise.
+	(estimate_edge_devirt_benefit): Likewise.
+	(estimate_edge_size_and_time):  Likewise.
+	(estimate_calls_size_and_time): Likewise.
+	(ipa_call_context::ipa_call_context): Likewise.
+	(estimate_ipcp_clone_size_and_time):  Likewise.
+	* ipa-fnsummary.h (ipa_call_context): Replace
+	vec<ipa_agg_jump_function_p> with vec<ipa_agg_value_set>.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Replace
+	vec<ipa_agg_jump_function_p> with vec<ipa_agg_value_set>.
+	(do_estimate_edge_size): Likewise.
+	(do_estimate_edge_hints): Likewise.
+
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (propagate_vr_across_jump_function): Propagate also across

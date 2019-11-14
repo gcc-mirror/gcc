@@ -293,7 +293,7 @@ public:
 		    clause_t nonspec_possible_truths,
 		    vec<tree> known_vals,
 		    vec<ipa_polymorphic_call_context> known_contexts,
-		    vec<ipa_agg_jump_function_p> known_aggs,
+		    vec<ipa_agg_value_set> known_aggs,
 		    vec<inline_param_summary> m_inline_param_summary);
   ipa_call_context ()
   : m_node(NULL)
@@ -329,7 +329,7 @@ private:
   /* Vector describing known polymorphic call contexts.  */
   vec<ipa_polymorphic_call_context> m_known_contexts;
   /* Vector describing known aggregate values.  */
-  vec<ipa_agg_jump_function_p> m_known_aggs;
+  vec<ipa_agg_value_set> m_known_aggs;
 };
 
 extern fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
@@ -345,7 +345,7 @@ void inline_analyze_function (struct cgraph_node *node);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<tree>,
 					vec<ipa_polymorphic_call_context>,
-					vec<ipa_agg_jump_function_p>,
+					vec<ipa_agg_value_set>,
 					int *, sreal *, sreal *,
 				        ipa_hints *);
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
@@ -360,7 +360,7 @@ void evaluate_properties_for_edge (struct cgraph_edge *e,
 				   vec<tree> *known_vals_ptr,
 				   vec<ipa_polymorphic_call_context>
 				   *known_contexts_ptr,
-				   vec<ipa_agg_jump_function_p> *);
+				   vec<ipa_agg_value_set> *);
 
 void ipa_fnsummary_c_finalize (void);
 HOST_WIDE_INT ipa_get_stack_frame_offset (struct cgraph_node *node);
