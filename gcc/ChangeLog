@@ -1,5 +1,12 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	PR target/92389
+	* config/i386/i386.h: Add PTA_AVX512VPOPCNTDQ to
+	PTA_ICELAKE_CLIENT which is later interited by
+	PTA_ICELAKE_SERVER and PTA_TIGERLAKE.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.c (sem_item_optimizer::execute): Save
 	loaded_symbols.
 	(sem_item_optimizer::parse_nonsingleton_classes):
