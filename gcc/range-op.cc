@@ -146,6 +146,7 @@ range_operator::fold_range (value_range &r, tree type,
     return;
 
   value_range tmp;
+  r.set_undefined ();
   for (unsigned x = 0; x < lh.num_pairs (); ++x)
     for (unsigned y = 0; y < rh.num_pairs (); ++y)
       {
@@ -2370,7 +2371,7 @@ operator_abs::wi_fold (value_range &r, tree type,
   wide_int max_value = wi::max_value (prec, sign);
   if (!TYPE_OVERFLOW_UNDEFINED (type) && wi::eq_p (lh_lb, min_value))
     {
-      r = value_range (type, lh_lb, lh_ub);
+      r = value_range (type);
       return;
     }
 
