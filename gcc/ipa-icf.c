@@ -2400,7 +2400,7 @@ sem_item_optimizer::execute (void)
 
   dump_cong_classes ();
 
-  parse_nonsingleton_classes ();
+  unsigned int loaded_symbols = parse_nonsingleton_classes ();
   subdivide_classes_by_equality ();
 
   if (dump_file)
@@ -2413,7 +2413,7 @@ sem_item_optimizer::execute (void)
   process_cong_reduction ();
   dump_cong_classes ();
   checking_verify_classes ();
-  bool merged_p = merge_classes (prev_class_count);
+  bool merged_p = merge_classes (prev_class_count, loaded_symbols);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     symtab->dump (dump_file);
@@ -2587,7 +2587,7 @@ sem_item_optimizer::build_graph (void)
 /* Semantic items in classes having more than one element and initialized.
    In case of WPA, we load function body.  */
 
-void
+unsigned int
 sem_item_optimizer::parse_nonsingleton_classes (void)
 {
   unsigned int counter = 0;
@@ -2607,6 +2607,8 @@ sem_item_optimizer::parse_nonsingleton_classes (void)
       float f = m_items.length () ? 100.0f * counter / m_items.length () : 0.0f;
       fprintf (dump_file, "Init called for %u items (%.2f%%).\n", counter, f);
     }
+
+  return counter;
 }
 
 /* Equality function for semantic items is used to subdivide existing
@@ -3214,10 +3216,12 @@ sort_congruence_class_groups_by_decl_uid (const void *a, const void *b)
 /* After reduction is done, we can declare all items in a group
    to be equal. PREV_CLASS_COUNT is start number of classes
    before reduction. True is returned if there's a merge operation
-   processed. */
+   processed.  LOADED_SYMBOLS is number of symbols that were loaded
+   in WPA.  */
 
 bool
-sem_item_optimizer::merge_classes (unsigned int prev_class_count)
+sem_item_optimizer::merge_classes (unsigned int prev_class_count,
+				   unsigned int loaded_symbols)
 {
   unsigned int item_count = m_items.length ();
   unsigned int class_count = m_classes_count;
@@ -3280,8 +3284,10 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	       non_singular_classes_count : 0.0f,
 	       non_singular_classes_count);
       fprintf (dump_file, "Equal symbols: %u\n", equal_items);
-      fprintf (dump_file, "Fraction of visited symbols: %.2f%%\n\n",
-	       item_count ? 100.0f * equal_items / item_count : 0.0f);
+      unsigned total = equal_items + non_singular_classes_count;
+      fprintf (dump_file, "Totally needed symbols: %u"
+	       ", fraction of loaded symbols: %.2f%%\n\n", total,
+	       loaded_symbols ? 100.0f * total / loaded_symbols: 0.0f);
     }
 
   unsigned int l;

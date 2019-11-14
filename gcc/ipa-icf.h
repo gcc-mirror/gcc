@@ -546,7 +546,7 @@ private:
 
   /* Semantic items in classes having more than one element and initialized.
      In case of WPA, we load function body.  */
-  void parse_nonsingleton_classes (void);
+  unsigned int parse_nonsingleton_classes (void);
 
   /* Equality function for semantic items is used to subdivide existing
      classes. If IN_WPA, fast equality function is invoked.  */
@@ -571,8 +571,10 @@ private:
   /* After reduction is done, we can declare all items in a group
      to be equal. PREV_CLASS_COUNT is start number of classes
      before reduction. True is returned if there's a merge operation
-     processed.  */
-  bool merge_classes (unsigned int prev_class_count);
+     processed.  LOADED_SYMBOLS is number of symbols that were loaded
+     in WPA.  */
+  bool merge_classes (unsigned int prev_class_count,
+		      unsigned int loaded_symbols);
 
   /* Fixup points to analysis info.  */
   void fixup_points_to_sets (void);
