@@ -121,6 +121,16 @@ public:
 class func_checker : operand_compare
 {
 public:
+  /* Default constructor.  */
+  func_checker ():
+    m_source_func_decl (NULL_TREE), m_target_func_decl (NULL_TREE),
+    m_ignored_source_nodes (NULL), m_ignored_target_nodes (NULL),
+    m_ignore_labels (false)
+  {
+    m_source_ssa_names.create (0);
+    m_target_ssa_names.create (0);
+  }
+
   /* Initialize internal structures for a given SOURCE_FUNC_DECL and
      TARGET_FUNC_DECL. Strict polymorphic comparison is processed if
      an option COMPARE_POLYMORPHIC is true. For special cases, one can
@@ -254,6 +264,7 @@ private:
   /* Flag if ignore labels in comparison.  */
   bool m_ignore_labels;
 
+public:
   /* Return true if two operands are equal.  The flags fields can be used
      to specify OEP flags described above.  */
   virtual bool operand_equal_p (const_tree, const_tree, unsigned int flags);
