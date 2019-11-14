@@ -1605,7 +1605,7 @@ vect_get_vec_def_for_operand (tree op, stmt_vec_info stmt_vinfo, tree vectype)
 	vector_type = vectype;
       else if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
 	       && VECTOR_BOOLEAN_TYPE_P (stmt_vectype))
-	vector_type = build_same_sized_truth_vector_type (stmt_vectype);
+	vector_type = truth_type_for (stmt_vectype);
       else
 	vector_type = get_vectype_for_scalar_type (loop_vinfo, TREE_TYPE (op));
 
@@ -2734,7 +2734,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 			   || TREE_CODE (masktype) == INTEGER_TYPE
 			   || types_compatible_p (srctype, masktype)));
   if (mask && TREE_CODE (masktype) == INTEGER_TYPE)
-    masktype = build_same_sized_truth_vector_type (srctype);
+    masktype = truth_type_for (srctype);
 
   tree mask_halftype = masktype;
   tree perm_mask = NULL_TREE;
@@ -2780,8 +2780,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, indices);
 	}
       else if (mask)
-	mask_halftype
-	  = build_same_sized_truth_vector_type (gs_info->offset_vectype);
+	mask_halftype = truth_type_for (gs_info->offset_vectype);
     }
   else
     gcc_unreachable ();
@@ -3524,8 +3523,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (mask_opno >= 0 && !vectypes[mask_opno])
 	    {
 	      gcc_assert (modifier != WIDEN);
-	      vectypes[mask_opno]
-		= build_same_sized_truth_vector_type (vectype_in);
+	      vectypes[mask_opno] = truth_type_for (vectype_in);
 	    }
 
 	  for (i = 0; i < nargs; i++)
@@ -6581,7 +6579,7 @@ scan_store_can_perm_p (tree vectype, tree init,
 		   && TREE_CODE (init) != REAL_CST)
 		  || !initializer_zerop (init))
 		{
-		  tree masktype = build_same_sized_truth_vector_type (vectype);
+		  tree masktype = truth_type_for (vectype);
 		  if (!expand_vec_cond_expr_p (vectype, masktype, VECTOR_CST))
 		    return -1;
 		  whole_vector_shift_kind = scan_store_kind_lshift_cond;
@@ -7106,7 +7104,7 @@ vectorizable_scan_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    zero_vec = build_zero_cst (vectype);
 	  if (masktype == NULL_TREE
 	      && use_whole_vector[i] == scan_store_kind_lshift_cond)
-	    masktype = build_same_sized_truth_vector_type (vectype);
+	    masktype = truth_type_for (vectype);
 	  perms[i] = vect_gen_perm_mask_any (vectype, indices);
 	}
       else
@@ -7547,8 +7545,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  ncopies *= 2;
 
 	  if (mask)
-	    mask_halfvectype
-	      = build_same_sized_truth_vector_type (gs_info.offset_vectype);
+	    mask_halfvectype = truth_type_for (gs_info.offset_vectype);
 	}
       else
 	gcc_unreachable ();
@@ -9972,7 +9969,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     return false;
 
   masked = !COMPARISON_CLASS_P (cond_expr);
-  vec_cmp_type = build_same_sized_truth_vector_type (comp_vectype);
+  vec_cmp_type = truth_type_for (comp_vectype);
 
   if (vec_cmp_type == NULL_TREE)
     return false;
@@ -11233,8 +11230,7 @@ get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type)
   if (!vectype)
     return NULL;
 
-  return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (vectype),
-				  vinfo->vector_size);
+  return truth_type_for (vectype);
 }
 
 /* Function get_same_sized_vectype
@@ -11246,7 +11242,7 @@ tree
 get_same_sized_vectype (tree scalar_type, tree vector_type)
 {
   if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
-    return build_same_sized_truth_vector_type (vector_type);
+    return truth_type_for (vector_type);
 
   return get_vectype_for_scalar_type_and_size
 	   (scalar_type, GET_MODE_SIZE (TYPE_MODE (vector_type)));
@@ -12109,7 +12105,7 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
 	  && !VECTOR_BOOLEAN_TYPE_P (mask_type)
 	  && gimple_code (stmt) == GIMPLE_ASSIGN
 	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
-	mask_type = build_same_sized_truth_vector_type (mask_type);
+	mask_type = truth_type_for (mask_type);
     }
 
   /* No mask_type should mean loop invariant predicate.

@@ -1,5 +1,31 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree.h (build_truth_vector_type): Delete.
+	(build_same_sized_truth_vector_type): Likewise.
+	* tree.c (build_truth_vector_type): Rename to...
+	(build_truth_vector_type_for): ...this.  Make static and take
+	a vector type as argument.
+	(truth_type_for): Update accordingly.
+	(build_same_sized_truth_vector_type): Delete.
+	* tree-vect-generic.c (expand_vector_divmod): Use truth_type_for
+	instead of build_same_sized_truth_vector_type.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Likewise.
+	(vect_record_loop_mask, vect_get_loop_mask): Likewise.
+	* tree-vect-patterns.c (build_mask_conversion): Likeise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Likewise.
+	(vect_build_gather_load_calls, vectorizable_call): Likewise.
+	(scan_store_can_perm_p, vectorizable_scan_store): Likewise.
+	(vectorizable_store, vectorizable_condition): Likewise.
+	(get_mask_type_for_scalar_type, get_same_sized_vectype): Likewise.
+	(vect_get_mask_type_for_stmt): Use truth_type_for instead of
+	build_truth_vector_type.
+	* config/aarch64/aarch64-sve-builtins.cc (gimple_folder::convert_pred):
+	Use truth_type_for instead of build_same_sized_truth_vector_type.
+	* config/rs6000/rs6000-call.c (fold_build_vec_cmp): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree.h (build_truth_vector_type_for_mode): Declare.
 	* tree.c (build_truth_vector_type_for_mode): New function,
 	split out from...

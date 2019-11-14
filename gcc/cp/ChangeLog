@@ -1,3 +1,9 @@
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* call.c (build_conditional_expr_1): Use truth_type_for instead
+	of build_same_sized_truth_vector_type.
+	* typeck.c (build_vec_cmp): Likewise.
+
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_context_selector): Don't require score
