@@ -1,3 +1,14 @@
+2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
+	    Doug Rupp <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.host: Collapse the arm-vxworks entries into
+	a single arm-wrs-vxworks7* one.
+	* config/arm/unwind-arm-vxworks.c: Update comments.  Provide
+	__gnu_Unwind_Find_exidx and a weak dummy __cxa_type_match for
+	kernel modules, to be overriden by libstdc++ when we link with
+	it.  Rely on externally provided __exidx_start/end.
+
 2019-11-14  Doug Rupp  <rupp@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 
