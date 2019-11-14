@@ -820,10 +820,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 		- ipa_call_summaries->get (e)->call_stmt_size
 	      > inline_insns_auto (e->caller, true))
     {
-      if (opt_for_fn (e->caller->decl, optimize) >= 3)
-        e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
-      else
-        e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_O2_LIMIT;
+      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl)
@@ -838,8 +835,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 			    : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
       else
 	e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
-			    ? CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT
-			    : CIF_MAX_INLINE_INSNS_AUTO_O2_LIMIT);
+			      ? CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT
+			      : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
       want_inline = false;
     }
   else
@@ -893,10 +890,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
           if (growth >= inline_insns_single (e->caller, false)
 	      || growth_positive_p (callee, e, growth))
 	    {
-	      if (opt_for_fn (e->caller->decl, optimize) >= 3)
-		e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
-	      else
-		e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_O2_LIMIT;
+	      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
 	      want_inline = false;
  	    }
 	}
