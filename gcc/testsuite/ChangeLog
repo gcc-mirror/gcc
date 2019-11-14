@@ -1,5 +1,7 @@
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/declare-variant-3.c: Add testcase for vendor nvidia.
+
 	* c-c++-common/gomp/declare-variant-2.c: Adjust expected diagnostics,
 	add a test for atomic_default_mem_order with a string literal.
 	* c-c++-common/gomp/declare-variant-3.c: Use string literal props

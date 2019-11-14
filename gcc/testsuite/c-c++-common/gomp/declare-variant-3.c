@@ -145,3 +145,5 @@ void f75 (void);
 void f76 (void);
 #pragma omp declare variant (f13) match (device={kind("any",any)})
 void f77 (void);
+#pragma omp declare variant (f13) match (implementation={vendor(nvidia)})
+void f78 (void);

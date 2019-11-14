@@ -2173,7 +2173,7 @@ c_omp_check_context_selector (location_t loc, tree ctx)
 	"host", "nohost", "cpu", "gpu", "fpga", "any", NULL };
       static const char *const vendor[] = {
 	"amd", "arm", "bsc", "cray", "fujitsu", "gnu", "ibm", "intel",
-	"llvm", "pgi", "ti", "unknown", NULL };
+	"llvm", "nvidia", "pgi", "ti", "unknown", NULL };
       static const char *const extension[] = { NULL };
       static const char *const atomic_default_mem_order[] = {
 	"seq_cst", "relaxed", "acq_rel", NULL };
