@@ -1148,23 +1148,17 @@ arc*-*-linux*)
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
 	;;
-arm-wrs-vxworks|arm-wrs-vxworks7)
+arm-wrs-vxworks7*)
+	# We only support VxWorks 7 now on ARM, post SR600.  Pre SR600
+	# VxWorks 7 was transitory and major versions prior to 7 were based
+	# on long deprecated ABI, not supported at all any more regardless
+	# of VxWorks.
 	extra_options="${extra_options} arm/vxworks.opt"
-	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
-        case $target in
-	*-vxworks7)
-            # VxWorks7 on ARM adheres to the ARM Base Platform ABI
-	    tmake_file="${tmake_file} arm/t-bpabi"
-	    tm_file="arm/bpabi.h ${tm_file}"
-	    # The BPABI long long divmod functions return a 128-bit value in
-	    # registers r0-r3.
-	    need_64bit_hwint=yes
-	    default_use_cxa_atexit=yes
-	    ;;
-        *)  ;;
-        esac
-        tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
-	target_cpu_cname="arm8"
+	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks arm/t-bpabi"
+	tm_file="elfos.h arm/elf.h arm/bpabi.h arm/aout.h ${tm_file}"
+	tm_file="${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+	target_cpu_cname="armv7-a"
+	need_64bit_hwint=yes
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"

@@ -1,4 +1,18 @@
 2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
+	    Doug Rupp <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc: Collapse the arm-vxworks entries into
+	a single arm-wrs-vxworks7* one, bpabi based.  Update
+	the default cpu from arm8 to armv7-a
+	* config/arm/vxworks.h (CC1_SPEC): Simplify, knowing that
+	we always use ARM_UNWIND_INFO.
+	(DWARF2_UNWIND_INFO): Remove redefinition.
+	(ARM_TARGET2_DWARF_FORMAT): Likewise.
+	(VXWORKS_PERSONALITY): Define, to "llvm".
+	(VXWORKS_EXTRA_LIBS_RTP): Define, to "-lllvm".
+
+2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/arm/vxworks.h (TARGET_OS_CPP_BUILTINS): Use
 	_VX_CPU instead of CPU and handle arm_arch8.
