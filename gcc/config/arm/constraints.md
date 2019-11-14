@@ -94,8 +94,9 @@
  "@internal
   Thumb only.  The union of the low registers and the stack register.")
 
-(define_register_constraint "c" "CC_REG"
- "@internal The condition code register.")
+(define_constraint "c"
+ "@internal The condition code register."
+ (match_operand 0 "cc_register"))
 
 (define_register_constraint "Cs" "CALLER_SAVE_REGS"
  "@internal The caller save registers.  Useful for sibcalls.")
