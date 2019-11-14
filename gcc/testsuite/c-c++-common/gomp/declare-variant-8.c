@@ -12,10 +12,10 @@ void f05 (void);
 void f06 (void);
 #pragma omp requires atomic_default_mem_order(seq_cst)
 void f07 (void);
-#pragma omp declare variant (f07) match (construct={parallel,for},device={kind(any)})
+#pragma omp declare variant (f07) match (construct={parallel,for},device={kind("any")})
 void f08 (void);
 void f09 (void);
-#pragma omp declare variant (f09) match (construct={parallel,for},implementation={vendor(gnu)})
+#pragma omp declare variant (f09) match (construct={parallel,for},implementation={vendor("gnu")})
 void f10 (void);
 void f11 (void);
 #pragma omp declare variant (f11) match (construct={parallel,for})
@@ -51,6 +51,12 @@ void f30 (void);
 void f31 (void);
 #pragma omp declare variant (f31) match (construct={teams,parallel,for})
 void f32 (void);
+void f33 (void);
+#pragma omp declare variant (f33) match (device={kind("any\0any")})	/* { dg-warning "unknown property '.any.000any.' of 'kind' selector" } */
+void f34 (void);
+void f35 (void);
+#pragma omp declare variant (f35) match (implementation={vendor("gnu\0")})	/* { dg-warning "unknown property '.gnu.000.' of 'vendor' selector" } */
+void f36 (void);
 
 void
 test1 (void)
@@ -76,6 +82,8 @@ test1 (void)
   for (i = 0; i < 1; i++)
     f14 ();	/* { dg-final { scan-tree-dump-times "f14 \\\(\\\);" 1 "gimple" } } */
   f16 ();	/* { dg-final { scan-tree-dump-times "f16 \\\(\\\);" 1 "gimple" } } */
+  f34 ();	/* { dg-final { scan-tree-dump-times "f34 \\\(\\\);" 1 "gimple" } } */
+  f36 ();	/* { dg-final { scan-tree-dump-times "f36 \\\(\\\);" 1 "gimple" } } */
 }
 
 #pragma omp declare target

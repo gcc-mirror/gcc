@@ -1776,17 +1776,13 @@ aarch64_sve_pred_mode (unsigned int elem_nbytes)
 /* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */
 
 static opt_machine_mode
-aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
+aarch64_get_mask_mode (machine_mode mode)
 {
-  if (TARGET_SVE && known_eq (nbytes, BYTES_PER_SVE_VECTOR))
-    {
-      unsigned int elem_nbytes = vector_element_size (nbytes, nunits);
-      machine_mode pred_mode;
-      if (aarch64_sve_pred_mode (elem_nbytes).exists (&pred_mode))
-	return pred_mode;
-    }
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if (vec_flags & VEC_SVE_DATA)
+    return aarch64_sve_pred_mode (GET_MODE_UNIT_SIZE (mode));
 
-  return default_get_mask_mode (nunits, nbytes);
+  return default_get_mask_mode (mode);
 }
 
 /* Return the SVE vector mode that has NUNITS elements of mode INNER_MODE.  */
@@ -1816,7 +1812,7 @@ aarch64_sve_element_int_mode (machine_mode mode)
 }
 
 /* Return the integer vector mode associated with SVE mode MODE.
-   Unlike mode_for_int_vector, this can handle the case in which
+   Unlike related_int_vector_mode, this can handle the case in which
    MODE is a predicate (and thus has a different total size).  */
 
 machine_mode
@@ -1824,6 +1820,30 @@ aarch64_sve_int_mode (machine_mode mode)
 {
   scalar_int_mode int_mode = aarch64_sve_element_int_mode (mode);
   return aarch64_sve_data_mode (int_mode, GET_MODE_NUNITS (mode)).require ();
+}
+
+/* Implement TARGET_VECTORIZE_RELATED_MODE.  */
+
+static opt_machine_mode
+aarch64_vectorize_related_mode (machine_mode vector_mode,
+				scalar_mode element_mode,
+				poly_uint64 nunits)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (vector_mode);
+
+  /* Prefer to use 1 128-bit vector instead of 2 64-bit vectors.  */
+  if ((vec_flags & VEC_ADVSIMD)
+      && known_eq (nunits, 0U)
+      && known_eq (GET_MODE_BITSIZE (vector_mode), 64U)
+      && maybe_ge (GET_MODE_BITSIZE (element_mode)
+		   * GET_MODE_NUNITS (vector_mode), 128U))
+    {
+      machine_mode res = aarch64_simd_container_mode (element_mode, 128);
+      if (VECTOR_MODE_P (res))
+	return res;
+    }
+
+  return default_vectorize_related_mode (vector_mode, element_mode, nunits);
 }
 
 /* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
@@ -12537,7 +12557,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     gcc_assert (use_rsqrt_p (mode));
 
   machine_mode mmsk = (VECTOR_MODE_P (mode)
-		       ? mode_for_int_vector (mode).require ()
+		       ? related_int_vector_mode (mode).require ()
 		       : int_mode_for_mode (mode).require ());
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
@@ -15916,12 +15936,31 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 /* Return a list of possible vector sizes for the vectorizer
    to iterate over.  */
 static void
-aarch64_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_SVE)
-    sizes->safe_push (BYTES_PER_SVE_VECTOR);
-  sizes->safe_push (16);
-  sizes->safe_push (8);
+    modes->safe_push (VNx16QImode);
+
+  /* Try using 128-bit vectors for all element types.  */
+  modes->safe_push (V16QImode);
+
+  /* Try using 64-bit vectors for 8-bit elements and 128-bit vectors
+     for wider elements.  */
+  modes->safe_push (V8QImode);
+
+  /* Try using 64-bit vectors for 16-bit elements and 128-bit vectors
+     for wider elements.
+
+     TODO: We could support a limited form of V4QImode too, so that
+     we use 32-bit vectors for 8-bit elements.  */
+  modes->safe_push (V4HImode);
+
+  /* Try using 64-bit vectors for 32-bit elements and 128-bit vectors
+     for 64-bit elements.
+
+     TODO: We could similarly support limited forms of V2QImode and V2HImode
+     for this case.  */
+  modes->safe_push (V2SImode);
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
@@ -19068,7 +19107,7 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  machine_mode sel_mode = mode_for_int_vector (d->vmode).require ();
+  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
   if (d->one_vector_p)
     emit_unspec2 (d->target, UNSPEC_TBL, d->op0, force_reg (sel_mode, sel));
@@ -19434,9 +19473,7 @@ void
 aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
 			  rtx *ops)
 {
-  machine_mode pred_mode
-    = aarch64_get_mask_mode (GET_MODE_NUNITS (cmp_mode),
-			     GET_MODE_SIZE (cmp_mode)).require ();
+  machine_mode pred_mode = aarch64_get_mask_mode (cmp_mode).require ();
   rtx pred = gen_reg_rtx (pred_mode);
   if (FLOAT_MODE_P (cmp_mode))
     {
@@ -21757,9 +21794,9 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   aarch64_builtin_vectorized_function
 
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  aarch64_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  aarch64_autovectorize_vector_modes
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV \
@@ -21792,6 +21829,8 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_VECTORIZE_VEC_PERM_CONST \
   aarch64_vectorize_vec_perm_const
 
+#undef TARGET_VECTORIZE_RELATED_MODE
+#define TARGET_VECTORIZE_RELATED_MODE aarch64_vectorize_related_mode
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE aarch64_get_mask_mode
 #undef TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
@@ -21932,6 +21971,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

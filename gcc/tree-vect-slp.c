@@ -224,6 +224,19 @@ vect_free_oprnd_info (vec<slp_oprnd_info> &oprnds_info)
 }
 
 
+/* Return true if STMTS contains a pattern statement.  */
+
+static bool
+vect_contains_pattern_stmt_p (vec<stmt_vec_info> stmts)
+{
+  stmt_vec_info stmt_info;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (stmts, i, stmt_info)
+    if (is_pattern_stmt_p (stmt_info))
+      return true;
+  return false;
+}
+
 /* Find the place of the data-ref in STMT_INFO in the interleaving chain
    that starts from FIRST_STMT_INFO.  Return -1 if the data-ref is not a part
    of the chain.  */
@@ -271,7 +284,7 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
     {
       scalar_int_mode int_mode;
       poly_int64 elt_bits = elt_bytes * BITS_PER_UNIT;
-      if (multiple_p (vinfo->vector_size, elt_bytes, &nelts)
+      if (multiple_p (GET_MODE_SIZE (vinfo->vector_mode), elt_bytes, &nelts)
 	  && int_mode_for_size (elt_bits, 0).exists (&int_mode))
 	{
 	  tree int_type = build_nonstandard_integer_type
@@ -475,7 +488,7 @@ again:
 	    }
 	  if ((dt == vect_constant_def
 	       || dt == vect_external_def)
-	      && !vinfo->vector_size.is_constant ()
+	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
 	      && (TREE_CODE (type) == BOOLEAN_TYPE
 		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
 						      TYPE_MODE (type))))
@@ -2381,8 +2394,11 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* FORNOW: SLP if you can.  */
-      /* All unroll factors have the form vinfo->vector_size * X for some
-	 rational X, so they must have a common multiple.  */
+      /* All unroll factors have the form:
+
+	   GET_MODE_SIZE (vinfo->vector_mode) * X
+
+	 for some rational X, so they must have a common multiple.  */
       unrolling_factor
 	= force_common_multiple (unrolling_factor,
 				 SLP_INSTANCE_UNROLLING_FACTOR (instance));
@@ -2691,6 +2707,39 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
   return vect_analyze_stmt (stmt_info, &dummy, node, node_instance, cost_vec);
 }
 
+/* Try to build NODE from scalars, returning true on success.
+   NODE_INSTANCE is the SLP instance that contains NODE.  */
+
+static bool
+vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
+			      slp_instance node_instance)
+{
+  stmt_vec_info stmt_info;
+  unsigned int i;
+
+  if (!is_a <bb_vec_info> (vinfo)
+      || node == SLP_INSTANCE_TREE (node_instance)
+      || vect_contains_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (node)))
+    return false;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Building vector operands from scalars instead\n");
+
+  /* Don't remove and free the child nodes here, since they could be
+     referenced by other structures.  The analysis and scheduling phases
+     (need to) ignore child nodes of anything that isn't vect_internal_def.  */
+  unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
+  SLP_TREE_DEF_TYPE (node) = vect_external_def;
+  SLP_TREE_SCALAR_OPS (node).safe_grow (group_size);
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
+    {
+      tree lhs = gimple_get_lhs (vect_orig_stmt (stmt_info)->stmt);
+      SLP_TREE_SCALAR_OPS (node)[i] = lhs;
+    }
+  return true;
+}
+
 /* Analyze statements contained in SLP tree NODE after recursively analyzing
    the subtree.  NODE_INSTANCE contains NODE and VINFO contains INSTANCE.
 
@@ -2717,6 +2766,13 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     {
       SLP_TREE_NUMBER_OF_VEC_STMTS (node)
 	= SLP_TREE_NUMBER_OF_VEC_STMTS (*leader);
+      /* Cope with cases in which we made a late decision to build the
+	 node from scalars.  */
+      if (SLP_TREE_DEF_TYPE (*leader) == vect_external_def
+	  && vect_slp_convert_to_external (vinfo, node, node_instance))
+	;
+      else
+	gcc_assert (SLP_TREE_DEF_TYPE (node) == SLP_TREE_DEF_TYPE (*leader));
       return true;
     }
 
@@ -2775,6 +2831,11 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_SCALAR_STMTS (child).length () != 0)
       STMT_VINFO_DEF_TYPE (SLP_TREE_SCALAR_STMTS (child)[0]) = dt[j];
+
+  /* If this node can't be vectorized, try pruning the tree here rather
+     than felling the whole thing.  */
+  if (!res && vect_slp_convert_to_external (vinfo, node, node_instance))
+    res = true;
 
   return res;
 }
@@ -3172,16 +3233,16 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 		    unsigned int n_stmts)
 {
   bb_vec_info bb_vinfo;
-  auto_vector_sizes vector_sizes;
+  auto_vector_modes vector_modes;
 
   /* Autodetect first vector size we try.  */
-  poly_uint64 next_vector_size = 0;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, false);
-  unsigned int next_size = 0;
+  machine_mode next_vector_mode = VOIDmode;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, false);
+  unsigned int mode_i = 0;
 
   vec_info_shared shared;
 
-  poly_uint64 autodetected_vector_size = 0;
+  machine_mode autodetected_vector_mode = VOIDmode;
   while (1)
     {
       bool vectorized = false;
@@ -3194,13 +3255,18 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	bb_vinfo->shared->save_datarefs ();
       else
 	bb_vinfo->shared->check_datarefs ();
-      bb_vinfo->vector_size = next_vector_size;
+      bb_vinfo->vector_mode = next_vector_mode;
 
       if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal)
 	  && dbg_cnt (vect_slp))
 	{
 	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "***** Analysis succeeded with vector mode"
+			       " %s\n", GET_MODE_NAME (bb_vinfo->vector_mode));
+	      dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
+	    }
 
 	  bb_vinfo->shared->check_datarefs ();
 	  vect_schedule_slp (bb_vinfo);
@@ -3208,7 +3274,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	  unsigned HOST_WIDE_INT bytes;
 	  if (dump_enabled_p ())
 	    {
-	      if (bb_vinfo->vector_size.is_constant (&bytes))
+	      if (GET_MODE_SIZE (bb_vinfo->vector_mode).is_constant (&bytes))
 		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 				 "basic block part vectorized using %wu byte "
 				 "vectors\n", bytes);
@@ -3220,34 +3286,63 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 
 	  vectorized = true;
 	}
+      else
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Analysis failed with vector mode %s\n",
+			     GET_MODE_NAME (bb_vinfo->vector_mode));
+	}
 
-      if (next_size == 0)
-	autodetected_vector_size = bb_vinfo->vector_size;
+      if (mode_i == 0)
+	autodetected_vector_mode = bb_vinfo->vector_mode;
+
+      if (!fatal)
+	while (mode_i < vector_modes.length ()
+	       && vect_chooses_same_modes_p (bb_vinfo, vector_modes[mode_i]))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "***** The result for vector mode %s would"
+			       " be the same\n",
+			       GET_MODE_NAME (vector_modes[mode_i]));
+	    mode_i += 1;
+	  }
 
       delete bb_vinfo;
 
-      if (next_size < vector_sizes.length ()
-	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
-	next_size += 1;
+      if (mode_i < vector_modes.length ()
+	  && VECTOR_MODE_P (autodetected_vector_mode)
+	  && (related_vector_mode (vector_modes[mode_i],
+				   GET_MODE_INNER (autodetected_vector_mode))
+	      == autodetected_vector_mode)
+	  && (related_vector_mode (autodetected_vector_mode,
+				   GET_MODE_INNER (vector_modes[mode_i]))
+	      == vector_modes[mode_i]))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Skipping vector mode %s, which would"
+			     " repeat the analysis for %s\n",
+			     GET_MODE_NAME (vector_modes[mode_i]),
+			     GET_MODE_NAME (autodetected_vector_mode));
+	  mode_i += 1;
+	}
 
       if (vectorized
-	  || next_size == vector_sizes.length ()
-	  || known_eq (autodetected_vector_size, 0U)
+	  || mode_i == vector_modes.length ()
+	  || autodetected_vector_mode == VOIDmode
 	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
 	     vector sizes will fail do not bother iterating.  */
 	  || fatal)
 	return vectorized;
 
       /* Try the next biggest vector size.  */
-      next_vector_size = vector_sizes[next_size++];
+      next_vector_mode = vector_modes[mode_i++];
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "***** Re-trying analysis with "
-			   "vector size ");
-	  dump_dec (MSG_NOTE, next_vector_size);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying analysis with vector mode %s\n",
+			 GET_MODE_NAME (next_vector_mode));
     }
 }
 
@@ -3497,8 +3592,7 @@ vect_get_constant_vectors (slp_tree op_node, slp_tree slp_node,
   tree stmt_vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
       && vect_mask_constant_operand_p (stmt_vinfo))
-    vector_type
-      = build_same_sized_truth_vector_type (stmt_vectype);
+    vector_type = truth_type_for (stmt_vectype);
   else
     vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op));
 

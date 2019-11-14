@@ -449,9 +449,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #  if __cplusplus > 201703L && defined __cpp_lib_concepts
   template<typename _Iterator1, typename _Iterator2>
     requires (!sized_sentinel_for<_Iterator1, _Iterator2>)
-    inline constexpr bool disable_sized_sentinel<reverse_iterator<_Iterator1>,
-						 reverse_iterator<_Iterator2>>
-						   = true;
+    inline constexpr bool
+    disable_sized_sentinel_for<reverse_iterator<_Iterator1>,
+			       reverse_iterator<_Iterator2>> = true;
 #  endif // C++20
 # endif // C++14
 

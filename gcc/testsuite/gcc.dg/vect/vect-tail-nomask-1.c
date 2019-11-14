@@ -106,4 +106,4 @@ main (int argc, const char **argv)
 }
 
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" { target avx2_runtime } } } */
-/* { dg-final { scan-tree-dump-times "LOOP EPILOGUE VECTORIZED \\(VS=16\\)" 2 "vect" { target avx2_runtime } } } */
+/* { dg-final { scan-tree-dump-times "LOOP EPILOGUE VECTORIZED \\(MODE=V16QI\\)" 2 "vect" { target avx2_runtime } } } */

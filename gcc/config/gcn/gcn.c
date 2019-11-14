@@ -3816,8 +3816,7 @@ gcn_expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
    a vector.  */
 
 opt_machine_mode
-gcn_vectorize_get_mask_mode (poly_uint64 ARG_UNUSED (nunits),
-			     poly_uint64 ARG_UNUSED (length))
+gcn_vectorize_get_mask_mode (machine_mode)
 {
   /* GCN uses a DImode bit-mask.  */
   return DImode;

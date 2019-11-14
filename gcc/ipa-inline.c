@@ -417,20 +417,10 @@ inline_insns_single (cgraph_node *n, bool hint)
 static int
 inline_insns_auto (cgraph_node *n, bool hint)
 {
-  if (opt_for_fn (n->decl, optimize) >= 3)
-    {
-      if (hint)
-	return param_max_inline_insns_auto
-	       * param_inline_heuristics_hint_percent / 100;
-      return param_max_inline_insns_auto;
-    }
-  else
-    {
-      if (hint)
-	return param_max_inline_insns_auto_o2
-	       * param_inline_heuristics_hint_percent_o2 / 100;
-      return param_max_inline_insns_auto_o2;
-    }
+  int max_inline_insns_auto = opt_for_fn (n->decl, param_max_inline_insns_auto);
+  if (hint)
+    return max_inline_insns_auto * param_inline_heuristics_hint_percent / 100;
+  return max_inline_insns_auto;
 }
 
 /* Decide if we can inline the edge and possibly update
@@ -830,10 +820,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 		- ipa_call_summaries->get (e)->call_stmt_size
 	      > inline_insns_auto (e->caller, true))
     {
-      if (opt_for_fn (e->caller->decl, optimize) >= 3)
-        e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
-      else
-        e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_O2_LIMIT;
+      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl)
@@ -848,8 +835,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 			    : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
       else
 	e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
-			    ? CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT
-			    : CIF_MAX_INLINE_INSNS_AUTO_O2_LIMIT);
+			      ? CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT
+			      : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
       want_inline = false;
     }
   else
@@ -903,10 +890,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
           if (growth >= inline_insns_single (e->caller, false)
 	      || growth_positive_p (callee, e, growth))
 	    {
-	      if (opt_for_fn (e->caller->decl, optimize) >= 3)
-		e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
-	      else
-		e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_O2_LIMIT;
+	      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
 	      want_inline = false;
  	    }
 	}
@@ -1179,6 +1163,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 
       overall_growth = callee_info->growth;
 
+#if 1
       /* Look for inliner wrappers of the form:
 
 	 inline_caller ()
@@ -1230,6 +1215,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	      overall_growth = caller_growth;
 	    }
 	}
+#endif
       if (overall_growth > 0)
         {
 	  /* Strongly preffer functions with few callers that can be inlined
@@ -2148,12 +2134,23 @@ inline_small_functions (void)
 	    fprintf (dump_file, " Peeling recursion with depth %i\n", depth);
 
 	  gcc_checking_assert (!callee->inlined_to);
+
+	  int old_size = ipa_size_summaries->get (where)->size;
+	  sreal old_time = ipa_fn_summaries->get (where)->time;
+
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
 	  reset_edge_caches (edge->callee);
 
-	  update_callee_keys (&edge_heap, where, updated_nodes);
+	  /* If caller's size and time increased we do not need to update
+	     all edges becuase badness is not going to decrease.  */
+	  if (old_size <= ipa_size_summaries->get (where)->size
+	      && old_time <= ipa_fn_summaries->get (where)->time
+	      && 0)
+	    update_callee_keys (&edge_heap, edge->callee, updated_nodes);
+	  else
+	    update_callee_keys (&edge_heap, where, updated_nodes);
 	}
       where = edge->caller;
       if (where->inlined_to)

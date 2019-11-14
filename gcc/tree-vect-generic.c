@@ -694,7 +694,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      tree zero, cst, cond, mask_type;
 	      gimple *stmt;
 
-	      mask_type = build_same_sized_truth_vector_type (type);
+	      mask_type = truth_type_for (type);
 	      zero = build_zero_cst (type);
 	      cond = build2 (LT_EXPR, mask_type, op0, zero);
 	      tree_vector_builder vec (type, nunits, 1);

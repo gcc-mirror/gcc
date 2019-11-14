@@ -39,6 +39,10 @@
 (define_register_constraint "y" "FP_LO8_REGS"
   "Floating point and SIMD vector registers V0 - V7.")
 
+(define_constraint "c"
+ "@internal The condition code register."
+  (match_operand 0 "cc_register"))
+
 (define_constraint "I"
  "A constant that can be used with an ADD operation."
  (and (match_code "const_int")

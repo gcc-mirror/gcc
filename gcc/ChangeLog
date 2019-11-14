@@ -1,5 +1,530 @@
 2019-11-14  Aldy Hernandez  <aldyh@redhat.com>
 
+	* range-op.cc (*operator*::*range): Remove calls to
+	range_intersect, range_invert, and range_union in favor of calling
+	the in-place API methods.
+	(range_tests): Same.
+	* range.cc (range_intersect): Remove.
+	(range_union): Remove.
+	(range_invert): Remove.
+	* range.h (range_intersect): Remove.
+	(range_union): Remove.
+	(range_intersect): Remove.
+
+2019-11-14  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/92430
+	* cfgcleanup.c (pass_jump_after_combine::gate): New function.
+	(pass_jump_after_combine::execute): Perform jump threading
+	unconditionally.
+
+2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
+	    Doug Rupp <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc: Collapse the arm-vxworks entries into
+	a single arm-wrs-vxworks7* one, bpabi based.  Update
+	the default cpu from arm8 to armv7-a
+	* config/arm/vxworks.h (CC1_SPEC): Simplify, knowing that
+	we always use ARM_UNWIND_INFO.
+	(DWARF2_UNWIND_INFO): Remove redefinition.
+	(ARM_TARGET2_DWARF_FORMAT): Likewise.
+	(VXWORKS_PERSONALITY): Define, to "llvm".
+	(VXWORKS_EXTRA_LIBS_RTP): Define, to "-lllvm".
+
+2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/vxworks.h (TARGET_OS_CPP_BUILTINS): Use
+	_VX_CPU instead of CPU and handle arm_arch8.
+
+2019-11-14  Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+	    Jerome Lambourg  <lambourg@adacore.com>
+
+	* config.gcc: Handle aarch64*-wrs-vxworks7*.
+	* config/aarch64/aarch64-vxworks.h: New file.
+	* config/aarch64/t-aarch64-vxworks: New file.
+
+2019-11-06  Jerome Lambourg  <lambourg@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h (USE_TM_CLONE_REGISTRY): Remove
+	definition, pointless with a VxWorks specific version
+	of crtstuff.
+	(DWARF2_UNWIND_INFO): Conditionalize on !ARM_UNWIND_INFO.
+	* config/vxworks.h (VX_CRTBEGIN_SPEC, VX_CRTEND_SPEC):
+	New local macros, controlling the addition of vxworks specific
+	crtstuff objects depending on the EH mechanism and kind of
+	module being linked.
+	(VXWORKS_STARTFILE_SPEC, VXWORKS_ENDFILE_SPEC): Use them.
+
+2019-11-06  Pat Bernardi  <bernardi@adacore.com>
+            Jerome Lambourg  <lambourg@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc: Add comment to introduce the TARGET_VXWORKS
+	common macro definitions, conveying VXWORKS7 or 64bit general
+	variations.  Add a block to set gcc_cv_initfini_array
+	unconditionally to "yes" for VxWorks7.
+	config/vx-common.h (VXWORKS_CC1_SPEC): New macro, empty string
+	by default.  Update some comments.
+	config/vxworks.h (VXWORKS_EXTRA_LIBS_RTP): New macro, empty by
+	default, to be added the end of VXWORKS_LIBS_RTP.
+	(VXWORKS_LIBS_RTP): Replace hardcoded part by VXWORKS_BASE_LIBS_RTP
+	and append VXWORKS_EXTRA_LIBS_RTP, both of which specific ports may
+	redefine.
+	(VXWORKS_NET_LIBS_RTP): Account for VxWorks7 specificities.
+	(VXWORKS_CC1_SPEC): Common base definition, with VxWorks7 variation
+	to account for the now available TLS abilities.
+	(TARGET_LIBC_HAS_FUNCTION): Account for VxWorks7 abilities.
+	(VXWORKS_HAVE_TLS): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_contains_pattern_stmt_p): New function.
+	(vect_slp_convert_to_external): Likewise.
+	(vect_slp_analyze_node_operations): If analysis fails, try building
+	the node from scalars instead.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-cfg.c (verify_gimple_assign_unary): Handle conversions
+	between vector types.
+	* tree-vect-stmts.c (vectorizable_conversion): Extend the
+	non-widening and non-narrowing path to handle standard
+	conversion codes, if the target supports them.
+	* expr.c (convert_move): Try using the extend and truncate optabs
+	for vectors.
+	* optabs-tree.c (supportable_convert_operation): Likewise.
+	* config/aarch64/iterators.md (Vnarroqw): New iterator.
+	* config/aarch64/aarch64-simd.md (<optab><Vnarrowq><mode>2)
+	(trunc<mode><Vnarrowq>2): New patterns.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vect_get_vector_types_for_stmt): Don't
+	require vectype and nunits_vectype to have the same size;
+	instead assert that nunits_vectype has at least as many
+	elements as vectype.  Don't compute a separate nunits_vectype
+	if the scalar type is obviously the same as vectype's.
+	Tweak dump messages.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vectorize_related_mode): New
+	function.
+	(aarch64_autovectorize_vector_modes): Also add V4HImode and V2SImode.
+	(TARGET_VECTORIZE_RELATED_MODE): Define.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vec_info::mode_set): New typedef.
+	(vec_info::used_vector_mode): New member variable.
+	(vect_chooses_same_modes_p): Declare.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Record each
+	chosen vector mode in vec_info::used_vector_mode.
+	(vect_chooses_same_modes_p): New function.
+	* tree-vect-loop.c (vect_analyze_loop): Use it to avoid trying
+	the same vector statements multiple times.
+	* tree-vect-slp.c (vect_slp_bb_region): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* machmode.h (opt_machine_mode::operator==): New function.
+	(opt_machine_mode::operator!=): Likewise.
+	* tree-vectorizer.h (vec_info::vector_mode): Update comment.
+	(get_related_vectype_for_scalar_type): Delete.
+	(get_vectype_for_scalar_type_and_size): Declare.
+	* tree-vect-slp.c (vect_slp_bb_region): Print dump messages to say
+	whether analysis passed or failed, and with what vector modes.
+	Use related_vector_mode to check whether trying a particular
+	vector mode would be redundant with the autodetected mode,
+	and print a dump message if we decide to skip it.
+	* tree-vect-loop.c (vect_analyze_loop): Likewise.
+	(vect_create_epilog_for_reduction): Use
+	get_related_vectype_for_scalar_type instead of
+	get_vectype_for_scalar_type_and_size.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): Replace
+	with...
+	(get_related_vectype_for_scalar_type): ...this new function.
+	Take a starting/"prevailing" vector mode rather than a vector size.
+	Take an optional nunits argument, with the same meaning as for
+	related_vector_mode.  Use related_vector_mode when not
+	auto-detecting a mode, falling back to mode_for_vector if no
+	target mode exists.
+	(get_vectype_for_scalar_type): Update accordingly.
+	(get_same_sized_vectype): Likewise.
+	* tree-vectorizer.c (get_vec_alignment_for_array_type): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vectorizable_call): Require the types
+	to have the same size.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vectorizable_call): If an operand is
+	constant or external, use get_vectype_for_scalar_type
+	rather than get_same_sized_vectype to get its vector type.
+	(vectorizable_conversion, vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vec_info::vector_size): Replace with...
+	(vec_info::vector_mode): ...this new field.
+	* tree-vect-loop.c (vect_update_vf_for_slp): Update accordingly.
+	(vect_analyze_loop, vect_transform_loop): Likewise.
+	* tree-vect-loop-manip.c (vect_do_peeling): Likewise.
+	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.
+	(vect_make_slp_decision, vect_slp_bb_region): Likewise.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Likewise.
+	* tree-vectorizer.c (try_vectorize_loop_1): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.h (vector_sizes, auto_vector_sizes): Delete.
+	(vector_modes, auto_vector_modes): New typedefs.
+	* target.def (autovectorize_vector_sizes): Replace with...
+	(autovectorize_vector_modes): ...this new hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES):
+	Replace with...
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): ...this new hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_autovectorize_vector_sizes): Delete.
+	(default_autovectorize_vector_modes): New function.
+	* targhooks.c (default_autovectorize_vector_sizes): Delete.
+	(default_autovectorize_vector_modes): New function.
+	* omp-general.c (omp_max_vf): Use autovectorize_vector_modes instead
+	of autovectorize_vector_sizes.  Use the number of units in the mode
+	to calculate the maximum VF.
+	* omp-low.c (omp_clause_aligned_alignment): Use
+	autovectorize_vector_modes instead of autovectorize_vector_sizes.
+	Use a loop based on related_mode to iterate through all supported
+	vector modes for a given scalar mode.
+	* optabs-query.c (can_vec_mask_load_store_p): Use
+	autovectorize_vector_modes instead of autovectorize_vector_sizes.
+	* tree-vect-loop.c (vect_analyze_loop, vect_transform_loop): Likewise.
+	* tree-vect-slp.c (vect_slp_bb_region): Likewise.
+	* config/aarch64/aarch64.c (aarch64_autovectorize_vector_sizes):
+	Replace with...
+	(aarch64_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/arc/arc.c (arc_autovectorize_vector_sizes): Replace with...
+	(arc_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/arm/arm.c (arm_autovectorize_vector_sizes): Replace with...
+	(arm_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes): Replace with...
+	(ix86_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	* config/mips/mips.c (mips_autovectorize_vector_sizes): Replace with...
+	(mips_autovectorize_vector_modes): ...this new function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Delete.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vectorizable_shift): Check the number
+	of vector elements as well as the type mode when deciding
+	whether an op1_vectype is compatible.  Reuse the result of
+	this check when generating vector statements.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): If
+	targetm.vectorize.preferred_simd_mode returns an integer mode,
+	use mode_for_vector to decide what the vector type's mode
+	should actually be.  Use build_vector_type_for_mode instead
+	of build_vector_type.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (get_mask_mode): Take a vector mode itself as argument,
+	instead of properties about the vector mode.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_get_mask_mode): Update to reflect new
+	get_mode_mask interface.
+	* targhooks.c (default_get_mask_mode): Likewise.  Use
+	related_int_vector_mode.
+	* optabs-query.c (can_vec_mask_load_store_p): Update call
+	to get_mask_mode.
+	* tree-vect-stmts.c (check_load_store_masking): Likewise, checking
+	first that the original mode really is a vector.
+	* tree.c (build_truth_vector_type_for): Likewise.
+	* config/aarch64/aarch64.c (aarch64_get_mask_mode): Update for new
+	get_mode_mask interface.
+	(aarch64_expand_sve_vcond): Update call accordingly.
+	* config/gcn/gcn.c (gcn_vectorize_get_mask_mode): Update for new
+	get_mode_mask interface.
+	* config/i386/i386.c (ix86_get_mask_mode): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.h (build_truth_vector_type): Delete.
+	(build_same_sized_truth_vector_type): Likewise.
+	* tree.c (build_truth_vector_type): Rename to...
+	(build_truth_vector_type_for): ...this.  Make static and take
+	a vector type as argument.
+	(truth_type_for): Update accordingly.
+	(build_same_sized_truth_vector_type): Delete.
+	* tree-vect-generic.c (expand_vector_divmod): Use truth_type_for
+	instead of build_same_sized_truth_vector_type.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Likewise.
+	(vect_record_loop_mask, vect_get_loop_mask): Likewise.
+	* tree-vect-patterns.c (build_mask_conversion): Likeise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Likewise.
+	(vect_build_gather_load_calls, vectorizable_call): Likewise.
+	(scan_store_can_perm_p, vectorizable_scan_store): Likewise.
+	(vectorizable_store, vectorizable_condition): Likewise.
+	(get_mask_type_for_scalar_type, get_same_sized_vectype): Likewise.
+	(vect_get_mask_type_for_stmt): Use truth_type_for instead of
+	build_truth_vector_type.
+	* config/aarch64/aarch64-sve-builtins.cc (gimple_folder::convert_pred):
+	Use truth_type_for instead of build_same_sized_truth_vector_type.
+	* config/rs6000/rs6000-call.c (fold_build_vec_cmp): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.h (build_truth_vector_type_for_mode): Declare.
+	* tree.c (build_truth_vector_type_for_mode): New function,
+	split out from...
+	(build_truth_vector_type): ...here.
+	(build_opaque_vector_type): Fix head comment.
+	* tree-vectorizer.h (supportable_narrowing_operation): Remove
+	vec_info parameter.
+	(vect_halve_mask_nunits): Replace vec_info parameter with the
+	mode of the new vector.
+	(vect_double_mask_nunits): Likewise.
+	* tree-vect-loop.c (vect_halve_mask_nunits): Likewise.
+	(vect_double_mask_nunits): Likewise.
+	* tree-vect-loop-manip.c: Include insn-config.h, rtl.h and recog.h.
+	(vect_maybe_permute_loop_masks): Remove vinfo parameter.  Update call
+	to vect_halve_mask_nunits, getting the required mode from the unpack
+	patterns.
+	(vect_set_loop_condition_masked): Update call accordingly.
+	* tree-vect-stmts.c (supportable_narrowing_operation): Remove vec_info
+	parameter and update call to vect_double_mask_nunits.
+	(vectorizable_conversion): Update call accordingly.
+	(simple_integer_narrowing): Likewise.  Remove vec_info parameter.
+	(vectorizable_call): Update call accordingly.
+	(supportable_widening_operation): Update call to
+	vect_halve_mask_nunits.
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types):
+	Use build_truth_vector_type_mode instead of build_truth_vector_type.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* machmode.h (mode_for_int_vector): Delete.
+	(related_int_vector_mode): Declare.
+	* stor-layout.c (mode_for_int_vector): Delete.
+	(related_int_vector_mode): New function.
+	* optabs.c (expand_vec_perm_1): Use related_int_vector_mode
+	instead of mode_for_int_vector.
+	(expand_vec_perm_const): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Likewise.
+	(aarch64_evpc_sve_tbl): Likewise.
+	* config/s390/s390.c (s390_expand_vec_compare_cc): Likewise.
+	(s390_expand_vcond): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (related_mode): New hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_RELATED_MODE): New hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_vectorize_related_mode): Declare.
+	* targhooks.c (default_vectorize_related_mode): New function.
+	* machmode.h (related_vector_mode): Declare.
+	* stor-layout.c (related_vector_mode): New function.
+	* expmed.c (extract_bit_field_1): Use it instead of mode_for_vector.
+	* optabs-query.c (qimode_for_vec_perm): Likewise.
+	* tree-vect-stmts.c (get_group_load_store_type): Likewise.
+	(vectorizable_store, vectorizable_load): Likewise
+
+2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/arm/aarch-common-protos.h (arm_md_asm_adjust): Declare.
+	* config/arm/aarch-common.c (arm_md_asm_adjust): New.
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__GCC_ASM_FLAG_OUTPUTS__.
+	* config/arm/arm.c (TARGET_MD_ASM_ADJUST): New.
+	* config/aarch64/aarch64-c.c (aarch64_define_unconditional_macros):
+	Define __GCC_ASM_FLAG_OUTPUTS__.
+	* config/aarch64/aarch64.c (TARGET_MD_ASM_ADJUST): New.
+	* doc/extend.texi (FlagOutputOperands): Add documentation
+	for ARM and AArch64.
+
+	* config/arm/arm-modes.def (CC_NZ): Rename from CC_NOOV.
+	* config/arm/predicates.md (nz_comparison_operator): Rename
+	from noov_comparison_operator.
+	* config/arm/arm.c (arm_select_cc_mode): Use CC_NZmode name.
+	(arm_gen_dicompare_reg): Likewise.
+	(maybe_get_arm_condition_code): Likewise.
+	(thumb1_final_prescan_insn): Likewise.
+	(arm_emit_coreregs_64bit_shift): Likewise.
+	* config/arm/arm.md (addsi3_compare0): Likewise.
+	(*addsi3_compare0_scratch, subsi3_compare0): Likewise.
+	(*mulsi3_compare0, *mulsi3_compare0_v6): Likewise.
+	(*mulsi3_compare0_scratch, *mulsi3_compare0_scratch_v6): Likewise.
+	(*mulsi3addsi_compare0, *mulsi3addsi_compare0_v6): Likewise.
+	(*mulsi3addsi_compare0_scratch): Likewise.
+	(*mulsi3addsi_compare0_scratch_v6): Likewise.
+	(*andsi3_compare0, *andsi3_compare0_scratch): Likewise.
+	(*zeroextractsi_compare0_scratch): Likewise.
+	(*ne_zeroextractsi, *ne_zeroextractsi_shifted): Likewise.
+	(*ite_ne_zeroextractsi, *ite_ne_zeroextractsi_shifted): Likewise.
+	(andsi_not_shiftsi_si_scc_no_reuse): Likewise.
+	(andsi_not_shiftsi_si_scc): Likewise.
+	(*andsi_notsi_si_compare0, *andsi_notsi_si_compare0_scratch): Likewise.
+	(*iorsi3_compare0, *iorsi3_compare0_scratch): Likewise.
+	(*xorsi3_compare0, *xorsi3_compare0_scratch): Likewise.
+	(*shiftsi3_compare0, *shiftsi3_compare0_scratch): Likewise.
+	(*not_shiftsi_compare0, *not_shiftsi_compare0_scratch): Likewise.
+	(*notsi_compare0, *notsi_compare0_scratch): Likewise.
+	(return_addr_mask, *check_arch2): Likewise.
+	(*arith_shiftsi_compare0, *arith_shiftsi_compare0_scratch): Likewise.
+	(*sub_shiftsi_compare0, *sub_shiftsi_compare0_scratch): Likewise.
+	(compare_scc splitters): Likewise.
+	(movcond_addsi): Likewise.
+	* config/arm/thumb2.md (thumb2_addsi3_compare0): Likewise.
+	(*thumb2_addsi3_compare0_scratch): Likewise.
+	(*thumb2_mulsi_short_compare0): Likewise.
+	(*thumb2_mulsi_short_compare0_scratch): Likewise.
+	(compare peephole2s): Likewise.
+	* config/arm/thumb1.md (thumb1_cbz): Use CC_NZmode and
+	nz_comparison_operator names.
+	(cbranchsi4_insn): Likewise.
+
+	* config/arm/constraints.md (c): Use cc_register predicate.
+
+	* config/aarch64/constraints.md (c): New constraint.
+
+2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (ipa_call_context::estimate_size_and_time,
+	ipa_merge_fn_summary_after_inlining): Micro optimize.
+
+2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.opt (max-inline-insns-single-O2): Set to 70 (instead of 30).
+
+2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (ipa_vr_operation_and_type_effects): Move up in file.
+	(ipa_value_range_from_jfunc): New function.
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Add
+	known_value_ranges parameter; use it to evalulate conditions.
+	(evaluate_properties_for_edge): Compute known value ranges.
+	(ipa_fn_summary_t::duplicate): Update use of
+	evaluate_conditions_for_known_args.
+	(estimate_ipcp_clone_size_and_time): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	* ipa-prop.h (ipa_value_range_from_jfunc): Declare.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* ipa-inline.c (want_inline_small_function_p): Use
+	CIF_MAX_INLINE_INSNS_AUTO_LIMIT instead
+	of CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* ipa-cp.c (devirtualization_time_bonus): Use opt_for_fn
+	of a callee to get value of the param.
+	* ipa-inline.c (inline_insns_auto): Use proper
+	opt_for_fn.
+	* opts.c (maybe_default_option): Do not overwrite param
+	value if optimization level does not match.  Note that
+	params usually have default value set via Init() keyword.
+	* params.opt: Remove -param=max-inline-insns-auto-O2.
+	* cif-code.def (MAX_INLINE_INSNS_AUTO_O2_LIMIT): Remove.
+	* doc/invoke.texi: Remove documentation of
+	max-inline-insns-auto-O2.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.c (switch_conversion::switch_conversion):
+	Do not initialize m_other_count.
+	(switch_conversion::collect): Do not count m_default_count and
+	m_other_count as we use frequencies for edges.
+	* tree-switch-conversion.h: Remove m_default_count and m_other_count.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	PR other/92329
+	* doc/invoke.texi: Document -fallocation-dce.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	PR target/92389
+	* config/i386/i386.h: Add PTA_AVX512VPOPCNTDQ to
+	PTA_ICELAKE_CLIENT which is later interited by
+	PTA_ICELAKE_SERVER and PTA_TIGERLAKE.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item_optimizer::execute): Save
+	loaded_symbols.
+	(sem_item_optimizer::parse_nonsingleton_classes):
+	Return number of loaded symbols.
+	(sem_item_optimizer::merge_classes): Print
+	statistics about totally needed symbols.
+	* ipa-icf.h (parse_nonsingleton_classes): Change return
+	type.
+	(merge_classes): Add one argument.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::hash_operand): Improve
+	func_checker::hash_operand by handling of FIELD_DECLs.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.h (func_checker::func_checker): Add
+	default constructor.
+	* ipa-icf.c (sem_function::init): Make operand_equal_p
+	and hash_operand public.
+	(sem_item::add_expr): Remove.
+	(sem_item::add_type): Remove.
+	(sem_function::hash_stmt): Use m_checker for hashing
+	of GIMPLE statements.
+	(sem_function::parse): Init with checker.
+	(sem_variable::parse): Pass NULL as checker.
+	(sem_item_optimizer::parse_funcs_and_vars):
+	Pass checker to ::parse function.
+	(sem_item_optimizer::parse_nonsingleton_classes): Likewise.
+	(sem_variable::parse): New function.
+	(sem_variable::get_hash): Only return computed hash value.
+	(sem_variable::init): Initialize hash of a variable.
+	* ipa-icf.h: Remove add_expr, add_type and add func_checker
+	to couple of functions as a new argument.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call): Update
+	bail out reason.
+	(func_checker::compare_gimple_assign): Likewise.
+
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-options.c (ix86_omp_device_kind_arch_isa): Don't
+	change sse4.2 to sse4_2 and sse4.1 to sse4.1.
+	* config/i386/t-omp-device (omp-device-properties-i386): Likewise.
+
+	* omp-general.c (omp_context_name_list_prop): New function.
+	(omp_context_selector_matches): Use it.  Return 0 if it returns
+	NULL.
+	(omp_context_selector_props_compare): Allow equivalency of an
+	identifier and a string literal containing no embedded zeros.
+
+2019-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
 	* range-op.cc (RANGE3): Remove.
 	(range_tests): Remove all selftest that check for multi-ranges.
 	Put tests in namespace selftest.

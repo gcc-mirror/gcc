@@ -12,7 +12,7 @@ template <int N>
 void f04 ();
 template <int N>
 void f05 ();
-#pragma omp declare variant (f05<N>) match (user={condition((T)N)},implementation={vendor(gnu)})
+#pragma omp declare variant (f05<N>) match (user={condition((T)N)},implementation={vendor("gnu")})
 template <int N, typename T>
 void f06 ();
 void f07 ();

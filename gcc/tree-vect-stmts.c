@@ -1605,7 +1605,7 @@ vect_get_vec_def_for_operand (tree op, stmt_vec_info stmt_vinfo, tree vectype)
 	vector_type = vectype;
       else if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
 	       && VECTOR_BOOLEAN_TYPE_P (stmt_vectype))
-	vector_type = build_same_sized_truth_vector_type (stmt_vectype);
+	vector_type = truth_type_for (stmt_vectype);
       else
 	vector_type = get_vectype_for_scalar_type (loop_vinfo, TREE_TYPE (op));
 
@@ -1943,9 +1943,8 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
     }
 
   machine_mode mask_mode;
-  if (!(targetm.vectorize.get_mask_mode
-	(GET_MODE_NUNITS (vecmode),
-	 GET_MODE_SIZE (vecmode)).exists (&mask_mode))
+  if (!VECTOR_MODE_P (vecmode)
+      || !targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
       || !can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
     {
       if (dump_enabled_p ())
@@ -2309,9 +2308,8 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 		  || alignment_support_scheme == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
 	      && known_eq (nunits, group_size)
-	      && mode_for_vector (elmode, (group_size - gap)).exists (&vmode)
-	      && VECTOR_MODE_P (vmode)
-	      && targetm.vector_mode_supported_p (vmode)
+	      && related_vector_mode (TYPE_MODE (vectype), elmode,
+				      group_size - gap).exists (&vmode)
 	      && (convert_optab_handler (vec_init_optab,
 					 TYPE_MODE (vectype), vmode)
 		  != CODE_FOR_nothing))
@@ -2735,7 +2733,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 			   || TREE_CODE (masktype) == INTEGER_TYPE
 			   || types_compatible_p (srctype, masktype)));
   if (mask && TREE_CODE (masktype) == INTEGER_TYPE)
-    masktype = build_same_sized_truth_vector_type (srctype);
+    masktype = truth_type_for (srctype);
 
   tree mask_halftype = masktype;
   tree perm_mask = NULL_TREE;
@@ -2781,8 +2779,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, indices);
 	}
       else if (mask)
-	mask_halftype
-	  = build_same_sized_truth_vector_type (gs_info->offset_vectype);
+	mask_halftype = truth_type_for (gs_info->offset_vectype);
     }
   else
     gcc_unreachable ();
@@ -3154,7 +3151,7 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
    *CONVERT_CODE.  */
 
 static bool
-simple_integer_narrowing (vec_info *vinfo, tree vectype_out, tree vectype_in,
+simple_integer_narrowing (tree vectype_out, tree vectype_in,
 			  tree_code *convert_code)
 {
   if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype_out))
@@ -3164,9 +3161,8 @@ simple_integer_narrowing (vec_info *vinfo, tree vectype_out, tree vectype_in,
   tree_code code;
   int multi_step_cvt = 0;
   auto_vec <tree, 8> interm_types;
-  if (!supportable_narrowing_operation (vinfo, NOP_EXPR, vectype_out,
-					vectype_in, &code, &multi_step_cvt,
-					&interm_types)
+  if (!supportable_narrowing_operation (NOP_EXPR, vectype_out, vectype_in,
+					&code, &multi_step_cvt, &interm_types)
       || multi_step_cvt)
     return false;
 
@@ -3299,10 +3295,10 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  return false;
 	}
     }
-  /* If all arguments are external or constant defs use a vector type with
-     the same size as the output vector type.  */
+  /* If all arguments are external or constant defs, infer the vector type
+     from the scalar type.  */
   if (!vectype_in)
-    vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
+    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type);
   if (vec_stmt)
     gcc_assert (vectype_in);
   if (!vectype_in)
@@ -3311,6 +3307,19 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "no vectype for scalar type %T\n", rhs_type);
 
+      return false;
+    }
+  /* FORNOW: we don't yet support mixtures of vector sizes for calls,
+     just mixtures of nunits.  E.g. DI->SI versions of __builtin_ctz*
+     are traditionally vectorized as two VnDI->VnDI IFN_CTZs followed
+     by a pack of the two vectors into an SI vector.  We would need
+     separate code to handle direct VnDI->VnSI IFN_CTZs.  */
+  if (TYPE_SIZE (vectype_in) != TYPE_SIZE (vectype_out))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "mismatched vector sizes %T and %T\n",
+			 vectype_in, vectype_out);
       return false;
     }
 
@@ -3348,7 +3357,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (cfn != CFN_LAST
       && (modifier == NONE
 	  || (modifier == NARROW
-	      && simple_integer_narrowing (vinfo, vectype_out, vectype_in,
+	      && simple_integer_narrowing (vectype_out, vectype_in,
 					   &convert_code))))
     ifn = vectorizable_internal_function (cfn, callee, vectype_out,
 					  vectype_in);
@@ -3526,8 +3535,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (mask_opno >= 0 && !vectypes[mask_opno])
 	    {
 	      gcc_assert (modifier != WIDEN);
-	      vectypes[mask_opno]
-		= build_same_sized_truth_vector_type (vectype_in);
+	      vectypes[mask_opno] = truth_type_for (vectype_in);
 	    }
 
 	  for (i = 0; i < nargs; i++)
@@ -4792,10 +4800,10 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	}
     }
 
-  /* If op0 is an external or constant defs use a vector type of
-     the same size as the output vector type.  */
+  /* If op0 is an external or constant def, infer the vector type
+     from the scalar type.  */
   if (!vectype_in)
-    vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
+    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type);
   if (vec_stmt)
     gcc_assert (vectype_in);
   if (!vectype_in)
@@ -4853,7 +4861,9 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   switch (modifier)
     {
     case NONE:
-      if (code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
+      if (code != FIX_TRUNC_EXPR
+	  && code != FLOAT_EXPR
+	  && !CONVERT_EXPR_CODE_P (code))
 	return false;
       if (supportable_convert_operation (code, vectype_out, vectype_in,
 					 &decl1, &code1))
@@ -4932,8 +4942,8 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
     case NARROW:
       gcc_assert (op_type == unary_op);
-      if (supportable_narrowing_operation (vinfo, code, vectype_out,
-					   vectype_in, &code1, &multi_step_cvt,
+      if (supportable_narrowing_operation (code, vectype_out, vectype_in,
+					   &code1, &multi_step_cvt,
 					   &interm_types))
 	break;
 
@@ -4949,8 +4959,8 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (!supportable_convert_operation (code, cvt_type, vectype_in,
 					  &decl1, &codecvt1))
 	goto unsupported;
-      if (supportable_narrowing_operation (vinfo, NOP_EXPR, vectype_out,
-					   cvt_type, &code1, &multi_step_cvt,
+      if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
+					   &code1, &multi_step_cvt,
 					   &interm_types))
 	break;
       goto unsupported;
@@ -5549,6 +5559,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   bool scalar_shift_arg = true;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
+  bool incompatible_op1_vectype_p = false;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -5590,10 +5601,10 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                          "use not simple.\n");
       return false;
     }
-  /* If op0 is an external or constant def use a vector type with
-     the same size as the output vector type.  */
+  /* If op0 is an external or constant def, infer the vector type
+     from the scalar type.  */
   if (!vectype)
-    vectype = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
+    vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0));
   if (vec_stmt)
     gcc_assert (vectype);
   if (!vectype)
@@ -5692,9 +5703,13 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                          "vector/vector shift/rotate found.\n");
 
       if (!op1_vectype)
-	op1_vectype = get_same_sized_vectype (TREE_TYPE (op1), vectype_out);
-      if ((op1_vectype == NULL_TREE
-	   || TYPE_MODE (op1_vectype) != TYPE_MODE (vectype))
+	op1_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op1));
+      incompatible_op1_vectype_p
+	= (op1_vectype == NULL_TREE
+	   || maybe_ne (TYPE_VECTOR_SUBPARTS (op1_vectype),
+			TYPE_VECTOR_SUBPARTS (vectype))
+	   || TYPE_MODE (op1_vectype) != TYPE_MODE (vectype));
+      if (incompatible_op1_vectype_p
 	  && (!slp_node
 	      || SLP_TREE_DEF_TYPE
 		   (SLP_TREE_CHILDREN (slp_node)[1]) != vect_constant_def))
@@ -5840,9 +5855,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                     }
                 }
             }
-	  else if (slp_node
-		   && !useless_type_conversion_p (TREE_TYPE (vectype),
-						  TREE_TYPE (op1)))
+	  else if (slp_node && incompatible_op1_vectype_p)
 	    {
 	      if (was_scalar_shift_arg)
 		{
@@ -6021,8 +6034,8 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                          "use not simple.\n");
       return false;
     }
-  /* If op0 is an external or constant def use a vector type with
-     the same size as the output vector type.  */
+  /* If op0 is an external or constant def, infer the vector type
+     from the scalar type.  */
   if (!vectype)
     {
       /* For boolean type we cannot determine vectype by
@@ -6042,7 +6055,7 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  vectype = vectype_out;
 	}
       else
-	vectype = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
+	vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0));
     }
   if (vec_stmt)
     gcc_assert (vectype);
@@ -6583,7 +6596,7 @@ scan_store_can_perm_p (tree vectype, tree init,
 		   && TREE_CODE (init) != REAL_CST)
 		  || !initializer_zerop (init))
 		{
-		  tree masktype = build_same_sized_truth_vector_type (vectype);
+		  tree masktype = truth_type_for (vectype);
 		  if (!expand_vec_cond_expr_p (vectype, masktype, VECTOR_CST))
 		    return -1;
 		  whole_vector_shift_kind = scan_store_kind_lshift_cond;
@@ -7108,7 +7121,7 @@ vectorizable_scan_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    zero_vec = build_zero_cst (vectype);
 	  if (masktype == NULL_TREE
 	      && use_whole_vector[i] == scan_store_kind_lshift_cond)
-	    masktype = build_same_sized_truth_vector_type (vectype);
+	    masktype = truth_type_for (vectype);
 	  perms[i] = vect_gen_perm_mask_any (vectype, indices);
 	}
       else
@@ -7549,8 +7562,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  ncopies *= 2;
 
 	  if (mask)
-	    mask_halfvectype
-	      = build_same_sized_truth_vector_type (gs_info.offset_vectype);
+	    mask_halfvectype = truth_type_for (gs_info.offset_vectype);
 	}
       else
 	gcc_unreachable ();
@@ -7811,9 +7823,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		 of vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (elem_type);
 	      machine_mode vmode;
-	      if (!mode_for_vector (elmode, group_size).exists (&vmode)
-		  || !VECTOR_MODE_P (vmode)
-		  || !targetm.vector_mode_supported_p (vmode)
+	      if (!related_vector_mode (TYPE_MODE (vectype), elmode,
+					group_size).exists (&vmode)
 		  || (convert_optab_handler (vec_extract_optab,
 					     TYPE_MODE (vectype), vmode)
 		      == CODE_FOR_nothing))
@@ -7830,9 +7841,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		     element extracts from the original vector type and
 		     element size stores.  */
 		  if (int_mode_for_size (lsize, 0).exists (&elmode)
-		      && mode_for_vector (elmode, lnunits).exists (&vmode)
-		      && VECTOR_MODE_P (vmode)
-		      && targetm.vector_mode_supported_p (vmode)
+		      && related_vector_mode (TYPE_MODE (vectype), elmode,
+					      lnunits).exists (&vmode)
 		      && (convert_optab_handler (vec_extract_optab,
 						 vmode, elmode)
 			  != CODE_FOR_nothing))
@@ -8913,9 +8923,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		 vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
 	      machine_mode vmode;
-	      if (mode_for_vector (elmode, group_size).exists (&vmode)
-		  && VECTOR_MODE_P (vmode)
-		  && targetm.vector_mode_supported_p (vmode)
+	      if (related_vector_mode (TYPE_MODE (vectype), elmode,
+				       group_size).exists (&vmode)
 		  && (convert_optab_handler (vec_init_optab,
 					     TYPE_MODE (vectype), vmode)
 		      != CODE_FOR_nothing))
@@ -8939,9 +8948,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */
 		  if (int_mode_for_size (lsize, 0).exists (&elmode)
-		      && mode_for_vector (elmode, lnunits).exists (&vmode)
-		      && VECTOR_MODE_P (vmode)
-		      && targetm.vector_mode_supported_p (vmode)
+		      && related_vector_mode (TYPE_MODE (vectype), elmode,
+					      lnunits).exists (&vmode)
 		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
 			  != CODE_FOR_nothing))
 		    {
@@ -9978,7 +9986,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     return false;
 
   masked = !COMPARISON_CLASS_P (cond_expr);
-  vec_cmp_type = build_same_sized_truth_vector_type (comp_vectype);
+  vec_cmp_type = truth_type_for (comp_vectype);
 
   if (vec_cmp_type == NULL_TREE)
     return false;
@@ -11132,18 +11140,28 @@ vect_remove_stores (stmt_vec_info first_stmt_info)
     }
 }
 
-/* Function get_vectype_for_scalar_type_and_size.
+/* If NUNITS is nonzero, return a vector type that contains NUNITS
+   elements of type SCALAR_TYPE, or null if the target doesn't support
+   such a type.
 
-   Returns the vector type corresponding to SCALAR_TYPE  and SIZE as supported
-   by the target.  */
+   If NUNITS is zero, return a vector type that contains elements of
+   type SCALAR_TYPE, choosing whichever vector size the target prefers.
+
+   If PREVAILING_MODE is VOIDmode, we have not yet chosen a vector mode
+   for this vectorization region and want to "autodetect" the best choice.
+   Otherwise, PREVAILING_MODE is a previously-chosen vector TYPE_MODE
+   and we want the new type to be interoperable with it.   PREVAILING_MODE
+   in this case can be a scalar integer mode or a vector mode; when it
+   is a vector mode, the function acts like a tree-level version of
+   related_vector_mode.  */
 
 tree
-get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
+get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
+				     tree scalar_type, poly_uint64 nunits)
 {
   tree orig_scalar_type = scalar_type;
   scalar_mode inner_mode;
   machine_mode simd_mode;
-  poly_uint64 nunits;
   tree vectype;
 
   if (!is_int_mode (TYPE_MODE (scalar_type), &inner_mode)
@@ -11183,19 +11201,45 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
   if (scalar_type == NULL_TREE)
     return NULL_TREE;
 
-  /* If no size was supplied use the mode the target prefers.   Otherwise
-     lookup a vector mode of the specified size.  */
-  if (known_eq (size, 0U))
-    simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
-  else if (!multiple_p (size, nbytes, &nunits)
-	   || !mode_for_vector (inner_mode, nunits).exists (&simd_mode))
-    return NULL_TREE;
-  /* NOTE: nunits == 1 is allowed to support single element vector types.  */
-  if (!multiple_p (GET_MODE_SIZE (simd_mode), nbytes, &nunits))
-    return NULL_TREE;
+  /* If no prevailing mode was supplied, use the mode the target prefers.
+     Otherwise lookup a vector mode based on the prevailing mode.  */
+  if (prevailing_mode == VOIDmode)
+    {
+      gcc_assert (known_eq (nunits, 0U));
+      simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
+      if (SCALAR_INT_MODE_P (simd_mode))
+	{
+	  /* Traditional behavior is not to take the integer mode
+	     literally, but simply to use it as a way of determining
+	     the vector size.  It is up to mode_for_vector to decide
+	     what the TYPE_MODE should be.
 
-  vectype = build_vector_type (scalar_type, nunits);
+	     Note that nunits == 1 is allowed in order to support single
+	     element vector types.  */
+	  if (!multiple_p (GET_MODE_SIZE (simd_mode), nbytes, &nunits)
+	      || !mode_for_vector (inner_mode, nunits).exists (&simd_mode))
+	    return NULL_TREE;
+	}
+    }
+  else if (SCALAR_INT_MODE_P (prevailing_mode)
+	   || !related_vector_mode (prevailing_mode,
+				    inner_mode, nunits).exists (&simd_mode))
+    {
+      /* Fall back to using mode_for_vector, mostly in the hope of being
+	 able to use an integer mode.  */
+      if (known_eq (nunits, 0U)
+	  && !multiple_p (GET_MODE_SIZE (prevailing_mode), nbytes, &nunits))
+	return NULL_TREE;
 
+      if (!mode_for_vector (inner_mode, nunits).exists (&simd_mode))
+	return NULL_TREE;
+    }
+
+  vectype = build_vector_type_for_mode (scalar_type, simd_mode);
+
+  /* In cases where the mode was chosen by mode_for_vector, check that
+     the target actually supports the chosen mode, or that it at least
+     allows the vector mode to be replaced by a like-sized integer.  */
   if (!VECTOR_MODE_P (TYPE_MODE (vectype))
       && !INTEGRAL_MODE_P (TYPE_MODE (vectype)))
     return NULL_TREE;
@@ -11217,12 +11261,14 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
 tree
 get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type)
 {
-  tree vectype;
-  vectype = get_vectype_for_scalar_type_and_size (scalar_type,
-						  vinfo->vector_size);
-  if (vectype
-      && known_eq (vinfo->vector_size, 0U))
-    vinfo->vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
+  tree vectype = get_related_vectype_for_scalar_type (vinfo->vector_mode,
+						      scalar_type);
+  if (vectype && vinfo->vector_mode == VOIDmode)
+    vinfo->vector_mode = TYPE_MODE (vectype);
+
+  if (vectype)
+    vinfo->used_vector_modes.add (TYPE_MODE (vectype));
+
   return vectype;
 }
 
@@ -11239,8 +11285,7 @@ get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type)
   if (!vectype)
     return NULL;
 
-  return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (vectype),
-				  vinfo->vector_size);
+  return truth_type_for (vectype);
 }
 
 /* Function get_same_sized_vectype
@@ -11252,10 +11297,29 @@ tree
 get_same_sized_vectype (tree scalar_type, tree vector_type)
 {
   if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
-    return build_same_sized_truth_vector_type (vector_type);
+    return truth_type_for (vector_type);
 
-  return get_vectype_for_scalar_type_and_size
-	   (scalar_type, GET_MODE_SIZE (TYPE_MODE (vector_type)));
+  poly_uint64 nunits;
+  if (!multiple_p (GET_MODE_SIZE (TYPE_MODE (vector_type)),
+		   GET_MODE_SIZE (TYPE_MODE (scalar_type)), &nunits))
+    return NULL_TREE;
+
+  return get_related_vectype_for_scalar_type (TYPE_MODE (vector_type),
+					      scalar_type, nunits);
+}
+
+/* Return true if replacing LOOP_VINFO->vector_mode with VECTOR_MODE
+   would not change the chosen vector modes.  */
+
+bool
+vect_chooses_same_modes_p (vec_info *vinfo, machine_mode vector_mode)
+{
+  for (vec_info::mode_set::iterator i = vinfo->used_vector_modes.begin ();
+       i != vinfo->used_vector_modes.end (); ++i)
+    if (!VECTOR_MODE_P (*i)
+	|| related_vector_mode (vector_mode, GET_MODE_INNER (*i), 0) != *i)
+      return false;
+  return true;
 }
 
 /* Function vect_is_simple_use.
@@ -11459,7 +11523,6 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
                                 int *multi_step_cvt,
                                 vec<tree> *interm_types)
 {
-  vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
   class loop *vect_loop = NULL;
   machine_mode vec_mode;
@@ -11644,11 +11707,8 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
     {
       intermediate_mode = insn_data[icode1].operand[0].mode;
       if (VECTOR_BOOLEAN_TYPE_P (prev_type))
-	{
-	  intermediate_type = vect_halve_mask_nunits (vinfo, prev_type);
-	  if (intermediate_mode != TYPE_MODE (intermediate_type))
-	    return false;
-	}
+	intermediate_type
+	  = vect_halve_mask_nunits (prev_type, intermediate_mode);
       else
 	intermediate_type
 	  = lang_hooks.types.type_for_mode (intermediate_mode,
@@ -11724,7 +11784,7 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
    narrowing operation (short in the above example).   */
 
 bool
-supportable_narrowing_operation (vec_info *vinfo, enum tree_code code,
+supportable_narrowing_operation (enum tree_code code,
 				 tree vectype_out, tree vectype_in,
 				 enum tree_code *code1, int *multi_step_cvt,
                                  vec<tree> *interm_types)
@@ -11832,11 +11892,8 @@ supportable_narrowing_operation (vec_info *vinfo, enum tree_code code,
     {
       intermediate_mode = insn_data[icode1].operand[0].mode;
       if (VECTOR_BOOLEAN_TYPE_P (prev_type))
-	{
-	  intermediate_type = vect_double_mask_nunits (vinfo, prev_type);
-	  if (intermediate_mode != TYPE_MODE (intermediate_type))
-	    return false;
-	}
+	intermediate_type
+	  = vect_double_mask_nunits (prev_type, intermediate_mode);
       else
 	intermediate_type
 	  = lang_hooks.types.type_for_mode (intermediate_mode, uns);
@@ -11963,7 +12020,12 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
   tree vectype;
   tree scalar_type = NULL_TREE;
   if (STMT_VINFO_VECTYPE (stmt_info))
-    *stmt_vectype_out = vectype = STMT_VINFO_VECTYPE (stmt_info);
+    {
+      *stmt_vectype_out = vectype = STMT_VINFO_VECTYPE (stmt_info);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "precomputed vectype: %T\n", vectype);
+    }
   else
     {
       gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
@@ -11995,7 +12057,7 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "get vectype for scalar type:  %T\n", scalar_type);
+			 "get vectype for scalar type: %T\n", scalar_type);
       vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
       if (!vectype)
 	return opt_result::failure_at (stmt,
@@ -12012,42 +12074,38 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 
   /* Don't try to compute scalar types if the stmt produces a boolean
      vector; use the existing vector type instead.  */
-  tree nunits_vectype;
-  if (VECTOR_BOOLEAN_TYPE_P (vectype))
-    nunits_vectype = vectype;
-  else
+  tree nunits_vectype = vectype;
+  if (!VECTOR_BOOLEAN_TYPE_P (vectype)
+      && *stmt_vectype_out != boolean_type_node)
     {
       /* The number of units is set according to the smallest scalar
 	 type (or the largest vector size, but we only support one
 	 vector size per vectorization).  */
-      if (*stmt_vectype_out != boolean_type_node)
+      HOST_WIDE_INT dummy;
+      scalar_type = vect_get_smallest_scalar_type (stmt_info, &dummy, &dummy);
+      if (scalar_type != TREE_TYPE (vectype))
 	{
-	  HOST_WIDE_INT dummy;
-	  scalar_type = vect_get_smallest_scalar_type (stmt_info,
-						       &dummy, &dummy);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "get vectype for smallest scalar type: %T\n",
+			     scalar_type);
+	  nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+	  if (!nunits_vectype)
+	    return opt_result::failure_at
+	      (stmt, "not vectorized: unsupported data-type %T\n",
+	       scalar_type);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location, "nunits vectype: %T\n",
+			     nunits_vectype);
 	}
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "get vectype for scalar type:  %T\n", scalar_type);
-      nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
     }
-  if (!nunits_vectype)
-    return opt_result::failure_at (stmt,
-				   "not vectorized: unsupported data-type %T\n",
-				   scalar_type);
 
-  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
-		GET_MODE_SIZE (TYPE_MODE (nunits_vectype))))
-    return opt_result::failure_at (stmt,
-				   "not vectorized: different sized vector "
-				   "types in statement, %T and %T\n",
-				   vectype, nunits_vectype);
+  gcc_assert (*stmt_vectype_out == boolean_type_node
+	      || multiple_p (TYPE_VECTOR_SUBPARTS (nunits_vectype),
+			     TYPE_VECTOR_SUBPARTS (*stmt_vectype_out)));
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_NOTE, vect_location, "vectype: %T\n",
-		       nunits_vectype);
-
       dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
       dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (nunits_vectype));
       dump_printf (MSG_NOTE, "\n");
@@ -12122,7 +12180,7 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
 	  && !VECTOR_BOOLEAN_TYPE_P (mask_type)
 	  && gimple_code (stmt) == GIMPLE_ASSIGN
 	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
-	mask_type = build_same_sized_truth_vector_type (mask_type);
+	mask_type = truth_type_for (mask_type);
     }
 
   /* No mask_type should mean loop invariant predicate.

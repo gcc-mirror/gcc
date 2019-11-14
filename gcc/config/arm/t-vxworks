@@ -16,7 +16,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = mrtp fPIC
+# Multilibs for ARM VxWorks.  With the move to VxWorks 7, we only
+# support -mrtp variation on top of the default settings at this
+# stage, without PIC.
 
-# -fPIC alone is not supported, only together with -mrtp
-MULTILIB_EXCEPTIONS = fPIC
+MULTILIB_OPTIONS = mrtp

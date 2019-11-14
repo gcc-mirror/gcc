@@ -122,6 +122,7 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   if (arm_arch_notm)
     builtin_define ("__ARM_ARCH_ISA_ARM");
   builtin_define ("__APCS_32__");
+  builtin_define ("__GCC_ASM_FLAG_OUTPUTS__");
 
   def_or_undef_macro (pfile, "__thumb__", TARGET_THUMB);
   def_or_undef_macro (pfile, "__thumb2__", TARGET_THUMB2);

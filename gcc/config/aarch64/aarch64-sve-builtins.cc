@@ -2240,7 +2240,7 @@ tree
 gimple_folder::convert_pred (gimple_seq &stmts, tree vectype,
 			     unsigned int argno)
 {
-  tree predtype = build_same_sized_truth_vector_type (vectype);
+  tree predtype = truth_type_for (vectype);
   tree pred = gimple_call_arg (call, argno);
   return gimple_build (&stmts, VIEW_CONVERT_EXPR, predtype, pred);
 }
@@ -2973,8 +2973,8 @@ register_builtin_types ()
       tree vectype;
       if (eltype == boolean_type_node)
 	{
-	  vectype = build_truth_vector_type (BYTES_PER_SVE_VECTOR,
-					     BYTES_PER_SVE_VECTOR);
+	  vectype = build_truth_vector_type_for_mode (BYTES_PER_SVE_VECTOR,
+						      VNx16BImode);
 	  gcc_assert (TYPE_MODE (vectype) == VNx16BImode
 		      && TYPE_MODE (vectype) == TYPE_MODE_RAW (vectype)
 		      && TYPE_ALIGN (vectype) == 16

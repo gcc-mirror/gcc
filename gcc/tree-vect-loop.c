@@ -1422,8 +1422,8 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Loop contains SLP and non-SLP stmts\n");
       /* Both the vectorization factor and unroll factor have the form
-	 loop_vinfo->vector_size * X for some rational X, so they must have
-	 a common multiple.  */
+	 GET_MODE_SIZE (loop_vinfo->vector_mode) * X for some rational X,
+	 so they must have a common multiple.  */
       vectorization_factor
 	= force_common_multiple (vectorization_factor,
 				 LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
@@ -2382,12 +2382,12 @@ again:
 opt_loop_vec_info
 vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 {
-  auto_vector_sizes vector_sizes;
+  auto_vector_modes vector_modes;
 
   /* Autodetect first vector size we try.  */
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes,
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes,
 						loop->simdlen != 0);
-  unsigned int next_size = 0;
+  unsigned int mode_i = 0;
 
   DUMP_VECT_SCOPE ("analyze_loop_nest");
 
@@ -2404,9 +2404,9 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
        " loops cannot be vectorized\n");
 
   unsigned n_stmts = 0;
-  poly_uint64 autodetected_vector_size = 0;
+  machine_mode autodetected_vector_mode = VOIDmode;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
-  poly_uint64 next_vector_size = 0;
+  machine_mode next_vector_mode = VOIDmode;
   poly_uint64 lowest_th = 0;
   unsigned vectorized_loops = 0;
 
@@ -2425,7 +2425,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return loop_vinfo;
 	}
-      loop_vinfo->vector_size = next_vector_size;
+      loop_vinfo->vector_mode = next_vector_mode;
 
       bool fatal = false;
 
@@ -2433,10 +2433,34 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
       res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
-      if (next_size == 0)
-	autodetected_vector_size = loop_vinfo->vector_size;
+      if (mode_i == 0)
+	autodetected_vector_mode = loop_vinfo->vector_mode;
+      if (dump_enabled_p ())
+	{
+	  if (res)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Analysis succeeded with vector mode %s\n",
+			     GET_MODE_NAME (loop_vinfo->vector_mode));
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Analysis failed with vector mode %s\n",
+			     GET_MODE_NAME (loop_vinfo->vector_mode));
+	}
 
       loop->aux = NULL;
+
+      if (!fatal)
+	while (mode_i < vector_modes.length ()
+	       && vect_chooses_same_modes_p (loop_vinfo, vector_modes[mode_i]))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "***** The result for vector mode %s would"
+			       " be the same\n",
+			       GET_MODE_NAME (vector_modes[mode_i]));
+	    mode_i += 1;
+	  }
+
       if (res)
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
@@ -2500,36 +2524,43 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	    }
 	}
 
-      if (next_size < vector_sizes.length ()
-	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
-	next_size += 1;
+      if (mode_i < vector_modes.length ()
+	  && VECTOR_MODE_P (autodetected_vector_mode)
+	  && (related_vector_mode (vector_modes[mode_i],
+				   GET_MODE_INNER (autodetected_vector_mode))
+	      == autodetected_vector_mode)
+	  && (related_vector_mode (autodetected_vector_mode,
+				   GET_MODE_INNER (vector_modes[mode_i]))
+	      == vector_modes[mode_i]))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Skipping vector mode %s, which would"
+			     " repeat the analysis for %s\n",
+			     GET_MODE_NAME (vector_modes[mode_i]),
+			     GET_MODE_NAME (autodetected_vector_mode));
+	  mode_i += 1;
+	}
 
-      if (next_size == vector_sizes.length ()
-	  || known_eq (autodetected_vector_size, 0U))
+      if (mode_i == vector_modes.length ()
+	  || autodetected_vector_mode == VOIDmode)
 	break;
 
       /* Try the next biggest vector size.  */
-      next_vector_size = vector_sizes[next_size++];
+      next_vector_mode = vector_modes[mode_i++];
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "***** Re-trying analysis with "
-			   "vector size ");
-	  dump_dec (MSG_NOTE, next_vector_size);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying analysis with vector mode %s\n",
+			 GET_MODE_NAME (next_vector_mode));
     }
 
   if (first_loop_vinfo)
     {
       loop->aux = (loop_vec_info) first_loop_vinfo;
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "***** Choosing vector size ");
-	  dump_dec (MSG_NOTE, first_loop_vinfo->vector_size);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Choosing vector mode %s\n",
+			 GET_MODE_NAME (first_loop_vinfo->vector_mode));
       LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo) = lowest_th;
       return first_loop_vinfo;
     }
@@ -4603,8 +4634,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       tree index_vec_type = TREE_TYPE (induction_index);
       gcc_checking_assert (TYPE_UNSIGNED (index_vec_type));
       tree index_scalar_type = TREE_TYPE (index_vec_type);
-      tree index_vec_cmp_type = build_same_sized_truth_vector_type
-	(index_vec_type);
+      tree index_vec_cmp_type = truth_type_for (index_vec_type);
 
       /* Get an unsigned integer version of the type of the data vector.  */
       int scalar_precision
@@ -4831,7 +4861,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       tree index = build_index_vector (vectype, 0, 1);
       tree index_type = TREE_TYPE (index);
       tree index_elt_type = TREE_TYPE (index_type);
-      tree mask_type = build_same_sized_truth_vector_type (index_type);
+      tree mask_type = truth_type_for (index_type);
 
       /* Create a vector that, for each element, identifies which of
 	 the REDUC_GROUP_SIZE results should use it.  */
@@ -4905,13 +4935,14 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 halves against each other.  */
       enum machine_mode mode1 = mode;
       tree stype = TREE_TYPE (vectype);
-      unsigned sz = tree_to_uhwi (TYPE_SIZE_UNIT (vectype));
-      unsigned sz1 = sz;
+      unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
+      unsigned nunits1 = nunits;
       if (!slp_reduc
 	  && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
-	sz1 = GET_MODE_SIZE (mode1).to_constant ();
+	nunits1 = GET_MODE_NUNITS (mode1).to_constant ();
 
-      tree vectype1 = get_vectype_for_scalar_type_and_size (stype, sz1);
+      tree vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
+							   stype, nunits1);
       reduce_with_shift = have_whole_vector_shift (mode1);
       if (!VECTOR_MODE_P (mode1))
 	reduce_with_shift = false;
@@ -4925,11 +4956,13 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       /* First reduce the vector to the desired vector size we should
 	 do shift reduction on by combining upper and lower halves.  */
       new_temp = new_phi_result;
-      while (sz > sz1)
+      while (nunits > nunits1)
 	{
 	  gcc_assert (!slp_reduc);
-	  sz /= 2;
-	  vectype1 = get_vectype_for_scalar_type_and_size (stype, sz);
+	  nunits /= 2;
+	  vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
+							  stype, nunits);
+	  unsigned int bitsize = tree_to_uhwi (TYPE_SIZE (vectype1));
 
 	  /* The target has to make sure we support lowpart/highpart
 	     extraction, either via direct vector extract or through
@@ -4954,15 +4987,14 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 		  = gimple_build_assign (dst2, BIT_FIELD_REF,
 					 build3 (BIT_FIELD_REF, vectype1,
 						 new_temp, TYPE_SIZE (vectype1),
-						 bitsize_int (sz * BITS_PER_UNIT)));
+						 bitsize_int (bitsize)));
 	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	    }
 	  else
 	    {
 	      /* Extract via punning to appropriately sized integer mode
 		 vector.  */
-	      tree eltype = build_nonstandard_integer_type (sz * BITS_PER_UNIT,
-							    1);
+	      tree eltype = build_nonstandard_integer_type (bitsize, 1);
 	      tree etype = build_vector_type (eltype, 2);
 	      gcc_assert (convert_optab_handler (vec_extract_optab,
 						 TYPE_MODE (etype),
@@ -4991,7 +5023,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 		  = gimple_build_assign (tem, BIT_FIELD_REF,
 					 build3 (BIT_FIELD_REF, eltype,
 						 new_temp, TYPE_SIZE (eltype),
-						 bitsize_int (sz * BITS_PER_UNIT)));
+						 bitsize_int (bitsize)));
 	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	      dst2 =  make_ssa_name (vectype1);
 	      epilog_stmt = gimple_build_assign (dst2, VIEW_CONVERT_EXPR,
@@ -7900,22 +7932,24 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
   return false;
 }
 
-/* Return a mask type with half the number of elements as TYPE.  */
+/* Return a mask type with half the number of elements as OLD_TYPE,
+   given that it should have mode NEW_MODE.  */
 
 tree
-vect_halve_mask_nunits (vec_info *vinfo, tree type)
+vect_halve_mask_nunits (tree old_type, machine_mode new_mode)
 {
-  poly_uint64 nunits = exact_div (TYPE_VECTOR_SUBPARTS (type), 2);
-  return build_truth_vector_type (nunits, vinfo->vector_size);
+  poly_uint64 nunits = exact_div (TYPE_VECTOR_SUBPARTS (old_type), 2);
+  return build_truth_vector_type_for_mode (nunits, new_mode);
 }
 
-/* Return a mask type with twice as many elements as TYPE.  */
+/* Return a mask type with twice as many elements as OLD_TYPE,
+   given that it should have mode NEW_MODE.  */
 
 tree
-vect_double_mask_nunits (vec_info *vinfo, tree type)
+vect_double_mask_nunits (tree old_type, machine_mode new_mode)
 {
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type) * 2;
-  return build_truth_vector_type (nunits, vinfo->vector_size);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (old_type) * 2;
+  return build_truth_vector_type_for_mode (nunits, new_mode);
 }
 
 /* Record that a fully-masked version of LOOP_VINFO would need MASKS to
@@ -7946,7 +7980,7 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
   if (rgm->max_nscalars_per_iter < nscalars_per_iter)
     {
       rgm->max_nscalars_per_iter = nscalars_per_iter;
-      rgm->mask_type = build_same_sized_truth_vector_type (vectype);
+      rgm->mask_type = truth_type_for (vectype);
     }
 }
 
@@ -7991,7 +8025,7 @@ vect_get_loop_mask (gimple_stmt_iterator *gsi, vec_loop_masks *masks,
       gcc_assert (multiple_p (TYPE_VECTOR_SUBPARTS (mask_type),
 			      TYPE_VECTOR_SUBPARTS (vectype)));
       gimple_seq seq = NULL;
-      mask_type = build_same_sized_truth_vector_type (vectype);
+      mask_type = truth_type_for (vectype);
       mask = gimple_build (&seq, VIEW_CONVERT_EXPR, mask_type, mask);
       if (seq)
 	gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
@@ -8582,12 +8616,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  dump_printf (MSG_NOTE, "\n");
 	}
       else
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "LOOP EPILOGUE VECTORIZED (VS=");
-	  dump_dec (MSG_NOTE, loop_vinfo->vector_size);
-	  dump_printf (MSG_NOTE, ")\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "LOOP EPILOGUE VECTORIZED (MODE=%s)\n",
+			 GET_MODE_NAME (loop_vinfo->vector_mode));
     }
 
   /* Loops vectorized with a variable factor won't benefit from

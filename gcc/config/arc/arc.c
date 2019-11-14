@@ -607,15 +607,15 @@ arc_preferred_simd_mode (scalar_mode mode)
 }
 
 /* Implements target hook
-   TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
+   TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES.  */
 
 static void
-arc_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+arc_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_PLUS_QMACW)
     {
-      sizes->quick_push (8);
-      sizes->quick_push (4);
+      modes->quick_push (V4HImode);
+      modes->quick_push (V2HImode);
     }
 }
 
@@ -726,8 +726,8 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arc_preferred_simd_mode
 
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES arc_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES arc_autovectorize_vector_modes
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P arc_can_use_doloop_p

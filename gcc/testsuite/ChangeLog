@@ -1,3 +1,89 @@
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-div-2.c: New test.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-pr69907.c: Do not expect BB vectorization
+	to fail for aarch64 targets.
+	* gcc.dg/vect/no-scevccp-outer-12.c: Expect the test to pass
+	on aarch64 targets.
+	* gcc.dg/vect/vect-double-reduc-5.c: Likewise.
+	* gcc.dg/vect/vect-outer-4e.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_5.c: New test.
+	* gcc.target/aarch64/vect_mixed_sizes_6.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_7.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_8.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_9.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_10.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_11.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_12.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_13.c: Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-outer-4f.c: Expect the test to pass on aarch64
+	targets.
+	* gcc.dg/vect/vect-outer-4g.c: Likewise.
+	* gcc.dg/vect/vect-outer-4k.c: Likewise.
+	* gcc.dg/vect/vect-outer-4l.c: Likewise.
+	* gfortran.dg/vect/vect-8.f90: Expect kernel 24 to be vectorized
+	for aarch64.
+	* gcc.target/aarch64/vect_mixed_sizes_1.c: New test.
+	* gcc.target/aarch64/vect_mixed_sizes_2.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_3.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_4.c: Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-tail-nomask-1.c: Update expected epilogue
+	vectorization message.
+
+2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
+
+	* gcc.target/aarch64/asm-flag-1.c: New test.
+	* gcc.target/aarch64/asm-flag-3.c: New test.
+	* gcc.target/aarch64/asm-flag-5.c: New test.
+	* gcc.target/aarch64/asm-flag-6.c: New test.
+
+	* gcc.target/arm/asm-flag-1.c: New test.
+	* gcc.target/arm/asm-flag-3.c: New test.
+	* gcc.target/arm/asm-flag-5.c: New test.
+	* gcc.target/arm/asm-flag-6.c: New test.
+
+2019-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inline-9.c: New testcase.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/memcmp-1.c: Update expected backtrace.
+
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-11.c: Add "sse4.2" and "sse4.1"
+	test.
+
+	* c-c++-common/gomp/declare-variant-2.c: Add test for non-integral
+	score and for negative score.
+	* c-c++-common/gomp/declare-variant-3.c: Add test for zero score.
+	* g++.dg/gomp/declare-variant-8.C: Add test for negative and zero
+	scores.
+
+	* c-c++-common/gomp/declare-variant-3.c: Add testcase for vendor nvidia.
+
+	* c-c++-common/gomp/declare-variant-2.c: Adjust expected diagnostics,
+	add a test for atomic_default_mem_order with a string literal.
+	* c-c++-common/gomp/declare-variant-3.c: Use string literal props
+	in a few random places, add a few string literal prop related tests.
+	* c-c++-common/gomp/declare-variant-8.c: Likewise.
+	* c-c++-common/gomp/declare-variant-9.c: Use string literal props
+	in a few random places.
+	* c-c++-common/gomp/declare-variant-10.c: Likewise.
+	* c-c++-common/gomp/declare-variant-11.c: Likewise.
+	* c-c++-common/gomp/declare-variant-12.c: Likewise.
+	* g++.dg/gomp/declare-variant-7.C: Likewise.
+
 2019-11-14  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR target/92464

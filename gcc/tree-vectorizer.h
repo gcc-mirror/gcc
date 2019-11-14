@@ -298,6 +298,7 @@ public:
 /* Vectorizer state common between loop and basic-block vectorization.  */
 class vec_info {
 public:
+  typedef hash_set<int_hash<machine_mode, E_VOIDmode, E_BLKmode> > mode_set;
   enum vec_kind { bb, loop };
 
   vec_info (vec_kind, void *, vec_info_shared *);
@@ -335,9 +336,13 @@ public:
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
 
-  /* The vector size for this loop in bytes, or 0 if we haven't picked
-     a size yet.  */
-  poly_uint64 vector_size;
+  /* The set of vector modes used in the vectorized region.  */
+  mode_set used_vector_modes;
+
+  /* The argument we should pass to related_vector_mode when looking up
+     the vector mode for a scalar mode, or VOIDmode if we haven't yet
+     made any decisions about which vector modes to use.  */
+  machine_mode vector_mode;
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
@@ -1624,10 +1629,12 @@ extern bool vect_can_advance_ivs_p (loop_vec_info);
 extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
 
 /* In tree-vect-stmts.c.  */
+extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
+						 poly_uint64 = 0);
 extern tree get_vectype_for_scalar_type (vec_info *, tree);
-extern tree get_vectype_for_scalar_type_and_size (tree, poly_uint64);
 extern tree get_mask_type_for_scalar_type (vec_info *, tree);
 extern tree get_same_sized_vectype (tree, tree);
+extern bool vect_chooses_same_modes_p (vec_info *, machine_mode);
 extern bool vect_get_loop_mask_type (loop_vec_info);
 extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
 				stmt_vec_info * = NULL, gimple ** = NULL);
@@ -1638,9 +1645,9 @@ extern bool supportable_widening_operation (enum tree_code, stmt_vec_info,
 					    tree, tree, enum tree_code *,
 					    enum tree_code *, int *,
 					    vec<tree> *);
-extern bool supportable_narrowing_operation (vec_info *, enum tree_code, tree,
-					     tree, enum tree_code *,
-					     int *, vec<tree> *);
+extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
+					     enum tree_code *, int *,
+					     vec<tree> *);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);
@@ -1741,8 +1748,8 @@ extern opt_loop_vec_info vect_analyze_loop (class loop *, vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
-extern tree vect_halve_mask_nunits (vec_info *, tree);
-extern tree vect_double_mask_nunits (vec_info *, tree);
+extern tree vect_halve_mask_nunits (tree, machine_mode);
+extern tree vect_double_mask_nunits (tree, machine_mode);
 extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
 				   unsigned int, tree, tree);
 extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,

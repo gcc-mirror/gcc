@@ -61,7 +61,7 @@ using namespace tree_switch_conversion;
 
 /* Constructor.  */
 
-switch_conversion::switch_conversion (): m_final_bb (NULL), m_other_count (),
+switch_conversion::switch_conversion (): m_final_bb (NULL),
   m_constructors (NULL), m_default_values (NULL),
   m_arr_ref_first (NULL), m_arr_ref_last (NULL),
   m_reason (NULL), m_default_case_nonstandard (false), m_cfg_altered (false)
@@ -89,10 +89,6 @@ switch_conversion::collect (gswitch *swtch)
   e_default = gimple_switch_default_edge (cfun, swtch);
   m_default_bb = e_default->dest;
   m_default_prob = e_default->probability;
-  m_default_count = e_default->count ();
-  FOR_EACH_EDGE (e, ei, m_switch_bb->succs)
-    if (e != e_default)
-      m_other_count += e->count ();
 
   /* Get upper and lower bounds of case values, and the covered range.  */
   min_case = gimple_switch_label (swtch, 1);
