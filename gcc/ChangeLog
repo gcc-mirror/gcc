@@ -1,3 +1,16 @@
+2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (ipa_vr_operation_and_type_effects): Move up in file.
+	(ipa_value_range_from_jfunc): New function.
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Add
+	known_value_ranges parameter; use it to evalulate conditions.
+	(evaluate_properties_for_edge): Compute known value ranges.
+	(ipa_fn_summary_t::duplicate): Update use of
+	evaluate_conditions_for_known_args.
+	(estimate_ipcp_clone_size_and_time): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	* ipa-prop.h (ipa_value_range_from_jfunc): Declare.
+
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
 	* ipa-inline.c (want_inline_small_function_p): Use

@@ -316,6 +316,7 @@ static void
 evaluate_conditions_for_known_args (struct cgraph_node *node,
 				    bool inline_p,
 				    vec<tree> known_vals,
+				    vec<value_range> known_value_ranges,
 				    vec<ipa_agg_value_set> known_aggs,
 				    clause_t *ret_clause,
 				    clause_t *ret_nonspec_clause)
@@ -371,7 +372,9 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	    val = NULL_TREE;
 	}
 
-      if (!val)
+      if (!val
+	  && (c->code == predicate::changed
+	      || c->code == predicate::is_not_constant))
 	{
 	  clause |= 1 << (i + predicate::first_dynamic_condition);
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
@@ -383,48 +386,101 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  continue;
 	}
 
-      if (TYPE_SIZE (c->type) != TYPE_SIZE (TREE_TYPE (val)))
-	{
-	  clause |= 1 << (i + predicate::first_dynamic_condition);
-	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
-	  continue;
-	}
       if (c->code == predicate::is_not_constant)
 	{
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
 
-      val = fold_unary (VIEW_CONVERT_EXPR, c->type, val);
-      for (j = 0; vec_safe_iterate (c->param_ops, j, &op); j++)
+      if (val && TYPE_SIZE (c->type) == TYPE_SIZE (TREE_TYPE (val)))
 	{
-	  if (!val)
-	    break;
-	  if (!op->val[0])
-	    val = fold_unary (op->code, op->type, val);
-	  else if (!op->val[1])
-	    val = fold_binary (op->code, op->type,
-			       op->index ? op->val[0] : val,
-			       op->index ? val : op->val[0]);
-	  else if (op->index == 0)
-	    val = fold_ternary (op->code, op->type,
-				val, op->val[0], op->val[1]);
-	  else if (op->index == 1)
-	    val = fold_ternary (op->code, op->type,
-				op->val[0], val, op->val[1]);
-	  else if (op->index == 2)
-	    val = fold_ternary (op->code, op->type,
-				op->val[0], op->val[1], val);
-	  else
-	    val = NULL_TREE;
+	  if (c->type != TREE_TYPE (val))
+	    val = fold_unary (VIEW_CONVERT_EXPR, c->type, val);
+	  for (j = 0; vec_safe_iterate (c->param_ops, j, &op); j++)
+	    {
+	      if (!val)
+		break;
+	      if (!op->val[0])
+		val = fold_unary (op->code, op->type, val);
+	      else if (!op->val[1])
+		val = fold_binary (op->code, op->type,
+				   op->index ? op->val[0] : val,
+				   op->index ? val : op->val[0]);
+	      else if (op->index == 0)
+		val = fold_ternary (op->code, op->type,
+				    val, op->val[0], op->val[1]);
+	      else if (op->index == 1)
+		val = fold_ternary (op->code, op->type,
+				    op->val[0], val, op->val[1]);
+	      else if (op->index == 2)
+		val = fold_ternary (op->code, op->type,
+				    op->val[0], op->val[1], val);
+	      else
+		val = NULL_TREE;
+	    }
+
+	  res = val
+	    ? fold_binary_to_constant (c->code, boolean_type_node, val, c->val)
+	    : NULL;
+
+	  if (res && integer_zerop (res))
+	    continue;
+	  if (res && integer_onep (res))
+	    {
+	      clause |= 1 << (i + predicate::first_dynamic_condition);
+	      nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
+	      continue;
+	    }
 	}
+      if (c->operand_num < (int) known_value_ranges.length ()
+	  && !c->agg_contents
+	  && !known_value_ranges[c->operand_num].undefined_p ()
+	  && !known_value_ranges[c->operand_num].varying_p ()
+	  && TYPE_SIZE (c->type)
+		 == TYPE_SIZE (known_value_ranges[c->operand_num].type ())
+	  && (!val || TREE_CODE (val) != INTEGER_CST))
+	{
+	  value_range vr = known_value_ranges[c->operand_num];
+	  if (!useless_type_conversion_p (c->type, vr.type ()))
+	    {
+	      value_range res;
+	      range_fold_unary_expr (&res, NOP_EXPR,
+				     c->type, &vr, vr.type ());
+	      vr = res;
+	    }
+	  tree type = c->type;
 
-      res = val
-	? fold_binary_to_constant (c->code, boolean_type_node, val, c->val)
-	: NULL;
+	  for (j = 0; vec_safe_iterate (c->param_ops, j, &op); j++)
+	    {
+	      if (vr.varying_p () || vr.undefined_p ())
+		break;
 
-      if (res && integer_zerop (res))
-	continue;
+	      value_range res;
+	      if (!op->val[0])
+	        range_fold_unary_expr (&res, op->code, op->type, &vr, type);
+	      else if (!op->val[1])
+		{
+		  value_range op0 (op->val[0], op->val[0]);
+		  range_fold_binary_expr (&res, op->code, op->type,
+					  op->index ? &op0 : &vr,
+					  op->index ? &vr : &op0);
+		}
+	      else
+		gcc_unreachable ();
+	      type = op->type;
+	      vr = res;
+	    }
+	  if (!vr.varying_p () && !vr.undefined_p ())
+	    {
+	      value_range res;
+	      value_range val_vr (c->val, c->val);
+	      range_fold_binary_expr (&res, c->code, boolean_type_node,
+				      &vr,
+				      &val_vr);
+	      if (res.zero_p ())
+		continue;
+	    }
+	}
 
       clause |= 1 << (i + predicate::first_dynamic_condition);
       nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
@@ -449,6 +505,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
   vec<tree> known_vals = vNULL;
+  auto_vec<value_range, 32> known_value_ranges;
   vec<ipa_agg_value_set> known_aggs = vNULL;
   class ipa_edge_args *args;
 
@@ -478,6 +535,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 
       if (count && (info->conds || known_vals_ptr))
 	known_vals.safe_grow_cleared (count);
+      if (count && info->conds)
+	known_value_ranges.safe_grow_cleared (count);
       if (count && (info->conds || known_aggs_ptr))
 	known_aggs.safe_grow_cleared (count);
       if (count && known_contexts_ptr)
@@ -512,6 +571,10 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	
 	    known_aggs[i] = ipa_agg_value_set_from_jfunc (caller_parms_info,
 							  caller, &jf->agg);
+            if (info->conds)
+              known_value_ranges[i] 
+                = ipa_value_range_from_jfunc (caller_parms_info, e, jf,
+                                              ipa_get_type (callee_pi, i));
 	  }
 	else
 	  gcc_assert (callee->thunk.thunk_p);
@@ -534,7 +597,9 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
     }
 
   evaluate_conditions_for_known_args (callee, inline_p,
-				      known_vals, known_aggs, clause_ptr,
+				      known_vals,
+				      known_value_ranges,
+				      known_aggs, clause_ptr,
 				      nonspec_clause_ptr);
 
   if (known_vals_ptr)
@@ -656,6 +721,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	}
       evaluate_conditions_for_known_args (dst, false,
 					  known_vals,
+					  vNULL,
 					  vNULL,
 					  &possible_truths,
 					  /* We are going to specialize,
@@ -3358,8 +3424,9 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 {
   clause_t clause, nonspec_clause;
 
-  evaluate_conditions_for_known_args (node, false, known_vals, known_aggs,
-				      &clause, &nonspec_clause);
+  /* TODO: Also pass known value ranges.  */
+  evaluate_conditions_for_known_args (node, false, known_vals, vNULL,
+				      known_aggs, &clause, &nonspec_clause);
   ipa_call_context ctx (node, clause, nonspec_clause,
 		        known_vals, known_contexts,
 		        known_aggs, vNULL);
@@ -3579,7 +3646,8 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   info->fp_expressions |= callee_info->fp_expressions;
 
   if (callee_info->conds)
-    evaluate_properties_for_edge (edge, true, &clause, NULL, NULL, NULL, NULL);
+    evaluate_properties_for_edge (edge, true, &clause,
+				  NULL, NULL, NULL, NULL);
   if (ipa_node_params_sum && callee_info->conds)
     {
       class ipa_edge_args *args = IPA_EDGE_REF (edge);
