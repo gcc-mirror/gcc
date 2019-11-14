@@ -1,5 +1,12 @@
 2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/92470
+	PR fortran/92500
+	* gfortran.dg/ISO_Fortran_binding_17.c: Include
+	ISO_Fortran_binding.h with relative path.
+
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backport from mainline
 	2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
 
