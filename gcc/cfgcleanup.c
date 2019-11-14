@@ -3304,6 +3304,7 @@ public:
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_thread_jumps; }
   virtual unsigned int execute (function *);
 
 }; // class pass_jump_after_combine
@@ -3313,7 +3314,7 @@ pass_jump_after_combine::execute (function *)
 {
   /* Jump threading does not keep dominators up-to-date.  */
   free_dominance_info (CDI_DOMINATORS);
-  cleanup_cfg (flag_thread_jumps ? CLEANUP_THREADING : 0);
+  cleanup_cfg (CLEANUP_THREADING);
   return 0;
 }
 

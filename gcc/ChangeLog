@@ -1,3 +1,10 @@
+2019-11-14  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/92430
+	* cfgcleanup.c (pass_jump_after_combine::gate): New function.
+	(pass_jump_after_combine::execute): Perform jump threading
+	unconditionally.
+
 2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
 	    Doug Rupp <rupp@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
