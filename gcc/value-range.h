@@ -83,8 +83,8 @@ public:
   void dump () const;
 
   static bool supports_type_p (tree);
-  value_range normalize_symbolics () const;
-  value_range normalize_addresses () const;
+  void normalize_symbolics ();
+  void normalize_addresses ();
 
   static const unsigned int m_max_pairs = 2;
   bool contains_p (tree) const;
