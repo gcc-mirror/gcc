@@ -1,5 +1,19 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* machmode.h (mode_for_int_vector): Delete.
+	(related_int_vector_mode): Declare.
+	* stor-layout.c (mode_for_int_vector): Delete.
+	(related_int_vector_mode): New function.
+	* optabs.c (expand_vec_perm_1): Use related_int_vector_mode
+	instead of mode_for_int_vector.
+	(expand_vec_perm_const): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Likewise.
+	(aarch64_evpc_sve_tbl): Likewise.
+	* config/s390/s390.c (s390_expand_vec_compare_cc): Likewise.
+	(s390_expand_vcond): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (related_mode): New hook.
 	* doc/tm.texi.in (TARGET_VECTORIZE_RELATED_MODE): New hook.
 	* doc/tm.texi: Regenerate.

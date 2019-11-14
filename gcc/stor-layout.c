@@ -515,21 +515,6 @@ mode_for_vector (scalar_mode innermode, poly_uint64 nunits)
   return opt_machine_mode ();
 }
 
-/* Return the mode for a vector that has NUNITS integer elements of
-   INT_BITS bits each, if such a mode exists.  The mode can be either
-   an integer mode or a vector mode.  */
-
-opt_machine_mode
-mode_for_int_vector (unsigned int int_bits, poly_uint64 nunits)
-{
-  scalar_int_mode int_mode;
-  machine_mode vec_mode;
-  if (int_mode_for_size (int_bits, 0).exists (&int_mode)
-      && mode_for_vector (int_mode, nunits).exists (&vec_mode))
-    return vec_mode;
-  return opt_machine_mode ();
-}
-
 /* If a piece of code is using vector mode VECTOR_MODE and also wants
    to operate on elements of mode ELEMENT_MODE, return the vector mode
    it should use for those elements.  If NUNITS is nonzero, ensure that
@@ -548,6 +533,26 @@ related_vector_mode (machine_mode vector_mode, scalar_mode element_mode,
 {
   gcc_assert (VECTOR_MODE_P (vector_mode));
   return targetm.vectorize.related_mode (vector_mode, element_mode, nunits);
+}
+
+/* If a piece of code is using vector mode VECTOR_MODE and also wants
+   to operate on integer vectors with the same element size and number
+   of elements, return the vector mode it should use.  Return an empty
+   opt_machine_mode if there is no supported vector mode with the
+   required properties.
+
+   Unlike mode_for_vector. any returned mode is guaranteed to satisfy
+   both VECTOR_MODE_P and targetm.vector_mode_supported_p.  */
+
+opt_machine_mode
+related_int_vector_mode (machine_mode vector_mode)
+{
+  gcc_assert (VECTOR_MODE_P (vector_mode));
+  scalar_int_mode int_mode;
+  if (int_mode_for_mode (GET_MODE_INNER (vector_mode)).exists (&int_mode))
+    return related_vector_mode (vector_mode, int_mode,
+				GET_MODE_NUNITS (vector_mode));
+  return opt_machine_mode ();
 }
 
 /* Return the alignment of MODE. This will be bounded by 1 and

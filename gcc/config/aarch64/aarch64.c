@@ -1816,7 +1816,7 @@ aarch64_sve_element_int_mode (machine_mode mode)
 }
 
 /* Return the integer vector mode associated with SVE mode MODE.
-   Unlike mode_for_int_vector, this can handle the case in which
+   Unlike related_int_vector_mode, this can handle the case in which
    MODE is a predicate (and thus has a different total size).  */
 
 machine_mode
@@ -12537,7 +12537,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     gcc_assert (use_rsqrt_p (mode));
 
   machine_mode mmsk = (VECTOR_MODE_P (mode)
-		       ? mode_for_int_vector (mode).require ()
+		       ? related_int_vector_mode (mode).require ()
 		       : int_mode_for_mode (mode).require ());
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
@@ -19068,7 +19068,7 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  machine_mode sel_mode = mode_for_int_vector (d->vmode).require ();
+  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
   if (d->one_vector_p)
     emit_unspec2 (d->target, UNSPEC_TBL, d->op0, force_reg (sel_mode, sel));
