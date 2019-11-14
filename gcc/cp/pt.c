@@ -11172,7 +11172,9 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 			v = tsubst_expr (v, args, complain, in_decl, true);
 			v = fold_non_dependent_expr (v);
 			if (!INTEGRAL_TYPE_P (TREE_TYPE (v))
-			    || !tree_fits_shwi_p (v))
+			    || (TREE_PURPOSE (t3) == score
+				? TREE_CODE (v) != INTEGER_CST
+				: !tree_fits_shwi_p (v)))
 			  {
 			    location_t loc
 			      = cp_expr_loc_or_loc (TREE_VALUE (t3),
@@ -11187,6 +11189,16 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 			    else
 			      error_at (loc, "property must be constant "
 					     "integer expression");
+			    return NULL_TREE;
+			  }
+			else if (TREE_PURPOSE (t3) == score
+				 && tree_int_cst_sgn (v) < 0)
+			  {
+			    location_t loc
+			      = cp_expr_loc_or_loc (TREE_VALUE (t3),
+						    match_loc);
+			    error_at (loc, "score argument must be "
+					   "non-negative");
 			    return NULL_TREE;
 			  }
 			TREE_VALUE (t3) = v;

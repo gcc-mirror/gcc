@@ -147,3 +147,5 @@ void f76 (void);
 void f77 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(nvidia)})
 void f78 (void);
+#pragma omp declare variant (f13) match (user={condition(score(0):0)})
+void f79 (void);

@@ -1,5 +1,11 @@
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/declare-variant-2.c: Add test for non-integral
+	score and for negative score.
+	* c-c++-common/gomp/declare-variant-3.c: Add test for zero score.
+	* g++.dg/gomp/declare-variant-8.C: Add test for negative and zero
+	scores.
+
 	* c-c++-common/gomp/declare-variant-3.c: Add testcase for vendor nvidia.
 
 	* c-c++-common/gomp/declare-variant-2.c: Adjust expected diagnostics,

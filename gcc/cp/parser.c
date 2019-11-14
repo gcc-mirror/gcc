@@ -40565,11 +40565,16 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		  if (score != error_mark_node)
 		    {
 		      score = fold_non_dependent_expr (score);
-		      if (!value_dependent_expression_p (score)
-			  && (!INTEGRAL_TYPE_P (TREE_TYPE (score))
-			      || !tree_fits_shwi_p (score)))
+		      if (value_dependent_expression_p (score))
+			properties = tree_cons (get_identifier (" score"),
+						score, properties);
+		      else if (!INTEGRAL_TYPE_P (TREE_TYPE (score))
+			       || TREE_CODE (score) != INTEGER_CST)
 			error_at (token->location, "score argument must be "
 				  "constant integer expression");
+		      else if (tree_int_cst_sgn (score) < 0)
+			error_at (token->location, "score argument must be "
+				  "non-negative");
 		      else
 			properties = tree_cons (get_identifier (" score"),
 						score, properties);

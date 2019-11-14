@@ -19823,9 +19823,12 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		  mark_exp_read (score);
 		  score = c_fully_fold (score, false, NULL);
 		  if (!INTEGRAL_TYPE_P (TREE_TYPE (score))
-		      || !tree_fits_shwi_p (score))
+		      || TREE_CODE (score) != INTEGER_CST)
 		    error_at (token->location, "score argument must be "
 			      "constant integer expression");
+		  else if (tree_int_cst_sgn (score) < 0)
+		    error_at (token->location, "score argument must be "
+			      "non-negative");
 		  else
 		    properties = tree_cons (get_identifier (" score"),
 					    score, properties);
