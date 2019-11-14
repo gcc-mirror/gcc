@@ -1,5 +1,9 @@
 2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* params.opt (max-inline-insns-single-O2): Set to 70 (instead of 30).
+
+2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-cp.c (ipa_vr_operation_and_type_effects): Move up in file.
 	(ipa_value_range_from_jfunc): New function.
 	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Add

@@ -483,7 +483,7 @@ Common Joined UInteger Var(param_max_inline_insns_single) Init(200) Param
 The maximum number of instructions in a single function eligible for inlining with -O3 and -Ofast.
 
 -param=max-inline-insns-single-O2=
-Common Joined UInteger Var(param_max_inline_insns_single_o2) Init(30) Param
+Common Joined UInteger Var(param_max_inline_insns_single_o2) Init(70) Param
 The maximum number of instructions in a single function eligible for inlining.
 
 -param=max-inline-insns-size=
