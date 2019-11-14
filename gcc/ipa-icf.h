@@ -191,7 +191,7 @@ public:
   DEBUG_FUNCTION void dump (void);
 
   /* Semantic item initialization function.  */
-  virtual void init (void) = 0;
+  virtual void init (ipa_icf_gimple::func_checker *) = 0;
 
   /* Add reference to a semantic TARGET.  */
   void add_reference (ref_map *map, sem_item *target);
@@ -269,11 +269,6 @@ public:
 protected:
   /* Cached, once calculated hash for the item.  */
 
-  /* Accumulate to HSTATE a hash of expression EXP.  */
-  static void add_expr (const_tree exp, inchash::hash &hstate);
-  /* Accumulate to HSTATE a hash of type T.  */
-  static void add_type (const_tree t, inchash::hash &hstate);
-
   /* Compare properties of symbol that does not affect semantics of symbol
      itself but affects semantics of its references.
      If ADDRESS is true, do extra checking needed for IPA_REF_ADDR.  */
@@ -322,7 +317,7 @@ public:
 
   ~sem_function ();
 
-  virtual void init (void);
+  virtual void init (ipa_icf_gimple::func_checker *);
   virtual bool equals_wpa (sem_item *item,
 			   hash_map <symtab_node *, sem_item *> &ignored_nodes);
   virtual hashval_t get_hash (void);
@@ -351,7 +346,8 @@ public:
 
   /* For a given call graph NODE, the function constructs new
      semantic function item.  */
-  static sem_function *parse (cgraph_node *node, bitmap_obstack *stack);
+  static sem_function *parse (cgraph_node *node, bitmap_obstack *stack,
+			      ipa_icf_gimple::func_checker *checker);
 
   /* Perform additional checks needed to match types of used function
      paramters.  */
@@ -423,10 +419,7 @@ public:
   sem_variable (varpool_node *_node, bitmap_obstack *stack);
 
   /* Semantic variable initialization function.  */
-  inline virtual void init (void)
-  {
-    decl = get_node ()->decl;
-  }
+  virtual void init (ipa_icf_gimple::func_checker *);
 
   virtual hashval_t get_hash (void);
   virtual bool merge (sem_item *alias_item);
@@ -445,7 +438,8 @@ public:
   }
 
   /* Parser function that visits a varpool NODE.  */
-  static sem_variable *parse (varpool_node *node, bitmap_obstack *stack);
+  static sem_variable *parse (varpool_node *node, bitmap_obstack *stack,
+			      ipa_icf_gimple::func_checker *checker);
 
 private:
   /* Compares trees T1 and T2 for semantic equality.  */

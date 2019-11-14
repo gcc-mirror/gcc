@@ -1,5 +1,26 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.h (func_checker::func_checker): Add
+	default constructor.
+	* ipa-icf.c (sem_function::init): Make operand_equal_p
+	and hash_operand public.
+	(sem_item::add_expr): Remove.
+	(sem_item::add_type): Remove.
+	(sem_function::hash_stmt): Use m_checker for hashing
+	of GIMPLE statements.
+	(sem_function::parse): Init with checker.
+	(sem_variable::parse): Pass NULL as checker.
+	(sem_item_optimizer::parse_funcs_and_vars):
+	Pass checker to ::parse function.
+	(sem_item_optimizer::parse_nonsingleton_classes): Likewise.
+	(sem_variable::parse): New function.
+	(sem_variable::get_hash): Only return computed hash value.
+	(sem_variable::init): Initialize hash of a variable.
+	* ipa-icf.h: Remove add_expr, add_type and add func_checker
+	to couple of functions as a new argument.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.c (func_checker::compare_gimple_call): Update
 	bail out reason.
 	(func_checker::compare_gimple_assign): Likewise.
