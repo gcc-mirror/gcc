@@ -1,5 +1,38 @@
 2019-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
+	* range-op.h (range_operator::fold_range): Return a bool.
+	* range-op.cc (range_operator::wi_fold): Assert supported type.
+	(range_operator::fold_range): Assert supported type and return true.
+	(operator_equal::fold_range): Return true.
+	(operator_not_equal::fold_range): Same.
+	(operator_lt::fold_range): Same.
+	(operator_le::fold_range): Same.
+	(operator_gt::fold_range): Same.
+	(operator_ge::fold_range): Same.
+	(operator_plus::op1_range): Adjust call to fold_range.
+	(operator_plus::op2_range): Same.
+	(operator_minus::op1_range): Same.
+	(operator_minus::op2_range): Same.
+	(operator_exact_divide::op1_range): Same.
+	(operator_lshift::fold_range): Return true and adjust fold_range call.
+	(operator_rshift::fold_range): Same.
+	(operator_cast::fold_range): Return true.
+	(operator_logical_and::fold_range): Same.
+	(operator_logical_or::fold_range): Same.
+	(operator_logical_not::fold_range): Same.
+	(operator_bitwise_not::fold_range): Adjust call to fold_range.
+	(operator_bitwise_not::op1_range): Same.
+	(operator_cst::fold_range): Return true.
+	(operator_identity::fold_range): Return true.
+	(operator_negate::fold_range): Return true and adjust fold_range call.
+	(operator_addr_expr::fold_range): Return true.
+	(operator_addr_expr::op1_range): Adjust call to fold_range.
+	(range_cast): Same.
+	* tree-vrp.c (range_fold_binary_symbolics_p): Adjust call to fold_range.
+	(range_fold_unary_symbolics_p): Same.
+
+2019-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
 	PR tree-optimization/92506
 	* range-op.cc (range_operator::fold_range): Start with range undefined.
 	(operator_abs::wi_fold): Fix wrong line copy... With wrapv, abs with
