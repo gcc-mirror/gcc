@@ -153,3 +153,7 @@ void f74 (void);
 void f75 (void);
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order("relaxed")})	/* { dg-error "expected identifier before string constant" } */
 void f76 (void);
+#pragma omp declare variant (f1) match(user={condition(score(&f76):1)})	/* { dg-error "score argument must be constant integer expression" "" { target { ! c++98_only } } } */
+void f77 (void);							/* { dg-error "cannot appear in a constant-expression" "" { target c++98_only } .-1 } */
+#pragma omp declare variant (f1) match(user={condition(score(-130):1)})	/* { dg-error "score argument must be non-negative" } */
+void f78 (void);
