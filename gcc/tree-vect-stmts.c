@@ -12018,7 +12018,12 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
   tree vectype;
   tree scalar_type = NULL_TREE;
   if (STMT_VINFO_VECTYPE (stmt_info))
-    *stmt_vectype_out = vectype = STMT_VINFO_VECTYPE (stmt_info);
+    {
+      *stmt_vectype_out = vectype = STMT_VINFO_VECTYPE (stmt_info);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "precomputed vectype: %T\n", vectype);
+    }
   else
     {
       gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
@@ -12050,7 +12055,7 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "get vectype for scalar type:  %T\n", scalar_type);
+			 "get vectype for scalar type: %T\n", scalar_type);
       vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
       if (!vectype)
 	return opt_result::failure_at (stmt,
@@ -12067,42 +12072,38 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 
   /* Don't try to compute scalar types if the stmt produces a boolean
      vector; use the existing vector type instead.  */
-  tree nunits_vectype;
-  if (VECTOR_BOOLEAN_TYPE_P (vectype))
-    nunits_vectype = vectype;
-  else
+  tree nunits_vectype = vectype;
+  if (!VECTOR_BOOLEAN_TYPE_P (vectype)
+      && *stmt_vectype_out != boolean_type_node)
     {
       /* The number of units is set according to the smallest scalar
 	 type (or the largest vector size, but we only support one
 	 vector size per vectorization).  */
-      if (*stmt_vectype_out != boolean_type_node)
+      HOST_WIDE_INT dummy;
+      scalar_type = vect_get_smallest_scalar_type (stmt_info, &dummy, &dummy);
+      if (scalar_type != TREE_TYPE (vectype))
 	{
-	  HOST_WIDE_INT dummy;
-	  scalar_type = vect_get_smallest_scalar_type (stmt_info,
-						       &dummy, &dummy);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "get vectype for smallest scalar type: %T\n",
+			     scalar_type);
+	  nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+	  if (!nunits_vectype)
+	    return opt_result::failure_at
+	      (stmt, "not vectorized: unsupported data-type %T\n",
+	       scalar_type);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location, "nunits vectype: %T\n",
+			     nunits_vectype);
 	}
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "get vectype for scalar type:  %T\n", scalar_type);
-      nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
     }
-  if (!nunits_vectype)
-    return opt_result::failure_at (stmt,
-				   "not vectorized: unsupported data-type %T\n",
-				   scalar_type);
 
-  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
-		GET_MODE_SIZE (TYPE_MODE (nunits_vectype))))
-    return opt_result::failure_at (stmt,
-				   "not vectorized: different sized vector "
-				   "types in statement, %T and %T\n",
-				   vectype, nunits_vectype);
+  gcc_assert (*stmt_vectype_out == boolean_type_node
+	      || multiple_p (TYPE_VECTOR_SUBPARTS (nunits_vectype),
+			     TYPE_VECTOR_SUBPARTS (*stmt_vectype_out)));
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_NOTE, vect_location, "vectype: %T\n",
-		       nunits_vectype);
-
       dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
       dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (nunits_vectype));
       dump_printf (MSG_NOTE, "\n");
