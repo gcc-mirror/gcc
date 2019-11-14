@@ -1,55 +1,49 @@
-/* { dg-do compile } */
+// PR ipa/92421
+// { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
+
 typedef long a;
 void *b, *c;
 template <typename, typename> class d {};
 template <typename e, typename f> bool operator!=(d<e, f>, d<e, f>);
-class g {
-public:
-  g(char *);
+struct g {
+  g(const char *);
 };
-class j {
-public:
+struct j {
   j();
   void h();
   void i();
   void aj();
 };
-class m {
-public:
+struct m {
   m(bool);
 };
-class n {
-public:
+struct n {
   operator a();
 };
-class o {
-public:
+struct o {
   long am();
 };
-class H {
-public:
+struct H {
   class p {};
   virtual bool accept(const char *, unsigned long, p *, bool);
 };
-class q : H {
-public:
-  class r {
-  public:
+struct q : H {
+  struct r {
     enum at { au, av, aw };
   };
   enum { ax };
-  virtual void ay(char *, int, const char *, r::at, char *);
+  virtual void ay(const char *, int, const char *, r::at, const char *);
   virtual bool az(const g &, unsigned = ax);
   virtual bool ba(const int &, p *, bool);
   void bb(char *bc, long bd, char *, long be) {
-    class bf : public p {
-    public:
-      bf(long);
+    struct bf : public p {
+      bf(long) {}
     } bg(be);
     accept(bc, bd, &bg, true);
   }
 };
-class s {
+struct s {
   q *bi;
   bool bj();
 };
@@ -109,6 +103,7 @@ template <class bk> class t : q {
     while (kit != df)
       ;
     cx();
+    return false;
   }
   bool az(const g &, unsigned) {
     t dj;
@@ -157,8 +152,7 @@ template <class bk> class t : q {
   O db[6];
   bool bp;
 };
-class w : q {
-public:
+struct w : q {
   void dn();
   bool l() {
     m(true);
@@ -171,4 +165,5 @@ public:
 bool s::bj() {
   bi->az("");
   new t<w>;
+  return false;
 }
