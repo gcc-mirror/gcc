@@ -1,5 +1,13 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_call): If an operand is
+	constant or external, use get_vectype_for_scalar_type
+	rather than get_same_sized_vectype to get its vector type.
+	(vectorizable_conversion, vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::vector_size): Replace with...
 	(vec_info::vector_mode): ...this new field.
 	* tree-vect-loop.c (vect_update_vf_for_slp): Update accordingly.

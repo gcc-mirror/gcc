@@ -3295,10 +3295,10 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  return false;
 	}
     }
-  /* If all arguments are external or constant defs use a vector type with
-     the same size as the output vector type.  */
+  /* If all arguments are external or constant defs, infer the vector type
+     from the scalar type.  */
   if (!vectype_in)
-    vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
+    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type);
   if (vec_stmt)
     gcc_assert (vectype_in);
   if (!vectype_in)
@@ -4787,10 +4787,10 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	}
     }
 
-  /* If op0 is an external or constant defs use a vector type of
-     the same size as the output vector type.  */
+  /* If op0 is an external or constant def, infer the vector type
+     from the scalar type.  */
   if (!vectype_in)
-    vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
+    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type);
   if (vec_stmt)
     gcc_assert (vectype_in);
   if (!vectype_in)
@@ -5586,10 +5586,10 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                          "use not simple.\n");
       return false;
     }
-  /* If op0 is an external or constant def use a vector type with
-     the same size as the output vector type.  */
+  /* If op0 is an external or constant def, infer the vector type
+     from the scalar type.  */
   if (!vectype)
-    vectype = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
+    vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0));
   if (vec_stmt)
     gcc_assert (vectype);
   if (!vectype)
@@ -5688,7 +5688,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                          "vector/vector shift/rotate found.\n");
 
       if (!op1_vectype)
-	op1_vectype = get_same_sized_vectype (TREE_TYPE (op1), vectype_out);
+	op1_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op1));
       incompatible_op1_vectype_p
 	= (op1_vectype == NULL_TREE
 	   || maybe_ne (TYPE_VECTOR_SUBPARTS (op1_vectype),
@@ -6019,8 +6019,8 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                          "use not simple.\n");
       return false;
     }
-  /* If op0 is an external or constant def use a vector type with
-     the same size as the output vector type.  */
+  /* If op0 is an external or constant def, infer the vector type
+     from the scalar type.  */
   if (!vectype)
     {
       /* For boolean type we cannot determine vectype by
@@ -6040,7 +6040,7 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  vectype = vectype_out;
 	}
       else
-	vectype = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
+	vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0));
     }
   if (vec_stmt)
     gcc_assert (vectype);
