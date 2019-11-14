@@ -250,6 +250,31 @@ convert_move (rtx to, rtx from, int unsignedp)
 
   if (VECTOR_MODE_P (to_mode) || VECTOR_MODE_P (from_mode))
     {
+      if (GET_MODE_UNIT_PRECISION (to_mode)
+	  > GET_MODE_UNIT_PRECISION (from_mode))
+	{
+	  optab op = unsignedp ? zext_optab : sext_optab;
+	  insn_code icode = convert_optab_handler (op, to_mode, from_mode);
+	  if (icode != CODE_FOR_nothing)
+	    {
+	      emit_unop_insn (icode, to, from,
+			      unsignedp ? ZERO_EXTEND : SIGN_EXTEND);
+	      return;
+	    }
+	}
+
+      if (GET_MODE_UNIT_PRECISION (to_mode)
+	  < GET_MODE_UNIT_PRECISION (from_mode))
+	{
+	  insn_code icode = convert_optab_handler (trunc_optab,
+						   to_mode, from_mode);
+	  if (icode != CODE_FOR_nothing)
+	    {
+	      emit_unop_insn (icode, to, from, TRUNCATE);
+	      return;
+	    }
+	}
+
       gcc_assert (known_eq (GET_MODE_BITSIZE (from_mode),
 			    GET_MODE_BITSIZE (to_mode)));
 

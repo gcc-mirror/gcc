@@ -4861,7 +4861,9 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   switch (modifier)
     {
     case NONE:
-      if (code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
+      if (code != FIX_TRUNC_EXPR
+	  && code != FLOAT_EXPR
+	  && !CONVERT_EXPR_CODE_P (code))
 	return false;
       if (supportable_convert_operation (code, vectype_out, vectype_in,
 					 &decl1, &code1))

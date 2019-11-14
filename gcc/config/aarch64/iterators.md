@@ -927,6 +927,8 @@
 			    (V2DI "V2SI")
 			    (DI	  "SI")	  (SI	"HI")
 			    (HI	  "QI")])
+(define_mode_attr Vnarrowq [(V8HI "v8qi") (V4SI "v4hi")
+			    (V2DI "v2si")])
 
 ;; Narrowed quad-modes for VQN (Used for XTN2).
 (define_mode_attr VNARROWQ2 [(V8HI "V16QI") (V4SI "V8HI")

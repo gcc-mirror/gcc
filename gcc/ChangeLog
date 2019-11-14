@@ -1,5 +1,19 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-cfg.c (verify_gimple_assign_unary): Handle conversions
+	between vector types.
+	* tree-vect-stmts.c (vectorizable_conversion): Extend the
+	non-widening and non-narrowing path to handle standard
+	conversion codes, if the target supports them.
+	* expr.c (convert_move): Try using the extend and truncate optabs
+	for vectors.
+	* optabs-tree.c (supportable_convert_operation): Likewise.
+	* config/aarch64/iterators.md (Vnarroqw): New iterator.
+	* config/aarch64/aarch64-simd.md (<optab><Vnarrowq><mode>2)
+	(trunc<mode><Vnarrowq>2): New patterns.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vect_get_vector_types_for_stmt): Don't
 	require vectype and nunits_vectype to have the same size;
 	instead assert that nunits_vectype has at least as many
