@@ -1,3 +1,13 @@
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	PR target/92389
+	* config/i386/i386.h: Add PTA_AVX512VPOPCNTDQ to
+	PTA_ICELAKE_CLIENT which is later interited by
+	PTA_ICELAKE_SERVER and PTA_TIGERLAKE.
+
 2019-11-13  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	Backport from mainline
