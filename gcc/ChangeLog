@@ -1,5 +1,13 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): If
+	targetm.vectorize.preferred_simd_mode returns an integer mode,
+	use mode_for_vector to decide what the vector type's mode
+	should actually be.  Use build_vector_type_for_mode instead
+	of build_vector_type.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (get_mask_mode): Take a vector mode itself as argument,
 	instead of properties about the vector mode.
 	* doc/tm.texi: Regenerate.

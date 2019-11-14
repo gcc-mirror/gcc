@@ -11176,16 +11176,31 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
   /* If no size was supplied use the mode the target prefers.   Otherwise
      lookup a vector mode of the specified size.  */
   if (known_eq (size, 0U))
-    simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
+    {
+      simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
+      if (SCALAR_INT_MODE_P (simd_mode))
+	{
+	  /* Traditional behavior is not to take the integer mode
+	     literally, but simply to use it as a way of determining
+	     the vector size.  It is up to mode_for_vector to decide
+	     what the TYPE_MODE should be.
+
+	     Note that nunits == 1 is allowed in order to support single
+	     element vector types.  */
+	  if (!multiple_p (GET_MODE_SIZE (simd_mode), nbytes, &nunits)
+	      || !mode_for_vector (inner_mode, nunits).exists (&simd_mode))
+	    return NULL_TREE;
+	}
+    }
   else if (!multiple_p (size, nbytes, &nunits)
 	   || !mode_for_vector (inner_mode, nunits).exists (&simd_mode))
     return NULL_TREE;
-  /* NOTE: nunits == 1 is allowed to support single element vector types.  */
-  if (!multiple_p (GET_MODE_SIZE (simd_mode), nbytes, &nunits))
-    return NULL_TREE;
 
-  vectype = build_vector_type (scalar_type, nunits);
+  vectype = build_vector_type_for_mode (scalar_type, simd_mode);
 
+  /* In cases where the mode was chosen by mode_for_vector, check that
+     the target actually supports the chosen mode, or that it at least
+     allows the vector mode to be replaced by a like-sized integer.  */
   if (!VECTOR_MODE_P (TYPE_MODE (vectype))
       && !INTEGRAL_MODE_P (TYPE_MODE (vectype)))
     return NULL_TREE;
