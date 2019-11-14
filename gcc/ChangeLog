@@ -1,5 +1,19 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	* ipa-cp.c (devirtualization_time_bonus): Use opt_for_fn
+	of a callee to get value of the param.
+	* ipa-inline.c (inline_insns_auto): Use proper
+	opt_for_fn.
+	* opts.c (maybe_default_option): Do not overwrite param
+	value if optimization level does not match.  Note that
+	params usually have default value set via Init() keyword.
+	* params.opt: Remove -param=max-inline-insns-auto-O2.
+	* cif-code.def (MAX_INLINE_INSNS_AUTO_O2_LIMIT): Remove.
+	* doc/invoke.texi: Remove documentation of
+	max-inline-insns-auto-O2.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	* tree-switch-conversion.c (switch_conversion::switch_conversion):
 	Do not initialize m_other_count.
 	(switch_conversion::collect): Do not count m_default_count and

@@ -2936,11 +2936,13 @@ devirtualization_time_bonus (struct cgraph_node *node,
       int size = ipa_size_summaries->get (callee)->size;
       /* FIXME: The values below need re-considering and perhaps also
 	 integrating into the cost metrics, at lest in some very basic way.  */
-      if (size <= param_max_inline_insns_auto / 4)
+      int max_inline_insns_auto
+	= opt_for_fn (callee->decl, param_max_inline_insns_auto);
+      if (size <= max_inline_insns_auto / 4)
 	res += 31 / ((int)speculative + 1);
-      else if (size <= param_max_inline_insns_auto / 2)
+      else if (size <= max_inline_insns_auto / 2)
 	res += 15 / ((int)speculative + 1);
-      else if (size <= param_max_inline_insns_auto
+      else if (size <= max_inline_insns_auto
 	       || DECL_DECLARED_INLINE_P (callee->decl))
 	res += 7 / ((int)speculative + 1);
     }

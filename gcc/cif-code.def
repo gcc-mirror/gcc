@@ -74,8 +74,6 @@ DEFCIFCODE(MAX_INLINE_INSNS_SINGLE_O2_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param max-inline-insns-single-O2 limit reached"))
 DEFCIFCODE(MAX_INLINE_INSNS_AUTO_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param max-inline-insns-auto limit reached"))
-DEFCIFCODE(MAX_INLINE_INSNS_AUTO_O2_LIMIT, CIF_FINAL_NORMAL,
-	   N_("--param max-inline-insns-auto-O2 limit reached"))
 DEFCIFCODE(INLINE_UNIT_GROWTH_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param inline-unit-growth limit reached"))
 

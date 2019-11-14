@@ -417,20 +417,10 @@ inline_insns_single (cgraph_node *n, bool hint)
 static int
 inline_insns_auto (cgraph_node *n, bool hint)
 {
-  if (opt_for_fn (n->decl, optimize) >= 3)
-    {
-      if (hint)
-	return param_max_inline_insns_auto
-	       * param_inline_heuristics_hint_percent / 100;
-      return param_max_inline_insns_auto;
-    }
-  else
-    {
-      if (hint)
-	return param_max_inline_insns_auto_o2
-	       * param_inline_heuristics_hint_percent_o2 / 100;
-      return param_max_inline_insns_auto_o2;
-    }
+  int max_inline_insns_auto = opt_for_fn (n->decl, param_max_inline_insns_auto);
+  if (hint)
+    return max_inline_insns_auto * param_inline_heuristics_hint_percent / 100;
+  return max_inline_insns_auto;
 }
 
 /* Decide if we can inline the edge and possibly update
