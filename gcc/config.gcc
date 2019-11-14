@@ -962,6 +962,11 @@ case ${target} in
     "" | yes | vxworks) thread_file='vxworks' ;;
     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
   esac
+
+  # A few common macro definitions conveying general characteristics
+  # of the configuration at hand. Note that by VxWorks 7, we mean the
+  # the SR6xx major update or beyond in vendor parlance:
+
   case $target in
     *-*-vxworks7*)
       tm_defines="$tm_defines TARGET_VXWORKS7=1"
@@ -970,6 +975,18 @@ case ${target} in
   case $target in
     *64-*-vxworks*)
       tm_defines="$tm_defines TARGET_VXWORKS64=1"
+      ;;
+  esac
+
+  # Then a few build configuration controls for VxWorks 7, which
+  # has specificities on top of which we aim to provide more complete
+  # C++ support:
+
+  case $target in
+    *-*-vxworks7*)
+      # VxWorks 7 always has init/fini_array support and it is simpler to
+      # just leverage this, sticking to what the system toolchain does:
+      gcc_cv_initfini_array=yes
       ;;
   esac
   ;;
