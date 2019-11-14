@@ -1,3 +1,9 @@
+2019-11-13  Claudiu Zissulescu <claziss@gmail.com>
+
+	Backport from mainline
+	* gcc.target/arc/delay-slot-limm.c: New test.
+	* gcc.target/arc/pic-2.c: New file.
+
 2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92470
