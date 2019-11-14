@@ -1,3 +1,10 @@
+2019-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/92506
+	* range-op.cc (range_operator::fold_range): Start with range undefined.
+	(operator_abs::wi_fold): Fix wrong line copy... With wrapv, abs with
+	overflow is varying.
+
 2019-11-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op.cc (*operator*::*range): Remove calls to
