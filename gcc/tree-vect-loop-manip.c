@@ -2538,8 +2538,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       unsigned int ratio;
       unsigned int epilogue_gaps
 	= LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
-      while (!(constant_multiple_p (loop_vinfo->vector_size,
-				    epilogue_vinfo->vector_size, &ratio)
+      while (!(constant_multiple_p
+	       (GET_MODE_SIZE (loop_vinfo->vector_mode),
+		GET_MODE_SIZE (epilogue_vinfo->vector_mode), &ratio)
 	       && eiters >= lowest_vf / ratio + epilogue_gaps))
 	{
 	  delete epilogue_vinfo;

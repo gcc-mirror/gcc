@@ -11226,11 +11226,10 @@ tree
 get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type)
 {
   tree vectype;
-  vectype = get_vectype_for_scalar_type_and_size (scalar_type,
-						  vinfo->vector_size);
-  if (vectype
-      && known_eq (vinfo->vector_size, 0U))
-    vinfo->vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
+  poly_uint64 vector_size = GET_MODE_SIZE (vinfo->vector_mode);
+  vectype = get_vectype_for_scalar_type_and_size (scalar_type, vector_size);
+  if (vectype && vinfo->vector_mode == VOIDmode)
+    vinfo->vector_mode = TYPE_MODE (vectype);
   return vectype;
 }
 

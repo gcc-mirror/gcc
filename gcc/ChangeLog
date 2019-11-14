@@ -1,5 +1,17 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::vector_size): Replace with...
+	(vec_info::vector_mode): ...this new field.
+	* tree-vect-loop.c (vect_update_vf_for_slp): Update accordingly.
+	(vect_analyze_loop, vect_transform_loop): Likewise.
+	* tree-vect-loop-manip.c (vect_do_peeling): Likewise.
+	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.
+	(vect_make_slp_decision, vect_slp_bb_region): Likewise.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Likewise.
+	* tree-vectorizer.c (try_vectorize_loop_1): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.h (vector_sizes, auto_vector_sizes): Delete.
 	(vector_modes, auto_vector_modes): New typedefs.
 	* target.def (autovectorize_vector_sizes): Replace with...
