@@ -1,5 +1,23 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/bb-slp-pr69907.c: Do not expect BB vectorization
+	to fail for aarch64 targets.
+	* gcc.dg/vect/no-scevccp-outer-12.c: Expect the test to pass
+	on aarch64 targets.
+	* gcc.dg/vect/vect-double-reduc-5.c: Likewise.
+	* gcc.dg/vect/vect-outer-4e.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_5.c: New test.
+	* gcc.target/aarch64/vect_mixed_sizes_6.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_7.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_8.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_9.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_10.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_11.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_12.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_13.c: Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-outer-4f.c: Expect the test to pass on aarch64
 	targets.
 	* gcc.dg/vect/vect-outer-4g.c: Likewise.

@@ -7007,3 +7007,21 @@
   "pmull2\\t%0.1q, %1.2d, %2.2d"
   [(set_attr "type" "crypto_pmull")]
 )
+
+;; Sign- or zero-extend a 64-bit integer vector to a 128-bit vector.
+(define_insn "<optab><Vnarrowq><mode>2"
+  [(set (match_operand:VQN 0 "register_operand" "=w")
+	(ANY_EXTEND:VQN (match_operand:<VNARROWQ> 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "<su>xtl\t%0.<Vtype>, %1.<Vntype>"
+  [(set_attr "type" "neon_shift_imm_long")]
+)
+
+;; Truncate a 128-bit integer vector to a 64-bit vector.
+(define_insn "trunc<mode><Vnarrowq>2"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "xtn\t%0.<Vntype>, %1.<Vtype>"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
