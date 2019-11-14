@@ -1,3 +1,7 @@
+2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/constraints.md (c): New constraint.
+
 2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c (ipa_call_context::estimate_size_and_time,
