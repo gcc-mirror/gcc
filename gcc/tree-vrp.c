@@ -1185,8 +1185,7 @@ range_fold_binary_symbolics_p (value_range *vr,
       value_range vr0_cst (*vr0), vr1_cst (*vr1);
       vr0_cst.normalize_symbolics ();
       vr1_cst.normalize_symbolics ();
-      op->fold_range (*vr, expr_type, vr0_cst, vr1_cst);
-      return true;
+      return op->fold_range (*vr, expr_type, vr0_cst, vr1_cst);
     }
   return false;
 }
@@ -1221,8 +1220,7 @@ range_fold_unary_symbolics_p (value_range *vr,
       const range_operator *op = get_range_op_handler (vr, code, expr_type);
       value_range vr0_cst (*vr0);
       vr0_cst.normalize_symbolics ();
-      op->fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
-      return true;
+      return op->fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
     }
   return false;
 }

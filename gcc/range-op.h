@@ -50,7 +50,7 @@ class range_operator
 {
 public:
   // Perform an operation between 2 ranges and return it.
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &lh,
 			   const value_range &rh) const;
 
@@ -73,7 +73,7 @@ public:
 			  const value_range &op1) const;
 
 protected:
-  // Perform an operation between 2 sub-ranges and return it.
+  // Perform an integral operation between 2 sub-ranges and return it.
   virtual void wi_fold (value_range &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
