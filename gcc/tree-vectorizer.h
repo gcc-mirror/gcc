@@ -335,9 +335,9 @@ public:
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
 
-  /* The vector size for this loop in bytes, or 0 if we haven't picked
-     a size yet.  */
-  poly_uint64 vector_size;
+  /* If we've chosen a vector size for this vectorization region,
+     this is one mode that has such a size, otherwise it is VOIDmode.  */
+  machine_mode vector_mode;
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);

@@ -271,7 +271,7 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
     {
       scalar_int_mode int_mode;
       poly_int64 elt_bits = elt_bytes * BITS_PER_UNIT;
-      if (multiple_p (vinfo->vector_size, elt_bytes, &nelts)
+      if (multiple_p (GET_MODE_SIZE (vinfo->vector_mode), elt_bytes, &nelts)
 	  && int_mode_for_size (elt_bits, 0).exists (&int_mode))
 	{
 	  tree int_type = build_nonstandard_integer_type
@@ -475,7 +475,7 @@ again:
 	    }
 	  if ((dt == vect_constant_def
 	       || dt == vect_external_def)
-	      && !vinfo->vector_size.is_constant ()
+	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
 	      && (TREE_CODE (type) == BOOLEAN_TYPE
 		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
 						      TYPE_MODE (type))))
@@ -2381,8 +2381,11 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* FORNOW: SLP if you can.  */
-      /* All unroll factors have the form vinfo->vector_size * X for some
-	 rational X, so they must have a common multiple.  */
+      /* All unroll factors have the form:
+
+	   GET_MODE_SIZE (vinfo->vector_mode) * X
+
+	 for some rational X, so they must have a common multiple.  */
       unrolling_factor
 	= force_common_multiple (unrolling_factor,
 				 SLP_INSTANCE_UNROLLING_FACTOR (instance));
@@ -3181,7 +3184,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 
   vec_info_shared shared;
 
-  poly_uint64 autodetected_vector_size = 0;
+  machine_mode autodetected_vector_mode = VOIDmode;
   while (1)
     {
       bool vectorized = false;
@@ -3194,7 +3197,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	bb_vinfo->shared->save_datarefs ();
       else
 	bb_vinfo->shared->check_datarefs ();
-      bb_vinfo->vector_size = GET_MODE_SIZE (next_vector_mode);
+      bb_vinfo->vector_mode = next_vector_mode;
 
       if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal)
 	  && dbg_cnt (vect_slp))
@@ -3208,7 +3211,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	  unsigned HOST_WIDE_INT bytes;
 	  if (dump_enabled_p ())
 	    {
-	      if (bb_vinfo->vector_size.is_constant (&bytes))
+	      if (GET_MODE_SIZE (bb_vinfo->vector_mode).is_constant (&bytes))
 		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 				 "basic block part vectorized using %wu byte "
 				 "vectors\n", bytes);
@@ -3222,18 +3225,18 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	}
 
       if (mode_i == 0)
-	autodetected_vector_size = bb_vinfo->vector_size;
+	autodetected_vector_mode = bb_vinfo->vector_mode;
 
       delete bb_vinfo;
 
       if (mode_i < vector_modes.length ()
 	  && known_eq (GET_MODE_SIZE (vector_modes[mode_i]),
-		       autodetected_vector_size))
+		       GET_MODE_SIZE (autodetected_vector_mode)))
 	mode_i += 1;
 
       if (vectorized
 	  || mode_i == vector_modes.length ()
-	  || known_eq (autodetected_vector_size, 0U)
+	  || autodetected_vector_mode == VOIDmode
 	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
 	     vector sizes will fail do not bother iterating.  */
 	  || fatal)

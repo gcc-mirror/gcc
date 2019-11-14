@@ -1422,8 +1422,8 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Loop contains SLP and non-SLP stmts\n");
       /* Both the vectorization factor and unroll factor have the form
-	 loop_vinfo->vector_size * X for some rational X, so they must have
-	 a common multiple.  */
+	 GET_MODE_SIZE (loop_vinfo->vector_mode) * X for some rational X,
+	 so they must have a common multiple.  */
       vectorization_factor
 	= force_common_multiple (vectorization_factor,
 				 LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
@@ -2404,7 +2404,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
        " loops cannot be vectorized\n");
 
   unsigned n_stmts = 0;
-  poly_uint64 autodetected_vector_size = 0;
+  machine_mode autodetected_vector_mode = VOIDmode;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
   machine_mode next_vector_mode = VOIDmode;
   poly_uint64 lowest_th = 0;
@@ -2425,7 +2425,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	  gcc_checking_assert (first_loop_vinfo == NULL);
 	  return loop_vinfo;
 	}
-      loop_vinfo->vector_size = GET_MODE_SIZE (next_vector_mode);
+      loop_vinfo->vector_mode = next_vector_mode;
 
       bool fatal = false;
 
@@ -2434,7 +2434,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 
       res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
       if (mode_i == 0)
-	autodetected_vector_size = loop_vinfo->vector_size;
+	autodetected_vector_mode = loop_vinfo->vector_mode;
 
       loop->aux = NULL;
       if (res)
@@ -2502,11 +2502,11 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 
       if (mode_i < vector_modes.length ()
 	  && known_eq (GET_MODE_SIZE (vector_modes[mode_i]),
-		       autodetected_vector_size))
+		       GET_MODE_SIZE (autodetected_vector_mode)))
 	mode_i += 1;
 
       if (mode_i == vector_modes.length ()
-	  || known_eq (autodetected_vector_size, 0U))
+	  || autodetected_vector_mode == VOIDmode)
 	break;
 
       /* Try the next biggest vector size.  */
@@ -2521,12 +2521,9 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
     {
       loop->aux = (loop_vec_info) first_loop_vinfo;
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "***** Choosing vector size ");
-	  dump_dec (MSG_NOTE, first_loop_vinfo->vector_size);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Choosing vector mode %s\n",
+			 GET_MODE_NAME (first_loop_vinfo->vector_mode));
       LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo) = lowest_th;
       return first_loop_vinfo;
     }
@@ -8580,12 +8577,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  dump_printf (MSG_NOTE, "\n");
 	}
       else
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "LOOP EPILOGUE VECTORIZED (VS=");
-	  dump_dec (MSG_NOTE, loop_vinfo->vector_size);
-	  dump_printf (MSG_NOTE, ")\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "LOOP EPILOGUE VECTORIZED (MODE=%s)\n",
+			 GET_MODE_NAME (loop_vinfo->vector_mode));
     }
 
   /* Loops vectorized with a variable factor won't benefit from
