@@ -1359,7 +1359,7 @@ get_vec_alignment_for_array_type (tree type)
   poly_uint64 array_size, vector_size;
 
   tree scalar_type = strip_array_types (type);
-  tree vectype = get_vectype_for_scalar_type_and_size (scalar_type, 0);
+  tree vectype = get_related_vectype_for_scalar_type (VOIDmode, scalar_type);
   if (!vectype
       || !poly_int_tree_p (TYPE_SIZE (type), &array_size)
       || !poly_int_tree_p (TYPE_SIZE (vectype), &vector_size)

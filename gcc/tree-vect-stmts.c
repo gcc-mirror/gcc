@@ -11138,18 +11138,28 @@ vect_remove_stores (stmt_vec_info first_stmt_info)
     }
 }
 
-/* Function get_vectype_for_scalar_type_and_size.
+/* If NUNITS is nonzero, return a vector type that contains NUNITS
+   elements of type SCALAR_TYPE, or null if the target doesn't support
+   such a type.
 
-   Returns the vector type corresponding to SCALAR_TYPE  and SIZE as supported
-   by the target.  */
+   If NUNITS is zero, return a vector type that contains elements of
+   type SCALAR_TYPE, choosing whichever vector size the target prefers.
+
+   If PREVAILING_MODE is VOIDmode, we have not yet chosen a vector mode
+   for this vectorization region and want to "autodetect" the best choice.
+   Otherwise, PREVAILING_MODE is a previously-chosen vector TYPE_MODE
+   and we want the new type to be interoperable with it.   PREVAILING_MODE
+   in this case can be a scalar integer mode or a vector mode; when it
+   is a vector mode, the function acts like a tree-level version of
+   related_vector_mode.  */
 
 tree
-get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
+get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
+				     tree scalar_type, poly_uint64 nunits)
 {
   tree orig_scalar_type = scalar_type;
   scalar_mode inner_mode;
   machine_mode simd_mode;
-  poly_uint64 nunits;
   tree vectype;
 
   if (!is_int_mode (TYPE_MODE (scalar_type), &inner_mode)
@@ -11189,10 +11199,11 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
   if (scalar_type == NULL_TREE)
     return NULL_TREE;
 
-  /* If no size was supplied use the mode the target prefers.   Otherwise
-     lookup a vector mode of the specified size.  */
-  if (known_eq (size, 0U))
+  /* If no prevailing mode was supplied, use the mode the target prefers.
+     Otherwise lookup a vector mode based on the prevailing mode.  */
+  if (prevailing_mode == VOIDmode)
     {
+      gcc_assert (known_eq (nunits, 0U));
       simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
       if (SCALAR_INT_MODE_P (simd_mode))
 	{
@@ -11208,9 +11219,19 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
 	    return NULL_TREE;
 	}
     }
-  else if (!multiple_p (size, nbytes, &nunits)
-	   || !mode_for_vector (inner_mode, nunits).exists (&simd_mode))
-    return NULL_TREE;
+  else if (SCALAR_INT_MODE_P (prevailing_mode)
+	   || !related_vector_mode (prevailing_mode,
+				    inner_mode, nunits).exists (&simd_mode))
+    {
+      /* Fall back to using mode_for_vector, mostly in the hope of being
+	 able to use an integer mode.  */
+      if (known_eq (nunits, 0U)
+	  && !multiple_p (GET_MODE_SIZE (prevailing_mode), nbytes, &nunits))
+	return NULL_TREE;
+
+      if (!mode_for_vector (inner_mode, nunits).exists (&simd_mode))
+	return NULL_TREE;
+    }
 
   vectype = build_vector_type_for_mode (scalar_type, simd_mode);
 
@@ -11238,9 +11259,8 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
 tree
 get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type)
 {
-  tree vectype;
-  poly_uint64 vector_size = GET_MODE_SIZE (vinfo->vector_mode);
-  vectype = get_vectype_for_scalar_type_and_size (scalar_type, vector_size);
+  tree vectype = get_related_vectype_for_scalar_type (vinfo->vector_mode,
+						      scalar_type);
   if (vectype && vinfo->vector_mode == VOIDmode)
     vinfo->vector_mode = TYPE_MODE (vectype);
   return vectype;
@@ -11273,8 +11293,13 @@ get_same_sized_vectype (tree scalar_type, tree vector_type)
   if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
     return truth_type_for (vector_type);
 
-  return get_vectype_for_scalar_type_and_size
-	   (scalar_type, GET_MODE_SIZE (TYPE_MODE (vector_type)));
+  poly_uint64 nunits;
+  if (!multiple_p (GET_MODE_SIZE (TYPE_MODE (vector_type)),
+		   GET_MODE_SIZE (TYPE_MODE (scalar_type)), &nunits))
+    return NULL_TREE;
+
+  return get_related_vectype_for_scalar_type (TYPE_MODE (vector_type),
+					      scalar_type, nunits);
 }
 
 /* Function vect_is_simple_use.

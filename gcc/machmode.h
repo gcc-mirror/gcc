@@ -258,6 +258,9 @@ public:
   bool exists () const;
   template<typename U> bool exists (U *) const;
 
+  bool operator== (const T &m) const { return m_mode == m; }
+  bool operator!= (const T &m) const { return m_mode != m; }
+
 private:
   machine_mode m_mode;
 };

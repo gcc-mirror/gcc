@@ -2435,6 +2435,17 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
       res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
       if (mode_i == 0)
 	autodetected_vector_mode = loop_vinfo->vector_mode;
+      if (dump_enabled_p ())
+	{
+	  if (res)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Analysis succeeded with vector mode %s\n",
+			     GET_MODE_NAME (loop_vinfo->vector_mode));
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Analysis failed with vector mode %s\n",
+			     GET_MODE_NAME (loop_vinfo->vector_mode));
+	}
 
       loop->aux = NULL;
       if (res)
@@ -2501,9 +2512,22 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	}
 
       if (mode_i < vector_modes.length ()
-	  && known_eq (GET_MODE_SIZE (vector_modes[mode_i]),
-		       GET_MODE_SIZE (autodetected_vector_mode)))
-	mode_i += 1;
+	  && VECTOR_MODE_P (autodetected_vector_mode)
+	  && (related_vector_mode (vector_modes[mode_i],
+				   GET_MODE_INNER (autodetected_vector_mode))
+	      == autodetected_vector_mode)
+	  && (related_vector_mode (autodetected_vector_mode,
+				   GET_MODE_INNER (vector_modes[mode_i]))
+	      == vector_modes[mode_i]))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Skipping vector mode %s, which would"
+			     " repeat the analysis for %s\n",
+			     GET_MODE_NAME (vector_modes[mode_i]),
+			     GET_MODE_NAME (autodetected_vector_mode));
+	  mode_i += 1;
+	}
 
       if (mode_i == vector_modes.length ()
 	  || autodetected_vector_mode == VOIDmode)
@@ -4898,13 +4922,14 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 halves against each other.  */
       enum machine_mode mode1 = mode;
       tree stype = TREE_TYPE (vectype);
-      unsigned sz = tree_to_uhwi (TYPE_SIZE_UNIT (vectype));
-      unsigned sz1 = sz;
+      unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
+      unsigned nunits1 = nunits;
       if (!slp_reduc
 	  && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
-	sz1 = GET_MODE_SIZE (mode1).to_constant ();
+	nunits1 = GET_MODE_NUNITS (mode1).to_constant ();
 
-      tree vectype1 = get_vectype_for_scalar_type_and_size (stype, sz1);
+      tree vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
+							   stype, nunits1);
       reduce_with_shift = have_whole_vector_shift (mode1);
       if (!VECTOR_MODE_P (mode1))
 	reduce_with_shift = false;
@@ -4918,11 +4943,13 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       /* First reduce the vector to the desired vector size we should
 	 do shift reduction on by combining upper and lower halves.  */
       new_temp = new_phi_result;
-      while (sz > sz1)
+      while (nunits > nunits1)
 	{
 	  gcc_assert (!slp_reduc);
-	  sz /= 2;
-	  vectype1 = get_vectype_for_scalar_type_and_size (stype, sz);
+	  nunits /= 2;
+	  vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
+							  stype, nunits);
+	  unsigned int bitsize = tree_to_uhwi (TYPE_SIZE (vectype1));
 
 	  /* The target has to make sure we support lowpart/highpart
 	     extraction, either via direct vector extract or through
@@ -4947,15 +4974,14 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 		  = gimple_build_assign (dst2, BIT_FIELD_REF,
 					 build3 (BIT_FIELD_REF, vectype1,
 						 new_temp, TYPE_SIZE (vectype1),
-						 bitsize_int (sz * BITS_PER_UNIT)));
+						 bitsize_int (bitsize)));
 	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	    }
 	  else
 	    {
 	      /* Extract via punning to appropriately sized integer mode
 		 vector.  */
-	      tree eltype = build_nonstandard_integer_type (sz * BITS_PER_UNIT,
-							    1);
+	      tree eltype = build_nonstandard_integer_type (bitsize, 1);
 	      tree etype = build_vector_type (eltype, 2);
 	      gcc_assert (convert_optab_handler (vec_extract_optab,
 						 TYPE_MODE (etype),
@@ -4984,7 +5010,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 		  = gimple_build_assign (tem, BIT_FIELD_REF,
 					 build3 (BIT_FIELD_REF, eltype,
 						 new_temp, TYPE_SIZE (eltype),
-						 bitsize_int (sz * BITS_PER_UNIT)));
+						 bitsize_int (bitsize)));
 	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	      dst2 =  make_ssa_name (vectype1);
 	      epilog_stmt = gimple_build_assign (dst2, VIEW_CONVERT_EXPR,
