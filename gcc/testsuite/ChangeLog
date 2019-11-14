@@ -1,5 +1,9 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/bb-slp-div-2.c: New test.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/bb-slp-pr69907.c: Do not expect BB vectorization
 	to fail for aarch64 targets.
 	* gcc.dg/vect/no-scevccp-outer-12.c: Expect the test to pass

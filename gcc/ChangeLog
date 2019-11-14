@@ -1,5 +1,12 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-slp.c (vect_contains_pattern_stmt_p): New function.
+	(vect_slp_convert_to_external): Likewise.
+	(vect_slp_analyze_node_operations): If analysis fails, try building
+	the node from scalars instead.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-cfg.c (verify_gimple_assign_unary): Handle conversions
 	between vector types.
 	* tree-vect-stmts.c (vectorizable_conversion): Extend the
