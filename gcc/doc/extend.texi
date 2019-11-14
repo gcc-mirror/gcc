@@ -9771,6 +9771,45 @@ referenced within the assembler template via @code{%0} etc, as there's
 no corresponding text in the assembly language.
 
 @table @asis
+@item ARM
+@itemx AArch64
+The flag output constraints for the ARM family are of the form
+@samp{=@@cc@var{cond}} where @var{cond} is one of the standard
+conditions defined in the ARM ARM for @code{ConditionHolds}.
+
+@table @code
+@item eq
+Z flag set, or equal
+@item ne
+Z flag clear or not equal
+@item cs
+@itemx hs
+C flag set or unsigned greater than equal
+@item cc
+@itemx lo
+C flag clear or unsigned less than
+@item mi
+N flag set or ``minus''
+@item pl
+N flag clear or ``plus''
+@item vs
+V flag set or signed overflow
+@item vc
+V flag clear
+@item hi
+unsigned greater than
+@item ls
+unsigned less than equal
+@item ge
+signed greater than equal
+@item lt
+signed less than
+@item gt
+signed greater than
+@item le
+signed less than equal
+@end table
+
 @item x86 family
 The flag output constraints for the x86 family are of the form
 @samp{=@@cc@var{cond}} where @var{cond} is one of the standard

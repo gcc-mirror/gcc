@@ -1,5 +1,16 @@
 2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/arm/aarch-common-protos.h (arm_md_asm_adjust): Declare.
+	* config/arm/aarch-common.c (arm_md_asm_adjust): New.
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__GCC_ASM_FLAG_OUTPUTS__.
+	* config/arm/arm.c (TARGET_MD_ASM_ADJUST): New.
+	* config/aarch64/aarch64-c.c (aarch64_define_unconditional_macros):
+	Define __GCC_ASM_FLAG_OUTPUTS__.
+	* config/aarch64/aarch64.c (TARGET_MD_ASM_ADJUST): New.
+	* doc/extend.texi (FlagOutputOperands): Add documentation
+	for ARM and AArch64.
+
 	* config/arm/arm-modes.def (CC_NZ): Rename from CC_NOOV.
 	* config/arm/predicates.md (nz_comparison_operator): Rename
 	from noov_comparison_operator.
