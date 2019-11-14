@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc for VxWorks.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997-2019 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@wrs.com>.
 
 This file is part of GCC.
@@ -33,139 +33,295 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gthr-posix.h"
 
 #else
-#ifdef __cplusplus
-#define UNUSED(x)
-#else
-#define UNUSED(x) x __attribute__((__unused__))
+
+#include <vxWorks.h>
+#include <version.h>
+
+/* Conditional compilation directives are easier to read when they fit on a
+   single line, which is helped by macros with shorter names.  */
+#define _VXW_MAJOR _WRS_VXWORKS_MAJOR
+#define _VXW_MINOR _WRS_VXWORKS_MINOR
+#define _VXW_PRE_69 (_VXW_MAJOR  < 6 || (_VXW_MAJOR == 6 && _VXW_MINOR < 9))
+
+/* Some VxWorks headers profusely use typedefs of a pointer to a function with
+   undefined number of arguments.  */
+#pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-prototypes"
+  #include <semLib.h>
+#pragma GCC diagnostic pop
+
+#include <errnoLib.h>
+
+
+/* --------------------- Test & Set/Swap internal API --------------------- */
+
+/* We use a bare atomic primitive with busy loops to handle mutual exclusion.
+   Inefficient, but reliable.  The actual primitive used depends on the mode
+   (RTP vs Kernel) and the version of VxWorks.  We define a macro and a type
+   here, for reuse without conditionals cluttering in the code afterwards.  */
+
+/* RTP, pre 6.9.  */
+
+#if defined(__RTP__) && _VXW_PRE_69
+
+#define __TAS(x) vxCas ((x), 0, 1)
+typedef volatile unsigned char __vx_tas_t;
+
+#endif
+
+/* RTP, 6.9 and beyond.  */
+
+#if defined(__RTP__) && !_VXW_PRE_69
+
+#define __TAS(x) vxAtomicCas ((x), 0, 1)
+typedef atomic_t __vx_tas_t;
+
+#include <vxAtomicLib.h>
+
+#endif
+
+/* Kernel */
+
+#if !defined(__RTP__)
+
+#define __TAS(x) vxTas (x)
+typedef volatile unsigned char __vx_tas_t;
+
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* ------------------------ Base __GTHREADS support ----------------------- */
+
 #define __GTHREADS 1
 #define __gthread_active_p() 1
 
 /* Mutexes are easy, except that they need to be initialized at runtime.  */
 
-#include <semLib.h>
-
-typedef SEM_ID __gthread_mutex_t;
 /* All VxWorks mutexes are recursive.  */
+typedef SEM_ID __gthread_mutex_t;
 typedef SEM_ID __gthread_recursive_mutex_t;
-#define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
-#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
+#define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init
+
+#define __CHECK_RESULT(result) (((result) == OK) ? OK : errnoGet())
+
+/* If a call to the VxWorks API fails, we must propagate the errno value.  */
+#define __RETURN_ERRNO_IF_NOT_OK(exp) if ((exp) != OK) return errnoGet()
+
+/* Non re-entrant mutex implementation. Libstdc++ expects the default
+   gthread mutex to be non reentrant.  */
 
 static inline void
-__gthread_mutex_init_function (__gthread_mutex_t *mutex)
+__gthread_mutex_init (__gthread_mutex_t * __mutex)
 {
-  *mutex = semMCreate (SEM_Q_PRIORITY | SEM_INVERSION_SAFE | SEM_DELETE_SAFE);
+  if (!__mutex)
+    return;
+  *__mutex = semBCreate (SEM_Q_PRIORITY, SEM_FULL);
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t *mutex)
+__gthread_mutex_destroy (__gthread_mutex_t * __mutex)
 {
-  semDelete(*mutex);
-  return 0;
+  if (!__mutex)
+    return ERROR;
+  return __CHECK_RESULT (semDelete (*__mutex));
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex)
+__gthread_mutex_lock (__gthread_mutex_t * __mutex)
 {
-  return semTake (*mutex, WAIT_FOREVER);
+  if (!__mutex)
+    return ERROR;
+  return __CHECK_RESULT (semTake(*__mutex, WAIT_FOREVER));
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+__gthread_mutex_trylock (__gthread_mutex_t * __mutex)
 {
-  return semTake (*mutex, NO_WAIT);
+  if (!__mutex)
+    return ERROR;
+  return __CHECK_RESULT (semTake (*__mutex, NO_WAIT));
 }
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+__gthread_mutex_unlock (__gthread_mutex_t * __mutex)
 {
-  return semGive (*mutex);
+  if (!__mutex)
+    return ERROR;
+  return __CHECK_RESULT (semGive (*__mutex));
 }
+
+/* Recursive mutex implementation. The only change is that we use semMCreate()
+   instead of semBCreate().  */
 
 static inline void
-__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_init (__gthread_recursive_mutex_t * __mutex)
 {
-  __gthread_mutex_init_function (mutex);
+  if (!__mutex)
+    return;
+  *__mutex =
+    semMCreate (SEM_Q_PRIORITY | SEM_INVERSION_SAFE | SEM_DELETE_SAFE);
 }
 
 static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
-{
-  return __gthread_mutex_lock (mutex);
-}
-
-static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
-{
-  return __gthread_mutex_trylock (mutex);
-}
-
-static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
-{
-  return __gthread_mutex_unlock (mutex);
-}
-
-static inline int
-__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t * __mutex)
 {
   return __gthread_mutex_destroy (__mutex);
 }
 
-/* pthread_once is complicated enough that it's implemented
-   out-of-line.  See config/vxlib.c.  */
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t * __mutex)
+{
+  return __gthread_mutex_lock (__mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t * __mutex)
+{
+  return __gthread_mutex_trylock (__mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t * __mutex)
+{
+  return __gthread_mutex_unlock (__mutex);
+}
 
 typedef struct
 {
-#if !defined(__RTP__)
+  /* PPC's test-and-set kernel mode implementation requires a pointer aligned
+     object, of which it only sets the first byte.  We use padding in addition
+     to an alignment request here to maxmise the factors leading to the
+     desired actual alignment choice by the compiler.  */
 #if defined(__PPC__)
-  __attribute ((aligned (__alignof (unsigned))))
+  __attribute ((aligned (__alignof__ (void *))))
 #endif
-  volatile unsigned char busy;
-#endif
+
+  __vx_tas_t busy;
   volatile unsigned char done;
+
 #if !defined(__RTP__) && defined(__PPC__)
-  /* PPC's test-and-set implementation requires a 4 byte aligned
-     object, of which it only sets the first byte.  We use padding
-     here, in order to maintain some amount of backwards
-     compatibility.  Without this padding, gthread_once objects worked
-     by accident because they happen to be static objects and the ppc
-     port automatically increased their alignment to 4 bytes.  */
   unsigned char pad1;
   unsigned char pad2;
 #endif
-}
-__gthread_once_t;
-
-#if defined (__RTP__)
-# define __GTHREAD_ONCE_INIT { 0 }
-#elif defined (__PPC__)
-# define __GTHREAD_ONCE_INIT { 0, 0, 0, 0 }
-#else
-# define __GTHREAD_ONCE_INIT { 0, 0 }
+#if !defined(__RTP__) && defined(__PPC64__)
+  unsigned char pad3;
+  unsigned char pad4;
+  unsigned char pad5;
+  unsigned char pad6;
 #endif
+} __gthread_once_t;
+
+#define __GTHREAD_ONCE_INIT { 0 }
 
 extern int __gthread_once (__gthread_once_t *__once, void (*__func)(void));
 
-/* Thread-specific data requires a great deal of effort, since VxWorks
-   is not really set up for it.  See config/vxlib.c for the gory
-   details.  All the TSD routines are sufficiently complex that they
+/* All the TSD routines are sufficiently complex that they
    need to be implemented out of line.  */
 
 typedef unsigned int __gthread_key_t;
 
-extern int __gthread_key_create (__gthread_key_t *__keyp, void (*__dtor)(void *));
+extern int __gthread_key_create (__gthread_key_t *__keyp,
+				 void (*__dtor)(void *));
 extern int __gthread_key_delete (__gthread_key_t __key);
 
 extern void *__gthread_getspecific (__gthread_key_t __key);
 extern int __gthread_setspecific (__gthread_key_t __key, void *__ptr);
 
-#undef UNUSED
+/* ------------------ Base condition variables support ------------------- */
+
+#define __GTHREAD_HAS_COND 1
+
+typedef SEM_ID __gthread_cond_t;
+
+#define __GTHREAD_COND_INIT_FUNCTION __gthread_cond_init
+
+/* Condition variable declarations.  */
+
+extern void __gthread_cond_init (__gthread_cond_t *cond);
+
+extern int __gthread_cond_destroy (__gthread_cond_t *cond);
+
+extern int __gthread_cond_broadcast (__gthread_cond_t *cond);
+
+extern int __gthread_cond_wait (__gthread_cond_t *cond,
+				__gthread_mutex_t *mutex);
+
+extern int __gthread_cond_wait_recursive (__gthread_cond_t *cond,
+					  __gthread_recursive_mutex_t *mutex);
+
+/* -----------------------  C++0x thread support ------------------------- */
+
+/* We do not support C++0x threads on that VxWorks 653, which we can
+   recognize by VTHREADS being defined.  */
+
+#ifndef VTHREADS
+
+#define __GTHREADS_CXX0X 1
+
+#include <limits.h>
+#include <time.h>
+#include <tickLib.h>
+#include <sysLib.h>
+#include <version.h>
+
+typedef struct
+{
+  TASK_ID task_id;
+  void *return_value;
+
+  /* This mutex is used to block in join() while the return value is
+     unavailable.  */
+  __gthread_mutex_t return_value_available;
+
+  /* Before freeing the structure in the task wrapper, we need to wait until
+     join() or detach() are called on that thread.   */
+  __gthread_mutex_t delete_ok;
+} __gthread_tcb;
+
+typedef __gthread_tcb *__gthread_t;
+
+/* Typedefs specific to different vxworks versions.  */
+#if _VXW_PRE_69
+  typedef int _Vx_usr_arg_t;
+  #define TASK_ID_NULL ((TASK_ID)NULL)
+  #define SEM_ID_NULL ((SEM_ID)NULL)
+#endif
+
+typedef struct timespec __gthread_time_t;
+
+/* Timed mutex lock declarations.  */
+
+extern int __gthread_mutex_timedlock (__gthread_mutex_t *m,
+				      const __gthread_time_t *abs_time);
+
+extern int __gthread_recursive_mutex_timedlock
+  (__gthread_recursive_mutex_t *mutex,
+   const __gthread_time_t *abs_timeout);
+
+/* Timed condition variable declarations.  */
+
+extern int __gthread_cond_signal (__gthread_cond_t *cond);
+extern int __gthread_cond_timedwait (__gthread_cond_t *cond,
+				     __gthread_mutex_t *mutex,
+				     const __gthread_time_t *abs_timeout);
+
+/* gthreads declarations.  */
+
+extern int __gthread_equal (__gthread_t t1, __gthread_t t2);
+extern int __gthread_yield (void);
+extern int __gthread_create (__gthread_t *__threadid,
+			     void *(*__func) (void*),
+			     void *__args);
+extern int __gthread_join (__gthread_t thread, void **value_ptr);
+extern int __gthread_detach (__gthread_t thread);
+
+extern __gthread_t __gthread_self (void);
+
+#endif
 
 #ifdef __cplusplus
 }

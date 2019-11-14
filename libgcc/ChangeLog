@@ -1,3 +1,37 @@
+2019-11-12  Corentin Gay  <gay@adacore.com>
+	    Jerome Lambourg  <lambourg@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-gthr-vxworks: New file, add all the gthr-vxworks
+	sources to LIB2ADDEH.
+	* config/t-vxworks: Remove adjustments to LIB2ADDEH.
+	* config/t-vxworks7: Likewise.
+
+	* config.host: Append a block at the end of the file to add the
+	t-gthr files to the tmake_file list for VxWorks after everything
+	else.
+
+	* config/vxlib.c: Rename as gthr-vxworks.c.
+	* config/vxlib-tls.c: Rename as gthr-vxworks-tls.c.
+
+	* config/gthr-vxworks.h: Simplify a few comments.  Expose a TAS
+	API and a basic error checking API, both internal.  Simplify the
+	__gthread_once_t type definition and initializers.  Add sections
+	for condition variables support and for the C++0x thread support,
+	conditioned against Vx653 for the latter.
+
+	* config/gthr-vxworks.c (__gthread_once): Simplify comments and
+	implementation, leveraging the TAS internal API.
+	* config/gthr-vxworks-tls.c: Introduce an internal TLS data access
+	API, leveraging the general availability of TLS services in VxWorks7
+	post SR6xxx.
+	(__gthread_setspecific, __gthread_setspecific): Use it.
+	(tls_delete_hook): Likewise, and simplify the enter/leave dtor logic.
+	* config/gthr-vxworks-cond.c: New file.  GTHREAD_COND variable
+	support based on VxWorks primitives.
+	* config/gthr-vxworks-thread.c: New file.  GTHREAD_CXX0X support
+	based on VxWorks primitives.
+
 2019-11-06  Jerome Lambourg  <lambourg@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 

@@ -1513,3 +1513,15 @@ aarch64*-*-*)
 	tm_file="${tm_file} aarch64/value-unwind.h"
 	;;
 esac
+
+# The vxworks threads implementation relies on a few extra sources,
+# which we arrange to add after everything else:
+
+case ${target_thread_file} in
+vxworks)
+	case ${host} in
+	*-*-vxworks*)
+		tmake_file="${tmake_file} t-gthr-vxworks"
+		;;
+	esac
+esac
