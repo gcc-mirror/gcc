@@ -35,42 +35,44 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #undef TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()		\
-  do {						\
-    if (TARGET_BIG_END)				\
-      builtin_define ("ARMEB");			\
-    else					\
-      builtin_define ("ARMEL");			\
-						\
-    if (arm_arch_xscale)			\
-      builtin_define ("CPU=XSCALE");		\
-    else if (arm_arch7)				\
-      {						\
-	if (!arm_arch_notm)			\
-	  builtin_define ("CPU=ARMARCH7M");	\
-	else if (TARGET_THUMB)			\
-	  builtin_define ("CPU=ARMARCH7_T2");	\
-	else					\
-	  builtin_define ("CPU=ARMARCH7");	\
-      }						\
-    else if (arm_arch6)				\
-      {						\
-	if (TARGET_THUMB)			\
-	  builtin_define ("CPU=ARMARCH6_T");	\
-	else					\
-	  builtin_define ("CPU=ARMARCH6");	\
-      }						\
+#define TARGET_OS_CPP_BUILTINS()			\
+  do {							\
+    if (TARGET_BIG_END)					\
+      builtin_define ("ARMEB");				\
+    else						\
+      builtin_define ("ARMEL");				\
+							\
+    if (arm_arch_xscale)				\
+      builtin_define ("_VX_CPU=XSCALE");		\
+    if (arm_arch8)					\
+      builtin_define ("_VX_CPU=ARMARCH8A");		\
+    else if (arm_arch7)					\
+      {							\
+	if (!arm_arch_notm)				\
+	  builtin_define ("_VX_CPU=ARMARCH7M");		\
+	else if (TARGET_THUMB)				\
+	  builtin_define ("_VX_CPU=ARMARCH7_T2");	\
+	else						\
+	  builtin_define ("_VX_CPU=ARMARCH7");		\
+      }							\
+    else if (arm_arch6)					\
+      {							\
+	if (TARGET_THUMB)				\
+	  builtin_define ("_VX_CPU=ARMARCH6_T");	\
+	else						\
+	  builtin_define ("_VX_CPU=ARMARCH6");		\
+      }							\
     else if (arm_arch5t)				\
-	builtin_define ("CPU=ARMARCH5_T");	\
-    else if (arm_arch4)				\
-      {						\
-	if (TARGET_THUMB)			\
-	  builtin_define ("CPU=ARMARCH4_T");	\
-	else					\
-	  builtin_define ("CPU=ARMARCH4");	\
-      }						\
-    VXWORKS_OS_CPP_BUILTINS ();			\
-    MAYBE_TARGET_BPABI_CPP_BUILTINS ();		\
+	builtin_define ("_VX_CPU=ARMARCH5_T");		\
+    else if (arm_arch4)					\
+      {							\
+	if (TARGET_THUMB)				\
+	  builtin_define ("_VX_CPU=ARMARCH4_T");	\
+	else						\
+	  builtin_define ("_VX_CPU=ARMARCH4");		\
+      }							\
+    VXWORKS_OS_CPP_BUILTINS ();				\
+    MAYBE_TARGET_BPABI_CPP_BUILTINS ();			\
   } while (0)
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
