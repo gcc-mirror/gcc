@@ -819,12 +819,6 @@ public:
   /* The probability of the default edge in the replaced switch.  */
   profile_probability m_default_prob;
 
-  /* The count of the default edge in the replaced switch.  */
-  profile_count m_default_count;
-
-  /* Combined count of all other (non-default) edges in the replaced switch.  */
-  profile_count m_other_count;
-
   /* Number of phi nodes in the final bb (that we'll be replacing).  */
   int m_phi_count;
 
