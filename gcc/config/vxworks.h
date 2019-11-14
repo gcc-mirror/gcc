@@ -143,9 +143,23 @@ along with GCC; see the file COPYING3.  If not see
 #undef VXWORKS_LIBGCC_SPEC
 #define VXWORKS_LIBGCC_SPEC "-lgcc"
 
+/* Setup the crtstuff begin/end we might need for dwarf EH registration.  */
+
+#if !defined(CONFIG_SJLJ_EXCEPTIONS) && DWARF2_UNWIND_INFO
+#define VX_CRTBEGIN_SPEC \
+ "%{!mrtp:vx_crtbegin-kernel.o%s} %{mrtp:vx_crtbegin-rtp.o%s}"
+#define VX_CRTEND_SPEC "-l:vx_crtend.o"
+#else
+#define VX_CRTBEGIN_SPEC ""
+#define VX_CRTEND_SPEC ""
+#endif
+
 #undef VXWORKS_STARTFILE_SPEC
-#define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:-l:crt0.o}}"
-#define VXWORKS_ENDFILE_SPEC ""
+#define VXWORKS_STARTFILE_SPEC \
+  VX_CRTBEGIN_SPEC " %{mrtp:%{!shared:-l:crt0.o}}"
+
+#undef VXWORKS_ENDFILE_SPEC
+#define VXWORKS_ENDFILE_SPEC VX_CRTEND_SPEC
 
 #undef  VXWORKS_CC1_SPEC
 #if TARGET_VXWORKS7

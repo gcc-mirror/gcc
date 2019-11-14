@@ -1,3 +1,16 @@
+2019-11-06  Jerome Lambourg  <lambourg@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h (USE_TM_CLONE_REGISTRY): Remove
+	definition, pointless with a VxWorks specific version
+	of crtstuff.
+	(DWARF2_UNWIND_INFO): Conditionalize on !ARM_UNWIND_INFO.
+	* config/vxworks.h (VX_CRTBEGIN_SPEC, VX_CRTEND_SPEC):
+	New local macros, controlling the addition of vxworks specific
+	crtstuff objects depending on the EH mechanism and kind of
+	module being linked.
+	(VXWORKS_STARTFILE_SPEC, VXWORKS_ENDFILE_SPEC): Use them.
+
 2019-11-06  Pat Bernardi  <bernardi@adacore.com>
             Jerome Lambourg  <lambourg@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
