@@ -39,7 +39,6 @@ enum value_range_kind
 
 class GTY((for_user)) value_range
 {
-  friend void range_tests ();
 public:
   value_range ();
   value_range (tree, tree, value_range_kind = VR_RANGE);
