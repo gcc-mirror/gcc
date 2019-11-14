@@ -1,3 +1,8 @@
+2019-11-14  Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.host: Handle aarch64*-wrs-vxworks7*.
+
 2019-11-12  Olivier Hainque  <hainque@adacore.com>
 
 	* config/t-gthr-vxworksae: New file, add all the gthr-vxworks
