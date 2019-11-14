@@ -4491,6 +4491,18 @@ c_simulate_builtin_function_decl (tree decl)
   C_DECL_BUILTIN_PROTOTYPE (decl) = prototype_p (type);
   return pushdecl (decl);
 }
+
+/* Warn about attributes in a context where they are unused
+   (attribute-declarations, except for the "fallthrough" case, and
+   attributes on statements).  */
+
+void
+c_warn_unused_attributes (tree attrs)
+{
+  for (tree t = attrs; t != NULL_TREE; t = TREE_CHAIN (t))
+    warning (OPT_Wattributes, "%qE attribute ignored",
+	     get_attribute_name (t));
+}
 
 /* Called when a declaration is seen that contains no names to declare.
    If its type is a reference to a structure, union or enum inherited
@@ -4545,6 +4557,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	    }
 	  else if (declspecs->typespec_kind != ctsk_tagdef
                    && declspecs->typespec_kind != ctsk_tagfirstref
+		   && declspecs->typespec_kind != ctsk_tagfirstref_attrs
 		   && declspecs->storage_class != csc_none)
 	    {
 	      if (warned != 1)
@@ -4556,6 +4569,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	    }
 	  else if (declspecs->typespec_kind != ctsk_tagdef
                    && declspecs->typespec_kind != ctsk_tagfirstref
+                   && declspecs->typespec_kind != ctsk_tagfirstref_attrs
 		   && (declspecs->const_p
 		       || declspecs->volatile_p
 		       || declspecs->atomic_p
@@ -4571,6 +4585,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	    }
 	  else if (declspecs->typespec_kind != ctsk_tagdef
                    && declspecs->typespec_kind != ctsk_tagfirstref
+                   && declspecs->typespec_kind != ctsk_tagfirstref_attrs
 		   && declspecs->alignas_p)
 	    {
 	      if (warned != 1)
@@ -4668,9 +4683,34 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 2;
     }
 
+  if (found_tag
+      && warned == 2
+      && (declspecs->typespec_kind == ctsk_tagref_attrs
+	  || declspecs->typespec_kind == ctsk_tagfirstref_attrs))
+    {
+      /* Standard attributes after the "struct" or "union" keyword are
+	 only permitted when the contents of the type are defined, or
+	 in the form "struct-or-union attribute-specifier-sequence
+	 identifier;".  If the ';' was not present, attributes were
+	 diagnosed in the parser.  Here, ensure that any other useless
+	 elements of the declaration result in a pedwarn, not just a
+	 warning.  Forward declarations of enum types are not part of
+	 standard C, but handle them the same.  */
+      pedwarn (input_location, 0,
+	       "invalid use of attributes in empty declaration");
+      warned = 1;
+    }
+
   if (warned != 1)
     {
-      if (!found_tag)
+      if (declspecs->declspecs_seen_p
+	  && !declspecs->non_std_attrs_seen_p)
+	/* An attribute declaration (but not a fallthrough attribute
+	   declaration, which was handled separately); warn if there
+	   are any attributes being ignored (but not if the attributes
+	   were empty).  */
+	c_warn_unused_attributes (declspecs->attrs);
+      else if (!found_tag)
 	pedwarn (input_location, 0, "empty declaration");
     }
 }
@@ -5605,7 +5645,8 @@ check_compound_literal_type (location_t loc, struct c_type_name *type_name)
 {
   if (warn_cxx_compat
       && (type_name->specs->typespec_kind == ctsk_tagdef
-          || type_name->specs->typespec_kind == ctsk_tagfirstref))
+          || type_name->specs->typespec_kind == ctsk_tagfirstref
+	  || type_name->specs->typespec_kind == ctsk_tagfirstref_attrs))
     warning_at (loc, OPT_Wc___compat,
 		"defining a type in a compound literal is invalid in C++");
 }
@@ -6210,18 +6251,32 @@ grokdeclarator (const struct c_declarator *declarator,
 	    const struct c_declarator *inner_decl;
 	    int attr_flags = 0;
 	    declarator = declarator->declarator;
+	    /* Standard attribute syntax precisely defines what entity
+	       an attribute in each position appertains to, so only
+	       apply laxity about positioning to GNU attribute syntax.
+	       Standard attributes applied to a function or array
+	       declarator apply exactly to that type; standard
+	       attributes applied to the identifier apply to the
+	       declaration rather than to the type.  */
 	    inner_decl = declarator;
 	    while (inner_decl->kind == cdk_attrs)
 	      inner_decl = inner_decl->declarator;
-	    if (inner_decl->kind == cdk_id)
-	      attr_flags |= (int) ATTR_FLAG_DECL_NEXT;
-	    else if (inner_decl->kind == cdk_function)
-	      attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
-	    else if (inner_decl->kind == cdk_array)
-	      attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
-	    returned_attrs = decl_attributes (&type,
-					      chainon (returned_attrs, attrs),
-					      attr_flags);
+	    if (!cxx11_attribute_p (attrs))
+	      {
+		if (inner_decl->kind == cdk_id)
+		  attr_flags |= (int) ATTR_FLAG_DECL_NEXT;
+		else if (inner_decl->kind == cdk_function)
+		  attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
+		else if (inner_decl->kind == cdk_array)
+		  attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
+	      }
+	    if (cxx11_attribute_p (attrs) && inner_decl->kind == cdk_id)
+	      returned_attrs = chainon (returned_attrs, attrs);
+	    else
+	      returned_attrs = decl_attributes (&type,
+						chainon (returned_attrs,
+							 attrs),
+						attr_flags);
 	    break;
 	  }
 	case cdk_array:
@@ -7686,11 +7741,14 @@ get_parm_info (bool ellipsis, tree expr)
 
 /* Get the struct, enum or union (CODE says which) with tag NAME.
    Define the tag as a forward-reference with location LOC if it is
-   not defined.  Return a c_typespec structure for the type
-   specifier.  */
+   not defined.  HAVE_STD_ATTRS says whether any standard attributes
+   were present after the struct, union or enum keyword; ATTRS are the
+   standard attributes present there.  Return a c_typespec structure
+   for the type specifier.  */
 
 struct c_typespec
-parser_xref_tag (location_t loc, enum tree_code code, tree name)
+parser_xref_tag (location_t loc, enum tree_code code, tree name,
+		 bool have_std_attrs, tree attrs)
 {
   struct c_typespec ret;
   tree ref;
@@ -7714,9 +7772,12 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name)
      this would not work properly if we return the reference found.
      (For example, with "struct foo" in an outer scope, "union foo;"
      must shadow that tag with a new one of union type.)  */
-  ret.kind = (ref ? ctsk_tagref : ctsk_tagfirstref);
+  ret.kind = (ref
+	      ? (have_std_attrs ? ctsk_tagref_attrs : ctsk_tagref)
+	      : (have_std_attrs ? ctsk_tagfirstref_attrs : ctsk_tagfirstref));
   if (ref && TREE_CODE (ref) == code)
     {
+      decl_attributes (&ref, attrs, (int) ATTR_FLAG_TYPE_IN_PLACE);
       if (C_TYPE_DEFINED_IN_STRUCT (ref)
 	  && loc != UNKNOWN_LOCATION
 	  && warn_cxx_compat)
@@ -7770,6 +7831,7 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name)
     }
 
   pushtag (loc, name, ref);
+  decl_attributes (&ref, attrs, (int) ATTR_FLAG_TYPE_IN_PLACE);
 
   ret.spec = ref;
   return ret;
@@ -7782,7 +7844,7 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name)
 tree
 xref_tag (enum tree_code code, tree name)
 {
-  return parser_xref_tag (input_location, code, name).spec;
+  return parser_xref_tag (input_location, code, name, false, NULL_TREE).spec;
 }
 
 /* Make sure that the tag NAME is defined *in the current scope*
@@ -10214,6 +10276,7 @@ declspecs_add_addrspace (location_t location,
 {
   specs->non_sc_seen_p = true;
   specs->declspecs_seen_p = true;
+  specs->non_std_attrs_seen_p = true;
 
   if (!ADDR_SPACE_GENERIC_P (specs->address_space)
       && specs->address_space != as)
@@ -10239,6 +10302,7 @@ declspecs_add_qual (location_t loc,
   bool dupe = false;
   specs->non_sc_seen_p = true;
   specs->declspecs_seen_p = true;
+  specs->non_std_attrs_seen_p = true;
   gcc_assert (TREE_CODE (qual) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (qual));
   i = C_RID_CODE (qual);
@@ -10297,6 +10361,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
   tree type = spec.spec;
   specs->non_sc_seen_p = true;
   specs->declspecs_seen_p = true;
+  specs->non_std_attrs_seen_p = true;
   specs->typespec_kind = spec.kind;
   if (TREE_DEPRECATED (type))
     specs->deprecated_p = true;
@@ -11162,6 +11227,7 @@ declspecs_add_scspec (location_t loc,
   enum c_storage_class n = csc_none;
   bool dupe = false;
   specs->declspecs_seen_p = true;
+  specs->non_std_attrs_seen_p = true;
   gcc_assert (TREE_CODE (scspec) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (scspec));
   i = C_RID_CODE (scspec);
@@ -11278,6 +11344,9 @@ declspecs_add_attrs (location_t loc, struct c_declspecs *specs, tree attrs)
   specs->attrs = chainon (attrs, specs->attrs);
   specs->locations[cdw_attributes] = loc;
   specs->declspecs_seen_p = true;
+  /* In the case of standard attributes at the start of the
+     declaration, the caller will reset this.  */
+  specs->non_std_attrs_seen_p = true;
   return specs;
 }
 
@@ -11306,7 +11375,7 @@ declspecs_add_alignas (location_t loc,
    specifiers with any other type specifier to determine the resulting
    type.  This is where ISO C checks on complex types are made, since
    "_Complex long" is a prefix of the valid ISO C type "_Complex long
-   double".  */
+   double".  Also apply postfix standard attributes to modify the type.  */
 
 struct c_declspecs *
 finish_declspecs (struct c_declspecs *specs)
@@ -11376,6 +11445,8 @@ finish_declspecs (struct c_declspecs *specs)
 		  && !specs->signed_p && !specs->unsigned_p
 		  && !specs->complex_p);
       /* Type to be filled in later.  */
+      if (specs->postfix_attrs)
+	error ("%<__auto_type%> followed by %<[[]]%> attributes");
       break;
     case cts_void:
       gcc_assert (!specs->long_p && !specs->short_p
@@ -11580,6 +11651,11 @@ finish_declspecs (struct c_declspecs *specs)
       break;
     default:
       gcc_unreachable ();
+    }
+  if (specs->type != NULL)
+    {
+      decl_attributes (&specs->type, specs->postfix_attrs, 0);
+      specs->postfix_attrs = NULL_TREE;
     }
 
   return specs;

@@ -1,3 +1,10 @@
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-fallthrough-1.c, gcc.dg/c2x-attr-syntax-1.c,
+	gcc.dg/c2x-attr-syntax-2.c, gcc.dg/c2x-attr-syntax-3.c,
+	gcc.dg/gnu2x-attr-syntax-1.c, gcc.dg/gnu2x-attr-syntax-2.c,
+	gcc.dg/gnu2x-attrs-1.c: New tests.
+
 2019-11-14  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/91682
