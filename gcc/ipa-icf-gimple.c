@@ -579,7 +579,7 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
       t2 = gimple_call_arg (s2, i);
 
       if (!compare_operand (t1, t2))
-	return return_false_with_msg ("memory operands are different");
+	return return_false_with_msg ("GIMPLE call operands are different");
     }
 
   /* Return value checking.  */
@@ -618,7 +618,8 @@ func_checker::compare_gimple_assign (gimple *s1, gimple *s2)
       arg2 = gimple_op (s2, i);
 
       if (!compare_operand (arg1, arg2))
-	return return_false_with_msg ("memory operands are different");
+	return return_false_with_msg ("GIMPLE assignment operands "
+				      "are different");
     }
 
 
