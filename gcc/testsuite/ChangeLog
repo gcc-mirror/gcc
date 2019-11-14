@@ -1,3 +1,10 @@
+2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
+
+	* gcc.target/arm/asm-flag-1.c: New test.
+	* gcc.target/arm/asm-flag-3.c: New test.
+	* gcc.target/arm/asm-flag-5.c: New test.
+	* gcc.target/arm/asm-flag-6.c: New test.
+
 2019-11-14  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/inline-9.c: New testcase.
