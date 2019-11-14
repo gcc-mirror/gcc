@@ -407,7 +407,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
--fallow-store-data-races @gol
+-fno-allocation-dce -fallow-store-data-races @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
 -fcaller-saves @gol
@@ -10266,6 +10266,10 @@ If @var{n} is not specified or is zero, use a machine-dependent default.
 The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@item -fno-allocation-dce
+@opindex fno-allocation-dce
+Do not remove unused C++ allocations in dead code elimination.
 
 @item -fallow-store-data-races
 @opindex fallow-store-data-races

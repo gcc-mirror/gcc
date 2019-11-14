@@ -1,5 +1,10 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	PR other/92329
+	* doc/invoke.texi: Document -fallocation-dce.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	PR target/92389
 	* config/i386/i386.h: Add PTA_AVX512VPOPCNTDQ to
 	PTA_ICELAKE_CLIENT which is later interited by
