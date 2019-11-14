@@ -1029,6 +1029,8 @@ ipa_polymorphic_call_context ipa_context_from_jfunc (ipa_node_params *,
 						     cgraph_edge *,
 						     int,
 						     ipa_jump_func *);
+value_range ipa_value_range_from_jfunc (ipa_node_params *, cgraph_edge *,
+					ipa_jump_func *, tree);
 ipa_agg_value_set ipa_agg_value_set_from_jfunc (ipa_node_params *,
 						cgraph_node *,
 						ipa_agg_jump_function *);

@@ -1,3 +1,7 @@
+2019-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inline-9.c: New testcase.
+
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/asan/memcmp-1.c: Update expected backtrace.
