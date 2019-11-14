@@ -548,15 +548,16 @@ gori_compute::range_of_expr (value_range &r, tree expr, gimple *s)
 // ssa-names invoked wont go off and calculate a range in derived
 // bases.
 
-value_range
-gori_compute::get_tree_range (tree expr, tree name,
+void
+gori_compute::get_tree_range (value_range &r, tree expr, tree name,
 			      const value_range *range_of_name)
 {
-  value_range r;
   if (expr == name && range_of_name)
-    return *range_of_name;
+    {
+      r = *range_of_name;
+      return;
+    }
   gcc_assert (range_of_expr (r, expr));
-  return r;
 }
 
 
@@ -585,11 +586,11 @@ gori_compute::compute_name_range_op (value_range &r, gimple *s,
 	  // for the type of operand1, but if it can be reduced
 	  // further, the results will be better.  Start with what we
 	  // know of the range of OP1.
-	  op1_range = get_tree_range (op1, name, name_range);
+	  get_tree_range (op1_range, op1, name, name_range);
 	  return gimple_range_calc_op1 (s, r, lhs, op1_range);
 	}
       // If we need the second operand, get a value and evaluate.
-      op2_range = get_tree_range (op2, name, name_range);
+      get_tree_range (op2_range, op2, name, name_range);
       if (gimple_range_calc_op1 (s, r, lhs, op2_range))
 	{
 	  // If op1 also has a range, intersect the 2 ranges.
@@ -602,7 +603,7 @@ gori_compute::compute_name_range_op (value_range &r, gimple *s,
 
   if (op2 == name)
     {
-      op1_range = get_tree_range (op1, name, name_range);
+      get_tree_range (op1_range, op1, name, name_range);
       if (gimple_range_calc_op2 (s, r, lhs, op1_range))
 	{
 	  // If op2 also has a range, intersect the 2 ranges.
@@ -833,15 +834,22 @@ gori_compute::logical_combine (value_range &r, enum tree_code code,
       case TRUTH_AND_EXPR:
       case BIT_AND_EXPR:
         if (!lhs.zero_p ())
-	  // The TRUE side is the intersection of the the 2 true ranges.
-	  r = range_intersect (op1_true, op2_true);
+	  {
+	    // The TRUE side is the intersection of the the 2 true ranges.
+	    r = op1_true;
+	    r.intersect (op2_true);
+	  }
 	else
 	  {
 	    // The FALSE side is the union of the other 3 cases.
-	    value_range ff = range_intersect (op1_false, op2_false);
-	    value_range tf = range_intersect (op1_true, op2_false);
-	    value_range ft = range_intersect (op1_false, op2_true);
-	    r = range_union (ff, tf);
+	    value_range ff (op1_false);
+	    ff.intersect (op2_false);
+	    value_range tf (op1_true);
+	    tf.intersect (op2_false);
+	    value_range ft (op1_false);
+	    ft.intersect (op2_true);
+	    r = ff;
+	    r.union_ (tf);
 	    r.union_ (ft);
 	  }
         break;
@@ -851,18 +859,25 @@ gori_compute::logical_combine (value_range &r, enum tree_code code,
       case TRUTH_OR_EXPR:
       case BIT_IOR_EXPR:
         if (lhs.zero_p ())
-	  // An OR operation will only take the FALSE path if both
-	  // operands are false. so [20, 255] intersect [0, 5] is the
-	  // union: [0,5][20,255].  */
-	  r = range_intersect (op1_false, op2_false);
+	  {
+	    // An OR operation will only take the FALSE path if both
+	    // operands are false. so [20, 255] intersect [0, 5] is the
+	    // union: [0,5][20,255].  */
+	    r = op1_false;
+	    r.intersect (op2_false);
+	  }
 	else
 	  {
 	    // The TRUE side of an OR operation will be the union of
 	    // the other three combinations.
-	    value_range tt = range_intersect (op1_true, op2_true);
-	    value_range tf = range_intersect (op1_true, op2_false);
-	    value_range ft = range_intersect (op1_false, op2_true);
-	    r = range_union (tt, tf);
+	    value_range tt (op1_true);
+	    tt.intersect (op2_true);
+	    value_range tf (op1_true);
+	    tf.intersect (op2_false);
+	    value_range ft (op1_false);
+	    ft.intersect (op2_true);
+	    r = tt;
+	    r.union_ (tf);
 	    r.union_ (ft);
 	  }
 	break;
@@ -933,7 +948,7 @@ gori_compute::compute_logical_operands (value_range &r, gimple *s,
   else
     {
       // Otherwise just get the value for name in operand 1 position
-      op1_true = get_tree_range (name, name, name_range);
+      get_tree_range (op1_true, name, name, name_range);
       op1_false = op1_true;
     }
 
@@ -951,7 +966,7 @@ gori_compute::compute_logical_operands (value_range &r, gimple *s,
 	{
 	  // Otherwise just get the value for name in operand 2
 	  // position.
-	  op2_true = get_tree_range (name, name, name_range);
+	  get_tree_range (op2_true, name, name, name_range);
 	  op2_false = op2_true;
 	}
     }
@@ -979,7 +994,7 @@ gori_compute::compute_operand1_range (value_range &r, gimple *s,
   tree op2 = gimple_range_operand2 (s);
 
   // Determine a known range for operand1 ().
-  op1_range = get_tree_range (op1, name, name_range);
+  get_tree_range (op1_range, op1, name, name_range);
 
   // Now calcuated the operand and put that result in r.
   if (!op2)
@@ -992,7 +1007,7 @@ gori_compute::compute_operand1_range (value_range &r, gimple *s,
     }
   else
     {
-      op2_range = get_tree_range (op2, name, name_range);
+      get_tree_range (op2_range, op2, name, name_range);
       if (!gimple_range_calc_op1 (s, r, lhs, op2_range))
 	return false;
     }
@@ -1021,14 +1036,14 @@ gori_compute::compute_operand2_range (value_range &r, gimple *s,
   tree op2 = gimple_range_operand2 (s);
 
   // Get a range for op1.
-  op1_range = get_tree_range (op1, name, name_range);
+  get_tree_range (op1_range, op1, name, name_range);
 
   // calculate the range for op2 based on lhs and op1.
   if (!gimple_range_calc_op2 (s, op2_range, lhs, op1_range))
     return false;
 
   // Also pick up what is known about op2's range at this point
-  r = get_tree_range (op2, name, name_range);
+  get_tree_range (r, op2, name, name_range);
 
   // And intersect it with the calculated result.
   op2_range.intersect (r);

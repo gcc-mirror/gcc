@@ -105,7 +105,7 @@ class vr_values : public gori_compute
   bool solve_name_given_equivalence (value_range &r,
 				     tree name, tree equiv,
 				     const value_range &equiv_range);
-  value_range range_for_op2 (gimple *, tree type);
+  void range_for_op2 (value_range &, gimple *, tree type);
 
   value_range_equiv *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);

@@ -1519,7 +1519,8 @@ operator_lshift::op1_range (value_range &r,
       rshift_op = range_op_handler (RSHIFT_EXPR, unsigned_type);
       rshift_op->fold_range (lb, unsigned_type, unsigned_lhs, shifted);
       range_cast (lb, type);
-      r = range_union (lb, ub);
+      r = lb;
+      r.union_ (ub);
       return true;
     }
   return false;
@@ -1577,7 +1578,8 @@ operator_rshift::op1_range (value_range &r,
       value_range mask_range (build_zero_cst (type), mask);
       range_op_handler (PLUS_EXPR, type)->fold_range (ub, type, lb,
 						      mask_range);
-      r = range_union (lb, ub);
+      r = lb;
+      r.union_ (ub);
       return true;
     }
   return false;

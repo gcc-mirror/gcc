@@ -2076,7 +2076,8 @@ vr_values::solve_name_given_equivalence (value_range &r,
   if (gimple_range_handler (def) && gimple_range_operand1 (def) == name)
     {
       tree op2_type = TREE_TYPE (gimple_range_operand1 (def));
-      value_range op2_range = range_for_op2 (def, op2_type);
+      value_range op2_range;
+      range_for_op2 (op2_range, def, op2_type);
       return gimple_range_calc_op1 (def, r, equiv_range, op2_range);
     }
   // Solve NAME in NAME = USE(EQUIV).
@@ -2084,29 +2085,29 @@ vr_values::solve_name_given_equivalence (value_range &r,
   if (gimple_range_handler (def) && gimple_range_operand1 (def) == equiv)
     {
       tree op2_type = gimple_expr_type (def);
-      value_range op2_range = range_for_op2 (def, op2_type);
+      value_range op2_range;
+      range_for_op2 (op2_range, def, op2_type);
       return gimple_range_fold (def, r, equiv_range, op2_range);
     }
   return false;
 }
 
-value_range
-vr_values::range_for_op2 (gimple *stmt, tree type)
+void
+vr_values::range_for_op2 (value_range &res, gimple *stmt, tree type)
 {
   tree op2 = gimple_assign_rhs2 (stmt);
   if (op2)
     {
-      value_range r;
       if (TREE_CODE (op2) == SSA_NAME)
-	range_of_ssa_name (r, op2);
+	range_of_ssa_name (res, op2);
       else
 	{
-	  r = value_range (op2, op2);
-	  r.normalize_addresses ();
+	  res = value_range (op2, op2);
+	  res.normalize_addresses ();
 	}
-      return r;
+      return;
     }
-  return value_range (type);
+  res.set_varying (type);
 }
 
 /* Initialize VRP lattice.  */

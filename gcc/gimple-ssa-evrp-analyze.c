@@ -193,14 +193,18 @@ gori_range_is_better (const value_range *range_evrp,
       return true;
     }
 
-  return range_intersect (*range_gori, *range_evrp) == *range_gori;
+  value_range inter (*range_gori);
+  inter.intersect (*range_evrp);
+  return inter == *range_gori;
 }
 
 static bool
 gori_range_is_unrepresentable (const value_range *r_evrp,
 			       const value_range *r_gori)
 {
-  bool evrp_is_better = range_intersect (*r_evrp, *r_gori) == *r_evrp;
+  value_range inter (*r_evrp);
+  inter.intersect (*r_gori);
+  bool evrp_is_better = inter == *r_evrp;
   return gori_range_is_better (r_evrp, r_gori) && evrp_is_better;
 }
 
@@ -221,9 +225,9 @@ evrp_range_analyzer::merge_gori_and_evrp_results
   return vr;
 }
 
-value_range
+void
 evrp_range_analyzer::try_find_new_range_with_gori
-				(tree name, edge e,
+				(value_range &res, tree name, edge e,
 				 const vec<assert_info> &asserts)
 {
   const value_range_equiv *known_range = get_value_range (name);
@@ -233,10 +237,9 @@ evrp_range_analyzer::try_find_new_range_with_gori
   equivalence_iterator iter (name, known_range, asserts);
   vr_values->save_equivalences (&iter);
 
-  value_range vr;
-  if (!vr_values->outgoing_edge_range_p (vr, e, name, known_range))
-    vr.set_varying (TREE_TYPE (name));
-  return vr;
+  if (vr_values->outgoing_edge_range_p (res, e, name, known_range))
+    return;
+  res.set_varying (TREE_TYPE (name));
 }
 
 static void
@@ -352,9 +355,9 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	  auto_vec<std::pair<tree, value_range_equiv *>, 8> vrs;
 	  for (unsigned i = 0; i < asserts.length (); ++i)
 	    {
-	      value_range vr_gori
-		= try_find_new_range_with_gori (asserts[i].name, pred_e,
-						asserts);
+	      value_range vr_gori;
+	      try_find_new_range_with_gori (vr_gori, asserts[i].name, pred_e,
+					    asserts);
 	      value_range_equiv *vr
 		= try_find_new_range (asserts[i].name,
 				      asserts[i].expr,

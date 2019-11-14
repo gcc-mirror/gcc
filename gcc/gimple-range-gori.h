@@ -159,8 +159,8 @@ protected:
   bool has_edge_range_p (edge e, tree name);
   gori_map m_gori_map;
 private:
-  value_range get_tree_range (tree expr, tree name,
-			      const value_range *range_of_name);
+  void get_tree_range (value_range &, tree expr, tree name,
+		       const value_range *range_of_name);
   bool compute_operand_range_switch (value_range &r, gswitch *s,
 				     const value_range &lhs,
 				     tree name,
