@@ -1,3 +1,12 @@
+2019-11-13  Claudiu Zissulescu <claziss@gmail.com>
+
+	Backport from mainline
+	* config/arc/arc.md (movsi_ne): Reorder instruction variants and
+	use new register constraint letters.
+	* config/arc/arc.c (arc_legitimize_pic_address): Consider UNSPECs
+	as well, if interesting recover the symbol and re-legitimize the
+	pic address.
+
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
