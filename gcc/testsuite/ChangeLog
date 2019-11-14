@@ -1,3 +1,9 @@
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/ISO_Fortran_binding_17.c: Include
+	../../../libgfortran/ISO_Fortran_binding.h rather than
+	ISO_Fortran_binding.h.
+
 2019-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR c++/92421
