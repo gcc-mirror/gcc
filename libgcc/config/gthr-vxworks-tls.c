@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Zack Weinberg <zack@codesourcery.com>
 
 This file is part of GCC.
@@ -23,21 +23,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 /* Threads compatibility routines for libgcc2 for VxWorks.
-   These are out-of-line routines called from gthr-vxworks.h. 
+   These are out-of-line routines called from gthr-vxworks.h.
 
    This file provides the TLS related support routines, calling specific
-   VxWorks kernel entry points for this purpose.  The base VxWorks 5.x kernels
-   don't feature these entry points, and we provide gthr_supp_vxw_5x.c as an
-   option to fill this gap.  Asking users to rebuild a kernel is not to be
-   taken lightly, still, so we have isolated these routines from the rest of
-   vxlib to ensure that the kernel dependencies are only dragged when really
-   necessary.  */
+   VxWorks kernel entry points for this purpose.  */
 
 #include "tconfig.h"
 #include "tsystem.h"
 #include "gthr.h"
 
 #if defined(__GTHREADS)
+
 #include <vxWorks.h>
 #ifndef __RTP__
 #include <vxLib.h>
@@ -46,31 +42,31 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __RTP__
 #include <taskHookLib.h>
 #else
-# include <errno.h>
+#include <errno.h>
 #endif
 
 /* Thread-local storage.
 
-   We reserve a field in the TCB to point to a dynamically allocated
-   array which is used to store TLS values.  A TLS key is simply an
-   offset in this array.  The exact location of the TCB field is not
-   known to this code nor to vxlib.c -- all access to it indirects
-   through the routines __gthread_get_tls_data and
-   __gthread_set_tls_data, which are provided by the VxWorks kernel.
+   A gthread TLS key is simply an offset in an array, the address of which
+   we store in a single pointer field associated with the current task.
+
+   On VxWorks 7, we have direct support for __thread variables and use
+   such a variable as the pointer "field".  On other versions, we resort
+   to __gthread_get_tls_data and __gthread_set_tls_data functions provided
+   by the kernel.
 
    There is also a global array which records which keys are valid and
    which have destructors.
 
-   A task delete hook is installed to execute key destructors.  The
-   routines __gthread_enter_tls_dtor_context and
-   __gthread_leave_tls_dtor_context, which are also provided by the
-   kernel, ensure that it is safe to call free() on memory allocated
-   by the task being deleted.  (This is a no-op on VxWorks 5, but
-   a major undertaking on AE.)
+   A task delete hook is installed to execute key destructors.  The routines
+   __gthread_enter_tls_dtor_context and __gthread_leave_tls_dtor_context,
+   which are also provided by the kernel, ensure that it is safe to call
+   free() on memory allocated by the task being deleted.  This is a no-op on
+   VxWorks 5, but a major undertaking on AE.
 
    The task delete hook is only installed when at least one thread
    has TLS data.  This is a necessary precaution, to allow this module
-   to be unloaded - a module with a hook cannot be removed.
+   to be unloaded - a module with a hook can not be removed.
 
    Since this interface is used to allocate only a small number of
    keys, the table size is small and static, which simplifies the
@@ -95,21 +91,34 @@ static int self_owner;
    it is only removed when unloading this module.  */
 static volatile int delete_hook_installed;
 
-/* kernel provided routines */
+/* TLS data access internal API.  A straight __thread variable on VxWorks 7,
+   a pointer returned by kernel provided routines otherwise.  */
+
+#ifdef __VXWORKS7__
+
+static __thread struct tls_data *__gthread_tls_data;
+
+#define VX_GET_TLS_DATA() __gthread_tls_data
+#define VX_SET_TLS_DATA(x) __gthread_tls_data = (x)
+
+#define VX_ENTER_TLS_DTOR()
+#define VX_LEAVE_TLS_DTOR()
+
+#else
+
 extern void *__gthread_get_tls_data (void);
 extern void __gthread_set_tls_data (void *data);
 
 extern void __gthread_enter_tls_dtor_context (void);
 extern void __gthread_leave_tls_dtor_context (void);
 
-#ifndef __RTP__
+#define VX_GET_TLS_DATA() __gthread_get_tls_data()
+#define VX_SET_TLS_DATA(x) __gthread_set_tls_data(x)
 
-extern void *__gthread_get_tsd_data (WIND_TCB *tcb);
-extern void __gthread_set_tsd_data (WIND_TCB *tcb, void *data);
-extern void __gthread_enter_tsd_dtor_context (WIND_TCB *tcb);
-extern void __gthread_leave_tsd_dtor_context (WIND_TCB *tcb);
+#define VX_ENTER_TLS_DTOR() __gthread_enter_tls_dtor_context ()
+#define VX_LEAVE_TLS_DTOR() __gthread_leave_tls_dtor_context ()
 
-#endif /* __RTP__ */
+#endif /* __VXWORKS7__ */
 
 /* This is a global structure which records all of the active keys.
 
@@ -138,7 +147,7 @@ struct tls_keys
    key is valid.  */
 static struct tls_keys tls_keys =
 {
-  { 0, 0, 0, 0 },
+  { NULL, NULL, NULL, NULL },
   { 1, 1, 1, 1 }
 };
 
@@ -157,28 +166,17 @@ static __gthread_once_t tls_init_guard = __GTHREAD_ONCE_INIT;
    count protects us from calling a stale destructor.  It does
    need to read tls_keys.dtor[key] atomically.  */
 
-static void
+void
 tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
 {
   struct tls_data *data;
   __gthread_key_t key;
 
-#ifdef __RTP__
-  data = __gthread_get_tls_data ();
-#else
-  /* In kernel mode, we can be called in the context of the thread
-     doing the killing, so must use the TCB to determine the data of
-     the thread being killed.  */
-  data = __gthread_get_tsd_data (tcb);
-#endif
-  
+  data = VX_GET_TLS_DATA();
+
   if (data && data->owner == &self_owner)
     {
-#ifdef __RTP__
-      __gthread_enter_tls_dtor_context ();
-#else
-      __gthread_enter_tsd_dtor_context (tcb);
-#endif
+      VX_ENTER_TLS_DTOR();
       for (key = 0; key < MAX_KEYS; key++)
 	{
 	  if (data->generation[key] == tls_keys.generation[key])
@@ -190,19 +188,11 @@ tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
 	    }
 	}
       free (data);
-#ifdef __RTP__
-      __gthread_leave_tls_dtor_context ();
-#else
-      __gthread_leave_tsd_dtor_context (tcb);
-#endif
 
-#ifdef __RTP__
-      __gthread_set_tls_data (0);
-#else
-      __gthread_set_tsd_data (tcb, 0);
-#endif
+      VX_LEAVE_TLS_DTOR();
+      VX_SET_TLS_DATA(NULL);
     }
-} 
+}
 
 /* Initialize global data used by the TLS system.  */
 static void
@@ -303,7 +293,7 @@ __gthread_getspecific (__gthread_key_t key)
   if (key >= MAX_KEYS)
     return 0;
 
-  data = __gthread_get_tls_data ();
+  data = GET_VX_TLS_DATA();
 
   if (!data)
     return 0;
@@ -332,7 +322,8 @@ __gthread_setspecific (__gthread_key_t key, void *value)
   if (key >= MAX_KEYS)
     return EINVAL;
 
-  data = __gthread_get_tls_data ();
+  data = VX_GET_TLS_DATA();
+
   if (!data)
     {
       if (!delete_hook_installed)
@@ -354,7 +345,8 @@ __gthread_setspecific (__gthread_key_t key, void *value)
 
       memset (data, 0, sizeof (struct tls_data));
       data->owner = &self_owner;
-      __gthread_set_tls_data (data);
+
+      VX_SET_TLS_DATA(data);
     }
 
   generation = tls_keys.generation[key];
