@@ -1,5 +1,17 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sem_item_optimizer::execute): Save
+	loaded_symbols.
+	(sem_item_optimizer::parse_nonsingleton_classes):
+	Return number of loaded symbols.
+	(sem_item_optimizer::merge_classes): Print
+	statistics about totally needed symbols.
+	* ipa-icf.h (parse_nonsingleton_classes): Change return
+	type.
+	(merge_classes): Add one argument.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.c (func_checker::hash_operand): Improve
 	func_checker::hash_operand by handling of FIELD_DECLs.
 
