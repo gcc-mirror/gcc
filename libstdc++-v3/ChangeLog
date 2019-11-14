@@ -1,3 +1,9 @@
+2019-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (disable_sized_sentinel): Rename to
+	disable_sized_sentinel_for.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Adjust.
+
 2019-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/compare (strong_order, weak_order, partial_order)

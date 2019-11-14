@@ -524,11 +524,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && __detail::__weakly_eq_cmp_with<_Sent, _Iter>;
 
   template<typename _Sent, typename _Iter>
-    inline constexpr bool disable_sized_sentinel = false;
+    inline constexpr bool disable_sized_sentinel_for = false;
 
   template<typename _Sent, typename _Iter>
     concept sized_sentinel_for = sentinel_for<_Sent, _Iter>
-    && !disable_sized_sentinel<remove_cv_t<_Sent>, remove_cv_t<_Iter>>
+    && !disable_sized_sentinel_for<remove_cv_t<_Sent>, remove_cv_t<_Iter>>
     && requires(const _Iter& __i, const _Sent& __s)
     {
       { __s - __i } -> same_as<iter_difference_t<_Iter>>;
