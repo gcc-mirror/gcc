@@ -1,3 +1,13 @@
+2019-11-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-gthr-vxworksae: New file, add all the gthr-vxworks
+	sources except the cxx0x support to LIB2ADDEH.  We don't support
+	cxx0x on AE/653.
+	* config/t-vxworksae: New file.
+	* config.host: Handle *-*-vxworksae: Add the two aforementioned
+	Makefile fragment files at their expected position in the tmake_file
+	list, in accordance with what is done for other VxWorks variants.
+
 2019-11-12  Corentin Gay  <gay@adacore.com>
 	    Jerome Lambourg  <lambourg@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
