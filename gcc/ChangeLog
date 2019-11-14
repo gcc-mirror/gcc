@@ -1,3 +1,17 @@
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (related_mode): New hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_RELATED_MODE): New hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_vectorize_related_mode): Declare.
+	* targhooks.c (default_vectorize_related_mode): New function.
+	* machmode.h (related_vector_mode): Declare.
+	* stor-layout.c (related_vector_mode): New function.
+	* expmed.c (extract_bit_field_1): Use it instead of mode_for_vector.
+	* optabs-query.c (qimode_for_vec_perm): Likewise.
+	* tree-vect-stmts.c (get_group_load_store_type): Likewise.
+	(vectorizable_store, vectorizable_load): Likewise
+
 2019-11-14  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/arm/aarch-common-protos.h (arm_md_asm_adjust): Declare.

@@ -6021,6 +6021,30 @@ The hook does not need to do anything if the vector returned by
 for autovectorization.  The default implementation does nothing.
 @end deftypefn
 
+@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_RELATED_MODE (machine_mode @var{vector_mode}, scalar_mode @var{element_mode}, poly_uint64 @var{nunits})
+If a piece of code is using vector mode @var{vector_mode} and also wants
+to operate on elements of mode @var{element_mode}, return the vector mode
+it should use for those elements.  If @var{nunits} is nonzero, ensure that
+the mode has exactly @var{nunits} elements, otherwise pick whichever vector
+size pairs the most naturally with @var{vector_mode}.  Return an empty
+@code{opt_machine_mode} if there is no supported vector mode with the
+required properties.
+
+There is no prescribed way of handling the case in which @var{nunits}
+is zero.  One common choice is to pick a vector mode with the same size
+as @var{vector_mode}; this is the natural choice if the target has a
+fixed vector size.  Another option is to choose a vector mode with the
+same number of elements as @var{vector_mode}; this is the natural choice
+if the target has a fixed number of elements.  Alternatively, the hook
+might choose a middle ground, such as trying to keep the number of
+elements as similar as possible while applying maximum and minimum
+vector sizes.
+
+The default implementation uses @code{mode_for_vector} to find the
+requested mode, returning a mode with the same size as @var{vector_mode}
+when @var{nunits} is zero.  This is the correct behavior for most targets.
+@end deftypefn
+
 @deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (poly_uint64 @var{nunits}, poly_uint64 @var{length})
 A vector mask is a value that holds one boolean result for every element
 in a vector.  This hook returns the machine mode that should be used to

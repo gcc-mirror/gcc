@@ -880,6 +880,8 @@ extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
 extern opt_machine_mode mode_for_vector (scalar_mode, poly_uint64);
 extern opt_machine_mode mode_for_int_vector (unsigned int, poly_uint64);
+extern opt_machine_mode related_vector_mode (machine_mode, scalar_mode,
+					     poly_uint64 = 0);
 
 /* Return the integer vector equivalent of MODE, if one exists.  In other
    words, return the mode for an integer vector that has the same number
