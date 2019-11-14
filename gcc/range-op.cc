@@ -2803,10 +2803,8 @@ range_cast (value_range &r, tree type)
 #include "selftest.h"
 #include "stor-layout.h"
 
-// Ideally this should go in namespace selftest, but range_tests
-// needs to be a friend of class value_range so it can access
-// value_range::m_max_pairs.
-
+namespace selftest
+{
 #define INT(N) build_int_cst (integer_type_node, (N))
 #define UINT(N) build_int_cstu (unsigned_type_node, (N))
 #define INT16(N) build_int_cst (short_integer_type_node, (N))
@@ -2816,14 +2814,6 @@ range_cast (value_range &r, tree type)
 #define UINT128(N) build_int_cstu (u128_type, (N))
 #define UCHAR(N) build_int_cstu (unsigned_char_type_node, (N))
 #define SCHAR(N) build_int_cst (signed_char_type_node, (N))
-
-#define RANGE3(A,B,C,D,E,F)		\
-( i1 = value_range (INT (A), INT (B)),	\
-  i2 = value_range (INT (C), INT (D)),	\
-  i3 = value_range (INT (E), INT (F)),	\
-  i1.union_ (i2),			\
-  i1.union_ (i3),			\
-  i1 )
 
 // Run all of the selftests within this file.
 
@@ -2893,16 +2883,13 @@ range_tests ()
   ASSERT_TRUE (r0 == r1);
 
   r1 = value_range (INT (5), INT (5));
-  r1.check ();
   value_range r2 (r1);
   ASSERT_TRUE (r1 == r2);
 
   r1 = value_range (INT (5), INT (10));
-  r1.check ();
 
   r1 = value_range (integer_type_node,
 	       wi::to_wide (INT (5)), wi::to_wide (INT (10)));
-  r1.check ();
   ASSERT_TRUE (r1.contains_p (INT (7)));
 
   r1 = value_range (SCHAR (0), SCHAR (20));
@@ -3046,42 +3033,12 @@ range_tests ()
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
 
-  if (value_range::m_max_pairs > 2)
-    {
-      // ([10,20] U [5,8]) U [1,3] ==> [1,3][5,8][10,20].
-      r0 = value_range (INT (10), INT (20));
-      r1 = value_range (INT (5), INT (8));
-      r0.union_ (r1);
-      r1 = value_range (INT (1), INT (3));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (1, 3, 5, 8, 10, 20));
-
-      // [1,3][5,8][10,20] U [-5,0] => [-5,3][5,8][10,20].
-      r1 = value_range (INT (-5), INT (0));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (-5, 3, 5, 8, 10, 20));
-    }
-
   // [10,20] U [30,40] ==> [10,20][30,40].
   r0 = value_range (INT (10), INT (20));
   r1 = value_range (INT (30), INT (40));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
 				  value_range (INT (30), INT (40))));
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40] U [50,60] ==> [10,20][30,40][50,60].
-      r1 = value_range (INT (50), INT (60));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (10, 20, 30, 40, 50, 60));
-      // [10,20][30,40][50,60] U [70, 80] ==> [10,20][30,40][50,60][70,80].
-      r1 = value_range (INT (70), INT (80));
-      r0.union_ (r1);
-
-      r2 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r2.union_ (value_range (INT (70), INT (80)));
-      ASSERT_TRUE (r0 == r2);
-    }
 
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
@@ -3092,35 +3049,6 @@ range_tests ()
   r0.invert ();
   ASSERT_TRUE (r0 == r1);
 
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40][50,60] U [6,35] => [6,40][50,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (6), INT (35));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (value_range (INT (6), INT (40)),
-				      value_range (INT (50), INT (60))));
-
-      // [10,20][30,40][50,60] U [6,60] => [6,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (6), INT (60));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == value_range (INT (6), INT (60)));
-
-      // [10,20][30,40][50,60] U [6,70] => [6,70].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (6), INT (70));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == value_range (INT (6), INT (70)));
-
-      // [10,20][30,40][50,60] U [35,70] => [10,20][30,70].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (35), INT (70));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				      value_range (INT (30), INT (70))));
-    }
-
   // [10,20][30,40] U [25,70] => [10,70].
   r0 = range_union (value_range (INT (10), INT (20)),
 		     value_range (INT (30), INT (40)));
@@ -3128,16 +3056,6 @@ range_tests ()
   r0.union_ (r1);
   ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
 				  value_range (INT (25), INT (70))));
-
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40][50,60] U [15,35] => [10,40][50,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (15), INT (35));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (40)),
-				      value_range (INT (50), INT (60))));
-    }
 
   // [10,20] U [15, 30] => [10, 30].
   r0 = value_range (INT (10), INT (20));
@@ -3151,15 +3069,6 @@ range_tests ()
   r0.union_ (r1);
   ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
 				  value_range (INT (25), INT (25))));
-
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40][50,60] U [35,35] => [10,20][30,40][50,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (35), INT (35));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (10, 20, 30, 40, 50, 60));
-    }
 
   // [15,40] U [] => [15,40].
   r0 = value_range (INT (15), INT (40));
@@ -3178,61 +3087,6 @@ range_tests ()
   r1 = value_range (INT (9), INT (9));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == value_range (INT (9), INT (20)));
-
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,10][12,12][20,100] ^ [15,200].
-      r0 = RANGE3 (10, 10, 12, 12, 20, 100);
-      r1 = value_range (INT (15), INT (200));
-      r0.intersect (r1);
-      ASSERT_TRUE (r0 == value_range (INT (20), INT (100)));
-
-      // [10,20][30,40][50,60] ^ [15,25][38,51][55,70]
-      // => [15,20][38,40][50,51][55,60]
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = RANGE3 (15, 25, 38, 51, 55, 70);
-      r0.intersect (r1);
-      if (value_range::m_max_pairs == 3)
-	{
-	  // When pairs==3, we don't have enough space, so
-	  //  conservatively handle things.  Thus, the ...[50,60].
-	  ASSERT_TRUE (r0 == RANGE3 (15, 20, 38, 40, 50, 60));
-	}
-      else
-	{
-	  r2 = RANGE3 (15, 20, 38, 40, 50, 51);
-	  r2.union_ (value_range (INT (55), INT (60)));
-	  ASSERT_TRUE (r0 == r2);
-	}
-
-      // [15,20][30,40][50,60] ^ [15,35][40,90][100,200]
-      // => [15,20][30,35][40,60]
-      r0 = RANGE3 (15, 20, 30, 40, 50, 60);
-      r1 = RANGE3 (15, 35, 40, 90, 100, 200);
-      r0.intersect (r1);
-      if (value_range::m_max_pairs == 3)
-	{
-	  // When pairs==3, we don't have enough space, so
-	  // conservatively handle things.
-	  ASSERT_TRUE (r0 == RANGE3 (15, 20, 30, 35, 40, 60));
-	}
-      else
-	{
-	  r2 = RANGE3 (15, 20, 30, 35, 40, 40);
-	  r2.union_ (value_range (INT (50), INT (60)));
-	  ASSERT_TRUE (r0 == r2);
-	}
-
-      // Test cases where a union inserts a sub-range inside a larger
-      // range.
-      //
-      // [8,10][135,255] U [14,14] => [8,10][14,14][135,255]
-      r0 = range_union (value_range (INT (8), INT (10)),
-			 value_range (INT (135), INT (255)));
-      r1 = value_range (INT (14), INT (14));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (8, 10, 14, 14, 135, 255));
-    }
 
   // [10,20] ^ [15,30] => [15,20].
   r0 = value_range (INT (10), INT (20));
@@ -3267,4 +3121,7 @@ range_tests ()
   r0.invert ();
   ASSERT_TRUE (r0.nonzero_p ());
 }
+
+} // namespace selftest
+
 #endif // CHECKING_P

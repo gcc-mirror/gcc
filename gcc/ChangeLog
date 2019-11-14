@@ -1,5 +1,13 @@
 2019-11-14  Aldy Hernandez  <aldyh@redhat.com>
 
+	* range-op.cc (RANGE3): Remove.
+	(range_tests): Remove all selftest that check for multi-ranges.
+	Put tests in namespace selftest.
+	* selftest.h: Move range_tests into namespace selftest.
+	* value-range.h (class value_range): Unfriend range_tests.
+
+2019-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (range_fold_binary_symbolics_p): Adapt for
 	normalize_symbolics and normalize_addresses working in place.
 	(range_fold_unary_symbolics_p): Same.
