@@ -16,25 +16,25 @@ struct A
 template <class T>
 struct A<T>::B : A<T>
 {
-  using A::nonexist; // { dg-error "no members matching" }
+  using A::nonexist; // { dg-error "has not been declared" }
 };
 
 template <class T>
 struct A<T>::C : A
 {
-  using A::nonexist; // { dg-error "no members matching" }
+  using A::nonexist; // { dg-error "has not been declared" }
 };
 
 template <class T>
 struct A<T>::D : A<T>
 {
-  using A<T>::nonexist; // { dg-error "no members matching" }
+  using A<T>::nonexist; // { dg-error "has not been declared" }
 };
 
 template <class T>
 struct A<T>::E : A
 {
-  using A<T>::nonexist; // { dg-error "no members matching" }
+  using A<T>::nonexist; // { dg-error "has not been declared" }
 };
 
 template <class T>

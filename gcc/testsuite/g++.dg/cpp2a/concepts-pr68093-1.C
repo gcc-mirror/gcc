@@ -9,5 +9,5 @@ struct S
 
 int main()
 {
-  foobar(S<double>{}, int{}); // { dg-error "cannot call" }
+  foobar(S<double>{}, int{}); // { dg-error "" }
 }

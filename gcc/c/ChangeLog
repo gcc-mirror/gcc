@@ -1,3 +1,134 @@
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (enum c_typespec_kind): Add ctsk_tagref_attrs and
+	ctsk_tagfirstref_attrs.
+	(struct c_declspecs): Update description of attrs.  Add
+	postfix_attrs and non_std_attrs_seen_p.  Increase size of
+	typespec_kind bit-field.
+	(c_warn_unused_attributes): New declaration.
+	(parser_xref_tag): Update prototype.
+	* c-decl.c (c_warn_unused_attributes): New function.
+	(shadow_tag_warned): Handle ctsk_tagfirstref_attrs and
+	ctsk_tagref_attrs.  Handle attribute declarations.
+	(check_compound_literal_type): Handle ctsk_tagfirstref_attrs.
+	(grokdeclarator): Handle standard attributes.
+	(parser_xref_tag): Add arguments have_std_attrs and attrs.  Apply
+	attributes to incomplete type reference.
+	(xref_tag): Update call to parser_xref_tag.
+	(declspecs_add_addrspace, declspecs_add_type)
+	(declspecs_add_scspec, declspecs_add_attrs): Set
+	non_std_attrs_seen_p.
+	(finish_declspecs): Apply postfix standard attributes to type.
+	* c-parser.c (c_token_starts_declspecs)
+	(c_token_starts_declaration, c_parser_next_token_starts_declspecs)
+	(c_parser_next_tokens_start_declaration): Update comments.
+	(c_parser_consume_token, c_parser_consume_pragma): Handle moving
+	parser->tokens[2] to parser->tokens[1].
+	(c_parser_nth_token_starts_std_attributes)
+	(c_parser_std_attribute_specifier_sequence): New functions.
+	(c_parser_declaration_or_fndef): Add arguments have_attrs and
+	attrs.  All callers changed.  Handle standard attributes.
+	(c_parser_parms_declarator, c_parser_parms_list_declarator)
+	(c_parser_parameter_declaration): Add argument have_gnu_attrs.
+	All callers changed.
+	(c_parser_declspecs): Add arguments start_std_attr_ok and
+	end_std_attr_ok.  All callers changed.  Handle standard
+	attributes.
+	(c_parser_enum_specifier, c_parser_struct_or_union_specifier)
+	(c_parser_direct_declarator, c_parser_direct_declarator_inner)
+	(c_parser_compound_statement_nostart, c_parser_all_labels)
+	(c_parser_label, c_parser_statement, c_parser_for_statement):
+	Handle standard attributes.
+	* c-parser.h (c_parser_declspecs): Update prototype.
+	* gimple-parser.c (c_parser_gimple_declaration): Update call to
+	c_parser_declspecs.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c: Do not include params.h.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (c_parser_parse_gimple_body): Replace old parameter syntax
+	with the new one, include opts.h if needed.  Use SET_OPTION_IF_UNSET
+	macro.
+
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/c/
+	* c-parser.c (OACC_SERIAL_CLAUSE_MASK): New macro.
+	(c_parser_oacc_kernels_parallel): Rename function to...
+	(c_parser_oacc_compute): ... this.  Handle PRAGMA_OACC_SERIAL.
+	(c_parser_omp_construct): Update accordingly.
+
+
+2019-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_translation_unit): Diagnose declare target
+	without corresponding end declare target.
+
+2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-convert.c (convert): Only handle vector conversions if one of
+	the types satisfies gnu_vector_type_p or if -flax-vector-conversions
+	allows it.
+	* c-typeck.c (build_array_ref): Only allow vector indexing if the
+	vectors satisfy gnu_vector_type_p.
+	(build_unary_op): Only allow unary operators to be applied to
+	vectors if they satisfy gnu_vector_type_p.
+	(digest_init): Only allow by-element initialization of vectors
+	if they satisfy gnu_vector_type_p.
+	(really_start_incremental_init): Likewise.
+	(push_init_level): Likewise.
+	(pop_init_level): Likewise.
+	(process_init_element): Likewise.
+	(build_binary_op): Only allow binary operators to be applied to
+	vectors if they satisfy gnu_vector_type_p.
+
+2019-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (grokparms): Convert () in a function definition to
+	(void) for C2x.
+	(store_parm_decls_oldstyle): Pedwarn for C2x.
+	(store_parm_decls): Update comment about () not generating a
+	prototype.
+
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_attribute_arguments): New function.
+	Factored out of c_parser_gnu_attribute.
+	(c_parser_gnu_attribute): Use c_parser_attribute_arguments.
+	(c_parser_balanced_token_sequence, c_parser_std_attribute)
+	(c_parser_std_attribute_specifier): New functions.
+	(c_parser_transaction_attributes): Use
+	c_parser_std_attribute_specifier.
+
+2019-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser): Remove lex_untranslated_string.  Add
+	lex_joined_string and translate_strings_p.
+	(c_lex_one_token): Pass 0 or C_LEX_STRING_NO_JOIN to
+	c_lex_with_flags.
+	(c_parser_string_literal): New function.
+	(c_parser_static_assert_declaration_no_semi): Use
+	c_parser_string_literal.  Do not set lex_untranslated_string.
+	(c_parser_asm_string_literal): Use c_parser_string_literal.
+	(c_parser_simple_asm_expr): Do not set lex_untranslated_string.
+	(c_parser_gnu_attributes): Set and restore translate_strings_p
+	instead of lex_untranslated_string.
+	(c_parser_asm_statement): Do not set lex_untranslated_string.
+	(c_parser_asm_operands): Likewise.
+	(c_parser_has_attribute_expression): Set and restore
+	translate_strings_p instead of lex_untranslated_string.
+	(c_parser_postfix_expression): Use c_parser_string_literal.
+	(pragma_lex): Likewise.
+	(c_parser_pragma_pch_preprocess): Set lex_joined_string.
+	(c_parse_file): Set translate_strings_p.
+	* gimple-parser.c (c_parser_gimple_postfix_expression)
+	(c_parser_gimple_or_rtl_pass_list): Use c_parser_string_literal.
+	* c-parser.c (c_parser_string_literal): Declare function.
+
 2019-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_finish_omp_declare_variant): Use

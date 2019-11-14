@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "predict.h"
 #include "tree-into-ssa.h"
-#include "params.h"
 
 namespace {
 
@@ -605,8 +604,8 @@ unsigned int
 loop_versioning::max_insns_for_loop (class loop *loop)
 {
   return (loop->inner
-	  ? PARAM_VALUE (PARAM_LOOP_VERSIONING_MAX_OUTER_INSNS)
-	  : PARAM_VALUE (PARAM_LOOP_VERSIONING_MAX_INNER_INSNS));
+	  ? param_loop_versioning_max_outer_insns
+	  : param_loop_versioning_max_inner_insns);
 }
 
 /* Return true if for cost reasons we should avoid versioning any loop
@@ -1495,7 +1494,7 @@ loop_versioning::prune_loop_conditions (class loop *loop, vr_values *vrs)
   EXECUTE_IF_SET_IN_BITMAP (&li.unity_names, 0, i, bi)
     {
       tree name = ssa_name (i);
-      const value_range *vr = vrs->get_value_range (name);
+      const value_range_equiv *vr = vrs->get_value_range (name);
       if (vr && !vr->may_contain_p (build_one_cst (TREE_TYPE (name))))
 	{
 	  if (dump_enabled_p ())

@@ -103,11 +103,11 @@ init_internal_fns ()
 #define mask_load_direct { -1, 2, false }
 #define load_lanes_direct { -1, -1, false }
 #define mask_load_lanes_direct { -1, -1, false }
-#define gather_load_direct { -1, -1, false }
+#define gather_load_direct { 3, 1, false }
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
-#define scatter_store_direct { 3, 3, false }
+#define scatter_store_direct { 3, 1, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
 #define ternary_direct { 0, 0, true }
@@ -2785,7 +2785,8 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
       create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
     }
 
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)),
+					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
 }
 
@@ -2813,11 +2814,12 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   create_integer_operand (&ops[i++], scale_int);
   if (optab == mask_gather_load_optab)
     {
-      tree mask = gimple_call_arg (stmt, 3);
+      tree mask = gimple_call_arg (stmt, 4);
       rtx mask_rtx = expand_normal (mask);
       create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
     }
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)),
+					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
 }
 
@@ -3084,11 +3086,11 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_gather_load_optab_supported_p direct_optab_supported_p
+#define direct_gather_load_optab_supported_p convert_optab_supported_p
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_scatter_store_optab_supported_p direct_optab_supported_p
+#define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
@@ -3513,8 +3515,6 @@ internal_fn_mask_index (internal_fn fn)
       return 2;
 
     case IFN_MASK_GATHER_LOAD:
-      return 3;
-
     case IFN_MASK_SCATTER_STORE:
       return 4;
 
@@ -3546,27 +3546,30 @@ internal_fn_stored_value_index (internal_fn fn)
    IFN.  For loads, VECTOR_TYPE is the vector type of the load result,
    while for stores it is the vector type of the stored data argument.
    MEMORY_ELEMENT_TYPE is the type of the memory elements being loaded
-   or stored.  OFFSET_SIGN is the sign of the offset argument, which is
-   only relevant when the offset is narrower than an address.  SCALE is
-   the amount by which the offset should be multiplied *after* it has
-   been extended to address width.  */
+   or stored.  OFFSET_VECTOR_TYPE is the vector type that holds the
+   offset from the shared base address of each loaded or stored element.
+   SCALE is the amount by which these offsets should be multiplied
+   *after* they have been extended to address width.  */
 
 bool
 internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
 					tree memory_element_type,
-					signop offset_sign, int scale)
+					tree offset_vector_type, int scale)
 {
   if (!tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (vector_type)),
 			   TYPE_SIZE (memory_element_type)))
     return false;
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (vector_type),
+		TYPE_VECTOR_SUBPARTS (offset_vector_type)))
+    return false;
   optab optab = direct_internal_fn_optab (ifn);
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (vector_type));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (vector_type),
+					   TYPE_MODE (offset_vector_type));
   int output_ops = internal_load_fn_p (ifn) ? 1 : 0;
+  bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (offset_vector_type));
   return (icode != CODE_FOR_nothing
-	  && insn_operand_matches (icode, 2 + output_ops,
-				   GEN_INT (offset_sign == UNSIGNED))
-	  && insn_operand_matches (icode, 3 + output_ops,
-				   GEN_INT (scale)));
+	  && insn_operand_matches (icode, 2 + output_ops, GEN_INT (unsigned_p))
+	  && insn_operand_matches (icode, 3 + output_ops, GEN_INT (scale)));
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */

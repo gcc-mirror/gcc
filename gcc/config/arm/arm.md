@@ -39,6 +39,8 @@
    (LAST_ARM_REGNUM  15)	;
    (CC_REGNUM       100)	; Condition code pseudo register
    (VFPCC_REGNUM    101)	; VFP Condition code pseudo register
+   (APSRQ_REGNUM    104)	; Q bit pseudo register
+   (APSRGE_REGNUM   105)	; GE bits pseudo register
   ]
 )
 ;; 3rd operand to select_dominance_cc_mode
@@ -423,6 +425,20 @@
 (include "marvell-pj4.md")
 (include "xgene1.md")
 
+;; define_subst and associated attributes
+
+(define_subst "add_setq"
+  [(set (match_operand:SI 0 "" "")
+        (match_operand:SI 1 "" ""))]
+  ""
+  [(set (match_dup 0)
+        (match_dup 1))
+   (set (reg:CC APSRQ_REGNUM)
+	(unspec:CC [(reg:CC APSRQ_REGNUM)] UNSPEC_Q_SET))])
+
+(define_subst_attr "add_clobber_q_name" "add_setq" "" "_setq")
+(define_subst_attr "add_clobber_q_pred" "add_setq" "!ARM_Q_BIT_READ"
+		   "ARM_Q_BIT_READ")
 
 ;;---------------------------------------------------------------------------
 ;; Insn patterns
@@ -2515,21 +2531,75 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "maddhisi4"
+(define_expand "maddhisi4"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(plus:SI (mult:SI (sign_extend:SI
+			   (match_operand:HI 1 "s_register_operand"))
+			  (sign_extend:SI
+			   (match_operand:HI 2 "s_register_operand")))
+		 (match_operand:SI 3 "s_register_operand")))]
+  "TARGET_DSP_MULTIPLY"
+  {
+    /* If this function reads the Q bit from ACLE intrinsics break up the
+       multiplication and accumulation as an overflow during accumulation will
+       clobber the Q flag.  */
+    if (ARM_Q_BIT_READ)
+      {
+	rtx tmp = gen_reg_rtx (SImode);
+	emit_insn (gen_mulhisi3 (tmp, operands[1], operands[2]));
+	emit_insn (gen_addsi3 (operands[0], tmp, operands[3]));
+	DONE;
+      }
+  }
+)
+
+(define_insn "*arm_maddhisi4"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (mult:SI (sign_extend:SI
 			   (match_operand:HI 1 "s_register_operand" "r"))
 			  (sign_extend:SI
 			   (match_operand:HI 2 "s_register_operand" "r")))
 		 (match_operand:SI 3 "s_register_operand" "r")))]
+  "TARGET_DSP_MULTIPLY && !ARM_Q_BIT_READ"
+  "smlabb%?\\t%0, %1, %2, %3"
+  [(set_attr "type" "smlaxy")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "arm_smlabb_setq"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (mult:SI (sign_extend:SI
+			   (match_operand:HI 1 "s_register_operand" "r"))
+			  (sign_extend:SI
+			   (match_operand:HI 2 "s_register_operand" "r")))
+		 (match_operand:SI 3 "s_register_operand" "r")))
+   (set (reg:CC APSRQ_REGNUM)
+	(unspec:CC [(reg:CC APSRQ_REGNUM)] UNSPEC_Q_SET))]
   "TARGET_DSP_MULTIPLY"
   "smlabb%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
 )
 
+(define_expand "arm_smlabb"
+ [(match_operand:SI 0 "s_register_operand")
+  (match_operand:SI 1 "s_register_operand")
+  (match_operand:SI 2 "s_register_operand")
+  (match_operand:SI 3 "s_register_operand")]
+  "TARGET_DSP_MULTIPLY"
+  {
+    rtx mult1 = gen_lowpart (HImode, operands[1]);
+    rtx mult2 = gen_lowpart (HImode, operands[2]);
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_smlabb_setq (operands[0], mult1, mult2, operands[3]));
+    else
+      emit_insn (gen_maddhisi4 (operands[0], mult1, mult2, operands[3]));
+    DONE;
+  }
+)
+
 ;; Note: there is no maddhisi4ibt because this one is canonical form
-(define_insn "*maddhisi4tb"
+(define_insn "maddhisi4tb"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (mult:SI (ashiftrt:SI
 			   (match_operand:SI 1 "s_register_operand" "r")
@@ -2537,13 +2607,47 @@
 			  (sign_extend:SI
 			   (match_operand:HI 2 "s_register_operand" "r")))
 		 (match_operand:SI 3 "s_register_operand" "r")))]
+  "TARGET_DSP_MULTIPLY && !ARM_Q_BIT_READ"
+  "smlatb%?\\t%0, %1, %2, %3"
+  [(set_attr "type" "smlaxy")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "arm_smlatb_setq"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (mult:SI (ashiftrt:SI
+			   (match_operand:SI 1 "s_register_operand" "r")
+			   (const_int 16))
+			  (sign_extend:SI
+			   (match_operand:HI 2 "s_register_operand" "r")))
+		 (match_operand:SI 3 "s_register_operand" "r")))
+   (set (reg:CC APSRQ_REGNUM)
+	(unspec:CC [(reg:CC APSRQ_REGNUM)] UNSPEC_Q_SET))]
   "TARGET_DSP_MULTIPLY"
   "smlatb%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*maddhisi4tt"
+(define_expand "arm_smlatb"
+ [(match_operand:SI 0 "s_register_operand")
+  (match_operand:SI 1 "s_register_operand")
+  (match_operand:SI 2 "s_register_operand")
+  (match_operand:SI 3 "s_register_operand")]
+  "TARGET_DSP_MULTIPLY"
+  {
+    rtx mult2 = gen_lowpart (HImode, operands[2]);
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_smlatb_setq (operands[0], operands[1],
+				      mult2, operands[3]));
+    else
+      emit_insn (gen_maddhisi4tb (operands[0], operands[1],
+				  mult2, operands[3]));
+    DONE;
+  }
+)
+
+(define_insn "maddhisi4tt"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (mult:SI (ashiftrt:SI
 			   (match_operand:SI 1 "s_register_operand" "r")
@@ -2552,10 +2656,44 @@
 			   (match_operand:SI 2 "s_register_operand" "r")
 			   (const_int 16)))
 		 (match_operand:SI 3 "s_register_operand" "r")))]
+  "TARGET_DSP_MULTIPLY && !ARM_Q_BIT_READ"
+  "smlatt%?\\t%0, %1, %2, %3"
+  [(set_attr "type" "smlaxy")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "arm_smlatt_setq"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (mult:SI (ashiftrt:SI
+			   (match_operand:SI 1 "s_register_operand" "r")
+			   (const_int 16))
+			  (ashiftrt:SI
+			   (match_operand:SI 2 "s_register_operand" "r")
+			   (const_int 16)))
+		 (match_operand:SI 3 "s_register_operand" "r")))
+   (set (reg:CC APSRQ_REGNUM)
+	(unspec:CC [(reg:CC APSRQ_REGNUM)] UNSPEC_Q_SET))]
   "TARGET_DSP_MULTIPLY"
   "smlatt%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
+)
+
+(define_expand "arm_smlatt"
+ [(match_operand:SI 0 "s_register_operand")
+  (match_operand:SI 1 "s_register_operand")
+  (match_operand:SI 2 "s_register_operand")
+  (match_operand:SI 3 "s_register_operand")]
+  "TARGET_DSP_MULTIPLY"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_smlatt_setq (operands[0], operands[1],
+				      operands[2], operands[3]));
+    else
+      emit_insn (gen_maddhisi4tt (operands[0], operands[1],
+				  operands[2], operands[3]));
+    DONE;
+  }
 )
 
 (define_insn "maddhidi4"
@@ -2603,6 +2741,38 @@
   "smlaltt%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "smlalxy")
    (set_attr "predicable" "yes")])
+
+(define_insn "arm_<smlaw_op><add_clobber_q_name>_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	   [(match_operand:SI 1 "s_register_operand" "r")
+	    (match_operand:SI 2 "s_register_operand" "r")
+	    (match_operand:SI 3 "s_register_operand" "r")]
+	   SMLAWBT))]
+  "TARGET_DSP_MULTIPLY && <add_clobber_q_pred>"
+  "<smlaw_op>%?\\t%0, %1, %2, %3"
+  [(set_attr "type" "smlaxy")
+   (set_attr "predicable" "yes")]
+)
+
+(define_expand "arm_<smlaw_op>"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(unspec:SI
+	   [(match_operand:SI 1 "s_register_operand")
+	    (match_operand:SI 2 "s_register_operand")
+	    (match_operand:SI 3 "s_register_operand")]
+	   SMLAWBT))]
+  "TARGET_DSP_MULTIPLY"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_<smlaw_op>_setq_insn (operands[0], operands[1],
+					       operands[2], operands[3]));
+    else
+      emit_insn (gen_arm_<smlaw_op>_insn (operands[0], operands[1],
+					  operands[2], operands[3]));
+    DONE;
+  }
+)
 
 (define_expand "mulsf3"
   [(set (match_operand:SF          0 "s_register_operand")
@@ -4039,17 +4209,144 @@
    (set_attr "type" "multiple")]
 )
 
+
+(define_expand "arm_<ss_op>"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(SSPLUSMINUS:SI (match_operand:SI 1 "s_register_operand")
+			(match_operand:SI 2 "s_register_operand")))]
+  "TARGET_DSP_MULTIPLY"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_<ss_op>_setq_insn (operands[0],
+					    operands[1], operands[2]));
+    else
+      emit_insn (gen_arm_<ss_op>_insn (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+
+(define_insn "arm_<ss_op><add_clobber_q_name>_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(SSPLUSMINUS:SI (match_operand:SI 1 "s_register_operand" "r")
+			(match_operand:SI 2 "s_register_operand" "r")))]
+  "TARGET_DSP_MULTIPLY && <add_clobber_q_pred>"
+  "<ss_op>%?\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")]
+)
+
 (define_code_iterator SAT [smin smax])
 (define_code_attr SATrev [(smin "smax") (smax "smin")])
 (define_code_attr SATlo [(smin "1") (smax "2")])
 (define_code_attr SAThi [(smin "2") (smax "1")])
 
-(define_insn "*satsi_<SAT:code>"
+(define_expand "arm_ssat"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "s_register_operand")
+   (match_operand:SI 2 "const_int_operand")]
+  "TARGET_32BIT && arm_arch6"
+  {
+    HOST_WIDE_INT val = INTVAL (operands[2]);
+    /* The builtin checking code should have ensured the right
+       range for the immediate.  */
+    gcc_assert (IN_RANGE (val, 1, 32));
+    HOST_WIDE_INT upper_bound = (HOST_WIDE_INT_1 << (val - 1)) - 1;
+    HOST_WIDE_INT lower_bound = -upper_bound - 1;
+    rtx up_rtx = gen_int_mode (upper_bound, SImode);
+    rtx lo_rtx = gen_int_mode (lower_bound, SImode);
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_satsi_smin_setq (operands[0], lo_rtx,
+				      up_rtx, operands[1]));
+    else
+      emit_insn (gen_satsi_smin (operands[0], lo_rtx, up_rtx, operands[1]));
+    DONE;
+  }
+)
+
+(define_expand "arm_usat"
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "s_register_operand")
+   (match_operand:SI 2 "const_int_operand")]
+  "TARGET_32BIT && arm_arch6"
+  {
+    HOST_WIDE_INT val = INTVAL (operands[2]);
+    /* The builtin checking code should have ensured the right
+       range for the immediate.  */
+    gcc_assert (IN_RANGE (val, 0, 31));
+    HOST_WIDE_INT upper_bound = (HOST_WIDE_INT_1 << val) - 1;
+    rtx up_rtx = gen_int_mode (upper_bound, SImode);
+    rtx lo_rtx = CONST0_RTX (SImode);
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_satsi_smin_setq (operands[0], lo_rtx, up_rtx,
+				      operands[1]));
+    else
+      emit_insn (gen_satsi_smin (operands[0], lo_rtx, up_rtx, operands[1]));
+    DONE;
+  }
+)
+
+(define_insn "arm_get_apsr"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI [(reg:CC APSRQ_REGNUM)] UNSPEC_APSR_READ))]
+  "TARGET_ARM_QBIT"
+  "mrs%?\t%0, APSR"
+  [(set_attr "predicable" "yes")
+   (set_attr "conds" "use")]
+)
+
+(define_insn "arm_set_apsr"
+  [(set (reg:CC APSRQ_REGNUM)
+	(unspec_volatile:CC
+	  [(match_operand:SI 0 "s_register_operand" "r")] VUNSPEC_APSR_WRITE))]
+  "TARGET_ARM_QBIT"
+  "msr%?\tAPSR_nzcvq, %0"
+  [(set_attr "predicable" "yes")
+   (set_attr "conds" "set")]
+)
+
+;; Read the APSR and extract the Q bit (bit 27)
+(define_expand "arm_saturation_occurred"
+  [(match_operand:SI 0 "s_register_operand")]
+  "TARGET_ARM_QBIT"
+  {
+    rtx apsr = gen_reg_rtx (SImode);
+    emit_insn (gen_arm_get_apsr (apsr));
+    emit_insn (gen_extzv (operands[0], apsr, CONST1_RTX (SImode),
+	       gen_int_mode (27, SImode)));
+    DONE;
+  }
+)
+
+;; Read the APSR and set the Q bit (bit position 27) according to operand 0
+(define_expand "arm_set_saturation"
+  [(match_operand:SI 0 "reg_or_int_operand")]
+  "TARGET_ARM_QBIT"
+  {
+    rtx apsr = gen_reg_rtx (SImode);
+    emit_insn (gen_arm_get_apsr (apsr));
+    rtx to_insert = gen_reg_rtx (SImode);
+    if (CONST_INT_P (operands[0]))
+      emit_move_insn (to_insert, operands[0] == CONST0_RTX (SImode)
+				 ? CONST0_RTX (SImode) : CONST1_RTX (SImode));
+    else
+      {
+        rtx cmp = gen_rtx_NE (SImode, operands[0], CONST0_RTX (SImode));
+        emit_insn (gen_cstoresi4 (to_insert, cmp, operands[0],
+				  CONST0_RTX (SImode)));
+      }
+    emit_insn (gen_insv (apsr, CONST1_RTX (SImode),
+	       gen_int_mode (27, SImode), to_insert));
+    emit_insn (gen_arm_set_apsr (apsr));
+    DONE;
+  }
+)
+
+(define_insn "satsi_<SAT:code><add_clobber_q_name>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
         (SAT:SI (<SATrev>:SI (match_operand:SI 3 "s_register_operand" "r")
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6
+  "TARGET_32BIT && arm_arch6 && <add_clobber_q_pred>
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;
@@ -4075,7 +4372,7 @@
                               (match_operand:SI 5 "const_int_operand" "i")])
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6
+  "TARGET_32BIT && arm_arch6 && !ARM_Q_BIT_READ
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;
@@ -5538,8 +5835,8 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI
 	  [(match_operand:SI 1 "s_register_operand" "r")
-	   (match_operand:SI 2 "s_register_operand" "r")
-	   (match_operand:SI 3 "s_register_operand" "r")] UNSPEC_USADA8))]
+	  (match_operand:SI 2 "s_register_operand" "r")
+	  (match_operand:SI 3 "s_register_operand" "r")] UNSPEC_USADA8))]
   "TARGET_INT_SIMD"
   "usada8%?\\t%0, %1, %2, %3"
   [(set_attr "predicable" "yes")
@@ -5555,6 +5852,112 @@
   "<simd32_op>%?\\t%Q0, %R0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "smlald")])
+
+(define_insn "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")] SIMD32_GE))
+   (set (reg:CC APSRGE_REGNUM)
+	(unspec:CC [(reg:CC APSRGE_REGNUM)] UNSPEC_GE_SET))]
+  "TARGET_INT_SIMD"
+  "<simd32_op>%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
+
+(define_insn "arm_<simd32_op><add_clobber_q_name>_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")
+	   (match_operand:SI 3 "s_register_operand" "r")] SIMD32_TERNOP_Q))]
+  "TARGET_INT_SIMD && <add_clobber_q_pred>"
+  "<simd32_op>%?\\t%0, %1, %2, %3"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
+
+(define_expand "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand")
+	   (match_operand:SI 2 "s_register_operand")
+	   (match_operand:SI 3 "s_register_operand")] SIMD32_TERNOP_Q))]
+  "TARGET_INT_SIMD"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_<simd32_op>_setq_insn (operands[0], operands[1],
+						operands[2], operands[3]));
+    else
+      emit_insn (gen_arm_<simd32_op>_insn (operands[0], operands[1],
+					   operands[2], operands[3]));
+    DONE;
+  }
+)
+
+(define_insn "arm_<simd32_op><add_clobber_q_name>_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")] SIMD32_BINOP_Q))]
+  "TARGET_INT_SIMD && <add_clobber_q_pred>"
+  "<simd32_op>%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
+
+(define_expand "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand")
+	   (match_operand:SI 2 "s_register_operand")] SIMD32_BINOP_Q))]
+  "TARGET_INT_SIMD"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_<simd32_op>_setq_insn (operands[0], operands[1],
+						operands[2]));
+    else
+      emit_insn (gen_arm_<simd32_op>_insn (operands[0], operands[1],
+					   operands[2]));
+    DONE;
+  }
+)
+
+(define_insn "arm_<simd32_op><add_clobber_q_name>_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "<sup>sat16_imm" "i")] USSAT16))]
+  "TARGET_INT_SIMD && <add_clobber_q_pred>"
+  "<simd32_op>%?\\t%0, %2, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
+
+(define_expand "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand")
+	   (match_operand:SI 2 "<sup>sat16_imm")] USSAT16))]
+  "TARGET_INT_SIMD"
+  {
+    if (ARM_Q_BIT_READ)
+      emit_insn (gen_arm_<simd32_op>_setq_insn (operands[0], operands[1],
+						operands[2]));
+    else
+      emit_insn (gen_arm_<simd32_op>_insn (operands[0], operands[1],
+					   operands[2]));
+    DONE;
+  }
+)
+
+(define_insn "arm_sel"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")
+	   (reg:CC APSRGE_REGNUM)] UNSPEC_SEL))]
+  "TARGET_INT_SIMD"
+  "sel%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_sreg")])
 
 (define_expand "extendsfdf2"
   [(set (match_operand:DF                  0 "s_register_operand")

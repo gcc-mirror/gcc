@@ -1,6 +1,7 @@
 /* Test for #prama target macros.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb1_ok } */
+/* { dg-require-effective-target arm_arm_ok } */
 
 #pragma GCC target ("thumb")
 

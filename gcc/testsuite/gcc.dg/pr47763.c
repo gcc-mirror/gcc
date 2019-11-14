@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funroll-loops -fdump-rtl-web" } */
+/* { dg-options "-O2 -funroll-loops -fweb -fdump-rtl-web" } */
 
 int
 foo()

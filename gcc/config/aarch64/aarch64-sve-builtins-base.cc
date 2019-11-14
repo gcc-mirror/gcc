@@ -1076,7 +1076,9 @@ public:
     /* Put the predicate last, as required by mask_gather_load_optab.  */
     e.rotate_inputs_left (0, 5);
     machine_mode mem_mode = e.memory_vector_mode ();
-    insn_code icode = direct_optab_handler (mask_gather_load_optab, mem_mode);
+    machine_mode int_mode = aarch64_sve_int_mode (mem_mode);
+    insn_code icode = convert_optab_handler (mask_gather_load_optab,
+					     mem_mode, int_mode);
     return e.use_exact_insn (icode);
   }
 };
@@ -2043,8 +2045,10 @@ public:
     e.prepare_gather_address_operands (1);
     /* Put the predicate last, as required by mask_scatter_store_optab.  */
     e.rotate_inputs_left (0, 6);
-    insn_code icode = direct_optab_handler (mask_scatter_store_optab,
-					    e.memory_vector_mode ());
+    machine_mode mem_mode = e.memory_vector_mode ();
+    machine_mode int_mode = aarch64_sve_int_mode (mem_mode);
+    insn_code icode = convert_optab_handler (mask_scatter_store_optab,
+					     mem_mode, int_mode);
     return e.use_exact_insn (icode);
   }
 };

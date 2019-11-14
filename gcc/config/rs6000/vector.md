@@ -493,6 +493,260 @@
     FAIL;
 })
 
+;; To support vector condition vectorization, define vcond_mask and vec_cmp.
+
+;; Same mode for condition true/false values and predicate operand.
+(define_expand "vcond_mask_<mode><mode>"
+  [(match_operand:VEC_I 0 "vint_operand")
+   (match_operand:VEC_I 1 "vint_operand")
+   (match_operand:VEC_I 2 "vint_operand")
+   (match_operand:VEC_I 3 "vint_operand")]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_select_<mode> (operands[0], operands[2], operands[1],
+				  operands[3]));
+  DONE;
+})
+
+;; Condition true/false values are float but predicate operand is of
+;; type integer vector with same element size.
+(define_expand "vcond_mask_<mode><VEC_int>"
+  [(match_operand:VEC_F 0 "vfloat_operand")
+   (match_operand:VEC_F 1 "vfloat_operand")
+   (match_operand:VEC_F 2 "vfloat_operand")
+   (match_operand:<VEC_INT> 3 "vint_operand")]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_select_<mode> (operands[0], operands[2], operands[1],
+				  gen_lowpart (<MODE>mode, operands[3])));
+  DONE;
+})
+
+;; For signed integer vectors comparison.
+(define_expand "vec_cmp<mode><mode>"
+  [(set (match_operand:VEC_I 0 "vint_operand")
+	(match_operator 1 "signed_or_equality_comparison_operator"
+	  [(match_operand:VEC_I 2 "vint_operand")
+	   (match_operand:VEC_I 3 "vint_operand")]))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  switch (code)
+    {
+    case NE:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+      break;
+    case EQ:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case GE:
+      emit_insn (gen_vector_nlt<mode> (operands[0],operands[2], operands[3],
+				       tmp));
+      break;
+    case GT:
+      emit_insn (gen_vector_gt<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case LE:
+      emit_insn (gen_vector_ngt<mode> (operands[0], operands[2], operands[3],
+				       tmp));
+      break;
+    case LT:
+      emit_insn (gen_vector_gt<mode> (operands[0], operands[3], operands[2]));
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+  DONE;
+})
+
+;; For unsigned integer vectors comparison.
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:VEC_I 0 "vint_operand")
+	(match_operator 1 "unsigned_or_equality_comparison_operator"
+	  [(match_operand:VEC_I 2 "vint_operand")
+	   (match_operand:VEC_I 3 "vint_operand")]))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  switch (code)
+    {
+    case NE:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+      break;
+    case EQ:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case GEU:
+      emit_insn (gen_vector_nltu<mode> (operands[0], operands[2], operands[3],
+					tmp));
+      break;
+    case GTU:
+      emit_insn (gen_vector_gtu<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case LEU:
+      emit_insn (gen_vector_ngtu<mode> (operands[0], operands[2], operands[3],
+					tmp));
+      break;
+    case LTU:
+      emit_insn (gen_vector_gtu<mode> (operands[0], operands[3], operands[2]));
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+  DONE;
+})
+
+;; For float point vectors comparison.
+(define_expand "vec_cmp<mode><VEC_int>"
+  [(set (match_operand:<VEC_INT> 0 "vint_operand")
+	 (match_operator 1 "comparison_operator"
+	    [(match_operand:VEC_F 2 "vfloat_operand")
+	    (match_operand:VEC_F 3 "vfloat_operand")]))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx res = gen_reg_rtx (<MODE>mode);
+  switch (code)
+    {
+    case NE:
+      emit_insn (gen_vector_ne<mode> (res, operands[2], operands[3]));
+      break;
+    case EQ:
+      emit_insn (gen_vector_eq<mode> (res, operands[2], operands[3]));
+      break;
+    case GE:
+      emit_insn (gen_vector_ge<mode> (res, operands[2], operands[3]));
+      break;
+    case GT:
+      emit_insn (gen_vector_gt<mode> (res, operands[2], operands[3]));
+      break;
+    case LE:
+      emit_insn (gen_vector_le<mode> (res, operands[2], operands[3]));
+      break;
+    case LT:
+      emit_insn (gen_vector_lt<mode> (res, operands[2], operands[3]));
+      break;
+    case LTGT:
+      emit_insn (gen_vector_ltgt<mode> (res, operands[2], operands[3]));
+      break;
+    case UNORDERED:
+      emit_insn (gen_vector_unordered<mode> (res, operands[2], operands[3]));
+      break;
+    case ORDERED:
+      emit_insn (gen_vector_ordered<mode> (res, operands[2], operands[3]));
+      break;
+    case UNEQ:
+      emit_insn (gen_vector_uneq<mode> (res, operands[2], operands[3]));
+      break;
+    case UNGE:
+      emit_insn (gen_vector_unge<mode> (res, operands[2], operands[3]));
+      break;
+    case UNGT:
+      emit_insn (gen_vector_ungt<mode> (res, operands[2], operands[3]));
+      break;
+    case UNLE:
+      emit_insn (gen_vector_unle<mode> (res, operands[2], operands[3]));
+      break;
+    case UNLT:
+      emit_insn (gen_vector_unlt<mode> (res, operands[2], operands[3]));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen_move_insn (operands[0], gen_lowpart (<VEC_INT>mode, res)));
+  DONE;
+})
+
+; lt(a,b) = gt(b,a)
+(define_expand "vector_lt<mode>"
+  [(set (match_operand:VEC_F 0 "vfloat_operand")
+	(lt:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+		  (match_operand:VEC_F 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_gt<mode> (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
+; le(a,b) = ge(b,a)
+(define_expand "vector_le<mode>"
+  [(set (match_operand:VEC_F 0 "vfloat_operand")
+	(le:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+		  (match_operand:VEC_F 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_ge<mode> (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
+; ne(a,b) = ~eq(a,b)
+(define_expand "vector_ne<mode>"
+  [(set (match_operand:VEC_F 0 "vfloat_operand")
+	(ne:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+		  (match_operand:VEC_F 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_eq<mode> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+  DONE;
+})
+
+; unge(a,b) = ~gt(b,a)
+(define_expand "vector_unge<mode>"
+  [(set (match_operand:VEC_F 0 "vfloat_operand")
+	(unge:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+		    (match_operand:VEC_F 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_gt<mode> (operands[0], operands[2], operands[1]));
+  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+  DONE;
+})
+
+; ungt(a,b) = ~ge(b,a)
+(define_expand "vector_ungt<mode>"
+  [(set (match_operand:VEC_F 0 "vfloat_operand")
+	(ungt:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+		    (match_operand:VEC_F 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_ge<mode> (operands[0], operands[2], operands[1]));
+  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+  DONE;
+})
+
+; unle(a,b) = ~gt(a,b)
+(define_expand "vector_unle<mode>"
+  [(set (match_operand:VEC_F 0 "vfloat_operand")
+	(unle:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+		    (match_operand:VEC_F 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_gt<mode> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+  DONE;
+})
+
+; unlt(a,b) = ~ge(a,b)
+(define_expand "vector_unlt<mode>"
+  [(set (match_operand:VEC_F 0 "vfloat_operand")
+	(unlt:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
+		    (match_operand:VEC_F 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_ge<mode> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+  DONE;
+})
+
 (define_expand "vector_eq<mode>"
   [(set (match_operand:VEC_C 0 "vlogical_operand")
 	(eq:VEC_C (match_operand:VEC_C 1 "vlogical_operand")
@@ -575,7 +829,7 @@
   operands[3] = gen_reg_rtx_and_attrs (operands[0]);
 })
 
-(define_insn_and_split "*vector_uneq<mode>"
+(define_insn_and_split "vector_uneq<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand")
 	(uneq:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
 		    (match_operand:VEC_F 2 "vfloat_operand")))]
@@ -596,7 +850,7 @@
   operands[4] = gen_reg_rtx (<MODE>mode);
 })
 
-(define_insn_and_split "*vector_ltgt<mode>"
+(define_insn_and_split "vector_ltgt<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand")
 	(ltgt:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
 		    (match_operand:VEC_F 2 "vfloat_operand")))]
@@ -617,7 +871,7 @@
   operands[4] = gen_reg_rtx (<MODE>mode);
 })
 
-(define_insn_and_split "*vector_ordered<mode>"
+(define_insn_and_split "vector_ordered<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand")
 	(ordered:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
 		       (match_operand:VEC_F 2 "vfloat_operand")))]
@@ -638,7 +892,7 @@
   operands[4] = gen_reg_rtx (<MODE>mode);
 })
 
-(define_insn_and_split "*vector_unordered<mode>"
+(define_insn_and_split "vector_unordered<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand")
 	(unordered:VEC_F (match_operand:VEC_F 1 "vfloat_operand")
 			 (match_operand:VEC_F 2 "vfloat_operand")))]

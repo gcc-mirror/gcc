@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code and -fPIC incompatible" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-Os -fno-strict-aliasing -fPIC -mthumb -march=armv7-a -mfpu=vfp3 -mfloat-abi=softfp" } */
 

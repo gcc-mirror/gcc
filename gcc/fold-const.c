@@ -71,7 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "generic-match.h"
 #include "gimple-fold.h"
-#include "params.h"
 #include "tree-into-ssa.h"
 #include "md5.h"
 #include "case-cfn-macros.h"
@@ -3475,6 +3474,9 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
     case tcc_exceptional:
       if (TREE_CODE (arg0) == CONSTRUCTOR)
 	{
+	  if (CONSTRUCTOR_NO_CLEARING (arg0) != CONSTRUCTOR_NO_CLEARING (arg1))
+	    return false;
+
 	  /* In GIMPLE constructors are used only to build vectors from
 	     elements.  Individual elements in the constructor must be
 	     indexed in increasing order and form an initial sequence.
@@ -3657,8 +3659,12 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	unsigned HOST_WIDE_INT idx;
 	tree field, value;
 	flags &= ~OEP_ADDRESS_OF;
+	hstate.add_int (CONSTRUCTOR_NO_CLEARING (t));
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
 	  {
+	    /* In GIMPLE the indexes can be either NULL or matching i.  */
+	    if (field == NULL_TREE)
+	      field = bitsize_int (idx);
 	    hash_operand (field, hstate, flags);
 	    hash_operand (value, hstate, flags);
 	  }
@@ -3678,10 +3684,6 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
       return;
     case IDENTIFIER_NODE:
       hstate.add_object (IDENTIFIER_HASH_VALUE (t));
-      return;
-    case FIELD_DECL:
-      inchash::add_expr (DECL_FIELD_OFFSET (t), hstate, flags);
-      inchash::add_expr (DECL_FIELD_BIT_OFFSET (t), hstate, flags);
       return;
     case FUNCTION_DECL:
       /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
@@ -5926,9 +5928,9 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
   bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
-  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+  if (param_logical_op_non_short_circuit != -1)
     logical_op_non_short_circuit
-      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+      = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && lhs != 0 && rhs != 0
@@ -8597,9 +8599,9 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
     return tem;
 
   bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
-  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+  if (param_logical_op_non_short_circuit != -1)
     logical_op_non_short_circuit
-      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+      = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && (code == TRUTH_AND_EXPR
@@ -13362,7 +13364,7 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 	 would not, passes that need this information could be revised
 	 to provide it through dataflow propagation.  */
       return (!name_registered_for_update_p (t)
-	      && depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH)
+	      && depth < param_max_ssa_name_query_depth
 	      && gimple_stmt_nonnegative_warnv_p (SSA_NAME_DEF_STMT (t),
 						  strict_overflow_p, depth));
 
@@ -14010,7 +14012,7 @@ integer_valued_real_single_p (tree t, int depth)
 	 would not, passes that need this information could be revised
 	 to provide it through dataflow propagation.  */
       return (!name_registered_for_update_p (t)
-	      && depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH)
+	      && depth < param_max_ssa_name_query_depth
 	      && gimple_stmt_integer_valued_real_p (SSA_NAME_DEF_STMT (t),
 						    depth));
 

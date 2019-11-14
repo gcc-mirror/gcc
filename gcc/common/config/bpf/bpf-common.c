@@ -39,17 +39,4 @@ static const struct default_options bpf_option_optimization_table[] =
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE bpf_option_optimization_table
 
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-
-static void
-bpf_option_default_params (void)
-{
-  /* XXX large-stack-frame = 512 bytes */
-  /* XXX max-unrolled-insns */
-  /* XXX max-unroll-times */
-}
-
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS bpf_option_default_params
-
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

@@ -1725,7 +1725,8 @@ gfc_conv_expr_present (gfc_symbol * sym)
       /* Walk function argument list to find hidden arg.  */
       cond = DECL_ARGUMENTS (DECL_CONTEXT (decl));
       for ( ; cond != NULL_TREE; cond = TREE_CHAIN (cond))
-	if (DECL_NAME (cond) == tree_name)
+	if (DECL_NAME (cond) == tree_name
+	    && DECL_ARTIFICIAL (cond))
 	  break;
 
       gcc_assert (cond);
@@ -5749,7 +5750,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					fold_convert (TREE_TYPE (parmse.expr),
 						      integer_zero_node));
 
-			    vec_safe_push (optionalargs, tmp);
+			    vec_safe_push (optionalargs,
+					   fold_convert (boolean_type_node,
+							 tmp));
 			  }
 		      }
 		    }

@@ -569,7 +569,7 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt
+lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
 target_cpu_default=@target_cpu_default@
@@ -930,7 +930,6 @@ RTL_BASE_H = $(CORETYPES_H) rtl.h rtl.def reg-notes.def \
 FIXED_VALUE_H = fixed-value.h
 RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
-PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
 	gtm-builtins.def sanitizer.def \
 	hsa-builtins.def
@@ -1124,6 +1123,7 @@ endif
 # Support for additional languages (other than C).
 # C can be supported this way too (leave for later).
 
+LANG_CONFIGUREFRAGS  = @all_lang_configurefrags@
 LANG_MAKEFRAGS = @all_lang_makefrags@
 
 # Used by gcc/jit/Make-lang.in
@@ -1606,6 +1606,7 @@ OBJS = \
 	typed-splay-tree.o \
 	unique-ptr-tests.o \
 	valtrack.o \
+	value-range.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
@@ -1634,7 +1635,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
-OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
+OBJS-libcommon-target = $(common_out_object_file) prefix.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
 	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o
 
@@ -1903,10 +1904,18 @@ cstamp-h: config.in config.status
 	CONFIG_FILES= \
 	LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status
 
+# On configurations that require auto-build.h, it is created while
+# running configure, so make config.status depend on it, so that
+# config.status --recheck runs and updates or creates it.
+@HAVE_AUTO_BUILD@auto-build.h: $(srcdir)/configure $(srcdir)/config.gcc
+@HAVE_AUTO_BUILD@	@if test -f $@; then echo rerunning config.status to update $@; \
+@HAVE_AUTO_BUILD@	else echo rerunning config.status to update $@; fi
+@HAVE_AUTO_BUILD@config.status: auto-build.h
+
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
-config.status: $(srcdir)/configure $(srcdir)/config.gcc
+config.status: $(srcdir)/configure $(srcdir)/config.gcc $(LANG_CONFIGUREFRAGS)
 	@if [ ! -f config.status ] ; then \
 	  echo You must configure gcc.  Look at http://gcc.gnu.org/install/ for details.; \
 	  false; \
@@ -2585,6 +2594,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/target-globals.h \
   $(srcdir)/ipa-predicate.h \
   $(srcdir)/ipa-fnsummary.h \
+  $(srcdir)/value-range.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/ubsan.c \
@@ -2648,7 +2658,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
-       params.list params.options case-cfn-macros.h \
+       case-cfn-macros.h \
        cfn-operators.pd omp-device-properties.h
 
 #
@@ -3508,19 +3518,6 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(infodir)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
-
-params.list: s-params.list; @true
-s-params.list: $(srcdir)/params-list.h $(srcdir)/params.def
-	$(CPP) $(srcdir)/params-list.h | sed 's/^#.*//;/^$$/d' > tmp-params.list
-	$(SHELL) $(srcdir)/../move-if-change tmp-params.list params.list
-	$(STAMP) s-params.list
-
-params.options: s-params.options; @true
-s-params.options: $(srcdir)/params-options.h $(srcdir)/params.def
-	$(CPP) $(srcdir)/params-options.h | sed 's/^#.*//;/^$$/d' > tmp-params.options
-	$(SHELL) $(srcdir)/../move-if-change tmp-params.options params.options
-	$(STAMP) s-params.options
-
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \

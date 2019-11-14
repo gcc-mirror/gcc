@@ -730,6 +730,12 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 # include "unique-ptr.h"
 #endif
 
+#ifdef INCLUDE_MALLOC_H
+#ifdef HAVE_MALLINFO
+#include <malloc.h>
+#endif
+#endif
+
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
 extern void fancy_abort (const char *, int, const char *)

@@ -604,7 +604,7 @@ extern int maybe_assemble_visibility (tree);
 
 extern int default_address_cost (rtx, machine_mode, addr_space_t, bool);
 
-/* Output stack usage information.  */
+/* Stack usage.  */
 extern void output_stack_usage (void);
 
 #endif /* ! GCC_OUTPUT_H */

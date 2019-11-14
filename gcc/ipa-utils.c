@@ -518,7 +518,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	    {
 	      if (symtab->dump_file)
 		fprintf (symtab->dump_file,
-			 "Edge count mistmatch for bb %i.\n",
+			 "Edge count mismatch for bb %i.\n",
 			 srcbb->index);
 	      match = false;
 	      break;
@@ -531,7 +531,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		{
 		  if (symtab->dump_file)
 		    fprintf (symtab->dump_file,
-			     "Succ edge mistmatch for bb %i.\n",
+			     "Succ edge mismatch for bb %i.\n",
 			     srce->dest->index);
 		  match = false;
 		  break;

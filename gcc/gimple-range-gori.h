@@ -145,59 +145,59 @@ public:
       which has non-virtual destructor might cause undefined
       behavior.  */
   virtual ~gori_compute ();
-  bool range_of_expr (value_range_base &r, tree expr, gimple *s = NULL);
+  bool range_of_expr (value_range &r, tree expr, gimple *s = NULL);
   virtual bool outgoing_edge_range_p
-				(value_range_base &r, edge e, tree name,
-				 const value_range_base *name_range = NULL);
+				(value_range &r, edge e, tree name,
+				 const value_range *name_range = NULL);
 protected:
-  virtual void range_of_ssa_name (value_range_base &, tree name,
+  virtual void range_of_ssa_name (value_range &, tree name,
 				  gimple *s = NULL);
-  bool compute_operand_range (value_range_base &r, gimple *s,
-			      const value_range_base &lhs,
+  bool compute_operand_range (value_range &r, gimple *s,
+			      const value_range &lhs,
 			      tree name,
-			      const value_range_base *name_range = NULL);
+			      const value_range *name_range = NULL);
   bool has_edge_range_p (edge e, tree name);
   gori_map m_gori_map;
 private:
-  value_range_base get_tree_range (tree expr, tree name,
-				   const value_range_base *range_of_name);
-  bool compute_operand_range_switch (value_range_base &r, gswitch *s,
-				     const value_range_base &lhs,
+  value_range get_tree_range (tree expr, tree name,
+			      const value_range *range_of_name);
+  bool compute_operand_range_switch (value_range &r, gswitch *s,
+				     const value_range &lhs,
 				     tree name,
-				     const value_range_base *name_range);
-  bool compute_name_range_op (value_range_base &r, gimple *s,
-			      const value_range_base &lhs,
+				     const value_range *name_range);
+  bool compute_name_range_op (value_range &r, gimple *s,
+			      const value_range &lhs,
 			      tree name,
-			      const value_range_base *name_range);
-  bool compute_operand_range_op (value_range_base &r, gimple *stmt,
-				 const value_range_base &lhs,
+			      const value_range *name_range);
+  bool compute_operand_range_op (value_range &r, gimple *stmt,
+				 const value_range &lhs,
 				 tree name,
-				 const value_range_base *name_range);
-  bool compute_operand1_range (value_range_base &r, gimple *s,
-			       const value_range_base &lhs,
+				 const value_range *name_range);
+  bool compute_operand1_range (value_range &r, gimple *s,
+			       const value_range &lhs,
 			       tree name,
-			       const value_range_base *name_range);
-  bool compute_operand2_range (value_range_base &r, gimple *s,
-			       const value_range_base &lhs,
+			       const value_range *name_range);
+  bool compute_operand2_range (value_range &r, gimple *s,
+			       const value_range &lhs,
 			       tree name,
-			       const value_range_base *name_range);
+			       const value_range *name_range);
   bool compute_operand1_and_operand2_range
-				(value_range_base &r, gimple *s,
-				 const value_range_base &lhs,
+				(value_range &r, gimple *s,
+				 const value_range &lhs,
 				 tree name,
-				 const value_range_base *name_range);
-  bool compute_logical_operands (value_range_base &r, gimple *s,
-				 const value_range_base &lhs,
+				 const value_range *name_range);
+  bool compute_logical_operands (value_range &r, gimple *s,
+				 const value_range &lhs,
 				 tree name,
-				 const value_range_base *name_range);
-  bool logical_combine (value_range_base &r, enum tree_code code,
-			const value_range_base &lhs,
-		        const value_range_base &op1_true,
-			const value_range_base &op1_false,
-		        const value_range_base &op2_true,
-			const value_range_base &op2_false);
-  value_range_base m_bool_zero;           /* Boolean zero cached.  */
-  value_range_base m_bool_one;            /* Boolean true cached.  */
+				 const value_range *name_range);
+  bool logical_combine (value_range &r, enum tree_code code,
+			const value_range &lhs,
+			const value_range &op1_true,
+			const value_range &op1_false,
+			const value_range &op2_true,
+			const value_range &op2_false);
+  value_range m_bool_zero;           /* Boolean zero cached.  */
+  value_range m_bool_one;            /* Boolean true cached.  */
 };
 
 #endif // GCC_GIMPLE_RANGE_GORI_H

@@ -1720,25 +1720,32 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
    compensate for the extra digit.  */
 
 void
-write_real_g0 (st_parameter_dt *dtp, const char *source, int kind, int d)
+write_real_w0 (st_parameter_dt *dtp, const char *source, int kind,
+	       format_token fmt, int d)
 {
   fnode f;
   char buf_stack[BUF_STACK_SZ];
   char str_buf[BUF_STACK_SZ];
   char *buffer, *result;
   size_t buf_size, res_len, flt_str_len;
-  int comp_d;
+  int comp_d = 0;
   set_fnode_default (dtp, &f, kind);
 
   if (d > 0)
     f.u.real.d = d;
+  f.format = fmt;
 
-  /* Compensate for extra digits when using scale factor, d is not
-     specified, and the magnitude is such that E editing is used.  */
-  if (dtp->u.p.scale_factor > 0 && d == 0)
-    comp_d = 1;
-  else
-    comp_d = 0;
+  /* For FMT_G, Compensate for extra digits when using scale factor, d
+     is not specified, and the magnitude is such that E editing
+     is used.  */
+  if (fmt == FMT_G)
+    {
+      if (dtp->u.p.scale_factor > 0 && d == 0)
+	comp_d = 1;
+      else
+	comp_d = 0;
+    }
+
   dtp->u.p.g0_no_blanks = 1;
 
   /* Precision for snprintf call.  */
@@ -1750,7 +1757,7 @@ write_real_g0 (st_parameter_dt *dtp, const char *source, int kind, int d)
   buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
 
   get_float_string (dtp, &f, source , kind, comp_d, buffer,
-                           precision, buf_size, result, &flt_str_len);
+		    precision, buf_size, result, &flt_str_len);
   write_float_string (dtp, result, flt_str_len);
 
   dtp->u.p.g0_no_blanks = 0;

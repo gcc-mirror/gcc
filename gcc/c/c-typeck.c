@@ -2610,7 +2610,7 @@ build_array_ref (location_t loc, tree array, tree index)
   if (TREE_CODE (TREE_TYPE (array)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (array)) != POINTER_TYPE
       /* Allow vector[index] but not index[vector].  */
-      && !VECTOR_TYPE_P (TREE_TYPE (array)))
+      && !gnu_vector_type_p (TREE_TYPE (array)))
     {
       if (TREE_CODE (TREE_TYPE (index)) != ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (index)) != POINTER_TYPE)
@@ -4360,7 +4360,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	 associativity, but won't generate any code.  */
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
 	    || typecode == FIXED_POINT_TYPE || typecode == COMPLEX_TYPE
-	    || typecode == VECTOR_TYPE))
+	    || gnu_vector_type_p (TREE_TYPE (arg))))
 	{
 	  error_at (location, "wrong type argument to unary plus");
 	  return error_mark_node;
@@ -4373,7 +4373,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
     case NEGATE_EXPR:
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
 	    || typecode == FIXED_POINT_TYPE || typecode == COMPLEX_TYPE
-	    || typecode == VECTOR_TYPE))
+	    || gnu_vector_type_p (TREE_TYPE (arg))))
 	{
 	  error_at (location, "wrong type argument to unary minus");
 	  return error_mark_node;
@@ -4385,7 +4385,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
     case BIT_NOT_EXPR:
       /* ~ works on integer types and non float vectors. */
       if (typecode == INTEGER_TYPE
-	  || (typecode == VECTOR_TYPE
+	  || (gnu_vector_type_p (TREE_TYPE (arg))
 	      && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (arg))))
 	{
 	  tree e = arg;
@@ -4571,7 +4571,8 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 
       if (typecode != POINTER_TYPE && typecode != FIXED_POINT_TYPE
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE
-	  && typecode != COMPLEX_TYPE && typecode != VECTOR_TYPE)
+	  && typecode != COMPLEX_TYPE
+	  && !gnu_vector_type_p (TREE_TYPE (arg)))
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 	    error_at (location, "wrong type argument to increment");
@@ -7858,7 +7859,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		     TYPE_MAIN_VARIANT (type))
 	  || (code == ARRAY_TYPE
 	      && comptypes (TREE_TYPE (inside_init), type))
-	  || (code == VECTOR_TYPE
+	  || (gnu_vector_type_p (type)
 	      && comptypes (TREE_TYPE (inside_init), type))
 	  || (code == POINTER_TYPE
 	      && TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
@@ -8356,7 +8357,7 @@ really_start_incremental_init (tree type)
 
       constructor_unfilled_index = constructor_index;
     }
-  else if (VECTOR_TYPE_P (constructor_type))
+  else if (gnu_vector_type_p (constructor_type))
     {
       /* Vectors are like simple fixed-size arrays.  */
       constructor_max_index =
@@ -8530,7 +8531,7 @@ push_init_level (location_t loc, int implicit,
       constructor_unfilled_fields = constructor_fields;
       constructor_bit_index = bitsize_zero_node;
     }
-  else if (VECTOR_TYPE_P (constructor_type))
+  else if (gnu_vector_type_p (constructor_type))
     {
       /* Vectors are like simple fixed-size arrays.  */
       constructor_max_index =
@@ -8719,7 +8720,7 @@ pop_init_level (location_t loc, int implicit,
     ;
   else if (!RECORD_OR_UNION_TYPE_P (constructor_type)
 	   && TREE_CODE (constructor_type) != ARRAY_TYPE
-	   && !VECTOR_TYPE_P (constructor_type))
+	   && !gnu_vector_type_p (constructor_type))
     {
       /* A nonincremental scalar initializer--just return
 	 the element, after verifying there is just one.  */
@@ -9945,7 +9946,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 					      last_init_list_comma),
 			      true, braced_init_obstack);
       else if ((TREE_CODE (constructor_type) == ARRAY_TYPE
-		|| VECTOR_TYPE_P (constructor_type))
+		|| gnu_vector_type_p (constructor_type))
 	       && constructor_max_index
 	       && tree_int_cst_lt (constructor_max_index,
 				   constructor_index))
@@ -10046,7 +10047,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		       || fieldcode == UNION_TYPE || fieldcode == VECTOR_TYPE))
+		       || fieldcode == UNION_TYPE
+		       || gnu_vector_type_p (fieldtype)))
 	    {
 	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
@@ -10137,7 +10139,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		       || fieldcode == UNION_TYPE || fieldcode == VECTOR_TYPE))
+		       || fieldcode == UNION_TYPE
+		       || gnu_vector_type_p (fieldtype)))
 	    {
 	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
@@ -10179,7 +10182,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != elttype
 		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
-		       || eltcode == UNION_TYPE || eltcode == VECTOR_TYPE))
+		       || eltcode == UNION_TYPE
+		       || gnu_vector_type_p (elttype)))
 	    {
 	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
@@ -10215,7 +10219,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	       constructor_unfilled_index.  */
 	    constructor_unfilled_index = constructor_index;
 	}
-      else if (VECTOR_TYPE_P (constructor_type))
+      else if (gnu_vector_type_p (constructor_type))
 	{
 	  tree elttype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
 
@@ -11559,7 +11563,8 @@ build_binary_op (location_t location, enum tree_code code,
 
   /* In case when one of the operands of the binary operation is
      a vector and another is a scalar -- convert scalar to vector.  */
-  if ((code0 == VECTOR_TYPE) != (code1 == VECTOR_TYPE))
+  if ((gnu_vector_type_p (type0) && code1 != VECTOR_TYPE)
+      || (gnu_vector_type_p (type1) && code0 != VECTOR_TYPE))
     {
       enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1,
 						     true);
@@ -11654,10 +11659,12 @@ build_binary_op (location_t location, enum tree_code code,
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == FIXED_POINT_TYPE
-	   || code0 == COMPLEX_TYPE || code0 == VECTOR_TYPE)
+	   || code0 == COMPLEX_TYPE
+	   || gnu_vector_type_p (type0))
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
 	      || code1 == FIXED_POINT_TYPE
-	      || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE))
+	      || code1 == COMPLEX_TYPE
+	      || gnu_vector_type_p (type1)))
 	{
 	  enum tree_code tcode0 = code0, tcode1 = code1;
 
@@ -11688,8 +11695,8 @@ build_binary_op (location_t location, enum tree_code code,
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	shorten = -1;
       /* Allow vector types which are not floating point types.   */
-      else if (code0 == VECTOR_TYPE
-	       && code1 == VECTOR_TYPE
+      else if (gnu_vector_type_p (type0)
+	       && gnu_vector_type_p (type1)
 	       && !VECTOR_FLOAT_TYPE_P (type0)
 	       && !VECTOR_FLOAT_TYPE_P (type1))
 	common = 1;
@@ -11700,7 +11707,8 @@ build_binary_op (location_t location, enum tree_code code,
       doing_div_or_mod = true;
       warn_for_div_by_zero (location, op1);
 
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      if (gnu_vector_type_p (type0)
+	  && gnu_vector_type_p (type1)
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	common = 1;
@@ -11779,7 +11787,8 @@ build_binary_op (location_t location, enum tree_code code,
 	 Also set SHORT_SHIFT if shifting rightward.  */
 
     case RSHIFT_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      if (gnu_vector_type_p (type0)
+	  && gnu_vector_type_p (type1)
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
 	  && known_eq (TYPE_VECTOR_SUBPARTS (type0),
@@ -11789,7 +11798,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE
-		|| (code0 == VECTOR_TYPE
+		|| (gnu_vector_type_p (type0)
 		    && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE))
 	       && code1 == INTEGER_TYPE)
 	{
@@ -11838,7 +11847,8 @@ build_binary_op (location_t location, enum tree_code code,
       break;
 
     case LSHIFT_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      if (gnu_vector_type_p (type0)
+	  && gnu_vector_type_p (type1)
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
 	  && known_eq (TYPE_VECTOR_SUBPARTS (type0),
@@ -11848,7 +11858,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE
-		|| (code0 == VECTOR_TYPE
+		|| (gnu_vector_type_p (type0)
 		    && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE))
 	       && code1 == INTEGER_TYPE)
 	{
@@ -11907,7 +11917,7 @@ build_binary_op (location_t location, enum tree_code code,
 
     case EQ_EXPR:
     case NE_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+      if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
         {
           tree intt;
 	  if (!vector_types_compatible_elements_p (type0, type1))
@@ -12075,7 +12085,7 @@ build_binary_op (location_t location, enum tree_code code,
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+      if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
         {
           tree intt;
 	  if (!vector_types_compatible_elements_p (type0, type1))
@@ -12222,7 +12232,8 @@ build_binary_op (location_t location, enum tree_code code,
   if (code0 == ERROR_MARK || code1 == ERROR_MARK)
     return error_mark_node;
 
-  if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+  if (gnu_vector_type_p (type0)
+      && gnu_vector_type_p (type1)
       && (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
 	  || !vector_types_compatible_elements_p (type0, type1)))
     {
@@ -12237,10 +12248,12 @@ build_binary_op (location_t location, enum tree_code code,
     }
 
   if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE
-       || code0 == FIXED_POINT_TYPE || code0 == VECTOR_TYPE)
+       || code0 == FIXED_POINT_TYPE
+       || gnu_vector_type_p (type0))
       &&
       (code1 == INTEGER_TYPE || code1 == REAL_TYPE || code1 == COMPLEX_TYPE
-       || code1 == FIXED_POINT_TYPE || code1 == VECTOR_TYPE))
+       || code1 == FIXED_POINT_TYPE
+       || gnu_vector_type_p (type1)))
     {
       bool first_complex = (code0 == COMPLEX_TYPE);
       bool second_complex = (code1 == COMPLEX_TYPE);

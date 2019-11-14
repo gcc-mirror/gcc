@@ -330,12 +330,12 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	  basic_block bb = gimple_bb (USE_STMT (use_p));
 	  if (!flow_bb_inside_loop_p (loop, bb))
 	    {
+	      if (is_gimple_debug (USE_STMT (use_p)))
+		continue;
+
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
                                  "vec_stmt_relevant_p: used out of loop.\n");
-
-	      if (is_gimple_debug (USE_STMT (use_p)))
-		continue;
 
 	      /* We expect all such uses to be in the loop exit phis
 		 (because of loop closed form)   */
@@ -474,6 +474,22 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
 
   basic_block def_bb = gimple_bb (dstmt_vinfo->stmt);
   basic_block bb = gimple_bb (stmt_vinfo->stmt);
+
+  /* case 2: A reduction phi (STMT) defined by a reduction stmt (DSTMT_VINFO).
+     We have to force the stmt live since the epilogue loop needs it to
+     continue computing the reduction.  */
+  if (gimple_code (stmt_vinfo->stmt) == GIMPLE_PHI
+      && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
+      && gimple_code (dstmt_vinfo->stmt) != GIMPLE_PHI
+      && STMT_VINFO_DEF_TYPE (dstmt_vinfo) == vect_reduction_def
+      && bb->loop_father == def_bb->loop_father)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "reduc-stmt defining reduc-phi in the same nest.\n");
+      vect_mark_relevant (worklist, dstmt_vinfo, relevant, true);
+      return opt_result::success ();
+    }
 
   /* case 3a: outer-loop stmt defining an inner-loop stmt:
 	outer-loop-header-bb:
@@ -901,26 +917,27 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 }
 
 
-/* Model cost for type demotion and promotion operations.  PWR is normally
-   zero for single-step promotions and demotions.  It will be one if 
-   two-step promotion/demotion is required, and so on.  Each additional
+/* Model cost for type demotion and promotion operations.  PWR is
+   normally zero for single-step promotions and demotions.  It will be
+   one if two-step promotion/demotion is required, and so on.  NCOPIES
+   is the number of vector results (and thus number of instructions)
+   for the narrowest end of the operation chain.  Each additional
    step doubles the number of instructions required.  */
 
 static void
 vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
-				    enum vect_def_type *dt, int pwr,
+				    enum vect_def_type *dt,
+				    unsigned int ncopies, int pwr,
 				    stmt_vector_for_cost *cost_vec)
 {
-  int i, tmp;
+  int i;
   int inside_cost = 0, prologue_cost = 0;
 
   for (i = 0; i < pwr + 1; i++)
     {
-      tmp = (STMT_VINFO_TYPE (stmt_info) == type_promotion_vec_info_type) ?
-	(i + 1) : i;
-      inside_cost += record_stmt_cost (cost_vec, vect_pow2 (tmp),
-				       vec_promote_demote, stmt_info, 0,
-				       vect_body);
+      inside_cost += record_stmt_cost (cost_vec, ncopies, vec_promote_demote,
+				       stmt_info, 0, vect_body);
+      ncopies *= 2;
     }
 
   /* FORNOW: Assuming maximum 2 args per stmts.  */
@@ -1894,10 +1911,9 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
       internal_fn ifn = (is_load
 			 ? IFN_MASK_GATHER_LOAD
 			 : IFN_MASK_SCATTER_STORE);
-      tree offset_type = TREE_TYPE (gs_info->offset);
       if (!internal_gather_scatter_fn_supported_p (ifn, vectype,
 						   gs_info->memory_type,
-						   TYPE_SIGN (offset_type),
+						   gs_info->offset_vectype,
 						   gs_info->scale))
 	{
 	  if (dump_enabled_p ())
@@ -2030,35 +2046,33 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
       if (!wi::multiple_of_p (wi::to_widest (step), scale, SIGNED, &factor))
 	continue;
 
-      /* See whether we can calculate (COUNT - 1) * STEP / SCALE
-	 in OFFSET_BITS bits.  */
+      /* Determine the minimum precision of (COUNT - 1) * STEP / SCALE.  */
       widest_int range = wi::mul (count, factor, SIGNED, &overflow);
       if (overflow)
 	continue;
       signop sign = range >= 0 ? UNSIGNED : SIGNED;
-      if (wi::min_precision (range, sign) > element_bits)
-	{
-	  overflow = wi::OVF_UNKNOWN;
-	  continue;
-	}
+      unsigned int min_offset_bits = wi::min_precision (range, sign);
 
-      /* See whether the target supports the operation.  */
-      tree memory_type = TREE_TYPE (DR_REF (dr));
-      if (!vect_gather_scatter_fn_p (DR_IS_READ (dr), masked_p, vectype,
-				     memory_type, element_bits, sign, scale,
-				     &gs_info->ifn, &gs_info->element_type))
-	continue;
-
-      tree offset_type = build_nonstandard_integer_type (element_bits,
+      /* Find the narrowest viable offset type.  */
+      unsigned int offset_bits = 1U << ceil_log2 (min_offset_bits);
+      tree offset_type = build_nonstandard_integer_type (offset_bits,
 							 sign == UNSIGNED);
+
+      /* See whether the target supports the operation with an offset
+	 no narrower than OFFSET_TYPE.  */
+      tree memory_type = TREE_TYPE (DR_REF (dr));
+      if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
+				     vectype, memory_type, offset_type, scale,
+				     &gs_info->ifn, &gs_info->offset_vectype))
+	continue;
 
       gs_info->decl = NULL_TREE;
       /* Logically the sum of DR_BASE_ADDRESS, DR_INIT and DR_OFFSET,
 	 but we don't need to store that here.  */
       gs_info->base = NULL_TREE;
+      gs_info->element_type = TREE_TYPE (vectype);
       gs_info->offset = fold_convert (offset_type, step);
       gs_info->offset_dt = vect_constant_def;
-      gs_info->offset_vectype = NULL_TREE;
       gs_info->scale = scale;
       gs_info->memory_type = memory_type;
       return true;
@@ -2088,22 +2102,12 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
     return vect_truncate_gather_scatter_offset (stmt_info, loop_vinfo,
 						masked_p, gs_info);
 
-  scalar_mode element_mode = SCALAR_TYPE_MODE (gs_info->element_type);
-  unsigned int element_bits = GET_MODE_BITSIZE (element_mode);
-  tree offset_type = TREE_TYPE (gs_info->offset);
-  unsigned int offset_bits = TYPE_PRECISION (offset_type);
+  tree old_offset_type = TREE_TYPE (gs_info->offset);
+  tree new_offset_type = TREE_TYPE (gs_info->offset_vectype);
 
-  /* Enforced by vect_check_gather_scatter.  */
-  gcc_assert (element_bits >= offset_bits);
-
-  /* If the elements are wider than the offset, convert the offset to the
-     same width, without changing its sign.  */
-  if (element_bits > offset_bits)
-    {
-      bool unsigned_p = TYPE_UNSIGNED (offset_type);
-      offset_type = build_nonstandard_integer_type (element_bits, unsigned_p);
-      gs_info->offset = fold_convert (offset_type, gs_info->offset);
-    }
+  gcc_assert (TYPE_PRECISION (new_offset_type)
+	      >= TYPE_PRECISION (old_offset_type));
+  gs_info->offset = fold_convert (new_offset_type, gs_info->offset);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2142,6 +2146,56 @@ perm_mask_for_reverse (tree vectype)
   if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
     return NULL_TREE;
   return vect_gen_perm_mask_checked (vectype, indices);
+}
+
+/* A subroutine of get_load_store_type, with a subset of the same
+   arguments.  Handle the case where STMT_INFO is a load or store that
+   accesses consecutive elements with a negative step.  */
+
+static vect_memory_access_type
+get_negative_load_store_type (stmt_vec_info stmt_info, tree vectype,
+			      vec_load_store_type vls_type,
+			      unsigned int ncopies)
+{
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
+  dr_alignment_support alignment_support_scheme;
+
+  if (ncopies > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "multiple types with negative step.\n");
+      return VMAT_ELEMENTWISE;
+    }
+
+  alignment_support_scheme = vect_supportable_dr_alignment (dr_info, false);
+  if (alignment_support_scheme != dr_aligned
+      && alignment_support_scheme != dr_unaligned_supported)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "negative step but alignment required.\n");
+      return VMAT_ELEMENTWISE;
+    }
+
+  if (vls_type == VLS_STORE_INVARIANT)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "negative step with invariant source;"
+			 " no permute needed.\n");
+      return VMAT_CONTIGUOUS_DOWN;
+    }
+
+  if (!perm_mask_for_reverse (vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "negative step and reversing not supported.\n");
+      return VMAT_ELEMENTWISE;
+    }
+
+  return VMAT_CONTIGUOUS_REVERSE;
 }
 
 /* STMT_INFO is either a masked or unconditional store.  Return the value
@@ -2270,7 +2324,15 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 				 "Peeling for outer loop is not supported\n");
 	      return false;
 	    }
-	  *memory_access_type = VMAT_CONTIGUOUS;
+	  int cmp = compare_step_with_zero (stmt_info);
+	  if (cmp < 0)
+	    *memory_access_type = get_negative_load_store_type
+	      (stmt_info, vectype, vls_type, 1);
+	  else
+	    {
+	      gcc_assert (!loop_vinfo || cmp > 0);
+	      *memory_access_type = VMAT_CONTIGUOUS;
+	    }
 	}
     }
   else
@@ -2370,56 +2432,6 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
     }
 
   return true;
-}
-
-/* A subroutine of get_load_store_type, with a subset of the same
-   arguments.  Handle the case where STMT_INFO is a load or store that
-   accesses consecutive elements with a negative step.  */
-
-static vect_memory_access_type
-get_negative_load_store_type (stmt_vec_info stmt_info, tree vectype,
-			      vec_load_store_type vls_type,
-			      unsigned int ncopies)
-{
-  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
-  dr_alignment_support alignment_support_scheme;
-
-  if (ncopies > 1)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "multiple types with negative step.\n");
-      return VMAT_ELEMENTWISE;
-    }
-
-  alignment_support_scheme = vect_supportable_dr_alignment (dr_info, false);
-  if (alignment_support_scheme != dr_aligned
-      && alignment_support_scheme != dr_unaligned_supported)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "negative step but alignment required.\n");
-      return VMAT_ELEMENTWISE;
-    }
-
-  if (vls_type == VLS_STORE_INVARIANT)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "negative step with invariant source;"
-			 " no permute needed.\n");
-      return VMAT_CONTIGUOUS_DOWN;
-    }
-
-  if (!perm_mask_for_reverse (vectype))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "negative step and reversing not supported.\n");
-      return VMAT_ELEMENTWISE;
-    }
-
-  return VMAT_CONTIGUOUS_REVERSE;
 }
 
 /* Analyze load or store statement STMT_INFO of type VLS_TYPE.  Return true
@@ -2947,7 +2959,6 @@ vect_get_gather_scatter_ops (class loop *loop, stmt_vec_info stmt_info,
 			     gather_scatter_info *gs_info,
 			     tree *dataref_ptr, tree *vec_offset)
 {
-  vec_info *vinfo = stmt_info->vinfo;
   gimple_seq stmts = NULL;
   *dataref_ptr = force_gimple_operand (gs_info->base, &stmts, true, NULL_TREE);
   if (stmts != NULL)
@@ -2957,10 +2968,8 @@ vect_get_gather_scatter_ops (class loop *loop, stmt_vec_info stmt_info,
       new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
       gcc_assert (!new_bb);
     }
-  tree offset_type = TREE_TYPE (gs_info->offset);
-  tree offset_vectype = get_vectype_for_scalar_type (vinfo, offset_type);
   *vec_offset = vect_get_vec_def_for_operand (gs_info->offset, stmt_info,
-					      offset_vectype);
+					      gs_info->offset_vectype);
 }
 
 /* Prepare to implement a grouped or strided load or store using
@@ -2993,8 +3002,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   /* The offset given in GS_INFO can have pointer type, so use the element
      type of the vector instead.  */
   tree offset_type = TREE_TYPE (gs_info->offset);
-  tree offset_vectype = get_vectype_for_scalar_type (loop_vinfo, offset_type);
-  offset_type = TREE_TYPE (offset_vectype);
+  offset_type = TREE_TYPE (gs_info->offset_vectype);
 
   /* Calculate X = DR_STEP / SCALE and convert it to the appropriate type.  */
   tree step = size_binop (EXACT_DIV_EXPR, DR_STEP (dr),
@@ -3003,7 +3011,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   step = force_gimple_operand (step, &stmts, true, NULL_TREE);
 
   /* Create {0, X, X*2, X*3, ...}.  */
-  *vec_offset = gimple_build (&stmts, VEC_SERIES_EXPR, offset_vectype,
+  *vec_offset = gimple_build (&stmts, VEC_SERIES_EXPR, gs_info->offset_vectype,
 			      build_zero_cst (offset_type), step);
   if (stmts)
     gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
@@ -4239,8 +4247,8 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 		{
 		  gimple_seq stmts;
 		  arginfo[i].op
-		    = force_gimple_operand (arginfo[i].op, &stmts, true,
-					    NULL_TREE);
+		    = force_gimple_operand (unshare_expr (arginfo[i].op),
+					    &stmts, true, NULL_TREE);
 		  if (stmts != NULL)
 		    {
 		      basic_block new_bb;
@@ -4954,7 +4962,7 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (!vec_stmt)		/* transformation not required.  */
     {
       DUMP_VECT_SCOPE ("vectorizable_conversion");
-      if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
+      if (modifier == NONE)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
 	  vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node,
@@ -4963,14 +4971,24 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       else if (modifier == NARROW)
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
-	  vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt,
-					      cost_vec);
+	  /* The final packing step produces one vector result per copy.  */
+	  unsigned int nvectors
+	    = (slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies);
+	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
+					      multi_step_cvt, cost_vec);
 	}
       else
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_promotion_vec_info_type;
-	  vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt,
-					      cost_vec);
+	  /* The initial unpacking step produces two vector results
+	     per copy.  MULTI_STEP_CVT is 0 for a single conversion,
+	     so >> MULTI_STEP_CVT divides by 2^(number of steps - 1).  */
+	  unsigned int nvectors
+	    = (slp_node
+	       ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt
+	       : ncopies * 2);
+	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
+					      multi_step_cvt, cost_vec);
 	}
       interm_types.release ();
       return true;
@@ -5263,6 +5281,29 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Return true if we can assume from the scalar form of STMT_INFO that
+   neither the scalar nor the vector forms will generate code.  STMT_INFO
+   is known not to involve a data reference.  */
+
+bool
+vect_nop_conversion_p (stmt_vec_info stmt_info)
+{
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
+    return false;
+
+  tree lhs = gimple_assign_lhs (stmt);
+  tree_code code = gimple_assign_rhs_code (stmt);
+  tree rhs = gimple_assign_rhs1 (stmt);
+
+  if (code == SSA_NAME || code == VIEW_CONVERT_EXPR)
+    return true;
+
+  if (CONVERT_EXPR_CODE_P (code))
+    return tree_nop_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs));
+
+  return false;
+}
 
 /* Function vectorizable_assignment.
 
@@ -5378,7 +5419,9 @@ vectorizable_assignment (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_assignment");
-      vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
+      if (!vect_nop_conversion_p (stmt_info))
+	vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node,
+				cost_vec);
       return true;
     }
 
@@ -9426,16 +9469,17 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
 		    if (memory_access_type == VMAT_GATHER_SCATTER)
 		      {
+			tree zero = build_zero_cst (vectype);
 			tree scale = size_int (gs_info.scale);
 			gcall *call;
 			if (loop_masks)
 			  call = gimple_build_call_internal
-			    (IFN_MASK_GATHER_LOAD, 4, dataref_ptr,
-			     vec_offset, scale, final_mask);
+			    (IFN_MASK_GATHER_LOAD, 5, dataref_ptr,
+			     vec_offset, scale, zero, final_mask);
 			else
 			  call = gimple_build_call_internal
-			    (IFN_GATHER_LOAD, 3, dataref_ptr,
-			     vec_offset, scale);
+			    (IFN_GATHER_LOAD, 4, dataref_ptr,
+			     vec_offset, scale, zero);
 			gimple_call_set_nothrow (call, true);
 			new_stmt = call;
 			data_ref = NULL_TREE;

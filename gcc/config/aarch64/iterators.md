@@ -302,12 +302,6 @@
 				  VNx64QI VNx32HI VNx16SI VNx8DI
 				  VNx32HF VNx16SF VNx8DF])
 
-;; All SVE vector modes that have 8-bit or 16-bit elements.
-(define_mode_iterator SVE_BH [VNx16QI VNx8HI VNx8HF])
-
-;; All SVE vector modes that have 8-bit, 16-bit or 32-bit elements.
-(define_mode_iterator SVE_BHS [VNx16QI VNx8HI VNx4SI VNx8HF VNx4SF])
-
 ;; SVE integer vector modes that have 8-bit, 16-bit or 32-bit elements.
 (define_mode_iterator SVE_BHSI [VNx16QI VNx8HI VNx4SI])
 

@@ -518,6 +518,7 @@ cp_common_init_ts (void)
   MARK_TS_EXP (VEC_DELETE_EXPR);
   MARK_TS_EXP (VEC_INIT_EXPR);
   MARK_TS_EXP (VEC_NEW_EXPR);
+  MARK_TS_EXP (SPACESHIP_EXPR);
 
   /* Fold expressions.  */
   MARK_TS_EXP (BINARY_LEFT_FOLD_EXPR);

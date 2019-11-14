@@ -484,7 +484,7 @@ sem_function::param_used_p (unsigned int i)
 
   class ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
 
-  if (vec_safe_length (parms_info->descriptors) <= i)
+  if (!parms_info || vec_safe_length (parms_info->descriptors) <= i)
     return true;
 
   return ipa_is_param_used (IPA_NODE_REF (get_node ()), i);
@@ -877,14 +877,9 @@ sem_function::equals_private (sem_item *item)
     }
 
   /* Checking all basic blocks.  */
-  push_cfun (DECL_STRUCT_FUNCTION (decl));
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
     if(!m_checker->compare_bb (bb_sorted[i], m_compared_func->bb_sorted[i]))
-      {
-	pop_cfun ();
-	return return_false ();
-      }
-  pop_cfun ();
+      return return_false ();
 
   auto_vec <int> bb_dict;
 

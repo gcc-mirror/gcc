@@ -798,7 +798,6 @@ lto_input_ts_function_decl_tree_pointers (class lto_input_block *ib,
 	cl_optimization_restore (&tmp, TREE_OPTIMIZATION (opts));
 	finish_options (&tmp, &global_options_set, UNKNOWN_LOCATION);
 	opts = build_optimization_node (&tmp);
-	finalize_options_struct (&tmp);
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = opts;
       }
   }

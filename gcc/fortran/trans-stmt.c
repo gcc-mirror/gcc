@@ -1841,10 +1841,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  if (rank > 0)
 	    copy_descriptor (&se.post, se.expr, desc, rank);
 	  else
-	    {
-	      tmp = gfc_conv_descriptor_data_get (desc);
-	      gfc_conv_descriptor_data_set (&se.post, se.expr, tmp);
-	    }
+	    gfc_conv_descriptor_data_set (&se.post, se.expr, desc);
 
 	  /* The dynamic type could have changed too.  */
 	  if (sym->ts.type == BT_CLASS)

@@ -309,7 +309,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typename _Iter::reference;
       };
 
-    // FIXME: needed due to PR c++/92102
     template<typename _Iter>
       concept __iter_without_nested_types = !__iter_with_nested_types<_Iter>;
 
@@ -798,23 +797,6 @@ namespace ranges
       friend constexpr bool
       operator==(unreachable_sentinel_t, const _It&) noexcept
       { return false; }
-
-#ifndef __cpp_lib_three_way_comparison
-    template<weakly_incrementable _It>
-      friend constexpr bool
-      operator!=(unreachable_sentinel_t, const _It&) noexcept
-      { return true; }
-
-    template<weakly_incrementable _It>
-      friend constexpr bool
-      operator==(const _It&, unreachable_sentinel_t) noexcept
-      { return false; }
-
-    template<weakly_incrementable _It>
-      friend constexpr bool
-      operator!=(const _It&, unreachable_sentinel_t) noexcept
-      { return true; }
-#endif
   };
 
   inline constexpr unreachable_sentinel_t unreachable_sentinel{};

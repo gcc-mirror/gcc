@@ -175,7 +175,7 @@ Do not generate mpy instructions for ARC700.
 
 mea
 Target Report Mask(EA_SET)
-Generate Extended arithmetic instructions.  Currently only divaw, adds, subs and sat16 are supported.
+Generate extended arithmetic instructions, only valid for ARC700.
 
 msoft-float
 Target Report Mask(0)

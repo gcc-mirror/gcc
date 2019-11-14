@@ -55,7 +55,6 @@
 #include "reload.h"
 #include "langhooks.h"
 #include "opts.h"
-#include "params.h"
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "gimple-iterator.h"
@@ -585,7 +584,7 @@ static const struct cpu_vector_cost thunderx2t99_vector_cost =
   1, /* scalar_store_cost  */
   5, /* vec_int_stmt_cost  */
   6, /* vec_fp_stmt_cost  */
-  3, /* vec_permute_cost  */
+  10, /* vec_permute_cost  */
   6, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
   8, /* vec_align_load_cost  */
@@ -5589,7 +5588,7 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
   HOST_WIDE_INT stack_clash_probe_interval
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+    = 1 << param_stack_clash_protection_guard_size;
 
   /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
   xops[0] = reg1;
@@ -6842,7 +6841,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 					bool final_adjustment_p)
 {
   HOST_WIDE_INT guard_size
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+    = 1 << param_stack_clash_protection_guard_size;
   HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
   HOST_WIDE_INT min_probe_threshold
     = (final_adjustment_p
@@ -7364,7 +7363,7 @@ aarch64_expand_epilogue (bool for_sibcall)
      for each allocation.  For stack clash we are in a usable state if
      the adjustment is less than GUARD_SIZE - GUARD_USED_BY_CALLER.  */
   HOST_WIDE_INT guard_size
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+    = 1 << param_stack_clash_protection_guard_size;
   HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
 
   /* We can re-use the registers when:
@@ -13306,73 +13305,60 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
   /* We don't mind passing in global_options_set here as we don't use
      the *options_set structs anyway.  */
-  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
-			 queue_depth,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_sched_autopref_queue_depth, queue_depth);
 
   /* Set up parameters to be used in prefetching algorithm.  Do not
      override the defaults unless we are tuning for a core we have
      researched values for.  */
   if (aarch64_tune_params.prefetch->num_slots > 0)
-    maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			   aarch64_tune_params.prefetch->num_slots,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_simultaneous_prefetches,
+			 aarch64_tune_params.prefetch->num_slots);
   if (aarch64_tune_params.prefetch->l1_cache_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			   aarch64_tune_params.prefetch->l1_cache_size,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_l1_cache_size,
+			 aarch64_tune_params.prefetch->l1_cache_size);
   if (aarch64_tune_params.prefetch->l1_cache_line_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			   aarch64_tune_params.prefetch->l1_cache_line_size,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_l1_cache_line_size,
+			 aarch64_tune_params.prefetch->l1_cache_line_size);
   if (aarch64_tune_params.prefetch->l2_cache_size >= 0)
-    maybe_set_param_value (PARAM_L2_CACHE_SIZE,
-			   aarch64_tune_params.prefetch->l2_cache_size,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_l2_cache_size,
+			 aarch64_tune_params.prefetch->l2_cache_size);
   if (!aarch64_tune_params.prefetch->prefetch_dynamic_strides)
-    maybe_set_param_value (PARAM_PREFETCH_DYNAMIC_STRIDES,
-			   0,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_prefetch_dynamic_strides, 0);
   if (aarch64_tune_params.prefetch->minimum_stride >= 0)
-    maybe_set_param_value (PARAM_PREFETCH_MINIMUM_STRIDE,
-			   aarch64_tune_params.prefetch->minimum_stride,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_prefetch_minimum_stride,
+			 aarch64_tune_params.prefetch->minimum_stride);
 
   /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
-
-  /* If the user hasn't changed it via configure then set the default to 64 KB
-     for the backend.  */
-  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
-			 DEFAULT_STK_CLASH_GUARD_SIZE == 0
-			   ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_sched_pressure_algorithm,
+		       SCHED_PRESSURE_MODEL);
 
   /* Validate the guard size.  */
-  int guard_size = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+  int guard_size = param_stack_clash_protection_guard_size;
+
+  if (guard_size != 12 && guard_size != 16)
+    error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
+	   "size.  Given value %d (%llu KB) is out of range",
+	   guard_size, (1ULL << guard_size) / 1024ULL);
 
   /* Enforce that interval is the same size as size so the mid-end does the
      right thing.  */
-  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL,
-			 guard_size,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_stack_clash_protection_probe_interval,
+		       guard_size);
 
   /* The maybe_set calls won't update the value if the user has explicitly set
      one.  Which means we need to validate that probing interval and guard size
      are equal.  */
   int probe_interval
-    = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+    = param_stack_clash_protection_probe_interval;
   if (guard_size != probe_interval)
     error ("stack clash guard size %<%d%> must be equal to probing interval "
 	   "%<%d%>", guard_size, probe_interval);
@@ -14156,7 +14142,7 @@ aarch64_handle_attr_cpu (const char *str)
  static bool
  aarch64_handle_attr_branch_protection (const char* str)
  {
-  char *err_str = (char *) xmalloc (strlen (str));
+  char *err_str = (char *) xmalloc (strlen (str) + 1);
   enum aarch64_parse_opt_result res = aarch64_parse_branch_protection (str,
 								      &err_str);
   bool success = false;

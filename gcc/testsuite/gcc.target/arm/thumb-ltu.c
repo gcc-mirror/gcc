@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-options "-mcpu=arm1136jf-s -mthumb -O2" } */
 

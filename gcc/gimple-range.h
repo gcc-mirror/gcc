@@ -32,24 +32,24 @@ extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 // If edge E has a constant range, return it and the range generating
 // statement.  for conditonals its TRUE/FALSE, for switches its the
 // possible cases.
-extern gimple *gimple_outgoing_edge_range_p (value_range_base &r, edge e);
+extern gimple *gimple_outgoing_edge_range_p (value_range &r, edge e);
 
 // These routines provide a GIMPLE interface to the range-ops code.
 extern tree gimple_range_operand1 (const gimple *s);
 extern tree gimple_range_operand2 (const gimple *s);
-extern bool gimple_range_fold (const gimple *s, value_range_base &res,
-			       const value_range_base &r1);
-extern bool gimple_range_fold (const gimple *s, value_range_base &res,
-			       const value_range_base &r1,
-			       const value_range_base &r2);
-extern bool gimple_range_calc_op1 (const gimple *s, value_range_base &r,
-				   const value_range_base &lhs_range);
-extern bool gimple_range_calc_op1 (const gimple *s, value_range_base &r,
-				   const value_range_base &lhs_range,
-				   const value_range_base &op2_range);
-extern bool gimple_range_calc_op2 (const gimple *s, value_range_base &r,
-				   const value_range_base &lhs_range,
-				   const value_range_base &op1_range);
+extern bool gimple_range_fold (const gimple *s, value_range &res,
+			       const value_range &r1);
+extern bool gimple_range_fold (const gimple *s, value_range &res,
+			       const value_range &r1,
+			       const value_range &r2);
+extern bool gimple_range_calc_op1 (const gimple *s, value_range &r,
+				   const value_range &lhs_range);
+extern bool gimple_range_calc_op1 (const gimple *s, value_range &r,
+				   const value_range &lhs_range,
+				   const value_range &op2_range);
+extern bool gimple_range_calc_op2 (const gimple *s, value_range &r,
+				   const value_range &lhs_range,
+				   const value_range &op1_range);
 
 
 // Return the range_operator pointer for this statement.  This routine
@@ -70,7 +70,7 @@ gimple_range_ssa_p (tree exp)
 {
   if (exp && TREE_CODE (exp) == SSA_NAME &&
       !SSA_NAME_IS_VIRTUAL_OPERAND (exp) &&
-      value_range_base::supports_type_p (TREE_TYPE (exp)))
+      value_range::supports_type_p (TREE_TYPE (exp)))
     return exp;
   return NULL_TREE;
 }
@@ -78,7 +78,7 @@ gimple_range_ssa_p (tree exp)
 // Return the legacy GCC global range for NAME if it has one, otherwise
 // return VARYING.
 
-static inline value_range_base
+static inline value_range
 gimple_range_global (tree name)
 {
   gcc_checking_assert (gimple_range_ssa_p (name));
@@ -88,10 +88,10 @@ gimple_range_global (tree name)
       // Return a range from an SSA_NAME's available range.  
       wide_int min, max;
       enum value_range_kind kind = get_range_info (name, &min, &max);
-      return value_range_base (kind, type, min, max);
+      return value_range (type, min, max, kind);
     }
  // Otherwise return range for the type.
- return value_range_base (type);
+ return value_range (type);
 }
 
 #endif // GCC_GIMPLE_RANGE_H

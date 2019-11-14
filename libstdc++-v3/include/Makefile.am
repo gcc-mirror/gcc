@@ -1385,8 +1385,9 @@ endif
 # <new>, <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
 # <concepts>, <cstdbool>, <type_traits>, <bit>, <atomic>,
 # and any files which they include (and which we provide).
-# <new>, <typeinfo>, <exception>, and <initializer_list> are installed by
-# libsupc++, so only the others and the sub-includes are copied here.
+# <new>, <typeinfo>, <exception>, <initializer_list> and <compare>
+# are installed by libsupc++, so only the others and the sub-includes
+# are copied here.
 install-freestanding-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/bits
 	for file in c++0x_warning.h atomic_base.h concept_check.h move.h; do \

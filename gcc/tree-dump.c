@@ -561,6 +561,7 @@ dequeue_and_dump (dump_info_p di)
     case ADDR_EXPR:
     case INDIRECT_REF:
     case CLEANUP_POINT_EXPR:
+    case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:

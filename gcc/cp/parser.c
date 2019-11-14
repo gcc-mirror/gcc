@@ -1850,6 +1850,7 @@ enum cp_parser_prec
   PREC_AND_EXPRESSION,
   PREC_EQUALITY_EXPRESSION,
   PREC_RELATIONAL_EXPRESSION,
+  PREC_SPACESHIP_EXPRESSION,
   PREC_SHIFT_EXPRESSION,
   PREC_ADDITIVE_EXPRESSION,
   PREC_MULTIPLICATIVE_EXPRESSION,
@@ -1920,6 +1921,8 @@ static const cp_parser_binary_operations_map_node binops[] = {
 
   { CPP_LSHIFT, LSHIFT_EXPR, PREC_SHIFT_EXPRESSION },
   { CPP_RSHIFT, RSHIFT_EXPR, PREC_SHIFT_EXPRESSION },
+
+  { CPP_SPACESHIP, SPACESHIP_EXPR, PREC_SPACESHIP_EXPRESSION },
 
   { CPP_LESS, LT_EXPR, PREC_RELATIONAL_EXPRESSION },
   { CPP_GREATER, GT_EXPR, PREC_RELATIONAL_EXPRESSION },
@@ -2890,12 +2893,16 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
 	  error_at (loc, "version control conflict marker in file");
 	  expanded_location token_exploc = expand_location (token->location);
 	  /* Consume tokens until the end of the source line.  */
-	  while (1)
+	  for (;;)
 	    {
 	      cp_lexer_consume_token (parser->lexer);
 	      cp_token *next = cp_lexer_peek_token (parser->lexer);
-	      if (next == NULL)
+	      if (next->type == CPP_EOF)
 		break;
+	      if (next->location == UNKNOWN_LOCATION
+		  || loc == UNKNOWN_LOCATION)
+		break;
+
 	      expanded_location next_exploc = expand_location (next->location);
 	      if (next_exploc.file != token_exploc.file)
 		break;
@@ -4542,9 +4549,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 
   if (i14 && ext)
     {
-      tree cxlit = lookup_qualified_name (std_node,
-					  get_identifier ("complex_literals"),
-					  0, false, false);
+      tree cxlit = lookup_qualified_name (std_node, "complex_literals",
+					  0, false);
       if (cxlit == error_mark_node)
 	{
 	  /* No <complex>, so pedwarn and use GNU semantics.  */
@@ -15504,6 +15510,10 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
       op = GE_EXPR;
       break;
 
+    case CPP_SPACESHIP:
+      op = SPACESHIP_EXPR;
+      break;
+
     case CPP_AND_AND:
       op = TRUTH_ANDIF_EXPR;
       break;
@@ -15530,6 +15540,15 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 
     case CPP_DEREF:
       op = COMPONENT_REF;
+      break;
+
+    case CPP_QUERY:
+      op = COND_EXPR;
+      /* Consume the `?'.  */
+      cp_lexer_consume_token (parser->lexer);
+      /* Look for the matching `:'.  */
+      cp_parser_require (parser, CPP_COLON, RT_COLON);
+      consumed = true;
       break;
 
     case CPP_OPEN_PAREN:
@@ -25018,6 +25037,31 @@ cp_parser_member_declaration (cp_parser* parser)
 		  else
 		    initializer = cp_parser_initializer (parser, &x, &x);
 		}
+	      /* Detect invalid bit-field cases such as
+
+		   int *p : 4;
+		   int &&r : 3;
+
+		 and similar.  */
+	      else if (cp_lexer_next_token_is (parser->lexer, CPP_COLON)
+		       /* If there were no type specifiers, it was a
+			  constructor.  */
+		       && decl_specifiers.any_type_specifiers_p)
+		{
+		  /* This is called for a decent diagnostic only.  */
+		  tree d = grokdeclarator (declarator, &decl_specifiers,
+					   BITFIELD, /*initialized=*/false,
+					   &attributes);
+		  error_at (DECL_SOURCE_LOCATION (d),
+			    "bit-field %qD has non-integral type %qT",
+			    d, TREE_TYPE (d));
+		  cp_parser_skip_to_end_of_statement (parser);
+		  /* Avoid "extra ;" pedwarns.  */
+		  if (cp_lexer_next_token_is (parser->lexer,
+					      CPP_SEMICOLON))
+		    cp_lexer_consume_token (parser->lexer);
+		  goto out;
+		}
 	      /* Otherwise, there is no initializer.  */
 	      else
 		initializer = NULL_TREE;
@@ -27327,17 +27371,6 @@ cp_parser_requires_expression (cp_parser *parser)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_REQUIRES));
   location_t loc = cp_lexer_consume_token (parser->lexer)->location;
-
-  /* A requires-expression shall appear only within a concept
-     definition or a requires-clause.
-
-     TODO: Implement this diagnostic correctly. */
-  if (!processing_template_decl)
-    {
-      error_at (loc, "a requires expression cannot appear outside a template");
-      cp_parser_skip_to_end_of_statement (parser);
-      return error_mark_node;
-    }
 
   /* This is definitely a requires-expression.  */
   cp_parser_commit_to_tentative_parse (parser);
@@ -40142,6 +40175,10 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 
    # pragma acc parallel oacc-parallel-clause[optseq] new-line
      structured-block
+
+   OpenACC 2.6:
+
+   # pragma acc serial oacc-serial-clause[optseq] new-line
 */
 
 #define OACC_KERNELS_CLAUSE_MASK					\
@@ -40177,9 +40214,24 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)       \
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
+#define OACC_SERIAL_CLAUSE_MASK						\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRIVATE)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
+
 static tree
-cp_parser_oacc_kernels_parallel (cp_parser *parser, cp_token *pragma_tok,
-				 char *p_name, bool *if_p)
+cp_parser_oacc_compute (cp_parser *parser, cp_token *pragma_tok,
+			char *p_name, bool *if_p)
 {
   omp_clause_mask mask;
   enum tree_code code;
@@ -40194,6 +40246,11 @@ cp_parser_oacc_kernels_parallel (cp_parser *parser, cp_token *pragma_tok,
       strcat (p_name, " parallel");
       mask = OACC_PARALLEL_CLAUSE_MASK;
       code = OACC_PARALLEL;
+      break;
+    case PRAGMA_OACC_SERIAL:
+      strcat (p_name, " serial");
+      mask = OACC_SERIAL_CLAUSE_MASK;
+      code = OACC_SERIAL;
       break;
     default:
       gcc_unreachable ();
@@ -42014,9 +42071,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       break;
     case PRAGMA_OACC_KERNELS:
     case PRAGMA_OACC_PARALLEL:
+    case PRAGMA_OACC_SERIAL:
       strcpy (p_name, "#pragma acc");
-      stmt = cp_parser_oacc_kernels_parallel (parser, pragma_tok, p_name,
-					      if_p);
+      stmt = cp_parser_oacc_compute (parser, pragma_tok, p_name, if_p);
       break;
     case PRAGMA_OACC_LOOP:
       strcpy (p_name, "#pragma acc");
@@ -42683,8 +42740,9 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OACC_DATA:
     case PRAGMA_OACC_HOST_DATA:
     case PRAGMA_OACC_KERNELS:
-    case PRAGMA_OACC_PARALLEL:
     case PRAGMA_OACC_LOOP:
+    case PRAGMA_OACC_PARALLEL:
+    case PRAGMA_OACC_SERIAL:
     case PRAGMA_OMP_ATOMIC:
     case PRAGMA_OMP_CRITICAL:
     case PRAGMA_OMP_DISTRIBUTE:

@@ -106,7 +106,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 DIST_COMMON = $(srcdir)/Makefile.am
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = libgo-test-support.exp
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -299,6 +299,7 @@ RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
 	       echo $(top_srcdir)/../dejagnu/runtest ; \
 	    else echo runtest; fi`
 
+EXTRA_DEJAGNU_SITE_CONFIG = libgo-test-support.exp
 
 # When running the tests we set GCC_EXEC_PREFIX to the install tree so that
 # files that have already been installed there will be found.  The -B option
@@ -338,6 +339,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+libgo-test-support.exp: $(top_builddir)/config.status $(srcdir)/libgo-test-support.exp.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
 	-rm -f *.lo

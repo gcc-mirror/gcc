@@ -177,19 +177,21 @@ void *CFI_address (const CFI_cdesc_t *dv, const CFI_index_t subscripts[])
 	 specified by subscripts. */
       for (i = 0; i < dv->rank; i++)
 	{
+	  CFI_index_t idx = subscripts[i] - dv->dim[i].lower_bound;
 	  if (unlikely (compile_options.bounds_check)
-	      && ((dv->dim[i].extent != -1
-		   && subscripts[i] >= dv->dim[i].extent)
-		  || subscripts[i] < 0))
+	      && ((dv->dim[i].extent != -1 && idx >= dv->dim[i].extent)
+		  || idx < 0))
 	    {
-	      fprintf (stderr, "CFI_address: subscripts[%d], is out of "
-		       "bounds. dv->dim[%d].extent = %d subscripts[%d] "
-		       "= %d.\n", i, i, (int)dv->dim[i].extent, i,
-		       (int)subscripts[i]);
+	      fprintf (stderr, "CFI_address: subscripts[%d] is out of "
+		       "bounds. For dimension = %d, subscripts = %d, "
+		       "lower_bound = %d, upper bound = %d, extend = %d\n",
+		       i, i, (int)subscripts[i], (int)dv->dim[i].lower_bound,
+		       (int)(dv->dim[i].extent - dv->dim[i].lower_bound),
+		       (int)dv->dim[i].extent);
               return NULL;
             }
 
-	  base_addr = base_addr + (CFI_index_t)(subscripts[i] * dv->dim[i].sm);
+	  base_addr = base_addr + (CFI_index_t)(idx * dv->dim[i].sm);
 	}
     }
 
@@ -228,7 +230,7 @@ CFI_allocate (CFI_cdesc_t *dv, const CFI_index_t lower_bounds[],
     }
 
   /* If the type is a character, the descriptor's element length is replaced
-   * by the elem_len argument. */
+     by the elem_len argument. */
   if (dv->type == CFI_type_char || dv->type == CFI_type_ucs4_char ||
       dv->type == CFI_type_signed_char)
     dv->elem_len = elem_len;
@@ -237,7 +239,7 @@ CFI_allocate (CFI_cdesc_t *dv, const CFI_index_t lower_bounds[],
   size_t arr_len = 1;
 
   /* If rank is greater than 0, lower_bounds and upper_bounds are used. They're
-   * ignored otherwhise. */
+     ignored otherwise. */
   if (dv->rank > 0)
     {
       if (unlikely (compile_options.bounds_check)
@@ -325,20 +327,10 @@ int CFI_establish (CFI_cdesc_t *dv, void *base_addr, CFI_attribute_t attribute,
 	{
 	  fprintf (stderr, "CFI_establish: Rank must be between 0 and %d, "
 		   "0 < rank (0 !< %d).\n", CFI_MAX_RANK, (int)rank);
-      return CFI_INVALID_RANK;
-    }
-
-      /* C Descriptor must not be an allocated allocatable. */
-      if (dv->attribute == CFI_attribute_allocatable && dv->base_addr != NULL)
-	{
-	  fprintf (stderr, "CFI_establish: If the C Descriptor represents an "
-		   "allocatable variable (dv->attribute = %d), its base "
-		   "address must be NULL (dv->base_addr = NULL).\n",
-		   CFI_attribute_allocatable);
-	  return CFI_INVALID_DESCRIPTOR;
+	  return CFI_INVALID_RANK;
 	}
 
-       /* If base address is not NULL, the established C Descriptor is for a
+      /* If base address is not NULL, the established C Descriptor is for a
 	  nonallocatable entity. */
       if (attribute == CFI_attribute_allocatable && base_addr != NULL)
 	{
@@ -382,26 +374,20 @@ int CFI_establish (CFI_cdesc_t *dv, void *base_addr, CFI_attribute_t attribute,
   dv->type = type;
 
   /* Extents must not be NULL if rank is greater than zero and base_addr is not
-   * NULL */
+     NULL */
   if (rank > 0 && base_addr != NULL)
     {
       if (unlikely (compile_options.bounds_check) && extents == NULL)
         {
 	  fprintf (stderr, "CFI_establish: Extents must not be NULL "
-		   "(extents != NULL) if rank (= %d) > 0 nd base address"
+		   "(extents != NULL) if rank (= %d) > 0 and base address "
 		   "is not NULL (base_addr != NULL).\n", (int)rank);
 	  return CFI_INVALID_EXTENT;
 	}
 
       for (int i = 0; i < rank; i++)
 	{
-	  /* If the C Descriptor is for a pointer then the lower bounds of every
-	   * dimension are set to zero. */
-	  if (attribute == CFI_attribute_pointer)
-	    dv->dim[i].lower_bound = 0;
-	  else
-	    dv->dim[i].lower_bound = 1;
-
+	  dv->dim[i].lower_bound = 0;
 	  dv->dim[i].extent = extents[i];
 	  if (i == 0)
 	    dv->dim[i].sm = dv->elem_len;
@@ -795,20 +781,29 @@ int CFI_select_part (CFI_cdesc_t *result, const CFI_cdesc_t *source,
 int CFI_setpointer (CFI_cdesc_t *result, CFI_cdesc_t *source,
 		    const CFI_index_t lower_bounds[])
 {
-  /* Result must not be NULL. */
-  if (unlikely (compile_options.bounds_check) && result == NULL)
+  /* Result must not be NULL and must be a Fortran pointer. */
+  if (unlikely (compile_options.bounds_check))
     {
-      fprintf (stderr, "CFI_setpointer: Result is NULL.\n");
-      return CFI_INVALID_DESCRIPTOR;
+      if (result == NULL)
+	{
+	  fprintf (stderr, "CFI_setpointer: Result is NULL.\n");
+	  return CFI_INVALID_DESCRIPTOR;
+	}
+      
+      if (result->attribute != CFI_attribute_pointer)
+	{
+ 	  fprintf (stderr, "CFI_setpointer: Result shall be the address of a "
+		   "C descriptor for a Fortran pointer.\n");
+ 	  return CFI_INVALID_ATTRIBUTE;
+ 	}
     }
-
+      
   /* If source is NULL, the result is a C Descriptor that describes a
    * disassociated pointer. */
   if (source == NULL)
     {
       result->base_addr = NULL;
       result->version  = CFI_VERSION;
-      result->attribute = CFI_attribute_pointer;
     }
   else
     {
@@ -852,7 +847,6 @@ int CFI_setpointer (CFI_cdesc_t *result, CFI_cdesc_t *source,
 
       /* Assign components to result. */
       result->version = source->version;
-      result->attribute = source->attribute;
 
       /* Dimension information. */
       for (int i = 0; i < source->rank; i++)

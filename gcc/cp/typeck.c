@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-ubsan.h"
-#include "params.h"
 #include "gcc-rich-location.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -1498,7 +1497,7 @@ comptypes (tree t1, tree t2, int strict)
 	   perform a deep check. */
 	return structural_comptypes (t1, t2, strict);
 
-      if (flag_checking && USE_CANONICAL_TYPES)
+      if (flag_checking && param_use_canonical_types)
 	{
 	  bool result = structural_comptypes (t1, t2, strict);
 	  
@@ -1519,7 +1518,7 @@ comptypes (tree t1, tree t2, int strict)
 	  
 	  return result;
 	}
-      if (!flag_checking && USE_CANONICAL_TYPES)
+      if (!flag_checking && param_use_canonical_types)
 	return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
       else
 	return structural_comptypes (t1, t2, strict);
@@ -3871,26 +3870,6 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
 
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
-      /* If the function is a non-template member function
-         or a non-template friend, then we need to check the
-         constraints.
-
-        Note that if overload resolution failed with a single
-        candidate this function will be used to explicitly diagnose
-        the failure for the single call expression. The check is
-        technically redundant since we also would have failed in
-        add_function_candidate. */
-      if (flag_concepts
-          && (complain & tf_error)
-          && !constraints_satisfied_p (function))
-        {
-          auto_diagnostic_group d;
-          error ("cannot call function %qD", function);
-          location_t loc = DECL_SOURCE_LOCATION (function);
-          diagnose_constraints (loc, function, NULL_TREE);
-          return error_mark_node;
-        }
-
       if (!mark_used (function, complain))
 	return error_mark_node;
       fndecl = function;
@@ -5189,6 +5168,7 @@ cp_build_binary_op (const op_location_t &location,
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
+    case SPACESHIP_EXPR:
       if (TREE_CODE (orig_op0) == STRING_CST
 	  || TREE_CODE (orig_op1) == STRING_CST)
 	{
@@ -5241,6 +5221,13 @@ cp_build_binary_op (const op_location_t &location,
 		op1 = build1 (VIEW_CONVERT_EXPR, type0, op1);
 	      warning_at (location, OPT_Wsign_compare, "comparison between "
 			  "types %qT and %qT", type0, type1);
+	    }
+
+	  if (resultcode == SPACESHIP_EXPR)
+	    {
+	      if (complain & tf_error)
+		sorry_at (location, "three-way comparison of vectors");
+	      return error_mark_node;
 	    }
 
 	  /* Always construct signed integer vector type.  */
@@ -5376,6 +5363,60 @@ cp_build_binary_op (const op_location_t &location,
 				  "to match other operand of binary "
 				  "expression",
 				  location);
+    }
+
+  if (code == SPACESHIP_EXPR)
+    {
+      iloc_sentinel s (location);
+
+      tree orig_type0 = TREE_TYPE (orig_op0);
+      tree_code orig_code0 = TREE_CODE (orig_type0);
+      tree orig_type1 = TREE_TYPE (orig_op1);
+      tree_code orig_code1 = TREE_CODE (orig_type1);
+      if (!result_type)
+	/* Nope.  */;
+      else if ((orig_code0 == BOOLEAN_TYPE) != (orig_code1 == BOOLEAN_TYPE))
+	/* "If one of the operands is of type bool and the other is not, the
+	   program is ill-formed."  */
+	result_type = NULL_TREE;
+      else if (code0 == POINTER_TYPE && orig_code0 != POINTER_TYPE
+	       && code1 == POINTER_TYPE && orig_code1 != POINTER_TYPE)
+	/* We only do array/function-to-pointer conversion if "at least one of
+	   the operands is of pointer type".  */
+	result_type = NULL_TREE;
+      else if (TYPE_PTRFN_P (result_type) || NULLPTR_TYPE_P (result_type))
+	/* <=> no longer supports equality relations.  */
+	result_type = NULL_TREE;
+      else if (orig_code0 == ENUMERAL_TYPE && orig_code1 == ENUMERAL_TYPE
+	       && !(same_type_ignoring_top_level_qualifiers_p
+		    (orig_type0, orig_type1)))
+	/* "If both operands have arithmetic types, or one operand has integral
+	   type and the other operand has unscoped enumeration type, the usual
+	   arithmetic conversions are applied to the operands."  So we don't do
+	   arithmetic conversions if the operands both have enumeral type.  */
+	result_type = NULL_TREE;
+
+      if (result_type)
+	build_type = spaceship_type (result_type, complain);
+
+      if (result_type && arithmetic_types_p)
+	{
+	  /* If a narrowing conversion is required, other than from an integral
+	     type to a floating point type, the program is ill-formed.  */
+	  bool ok = true;
+	  if (TREE_CODE (result_type) == REAL_TYPE
+	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (orig_op0)))
+	    /* OK */;
+	  else if (!check_narrowing (result_type, orig_op0, complain))
+	    ok = false;
+	  if (TREE_CODE (result_type) == REAL_TYPE
+	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (orig_op1)))
+	    /* OK */;
+	  else if (!check_narrowing (result_type, orig_op1, complain))
+	    ok = false;
+	  if (!ok && !(complain & tf_error))
+	    return error_mark_node;
+	}
     }
 
   if (!result_type)
@@ -5951,15 +5992,22 @@ cp_truthvalue_conversion (tree expr)
     return c_common_truthvalue_conversion (input_location, expr);
 }
 
+/* Returns EXPR contextually converted to bool.  */
+
+tree
+contextual_conv_bool (tree expr, tsubst_flags_t complain)
+{
+  return perform_implicit_conversion_flags (boolean_type_node, expr,
+					    complain, LOOKUP_NORMAL);
+}
+
 /* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  This
    is a low-level function; most callers should use maybe_convert_cond.  */
 
 tree
 condition_conversion (tree expr)
 {
-  tree t;
-  t = perform_implicit_conversion_flags (boolean_type_node, expr,
-					 tf_warning_or_error, LOOKUP_NORMAL);
+  tree t = contextual_conv_bool (expr, tf_warning_or_error);
   if (!processing_template_decl)
     t = fold_build_cleanup_point_expr (boolean_type_node, t);
   return t;
@@ -6311,7 +6359,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 		       : _("wrong type argument to unary plus"));
 	else
 	  {
-	    if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	    if (!noconvert && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
 	      arg = cp_perform_integral_promotions (arg, complain);
 
 	    /* Make sure the result is not an lvalue: a unary plus or minus
@@ -6336,7 +6384,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 						   | WANT_VECTOR_OR_COMPLEX,
 						   arg, true)))
 	errstring = _("wrong type argument to bit-complement");
-      else if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+      else if (!noconvert && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
 	{
 	  /* Warn if the expression has boolean value.  */
 	  if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
@@ -9729,7 +9777,7 @@ check_return_expr (tree retval, bool *no_warning)
 	   type.  In that case, we have to evaluate the expression for
 	   its side-effects.  */
 	finish_expr_stmt (retval);
-      else
+      else if (retval != error_mark_node)
 	permerror (input_location,
 		   "return-statement with a value, in function "
 		   "returning %qT", valtype);

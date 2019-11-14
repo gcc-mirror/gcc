@@ -20,7 +20,7 @@ tsan_files = \
 	tsan_fd.cpp \
 	tsan_flags.cpp \
 	tsan_ignoreset.cpp \
-	tsan_interceptors.cpp \
+	tsan_interceptors_posix.cpp \
 	tsan_interceptors_mac.cpp \
 	tsan_interface_ann.cpp \
 	tsan_interface_atomic.cpp \

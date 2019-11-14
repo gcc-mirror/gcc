@@ -3577,6 +3577,17 @@ d_expr_primary (struct d_info *di)
 	  && type->u.s_builtin.type->print != D_PRINT_DEFAULT)
 	di->expansion -= type->u.s_builtin.type->len;
 
+      if (type->type == DEMANGLE_COMPONENT_BUILTIN_TYPE
+	  && strcmp (type->u.s_builtin.type->name,
+		     cplus_demangle_builtin_types[33].name) == 0)
+	{
+	  if (d_peek_char (di) == 'E')
+	    {
+	      d_advance (di, 1);
+	      return type;
+	    }
+	}
+
       /* Rather than try to interpret the literal value, we just
 	 collect it as a string.  Note that it's possible to have a
 	 floating point literal here.  The ABI specifies that the

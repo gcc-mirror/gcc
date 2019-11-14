@@ -239,7 +239,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_OUTPUT_IDENT
 #define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
 
-/* Darwin profiling -- call mcount.  */
+/* Darwin profiling -- call mcount.
+   If we need a stub, then we unconditionally mark it as used.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
   do {									\
@@ -248,7 +249,6 @@ along with GCC; see the file COPYING3.  If not see
       {									\
 	const char *name = machopic_mcount_stub_name ();		\
 	fprintf (FILE, "\tcall %s\n", name+1);  /*  skip '&'  */	\
-	machopic_validate_stub_or_non_lazy_ptr (name);			\
       }									\
     else fprintf (FILE, "\tcall mcount\n");				\
   } while (0)

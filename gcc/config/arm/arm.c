@@ -59,7 +59,6 @@
 #include "langhooks.h"
 #include "intl.h"
 #include "libfuncs.h"
-#include "params.h"
 #include "opts.h"
 #include "dumpfile.h"
 #include "target-globals.h"
@@ -384,6 +383,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef  TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
+
+#undef TARGET_CHECK_BUILTIN_CALL
+#define TARGET_CHECK_BUILTIN_CALL arm_check_builtin_call
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS arm_legitimize_address
@@ -3521,9 +3523,8 @@ arm_option_override (void)
        but measurable, size reduction for PIC code.  Therefore, we decrease
        the bar for unrestricted expression hoisting to the cost of PIC address
        calculation, which is 2 instructions.  */
-    maybe_set_param_value (PARAM_GCSE_UNRESTRICTED_COST, 2,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_gcse_unrestricted_cost, 2);
 
   /* ARM EABI defaults to strict volatile bitfields.  */
   if (TARGET_AAPCS_BASED && flag_strict_volatile_bitfields < 0
@@ -3543,47 +3544,43 @@ arm_option_override (void)
      override the defaults unless we are tuning for a core we have
      researched values for.  */
   if (current_tune->prefetch.num_slots > 0)
-    maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			   current_tune->prefetch.num_slots,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_simultaneous_prefetches,
+			 current_tune->prefetch.num_slots);
   if (current_tune->prefetch.l1_cache_line_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			   current_tune->prefetch.l1_cache_line_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_line_size,
+			 current_tune->prefetch.l1_cache_line_size);
   if (current_tune->prefetch.l1_cache_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			   current_tune->prefetch.l1_cache_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_size,
+			 current_tune->prefetch.l1_cache_size);
 
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
-  int param_sched_autopref_queue_depth;
+  int sched_autopref_queue_depth;
 
   switch (current_tune->sched_autopref)
     {
     case tune_params::SCHED_AUTOPREF_OFF:
-      param_sched_autopref_queue_depth = -1;
+      sched_autopref_queue_depth = -1;
       break;
 
     case tune_params::SCHED_AUTOPREF_RANK:
-      param_sched_autopref_queue_depth = 0;
+      sched_autopref_queue_depth = 0;
       break;
 
     case tune_params::SCHED_AUTOPREF_FULL:
-      param_sched_autopref_queue_depth = max_insn_queue_index + 1;
+      sched_autopref_queue_depth = max_insn_queue_index + 1;
       break;
 
     default:
       gcc_unreachable ();
     }
 
-  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
-			 param_sched_autopref_queue_depth,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_sched_autopref_queue_depth,
+		       sched_autopref_queue_depth);
 
   /* Currently, for slow flash data, we just disable literal pools.  We also
      disable it for pure-code.  */
@@ -29140,6 +29137,11 @@ arm_conditional_register_usage (void)
       if (TARGET_CALLER_INTERWORKING)
 	global_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;
     }
+
+  /* The Q and GE bits are only accessed via special ACLE patterns.  */
+  CLEAR_HARD_REG_BIT (operand_reg_set, APSRQ_REGNUM);
+  CLEAR_HARD_REG_BIT (operand_reg_set, APSRGE_REGNUM);
+
   SUBTARGET_CONDITIONAL_REGISTER_USAGE
 }
 
@@ -31740,8 +31742,6 @@ arm_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
 
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
 
-  finalize_options_struct (&func_options);
-
   return ret;
 }
 
@@ -32373,6 +32373,26 @@ void
 arm_emit_speculation_barrier_function ()
 {
   emit_library_call (speculation_barrier_libfunc, LCT_NORMAL, VOIDmode);
+}
+
+/* Have we recorded an explicit access to the Q bit of APSR?.  */
+bool
+arm_q_bit_access (void)
+{
+  if (cfun && cfun->decl)
+    return lookup_attribute ("acle qbit",
+			     DECL_ATTRIBUTES (cfun->decl));
+  return true;
+}
+
+/* Have we recorded an explicit access to the GE bits of PSTATE?.  */
+bool
+arm_ge_bits_access (void)
+{
+  if (cfun && cfun->decl)
+    return lookup_attribute ("acle gebits",
+			     DECL_ATTRIBUTES (cfun->decl));
+  return true;
 }
 
 #if CHECKING_P

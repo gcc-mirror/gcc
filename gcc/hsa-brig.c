@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "print-tree.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "hsa-common.h"
 #include "gomp-constants.h"

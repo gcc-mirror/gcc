@@ -482,7 +482,7 @@ debug (gori_map &g)
 // Return the legacy global known value for NAME in R.
 
 void
-gori_compute::range_of_ssa_name (value_range_base &r, tree name,
+gori_compute::range_of_ssa_name (value_range &r, tree name,
 				 gimple *s ATTRIBUTE_UNUSED)
 {
   r = gimple_range_global (name);
@@ -495,7 +495,7 @@ gori_compute::range_of_ssa_name (value_range_base &r, tree name,
 // the type of EXPR.
 
 bool
-gori_compute::range_of_expr (value_range_base &r, tree expr, gimple *s)
+gori_compute::range_of_expr (value_range &r, tree expr, gimple *s)
 {
   tree type;
   if (TYPE_P (expr))
@@ -504,7 +504,7 @@ gori_compute::range_of_expr (value_range_base &r, tree expr, gimple *s)
     type = TREE_TYPE (expr);
 
   // Return false if the type isn't suported.
-  if (!value_range_base::supports_type_p (type))
+  if (!value_range::supports_type_p (type))
     return false;
 
   switch (TREE_CODE (expr))
@@ -514,7 +514,7 @@ gori_compute::range_of_expr (value_range_base &r, tree expr, gimple *s)
 	// since we have no idea how it will be used.
         if (!TREE_OVERFLOW_P (expr))
 	  {
-	    r = value_range_base (expr, expr);
+	    r = value_range (expr, expr);
 	    return true;
 	  }
 	break;
@@ -538,7 +538,7 @@ gori_compute::range_of_expr (value_range_base &r, tree expr, gimple *s)
       default:
         break;
     }
-  r = value_range_base (type);
+  r.set_varying (type);
   return true;
 }
 
@@ -548,11 +548,11 @@ gori_compute::range_of_expr (value_range_base &r, tree expr, gimple *s)
 // ssa-names invoked wont go off and calculate a range in derived
 // bases.
 
-value_range_base
+value_range
 gori_compute::get_tree_range (tree expr, tree name,
-			      const value_range_base *range_of_name)
+			      const value_range *range_of_name)
 {
-  value_range_base r;
+  value_range r;
   if (expr == name && range_of_name)
     return *range_of_name;
   gcc_assert (range_of_expr (r, expr));
@@ -566,12 +566,12 @@ gori_compute::get_tree_range (tree expr, tree name,
 // range can be calculated.
 
 bool
-gori_compute::compute_name_range_op (value_range_base &r, gimple *s,
-				     const value_range_base &lhs,
+gori_compute::compute_name_range_op (value_range &r, gimple *s,
+				     const value_range &lhs,
 				     tree name,
-				     const value_range_base *name_range)
+				     const value_range *name_range)
 {
-  value_range_base op1_range, op2_range;
+  value_range op1_range, op2_range;
 
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
@@ -621,8 +621,8 @@ gori_compute::compute_name_range_op (value_range_base &r, gimple *s,
 gori_compute::gori_compute ()
 {
   // Create a boolean_type true and false range.
-  m_bool_zero = value_range_base (boolean_false_node, boolean_false_node);
-  m_bool_one = value_range_base (boolean_true_node, boolean_true_node);
+  m_bool_zero = value_range (boolean_false_node, boolean_false_node);
+  m_bool_one = value_range (boolean_true_node, boolean_true_node);
 }
 
 // Destruct a gori_compute_object
@@ -637,10 +637,10 @@ gori_compute::~gori_compute ()
 // for NAME coming into S.
 
 bool
-gori_compute::compute_operand_range (value_range_base &r, gimple *s,
-				     const value_range_base &lhs,
+gori_compute::compute_operand_range (value_range &r, gimple *s,
+				     const value_range &lhs,
 				     tree name,
-				     const value_range_base *name_range)
+				     const value_range *name_range)
 {
   if (gimple_range_handler (s))
     return compute_operand_range_op (r, s, lhs, name, name_range);
@@ -656,10 +656,10 @@ gori_compute::compute_operand_range (value_range_base &r, gimple *s,
 // NAME coming into S.
 
 bool
-gori_compute::compute_operand_range_switch (value_range_base &r, gswitch *s,
-					    const value_range_base &lhs,
+gori_compute::compute_operand_range_switch (value_range &r, gswitch *s,
+					    const value_range &lhs,
 					    tree name,
-					    const value_range_base *name_range)
+					    const value_range *name_range)
 {
   tree op1 = gimple_switch_index (s);
 
@@ -716,10 +716,10 @@ is_gimple_logical_p (const gimple *gs)
 // for NAME coming into S.
 
 bool
-gori_compute::compute_operand_range_op (value_range_base &r, gimple *stmt,
-					const value_range_base &lhs,
+gori_compute::compute_operand_range_op (value_range &r, gimple *stmt,
+					const value_range &lhs,
 					tree name,
-					const value_range_base *name_range)
+					const value_range *name_range)
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
@@ -769,12 +769,12 @@ gori_compute::compute_operand_range_op (value_range_base &r, gimple *stmt,
 // the LHS.
 
 bool
-gori_compute::logical_combine (value_range_base &r, enum tree_code code,
-			       const value_range_base &lhs,
-			       const value_range_base &op1_true,
-			       const value_range_base &op1_false,
-			       const value_range_base &op2_true,
-			       const value_range_base &op2_false)
+gori_compute::logical_combine (value_range &r, enum tree_code code,
+			       const value_range &lhs,
+			       const value_range &op1_true,
+			       const value_range &op1_false,
+			       const value_range &op2_true,
+			       const value_range &op2_false)
 {
   // This is not a simple fold of a logical expression, rather it
   // determines ranges which flow through the logical expression.
@@ -813,7 +813,7 @@ gori_compute::logical_combine (value_range_base &r, enum tree_code code,
   // would be lost.  */
   if (!lhs.singleton_p ())
     {
-      value_range_base r1;
+      value_range r1;
       if (logical_combine (r1, code, m_bool_zero, op1_true, op1_false,
 			   op2_true, op2_false)
 	  && logical_combine (r, code, m_bool_one, op1_true, op1_false,
@@ -838,9 +838,9 @@ gori_compute::logical_combine (value_range_base &r, enum tree_code code,
 	else
 	  {
 	    // The FALSE side is the union of the other 3 cases.
-	    value_range_base ff = range_intersect (op1_false, op2_false);
-	    value_range_base tf = range_intersect (op1_true, op2_false);
-	    value_range_base ft = range_intersect (op1_false, op2_true);
+	    value_range ff = range_intersect (op1_false, op2_false);
+	    value_range tf = range_intersect (op1_true, op2_false);
+	    value_range ft = range_intersect (op1_false, op2_true);
 	    r = range_union (ff, tf);
 	    r.union_ (ft);
 	  }
@@ -859,9 +859,9 @@ gori_compute::logical_combine (value_range_base &r, enum tree_code code,
 	  {
 	    // The TRUE side of an OR operation will be the union of
 	    // the other three combinations.
-	    value_range_base tt = range_intersect (op1_true, op2_true);
-	    value_range_base tf = range_intersect (op1_true, op2_false);
-	    value_range_base ft = range_intersect (op1_false, op2_true);
+	    value_range tt = range_intersect (op1_true, op2_true);
+	    value_range tf = range_intersect (op1_true, op2_false);
+	    value_range ft = range_intersect (op1_false, op2_true);
 	    r = range_union (tt, tf);
 	    r.union_ (ft);
 	  }
@@ -880,19 +880,19 @@ gori_compute::logical_combine (value_range_base &r, enum tree_code code,
 // coming into S.
 
 bool
-gori_compute::compute_logical_operands (value_range_base &r, gimple *s,
-				        const value_range_base &lhs,
+gori_compute::compute_logical_operands (value_range &r, gimple *s,
+					const value_range &lhs,
 					tree name,
-					const value_range_base *name_range)
+					const value_range *name_range)
 {
-  value_range_base op1_range, op2_range;
+  value_range op1_range, op2_range;
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
   bool ret = true;
   const unsigned depth_limit = 6;	// Max depth of logical recursion.
   static unsigned depth = 0;		// Current depth of recursion.
 
-  value_range_base op1_true, op1_false, op2_true, op2_false;
+  value_range op1_true, op1_false, op2_true, op2_false;
 
   // Reaching this point means NAME is not in this stmt, but one of
   // the names in it ought to be derived from it.  */
@@ -970,11 +970,11 @@ gori_compute::compute_logical_operands (value_range_base &r, gimple *s,
 // NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand1_range (value_range_base &r, gimple *s,
-				      const value_range_base &lhs, tree name,
-				      const value_range_base *name_range)
+gori_compute::compute_operand1_range (value_range &r, gimple *s,
+				      const value_range &lhs, tree name,
+				      const value_range *name_range)
 {
-  value_range_base op1_range, op2_range;
+  value_range op1_range, op2_range;
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
 
@@ -1012,11 +1012,11 @@ gori_compute::compute_operand1_range (value_range_base &r, gimple *s,
 // NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand2_range (value_range_base &r, gimple *s,
-				      const value_range_base &lhs, tree name,
-				      const value_range_base *name_range)
+gori_compute::compute_operand2_range (value_range &r, gimple *s,
+				      const value_range &lhs, tree name,
+				      const value_range *name_range)
 {
-  value_range_base op1_range, op2_range;
+  value_range op1_range, op2_range;
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
 
@@ -1045,13 +1045,13 @@ gori_compute::compute_operand2_range (value_range_base &r, gimple *s,
 
 bool
 gori_compute::compute_operand1_and_operand2_range
-					(value_range_base &r,
+					(value_range &r,
 					 gimple *s,
-					 const value_range_base &lhs,
+					 const value_range &lhs,
 					 tree name,
-					 const value_range_base *name_range)
+					 const value_range *name_range)
 {
-  value_range_base op_range;
+  value_range op_range;
 
   // Calculate a good a range for op2. Since op1 == op2, this will
   // have already included whatever the actual range of name is.
@@ -1081,10 +1081,10 @@ gori_compute::has_edge_range_p (edge e, tree name)
 // control edge or NAME is not defined by this edge.
 
 bool
-gori_compute::outgoing_edge_range_p (value_range_base &r, edge e, tree name,
-				     const value_range_base *name_range)
+gori_compute::outgoing_edge_range_p (value_range &r, edge e, tree name,
+				     const value_range *name_range)
 {
-  value_range_base lhs;
+  value_range lhs;
 
   gcc_checking_assert (gimple_range_ssa_p (name));
   // Determine if there is an outgoing edge.

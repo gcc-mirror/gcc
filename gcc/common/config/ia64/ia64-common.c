@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
-#include "params.h"
 
 /* Implement overriding of the optimization options.  */
 static const struct default_options ia64_option_optimization_table[] =
@@ -36,6 +35,14 @@ static const struct default_options ia64_option_optimization_table[] =
 #ifdef SUBTARGET_OPTIMIZATION_OPTIONS
     SUBTARGET_OPTIMIZATION_OPTIONS,
 #endif
+
+    /* Let the scheduler form additional regions.  */
+    { OPT_LEVELS_ALL, OPT__param_max_sched_extend_regions_iters_, NULL, 2 },
+      /* Set the default values for cache-related parameters.  */
+    { OPT_LEVELS_ALL, OPT__param_simultaneous_prefetches_, NULL, 6 },
+    { OPT_LEVELS_ALL, OPT__param_l1_cache_line_size_ , NULL, 32},
+    { OPT_LEVELS_ALL, OPT__param_sched_mem_true_dep_cost_, NULL, 4 },
+
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
@@ -82,25 +89,8 @@ ia64_except_unwind_info (struct gcc_options *opts)
   return UI_TARGET;
 }
 
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-
-static void
-ia64_option_default_params (void)
-{
-  /* Let the scheduler form additional regions.  */
-  set_default_param_value (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS, 2);
-
-  /* Set the default values for cache-related parameters.  */
-  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6);
-  set_default_param_value (PARAM_L1_CACHE_LINE_SIZE, 32);
-
-  set_default_param_value (PARAM_SCHED_MEM_TRUE_DEP_COST, 4);
-}
-
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE ia64_option_optimization_table
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS ia64_option_default_params
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO  ia64_except_unwind_info

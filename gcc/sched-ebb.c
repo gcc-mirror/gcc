@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "profile.h"
 #include "insn-attr.h"
-#include "params.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
 #include "sched-int.h"
@@ -620,9 +619,9 @@ schedule_ebbs (void)
     return;
 
   if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
-    probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
+    probability_cutoff = param_tracer_min_branch_probability_feedback;
   else
-    probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);
+    probability_cutoff = param_tracer_min_branch_probability;
   probability_cutoff = REG_BR_PROB_BASE / 100 * probability_cutoff;
 
   schedule_ebbs_init ();

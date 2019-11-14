@@ -1628,7 +1628,8 @@ struct GTY(()) tree_type_common {
   unsigned warn_if_not_align : 6;
   unsigned typeless_storage : 1;
   unsigned empty_flag : 1;
-  unsigned spare : 17;
+  unsigned indivisible_p : 1;
+  unsigned spare : 16;
 
   alias_set_type alias_set;
   tree pointer_to;

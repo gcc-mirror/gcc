@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "except.h"
 #include "debug.h"
-#include "params.h"
 #include "value-prof.h"
 #include "cfgloop.h"
 #include "builtins.h"
@@ -1812,7 +1811,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  /* If the inlined function has too many debug markers,
 	     don't copy them.  */
 	  if (id->src_cfun->debug_marker_count
-	      > PARAM_VALUE (PARAM_MAX_DEBUG_MARKER_COUNT))
+	      > param_max_debug_marker_count)
 	    return stmts;
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
@@ -3593,7 +3592,9 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
      vs. the call expression.  */
   if (modify_dest)
     caller_type = TREE_TYPE (modify_dest);
-  else
+  else if (return_slot)
+    caller_type = TREE_TYPE (return_slot);
+  else /* No LHS on the call.  */
     caller_type = TREE_TYPE (TREE_TYPE (callee));
 
   /* We don't need to do anything for functions that don't return anything.  */
@@ -3634,6 +3635,10 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	  && !DECL_GIMPLE_REG_P (result)
 	  && DECL_P (var))
 	DECL_GIMPLE_REG_P (var) = 0;
+
+      if (!useless_type_conversion_p (callee_type, caller_type))
+	var = build1 (VIEW_CONVERT_EXPR, callee_type, var);
+
       use = NULL;
       goto done;
     }
@@ -3654,7 +3659,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       /* ??? If we're assigning to a variable sized type, then we must
 	 reuse the destination variable, because we've no good way to
 	 create variable sized temporaries at this point.  */
-      else if (TREE_CODE (TYPE_SIZE_UNIT (caller_type)) != INTEGER_CST)
+      else if (!poly_int_tree_p (TYPE_SIZE_UNIT (caller_type)))
 	use_it = true;
 
       /* If the callee cannot possibly modify MODIFY_DEST, then we can
@@ -3689,7 +3694,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	}
     }
 
-  gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (callee_type)) == INTEGER_CST);
+  gcc_assert (poly_int_tree_p (TYPE_SIZE_UNIT (callee_type)));
 
   var = copy_result_decl_to_var (result, id);
   DECL_SEEN_IN_BIND_EXPR_P (var) = 1;

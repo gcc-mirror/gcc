@@ -4635,6 +4635,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   call->symtree->n.sym->attr.procedure = 1;
   call->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   call->resolved_sym = call->symtree->n.sym;
+  gfc_commit_symbol (call->resolved_sym);
 
   /* Argument TRANSA.  */
   next = gfc_get_actual_arglist ();

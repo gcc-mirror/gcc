@@ -407,7 +407,10 @@ uptr internal_unlink(const char *path) {
 }
 
 uptr internal_rename(const char *oldpath, const char *newpath) {
-#if SANITIZER_USES_CANONICAL_LINUX_SYSCALLS || SANITIZER_OPENBSD
+#if defined(__riscv)
+  return internal_syscall(SYSCALL(renameat2), AT_FDCWD, (uptr)oldpath, AT_FDCWD,
+                          (uptr)newpath, 0);
+#elif SANITIZER_USES_CANONICAL_LINUX_SYSCALLS || SANITIZER_OPENBSD
   return internal_syscall(SYSCALL(renameat), AT_FDCWD, (uptr)oldpath, AT_FDCWD,
                           (uptr)newpath);
 #else
@@ -1062,8 +1065,6 @@ uptr GetMaxUserVirtualAddress() {
 uptr GetPageSize() {
 #if SANITIZER_LINUX && (defined(__x86_64__) || defined(__i386__))
   return EXEC_PAGESIZE;
-#elif SANITIZER_USE_GETAUXVAL
-  return getauxval(AT_PAGESZ);
 #elif SANITIZER_FREEBSD || SANITIZER_NETBSD
 // Use sysctl as sysconf can trigger interceptors internally.
   int pz = 0;
@@ -1072,6 +1073,8 @@ uptr GetPageSize() {
   int rv = internal_sysctl(mib, 2, &pz, &pzl, nullptr, 0);
   CHECK_EQ(rv, 0);
   return (uptr)pz;
+#elif SANITIZER_USE_GETAUXVAL
+  return getauxval(AT_PAGESZ);
 #else
   return sysconf(_SC_PAGESIZE);  // EXEC_PAGESIZE may not be trustworthy.
 #endif
@@ -1849,6 +1852,12 @@ SignalContext::WriteFlag SignalContext::GetWriteFlag() const {
 #endif
 }
 
+bool SignalContext::IsTrueFaultingAddress() const {
+  auto si = static_cast<const siginfo_t *>(siginfo);
+  // SIGSEGV signals without a true fault address have si_code set to 128.
+  return si->si_signo == SIGSEGV && si->si_code != 128;
+}
+
 void SignalContext::DumpAllRegisters(void *context) {
   // FIXME: Implement this.
 }
@@ -1966,6 +1975,11 @@ static void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
 # endif
   *bp = ucontext->uc_mcontext.gregs[11];
   *sp = ucontext->uc_mcontext.gregs[15];
+#elif defined(__riscv)
+  ucontext_t *ucontext = (ucontext_t*)context;
+  *pc = ucontext->uc_mcontext.__gregs[REG_PC];
+  *bp = ucontext->uc_mcontext.__gregs[REG_S0];
+  *sp = ucontext->uc_mcontext.__gregs[REG_SP];
 #else
 # error "Unsupported arch"
 #endif
@@ -2010,6 +2024,35 @@ void CheckASLR() {
                "ASLR will be disabled and the program re-executed.\n");
     CHECK_NE(personality(old_personality | ADDR_NO_RANDOMIZE), -1);
     ReExec();
+  }
+#elif SANITIZER_FREEBSD
+  int aslr_pie;
+  uptr len = sizeof(aslr_pie);
+#if SANITIZER_WORDSIZE == 64
+  if (UNLIKELY(internal_sysctlbyname("kern.elf64.aslr.pie_enable",
+      &aslr_pie, &len, NULL, 0) == -1)) {
+    // We're making things less 'dramatic' here since
+    // the OID is not necessarily guaranteed to be here
+    // just yet regarding FreeBSD release
+    return;
+  }
+
+  if (aslr_pie > 0) {
+    Printf("This sanitizer is not compatible with enabled ASLR "
+           "and binaries compiled with PIE\n");
+    Die();
+  }
+#endif
+  // there might be 32 bits compat for 64 bits
+  if (UNLIKELY(internal_sysctlbyname("kern.elf32.aslr.pie_enable",
+      &aslr_pie, &len, NULL, 0) == -1)) {
+    return;
+  }
+
+  if (aslr_pie > 0) {
+    Printf("This sanitizer is not compatible with enabled ASLR "
+           "and binaries compiled with PIE\n");
+    Die();
   }
 #else
   // Do nothing

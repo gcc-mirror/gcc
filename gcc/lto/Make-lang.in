@@ -92,7 +92,7 @@ $(LTO_DUMP_EXE): $(LTO_EXE) $(LTO_DUMP_OBJS) $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(LTO_DUMP_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS)
 
-lto/lto-dump.o: $(LTO_EXE)
+lto/lto-dump.o: $(LTO_OBJS)
 
 lto1.fda: ../prev-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
 	$(CREATE_GCOV) -binary ../prev-gcc/lto1$(exeext) -gcov lto1.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1

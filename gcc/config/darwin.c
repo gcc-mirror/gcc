@@ -601,15 +601,6 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   return p->ptr_name;
 }
 
-/* Return the name of the stub for the mcount function.  */
-
-const char*
-machopic_mcount_stub_name (void)
-{
-  rtx symbol = gen_rtx_SYMBOL_REF (Pmode, "*mcount");
-  return machopic_indirection_name (symbol, /*stub_p=*/true);
-}
-
 /* If NAME is the name of a stub or a non-lazy pointer , mark the stub
    or non-lazy pointer as used -- and mark the object to which the
    pointer/stub refers as used as well, since the pointer/stub will
@@ -2155,6 +2146,20 @@ darwin_emit_except_table_label (FILE *file)
 			       except_table_label_num++);
   ASM_OUTPUT_LABEL (file, section_start_label);
 }
+
+/* Return, and mark as used, the name of the stub for the mcount function.
+   Currently, this is only called by X86 code in the expansion of the
+   FUNCTION_PROFILER macro, when stubs are enabled.  */
+
+const char*
+machopic_mcount_stub_name (void)
+{
+  rtx symbol = gen_rtx_SYMBOL_REF (Pmode, "*mcount");
+  const char *name = machopic_indirection_name (symbol, /*stub_p=*/true);
+  machopic_validate_stub_or_non_lazy_ptr (name);
+  return name;
+}
+
 /* Generate a PC-relative reference to a Mach-O non-lazy-symbol.  */
 
 void

@@ -1035,6 +1035,82 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
   fprintf (file, ">");
 }
 
+/* Print the identifier for DECL according to FLAGS.  */
+
+void
+print_decl_identifier (FILE *file, tree decl, int flags)
+{
+  bool needs_colon = false;
+  const char *name;
+  char c;
+
+  if (flags & PRINT_DECL_ORIGIN)
+    {
+      if (DECL_IS_BUILTIN (decl))
+	fputs ("<built-in>", file);
+      else
+	{
+	  expanded_location loc
+	    = expand_location (DECL_SOURCE_LOCATION (decl));
+	  fprintf (file, "%s:%d:%d", loc.file, loc.line, loc.column);
+	}
+      needs_colon = true;
+    }
+
+  if (flags & PRINT_DECL_UNIQUE_NAME)
+    {
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      if (!TREE_PUBLIC (decl)
+	  || (DECL_WEAK (decl) && !DECL_EXTERNAL (decl)))
+	/* The symbol has internal or weak linkage so its assembler name
+	   is not necessarily unique among the compilation units of the
+	   program.  We therefore have to further mangle it.  But we can't
+	   simply use DECL_SOURCE_FILE because it contains the name of the
+	   file the symbol originates from so, e.g. for function templates
+	   in C++ where the templates are defined in a header file, we can
+	   have symbols with the same assembler name and DECL_SOURCE_FILE.
+	   That's why we use the name of the top-level source file of the
+	   compilation unit.  ??? Unnecessary for Ada.  */
+	name = ACONCAT ((main_input_filename, ":", name, NULL));
+    }
+  else if (flags & PRINT_DECL_NAME)
+    {
+      /* We don't want to print the full qualified name because it can be long,
+	 so we strip the scope prefix, but we may need to deal with the suffix
+	 created by the compiler.  */
+      const char *suffix = strchr (IDENTIFIER_POINTER (DECL_NAME (decl)), '.');
+      name = lang_hooks.decl_printable_name (decl, 2);
+      if (suffix)
+	{
+	  const char *dot = strchr (name, '.');
+	  while (dot && strcasecmp (dot, suffix) != 0)
+	    {
+	      name = dot + 1;
+	      dot = strchr (name, '.');
+	    }
+	}
+      else
+	{
+	  const char *dot = strrchr (name, '.');
+	  if (dot)
+	    name = dot + 1;
+	}
+    }
+  else
+    return;
+
+  if (needs_colon)
+    fputc (':', file);
+
+  while ((c = *name++) != '\0')
+    {
+      /* Strip double-quotes because of VCG.  */
+      if (c == '"')
+	continue;
+      fputc (c, file);
+    }
+}
+
 
 /* Print the node NODE on standard error, for debugging.
    Most nodes referred to by this one are printed recursively

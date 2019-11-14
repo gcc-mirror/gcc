@@ -10576,6 +10576,8 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OACC_PARALLEL:
 	case EXEC_OACC_KERNELS_LOOP:
 	case EXEC_OACC_KERNELS:
+	case EXEC_OACC_SERIAL_LOOP:
+	case EXEC_OACC_SERIAL:
 	case EXEC_OACC_DATA:
 	case EXEC_OACC_HOST_DATA:
 	case EXEC_OACC_LOOP:
@@ -10688,6 +10690,18 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   lhs = code->expr1;
   rhs = code->expr2;
+
+  if ((gfc_numeric_ts (&lhs->ts) || lhs->ts.type == BT_LOGICAL)
+      && rhs->ts.type == BT_CHARACTER
+      && rhs->expr_type != EXPR_CONSTANT)
+    {
+      /* Use of -fdec-char-conversions allows assignment of character data
+	 to non-character variables.  This not permited for nonconstant
+	 strings.  */
+      gfc_error ("Cannot convert %s to %s at %L", gfc_typename (rhs),
+		 gfc_typename (lhs), &rhs->where);
+      return false;
+    }
 
   /* Handle the case of a BOZ literal on the RHS.  */
   if (rhs->ts.type == BT_BOZ)
@@ -11527,6 +11541,8 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OACC_PARALLEL:
 	    case EXEC_OACC_KERNELS_LOOP:
 	    case EXEC_OACC_KERNELS:
+	    case EXEC_OACC_SERIAL_LOOP:
+	    case EXEC_OACC_SERIAL:
 	    case EXEC_OACC_DATA:
 	    case EXEC_OACC_HOST_DATA:
 	    case EXEC_OACC_LOOP:
@@ -11940,6 +11956,8 @@ start:
 	case EXEC_OACC_PARALLEL:
 	case EXEC_OACC_KERNELS_LOOP:
 	case EXEC_OACC_KERNELS:
+	case EXEC_OACC_SERIAL_LOOP:
+	case EXEC_OACC_SERIAL:
 	case EXEC_OACC_DATA:
 	case EXEC_OACC_HOST_DATA:
 	case EXEC_OACC_LOOP:

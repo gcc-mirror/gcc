@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify.h"
 #include "tree-dfa.h"
-#include "params.h"
 #include "langhooks-def.h"
 #include "tree-diagnostic.h"
 #include "except.h"
@@ -1170,6 +1169,10 @@ free_node (tree node)
     vec_free (BLOCK_NONLOCALIZED_VARS (node));
   else if (code == TREE_BINFO)
     vec_free (BINFO_BASE_ACCESSES (node));
+  else if (code == OPTIMIZATION_NODE)
+    cl_optimization_option_free (TREE_OPTIMIZATION (node));
+  else if (code == TARGET_OPTION_NODE)
+    cl_target_option_free (TREE_TARGET_OPTION (node));
   ggc_free (node);
 }
 
@@ -1549,15 +1552,15 @@ wide_int_to_tree_1 (tree type, const wide_int_ref &pcst)
 	  if (TYPE_SIGN (type) == UNSIGNED)
 	    {
 	      /* Cache [0, N).  */
-	      limit = INTEGER_SHARE_LIMIT;
-	      if (IN_RANGE (hwi, 0, INTEGER_SHARE_LIMIT - 1))
+	      limit = param_integer_share_limit;
+	      if (IN_RANGE (hwi, 0, param_integer_share_limit - 1))
 		ix = hwi;
 	    }
 	  else
 	    {
 	      /* Cache [-1, N).  */
-	      limit = INTEGER_SHARE_LIMIT + 1;
-	      if (IN_RANGE (hwi, -1, INTEGER_SHARE_LIMIT - 1))
+	      limit = param_integer_share_limit + 1;
+	      if (IN_RANGE (hwi, -1, param_integer_share_limit - 1))
 		ix = hwi + 1;
 	    }
 	  break;
@@ -1733,23 +1736,24 @@ cache_integer_cst (tree t)
       if (TYPE_UNSIGNED (type))
 	{
 	  /* Cache 0..N */
-	  limit = INTEGER_SHARE_LIMIT;
+	  limit = param_integer_share_limit;
 
 	  /* This is a little hokie, but if the prec is smaller than
-	     what is necessary to hold INTEGER_SHARE_LIMIT, then the
+	     what is necessary to hold param_integer_share_limit, then the
 	     obvious test will not get the correct answer.  */
 	  if (prec < HOST_BITS_PER_WIDE_INT)
 	    {
-	      if (tree_to_uhwi (t) < (unsigned HOST_WIDE_INT) INTEGER_SHARE_LIMIT)
+	      if (tree_to_uhwi (t)
+		  < (unsigned HOST_WIDE_INT) param_integer_share_limit)
 		ix = tree_to_uhwi (t);
 	    }
-	  else if (wi::ltu_p (wi::to_wide (t), INTEGER_SHARE_LIMIT))
+	  else if (wi::ltu_p (wi::to_wide (t), param_integer_share_limit))
 	    ix = tree_to_uhwi (t);
 	}
       else
 	{
 	  /* Cache -1..N */
-	  limit = INTEGER_SHARE_LIMIT + 1;
+	  limit = param_integer_share_limit + 1;
 
 	  if (integer_minus_onep (t))
 	    ix = 0;
@@ -1757,10 +1761,10 @@ cache_integer_cst (tree t)
 	    {
 	      if (prec < HOST_BITS_PER_WIDE_INT)
 		{
-		  if (tree_to_shwi (t) < INTEGER_SHARE_LIMIT)
+		  if (tree_to_shwi (t) < param_integer_share_limit)
 		    ix = tree_to_shwi (t) + 1;
 		}
-	      else if (wi::ltu_p (wi::to_wide (t), INTEGER_SHARE_LIMIT))
+	      else if (wi::ltu_p (wi::to_wide (t), param_integer_share_limit))
 		ix = tree_to_shwi (t) + 1;
 	    }
 	}
@@ -5383,9 +5387,15 @@ fld_incomplete_type_of (tree t, class free_lang_data_d *fld)
 	      TYPE_TYPELESS_STORAGE (copy) = 0;
 	      TYPE_FIELDS (copy) = NULL;
 	      TYPE_BINFO (copy) = NULL;
+	      TYPE_FINAL_P (copy) = 0;
+	      TYPE_EMPTY_P (copy) = 0;
 	    }
 	  else
-	    TYPE_VALUES (copy) = NULL;
+	    {
+	      TYPE_VALUES (copy) = NULL;
+	      ENUM_IS_OPAQUE (copy) = 0;
+	      ENUM_IS_SCOPED (copy) = 0;
+	    }
 
 	  /* Build copy of TYPE_DECL in TYPE_NAME if necessary.
 	     This is needed for ODR violation warnings to come out right (we
@@ -5468,6 +5478,7 @@ free_lang_data_in_binfo (tree binfo)
   BINFO_INHERITANCE_CHAIN (binfo) = NULL_TREE;
   BINFO_SUBVTT_INDEX (binfo) = NULL_TREE;
   BINFO_VPTR_FIELD (binfo) = NULL_TREE;
+  TREE_PUBLIC (binfo) = 0;
 
   FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (binfo), i, t)
     free_lang_data_in_binfo (t);
@@ -5569,6 +5580,8 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
     {
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
+	  ENUM_IS_OPAQUE (type) = 0;
+	  ENUM_IS_SCOPED (type) = 0;
 	  /* Type values are used only for C++ ODR checking.  Drop them
 	     for all type variants and non-ODR types.
 	     For ODR types the data is freed in free_odr_warning_data.  */
@@ -13635,6 +13648,8 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	return NULL_TREE;
 
       base = TREE_OPERAND (ref, 0);
+      while (TREE_CODE (base) == COMPONENT_REF)
+	base = TREE_OPERAND (base, 0);
       baseoff = tree_to_poly_int64 (byte_position (TREE_OPERAND (ref, 1)));
     }
 
@@ -13656,27 +13671,28 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 
   memsize = NULL_TREE;
 
-  /* MEMBER is a true flexible array member.  Compute its size from
-     the initializer of the BASE object if it has one.  */
-  if (tree init = DECL_P (base) ? DECL_INITIAL (base) : NULL_TREE)
-    {
-      init = get_initializer_for (init, member);
-      if (init)
-	{
-	  memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
-	  if (tree refsize = TYPE_SIZE_UNIT (reftype))
-	    {
-	      /* Use the larger of the initializer size and the tail
-		 padding in the enclosing struct.  */
-	      poly_int64 rsz = tree_to_poly_int64 (refsize);
-	      rsz -= baseoff;
-	      if (known_lt (tree_to_poly_int64 (memsize), rsz))
-		memsize = wide_int_to_tree (TREE_TYPE (memsize), rsz);
-	    }
+  if (typematch)
+    /* MEMBER is a true flexible array member.  Compute its size from
+       the initializer of the BASE object if it has one.  */
+    if (tree init = DECL_P (base) ? DECL_INITIAL (base) : NULL_TREE)
+      {
+	init = get_initializer_for (init, member);
+	if (init)
+	  {
+	    memsize = TYPE_SIZE_UNIT (TREE_TYPE (init));
+	    if (tree refsize = TYPE_SIZE_UNIT (reftype))
+	      {
+		/* Use the larger of the initializer size and the tail
+		   padding in the enclosing struct.  */
+		poly_int64 rsz = tree_to_poly_int64 (refsize);
+		rsz -= baseoff;
+		if (known_lt (tree_to_poly_int64 (memsize), rsz))
+		  memsize = wide_int_to_tree (TREE_TYPE (memsize), rsz);
+	      }
 
-	  baseoff = 0;
-	}
-    }
+	    baseoff = 0;
+	  }
+      }
 
   if (!memsize)
     {
@@ -13689,17 +13705,19 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	    /* The size of a flexible array member of an extern struct
 	       with no initializer cannot be determined (it's defined
 	       in another translation unit and can have an initializer
-	       witth an arbitrary number of elements).  */
+	       with an arbitrary number of elements).  */
 	    return NULL_TREE;
 
 	  /* Use the size of the base struct or, for interior zero-length
 	     arrays, the size of the enclosing type.  */
 	  memsize = TYPE_SIZE_UNIT (bt);
 	}
-      else
+      else if (DECL_P (base))
 	/* Use the size of the BASE object (possibly an array of some
 	   other type such as char used to store the struct).  */
 	memsize = DECL_SIZE_UNIT (base);
+      else
+	return NULL_TREE;
     }
 
   /* If the flexible array member has a known size use the greater

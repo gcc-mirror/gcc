@@ -1,6 +1,7 @@
 /* Test that FMA macro is correctly undef.  */
 /* { dg-do compile } */
 /* { dg-skip-if "Default no fma" { *-*-* } { "-mfpu=*vfpv4*" "-mfpu=*armv8"} } */
+/* { dg-skip-if "-mpure-code supports M-profile without Neon only" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_fp_ok } */
 /* { dg-add-options arm_fp } */
 

@@ -431,8 +431,270 @@ __smlsldx (int16x2_t __a, int16x2_t __b, int64_t __c)
   return __builtin_arm_smlsldx (__a, __b, __c);
 }
 
+__extension__ extern __inline uint8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sel (uint8x4_t __a, uint8x4_t __b)
+{
+  return __builtin_arm_sel (__a, __b);
+}
+
+__extension__ extern __inline int8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sadd8 (int8x4_t __a, int8x4_t __b)
+{
+  return __builtin_arm_sadd8 (__a, __b);
+}
+
+__extension__ extern __inline int8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__ssub8 (int8x4_t __a, int8x4_t __b)
+{
+  return __builtin_arm_ssub8 (__a, __b);
+}
+
+__extension__ extern __inline uint8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__uadd8 (uint8x4_t __a, uint8x4_t __b)
+{
+  return __builtin_arm_uadd8 (__a, __b);
+}
+
+__extension__ extern __inline uint8x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__usub8 (uint8x4_t __a, uint8x4_t __b)
+{
+  return __builtin_arm_usub8 (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sadd16 (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_sadd16 (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sasx (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_sasx (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__ssax (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_ssax (__a, __b);
+}
+
+__extension__ extern __inline int16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__ssub16 (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_ssub16 (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__uadd16 (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_uadd16 (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__uasx (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_uasx (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__usax (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_usax (__a, __b);
+}
+
+__extension__ extern __inline uint16x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__usub16 (uint16x2_t __a, uint16x2_t __b)
+{
+  return __builtin_arm_usub16 (__a, __b);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlad (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smlad (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smladx (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smladx (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlsd (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smlsd (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlsdx (int16x2_t __a, int16x2_t __b, int32_t __c)
+{
+  return __builtin_arm_smlsdx (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smuad (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_smuad (__a, __b);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smuadx (int16x2_t __a, int16x2_t __b)
+{
+  return __builtin_arm_smuadx (__a, __b);
+}
+
+#define __ssat16(__a, __sat)					\
+  __extension__							\
+  ({								\
+    int16x2_t __arg = (__a);					\
+    __builtin_sat_imm_check (__sat, 1, 16);			\
+    int16x2_t __res = __builtin_arm_ssat16 (__arg, __sat);	\
+    __res;							\
+  })
+
+#define __usat16(__a, __sat)					\
+  __extension__							\
+  ({								\
+    int16x2_t __arg = (__a);					\
+    __builtin_sat_imm_check (__sat, 0, 15);			\
+    int16x2_t __res = __builtin_arm_usat16 (__arg, __sat);	\
+    __res;							\
+  })
+
 #endif
 
+#ifdef __ARM_FEATURE_SAT
+
+#define __ssat(__a, __sat)				\
+  __extension__						\
+  ({							\
+    int32_t __arg = (__a);				\
+    __builtin_sat_imm_check (__sat, 1, 32);		\
+    int32_t __res = __builtin_arm_ssat (__arg, __sat);	\
+    __res;						\
+  })
+
+#define __usat(__a, __sat)				\
+  __extension__						\
+  ({							\
+    int32_t __arg = (__a);				\
+    __builtin_sat_imm_check (__sat, 0, 31);		\
+    uint32_t __res = __builtin_arm_usat (__arg, __sat);	\
+    __res;						\
+  })
+
+#endif
+
+#ifdef __ARM_FEATURE_QBIT
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__ignore_saturation (void)
+{
+  /* ACLE designates this intrinsic as a hint.
+     Implement as a nop for now.  */
+}
+
+/* These are defined as macros because the implementation of the builtins
+   requires easy access to the current function so wrapping it in an
+   always_inline function complicates things.  */
+
+#define __saturation_occurred __builtin_arm_saturation_occurred
+
+#define __set_saturation_occurred(__a)			\
+  __extension__						\
+  ({							\
+    int __arg = (__a);					\
+    __builtin_arm_set_saturation (__arg);		\
+  })
+#endif
+
+#ifdef __ARM_FEATURE_DSP
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__qadd (int32_t __a, int32_t __b)
+{
+  return __builtin_arm_qadd (__a, __b);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__qsub (int32_t __a, int32_t __b)
+{
+  return __builtin_arm_qsub (__a, __b);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__qdbl (int32_t __x)
+{
+  return __qadd (__x, __x);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlabb (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlabb (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlatb (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlatb (__a, __b, __c);
+}
+
+/* smlatb is equivalent to smlabt with the two multiplication operands
+   swapped around.  */
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlabt (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __smlatb (__b, __a, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+__smlatt (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlatt (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlawb (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlawb (__a, __b, __c);
+}
+
+__extension__ extern __inline int32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlawt (int32_t __a, int32_t __b, int32_t __c)
+{
+  return __builtin_arm_smlawt (__a, __b, __c);
+}
+#endif
 
 #pragma GCC push_options
 #ifdef __ARM_FEATURE_CRC32

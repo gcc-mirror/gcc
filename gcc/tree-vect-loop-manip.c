@@ -2291,12 +2291,14 @@ slpeel_update_phi_nodes_for_guard2 (class loop *loop, class loop *epilog,
     {
       gphi *update_phi = gsi.phi ();
       tree old_arg = PHI_ARG_DEF (update_phi, 0);
-      /* This loop-closed-phi actually doesn't represent a use out of the
-	 loop - the phi arg is a constant.  */
-      if (TREE_CODE (old_arg) != SSA_NAME)
-	continue;
 
-      tree merge_arg = get_current_def (old_arg);
+      tree merge_arg = NULL_TREE;
+
+      /* If the old argument is a SSA_NAME use its current_def.  */
+      if (TREE_CODE (old_arg) == SSA_NAME)
+	merge_arg = get_current_def (old_arg);
+      /* If it's a constant or doesn't have a current_def, just use the old
+	 argument.  */
       if (!merge_arg)
 	merge_arg = old_arg;
 
@@ -2528,9 +2530,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	= eiters % lowest_vf + LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
 
       unsigned int ratio;
+      unsigned int epilogue_gaps
+	= LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
       while (!(constant_multiple_p (loop_vinfo->vector_size,
 				    epilogue_vinfo->vector_size, &ratio)
-	       && eiters >= lowest_vf / ratio))
+	       && eiters >= lowest_vf / ratio + epilogue_gaps))
 	{
 	  delete epilogue_vinfo;
 	  epilogue_vinfo = NULL;
@@ -2541,6 +2545,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	    }
 	  epilogue_vinfo = loop_vinfo->epilogue_vinfos[0];
 	  loop_vinfo->epilogue_vinfos.ordered_remove (0);
+	  epilogue_gaps = LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
 	}
     }
   /* Prolog loop may be skipped.  */
@@ -3166,8 +3171,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
     = LOOP_REQUIRES_VERSIONING_FOR_SIMD_IF_COND (loop_vinfo);
   unsigned th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
 
-  if (th >= vect_vf_for_cost (loop_vinfo)
-      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+  if (vect_apply_runtime_profitability_check_p (loop_vinfo)
       && !ordered_p (th, versioning_threshold))
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),

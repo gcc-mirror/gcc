@@ -152,6 +152,10 @@ public:
   /* The root of SLP tree.  */
   slp_tree root;
 
+  /* For vector constructors, the constructor stmt that the SLP tree is built
+     from, NULL otherwise.  */
+  stmt_vec_info root_stmt;
+
   /* Size of groups of scalar stmts that will be replaced by SIMD stmt/s.  */
   unsigned int group_size;
 
@@ -171,6 +175,7 @@ public:
 #define SLP_INSTANCE_GROUP_SIZE(S)               (S)->group_size
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
+#define SLP_INSTANCE_ROOT_STMT(S)                (S)->root_stmt
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
@@ -484,7 +489,7 @@ public:
 
   /* Threshold of number of iterations below which vectorization will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
-     PARAM_MIN_VECT_LOOP_BOUND.  */
+     param_min_vect_loop_bound.  */
   unsigned int th;
 
   /* When applying loop versioning, the vector form should only be used
@@ -1045,6 +1050,9 @@ public:
   /* The vector input type relevant for reduction vectorization.  */
   tree reduc_vectype_in;
 
+  /* The vector type for performing the actual reduction.  */
+  tree reduc_vectype;
+
   /* Whether we force a single cycle PHI during reduction vectorization.  */
   bool force_single_cycle;
 
@@ -1170,6 +1178,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_REDUC_CODE(S)	(S)->reduc_code
 #define STMT_VINFO_REDUC_FN(S)		(S)->reduc_fn
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
+#define STMT_VINFO_REDUC_VECTYPE(S)     (S)->reduc_vectype
 #define STMT_VINFO_REDUC_VECTYPE_IN(S)  (S)->reduc_vectype_in
 #define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
 
@@ -1547,6 +1556,17 @@ vect_get_scalar_dr_size (dr_vec_info *dr_info)
   return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_info->dr))));
 }
 
+/* Return true if LOOP_VINFO requires a runtime check for whether the
+   vector loop is profitable.  */
+
+inline bool
+vect_apply_runtime_profitability_check_p (loop_vec_info loop_vinfo)
+{
+  unsigned int th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
+  return (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  && th >= vect_vf_for_cost (loop_vinfo));
+}
+
 /* Source location + hotness information. */
 extern dump_user_location_t vect_location;
 
@@ -1641,6 +1661,7 @@ extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
 extern bool vect_transform_stmt (stmt_vec_info, gimple_stmt_iterator *,
 				 slp_tree, slp_instance);
 extern void vect_remove_stores (stmt_vec_info);
+extern bool vect_nop_conversion_p (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern void vect_get_load_cost (stmt_vec_info, int, bool,
@@ -1673,8 +1694,8 @@ extern opt_result vect_verify_datarefs_alignment (loop_vec_info);
 extern bool vect_slp_analyze_and_verify_instance_alignment (slp_instance);
 extern opt_result vect_analyze_data_ref_accesses (vec_info *);
 extern opt_result vect_prune_runtime_alias_test_list (loop_vec_info);
-extern bool vect_gather_scatter_fn_p (bool, bool, tree, tree, unsigned int,
-				      signop, int, internal_fn *, tree *);
+extern bool vect_gather_scatter_fn_p (vec_info *, bool, bool, tree, tree,
+				      tree, int, internal_fn *, tree *);
 extern bool vect_check_gather_scatter (stmt_vec_info, loop_vec_info,
 				       gather_scatter_info *);
 extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
@@ -1716,9 +1737,7 @@ extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 extern bool needs_fold_left_reduction_p (tree, tree_code);
 /* Drive for loop analysis stage.  */
-extern opt_loop_vec_info vect_analyze_loop (class loop *,
-					    loop_vec_info,
-					    vec_info_shared *);
+extern opt_loop_vec_info vect_analyze_loop (class loop *, vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);

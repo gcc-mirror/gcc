@@ -18,7 +18,7 @@ template<typename T> requires Bad<T> void bad(T x) { }
 
 void driver_2()
 {
-  bad(0); // { dg-error "cannot call" }
+  bad(0); // { dg-error "" }
 }
 
 // req6.C
@@ -41,8 +41,8 @@ void h2(T);
 
 void driver_3()
 {
-  h1(0); // { dg-error "cannot call" }
-  h2(0); // { dg-error "cannot call" } 
+  h1(0); // { dg-error "" }
+  h2(0); // { dg-error "" } 
 }
 
 // req7.C

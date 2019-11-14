@@ -228,15 +228,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_MFCRF 0
 #endif
 
-/* Define TARGET_TLS_MARKERS if the target assembler does not support
-   arg markers for __tls_get_addr calls.  */
-#ifndef HAVE_AS_TLS_MARKERS
-#undef  TARGET_TLS_MARKERS
-#define TARGET_TLS_MARKERS 0
-#else
-#define TARGET_TLS_MARKERS tls_markers
-#endif
-
 #ifndef TARGET_SECURE_PLT
 #define TARGET_SECURE_PLT 0
 #endif
@@ -1487,13 +1478,6 @@ enum rs6000_pltseq_enum {
 
 #define IS_V4_FP_ARGS(OP) \
   ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
-
-/* Whether OP is an UNSPEC used in !TARGET_TLS_MARKER calls.  */
-#define IS_NOMARK_TLSGETADDR(OP)		\
-  (!TARGET_TLS_MARKERS				\
-   && GET_CODE (OP) == UNSPEC			\
-   && (XINT (OP, 1) == UNSPEC_TLSGD		\
-       || XINT (OP, 1) == UNSPEC_TLSLD))
 
 /* We don't have prologue and epilogue functions to save/restore
    everything for most ABIs.  */

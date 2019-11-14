@@ -72,7 +72,7 @@ int caller2(void)
   return sum;
 }
 
-/* { dg-final { scan-ipa-dump-times "offset: 0, cst: 1" 1 "cp" } } */
-/* { dg-final { scan-ipa-dump-times "offset: 0, cst: 2" 1 "cp" } } */
-/* { dg-final { scan-ipa-dump-times "offset: 0, cst: 3" 1 "cp" } } */
-/* { dg-final { scan-ipa-dump-times "offset: 64, cst: 4" 1 "cp" } } */
+/* { dg-final { scan-ipa-dump-times "offset: 0, type: int, CONST: 1" 1 "cp" } } */
+/* { dg-final { scan-ipa-dump-times "offset: 0, type: int, CONST: 2" 1 "cp" } } */
+/* { dg-final { scan-ipa-dump-times "offset: 0, type: int, CONST: 3" 1 "cp" } } */
+/* { dg-final { scan-ipa-dump-times "offset: 64, type: int, CONST: 4" 1 "cp" } } */

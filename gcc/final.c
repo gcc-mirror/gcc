@@ -75,7 +75,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
@@ -657,7 +656,7 @@ compute_alignments (void)
     }
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   profile_count count_threshold = cfun->cfg->count_max.apply_scale
-		 (1, PARAM_VALUE (PARAM_ALIGN_THRESHOLD));
+		 (1, param_align_threshold);
 
   if (dump_file)
     {
@@ -743,7 +742,7 @@ compute_alignments (void)
 	  && branch_count + fallthru_count > count_threshold
 	  && (branch_count
 	      > fallthru_count.apply_scale
-		    (PARAM_VALUE (PARAM_ALIGN_LOOP_ITERATIONS), 1)))
+		    (param_align_loop_iterations, 1)))
 	{
 	  align_flags alignment = LOOP_ALIGN (label);
 	  if (dump_file)

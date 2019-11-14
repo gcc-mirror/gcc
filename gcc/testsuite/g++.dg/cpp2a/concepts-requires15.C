@@ -9,7 +9,7 @@ template<C T>
 void fun(T s) { }
 
 int main(int, char **) {
-  fun((int *)0); // { dg-error "cannot call function" }
+  fun((int *)0); // { dg-error "" }
   return 0;
 }
 

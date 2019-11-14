@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "tree-dfa.h"
 #include "profile.h"
-#include "params.h"
 #include "context.h"
 #include "gimplify.h"
 #include "stringpool.h"
@@ -196,6 +195,9 @@ delete_function_version (cgraph_function_version_info *decl_v)
 {
   if (decl_v == NULL)
     return;
+
+  if (version_info_node == decl_v)
+    version_info_node = NULL;
 
   if (decl_v->prev != NULL)
     decl_v->prev->next = decl_v->next;
@@ -878,19 +880,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->can_throw_external
     = call_stmt ? stmt_can_throw_external (DECL_STRUCT_FUNCTION (caller->decl),
 					   call_stmt) : false;
-  if (call_stmt
-      && callee && callee->decl
-      && !gimple_check_call_matching_types (call_stmt, callee->decl,
-					    false))
-    {
-      edge->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      edge->call_stmt_cannot_inline_p = true;
-    }
-  else
-    {
-      edge->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
-      edge->call_stmt_cannot_inline_p = false;
-    }
+  edge->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
+  edge->call_stmt_cannot_inline_p = false;
 
   if (opt_for_fn (edge->caller->decl, flag_devirtualize)
       && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
@@ -1056,8 +1047,8 @@ cgraph_edge::remove (void)
      call call_dest
 
    At this time the function just creates the direct call,
-   the referencd representing the if conditional and attaches
-   them all to the orginal indirect call statement.  
+   the reference representing the if conditional and attaches
+   them all to the original indirect call statement.  
 
    Return direct edge created.  */
 
@@ -1151,7 +1142,7 @@ cgraph_edge::speculative_call_info (cgraph_edge *&direct,
   gcc_assert (e && e2 && ref);
 }
 
-/* Speculative call edge turned out to be direct call to CALLE_DECL.
+/* Speculative call edge turned out to be direct call to CALLEE_DECL.
    Remove the speculative call sequence and return edge representing the call.
    It is up to caller to redirect the call as appropriate. */
 
@@ -1252,13 +1243,6 @@ cgraph_edge::make_direct (cgraph_node *callee)
   /* Insert to callers list of the new callee.  */
   edge->set_callee (callee);
 
-  if (call_stmt
-      && !gimple_check_call_matching_types (call_stmt, callee->decl, false))
-    {
-      call_stmt_cannot_inline_p = true;
-      inline_failed = CIF_MISMATCHED_ARGUMENTS;
-    }
-
   /* We need to re-determine the inlining status of the edge.  */
   initialize_inline_failed (edge);
   return edge;
@@ -1287,28 +1271,9 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	 substitution), forget about speculating.  */
       if (decl)
 	e = e->resolve_speculation (decl);
-      /* If types do not match, speculation was likely wrong. 
-         The direct edge was possibly redirected to the clone with a different
-	 signature.  We did not update the call statement yet, so compare it 
-	 with the reference that still points to the proper type.  */
-      else if (!gimple_check_call_matching_types (e->call_stmt,
-						  ref->referred->decl,
-						  true))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Not expanding speculative call of %s -> %s\n"
-		     "Type mismatch.\n",
-		     e->caller->dump_name (),
-		     e->callee->dump_name ());
-	  e = e->resolve_speculation ();
-	  /* We are producing the final function body and will throw away the
-	     callgraph edges really soon.  Reset the counts/frequencies to
-	     keep verifier happy in the case of roundoff errors.  */
-	  e->count = gimple_bb (e->call_stmt)->count;
-	}
-      /* Expand speculation into GIMPLE code.  */
       else
 	{
+	  /* Expand speculation into GIMPLE code.  */
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
@@ -2371,7 +2336,7 @@ set_nothrow_flag_1 (cgraph_node *node, bool nothrow, bool non_call,
   if (nothrow && !TREE_NOTHROW (node->decl))
     {
       /* With non-call exceptions we can't say for sure if other function body
-	 was not possibly optimized to stil throw.  */
+	 was not possibly optimized to still throw.  */
       if (!non_call || node->binds_to_current_def_p ())
 	{
 	  TREE_NOTHROW (node->decl) = true;
@@ -2579,7 +2544,7 @@ set_const_flag_1 (cgraph_node *node, bool set_const, bool looping,
    If SET_CONST if false, clear the flag.
 
    When setting the flag be careful about possible interposition and
-   do not set the flag for functions that can be interposet and set pure
+   do not set the flag for functions that can be interposed and set pure
    flag for functions that can bind to other definition. 
 
    Return true if any change was done. */
@@ -2731,14 +2696,18 @@ cgraph_edge::maybe_hot_p (void)
     return false;
   if (caller->frequency == NODE_FREQUENCY_HOT)
     return true;
-  /* If profile is now known yet, be conservative.
-     FIXME: this predicate is used by early inliner and can do better there.  */
-  if (symtab->state < IPA_SSA)
+  if (!count.initialized_p ())
     return true;
-  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && sreal_frequency () * 2 < 3)
+  cgraph_node *where = caller->inlined_to ? caller->inlined_to : caller;
+  if (!where->count.initialized_p ())
     return false;
-  if (sreal_frequency () * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) <= 1)
+  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE)
+    {
+      if (count.apply_scale (2, 1) < where->count.apply_scale (3, 1))
+	return false;
+    }
+  else if (count.apply_scale (param_hot_bb_frequency_fraction , 1)
+	   < where->count)
     return false;
   return true;
 }
@@ -2773,7 +2742,7 @@ cgraph_node::can_remove_if_no_direct_calls_p (bool will_inline)
   if (will_inline && address_taken)
     return false;
 
-  /* Otheriwse check if we can remove the symbol itself and then verify
+  /* Otherwise check if we can remove the symbol itself and then verify
      that only uses of the comdat groups are direct call to THIS
      or its aliases.   */
   if (!can_remove_if_no_direct_calls_and_refs_p ())
@@ -3635,102 +3604,6 @@ cgraph_node::get_fun () const
   return fun;
 }
 
-/* Verify if the type of the argument matches that of the function
-   declaration.  If we cannot verify this or there is a mismatch,
-   return false.  */
-
-static bool
-gimple_check_call_args (gimple *stmt, tree fndecl, bool args_count_match)
-{
-  tree parms, p;
-  unsigned int i, nargs;
-
-  /* Calls to internal functions always match their signature.  */
-  if (gimple_call_internal_p (stmt))
-    return true;
-
-  nargs = gimple_call_num_args (stmt);
-
-  /* Get argument types for verification.  */
-  if (fndecl)
-    parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-  else
-    parms = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
-
-  /* Verify if the type of the argument matches that of the function
-     declaration.  If we cannot verify this or there is a mismatch,
-     return false.  */
-  if (fndecl && DECL_ARGUMENTS (fndecl))
-    {
-      for (i = 0, p = DECL_ARGUMENTS (fndecl);
-	   i < nargs;
-	   i++, p = DECL_CHAIN (p))
-	{
-	  tree arg;
-	  /* We cannot distinguish a varargs function from the case
-	     of excess parameters, still deferring the inlining decision
-	     to the callee is possible.  */
-	  if (!p)
-	    break;
-	  arg = gimple_call_arg (stmt, i);
-	  if (p == error_mark_node
-	      || DECL_ARG_TYPE (p) == error_mark_node
-	      || arg == error_mark_node
-	      || (!types_compatible_p (DECL_ARG_TYPE (p), TREE_TYPE (arg))
-		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))
-            return false;
-	}
-      if (args_count_match && p)
-	return false;
-    }
-  else if (parms)
-    {
-      for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
-	{
-	  tree arg;
-	  /* If this is a varargs function defer inlining decision
-	     to callee.  */
-	  if (!p)
-	    break;
-	  arg = gimple_call_arg (stmt, i);
-	  if (TREE_VALUE (p) == error_mark_node
-	      || arg == error_mark_node
-	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
-	      || (!types_compatible_p (TREE_VALUE (p), TREE_TYPE (arg))
-		  && !fold_convertible_p (TREE_VALUE (p), arg)))
-            return false;
-	}
-    }
-  else
-    {
-      if (nargs != 0)
-        return false;
-    }
-  return true;
-}
-
-/* Verify if the type of the argument and lhs of CALL_STMT matches
-   that of the function declaration CALLEE. If ARGS_COUNT_MATCH is
-   true, the arg count needs to be the same.
-   If we cannot verify this or there is a mismatch, return false.  */
-
-bool
-gimple_check_call_matching_types (gimple *call_stmt, tree callee,
-				  bool args_count_match)
-{
-  tree lhs;
-
-  if ((DECL_RESULT (callee)
-       && !DECL_BY_REFERENCE (DECL_RESULT (callee))
-       && (lhs = gimple_call_lhs (call_stmt)) != NULL_TREE
-       && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
-                                      TREE_TYPE (lhs))
-       && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
-      || !gimple_check_call_args (call_stmt, callee, args_count_match))
-    return false;
-  return true;
-}
-
 /* Reset all state within cgraph.c so that we can rerun the compiler
    within the same process.  For use by toplev::finalize.  */
 
@@ -3745,7 +3618,7 @@ cgraph_c_finalize (void)
   version_info_node = NULL;
 }
 
-/* A wroker for call_for_symbol_and_aliases.  */
+/* A worker for call_for_symbol_and_aliases.  */
 
 bool
 cgraph_node::call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
@@ -3800,13 +3673,14 @@ cgraph_edge::possibly_call_in_translation_unit_p (void)
   if (flag_incremental_link == INCREMENTAL_LINK_LTO)
     return true;
 
-  /* We may be smarter here and avoid stremaing in indirect calls we can't
-     track, but that would require arranging stremaing the indirect call
+  /* We may be smarter here and avoid streaming in indirect calls we can't
+     track, but that would require arranging streaming the indirect call
      summary first.  */
   if (!callee)
     return true;
 
-  /* If calle is local to the original translation unit, it will be defined.  */
+  /* If callee is local to the original translation unit, it will be
+     defined.  */
   if (!TREE_PUBLIC (callee->decl) && !DECL_EXTERNAL (callee->decl))
     return true;
 

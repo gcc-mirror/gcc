@@ -505,6 +505,9 @@ avr-*-*)
 	    tmake_file="$tmake_file ${cpu_type}/t-avrlibc"
 	fi
 	tm_file="$tm_file avr/avr-lib.h"
+	if test x${with_fixed_point} = xno; then
+	    fixed_point=no
+	fi
 	;;
 bfin*-elf*)
 	tmake_file="bfin/t-bfin bfin/t-crtlibid bfin/t-crtstuff t-libgcc-pic t-fdpbit"

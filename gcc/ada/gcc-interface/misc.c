@@ -54,9 +54,6 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-/* This symbol needs to be defined for the front-end.  */
-void *callgraph_info_file = NULL;
-
 /* Command-line argc and argv.  These variables are global since they are
    imported in back_end.adb.  */
 unsigned int save_argc;

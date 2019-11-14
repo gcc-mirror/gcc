@@ -1,3 +1,156 @@
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_procedure_call): Fold hidden
+	is-present argument to the right type.
+
+2019-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81651
+	* module.c (gzopen_included_file, gzopen_included_file_1)
+	(gzopen_intrinsic_module, bad_module, gfc_use_module): Use fully
+	qualified module path for error reporting.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* options.c (gfc_init_options):
+	Use SET_OPTION_IF_UNSET.
+
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/fortran/
+	* gfortran.h (gfc_statement): Add ST_OACC_SERIAL_LOOP,
+	ST_OACC_END_SERIAL_LOOP, ST_OACC_SERIAL and ST_OACC_END_SERIAL
+	enumeration constants.
+	(gfc_exec_op): Add EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL
+	enumeration constants.
+	* match.h (gfc_match_oacc_serial): New prototype.
+	(gfc_match_oacc_serial_loop): Likewise.
+	* dump-parse-tree.c (show_omp_node, show_code_node): Handle
+	EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* match.c (match_exit_cycle): Handle EXEC_OACC_SERIAL_LOOP.
+	* openmp.c (OACC_SERIAL_CLAUSES): New macro.
+	(gfc_match_oacc_serial_loop): New function.
+	(gfc_match_oacc_serial): Likewise.
+	(oacc_is_loop): Handle EXEC_OACC_SERIAL_LOOP.
+	(resolve_omp_clauses): Handle EXEC_OACC_SERIAL.
+	(oacc_code_to_statement): Handle EXEC_OACC_SERIAL and
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_resolve_oacc_directive): Likewise.
+	* parse.c (decode_oacc_directive) <'s'>: Add case for "serial"
+	and "serial loop".
+	(next_statement): Handle ST_OACC_SERIAL_LOOP and ST_OACC_SERIAL.
+	(gfc_ascii_statement): Likewise.  Handle ST_OACC_END_SERIAL_LOOP
+	and ST_OACC_END_SERIAL.
+	(parse_oacc_structured_block): Handle ST_OACC_SERIAL.
+	(parse_oacc_loop): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_END_SERIAL_LOOP.
+	(parse_executable): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_SERIAL.
+	(is_oacc): Handle EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* resolve.c (gfc_resolve_blocks, gfc_resolve_code): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_oacc_construct): Handle
+	EXEC_OACC_SERIAL.
+	(gfc_trans_oacc_combined_directive): Handle
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_trans_oacc_directive): Handle EXEC_OACC_SERIAL_LOOP and
+	EXEC_OACC_SERIAL.
+	* trans.c (trans_code): Likewise.
+
+2019-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/91828
+	* simplify.c (gfc_simplify_fraction): Remove fallback path for
+	MPFR < 3.1.0.
+
+2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_expr_present): Check for DECL_ARTIFICIAL
+	for the VALUE hidden argument avoiding -fallow-underscore issues.
+	* trans-decl.c (create_function_arglist): Also set
+	GFC_DECL_OPTIONAL_ARGUMENT for per-value arguments.
+	* f95-lang.c (LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT):
+	Renamed from LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT; point
+	to gfc_omp_check_optional_argument.
+	* trans.h (gfc_omp_check_optional_argument): Subsitutes
+	gfc_omp_is_optional_argument declaration.
+	* trans-openmp.c (gfc_omp_is_optional_argument): Make static.
+	(gfc_omp_check_optional_argument): New function.
+
+2019-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/91413
+	* trans-decl.c (gfc_finish_var_decl): Don't print warning when
+	-fno-automatic is enabled.
+
+2019-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92123
+	*decl.c (gfc_verify_c_interop_param): Remove error asserting
+	that pointer or allocatable variables in a bind C procedure are
+	not supported. Delete some trailing spaces.
+	* trans-stmt.c (trans_associate_var): Correct the attempt to
+	treat scalar pointer or allocatable temporaries as if they are
+	array descriptors.
+
+2019-11-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92321
+	* frontend-passes.c (call_external_blas): Commit symbol for
+	external BLAS routine.
+
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* arith.c (character2representation): Change i type to size_t.
+
+2019-11-08  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* arith.c (hollerith2representation): Use OPT_Wcharacter_truncation in
+	call to gfc_warning.
+	(character2representation, gfc_character2int, gfc_character2real,
+	gfc_character2complex and gfc_character2logical): New.
+	* arith.h (gfc_character2int, gfc_character2real, gfc_character2complex,
+	gfc_character2logical): Declare.
+	* expr.c (gfc_check_assign): Return true if left hand side is numeric
+	or logical and the right hand side is character and of kind=1.
+	* gfortran.texi: Add -fdec-char-conversions.
+	* intrinsic.c (add_conversions): Add conversions from character to
+	integer, real, complex and logical types for their supported kinds.
+	(gfc_convert_type_warn): Reorder if..else if.. sequence so that warnings
+	are produced for conversion to logical.
+	* invoke.texi: Add option to list of options.
+	* invoke.texi: Add Character conversion subsection to Extensions
+	section.
+	* lang.opt: Add new option.
+	* options.c (set_dec_flags): Add SET_BITFLAG for
+	flag_dec_char_conversions.
+	* resolve.c (resolve_ordindary_assign): Issue error if the left hand
+	side is numeric or logical and the right hand side is a character
+	variable.
+	* simplify.c (gfc_convert_constant): Assign the conversion function
+	depending on destination type.
+	* trans-const.c (gfc_constant_to_tree): Use OPT_Wsurprising in
+	gfc_warning allowing the warning to be switched off only if
+	flag_dec_char_conversions is enabled.
+
+2019-11-08  Tobias Burnus  <tobias@codesourcery.com
+
+	PR fortran/91253
+	* scanner.c (skip_fixed_comments): Move comment
+	lines to next if block.
+	(gfc_next_char_literal): Fix continue_line setting.
+	(get_file): Remove bogus ATTRIBUTE_UNUSED.
+
+2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io.c (check_format): Allow zero width for D, E, EN, and ES
+	specifiers as default and when -std=F2018 is given. Retain
+	existing errors when using the -fdec family of flags.
+
 2019-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92113

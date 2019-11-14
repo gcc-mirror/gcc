@@ -4,8 +4,8 @@
 
 
 const static char16_t	c0 = u'';		/* { dg-error "empty character" } */
-const static char16_t	c1 = u'ab';		/* { dg-warning "constant too long" } */
-const static char16_t	c2 = u'\U00064321';	/* { dg-warning "constant too long" } */
+const static char16_t	c1 = u'ab';		/* { dg-error "constant too long" } */
+const static char16_t	c2 = u'\U00064321';	/* { dg-error "constant too long" } */
 
 const static char16_t	c3 = 'a';
 const static char16_t	c4 = U'a';

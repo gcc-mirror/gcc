@@ -390,6 +390,55 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   cpp_define (pfile, "__WITH_AVRLIBC__");
 #endif /* WITH_AVRLIBC */
 
+  // From configure --with-double={|32|32,64|64,32|64}
+
+#ifdef HAVE_DOUBLE_MULTILIB
+  cpp_define (pfile, "__HAVE_DOUBLE_MULTILIB__");
+#endif
+
+#ifdef HAVE_DOUBLE64
+  cpp_define (pfile, "__HAVE_DOUBLE64__");
+#endif
+
+#ifdef HAVE_DOUBLE32
+  cpp_define (pfile, "__HAVE_DOUBLE32__");
+#endif
+
+#if defined (WITH_DOUBLE64)
+  cpp_define (pfile, "__DEFAULT_DOUBLE__=64");
+#elif defined (WITH_DOUBLE32)
+  cpp_define (pfile, "__DEFAULT_DOUBLE__=32");
+#else
+#error "align this with config.gcc"
+#endif
+
+  // From configure --with-long-double={|32|32,64|64,32|64|double}
+
+#ifdef HAVE_LONG_DOUBLE_MULTILIB
+  cpp_define (pfile, "__HAVE_LONG_DOUBLE_MULTILIB__");
+#endif
+
+#ifdef HAVE_LONG_DOUBLE64
+  cpp_define (pfile, "__HAVE_LONG_DOUBLE64__");
+#endif
+
+#ifdef HAVE_LONG_DOUBLE32
+  cpp_define (pfile, "__HAVE_LONG_DOUBLE32__");
+#endif
+
+#ifdef HAVE_LONG_DOUBLE_IS_DOUBLE
+  cpp_define (pfile, "__HAVE_LONG_DOUBLE_IS_DOUBLE__");
+#endif
+
+#if defined (WITH_LONG_DOUBLE64)
+  cpp_define (pfile, "__DEFAULT_LONG_DOUBLE__=64");
+#elif defined (WITH_LONG_DOUBLE32)
+  cpp_define (pfile, "__DEFAULT_LONG_DOUBLE__=32");
+#else
+#error "align this with config.gcc"
+#endif
+
+  
   /* Define builtin macros so that the user can easily query whether
      non-generic address spaces (and which) are supported or not.
      This is only supported for C.  For C++, a language extension is needed

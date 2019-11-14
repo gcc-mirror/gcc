@@ -91,6 +91,10 @@ OPTAB_CD(vec_cmpu_optab, "vec_cmpu$a$b")
 OPTAB_CD(vec_cmpeq_optab, "vec_cmpeq$a$b")
 OPTAB_CD(maskload_optab, "maskload$a$b")
 OPTAB_CD(maskstore_optab, "maskstore$a$b")
+OPTAB_CD(gather_load_optab, "gather_load$a$b")
+OPTAB_CD(mask_gather_load_optab, "mask_gather_load$a$b")
+OPTAB_CD(scatter_store_optab, "scatter_store$a$b")
+OPTAB_CD(mask_scatter_store_optab, "mask_scatter_store$a$b")
 OPTAB_CD(vec_extract_optab, "vec_extract$a$b")
 OPTAB_CD(vec_init_optab, "vec_init$a$b")
 
@@ -424,11 +428,6 @@ OPTAB_D (atomic_xor_optab, "atomic_xor$I$a")
 
 OPTAB_D (get_thread_pointer_optab, "get_thread_pointer$I$a")
 OPTAB_D (set_thread_pointer_optab, "set_thread_pointer$I$a")
-
-OPTAB_D (gather_load_optab, "gather_load$a")
-OPTAB_D (mask_gather_load_optab, "mask_gather_load$a")
-OPTAB_D (scatter_store_optab, "scatter_store$a")
-OPTAB_D (mask_scatter_store_optab, "mask_scatter_store$a")
 
 OPTAB_DC (vec_duplicate_optab, "vec_duplicate$a", VEC_DUPLICATE)
 OPTAB_DC (vec_series_optab, "vec_series$a", VEC_SERIES)

@@ -63,11 +63,6 @@ private:
      it's set to NULL.  */
   void build_option_suggestions (const char *prefix);
 
-  /* Find parameter completions for --param format with SEPARATOR.
-     Again, save the completions into results.  */
-  void find_param_completions (const char separator, const char *param_prefix,
-			       auto_string_vec &results);
-
 private:
   /* Cache with all suggestions.  */
   auto_string_vec *m_option_suggestions;

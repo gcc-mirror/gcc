@@ -1,3 +1,64 @@
+2019-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (strong_order, weak_order, partial_order)
+	(compare_strong_order_fallback, compare_weak_order_fallback)
+	(compare_partial_order_fallback): Define customization point objects
+	for C++20.
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc: New
+	test.
+	* testsuite/18_support/comparisons/algorithms/strong_order.cc: New
+	test.
+	* testsuite/18_support/comparisons/algorithms/weak_order.cc: New test.
+
+2019-11-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/gnu/gpl-3.0.xml: Adjust link to "Why not LGPL".
+
+2019-11-10  Gerald Pfeifer  <gerald@pfeifer.com>
+	
+	* doc/xml/manual/using.xml: Switch www.hboehm.info to https.
+
+2019-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add <compare> header.
+	* include/precompiled/stdc++.h: Include <compare> header.
+
+	* libsupc++/compare (common_comparison_category)
+	(common_comparison_category_t): Define for C++20.
+	* testsuite/18_support/comparisons/common/1.cc: New test.
+
+	* include/bits/stl_algo.h (for_each_n): Handle negative count.
+	* testsuite/25_algorithms/for_each/for_each_n_debug.cc: New test.
+
+2019-11-07  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/compare: Remove strong_equality and weak_equality.
+
+2019-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/compare (__3way_builtin_ptr_cmp): Define helper.
+	(compare_three_way): Add missing implementation.
+
+	* include/bits/iterator_concepts.h (unreachable_sentinel_t): Remove
+	redundant equality operators.
+	* testsuite/util/testsuite_iterators.h (test_range::sentinel):
+	Likewise.
+
+2019-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare: New header.
+	* libsupc++/Makefile.am (std_HEADERS): Add compare.
+	* include/std/version: Define __cpp_lib_three_way_comparison.
+	* include/std/functional: #include <compare>.
+
+	* include/std/version [!_GLIBCXX_HOSTED]: Do not define feature test
+	macros for features that are only present in hosted builds.
+
+	* include/bits/iterator_concepts.h (__iter_without_nested_types):
+	Remove incorrect comment.
+
 2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/html/*: Regenerate.

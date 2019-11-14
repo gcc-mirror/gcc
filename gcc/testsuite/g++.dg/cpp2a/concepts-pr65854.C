@@ -19,4 +19,4 @@ template<typename T1, typename T2>
   requires C<T1, T2>
 int f();
 
-auto i = f<char, int>(); // { dg-error "cannot call function" }
+auto i = f<char, int>(); // { dg-error "" }

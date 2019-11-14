@@ -37,7 +37,7 @@ extern struct t_msp430_mcu_data hard_msp430_mcu_data[605];
 
 /* Set to the full path to devices.csv if it is found by searching the -I and
    -L paths.  */
-char * derived_devices_csv_loc = NULL;
+char *derived_devices_csv_loc = NULL;
 
 /* This is to canonicalize the directory separators in the path.
    On Windows we could have a mix of '/' and '\' in the path.  */
@@ -50,6 +50,128 @@ canonicalize_path_dirsep (char **path)
   for (i = 0; i < len; i++)
     if (IS_DIR_SEPARATOR (t_path[i]))
       t_path[i] = DIR_SEPARATOR;
+}
+
+/* This function returns the enclosing directory of PATH.
+   It is inconsequential whether PATH ends in a dirsep or not.
+   It modifies the string pointed to by PATH.  */
+char *
+msp430_dirname (char *path)
+{
+  int last_elem = strlen (path) - 1;
+  int i = last_elem - (IS_DIR_SEPARATOR (path[last_elem]) ? 1 : 0);
+  for (; i >= 0; i--)
+    {
+      if (IS_DIR_SEPARATOR (path[i]))
+	{
+	  path[i] = '\0';
+	  return path;
+	}
+    }
+  return path;
+}
+
+/* devices.csv path from the toolchain root.  */
+static const char rest_of_devices_path[] = "/msp430-elf/include/devices/";
+
+/* "The default value of GCC_EXEC_PREFIX is prefix/lib/gcc". Strip lib/gcc
+   from GCC_EXEC_PREFIX to get the path to the installed toolchain.  */
+static void
+extract_devices_dir_from_exec_prefix (char **devices_loc)
+{
+  const char *temp;
+  char *gcc_exec_prefix = *devices_loc;
+  int len = strlen (gcc_exec_prefix);
+
+  /* Copied from gcc.c.  */
+  if (len > (int) sizeof ("/lib/gcc/") - 1
+      && (IS_DIR_SEPARATOR (gcc_exec_prefix[len-1])))
+    {
+      temp = gcc_exec_prefix + len - sizeof ("/lib/gcc/") + 1;
+      if (IS_DIR_SEPARATOR (*temp)
+	  && filename_ncmp (temp + 1, "lib", 3) == 0
+	  && IS_DIR_SEPARATOR (temp[4])
+	  && filename_ncmp (temp + 5, "gcc", 3) == 0)
+	{
+	  len -= sizeof ("/lib/gcc/") - 1;
+	  /* Keep the '/' from the beginning of /lib/gcc.  */
+	  gcc_exec_prefix[len + 1] = (char) 0;
+	  *devices_loc = concat (gcc_exec_prefix, rest_of_devices_path, NULL);
+	  return;
+	}
+    }
+}
+
+/* Given the path to the GCC executable, return the path to the installed
+   device data in "$TOOLCHAIN_ROOT/msp430-elf/include/devices".
+   Assumes the GCC executable is in "$TOOLCHAIN_ROOT/<somedir>/".  */
+static void
+extract_devices_dir_from_collect_gcc (char **devices_loc)
+{
+  char *t_devices_loc = *devices_loc;
+  /* Go up a directory to the toolchain root.  */
+  t_devices_loc = msp430_dirname (msp430_dirname (t_devices_loc));
+  t_devices_loc = concat (t_devices_loc, rest_of_devices_path, NULL);
+  *devices_loc = t_devices_loc;
+}
+
+/* The path to the MSP430-GCC support files can be specified with the
+   environment variable "MSP430_GCC_INCLUDE_DIR", or installed into the
+   toolchain in the msp430-elf/include/devices subdirectory.
+   We use the GCC_EXEC_PREFIX or COLLECT_GCC environment variables as a starting
+   point for the location of the toolchain, and work out the path to the
+   installed device data from there.
+   Return 0 and set LOCAL_DEVICES_CSV_LOC if we find devices.csv.  Return 1
+   if devices.csv wasn't found.  */
+int
+msp430_check_env_var_for_devices (char **local_devices_csv_loc)
+{
+  const int num_vars = 3;
+  const char dirsep[2] = { DIR_SEPARATOR, 0 };
+  /* Both GCC_EXEC_PREFIX and COLLECT_GCC should always be set to the format we
+     expect, as they are required for correct operation of the toolchain.
+     So if they are wrong the user will probably have bigger problems.
+     GCC_EXEC_PREFIX is only defined in the driver, whilst COLLECT_GCC is only
+     defined in the compiler proper, so we need both.  */
+  const char *env_vars[num_vars] = {
+      "MSP430_GCC_INCLUDE_DIR", "GCC_EXEC_PREFIX", "COLLECT_GCC" };
+  enum msp430_include_vars {
+      MSP430_GCC_INCLUDE_DIR,
+      GCC_EXEC_PREFIX,
+      COLLECT_GCC
+  };
+  FILE *devices_csv_file = NULL;
+  int i;
+
+  for (i = MSP430_GCC_INCLUDE_DIR; i <= COLLECT_GCC; i++)
+    {
+      char *t_devices_loc;
+      char *val = getenv (env_vars[i]);
+      if (val == NULL)
+	continue;
+      t_devices_loc = xstrdup (val);
+
+      if (i == MSP430_GCC_INCLUDE_DIR)
+	{
+	  if (!IS_DIR_SEPARATOR (t_devices_loc[strlen (t_devices_loc) - 1]))
+	    t_devices_loc = concat (t_devices_loc, dirsep, NULL);
+	}
+      else if (i == GCC_EXEC_PREFIX)
+	extract_devices_dir_from_exec_prefix (&t_devices_loc);
+      else if (i == COLLECT_GCC)
+	extract_devices_dir_from_collect_gcc (&t_devices_loc);
+
+      t_devices_loc = concat (t_devices_loc, "devices.csv", NULL);
+      devices_csv_file = fopen (t_devices_loc,  "r");
+      if (devices_csv_file != NULL)
+	{
+	  fclose (devices_csv_file);
+	  *local_devices_csv_loc = t_devices_loc;
+	  canonicalize_path_dirsep (local_devices_csv_loc);
+	  return 0;
+	}
+    }
+  return 1;
 }
 
 /* Spec function which searches the paths passed to the -I and -L options for
@@ -69,7 +191,7 @@ msp430_check_path_for_devices (int argc, const char **argv)
     return NULL;
   for (i = 0; i < argc; i++)
     {
-      char *inc_path = ASTRDUP (argv[i]);
+      char *inc_path = xstrdup (argv[i]);
       canonicalize_path_dirsep (&inc_path);
       if (!IS_DIR_SEPARATOR (inc_path[strlen (inc_path) - 1]))
 	inc_path = concat (inc_path, dirsep, NULL);
@@ -274,8 +396,11 @@ parse_devices_csv (const char * mcu_name)
   /* Otherwise check if the path to devices.csv was found another way.  */
   else if (derived_devices_csv_loc != NULL)
     return parse_devices_csv_1 (derived_devices_csv_loc, mcu_name);
-  /* devices.csv was not found.  */
-  return 2;
+  /* Otherwise we need to use environment variables to try and find it.  */
+  if (msp430_check_env_var_for_devices (&derived_devices_csv_loc))
+    /* devices.csv was not found.  */
+    return 2;
+  return parse_devices_csv_1 (derived_devices_csv_loc, mcu_name);
 }
 
 /* Main entry point to load the MCU data for the given -mmcu into

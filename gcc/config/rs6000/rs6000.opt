@@ -246,10 +246,6 @@ mavoid-indexed-addresses
 Target Report Var(TARGET_AVOID_XFORM) Init(-1) Save
 Avoid generation of indexed load/store instructions when possible.
 
-mtls-markers
-Target Report Var(tls_markers) Init(1) Save
-Mark __tls_get_addr calls with argument info.
-
 msched-epilog
 Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1) Save
 
@@ -500,6 +496,10 @@ Generate aggregate parameter passing code with at most 64-bit alignment.
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
+
+munroll-only-small-loops
+Target Undocumented Var(unroll_only_small_loops) Init(0) Save
+; Use conservative small loop unrolling.
 
 mpower9-misc
 Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)

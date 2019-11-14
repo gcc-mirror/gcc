@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "cfgloop.h"
 #include "tree-data-ref.h"
-#include "params.h"
 #include "dumpfile.h"
 #include "tree-vectorizer.h"
 #include "graphite.h"
@@ -64,7 +63,7 @@ get_schedule_for_node_st (__isl_take isl_schedule_node *node, void *user)
   if (type != isl_schedule_node_leaf)
     return node;
 
-  long tile_size = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
+  long tile_size = param_loop_block_tile_size;
   if (dims <= 1
       || tile_size == 0
       || !isl_schedule_node_band_get_permutable (node))
@@ -115,7 +114,7 @@ optimize_isl (scop_p scop)
 {
   int old_err = isl_options_get_on_error (scop->isl_context);
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
-  int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
+  int max_operations = param_max_isl_operations;
   if (max_operations)
     isl_ctx_set_max_operations (scop->isl_context, max_operations);
   isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);

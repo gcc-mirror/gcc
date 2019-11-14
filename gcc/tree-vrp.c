@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "target.h"
 #include "case-cfn-macros.h"
-#include "params.h"
 #include "alloc-pool.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
@@ -69,17 +68,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "range-op.h"
 
-static bool
-ranges_from_anti_range (const value_range_base *ar,
-			value_range_base *vr0, value_range_base *vr1,
-			bool handle_pointers = false);
-
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
 static sbitmap *live;
 
 void
-value_range::set_equiv (bitmap equiv)
+value_range_equiv::set_equiv (bitmap equiv)
 {
   if (undefined_p () || varying_p ())
     equiv = NULL;
@@ -104,70 +98,35 @@ value_range::set_equiv (bitmap equiv)
 /* Initialize value_range.  */
 
 void
-value_range::set (enum value_range_kind kind, tree min, tree max,
-		  bitmap equiv)
+value_range_equiv::set (tree min, tree max, bitmap equiv,
+			value_range_kind kind)
 {
-  value_range_base::set (kind, min, max);
+  value_range::set (min, max, kind);
   set_equiv (equiv);
   if (flag_checking)
     check ();
 }
 
-value_range_base::value_range_base (value_range_kind kind, tree min, tree max)
-{
-  set (kind, min, max);
-}
-
-value_range::value_range (value_range_kind kind, tree min, tree max,
-			  bitmap equiv)
+value_range_equiv::value_range_equiv (tree min, tree max, bitmap equiv,
+				      value_range_kind kind)
 {
   m_equiv = NULL;
-  set (kind, min, max, equiv);
+  set (min, max, equiv, kind);
 }
 
-value_range::value_range (const value_range_base &other)
+value_range_equiv::value_range_equiv (const value_range &other)
 {
   m_equiv = NULL;
-  set (other.kind (), other.min(), other.max (), NULL);
-}
-
-value_range_base::value_range_base (tree type)
-{
-  set_varying (type);
-}
-
-value_range_base::value_range_base (enum value_range_kind kind,
-				    tree type,
-				    const wide_int &wmin,
-				    const wide_int &wmax)
-{
-  tree min = wide_int_to_tree (type, wmin);
-  tree max = wide_int_to_tree (type, wmax);
-  gcc_checking_assert (kind == VR_RANGE || kind == VR_ANTI_RANGE);
-  set (kind, min, max);
-}
-
-value_range_base::value_range_base (tree type,
-				    const wide_int &wmin,
-				    const wide_int &wmax)
-{
-  tree min = wide_int_to_tree (type, wmin);
-  tree max = wide_int_to_tree (type, wmax);
-  set (VR_RANGE, min, max);
-}
-
-value_range_base::value_range_base (tree min, tree max)
-{
-  set (VR_RANGE, min, max);
+  set (other.min(), other.max (), NULL, other.kind ());
 }
 
 /* Like set, but keep the equivalences in place.  */
 
 void
-value_range::update (value_range_kind kind, tree min, tree max)
+value_range_equiv::update (tree min, tree max, value_range_kind kind)
 {
-  set (kind, min, max,
-       (kind != VR_UNDEFINED && kind != VR_VARYING) ? m_equiv : NULL);
+  set (min, max,
+       (kind != VR_UNDEFINED && kind != VR_VARYING) ? m_equiv : NULL, kind);
 }
 
 /* Copy value_range in FROM into THIS while avoiding bitmap sharing.
@@ -177,59 +136,23 @@ value_range::update (value_range_kind kind, tree min, tree max)
    object.  Use the constructors for initialization.  */
 
 void
-value_range::deep_copy (const value_range *from)
+value_range_equiv::deep_copy (const value_range_equiv *from)
 {
-  set (from->m_kind, from->min (), from->max (), from->m_equiv);
+  set (from->min (), from->max (), from->m_equiv, from->m_kind);
 }
 
 void
-value_range::move (value_range *from)
+value_range_equiv::move (value_range_equiv *from)
 {
-  set (from->m_kind, from->min (), from->max ());
+  set (from->min (), from->max (), NULL, from->m_kind);
   m_equiv = from->m_equiv;
   from->m_equiv = NULL;
 }
 
-/* Check the validity of the range.  */
-
 void
-value_range_base::check ()
+value_range_equiv::check ()
 {
-  switch (m_kind)
-    {
-    case VR_RANGE:
-    case VR_ANTI_RANGE:
-      {
-	int cmp;
-
-	gcc_assert (m_min && m_max);
-
-	gcc_assert (!TREE_OVERFLOW_P (m_min) && !TREE_OVERFLOW_P (m_max));
-
-	/* Creating ~[-MIN, +MAX] is stupid because that would be
-	   the empty set.  */
-	if (INTEGRAL_TYPE_P (TREE_TYPE (m_min)) && m_kind == VR_ANTI_RANGE)
-	  gcc_assert (!vrp_val_is_min (m_min) || !vrp_val_is_max (m_max));
-
-	cmp = compare_values (m_min, m_max);
-	gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
-	break;
-      }
-    case VR_UNDEFINED:
-      gcc_assert (!min () && !max ());
-      break;
-    case VR_VARYING:
-      gcc_assert (m_min && m_max);
-      break;
-    default:
-      gcc_unreachable ();
-    }
-}
-
-void
-value_range::check ()
-{
-  value_range_base::check ();
+  value_range::check ();
   switch (m_kind)
     {
     case VR_UNDEFINED:
@@ -239,102 +162,45 @@ value_range::check ()
     }
 }
 
-/* Equality operator.  We purposely do not overload ==, to avoid
-   confusion with the equality bitmap in the derived value_range
-   class.  */
+/* Return true if the bitmaps B1 and B2 are equal.  */
 
-bool
-value_range_base::equal_p (const value_range_base &other) const
+static bool
+vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 {
-  /* Ignore types for undefined.  All undefines are equal.  */
-  if (undefined_p ())
-    return m_kind == other.m_kind;
-
-  return (m_kind == other.m_kind
-	  && vrp_operand_equal_p (m_min, other.m_min)
-	  && vrp_operand_equal_p (m_max, other.m_max));
+  return (b1 == b2
+	  || ((!b1 || bitmap_empty_p (b1))
+	      && (!b2 || bitmap_empty_p (b2)))
+	  || (b1 && b2
+	      && bitmap_equal_p (b1, b2)));
 }
 
 /* Returns TRUE if THIS == OTHER.  Ignores the equivalence bitmap if
    IGNORE_EQUIVS is TRUE.  */
 
 bool
-value_range::equal_p (const value_range &other, bool ignore_equivs) const
+value_range_equiv::equal_p (const value_range_equiv &other,
+			    bool ignore_equivs) const
 {
-  return (value_range_base::equal_p (other)
+  return (value_range::equal_p (other)
 	  && (ignore_equivs
 	      || vrp_bitmap_equal_p (m_equiv, other.m_equiv)));
 }
 
-/* Return TRUE if this is a symbolic range.  */
-
-bool
-value_range_base::symbolic_p () const
+void
+value_range_equiv::set_undefined ()
 {
-  return (!varying_p ()
-	  && !undefined_p ()
-	  && (!is_gimple_min_invariant (m_min)
-	      || !is_gimple_min_invariant (m_max)));
-}
-
-/* NOTE: This is not the inverse of symbolic_p because the range
-   could also be varying or undefined.  Ideally they should be inverse
-   of each other, with varying only applying to symbolics.  Varying of
-   constants would be represented as [-MIN, +MAX].  */
-
-bool
-value_range_base::constant_p () const
-{
-  return (!varying_p ()
-	  && !undefined_p ()
-	  && TREE_CODE (m_min) == INTEGER_CST
-	  && TREE_CODE (m_max) == INTEGER_CST);
+  set (NULL, NULL, NULL, VR_UNDEFINED);
 }
 
 void
-value_range_base::set_undefined ()
+value_range_equiv::set_varying (tree type)
 {
-  m_kind = VR_UNDEFINED;
-  m_min = m_max = NULL;
-}
-
-void
-value_range::set_undefined ()
-{
-  set (VR_UNDEFINED, NULL, NULL, NULL);
-}
-
-void
-value_range_base::set_varying (tree type)
-{
-  m_kind = VR_VARYING;
-  if (supports_type_p (type))
-    {
-      m_min = vrp_val_min (type, true);
-      m_max = vrp_val_max (type, true);
-    }
-  else
-    /* We can't do anything range-wise with these types.  */
-    m_min = m_max = error_mark_node;
-}
-
-void
-value_range::set_varying (tree type)
-{
-  value_range_base::set_varying (type);
+  value_range::set_varying (type);
   equiv_clear ();
 }
 
-/* Return TRUE if it is possible that range contains VAL.  */
-
-bool
-value_range_base::may_contain_p (tree val) const
-{
-  return value_inside_range (val) != 0;
-}
-
 void
-value_range::equiv_clear ()
+value_range_equiv::equiv_clear ()
 {
   if (m_equiv)
     bitmap_clear (m_equiv);
@@ -348,9 +214,9 @@ value_range::equiv_clear ()
    turned on/off.  */
 
 void
-value_range::equiv_add (const_tree var,
-			const value_range *var_vr,
-			bitmap_obstack *obstack)
+value_range_equiv::equiv_add (const_tree var,
+			      const value_range_equiv *var_vr,
+			      bitmap_obstack *obstack)
 {
   if (!m_equiv)
     m_equiv = BITMAP_ALLOC (obstack);
@@ -360,102 +226,10 @@ value_range::equiv_add (const_tree var,
     bitmap_ior_into (m_equiv, var_vr->m_equiv);
 }
 
-/* If range is a singleton, place it in RESULT and return TRUE.
-   Note: A singleton can be any gimple invariant, not just constants.
-   So, [&x, &x] counts as a singleton.  */
-
-bool
-value_range_base::singleton_p (tree *result) const
-{
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      if (nonzero_p ())
-	{
-	  if (TYPE_PRECISION (type ()) == 1)
-	    {
-	      if (result)
-		*result = m_max;
-	      return true;
-	    }
-	  return false;
-	}
-      if (num_pairs () == 1)
-	{
-	  value_range_base vr0, vr1;
-	  ranges_from_anti_range (this, &vr0, &vr1, true);
-	  return vr0.singleton_p (result);
-	}
-    }
-  if (m_kind == VR_RANGE
-      && vrp_operand_equal_p (min (), max ())
-      && is_gimple_min_invariant (min ()))
-    {
-      if (result)
-        *result = min ();
-      return true;
-    }
-  return false;
-}
-
-tree
-value_range_base::type () const
-{
-  gcc_checking_assert (m_min);
-  return TREE_TYPE (min ());
-}
-
 void
-value_range_base::dump (FILE *file) const
+value_range_equiv::dump (FILE *file) const
 {
-  if (undefined_p ())
-    fprintf (file, "UNDEFINED");
-  else if (m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
-    {
-      tree ttype = type ();
-
-      print_generic_expr (file, ttype);
-      fprintf (file, " ");
-
-      fprintf (file, "%s[", (m_kind == VR_ANTI_RANGE) ? "~" : "");
-
-      if (INTEGRAL_TYPE_P (ttype)
-	  && !TYPE_UNSIGNED (ttype)
-	  && vrp_val_is_min (min ())
-	  && TYPE_PRECISION (ttype) != 1)
-	fprintf (file, "-INF");
-      else
-	print_generic_expr (file, min ());
-
-      fprintf (file, ", ");
-
-      if (supports_type_p (ttype)
-	  && vrp_val_is_max (max (), true)
-	  && TYPE_PRECISION (ttype) != 1)
-	fprintf (file, "+INF");
-      else
-	print_generic_expr (file, max ());
-
-      fprintf (file, "]");
-    }
-  else if (varying_p ())
-    {
-      print_generic_expr (file, type ());
-      fprintf (file, " VARYING");
-    }
-  else
-    gcc_unreachable ();
-}
-
-void
-value_range_base::dump () const
-{
-  dump (stderr);
-}
-
-void
-value_range::dump (FILE *file) const
-{
-  value_range_base::dump (file);
+  value_range::dump (file);
   if ((m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
       && m_equiv)
     {
@@ -476,22 +250,13 @@ value_range::dump (FILE *file) const
 }
 
 void
-value_range::dump () const
+value_range_equiv::dump () const
 {
   dump (stderr);
 }
 
 void
-dump_value_range (FILE *file, const value_range *vr)
-{
-  if (!vr)
-    fprintf (file, "[]");
-  else
-    vr->dump (file);
-}
-
-void
-dump_value_range (FILE *file, const value_range_base *vr)
+dump_value_range (FILE *file, const value_range_equiv *vr)
 {
   if (!vr)
     fprintf (file, "[]");
@@ -500,25 +265,13 @@ dump_value_range (FILE *file, const value_range_base *vr)
 }
 
 DEBUG_FUNCTION void
-debug (const value_range_base *vr)
+debug (const value_range_equiv *vr)
 {
   dump_value_range (stderr, vr);
 }
 
 DEBUG_FUNCTION void
-debug (const value_range_base &vr)
-{
-  dump_value_range (stderr, &vr);
-}
-
-DEBUG_FUNCTION void
-debug (const value_range *vr)
-{
-  dump_value_range (stderr, vr);
-}
-
-DEBUG_FUNCTION void
-debug (const value_range &vr)
+debug (const value_range_equiv &vr)
 {
   dump_value_range (stderr, &vr);
 }
@@ -570,58 +323,6 @@ static bitmap need_assert_for;
    holds a list of ASSERT_LOCUS_T nodes that describe where
    ASSERT_EXPRs for SSA name N_I should be inserted.  */
 static assert_locus **asserts_for;
-
-/* Return the maximum value for TYPE.  */
-
-tree
-vrp_val_max (const_tree type, bool handle_pointers)
-{
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MAX_VALUE (type);
-  if (POINTER_TYPE_P (type) && handle_pointers)
-    {
-      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-      return wide_int_to_tree (const_cast<tree> (type), max);
-    }
-  return NULL_TREE;
-}
-
-/* Return the minimum value for TYPE.  */
-
-tree
-vrp_val_min (const_tree type, bool handle_pointers)
-{
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MIN_VALUE (type);
-  if (POINTER_TYPE_P (type) && handle_pointers)
-    return build_zero_cst (const_cast<tree> (type));
-  return NULL_TREE;
-}
-
-/* Return whether VAL is equal to the maximum value of its type.
-   We can't do a simple equality comparison with TYPE_MAX_VALUE because
-   C typedefs and Ada subtypes can produce types whose TYPE_MAX_VALUE
-   is not == to the integer constant with the same value in the type.  */
-
-bool
-vrp_val_is_max (const_tree val, bool handle_pointers)
-{
-  tree type_max = vrp_val_max (TREE_TYPE (val), handle_pointers);
-  return (val == type_max
-	  || (type_max != NULL_TREE
-	      && operand_equal_p (val, type_max, 0)));
-}
-
-/* Return whether VAL is equal to the minimum value of its type.  */
-
-bool
-vrp_val_is_min (const_tree val, bool handle_pointers)
-{
-  tree type_min = vrp_val_min (TREE_TYPE (val), handle_pointers);
-  return (val == type_min
-	  || (type_min != NULL_TREE
-	      && operand_equal_p (val, type_min, 0)));
-}
 
 /* VR_TYPE describes a range with mininum value *MIN and maximum
    value *MAX.  Restrict the range to the set of values that have
@@ -695,258 +396,22 @@ intersect_range_with_nonzero_bits (enum value_range_kind vr_type,
   return vr_type;
 }
 
-
-/* Set value range to the canonical form of {VRTYPE, MIN, MAX, EQUIV}.
-   This means adjusting VRTYPE, MIN and MAX representing the case of a
-   wrapping range with MAX < MIN covering [MIN, type_max] U [type_min, MAX]
-   as anti-rage ~[MAX+1, MIN-1].  Likewise for wrapping anti-ranges.
-   In corner cases where MAX+1 or MIN-1 wraps this will fall back
-   to varying.
-   This routine exists to ease canonicalization in the case where we
-   extract ranges from var + CST op limit.  */
-
 void
-value_range_base::set (enum value_range_kind kind, tree min, tree max)
-{
-  /* Use the canonical setters for VR_UNDEFINED and VR_VARYING.  */
-  if (kind == VR_UNDEFINED)
-    {
-      set_undefined ();
-      return;
-    }
-  else if (kind == VR_VARYING)
-    {
-      gcc_assert (TREE_TYPE (min) == TREE_TYPE (max));
-      tree typ = TREE_TYPE (min);
-      if (supports_type_p (typ))
-	{
-	  gcc_assert (vrp_val_min (typ, true));
-	  gcc_assert (vrp_val_max (typ, true));
-	}
-      set_varying (typ);
-      return;
-    }
-
-  /* Convert POLY_INT_CST bounds into worst-case INTEGER_CST bounds.  */
-  if (POLY_INT_CST_P (min))
-    {
-      tree type_min = vrp_val_min (TREE_TYPE (min), true);
-      widest_int lb
-	= constant_lower_bound_with_limit (wi::to_poly_widest (min),
-					   wi::to_widest (type_min));
-      min = wide_int_to_tree (TREE_TYPE (min), lb);
-    }
-  if (POLY_INT_CST_P (max))
-    {
-      tree type_max = vrp_val_max (TREE_TYPE (max), true);
-      widest_int ub
-	= constant_upper_bound_with_limit (wi::to_poly_widest (max),
-					   wi::to_widest (type_max));
-      max = wide_int_to_tree (TREE_TYPE (max), ub);
-    }
-
-  /* Nothing to canonicalize for symbolic ranges.  */
-  if (TREE_CODE (min) != INTEGER_CST
-      || TREE_CODE (max) != INTEGER_CST)
-    {
-      m_kind = kind;
-      m_min = min;
-      m_max = max;
-      return;
-    }
-
-  /* Wrong order for min and max, to swap them and the VR type we need
-     to adjust them.  */
-  if (tree_int_cst_lt (max, min))
-    {
-      tree one, tmp;
-
-      /* For one bit precision if max < min, then the swapped
-	 range covers all values, so for VR_RANGE it is varying and
-	 for VR_ANTI_RANGE empty range, so drop to varying as well.  */
-      if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
-	{
-	  set_varying (TREE_TYPE (min));
-	  return;
-	}
-
-      one = build_int_cst (TREE_TYPE (min), 1);
-      tmp = int_const_binop (PLUS_EXPR, max, one);
-      max = int_const_binop (MINUS_EXPR, min, one);
-      min = tmp;
-
-      /* There's one corner case, if we had [C+1, C] before we now have
-	 that again.  But this represents an empty value range, so drop
-	 to varying in this case.  */
-      if (tree_int_cst_lt (max, min))
-	{
-	  set_varying (TREE_TYPE (min));
-	  return;
-	}
-
-      kind = kind == VR_RANGE ? VR_ANTI_RANGE : VR_RANGE;
-    }
-
-  tree type = TREE_TYPE (min);
-
-  /* Anti-ranges that can be represented as ranges should be so.  */
-  if (kind == VR_ANTI_RANGE)
-    {
-      /* For -fstrict-enums we may receive out-of-range ranges so consider
-         values < -INF and values > INF as -INF/INF as well.  */
-      bool is_min = vrp_val_is_min (min, true);
-      bool is_max = vrp_val_is_max (max, true);
-
-      if (is_min && is_max)
-	{
-	  /* We cannot deal with empty ranges, drop to varying.
-	     ???  This could be VR_UNDEFINED instead.  */
-	  set_varying (type);
-	  return;
-	}
-      else if (TYPE_PRECISION (TREE_TYPE (min)) == 1
-	       && (is_min || is_max))
-	{
-	  /* Non-empty boolean ranges can always be represented
-	     as a singleton range.  */
-	  if (is_min)
-	    min = max = vrp_val_max (TREE_TYPE (min));
-	  else
-	    min = max = vrp_val_min (TREE_TYPE (min));
-	  kind = VR_RANGE;
-	}
-      else if (is_min)
-        {
-	  tree one = build_int_cst (TREE_TYPE (max), 1);
-	  min = int_const_binop (PLUS_EXPR, max, one);
-	  max = vrp_val_max (TREE_TYPE (max), true);
-	  kind = VR_RANGE;
-        }
-      else if (is_max)
-        {
-	  tree one = build_int_cst (TREE_TYPE (min), 1);
-	  max = int_const_binop (MINUS_EXPR, min, one);
-	  min = vrp_val_min (TREE_TYPE (min), true);
-	  kind = VR_RANGE;
-        }
-    }
-
-  /* Normalize [MIN, MAX] into VARYING and ~[MIN, MAX] into UNDEFINED.
-
-     Avoid using TYPE_{MIN,MAX}_VALUE because -fstrict-enums can
-     restrict those to a subset of what actually fits in the type.
-     Instead use the extremes of the type precision which will allow
-     compare_range_with_value() to check if a value is inside a range,
-     whereas if we used TYPE_*_VAL, said function would just punt
-     upon seeing a VARYING.  */
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
-  if (wi::eq_p (wi::to_wide (min), wi::min_value (prec, sign))
-      && wi::eq_p (wi::to_wide (max), wi::max_value (prec, sign)))
-    {
-      if (kind == VR_RANGE)
-	set_varying (type);
-      else if (kind == VR_ANTI_RANGE)
-	set_undefined ();
-      else
-	gcc_unreachable ();
-      return;
-    }
-
-  /* Do not drop [-INF(OVF), +INF(OVF)] to varying.  (OVF) has to be sticky
-     to make sure VRP iteration terminates, otherwise we can get into
-     oscillations.  */
-
-  m_kind = kind;
-  m_min = min;
-  m_max = max;
-  if (flag_checking)
-    check ();
-}
-
-void
-value_range_base::set (tree val)
+value_range_equiv::set (tree val)
 {
   gcc_assert (TREE_CODE (val) == SSA_NAME || is_gimple_min_invariant (val));
   if (TREE_OVERFLOW_P (val))
     val = drop_tree_overflow (val);
-  set (VR_RANGE, val, val);
-}
-
-void
-value_range::set (tree val)
-{
-  gcc_assert (TREE_CODE (val) == SSA_NAME || is_gimple_min_invariant (val));
-  if (TREE_OVERFLOW_P (val))
-    val = drop_tree_overflow (val);
-  set (VR_RANGE, val, val, NULL);
-}
-
-/* Set value range VR to a nonzero range of type TYPE.  */
-
-void
-value_range_base::set_nonzero (tree type)
-{
-  tree zero = build_int_cst (type, 0);
-  set (VR_ANTI_RANGE, zero, zero);
-}
-
-/* Set value range VR to a ZERO range of type TYPE.  */
-
-void
-value_range_base::set_zero (tree type)
-{
-  set (build_int_cst (type, 0));
-}
-
-/* Return true, if VAL1 and VAL2 are equal values for VRP purposes.  */
-
-bool
-vrp_operand_equal_p (const_tree val1, const_tree val2)
-{
-  if (val1 == val2)
-    return true;
-  if (!val1 || !val2 || !operand_equal_p (val1, val2, 0))
-    return false;
-  return true;
-}
-
-/* Return true, if the bitmaps B1 and B2 are equal.  */
-
-bool
-vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
-{
-  return (b1 == b2
-	  || ((!b1 || bitmap_empty_p (b1))
-	      && (!b2 || bitmap_empty_p (b2)))
-	  || (b1 && b2
-	      && bitmap_equal_p (b1, b2)));
-}
-
-bool
-range_has_numeric_bounds_p (const value_range_base *vr)
-{
-  return (vr->min ()
-	  && TREE_CODE (vr->min ()) == INTEGER_CST
-	  && TREE_CODE (vr->max ()) == INTEGER_CST);
+  set (val, val);
 }
 
 /* Return true if max and min of VR are INTEGER_CST.  It's not necessary
    a singleton.  */
 
 bool
-range_int_cst_p (const value_range_base *vr)
+range_int_cst_p (const value_range *vr)
 {
   return (vr->kind () == VR_RANGE && range_has_numeric_bounds_p (vr));
-}
-
-/* Return true if VR is a INTEGER_CST singleton.  */
-
-bool
-range_int_cst_singleton_p (const value_range_base *vr)
-{
-  return (range_int_cst_p (vr)
-	  && tree_int_cst_equal (vr->min (), vr->max ()));
 }
 
 /* Return the single symbol (an SSA_NAME) contained in T if any, or NULL_TREE
@@ -1235,146 +700,6 @@ compare_values (tree val1, tree val2)
   return compare_values_warnv (val1, val2, &sop);
 }
 
-
-/* Return 1 if VAL is inside value range.
-          0 if VAL is not inside value range.
-	 -2 if we cannot tell either way.
-
-   Benchmark compile/20001226-1.c compilation time after changing this
-   function.  */
-
-int
-value_range_base::value_inside_range (tree val) const
-{
-  int cmp1, cmp2;
-
-  if (varying_p ())
-    return 1;
-
-  if (undefined_p ())
-    return 0;
-
-  cmp1 = operand_less_p (val, m_min);
-  if (cmp1 == -2)
-    return -2;
-  if (cmp1 == 1)
-    return m_kind != VR_RANGE;
-
-  cmp2 = operand_less_p (m_max, val);
-  if (cmp2 == -2)
-    return -2;
-
-  if (m_kind == VR_RANGE)
-    return !cmp2;
-  else
-    return !!cmp2;
-}
-
-/* For range [LB, UB] compute two wide_int bit masks.
-
-   In the MAY_BE_NONZERO bit mask, if some bit is unset, it means that
-   for all numbers in the range the bit is 0, otherwise it might be 0
-   or 1.
-
-   In the MUST_BE_NONZERO bit mask, if some bit is set, it means that
-   for all numbers in the range the bit is 1, otherwise it might be 0
-   or 1.  */
-
-static inline void
-wide_int_range_set_zero_nonzero_bits (signop sign,
-				      const wide_int &lb, const wide_int &ub,
-				      wide_int &may_be_nonzero,
-				      wide_int &must_be_nonzero)
-{
-  may_be_nonzero = wi::minus_one (lb.get_precision ());
-  must_be_nonzero = wi::zero (lb.get_precision ());
-
-  if (wi::eq_p (lb, ub))
-    {
-      may_be_nonzero = lb;
-      must_be_nonzero = may_be_nonzero;
-    }
-  else if (wi::ge_p (lb, 0, sign) || wi::lt_p (ub, 0, sign))
-    {
-      wide_int xor_mask = lb ^ ub;
-      may_be_nonzero = lb | ub;
-      must_be_nonzero = lb & ub;
-      if (xor_mask != 0)
-	{
-	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
-				    may_be_nonzero.get_precision ());
-	  may_be_nonzero = may_be_nonzero | mask;
-	  must_be_nonzero = wi::bit_and_not (must_be_nonzero, mask);
-	}
-    }
-}
-
-/* value_range wrapper for wide_int_range_set_zero_nonzero_bits above.
-
-   Return TRUE if VR was a constant range and we were able to compute
-   the bit masks.  */
-
-bool
-vrp_set_zero_nonzero_bits (const tree expr_type,
-			   const value_range_base *vr,
-			   wide_int *may_be_nonzero,
-			   wide_int *must_be_nonzero)
-{
-  if (!range_int_cst_p (vr))
-    {
-      *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
-      *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
-      return false;
-    }
-  wide_int_range_set_zero_nonzero_bits (TYPE_SIGN (expr_type),
-					wi::to_wide (vr->min ()),
-					wi::to_wide (vr->max ()),
-					*may_be_nonzero, *must_be_nonzero);
-  return true;
-}
-
-/* Create two value-ranges in *VR0 and *VR1 from the anti-range *AR
-   so that *VR0 U *VR1 == *AR.  Returns true if that is possible,
-   false otherwise.  If *AR can be represented with a single range
-   *VR1 will be VR_UNDEFINED.  */
-
-static bool
-ranges_from_anti_range (const value_range_base *ar,
-			value_range_base *vr0, value_range_base *vr1,
-			bool handle_pointers)
-{
-  tree type = ar->type ();
-
-  vr0->set_undefined ();
-  vr1->set_undefined ();
-
-  /* As a future improvement, we could handle ~[0, A] as: [-INF, -1] U
-     [A+1, +INF].  Not sure if this helps in practice, though.  */
-
-  if (ar->kind () != VR_ANTI_RANGE
-      || TREE_CODE (ar->min ()) != INTEGER_CST
-      || TREE_CODE (ar->max ()) != INTEGER_CST
-      || !vrp_val_min (type, handle_pointers)
-      || !vrp_val_max (type, handle_pointers))
-    return false;
-
-  if (tree_int_cst_lt (vrp_val_min (type, handle_pointers), ar->min ()))
-    vr0->set (VR_RANGE,
-	      vrp_val_min (type, handle_pointers),
-	      wide_int_to_tree (type, wi::to_wide (ar->min ()) - 1));
-  if (tree_int_cst_lt (ar->max (), vrp_val_max (type, handle_pointers)))
-    vr1->set (VR_RANGE,
-	      wide_int_to_tree (type, wi::to_wide (ar->max ()) + 1),
-	      vrp_val_max (type, handle_pointers));
-  if (vr0->undefined_p ())
-    {
-      *vr0 = *vr1;
-      vr1->set_undefined ();
-    }
-
-  return !vr0->undefined_p ();
-}
-
 /* If BOUND will include a symbolic bound, adjust it accordingly,
    otherwise leave it as is.
 
@@ -1562,11 +887,11 @@ set_value_range_with_overflow (value_range_kind &kind, tree &min, tree &max,
 /* Fold two value range's of a POINTER_PLUS_EXPR into VR.  */
 
 static void
-extract_range_from_pointer_plus_expr (value_range_base *vr,
+extract_range_from_pointer_plus_expr (value_range *vr,
 				      enum tree_code code,
 				      tree expr_type,
-				      const value_range_base *vr0,
-				      const value_range_base *vr1)
+				      const value_range *vr0,
+				      const value_range *vr1)
 {
   gcc_checking_assert (POINTER_TYPE_P (expr_type)
 		       && code == POINTER_PLUS_EXPR);
@@ -1602,16 +927,16 @@ extract_range_from_pointer_plus_expr (value_range_base *vr,
    result in *VR.  */
 
 static void
-extract_range_from_plus_minus_expr (value_range_base *vr,
+extract_range_from_plus_minus_expr (value_range *vr,
 				    enum tree_code code,
 				    tree expr_type,
-				    const value_range_base *vr0_,
-				    const value_range_base *vr1_)
+				    const value_range *vr0_,
+				    const value_range *vr1_)
 {
   gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR);
 
-  value_range_base vr0 = *vr0_, vr1 = *vr1_;
-  value_range_base vrtem0, vrtem1;
+  value_range vr0 = *vr0_, vr1 = *vr1_;
+  value_range vrtem0, vrtem1;
 
   /* Now canonicalize anti-ranges to ranges when they are not symbolic
      and express ~[] op X as ([]' op X) U ([]'' op X).  */
@@ -1621,7 +946,7 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
       extract_range_from_plus_minus_expr (vr, code, expr_type, &vrtem0, vr1_);
       if (!vrtem1.undefined_p ())
 	{
-	  value_range_base vrres;
+	  value_range vrres;
 	  extract_range_from_plus_minus_expr (&vrres, code, expr_type,
 					      &vrtem1, vr1_);
 	  vr->union_ (&vrres);
@@ -1635,7 +960,7 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
       extract_range_from_plus_minus_expr (vr, code, expr_type, vr0_, &vrtem0);
       if (!vrtem1.undefined_p ())
 	{
-	  value_range_base vrres;
+	  value_range vrres;
 	  extract_range_from_plus_minus_expr (&vrres, code, expr_type,
 					      vr0_, &vrtem1);
 	  vr->union_ (&vrres);
@@ -1777,14 +1102,14 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
       vr->set_varying (expr_type);
     }
   else
-    vr->set (kind, min, max);
+    vr->set (min, max, kind);
 }
 
 /* Return the range-ops handler for CODE and EXPR_TYPE.  If no
    suitable operator is found, return NULL and set VR to VARYING.  */
 
 static const range_operator *
-get_range_op_handler (value_range_base *vr,
+get_range_op_handler (value_range *vr,
 		      enum tree_code code,
 		      tree expr_type)
 {
@@ -1798,12 +1123,12 @@ get_range_op_handler (value_range_base *vr,
    VARYING and return FALSE.  */
 
 static bool
-supported_types_p (value_range_base *vr,
+supported_types_p (value_range *vr,
 		   tree type0,
 		   tree type1 = NULL)
 {
-  if (!value_range_base::supports_type_p (type0)
-      || (type1 && !value_range_base::supports_type_p (type1)))
+  if (!value_range::supports_type_p (type0)
+      || (type1 && !value_range::supports_type_p (type1)))
     {
       vr->set_varying (type0);
       return false;
@@ -1815,9 +1140,8 @@ supported_types_p (value_range_base *vr,
    VR to UNDEFINED and return FALSE.  */
 
 static bool
-defined_ranges_p (value_range_base *vr,
-		  const value_range_base *vr0,
-		  const value_range_base *vr1 = NULL)
+defined_ranges_p (value_range *vr,
+		  const value_range *vr0, const value_range *vr1 = NULL)
 {
   if (vr0->undefined_p () && (!vr1 || vr1->undefined_p ()))
     {
@@ -1827,11 +1151,11 @@ defined_ranges_p (value_range_base *vr,
   return true;
 }
 
-static value_range_base
-drop_undefines_to_varying (const value_range_base *vr, tree expr_type)
+static value_range
+drop_undefines_to_varying (const value_range *vr, tree expr_type)
 {
   if (vr->undefined_p ())
-    return value_range_base (expr_type);
+    return value_range (expr_type);
   else
     return *vr;
 }
@@ -1840,11 +1164,10 @@ drop_undefines_to_varying (const value_range_base *vr, tree expr_type)
    return TRUE, otherwise return FALSE.  */
 
 static bool
-range_fold_binary_symbolics_p (value_range_base *vr,
+range_fold_binary_symbolics_p (value_range *vr,
 			       tree_code code,
 			       tree expr_type,
-			       const value_range_base *vr0,
-			       const value_range_base *vr1)
+			       const value_range *vr0, const value_range *vr1)
 {
   if (vr0->symbolic_p () || vr1->symbolic_p ())
     {
@@ -1859,9 +1182,10 @@ range_fold_binary_symbolics_p (value_range_base *vr,
 	  return true;
 	}
       const range_operator *op = get_range_op_handler (vr, code, expr_type);
-      *vr = op->fold_range (expr_type,
-			    vr0->normalize_symbolics (),
-			    vr1->normalize_symbolics ());
+      value_range vr0_cst (*vr0), vr1_cst (*vr1);
+      vr0_cst.normalize_symbolics ();
+      vr1_cst.normalize_symbolics ();
+      op->fold_range (*vr, expr_type, vr0_cst, vr1_cst);
       return true;
     }
   return false;
@@ -1871,17 +1195,17 @@ range_fold_binary_symbolics_p (value_range_base *vr,
    TRUE, otherwise return FALSE.  */
 
 static bool
-range_fold_unary_symbolics_p (value_range_base *vr,
+range_fold_unary_symbolics_p (value_range *vr,
 			      tree_code code,
 			      tree expr_type,
-			      const value_range_base *vr0)
+			      const value_range *vr0)
 {
   if (vr0->symbolic_p ())
     {
       if (code == NEGATE_EXPR)
 	{
 	  /* -X is simply 0 - X.  */
-	  value_range_base zero;
+	  value_range zero;
 	  zero.set_zero (vr0->type ());
 	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &zero, vr0);
 	  return true;
@@ -1889,15 +1213,15 @@ range_fold_unary_symbolics_p (value_range_base *vr,
       if (code == BIT_NOT_EXPR)
 	{
 	  /* ~X is simply -1 - X.  */
-	  value_range_base minusone;
+	  value_range minusone;
 	  minusone.set (build_int_cst (vr0->type (), -1));
 	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
 	  return true;
 	}
       const range_operator *op = get_range_op_handler (vr, code, expr_type);
-      *vr = op->fold_range (expr_type,
-			    vr0->normalize_symbolics (),
-			    value_range_base (expr_type));
+      value_range vr0_cst (*vr0);
+      vr0_cst.normalize_symbolics ();
+      op->fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
       return true;
     }
   return false;
@@ -1906,11 +1230,11 @@ range_fold_unary_symbolics_p (value_range_base *vr,
 /* Perform a binary operation on a pair of ranges.  */
 
 void
-range_fold_binary_expr (value_range_base *vr,
+range_fold_binary_expr (value_range *vr,
 			enum tree_code code,
 			tree expr_type,
-			const value_range_base *vr0_,
-			const value_range_base *vr1_)
+			const value_range *vr0_,
+			const value_range *vr1_)
 {
   if (!supported_types_p (vr, expr_type)
       || !defined_ranges_p (vr, vr0_, vr1_))
@@ -1919,22 +1243,22 @@ range_fold_binary_expr (value_range_base *vr,
   if (!op)
     return;
 
-  value_range_base vr0 = drop_undefines_to_varying (vr0_, expr_type);
-  value_range_base vr1 = drop_undefines_to_varying (vr1_, expr_type);
+  value_range vr0 = drop_undefines_to_varying (vr0_, expr_type);
+  value_range vr1 = drop_undefines_to_varying (vr1_, expr_type);
   if (range_fold_binary_symbolics_p (vr, code, expr_type, &vr0, &vr1))
     return;
 
-  *vr = op->fold_range (expr_type,
-			vr0.normalize_addresses (),
-			vr1.normalize_addresses ());
+  vr0.normalize_addresses ();
+  vr1.normalize_addresses ();
+  op->fold_range (*vr, expr_type, vr0, vr1);
 }
 
 /* Perform a unary operation on a range.  */
 
 void
-range_fold_unary_expr (value_range_base *vr,
+range_fold_unary_expr (value_range *vr,
 		       enum tree_code code, tree expr_type,
-		       const value_range_base *vr0,
+		       const value_range *vr0,
 		       tree vr0_type)
 {
   if (!supported_types_p (vr, expr_type, vr0_type)
@@ -1947,9 +1271,9 @@ range_fold_unary_expr (value_range_base *vr,
   if (range_fold_unary_symbolics_p (vr, code, expr_type, vr0))
     return;
 
-  *vr = op->fold_range (expr_type,
-			vr0->normalize_addresses (),
-			value_range_base (expr_type));
+  value_range vr0_cst (*vr0);
+  vr0_cst.normalize_addresses ();
+  op->fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
 }
 
 /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,
@@ -2042,41 +1366,6 @@ void debug_asserts_for (tree);
 void dump_all_asserts (FILE *);
 void debug_all_asserts (void);
 
-void
-dump_assert_info (FILE *file, const assert_info &assert)
-{
-  fprintf (file, "Assert for: ");
-  print_generic_expr (file, assert.name);
-  fprintf (file, "\n\tPREDICATE: expr=[");
-  print_generic_expr (file, assert.expr);
-  fprintf (file, "] %s ", get_tree_code_name (assert.comp_code));
-  fprintf (file, "val=[");
-  print_generic_expr (file, assert.val);
-  fprintf (file, "]\n\n");
-}
-
-void
-dump_asserts_info (FILE *file, const vec<assert_info> &asserts)
-{
-  for (unsigned i = 0; i < asserts.length (); ++i)
-    {
-      dump_assert_info (file, asserts[i]);
-      fprintf (file, "\n");
-    }
-}
-
-DEBUG_FUNCTION void
-debug (const assert_info &assert)
-{
-  dump_assert_info (stderr, assert);
-}
-
-DEBUG_FUNCTION void
-debug (const vec<assert_info> &asserts)
-{
-  dump_asserts_info (stderr, asserts);
-}
-
 /* Dump all the registered assertions for NAME to FILE.  */
 
 void
@@ -2142,6 +1431,45 @@ DEBUG_FUNCTION void
 debug_all_asserts (void)
 {
   dump_all_asserts (stderr);
+}
+
+/* Dump assert_info structure.  */
+
+void
+dump_assert_info (FILE *file, const assert_info &assert)
+{
+  fprintf (file, "Assert for: ");
+  print_generic_expr (file, assert.name);
+  fprintf (file, "\n\tPREDICATE: expr=[");
+  print_generic_expr (file, assert.expr);
+  fprintf (file, "] %s ", get_tree_code_name (assert.comp_code));
+  fprintf (file, "val=[");
+  print_generic_expr (file, assert.val);
+  fprintf (file, "]\n\n");
+}
+
+DEBUG_FUNCTION void
+debug (const assert_info &assert)
+{
+  dump_assert_info (stderr, assert);
+}
+
+/* Dump a vector of assert_info's.  */
+
+void
+dump_asserts_info (FILE *file, const vec<assert_info> &asserts)
+{
+  for (unsigned i = 0; i < asserts.length (); ++i)
+    {
+      dump_assert_info (file, asserts[i]);
+      fprintf (file, "\n");
+    }
+}
+
+DEBUG_FUNCTION void
+debug (const vec<assert_info> &asserts)
+{
+  dump_asserts_info (stderr, asserts);
 }
 
 /* Push the assert info for NAME, EXPR, COMP_CODE and VAL to ASSERTS.  */
@@ -3469,7 +2797,7 @@ find_switch_asserts (basic_block bb, gswitch *last)
 
   /* Now register along the default label assertions that correspond to the
      anti-range of each label.  */
-  int insertion_limit = PARAM_VALUE (PARAM_MAX_VRP_SWITCH_ASSERTIONS);
+  int insertion_limit = param_max_vrp_switch_assertions;
   if (insertion_limit == 0)
     return;
 
@@ -4124,20 +3452,20 @@ class vrp_prop : public ssa_propagation_engine
 
   class vr_values vr_values;
   /* Temporary delegator to minimize code churn.  */
-  const value_range *get_value_range (const_tree op)
+  const value_range_equiv *get_value_range (const_tree op)
     { return vr_values.get_value_range (op); }
   void set_def_to_varying (const_tree def)
     { vr_values.set_def_to_varying (def); }
   void set_defs_to_varying (gimple *stmt)
     { vr_values.set_defs_to_varying (stmt); }
   void extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
-				tree *output_p, value_range *vr)
+				tree *output_p, value_range_equiv *vr)
     { vr_values.extract_range_from_stmt (stmt, taken_edge_p, output_p, vr); }
-  bool update_value_range (const_tree op, value_range *vr)
+  bool update_value_range (const_tree op, value_range_equiv *vr)
     { return vr_values.update_value_range (op, vr); }
-  void extract_range_basic (value_range *vr, gimple *stmt)
+  void extract_range_basic (value_range_equiv *vr, gimple *stmt)
     { vr_values.extract_range_basic (vr, stmt); }
-  void extract_range_from_phi_node (gphi *phi, value_range *vr)
+  void extract_range_from_phi_node (gphi *phi, value_range_equiv *vr)
     { vr_values.extract_range_from_phi_node (phi, vr); }
 };
 /* Checks one ARRAY_REF in REF, located at LOCUS. Ignores flexible arrays
@@ -4152,17 +3480,20 @@ bool
 vrp_prop::check_array_ref (location_t location, tree ref,
 			   bool ignore_off_by_one)
 {
-  tree low_sub, up_sub;
-  tree low_bound, up_bound, up_bound_p1;
-
   if (TREE_NO_WARNING (ref))
     return false;
 
-  low_sub = up_sub = TREE_OPERAND (ref, 1);
-  up_bound = array_ref_up_bound (ref);
+  tree low_sub = TREE_OPERAND (ref, 1);
+  tree up_sub = low_sub;
+  tree up_bound = array_ref_up_bound (ref);
+
+  /* Referenced decl if one can be determined.  */
+  tree decl = NULL_TREE;
 
   /* Set for accesses to interior zero-length arrays.  */
   bool interior_zero_len = false;
+
+  tree up_bound_p1;
 
   if (!up_bound
       || TREE_CODE (up_bound) != INTEGER_CST
@@ -4189,34 +3520,54 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  tree arg = TREE_OPERAND (ref, 0);
 	  poly_int64 off;
 
-	  if (TREE_CODE (arg) == COMPONENT_REF)
+	  const bool compref = TREE_CODE (arg) == COMPONENT_REF;
+	  if (compref)
 	    {
 	      /* Try to determine the size of the trailing array from
 		 its initializer (if it has one).  */
 	      if (tree refsize = component_ref_size (arg, &interior_zero_len))
-		maxbound = refsize;
+		if (TREE_CODE (refsize) == INTEGER_CST)
+		  maxbound = refsize;
 	    }
 
-	  if (maxbound == ptrdiff_max
-	      && get_addr_base_and_unit_offset (arg, &off)
-	      && known_gt (off, 0))
-	    maxbound = wide_int_to_tree (sizetype,
-					 wi::sub (wi::to_wide (maxbound),
-						  off));
+	  if (maxbound == ptrdiff_max)
+	    {
+	      /* Try to determine the size of the base object.  Avoid
+		 COMPONENT_REF already tried above.  Using its DECL_SIZE
+		 size wouldn't necessarily be correct if the reference is
+		 to its flexible array member initialized in a different
+		 translation unit.  */
+	      tree base = get_addr_base_and_unit_offset (arg, &off);
+	      if (!compref && base && DECL_P (base))
+		if (tree basesize = DECL_SIZE_UNIT (base))
+		  if (TREE_CODE (basesize) == INTEGER_CST)
+		    {
+		      maxbound = basesize;
+		      decl = base;
+		    }
+
+	      if (known_gt (off, 0))
+		maxbound = wide_int_to_tree (sizetype,
+					     wi::sub (wi::to_wide (maxbound),
+						      off));
+	    }
 	  else
 	    maxbound = fold_convert (sizetype, maxbound);
 
 	  up_bound_p1 = int_const_binop (TRUNC_DIV_EXPR, maxbound, eltsize);
 
-	  up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
-				      build_int_cst (ptrdiff_type_node, 1));
+	  if (up_bound_p1 != NULL_TREE)
+	    up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
+					build_int_cst (ptrdiff_type_node, 1));
+	  else
+	    up_bound = NULL_TREE;
 	}
     }
   else
     up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
 				   build_int_cst (TREE_TYPE (up_bound), 1));
 
-  low_bound = array_ref_low_bound (ref);
+  tree low_bound = array_ref_low_bound (ref);
 
   tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
 
@@ -4225,10 +3576,10 @@ vrp_prop::check_array_ref (location_t location, tree ref,
   /* Empty array.  */
   if (up_bound && tree_int_cst_equal (low_bound, up_bound_p1))
     warned = warning_at (location, OPT_Warray_bounds,
-			 "array subscript %E is above array bounds of %qT",
-			 low_bound, artype);
+			 "array subscript %E is outside array bounds of %qT",
+			 low_sub, artype);
 
-  const value_range *vr = NULL;
+  const value_range_equiv *vr = NULL;
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
       vr = get_value_range (low_sub);
@@ -4287,7 +3638,7 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  fprintf (dump_file, "\n");
 	}
 
-      ref = TREE_OPERAND (ref, 0);
+      ref = decl ? decl : TREE_OPERAND (ref, 0);
 
       tree rec = NULL_TREE;
       if (TREE_CODE (ref) == COMPONENT_REF)
@@ -4354,13 +3705,13 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   /* The range of the byte offset into the reference.  */
   offset_int offrange[2] = { 0, 0 };
 
-  const value_range *vr = NULL;
+  const value_range_equiv *vr = NULL;
 
   /* Determine the offsets and increment OFFRANGE for the bounds of each.
      The loop computes the range of the final offset for expressions such
      as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs in
      some range.  */
-  const unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
+  const unsigned limit = param_ssa_name_def_chain_limit;
   for (unsigned n = 0; TREE_CODE (arg) == SSA_NAME && n < limit; ++n)
     {
       gimple *def = SSA_NAME_DEF_STMT (arg);
@@ -4440,6 +3791,7 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
     {
       arg = TREE_OPERAND (arg, 0);
       if (TREE_CODE (arg) != STRING_CST
+	  && TREE_CODE (arg) != PARM_DECL
 	  && TREE_CODE (arg) != VAR_DECL)
 	return false;
     }
@@ -4523,7 +3875,9 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   if (ignore_off_by_one)
     ubound += 1;
 
-  if (offrange[0] >= ubound || offrange[1] < arrbounds[0])
+  if (arrbounds[0] == arrbounds[1]
+      || offrange[0] >= ubound
+      || offrange[1] < arrbounds[0])
     {
       /* Treat a reference to a non-array object as one to an array
 	 of a single element.  */
@@ -5193,7 +4547,7 @@ enum ssa_prop_result
 vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   tree lhs = gimple_get_lhs (stmt);
-  value_range vr;
+  value_range_equiv vr;
   extract_range_from_stmt (stmt, taken_edge_p, output_p, &vr);
 
   if (*output_p)
@@ -5262,9 +4616,9 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 		   SSA_PROP_NOT_INTERESTING.  If there are no
 		   {REAL,IMAG}PART_EXPR uses at all,
 		   return SSA_PROP_VARYING.  */
-		value_range new_vr;
+		value_range_equiv new_vr;
 		extract_range_basic (&new_vr, use_stmt);
-		const value_range *old_vr = get_value_range (use_lhs);
+		const value_range_equiv *old_vr = get_value_range (use_lhs);
 		if (!old_vr->equal_p (new_vr, /*ignore_equivs=*/false))
 		  res = SSA_PROP_INTERESTING;
 		else
@@ -5291,672 +4645,8 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
   return (*taken_edge_p) ? SSA_PROP_INTERESTING : SSA_PROP_VARYING;
 }
 
-/* Union the two value-ranges { *VR0TYPE, *VR0MIN, *VR0MAX } and
-   { VR1TYPE, VR0MIN, VR0MAX } and store the result
-   in { *VR0TYPE, *VR0MIN, *VR0MAX }.  This may not be the smallest
-   possible such range.  The resulting range is not canonicalized.  */
-
-static void
-union_ranges (enum value_range_kind *vr0type,
-	      tree *vr0min, tree *vr0max,
-	      enum value_range_kind vr1type,
-	      tree vr1min, tree vr1max)
-{
-  int cmpmin = compare_values (*vr0min, vr1min);
-  int cmpmax = compare_values (*vr0max, vr1max);
-  bool mineq = cmpmin == 0;
-  bool maxeq = cmpmax == 0;
-
-  /* [] is vr0, () is vr1 in the following classification comments.  */
-  if (mineq && maxeq)
-    {
-      /* [(  )] */
-      if (*vr0type == vr1type)
-	/* Nothing to do for equal ranges.  */
-	;
-      else if ((*vr0type == VR_RANGE
-		&& vr1type == VR_ANTI_RANGE)
-	       || (*vr0type == VR_ANTI_RANGE
-		   && vr1type == VR_RANGE))
-	{
-	  /* For anti-range with range union the result is varying.  */
-	  goto give_up;
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if (operand_less_p (*vr0max, vr1min) == 1
-	   || operand_less_p (vr1max, *vr0min) == 1)
-    {
-      /* [ ] ( ) or ( ) [ ]
-	 If the ranges have an empty intersection, result of the union
-	 operation is the anti-range or if both are anti-ranges
-	 it covers all.  */
-      if (*vr0type == VR_ANTI_RANGE
-	  && vr1type == VR_ANTI_RANGE)
-	goto give_up;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	;
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  *vr0type = vr1type;
-	  *vr0min = vr1min;
-	  *vr0max = vr1max;
-	}
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  /* The result is the convex hull of both ranges.  */
-	  if (operand_less_p (*vr0max, vr1min) == 1)
-	    {
-	      /* If the result can be an anti-range, create one.  */
-	      if (TREE_CODE (*vr0max) == INTEGER_CST
-		  && TREE_CODE (vr1min) == INTEGER_CST
-		  && vrp_val_is_min (*vr0min)
-		  && vrp_val_is_max (vr1max))
-		{
-		  tree min = int_const_binop (PLUS_EXPR,
-					      *vr0max,
-					      build_int_cst (TREE_TYPE (*vr0max), 1));
-		  tree max = int_const_binop (MINUS_EXPR,
-					      vr1min,
-					      build_int_cst (TREE_TYPE (vr1min), 1));
-		  if (!operand_less_p (max, min))
-		    {
-		      *vr0type = VR_ANTI_RANGE;
-		      *vr0min = min;
-		      *vr0max = max;
-		    }
-		  else
-		    *vr0max = vr1max;
-		}
-	      else
-		*vr0max = vr1max;
-	    }
-	  else
-	    {
-	      /* If the result can be an anti-range, create one.  */
-	      if (TREE_CODE (vr1max) == INTEGER_CST
-		  && TREE_CODE (*vr0min) == INTEGER_CST
-		  && vrp_val_is_min (vr1min)
-		  && vrp_val_is_max (*vr0max))
-		{
-		  tree min = int_const_binop (PLUS_EXPR,
-					      vr1max,
-					      build_int_cst (TREE_TYPE (vr1max), 1));
-		  tree max = int_const_binop (MINUS_EXPR,
-					      *vr0min,
-					      build_int_cst (TREE_TYPE (*vr0min), 1));
-		  if (!operand_less_p (max, min))
-		    {
-		      *vr0type = VR_ANTI_RANGE;
-		      *vr0min = min;
-		      *vr0max = max;
-		    }
-		  else
-		    *vr0min = vr1min;
-		}
-	      else
-		*vr0min = vr1min;
-	    }
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if ((maxeq || cmpmax == 1)
-	   && (mineq || cmpmin == -1))
-    {
-      /* [ (  ) ] or [(  ) ] or [ (  )] */
-      if (*vr0type == VR_RANGE
-	  && vr1type == VR_RANGE)
-	;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  *vr0type = vr1type;
-	  *vr0min = vr1min;
-	  *vr0max = vr1max;
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  /* Arbitrarily choose the right or left gap.  */
-	  if (!mineq && TREE_CODE (vr1min) == INTEGER_CST)
-	    *vr0max = int_const_binop (MINUS_EXPR, vr1min,
-				       build_int_cst (TREE_TYPE (vr1min), 1));
-	  else if (!maxeq && TREE_CODE (vr1max) == INTEGER_CST)
-	    *vr0min = int_const_binop (PLUS_EXPR, vr1max,
-				       build_int_cst (TREE_TYPE (vr1max), 1));
-	  else
-	    goto give_up;
-	}
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	/* The result covers everything.  */
-	goto give_up;
-      else
-	gcc_unreachable ();
-    }
-  else if ((maxeq || cmpmax == -1)
-	   && (mineq || cmpmin == 1))
-    {
-      /* ( [  ] ) or ([  ] ) or ( [  ]) */
-      if (*vr0type == VR_RANGE
-	  && vr1type == VR_RANGE)
-	{
-	  *vr0type = vr1type;
-	  *vr0min = vr1min;
-	  *vr0max = vr1max;
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	;
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  *vr0type = VR_ANTI_RANGE;
-	  if (!mineq && TREE_CODE (*vr0min) == INTEGER_CST)
-	    {
-	      *vr0max = int_const_binop (MINUS_EXPR, *vr0min,
-					 build_int_cst (TREE_TYPE (*vr0min), 1));
-	      *vr0min = vr1min;
-	    }
-	  else if (!maxeq && TREE_CODE (*vr0max) == INTEGER_CST)
-	    {
-	      *vr0min = int_const_binop (PLUS_EXPR, *vr0max,
-					 build_int_cst (TREE_TYPE (*vr0max), 1));
-	      *vr0max = vr1max;
-	    }
-	  else
-	    goto give_up;
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	/* The result covers everything.  */
-	goto give_up;
-      else
-	gcc_unreachable ();
-    }
-  else if (cmpmin == -1
-	   && cmpmax == -1
-	   && (operand_less_p (vr1min, *vr0max) == 1
-	       || operand_equal_p (vr1min, *vr0max, 0)))
-    {
-      /* [  (  ]  ) or [   ](   ) */
-      if (*vr0type == VR_RANGE
-	  && vr1type == VR_RANGE)
-	*vr0max = vr1max;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	*vr0min = vr1min;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  if (TREE_CODE (vr1min) == INTEGER_CST)
-	    *vr0max = int_const_binop (MINUS_EXPR, vr1min,
-				       build_int_cst (TREE_TYPE (vr1min), 1));
-	  else
-	    goto give_up;
-	}
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  if (TREE_CODE (*vr0max) == INTEGER_CST)
-	    {
-	      *vr0type = vr1type;
-	      *vr0min = int_const_binop (PLUS_EXPR, *vr0max,
-					 build_int_cst (TREE_TYPE (*vr0max), 1));
-	      *vr0max = vr1max;
-	    }
-	  else
-	    goto give_up;
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if (cmpmin == 1
-	   && cmpmax == 1
-	   && (operand_less_p (*vr0min, vr1max) == 1
-	       || operand_equal_p (*vr0min, vr1max, 0)))
-    {
-      /* (  [  )  ] or (   )[   ] */
-      if (*vr0type == VR_RANGE
-	  && vr1type == VR_RANGE)
-	*vr0min = vr1min;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	*vr0max = vr1max;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  if (TREE_CODE (vr1max) == INTEGER_CST)
-	    *vr0min = int_const_binop (PLUS_EXPR, vr1max,
-				       build_int_cst (TREE_TYPE (vr1max), 1));
-	  else
-	    goto give_up;
-	}
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  if (TREE_CODE (*vr0min) == INTEGER_CST)
-	    {
-	      *vr0type = vr1type;
-	      *vr0max = int_const_binop (MINUS_EXPR, *vr0min,
-					 build_int_cst (TREE_TYPE (*vr0min), 1));
-	      *vr0min = vr1min;
-	    }
-	  else
-	    goto give_up;
-	}
-      else
-	gcc_unreachable ();
-    }
-  else
-    goto give_up;
-
-  return;
-
-give_up:
-  *vr0type = VR_VARYING;
-  *vr0min = NULL_TREE;
-  *vr0max = NULL_TREE;
-}
-
-/* Intersect the two value-ranges { *VR0TYPE, *VR0MIN, *VR0MAX } and
-   { VR1TYPE, VR0MIN, VR0MAX } and store the result
-   in { *VR0TYPE, *VR0MIN, *VR0MAX }.  This may not be the smallest
-   possible such range.  The resulting range is not canonicalized.  */
-
-static void
-intersect_ranges (enum value_range_kind *vr0type,
-		  tree *vr0min, tree *vr0max,
-		  enum value_range_kind vr1type,
-		  tree vr1min, tree vr1max)
-{
-  bool mineq = vrp_operand_equal_p (*vr0min, vr1min);
-  bool maxeq = vrp_operand_equal_p (*vr0max, vr1max);
-
-  /* [] is vr0, () is vr1 in the following classification comments.  */
-  if (mineq && maxeq)
-    {
-      /* [(  )] */
-      if (*vr0type == vr1type)
-	/* Nothing to do for equal ranges.  */
-	;
-      else if ((*vr0type == VR_RANGE
-		&& vr1type == VR_ANTI_RANGE)
-	       || (*vr0type == VR_ANTI_RANGE
-		   && vr1type == VR_RANGE))
-	{
-	  /* For anti-range with range intersection the result is empty.  */
-	  *vr0type = VR_UNDEFINED;
-	  *vr0min = NULL_TREE;
-	  *vr0max = NULL_TREE;
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if (operand_less_p (*vr0max, vr1min) == 1
-	   || operand_less_p (vr1max, *vr0min) == 1)
-    {
-      /* [ ] ( ) or ( ) [ ]
-	 If the ranges have an empty intersection, the result of the
-	 intersect operation is the range for intersecting an
-	 anti-range with a range or empty when intersecting two ranges.  */
-      if (*vr0type == VR_RANGE
-	  && vr1type == VR_ANTI_RANGE)
-	;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  *vr0type = vr1type;
-	  *vr0min = vr1min;
-	  *vr0max = vr1max;
-	}
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  *vr0type = VR_UNDEFINED;
-	  *vr0min = NULL_TREE;
-	  *vr0max = NULL_TREE;
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  /* If the anti-ranges are adjacent to each other merge them.  */
-	  if (TREE_CODE (*vr0max) == INTEGER_CST
-	      && TREE_CODE (vr1min) == INTEGER_CST
-	      && operand_less_p (*vr0max, vr1min) == 1
-	      && integer_onep (int_const_binop (MINUS_EXPR,
-						vr1min, *vr0max)))
-	    *vr0max = vr1max;
-	  else if (TREE_CODE (vr1max) == INTEGER_CST
-		   && TREE_CODE (*vr0min) == INTEGER_CST
-		   && operand_less_p (vr1max, *vr0min) == 1
-		   && integer_onep (int_const_binop (MINUS_EXPR,
-						     *vr0min, vr1max)))
-	    *vr0min = vr1min;
-	  /* Else arbitrarily take VR0.  */
-	}
-    }
-  else if ((maxeq || operand_less_p (vr1max, *vr0max) == 1)
-	   && (mineq || operand_less_p (*vr0min, vr1min) == 1))
-    {
-      /* [ (  ) ] or [(  ) ] or [ (  )] */
-      if (*vr0type == VR_RANGE
-	  && vr1type == VR_RANGE)
-	{
-	  /* If both are ranges the result is the inner one.  */
-	  *vr0type = vr1type;
-	  *vr0min = vr1min;
-	  *vr0max = vr1max;
-	}
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  /* Choose the right gap if the left one is empty.  */
-	  if (mineq)
-	    {
-	      if (TREE_CODE (vr1max) != INTEGER_CST)
-		*vr0min = vr1max;
-	      else if (TYPE_PRECISION (TREE_TYPE (vr1max)) == 1
-		       && !TYPE_UNSIGNED (TREE_TYPE (vr1max)))
-		*vr0min
-		  = int_const_binop (MINUS_EXPR, vr1max,
-				     build_int_cst (TREE_TYPE (vr1max), -1));
-	      else
-		*vr0min
-		  = int_const_binop (PLUS_EXPR, vr1max,
-				     build_int_cst (TREE_TYPE (vr1max), 1));
-	    }
-	  /* Choose the left gap if the right one is empty.  */
-	  else if (maxeq)
-	    {
-	      if (TREE_CODE (vr1min) != INTEGER_CST)
-		*vr0max = vr1min;
-	      else if (TYPE_PRECISION (TREE_TYPE (vr1min)) == 1
-		       && !TYPE_UNSIGNED (TREE_TYPE (vr1min)))
-		*vr0max
-		  = int_const_binop (PLUS_EXPR, vr1min,
-				     build_int_cst (TREE_TYPE (vr1min), -1));
-	      else
-		*vr0max
-		  = int_const_binop (MINUS_EXPR, vr1min,
-				     build_int_cst (TREE_TYPE (vr1min), 1));
-	    }
-	  /* Choose the anti-range if the range is effectively varying.  */
-	  else if (vrp_val_is_min (*vr0min)
-		   && vrp_val_is_max (*vr0max))
-	    {
-	      *vr0type = vr1type;
-	      *vr0min = vr1min;
-	      *vr0max = vr1max;
-	    }
-	  /* Else choose the range.  */
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	/* If both are anti-ranges the result is the outer one.  */
-	;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  /* The intersection is empty.  */
-	  *vr0type = VR_UNDEFINED;
-	  *vr0min = NULL_TREE;
-	  *vr0max = NULL_TREE;
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if ((maxeq || operand_less_p (*vr0max, vr1max) == 1)
-	   && (mineq || operand_less_p (vr1min, *vr0min) == 1))
-    {
-      /* ( [  ] ) or ([  ] ) or ( [  ]) */
-      if (*vr0type == VR_RANGE
-	  && vr1type == VR_RANGE)
-	/* Choose the inner range.  */
-	;
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  /* Choose the right gap if the left is empty.  */
-	  if (mineq)
-	    {
-	      *vr0type = VR_RANGE;
-	      if (TREE_CODE (*vr0max) != INTEGER_CST)
-		*vr0min = *vr0max;
-	      else if (TYPE_PRECISION (TREE_TYPE (*vr0max)) == 1
-		       && !TYPE_UNSIGNED (TREE_TYPE (*vr0max)))
-		*vr0min
-		  = int_const_binop (MINUS_EXPR, *vr0max,
-				     build_int_cst (TREE_TYPE (*vr0max), -1));
-	      else
-		*vr0min
-		  = int_const_binop (PLUS_EXPR, *vr0max,
-				     build_int_cst (TREE_TYPE (*vr0max), 1));
-	      *vr0max = vr1max;
-	    }
-	  /* Choose the left gap if the right is empty.  */
-	  else if (maxeq)
-	    {
-	      *vr0type = VR_RANGE;
-	      if (TREE_CODE (*vr0min) != INTEGER_CST)
-		*vr0max = *vr0min;
-	      else if (TYPE_PRECISION (TREE_TYPE (*vr0min)) == 1
-		       && !TYPE_UNSIGNED (TREE_TYPE (*vr0min)))
-		*vr0max
-		  = int_const_binop (PLUS_EXPR, *vr0min,
-				     build_int_cst (TREE_TYPE (*vr0min), -1));
-	      else
-		*vr0max
-		  = int_const_binop (MINUS_EXPR, *vr0min,
-				     build_int_cst (TREE_TYPE (*vr0min), 1));
-	      *vr0min = vr1min;
-	    }
-	  /* Choose the anti-range if the range is effectively varying.  */
-	  else if (vrp_val_is_min (vr1min)
-		   && vrp_val_is_max (vr1max))
-	    ;
-	  /* Choose the anti-range if it is ~[0,0], that range is special
-	     enough to special case when vr1's range is relatively wide.
-	     At least for types bigger than int - this covers pointers
-	     and arguments to functions like ctz.  */
-	  else if (*vr0min == *vr0max
-		   && integer_zerop (*vr0min)
-		   && ((TYPE_PRECISION (TREE_TYPE (*vr0min))
-			>= TYPE_PRECISION (integer_type_node))
-		       || POINTER_TYPE_P (TREE_TYPE (*vr0min)))
-		   && TREE_CODE (vr1max) == INTEGER_CST
-		   && TREE_CODE (vr1min) == INTEGER_CST
-		   && (wi::clz (wi::to_wide (vr1max) - wi::to_wide (vr1min))
-		       < TYPE_PRECISION (TREE_TYPE (*vr0min)) / 2))
-	    ;
-	  /* Else choose the range.  */
-	  else
-	    {
-	      *vr0type = vr1type;
-	      *vr0min = vr1min;
-	      *vr0max = vr1max;
-	    }
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  /* If both are anti-ranges the result is the outer one.  */
-	  *vr0type = vr1type;
-	  *vr0min = vr1min;
-	  *vr0max = vr1max;
-	}
-      else if (vr1type == VR_ANTI_RANGE
-	       && *vr0type == VR_RANGE)
-	{
-	  /* The intersection is empty.  */
-	  *vr0type = VR_UNDEFINED;
-	  *vr0min = NULL_TREE;
-	  *vr0max = NULL_TREE;
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if ((operand_less_p (vr1min, *vr0max) == 1
-	    || operand_equal_p (vr1min, *vr0max, 0))
-	   && operand_less_p (*vr0min, vr1min) == 1)
-    {
-      /* [  (  ]  ) or [  ](  ) */
-      if (*vr0type == VR_ANTI_RANGE
-	  && vr1type == VR_ANTI_RANGE)
-	*vr0max = vr1max;
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_RANGE)
-	*vr0min = vr1min;
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  if (TREE_CODE (vr1min) == INTEGER_CST)
-	    *vr0max = int_const_binop (MINUS_EXPR, vr1min,
-				       build_int_cst (TREE_TYPE (vr1min), 1));
-	  else
-	    *vr0max = vr1min;
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  *vr0type = VR_RANGE;
-	  if (TREE_CODE (*vr0max) == INTEGER_CST)
-	    *vr0min = int_const_binop (PLUS_EXPR, *vr0max,
-				       build_int_cst (TREE_TYPE (*vr0max), 1));
-	  else
-	    *vr0min = *vr0max;
-	  *vr0max = vr1max;
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if ((operand_less_p (*vr0min, vr1max) == 1
-	    || operand_equal_p (*vr0min, vr1max, 0))
-	   && operand_less_p (vr1min, *vr0min) == 1)
-    {
-      /* (  [  )  ] or (  )[  ] */
-      if (*vr0type == VR_ANTI_RANGE
-	  && vr1type == VR_ANTI_RANGE)
-	*vr0min = vr1min;
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_RANGE)
-	*vr0max = vr1max;
-      else if (*vr0type == VR_RANGE
-	       && vr1type == VR_ANTI_RANGE)
-	{
-	  if (TREE_CODE (vr1max) == INTEGER_CST)
-	    *vr0min = int_const_binop (PLUS_EXPR, vr1max,
-				       build_int_cst (TREE_TYPE (vr1max), 1));
-	  else
-	    *vr0min = vr1max;
-	}
-      else if (*vr0type == VR_ANTI_RANGE
-	       && vr1type == VR_RANGE)
-	{
-	  *vr0type = VR_RANGE;
-	  if (TREE_CODE (*vr0min) == INTEGER_CST)
-	    *vr0max = int_const_binop (MINUS_EXPR, *vr0min,
-				       build_int_cst (TREE_TYPE (*vr0min), 1));
-	  else
-	    *vr0max = *vr0min;
-	  *vr0min = vr1min;
-	}
-      else
-	gcc_unreachable ();
-    }
-
-  /* If we know the intersection is empty, there's no need to
-     conservatively add anything else to the set.  */
-  if (*vr0type == VR_UNDEFINED)
-    return;
-
-  /* As a fallback simply use { *VRTYPE, *VR0MIN, *VR0MAX } as
-     result for the intersection.  That's always a conservative
-     correct estimate unless VR1 is a constant singleton range
-     in which case we choose that.  */
-  if (vr1type == VR_RANGE
-      && is_gimple_min_invariant (vr1min)
-      && vrp_operand_equal_p (vr1min, vr1max))
-    {
-      *vr0type = vr1type;
-      *vr0min = vr1min;
-      *vr0max = vr1max;
-    }
-}
-
-
-/* Helper for the intersection operation for value ranges.  Given two
-   value ranges VR0 and VR1, return the intersection of the two
-   ranges.  This may not be the smallest possible such range.  */
-
-value_range_base
-value_range_base::intersect_helper (const value_range_base *vr0,
-				    const value_range_base *vr1)
-{
-  /* If either range is VR_VARYING the other one wins.  */
-  if (vr1->varying_p ())
-    return *vr0;
-  if (vr0->varying_p ())
-    return *vr1;
-
-  /* When either range is VR_UNDEFINED the resulting range is
-     VR_UNDEFINED, too.  */
-  if (vr0->undefined_p ())
-    return *vr0;
-  if (vr1->undefined_p ())
-    return *vr1;
-
-  value_range_kind vr0type = vr0->kind ();
-  tree vr0min = vr0->min ();
-  tree vr0max = vr0->max ();
-  intersect_ranges (&vr0type, &vr0min, &vr0max,
-		    vr1->kind (), vr1->min (), vr1->max ());
-  /* Make sure to canonicalize the result though as the inversion of a
-     VR_RANGE can still be a VR_RANGE.  Work on a temporary so we can
-     fall back to vr0 when this turns things to varying.  */
-  value_range_base tem;
-  if (vr0type == VR_UNDEFINED)
-    tem.set_undefined ();
-  else if (vr0type == VR_VARYING)
-    tem.set_varying (vr0->type ());
-  else
-    tem.set (vr0type, vr0min, vr0max);
-  /* If that failed, use the saved original VR0.  */
-  if (tem.varying_p ())
-    return *vr0;
-
-  return tem;
-}
-
 void
-value_range_base::intersect (const value_range_base *other)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Intersecting\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\nand\n  ");
-      dump_value_range (dump_file, other);
-      fprintf (dump_file, "\n");
-    }
-
-  *this = intersect_helper (this, other);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "to\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\n");
-    }
-}
-
-void
-value_range::intersect (const value_range *other)
+value_range_equiv::intersect (const value_range_equiv *other)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -5974,8 +4664,8 @@ value_range::intersect (const value_range *other)
     this->deep_copy (other);
   else
     {
-      value_range_base tem = intersect_helper (this, other);
-      this->update (tem.kind (), tem.min (), tem.max ());
+      value_range tem = intersect_helper (this, other);
+      this->update (tem.min (), tem.max (), tem.kind ());
 
       /* If the result is VR_UNDEFINED there is no need to mess with
 	 equivalencies.  */
@@ -6004,82 +4694,8 @@ value_range::intersect (const value_range *other)
     }
 }
 
-/* Helper for meet operation for value ranges.  Given two value ranges VR0 and
-   VR1, return a range that contains both VR0 and VR1.  This may not be the
-   smallest possible such range.  */
-
-value_range_base
-value_range_base::union_helper (const value_range_base *vr0,
-				const value_range_base *vr1)
-{
-  /* VR0 has the resulting range if VR1 is undefined or VR0 is varying.  */
-  if (vr1->undefined_p ()
-      || vr0->varying_p ())
-    return *vr0;
-
-  /* VR1 has the resulting range if VR0 is undefined or VR1 is varying.  */
-  if (vr0->undefined_p ()
-      || vr1->varying_p ())
-    return *vr1;
-
-  value_range_kind vr0type = vr0->kind ();
-  tree vr0min = vr0->min ();
-  tree vr0max = vr0->max ();
-  union_ranges (&vr0type, &vr0min, &vr0max,
-		vr1->kind (), vr1->min (), vr1->max ());
-
-  /* Work on a temporary so we can still use vr0 when union returns varying.  */
-  value_range_base tem;
-  if (vr0type == VR_UNDEFINED)
-    tem.set_undefined ();
-  else if (vr0type == VR_VARYING)
-    tem.set_varying (vr0->type ());
-  else
-    tem.set (vr0type, vr0min, vr0max);
-
-  /* Failed to find an efficient meet.  Before giving up and setting
-     the result to VARYING, see if we can at least derive a useful
-     anti-range.  */
-  if (tem.varying_p ()
-      && range_includes_zero_p (vr0) == 0
-      && range_includes_zero_p (vr1) == 0)
-    {
-      tem.set_nonzero (vr0->type ());
-      return tem;
-    }
-
-  return tem;
-}
-
-
-/* Meet operation for value ranges.  Given two value ranges VR0 and
-   VR1, store in VR0 a range that contains both VR0 and VR1.  This
-   may not be the smallest possible such range.  */
-
 void
-value_range_base::union_ (const value_range_base *other)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Meeting\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\nand\n  ");
-      dump_value_range (dump_file, other);
-      fprintf (dump_file, "\n");
-    }
-
-  *this = union_helper (this, other);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "to\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\n");
-    }
-}
-
-void
-value_range::union_ (const value_range *other)
+value_range_equiv::union_ (const value_range_equiv *other)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -6096,8 +4712,8 @@ value_range::union_ (const value_range *other)
     this->deep_copy (other);
   else
     {
-      value_range_base tem = union_helper (this, other);
-      this->update (tem.kind (), tem.min (), tem.max ());
+      value_range tem = union_helper (this, other);
+      this->update (tem.min (), tem.max (), tem.kind ());
 
       /* The resulting set of equivalences is always the intersection of
 	 the two sets.  */
@@ -6115,241 +4731,6 @@ value_range::union_ (const value_range *other)
     }
 }
 
-/* Normalize addresses into constants.  */
-
-value_range_base
-value_range_base::normalize_addresses () const
-{
-  if (undefined_p ())
-    return *this;
-
-  if (!POINTER_TYPE_P (type ()) || range_has_numeric_bounds_p (this))
-    return *this;
-
-  if (!range_includes_zero_p (this))
-    {
-      gcc_checking_assert (TREE_CODE (m_min) == ADDR_EXPR
-			   || TREE_CODE (m_max) == ADDR_EXPR);
-      return range_nonzero (type ());
-    }
-  return value_range_base (type ());
-}
-
-/* Normalize symbolics and addresses into constants.  */
-
-value_range_base
-value_range_base::normalize_symbolics () const
-{
-  if (varying_p () || undefined_p ())
-    return *this;
-  tree ttype = type ();
-  bool min_symbolic = !is_gimple_min_invariant (min ());
-  bool max_symbolic = !is_gimple_min_invariant (max ());
-  if (!min_symbolic && !max_symbolic)
-    return normalize_addresses ();
-
-  // [SYM, SYM] -> VARYING
-  if (min_symbolic && max_symbolic)
-    {
-      value_range_base var;
-      var.set_varying (ttype);
-      return var;
-    }
-  if (kind () == VR_RANGE)
-    {
-      // [SYM, NUM] -> [-MIN, NUM]
-      if (min_symbolic)
-	return value_range_base (VR_RANGE, vrp_val_min (ttype, true), max ());
-      // [NUM, SYM] -> [NUM, +MAX]
-      return value_range_base (VR_RANGE, min (), vrp_val_max (ttype, true));
-    }
-  gcc_checking_assert (kind () == VR_ANTI_RANGE);
-  // ~[SYM, NUM] -> [NUM + 1, +MAX]
-  if (min_symbolic)
-    {
-      if (!vrp_val_is_max (max ()))
-	{
-	  tree n = wide_int_to_tree (ttype, wi::to_wide (max ()) + 1);
-	  return value_range_base (VR_RANGE, n, vrp_val_max (ttype, true));
-	}
-      value_range_base var;
-      var.set_varying (ttype);
-      return var;
-    }
-  // ~[NUM, SYM] -> [-MIN, NUM - 1]
-  if (!vrp_val_is_min (min ()))
-    {
-      tree n = wide_int_to_tree (ttype, wi::to_wide (min ()) - 1);
-      return value_range_base (VR_RANGE, vrp_val_min (ttype, true), n);
-    }
-  value_range_base var;
-  var.set_varying (ttype);
-  return var;
-}
-
-/* Return the number of sub-ranges in a range.  */
-
-unsigned
-value_range_base::num_pairs () const
-{
-  if (undefined_p ())
-    return 0;
-  if (varying_p ())
-    return 1;
-  if (symbolic_p ())
-    return normalize_symbolics ().num_pairs ();
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      // ~[MIN, X] has one sub-range of [X+1, MAX], and
-      // ~[X, MAX] has one sub-range of [MIN, X-1].
-      if (vrp_val_is_min (m_min, true) || vrp_val_is_max (m_max, true))
-	return 1;
-      return 2;
-    }
-  return 1;
-}
-
-/* Return the lower bound for a sub-range.  PAIR is the sub-range in
-   question.  */
-
-wide_int
-value_range_base::lower_bound (unsigned pair) const
-{
-  if (symbolic_p ())
-    return normalize_symbolics ().lower_bound (pair);
-
-  gcc_checking_assert (!undefined_p ());
-  gcc_checking_assert (pair + 1 <= num_pairs ());
-  tree t = NULL;
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      tree typ = type ();
-      if (pair == 1 || vrp_val_is_min (m_min, true))
-	t = wide_int_to_tree (typ, wi::to_wide (m_max) + 1);
-      else
-	t = vrp_val_min (typ, true);
-    }
-  else
-    t = m_min;
-  return wi::to_wide (t);
-}
-
-/* Return the upper bound for a sub-range.  PAIR is the sub-range in
-   question.  */
-
-wide_int
-value_range_base::upper_bound (unsigned pair) const
-{
-  if (symbolic_p ())
-    return normalize_symbolics ().upper_bound (pair);
-
-  gcc_checking_assert (!undefined_p ());
-  gcc_checking_assert (pair + 1 <= num_pairs ());
-  tree t = NULL;
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      tree typ = type ();
-      if (pair == 1 || vrp_val_is_min (m_min, true))
-	t = vrp_val_max (typ, true);
-      else
-	t = wide_int_to_tree (typ, wi::to_wide (m_min) - 1);
-    }
-  else
-    t = m_max;
-  return wi::to_wide (t);
-}
-
-/* Return the highest bound in a range.  */
-
-wide_int
-value_range_base::upper_bound () const
-{
-  unsigned pairs = num_pairs ();
-  gcc_checking_assert (pairs > 0);
-  return upper_bound (pairs - 1);
-}
-
-/* Return TRUE if range contains INTEGER_CST.  */
-
-bool
-value_range_base::contains_p (tree cst) const
-{
-  gcc_checking_assert (TREE_CODE (cst) == INTEGER_CST);
-  if (symbolic_p ())
-    return normalize_symbolics ().contains_p (cst);
-  return value_inside_range (cst) == 1;
-}
-
-/* Return the inverse of a range.  */
-
-void
-value_range_base::invert ()
-{
-  /* We can't just invert VR_RANGE and VR_ANTI_RANGE because we may
-     create a non-canonical ranges.  Use the constructors instead.  */
-  if (m_kind == VR_RANGE)
-    *this = value_range_base (VR_ANTI_RANGE, m_min, m_max);
-  else if (m_kind == VR_ANTI_RANGE)
-    *this = value_range_base (VR_RANGE, m_min, m_max);
-  else
-    gcc_unreachable ();
-}
-
-/* Range union, but for references.  */
-
-void
-value_range_base::union_ (const value_range_base &r)
-{
-  /* Disable details for now, because it makes the ranger dump
-     unnecessarily verbose.  */
-  bool details = dump_flags & TDF_DETAILS;
-  if (details)
-    dump_flags &= ~TDF_DETAILS;
-  union_ (&r);
-  if (details)
-    dump_flags |= TDF_DETAILS;
-}
-
-/* Range intersect, but for references.  */
-
-void
-value_range_base::intersect (const value_range_base &r)
-{
-  /* Disable details for now, because it makes the ranger dump
-     unnecessarily verbose.  */
-  bool details = dump_flags & TDF_DETAILS;
-  if (details)
-    dump_flags &= ~TDF_DETAILS;
-  intersect (&r);
-  if (details)
-    dump_flags |= TDF_DETAILS;
-}
-
-/* Return TRUE if two types are compatible for range operations.  */
-
-static bool
-range_compatible_p (tree t1, tree t2)
-{
-  if (POINTER_TYPE_P (t1) && POINTER_TYPE_P (t2))
-    return true;
-
-  return types_compatible_p (t1, t2);
-}
-
-bool
-value_range_base::operator== (const value_range_base &r) const
-{
-  if (undefined_p ())
-    return r.undefined_p ();
-
-  if (!range_compatible_p (type (), r.type ()))
-    return false;
-
-  return (m_kind == r.m_kind
-	  && operand_equal_p (m_min, r.m_min, 0)
-	  && operand_equal_p (m_max, r.m_max, 0));
-}
-
 /* Visit all arguments for PHI node PHI that flow through executable
    edges.  If a valid value range can be derived from all the incoming
    value ranges, set a new range for the LHS of PHI.  */
@@ -6358,7 +4739,7 @@ enum ssa_prop_result
 vrp_prop::visit_phi (gphi *phi)
 {
   tree lhs = PHI_RESULT (phi);
-  value_range vr_result;
+  value_range_equiv vr_result;
   extract_range_from_phi_node (phi, &vr_result);
   if (update_value_range (lhs, &vr_result))
     {
@@ -6555,7 +4936,7 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 
       op = lhs_of_dominating_assert (op, bb, stmt);
 
-      const value_range *vr = vr_values->get_value_range (op);
+      const value_range_equiv *vr = vr_values->get_value_range (op);
       if (vr->undefined_p ()
 	  || vr->varying_p ()
 	  || vr->symbolic_p ())
@@ -6621,7 +5002,7 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 	{
 	  edge dummy_e;
 	  tree dummy_tree;
-	  value_range new_vr;
+	  value_range_equiv new_vr;
 	  vr_values->extract_range_from_stmt (stmt, &dummy_e,
 					      &dummy_tree, &new_vr);
 	  tree singleton;
@@ -6797,7 +5178,7 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
       if (!name)
 	continue;
 
-      const value_range *vr = get_value_range (name);
+      const value_range_equiv *vr = get_value_range (name);
       if (!name || !vr->constant_p ())
 	continue;
 
@@ -6993,11 +5374,11 @@ make_pass_vrp (gcc::context *ctxt)
 /* Worker for determine_value_range.  */
 
 static void
-determine_value_range_1 (value_range_base *vr, tree expr)
+determine_value_range_1 (value_range *vr, tree expr)
 {
   if (BINARY_CLASS_P (expr))
     {
-      value_range_base vr0, vr1;
+      value_range vr0, vr1;
       determine_value_range_1 (&vr0, TREE_OPERAND (expr, 0));
       determine_value_range_1 (&vr1, TREE_OPERAND (expr, 1));
       range_fold_binary_expr (vr, TREE_CODE (expr), TREE_TYPE (expr),
@@ -7005,7 +5386,7 @@ determine_value_range_1 (value_range_base *vr, tree expr)
     }
   else if (UNARY_CLASS_P (expr))
     {
-      value_range_base vr0;
+      value_range vr0;
       determine_value_range_1 (&vr0, TREE_OPERAND (expr, 0));
       range_fold_unary_expr (vr, TREE_CODE (expr), TREE_TYPE (expr),
 			     &vr0, TREE_TYPE (TREE_OPERAND (expr, 0)));
@@ -7021,8 +5402,9 @@ determine_value_range_1 (value_range_base *vr, tree expr)
       if (TREE_CODE (expr) == SSA_NAME
 	  && INTEGRAL_TYPE_P (TREE_TYPE (expr))
 	  && (kind = get_range_info (expr, &min, &max)) != VR_VARYING)
-	vr->set (kind, wide_int_to_tree (TREE_TYPE (expr), min),
-		 wide_int_to_tree (TREE_TYPE (expr), max));
+	vr->set (wide_int_to_tree (TREE_TYPE (expr), min),
+		 wide_int_to_tree (TREE_TYPE (expr), max),
+		 kind);
       else
 	vr->set_varying (TREE_TYPE (expr));
     }
@@ -7034,7 +5416,7 @@ determine_value_range_1 (value_range_base *vr, tree expr)
 value_range_kind
 determine_value_range (tree expr, wide_int *min, wide_int *max)
 {
-  value_range_base vr;
+  value_range vr;
   determine_value_range_1 (&vr, expr);
   if (vr.constant_p ())
     {

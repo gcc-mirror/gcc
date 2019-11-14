@@ -242,6 +242,16 @@ ggc_alloc_atomic (size_t s CXX_MEM_STAT_INFO)
     return ggc_internal_alloc (s PASS_MEM_STAT);
 }
 
+/* Call destructor and free the garbage collected memory.  */
+
+template <typename T>
+inline void
+ggc_delete (T *ptr)
+{
+  ptr->~T ();
+  ggc_free (ptr);
+}
+
 /* Allocate a gc-able string, and fill it with LENGTH bytes from CONTENTS.
    If LENGTH is -1, then CONTENTS is assumed to be a
    null-terminated string and the memory sized accordingly.  */

@@ -21,15 +21,12 @@ along with GCC; see the file COPYING3.  If not see
    any particular GC implementation.  */
 
 #include "config.h"
-#ifdef HAVE_MALLINFO
-#include <malloc.h>
-#endif
+#define INCLUDE_MALLOC_H
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
 #include "diagnostic-core.h"
 #include "ggc-internal.h"
-#include "params.h"
 #include "hosthooks.h"
 #include "plugin.h"
 #include "options.h"
@@ -816,8 +813,8 @@ void
 init_ggc_heuristics (void)
 {
 #if !defined ENABLE_GC_CHECKING && !defined ENABLE_GC_ALWAYS_COLLECT
-  set_default_param_value (GGC_MIN_EXPAND, ggc_min_expand_heuristic ());
-  set_default_param_value (GGC_MIN_HEAPSIZE, ggc_min_heapsize_heuristic ());
+  param_ggc_min_expand = ggc_min_expand_heuristic ();
+  param_ggc_min_heapsize = ggc_min_heapsize_heuristic ();
 #endif
 }
 
@@ -1005,10 +1002,10 @@ ggc_prune_overhead_list (void)
 
   for (; it != ggc_mem_desc.m_reverse_object_map->end (); ++it)
     if (!ggc_marked_p ((*it).first))
-      (*it).second.first->m_collected += (*it).second.second;
-
-  delete ggc_mem_desc.m_reverse_object_map;
-  ggc_mem_desc.m_reverse_object_map = new map_t (13, false, false, false);
+      {
+        (*it).second.first->m_collected += (*it).second.second;
+	ggc_mem_desc.m_reverse_object_map->remove ((*it).first);
+      }
 }
 
 /* Return memory used by heap in kb, 0 if this info is not available.  */

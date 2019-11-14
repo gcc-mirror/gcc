@@ -78,6 +78,7 @@ struct _cpp_file;
   OP(NOT_EQ,		"!=")						\
   OP(GREATER_EQ,	">=")						\
   OP(LESS_EQ,		"<=")						\
+  OP(SPACESHIP,		"<=>")						\
 									\
   /* These two are unary + / - in preprocessor expressions.  */		\
   OP(PLUS_EQ,		"+=")	/* math */				\

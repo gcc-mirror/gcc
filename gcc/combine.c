@@ -100,7 +100,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "rtlhooks-def.h"
 #include "expr.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "valtrack.h"
 #include "rtl-iter.h"
@@ -1251,7 +1250,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
   init_reg_last ();
   setup_incoming_promotions (first);
   last_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  int max_combine = PARAM_VALUE (PARAM_MAX_COMBINE_INSNS);
+  int max_combine = param_max_combine_insns;
 
   FOR_EACH_BB_FN (this_basic_block, cfun)
     {
@@ -13282,7 +13281,7 @@ record_value_for_reg (rtx reg, rtx_insn *insn, rtx value)
 	    {
 	      /* If there are two or more occurrences of REG in VALUE,
 		 prevent the value from growing too much.  */
-	      if (count_rtxs (tem) > MAX_LAST_VALUE_RTL)
+	      if (count_rtxs (tem) > param_max_last_value_rtl)
 		tem = gen_rtx_CLOBBER (GET_MODE (tem), const0_rtx);
 	    }
 

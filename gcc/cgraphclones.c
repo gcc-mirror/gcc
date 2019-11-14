@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This module provide facilities for clonning functions. I.e. creating
+/* This module provide facilities for cloning functions.  I.e. creating
    new functions based on existing functions with simple modifications,
    such as replacement of parameters.
 
@@ -304,7 +304,7 @@ dump_callgraph_transformation (const cgraph_node *original,
    When UPDATE_ORIGINAL is true, the counts are subtracted from the original
    function's profile to reflect the fact that part of execution is handled
    by node.  
-   When CALL_DUPLICATOIN_HOOK is true, the ipa passes are acknowledged about
+   When CALL_DUPLICATION_HOOK is true, the ipa passes are acknowledged about
    the new clone. Otherwise the caller is responsible for doing so later.
 
    If the new node is being inlined into another one, NEW_INLINED_TO should be
@@ -381,7 +381,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     {
       /* Redirect calls to the old version node to point to its new
 	 version.  The only exception is when the edge was proved to
-	 be unreachable during the clonning procedure.  */
+	 be unreachable during the cloning procedure.  */
       if (!e->callee
 	  || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
         e->redirect_callee_duplicating_thunks (new_node);
@@ -570,6 +570,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
   set_new_clone_decl_and_node_flags (new_node);
+  new_node->ipcp_clone = ipcp_clone;
   new_node->clone.tree_map = tree_map;
   if (!implicit_section)
     new_node->set_section (get_section ());
@@ -891,8 +892,6 @@ cgraph_node::create_version_clone (tree new_decl,
 	  version.  */
        e->redirect_callee (new_version);
      }
-
-   symtab->call_cgraph_duplication_hooks (this, new_version);
 
    dump_callgraph_transformation (this, new_version, suffix);
 

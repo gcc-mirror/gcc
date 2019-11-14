@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "profile.h"
 #include "tree-cfgcleanup.h"
-#include "params.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-pretty-print.h"

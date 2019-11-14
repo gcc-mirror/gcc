@@ -714,6 +714,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Used to indicate that this TYPE represents a compiler-generated entity.  */
 #define TYPE_ARTIFICIAL(NODE) (TYPE_CHECK (NODE)->base.nowarning_flag)
 
+/* True if the type is indivisible at the source level, i.e. if its
+   component parts cannot be accessed directly.  This is used to suppress
+   normal GNU extensions for target-specific vector types.  */
+#define TYPE_INDIVISIBLE_P(NODE) (TYPE_CHECK (NODE)->type_common.indivisible_p)
+
 /* In an IDENTIFIER_NODE, this means that assemble_name was called with
    this string as an argument.  */
 #define TREE_SYMBOL_REFERENCED(NODE) \
@@ -1617,7 +1622,8 @@ class auto_suppress_location_wrappers
    treatment if OMP_CLAUSE_SIZE is zero.  */
 #define OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
-/* Nonzero if this map clause is for an ACC parallel reduction variable.  */
+/* Nonzero if this map clause is for an OpenACC compute construct's reduction
+   variable.  */
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 

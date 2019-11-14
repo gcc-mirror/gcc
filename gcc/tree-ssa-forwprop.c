@@ -1786,7 +1786,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
   gimple *def_stmt;
-  tree op, op0, op1, op2;
+  tree op, op0, op1;
   tree elem_type;
   unsigned idx, size;
   enum tree_code code;
@@ -1804,20 +1804,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
     return false;
 
   op1 = TREE_OPERAND (op, 1);
-  op2 = TREE_OPERAND (op, 2);
   code = gimple_assign_rhs_code (def_stmt);
-
-  if (code == CONSTRUCTOR)
-    {
-      tree tem = fold_ternary (BIT_FIELD_REF, TREE_TYPE (op),
-			       gimple_assign_rhs1 (def_stmt), op1, op2);
-      if (!tem || !valid_gimple_rhs_p (tem))
-	return false;
-      gimple_assign_set_rhs_from_tree (gsi, tem);
-      update_stmt (gsi_stmt (*gsi));
-      return true;
-    }
-
   elem_type = TREE_TYPE (TREE_TYPE (op0));
   if (TREE_TYPE (op) != elem_type)
     return false;

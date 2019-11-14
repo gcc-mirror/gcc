@@ -46,6 +46,6 @@ struct X {
 };
 
 void test2() {
-  g1<X, X>(); // { dg-error "cannot call" }
-  g2<X, X>(); // { dg-error "cannot call" }
+  g1<X, X>(); // { dg-error "" }
+  g2<X, X>(); // { dg-error "" }
 }

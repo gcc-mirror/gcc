@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 class equivalence_iterator
 {
 public:
-  equivalence_iterator (tree name, const value_range *,
+  equivalence_iterator (tree name, const value_range_equiv *,
 			const vec<assert_info> &);
   tree next (void);
 private:
@@ -54,23 +54,25 @@ class vr_values : public gori_compute
   vr_values (void);
   ~vr_values (void);
 
-  const value_range *get_value_range (const_tree);
-  void set_vr_value (tree, value_range *);
-  value_range *swap_vr_value (tree, value_range *);
+  const value_range_equiv *get_value_range (const_tree);
+  void set_vr_value (tree, value_range_equiv *);
+  value_range_equiv *swap_vr_value (tree, value_range_equiv *);
 
   void set_def_to_varying (const_tree);
   void set_defs_to_varying (gimple *);
-  bool update_value_range (const_tree, value_range *);
+  bool update_value_range (const_tree, value_range_equiv *);
   tree op_with_constant_singleton_value_range (tree);
-  void adjust_range_with_scev (value_range *, class loop *, gimple *, tree);
+  void adjust_range_with_scev (value_range_equiv *, class loop *,
+			       gimple *, tree);
   tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
   void dump_all_value_ranges (FILE *);
 
   void extract_range_for_var_from_comparison_expr (tree, enum tree_code,
-						   tree, tree, value_range *);
-  void extract_range_from_phi_node (gphi *, value_range *);
-  void extract_range_basic (value_range *, gimple *);
-  void extract_range_from_stmt (gimple *, edge *, tree *, value_range *);
+						   tree, tree,
+						   value_range_equiv *);
+  void extract_range_from_phi_node (gphi *, value_range_equiv *);
+  void extract_range_basic (value_range_equiv *, gimple *);
+  void extract_range_from_stmt (gimple *, edge *, tree *, value_range_equiv *);
 
   void vrp_visit_cond_stmt (gcond *, edge *);
 
@@ -81,35 +83,35 @@ class vr_values : public gori_compute
   void set_lattice_propagation_complete (void) { values_propagated = true; }
 
   /* Allocate a new value_range object.  */
-  value_range *allocate_value_range (void)
+  value_range_equiv *allocate_value_range_equiv (void)
     { return vrp_value_range_pool.allocate (); }
-  void free_value_range (value_range *vr)
+  void free_value_range (value_range_equiv *vr)
     { vrp_value_range_pool.remove (vr); }
 
   /* */
   void cleanup_edges_and_switches (void);
 
-  bool outgoing_edge_range_p (value_range_base &, edge, tree name,
-			      const value_range_base *name_range = NULL);
+  bool outgoing_edge_range_p (value_range &, edge, tree name,
+			      const value_range *name_range = NULL);
   void save_equivalences (equivalence_iterator *);
  private:
-  void range_of_ssa_name (value_range_base &r, tree op, gimple * = NULL);
+  void range_of_ssa_name (value_range &r, tree op, gimple * = NULL);
   equivalence_iterator *m_equivalences;
-  bool outgoing_edge_range_with_equivalences_p (value_range_base &,
+  bool outgoing_edge_range_with_equivalences_p (value_range &,
 						edge, tree name);
-  bool solve_equiv_at_statement (value_range_base &,
+  bool solve_equiv_at_statement (value_range &,
 				 tree, gimple *stmt,
-				 const value_range_base &);
-  bool solve_name_given_equivalence (value_range_base &r,
+				 const value_range &);
+  bool solve_name_given_equivalence (value_range &r,
 				     tree name, tree equiv,
-				     const value_range_base &equiv_range);
-  value_range_base range_for_op2 (gimple *, tree type);
+				     const value_range &equiv_range);
+  value_range range_for_op2 (gimple *, tree type);
 
-  value_range *get_lattice_entry (const_tree);
+  value_range_equiv *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
   bool check_for_binary_op_overflow (enum tree_code, tree, tree, tree, bool *);
-  const value_range *get_vr_for_comparison (int, value_range *);
+  const value_range_equiv *get_vr_for_comparison (int, value_range_equiv *);
   tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool);
   tree compare_names (enum tree_code, tree, tree, bool *);
   bool two_valued_val_range_p (tree, tree *, tree *);
@@ -119,17 +121,17 @@ class vr_values : public gori_compute
   tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
 						tree, tree, bool,
 						bool *, bool *);
-  void extract_range_from_assignment (value_range *, gassign *);
-  void extract_range_from_assert (value_range *, tree);
-  void extract_range_from_ssa_name (value_range *, tree);
-  void extract_range_from_binary_expr (value_range *, enum tree_code,
+  void extract_range_from_assignment (value_range_equiv *, gassign *);
+  void extract_range_from_assert (value_range_equiv *, tree);
+  void extract_range_from_ssa_name (value_range_equiv *, tree);
+  void extract_range_from_binary_expr (value_range_equiv *, enum tree_code,
 				       tree, tree, tree);
-  void extract_range_from_unary_expr (value_range *, enum tree_code,
+  void extract_range_from_unary_expr (value_range_equiv *, enum tree_code,
 				      tree, tree);
-  void extract_range_from_cond_expr (value_range *, gassign *);
-  void extract_range_from_comparison (value_range *, enum tree_code,
+  void extract_range_from_cond_expr (value_range_equiv *, gassign *);
+  void extract_range_from_comparison (value_range_equiv *, enum tree_code,
 				      tree, tree, tree);
-  void vrp_visit_assignment_or_call (gimple*, tree *, value_range *);
+  void vrp_visit_assignment_or_call (gimple*, tree *, value_range_equiv *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
@@ -143,7 +145,7 @@ class vr_values : public gori_compute
   bool simplify_internal_call_using_ranges (gimple_stmt_iterator *, gimple *);
 
   /* Allocation pools for value_range objects.  */
-  object_allocator<value_range> vrp_value_range_pool;
+  object_allocator<value_range_equiv> vrp_value_range_pool;
 
   /* This probably belongs in the lattice rather than in here.  */
   bool values_propagated;
@@ -154,7 +156,7 @@ class vr_values : public gori_compute
   /* Value range array.  After propagation, VR_VALUE[I] holds the range
      of values that SSA name N_I may take.  */
   unsigned int num_vr_values;
-  value_range **vr_value;
+  value_range_equiv **vr_value;
 
   /* For a PHI node which sets SSA name N_I, VR_COUNTS[I] holds the
      number of executable edges we saw the last time we visited the

@@ -5242,13 +5242,19 @@ real_nextafter (REAL_VALUE_TYPE *r, format_helper fmt,
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  LEN is the size of BUF, and the buffer must be large
-   enough to contain the resulting string.  */
+   enough to contain the resulting string.  If NORM_MAX, instead write
+   the maximum representable finite normalized floating-point number,
+   defined to be such that all choices of digits for that exponent are
+   representable in the format (this only makes a difference for IBM
+   long double).  */
 
 void
-get_max_float (const struct real_format *fmt, char *buf, size_t len)
+get_max_float (const struct real_format *fmt, char *buf, size_t len,
+	       bool norm_max)
 {
   int i, n;
   char *p;
+  bool is_ibm_extended = fmt->pnan < fmt->p;
 
   strcpy (buf, "0x0.");
   n = fmt->p;
@@ -5256,8 +5262,9 @@ get_max_float (const struct real_format *fmt, char *buf, size_t len)
     *p++ = 'f';
   if (i < n)
     *p++ = "08ce"[n - i];
-  sprintf (p, "p%d", fmt->emax);
-  if (fmt->pnan < fmt->p)
+  sprintf (p, "p%d",
+	   (is_ibm_extended && norm_max) ? fmt->emax - 1 : fmt->emax);
+  if (is_ibm_extended && !norm_max)
     {
       /* This is an IBM extended double format made up of two IEEE
 	 doubles.  The value of the long double is the sum of the

@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
-#include "params.h"
 #include "fold-const.h"
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
@@ -203,7 +202,7 @@ class translate_isl_ast_to_gimple
   {
     codegen_error = true;
     gcc_assert (! flag_checking
-		|| PARAM_VALUE (PARAM_GRAPHITE_ALLOW_CODEGEN_ERRORS));
+		|| param_graphite_allow_codegen_errors);
   }
 
   bool is_constant (tree op) const
@@ -1383,7 +1382,7 @@ scop_to_isl_ast (scop_p scop)
 {
   int old_err = isl_options_get_on_error (scop->isl_context);
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
-  int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
+  int max_operations = param_max_isl_operations;
   if (max_operations)
     isl_ctx_set_max_operations (scop->isl_context, max_operations);
   isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);

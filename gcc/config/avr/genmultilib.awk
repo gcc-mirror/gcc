@@ -38,15 +38,26 @@ BEGIN {
     dir_rcall = "short-calls"
     opt_rcall = "mshort-calls"
 
+    dir_double64 = "double64"
+    opt_double64 = "mdouble=64"
+
+    dir_long_double64 = "long-double64"
+    opt_long_double64 = "mlong-double=64"
+
     #    awk Variable         Makefile Variable  
     #  ------------------------------------------
     #    m_options     <->    MULTILIB_OPTIONS
     #    m_dirnames    <->    MULTILIB_DIRNAMES
     #    m_required    <->    MULTILIB_REQUIRED
+    #    m_reuse       <->    MULTILIB_REUSE
     m_sep = ""
     m_options    = "\nMULTILIB_OPTIONS = "
     m_dirnames   = "\nMULTILIB_DIRNAMES ="
     m_required   = "\nMULTILIB_REQUIRED ="
+    m_reuse      = "\nMULTILIB_REUSE ="
+
+    have_double_multi = (HAVE_DOUBLE_MULTILIB == "HAVE_DOUBLE_MULTILIB")
+    have_long_double_multi = (HAVE_LONG_DOUBLE_MULTILIB == "HAVE_LONG_DOUBLE_MULTILIB")
 }
 
 ##################################################################
@@ -130,7 +141,26 @@ BEGIN {
 	# leading "mmcu=avr2/" in order not to confuse genmultilib.
 	gsub (/^mmcu=avr2\//, "", opts)
 	if (opts != "mmcu=avr2")
+	{
 	    m_required = m_required " \\\n\t" opts
+	    if (have_double_multi && have_long_double_multi)
+	    {
+		m_required = m_required " \\\n\t" opts "/" opt_double64
+		m_required = m_required " \\\n\t" opts "/" opt_long_double64
+
+		# -mlong-double=64 -mdouble=64 is the same as -mdouble=64,
+		# hence add a respective reuse.
+		d_opts  = opts "/" opt_double64
+		d_reuse = opts "/" opt_double64 "/" opt_long_double64
+		gsub (/=/, ".", d_opts)
+		gsub (/=/, ".", d_reuse)
+		m_reuse = m_reuse " \\\n\t" d_opts "=" d_reuse
+	    }
+	    else if (have_double_multi)
+		m_required = m_required " \\\n\t" opts "/" opt_double64
+	    else if (have_long_double_multi)
+		m_required = m_required " \\\n\t" opts "/" opt_long_double64
+	}
     }
 }
 
@@ -143,9 +173,37 @@ END {
     # Output that Stuff
     ############################################################
 
-    # Intended Target: ./gcc/config/avr/t-multilib
+    # Intended Target: $(top_builddir)/gcc/t-multilib-avr
 
-    print m_options  " " opt_tiny " " opt_rcall
-    print m_dirnames " " dir_tiny " " dir_rcall
+    if (have_double_multi && have_long_double_multi)
+    {
+	print m_options  " " opt_tiny " " opt_rcall " " opt_double64 "/" opt_long_double64
+	print m_dirnames " " dir_tiny " " dir_rcall " " dir_double64 " " dir_long_double64
+	# Notice that the ./double64 and ./long-double64 variants cannot
+	# be copied by t-avrlibc because the . default multilib is built
+	# after all the others.
+	m_required = m_required " \\\n\t" opt_double64
+	m_required = m_required " \\\n\t" opt_long_double64
+	m_reuse = m_reuse " \\\n\tmdouble.64=mdouble.64/mlong-double.64"
+    }
+    else if (have_double_multi)
+    {
+	print m_options  " " opt_tiny " " opt_rcall " " opt_double64
+	print m_dirnames " " dir_tiny " " dir_rcall " " dir_double64
+	m_required = m_required " \\\n\t" opt_double64
+    }
+    else if (have_long_double_multi)
+    {
+	print m_options  " " opt_tiny " " opt_rcall " " opt_long_double64
+	print m_dirnames " " dir_tiny " " dir_rcall " " dir_long_double64
+	m_required = m_required " \\\n\t" opt_long_double64
+    }
+    else
+    {
+	print m_options  " " opt_tiny " " opt_rcall
+	print m_dirnames " " dir_tiny " " dir_rcall
+    }
+
     print m_required
+    print m_reuse
 }
