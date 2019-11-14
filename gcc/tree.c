@@ -10873,25 +10873,35 @@ build_vector_type (tree innertype, poly_int64 nunits)
   return make_vector_type (innertype, nunits, VOIDmode);
 }
 
+/* Build a truth vector with NUNITS units, giving it mode MASK_MODE.  */
+
+tree
+build_truth_vector_type_for_mode (poly_uint64 nunits, machine_mode mask_mode)
+{
+  gcc_assert (mask_mode != BLKmode);
+
+  poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
+  unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
+  tree bool_type = build_nonstandard_boolean_type (esize);
+
+  return make_vector_type (bool_type, nunits, mask_mode);
+}
+
 /* Build truth vector with specified length and number of units.  */
 
 tree
 build_truth_vector_type (poly_uint64 nunits, poly_uint64 vector_size)
 {
-  machine_mode mask_mode
-    = targetm.vectorize.get_mask_mode (nunits, vector_size).else_blk ();
+  machine_mode mask_mode;
+  if (targetm.vectorize.get_mask_mode (nunits,
+				       vector_size).exists (&mask_mode))
+    return build_truth_vector_type_for_mode (nunits, mask_mode);
 
-  poly_uint64 vsize;
-  if (mask_mode == BLKmode)
-    vsize = vector_size * BITS_PER_UNIT;
-  else
-    vsize = GET_MODE_BITSIZE (mask_mode);
-
+  poly_uint64 vsize = vector_size * BITS_PER_UNIT;
   unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
-
   tree bool_type = build_nonstandard_boolean_type (esize);
 
-  return make_vector_type (bool_type, nunits, mask_mode);
+  return make_vector_type (bool_type, nunits, BLKmode);
 }
 
 /* Returns a vector type corresponding to a comparison of VECTYPE.  */
@@ -10910,7 +10920,8 @@ build_same_sized_truth_vector_type (tree vectype)
   return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (vectype), size);
 }
 
-/* Similarly, but builds a variant type with TYPE_VECTOR_OPAQUE set.  */
+/* Like build_vector_type, but builds a variant type with TYPE_VECTOR_OPAQUE
+   set.  */
 
 tree
 build_opaque_vector_type (tree innertype, poly_int64 nunits)
