@@ -3239,6 +3239,18 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
       if (mode_i == 0)
 	autodetected_vector_mode = bb_vinfo->vector_mode;
 
+      if (!fatal)
+	while (mode_i < vector_modes.length ()
+	       && vect_chooses_same_modes_p (bb_vinfo, vector_modes[mode_i]))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "***** The result for vector mode %s would"
+			       " be the same\n",
+			       GET_MODE_NAME (vector_modes[mode_i]));
+	    mode_i += 1;
+	  }
+
       delete bb_vinfo;
 
       if (mode_i < vector_modes.length ()
