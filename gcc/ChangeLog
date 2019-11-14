@@ -1,5 +1,12 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_vectorize_related_mode): New
+	function.
+	(aarch64_autovectorize_vector_modes): Also add V4HImode and V2SImode.
+	(TARGET_VECTORIZE_RELATED_MODE): Define.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::mode_set): New typedef.
 	(vec_info::used_vector_mode): New member variable.
 	(vect_chooses_same_modes_p): Declare.

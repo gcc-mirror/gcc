@@ -1,5 +1,19 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-outer-4f.c: Expect the test to pass on aarch64
+	targets.
+	* gcc.dg/vect/vect-outer-4g.c: Likewise.
+	* gcc.dg/vect/vect-outer-4k.c: Likewise.
+	* gcc.dg/vect/vect-outer-4l.c: Likewise.
+	* gfortran.dg/vect/vect-8.f90: Expect kernel 24 to be vectorized
+	for aarch64.
+	* gcc.target/aarch64/vect_mixed_sizes_1.c: New test.
+	* gcc.target/aarch64/vect_mixed_sizes_2.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_3.c: Likewise.
+	* gcc.target/aarch64/vect_mixed_sizes_4.c: Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-tail-nomask-1.c: Update expected epilogue
 	vectorization message.
 
