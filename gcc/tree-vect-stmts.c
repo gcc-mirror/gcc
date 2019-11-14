@@ -11263,6 +11263,10 @@ get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type)
 						      scalar_type);
   if (vectype && vinfo->vector_mode == VOIDmode)
     vinfo->vector_mode = TYPE_MODE (vectype);
+
+  if (vectype)
+    vinfo->used_vector_modes.add (TYPE_MODE (vectype));
+
   return vectype;
 }
 
@@ -11300,6 +11304,20 @@ get_same_sized_vectype (tree scalar_type, tree vector_type)
 
   return get_related_vectype_for_scalar_type (TYPE_MODE (vector_type),
 					      scalar_type, nunits);
+}
+
+/* Return true if replacing LOOP_VINFO->vector_mode with VECTOR_MODE
+   would not change the chosen vector modes.  */
+
+bool
+vect_chooses_same_modes_p (vec_info *vinfo, machine_mode vector_mode)
+{
+  for (vec_info::mode_set::iterator i = vinfo->used_vector_modes.begin ();
+       i != vinfo->used_vector_modes.end (); ++i)
+    if (!VECTOR_MODE_P (*i)
+	|| related_vector_mode (vector_mode, GET_MODE_INNER (*i), 0) != *i)
+      return false;
+  return true;
 }
 
 /* Function vect_is_simple_use.

@@ -1,5 +1,17 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::mode_set): New typedef.
+	(vec_info::used_vector_mode): New member variable.
+	(vect_chooses_same_modes_p): Declare.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Record each
+	chosen vector mode in vec_info::used_vector_mode.
+	(vect_chooses_same_modes_p): New function.
+	* tree-vect-loop.c (vect_analyze_loop): Use it to avoid trying
+	the same vector statements multiple times.
+	* tree-vect-slp.c (vect_slp_bb_region): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* machmode.h (opt_machine_mode::operator==): New function.
 	(opt_machine_mode::operator!=): Likewise.
 	* tree-vectorizer.h (vec_info::vector_mode): Update comment.

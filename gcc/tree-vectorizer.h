@@ -298,6 +298,7 @@ public:
 /* Vectorizer state common between loop and basic-block vectorization.  */
 class vec_info {
 public:
+  typedef hash_set<int_hash<machine_mode, E_VOIDmode, E_BLKmode> > mode_set;
   enum vec_kind { bb, loop };
 
   vec_info (vec_kind, void *, vec_info_shared *);
@@ -334,6 +335,9 @@ public:
 
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
+
+  /* The set of vector modes used in the vectorized region.  */
+  mode_set used_vector_modes;
 
   /* The argument we should pass to related_vector_mode when looking up
      the vector mode for a scalar mode, or VOIDmode if we haven't yet
@@ -1630,6 +1634,7 @@ extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
 extern tree get_vectype_for_scalar_type (vec_info *, tree);
 extern tree get_mask_type_for_scalar_type (vec_info *, tree);
 extern tree get_same_sized_vectype (tree, tree);
+extern bool vect_chooses_same_modes_p (vec_info *, machine_mode);
 extern bool vect_get_loop_mask_type (loop_vec_info);
 extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
 				stmt_vec_info * = NULL, gimple ** = NULL);
