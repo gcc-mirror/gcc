@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_LIBGCC_SPEC ""
 #define	VXWORKS_STARTFILE_SPEC ""
 #define VXWORKS_ENDFILE_SPEC ""
+#define VXWORKS_CC1_SPEC ""
 
 /* VxWorks cannot have dots in constructor labels, because it uses a
    mutant variation of collect2 that generates C code instead of
@@ -61,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
 
-/* VxWorks uses DWARF2.  */
+/* VxWorks uses DWARF2 debugging info.  */
 #define DWARF2_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 

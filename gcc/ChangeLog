@@ -1,3 +1,24 @@
+2019-11-06  Pat Bernardi  <bernardi@adacore.com>
+            Jerome Lambourg  <lambourg@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc: Add comment to introduce the TARGET_VXWORKS
+	common macro definitions, conveying VXWORKS7 or 64bit general
+	variations.  Add a block to set gcc_cv_initfini_array
+	unconditionally to "yes" for VxWorks7.
+	config/vx-common.h (VXWORKS_CC1_SPEC): New macro, empty string
+	by default.  Update some comments.
+	config/vxworks.h (VXWORKS_EXTRA_LIBS_RTP): New macro, empty by
+	default, to be added the end of VXWORKS_LIBS_RTP.
+	(VXWORKS_LIBS_RTP): Replace hardcoded part by VXWORKS_BASE_LIBS_RTP
+	and append VXWORKS_EXTRA_LIBS_RTP, both of which specific ports may
+	redefine.
+	(VXWORKS_NET_LIBS_RTP): Account for VxWorks7 specificities.
+	(VXWORKS_CC1_SPEC): Common base definition, with VxWorks7 variation
+	to account for the now available TLS abilities.
+	(TARGET_LIBC_HAS_FUNCTION): Account for VxWorks7 abilities.
+	(VXWORKS_HAVE_TLS): Likewise.
+
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-slp.c (vect_contains_pattern_stmt_p): New function.

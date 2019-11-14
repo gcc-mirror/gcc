@@ -78,10 +78,23 @@ along with GCC; see the file COPYING3.  If not see
 
 #define VXWORKS_SYSCALL_LIBS_RTP
 
+#if TARGET_VXWORKS7
+#define VXWORKS_NET_LIBS_RTP "-lnet"
+#else
 #define VXWORKS_NET_LIBS_RTP "-lnet -ldsi"
+#endif
+
+#define VXWORKS_BASE_LIBS_RTP "-lc -lgcc -lc_internal"
+
+#define VXWORKS_EXTRA_LIBS_RTP
 
 #define VXWORKS_LIBS_RTP \
-  VXWORKS_SYSCALL_LIBS_RTP " " VXWORKS_NET_LIBS_RTP " -lc -lgcc -lc_internal"
+  VXWORKS_SYSCALL_LIBS_RTP " " VXWORKS_NET_LIBS_RTP " " \
+  VXWORKS_BASE_LIBS_RTP " " VXWORKS_EXTRA_LIBS_RTP
+
+/* TLS configuration.  VxWorks 7 now always has proper TLS support.
+   Earlier versions did not, not even for RTPS.  */
+#define VXWORKS_HAVE_TLS TARGET_VXWORKS7
 
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
@@ -134,10 +147,15 @@ along with GCC; see the file COPYING3.  If not see
 #define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:-l:crt0.o}}"
 #define VXWORKS_ENDFILE_SPEC ""
 
+#undef  VXWORKS_CC1_SPEC
+#if TARGET_VXWORKS7
+#define VXWORKS_CC1_SPEC \
+  "%(cc1_cpu) %{!mrtp:%{!ftls-model=*:-ftls-model=local-exec}}"
+#else
+#define VXWORKS_CC1_SPEC ""
+#endif
+
 /* Do VxWorks-specific parts of TARGET_OPTION_OVERRIDE.  */
-
-#define VXWORKS_HAVE_TLS (TARGET_VXWORKS7 && TARGET_VXWORKS_RTP)
-
 #undef VXWORKS_OVERRIDE_OPTIONS
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
@@ -179,8 +197,11 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_VXWORKS64 ? "long unsigned int" : "unsigned int")
 
+/* Assumptions on the target libc.  VxWorks 7, post SR600, provides a C11
+   runtime without sincos support.  */
 #undef TARGET_LIBC_HAS_FUNCTION
-#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+#define TARGET_LIBC_HAS_FUNCTION \
+  (TARGET_VXWORKS7 ? default_libc_has_function : no_c99_libc_has_function)
 
 /* Both kernels and RTPs have the facilities required by this macro.  */
 #define TARGET_POSIX_IO
