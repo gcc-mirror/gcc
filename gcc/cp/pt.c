@@ -27459,10 +27459,12 @@ finish_concept_definition (cp_expr id, tree init)
       return error_mark_node;
     }
 
-  /* Initially build the concept declaration; it's type is bool.  */
+  /* Initially build the concept declaration; its type is bool.  */
   tree decl = build_lang_decl_loc (loc, CONCEPT_DECL, *id, boolean_type_node);
   DECL_CONTEXT (decl) = current_scope ();
   DECL_INITIAL (decl) = init;
+
+  set_originating_module (decl, false);
 
   /* Push the enclosing template.  */
   return push_template_decl (decl);

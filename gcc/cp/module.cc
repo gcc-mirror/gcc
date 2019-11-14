@@ -5274,7 +5274,8 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.threadprivate_or_deleted_p);
   WB (lang->u.base.anticipated_p);
   WB (lang->u.base.friend_or_tls);
-  WB (lang->u.base.odr_used);
+  WB (lang->u.base.unknown_bound_p);
+  WB (lang->u.base.odr_used); // FIXME: Should this be written?
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
@@ -5300,6 +5301,9 @@ trees_out::lang_decl_bools (tree t)
       WB (lang->u.fn.this_thunk_p);
       WB (lang->u.fn.hidden_friend_p);
       WB (lang->u.fn.omp_declare_reduction_p);
+      WB (lang->u.fn.has_dependent_explicit_spec_p);
+      WB (lang->u.fn.immediate_fn_p);
+      WB (lang->u.fn.maybe_deleted);
       /* FALLTHROUGH.  */
 
     case lds_min:  /* lang_decl_min.  */
@@ -5333,6 +5337,7 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.threadprivate_or_deleted_p);
   RB (lang->u.base.anticipated_p);
   RB (lang->u.base.friend_or_tls);
+  RB (lang->u.base.unknown_bound_p);
   RB (lang->u.base.odr_used);
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
@@ -5357,6 +5362,9 @@ trees_in::lang_decl_bools (tree t)
       RB (lang->u.fn.this_thunk_p);
       RB (lang->u.fn.hidden_friend_p);
       RB (lang->u.fn.omp_declare_reduction_p);
+      RB (lang->u.fn.has_dependent_explicit_spec_p);
+      RB (lang->u.fn.immediate_fn_p);
+      RB (lang->u.fn.maybe_deleted);
       /* FALLTHROUGH.  */
 
     case lds_min:  /* lang_decl_min.  */
@@ -9935,11 +9943,12 @@ has_definition (tree decl)
       break;
 
     case VAR_DECL:
-      if (!DECL_INITIAL (decl))
-	/* Nothing to define.  */
-	break;
+      if (!TREE_CONSTANT (decl))
+	return false;
+      /* Fallthrough.  */
 
-      if (TREE_CONSTANT (decl))
+    case CONCEPT_DECL:
+      if (DECL_INITIAL (decl))
 	return true;
 
       break;
@@ -10740,6 +10749,7 @@ trees_out::write_definition (tree decl)
       break;
 
     case VAR_DECL:
+    case CONCEPT_DECL:
       write_var_def (decl);
       break;
     }
@@ -10781,6 +10791,7 @@ trees_out::mark_declaration (tree decl, bool do_defn)
       break;
 
     case VAR_DECL:
+    case CONCEPT_DECL:
       mark_var_def (decl);
       break;
     }
@@ -10821,6 +10832,7 @@ trees_in::read_definition (tree decl)
       break;
 
     case VAR_DECL:
+    case CONCEPT_DECL:
       return read_var_def (decl, maybe_template);
     }
 
@@ -17048,6 +17060,7 @@ get_originating_module_decl (tree decl)
 		       || TREE_CODE (decl) == FUNCTION_DECL
 		       || TREE_CODE (decl) == TYPE_DECL
 		       || TREE_CODE (decl) == VAR_DECL
+		       || TREE_CODE (decl) == CONCEPT_DECL
 		       || TREE_CODE (decl) == NAMESPACE_DECL);
 
   for (tree ctx;; decl = ctx)
@@ -17194,7 +17207,8 @@ set_instantiating_module (tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 	      || TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == TYPE_DECL);
+	      || TREE_CODE (decl) == TYPE_DECL
+	      || TREE_CODE (decl) == CONCEPT_DECL);
 
   if (!modules_p ())
     return;

@@ -180,8 +180,10 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
   if (!modules_p ())
     return;
 
+  if (!DECL_CONTEXT (decl))
+    return;
+
   if (TREE_CODE (decl) != CONST_DECL
-      || !DECL_CONTEXT (decl)
       || !UNSCOPED_ENUM_P (DECL_CONTEXT (decl)))
     {
       if (!DECL_NAMESPACE_SCOPE_P (decl))

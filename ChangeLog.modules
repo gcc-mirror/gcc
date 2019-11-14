@@ -1,5 +1,18 @@
 2019-11-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (lang_decl_base): Note 8-bits.
+	* error.c (dump_module_suffix): Bail on no DECL_CONTEXT.
+	* module.cc (trees_{in,out}::lang_decl_bools): Update for new
+	fields.
+	(has_definition): Deal with CONCEPT_DECL.
+	(trees_out::{mark,write}_definition): Concepts are like vars.
+	(trees_in::read_definition): Likewise.
+	({get,set}_originating_module{,_decl}): Deal with CONCEPT_DECL.
+	* pt.c (finish_concept_definition): Set orginating module.
+	gcc/testsuite/
+	* g++.dg/modules/concept-3_[ab].C: New.
+
 	Merge trunk r278228.
 
 2019-11-01  Nathan Sidwell  <nathan@acm.org>

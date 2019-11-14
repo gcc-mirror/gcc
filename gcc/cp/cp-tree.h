@@ -2727,6 +2727,7 @@ struct GTY(()) lang_decl_base {
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
   unsigned initialized_in_class : 1;	   /* var or fn */
+
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
   unsigned anticipated_p : 1;		   /* fn, type or template */
   /* anticipated_p reused as DECL_OMP_PRIVATIZED_MEMBER in var */
@@ -2735,8 +2736,8 @@ struct GTY(()) lang_decl_base {
   unsigned odr_used : 1;		   /* var or fn */
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
-
   unsigned dependent_init_p : 1;	   /* var */
+
   unsigned module_purview_p : 1;	   /* var,fn,type,template,namespace  */
 #define MODULE_BITS (15)
   unsigned module_origin : MODULE_BITS;     /* var,fn,type,template,namespace */
