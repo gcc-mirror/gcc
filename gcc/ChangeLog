@@ -1,5 +1,33 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* machmode.h (opt_machine_mode::operator==): New function.
+	(opt_machine_mode::operator!=): Likewise.
+	* tree-vectorizer.h (vec_info::vector_mode): Update comment.
+	(get_related_vectype_for_scalar_type): Delete.
+	(get_vectype_for_scalar_type_and_size): Declare.
+	* tree-vect-slp.c (vect_slp_bb_region): Print dump messages to say
+	whether analysis passed or failed, and with what vector modes.
+	Use related_vector_mode to check whether trying a particular
+	vector mode would be redundant with the autodetected mode,
+	and print a dump message if we decide to skip it.
+	* tree-vect-loop.c (vect_analyze_loop): Likewise.
+	(vect_create_epilog_for_reduction): Use
+	get_related_vectype_for_scalar_type instead of
+	get_vectype_for_scalar_type_and_size.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): Replace
+	with...
+	(get_related_vectype_for_scalar_type): ...this new function.
+	Take a starting/"prevailing" vector mode rather than a vector size.
+	Take an optional nunits argument, with the same meaning as for
+	related_vector_mode.  Use related_vector_mode when not
+	auto-detecting a mode, falling back to mode_for_vector if no
+	target mode exists.
+	(get_vectype_for_scalar_type): Update accordingly.
+	(get_same_sized_vectype): Likewise.
+	* tree-vectorizer.c (get_vec_alignment_for_array_type): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_call): Require the types
 	to have the same size.
 

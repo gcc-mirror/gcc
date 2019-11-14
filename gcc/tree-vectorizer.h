@@ -335,8 +335,9 @@ public:
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
 
-  /* If we've chosen a vector size for this vectorization region,
-     this is one mode that has such a size, otherwise it is VOIDmode.  */
+  /* The argument we should pass to related_vector_mode when looking up
+     the vector mode for a scalar mode, or VOIDmode if we haven't yet
+     made any decisions about which vector modes to use.  */
   machine_mode vector_mode;
 
 private:
@@ -1624,8 +1625,9 @@ extern bool vect_can_advance_ivs_p (loop_vec_info);
 extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
 
 /* In tree-vect-stmts.c.  */
+extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
+						 poly_uint64 = 0);
 extern tree get_vectype_for_scalar_type (vec_info *, tree);
-extern tree get_vectype_for_scalar_type_and_size (tree, poly_uint64);
 extern tree get_mask_type_for_scalar_type (vec_info *, tree);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_get_loop_mask_type (loop_vec_info);

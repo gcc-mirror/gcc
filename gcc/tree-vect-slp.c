@@ -3203,7 +3203,12 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	  && dbg_cnt (vect_slp))
 	{
 	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "***** Analysis succeeded with vector mode"
+			       " %s\n", GET_MODE_NAME (bb_vinfo->vector_mode));
+	      dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
+	    }
 
 	  bb_vinfo->shared->check_datarefs ();
 	  vect_schedule_slp (bb_vinfo);
@@ -3223,6 +3228,13 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 
 	  vectorized = true;
 	}
+      else
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Analysis failed with vector mode %s\n",
+			     GET_MODE_NAME (bb_vinfo->vector_mode));
+	}
 
       if (mode_i == 0)
 	autodetected_vector_mode = bb_vinfo->vector_mode;
@@ -3230,9 +3242,22 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
       delete bb_vinfo;
 
       if (mode_i < vector_modes.length ()
-	  && known_eq (GET_MODE_SIZE (vector_modes[mode_i]),
-		       GET_MODE_SIZE (autodetected_vector_mode)))
-	mode_i += 1;
+	  && VECTOR_MODE_P (autodetected_vector_mode)
+	  && (related_vector_mode (vector_modes[mode_i],
+				   GET_MODE_INNER (autodetected_vector_mode))
+	      == autodetected_vector_mode)
+	  && (related_vector_mode (autodetected_vector_mode,
+				   GET_MODE_INNER (vector_modes[mode_i]))
+	      == vector_modes[mode_i]))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Skipping vector mode %s, which would"
+			     " repeat the analysis for %s\n",
+			     GET_MODE_NAME (vector_modes[mode_i]),
+			     GET_MODE_NAME (autodetected_vector_mode));
+	  mode_i += 1;
+	}
 
       if (vectorized
 	  || mode_i == vector_modes.length ()
