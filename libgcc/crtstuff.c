@@ -153,6 +153,8 @@ call_ ## FUNC (void)					\
 
 #if !defined(USE_TM_CLONE_REGISTRY) && defined(OBJECT_FORMAT_ELF)
 # define USE_TM_CLONE_REGISTRY 1
+#elif !defined(USE_TM_CLONE_REGISTRY)
+# define USE_TM_CLONE_REGISTRY 0
 #endif
 
 /* We do not want to add the weak attribute to the declarations of these
@@ -450,8 +452,7 @@ CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__,
 			  __do_global_dtors_aux_1)
 #endif
 
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* Stick a call to __register_frame_info into the .init section.  For some
    reason calls with no arguments work more reliably in .init, so stick the
    call in another function.  */
@@ -560,8 +561,7 @@ __do_global_dtors (void)
 #endif
 }
 
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* A helper function for __do_global_ctors, which is in crtend.o.  Here
    in crtbegin.o, we can reference a couple of symbols not visible there.
    Plus, since we're before libgcc.a, we have no problems referencing
@@ -733,8 +733,7 @@ void
 __do_global_ctors (void)
 {
   func_ptr *p;
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
   __do_global_ctors_1();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)

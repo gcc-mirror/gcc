@@ -6,7 +6,7 @@
   logical :: k, l
   b(:, :) = 16
   l = .false.
-  if (allocated (a)) STOP 1
+  if (allocated (a)) stop 1
 !$omp task private (a, b) shared (l)
   l = l.or.allocated (a)
   allocate (a(3, 6))
@@ -18,19 +18,19 @@
   l = l.or.allocated (a)
 !$omp end task
 !$omp taskwait
-  if (allocated (a).or.l) STOP 2
+  if (allocated (a).or.l) stop 2
   allocate (a(6, 3))
   a(:, :) = 3
-  if (.not.allocated (a)) STOP 3
+  if (.not.allocated (a)) stop 3
   l = l.or.size(a).ne.18.or.size(a,1).ne.6.or.size(a,2).ne.3
-  if (l) STOP 4
+  if (l) stop 4
 !$omp task private (a, b) shared (l)
   l = l.or..not.allocated (a)
   a(3, 2) = 1
   b(3, 2) = 1
 !$omp end task
 !$omp taskwait
-  if (l.or..not.allocated (a)) STOP 5
+  if (l.or..not.allocated (a)) stop 5
 !$omp task firstprivate (a, b) shared (l)
   l = l.or..not.allocated (a)
   l = l.or.size(a).ne.18.or.size(a,1).ne.6.or.size(a,2).ne.3
@@ -43,5 +43,5 @@
   b(:, :) = 8
 !$omp end task
 !$omp taskwait
-  if (any (a.ne.3).or.any (b.ne.16).or.l) STOP 6
+  if (any (a.ne.3).or.any (b.ne.16).or.l) stop 6
 end

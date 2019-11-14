@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
 #include "domwalk.h"
-#include "params.h"
 #include "tree-affine.h"
 #include "tree-ssa-propagate.h"
 #include "trans-mem.h"
@@ -230,7 +229,7 @@ static bool ref_indep_loop_p (class loop *, im_mem_ref *);
 static bool ref_always_accessed_p (class loop *, im_mem_ref *, bool);
 
 /* Minimum cost of an expensive expression.  */
-#define LIM_EXPENSIVE ((unsigned) PARAM_VALUE (PARAM_LIM_EXPENSIVE))
+#define LIM_EXPENSIVE ((unsigned) param_lim_expensive)
 
 /* The outermost loop for which execution of the header guarantees that the
    block will be executed.  */

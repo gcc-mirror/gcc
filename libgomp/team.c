@@ -171,7 +171,7 @@ gomp_new_team (unsigned nthreads)
     {
       size_t extra = sizeof (team->ordered_release[0])
 		     + sizeof (team->implicit_task[0]);
-      team = gomp_malloc (sizeof (*team) + nthreads * extra);
+      team = team_malloc (sizeof (*team) + nthreads * extra);
 
 #ifndef HAVE_SYNC_BUILTINS
       gomp_mutex_init (&team->work_share_list_free_lock);
@@ -221,7 +221,7 @@ free_team (struct gomp_team *team)
   gomp_barrier_destroy (&team->barrier);
   gomp_mutex_destroy (&team->task_lock);
   priority_queue_free (&team->task_queue);
-  free (team);
+  team_free (team);
 }
 
 static void
@@ -239,6 +239,9 @@ gomp_free_pool_helper (void *thread_pool)
   pthread_exit (NULL);
 #elif defined(__nvptx__)
   asm ("exit;");
+#elif defined(__AMDGCN__)
+  asm ("s_dcache_wb\n\t"
+       "s_endpgm");
 #else
 #error gomp_free_pool_helper must terminate the thread
 #endif
@@ -282,8 +285,8 @@ gomp_free_thread (void *arg __attribute__((unused)))
       if (pool->last_team)
 	free_team (pool->last_team);
 #ifndef __nvptx__
-      free (pool->threads);
-      free (pool);
+      team_free (pool->threads);
+      team_free (pool);
 #endif
       thr->thread_pool = NULL;
     }
@@ -1079,8 +1082,8 @@ gomp_pause_host (void)
       if (pool->last_team)
 	free_team (pool->last_team);
 #ifndef __nvptx__
-      free (pool->threads);
-      free (pool);
+      team_free (pool->threads);
+      team_free (pool);
 #endif
       thr->thread_pool = NULL;
     }

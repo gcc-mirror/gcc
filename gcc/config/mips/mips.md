@@ -2464,9 +2464,11 @@
   [(set (match_operand:TI 0 "register_operand")
 	(mult:TI (any_extend:TI (match_operand:DI 1 "register_operand"))
 		 (any_extend:TI (match_operand:DI 2 "register_operand"))))]
-  "ISA_HAS_DMULT && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
+  "ISA_HAS_R6DMUL
+   || (ISA_HAS_DMULT
+       && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120))"
 {
-  rtx hilo;
+  rtx hilo, hi, lo;
 
   if (TARGET_MIPS16)
     {
@@ -2476,9 +2478,16 @@
     }
   else if (TARGET_FIX_R4000)
     emit_insn (gen_<u>mulditi3_r4000 (operands[0], operands[1], operands[2]));
-  else
+  else if (ISA_HAS_DMULT)
     emit_insn (gen_<u>mulditi3_internal (operands[0], operands[1],
 					 operands[2]));
+  else
+    {
+      hi = mips_subword (operands[0], 1);
+      lo = mips_subword (operands[0], 0);
+      emit_insn (gen_muldi3_mul3_nohilo (lo, operands[1], operands[2]));
+      emit_insn (gen_<su>muldi3_highpart_r6 (hi, operands[1], operands[2]));
+    }
   DONE;
 })
 
@@ -5836,8 +5845,8 @@
   "ISA_HAS_ROR"
 {
   if (CONST_INT_P (operands[2]))
-    gcc_assert (INTVAL (operands[2]) >= 0
-		&& INTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode));
+    operands[2] = GEN_INT (INTVAL (operands[2])
+                           & (GET_MODE_BITSIZE (<MODE>mode) - 1));
 
   return "<d>ror\t%0,%1,%2";
 }

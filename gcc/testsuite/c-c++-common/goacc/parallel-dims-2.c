@@ -1,5 +1,7 @@
-/* Invalid use of OpenACC parallelism dimensions clauses: num_gangs,
-   num_workers, vector_length.  */
+/* Invalid use of OpenACC parallelism dimensions clauses: 'num_gangs',
+   'num_workers', 'vector_length'.  */
+
+/* See also '../../gfortran.dg/goacc/parallel-dims-2.f90'.  */
 
 void f(int i, float f)
 {
@@ -254,5 +256,15 @@ void f(int i, float f)
   num_workers(0.5) /* { dg-error "'num_workers' expression must be integral" } */ \
   vector_length(&f) /* { dg-error "'vector_length' expression must be integral" } */ \
   num_gangs( /* { dg-error "expected (primary-|)expression before end of line" "TODO" { xfail c } } */
+  ;
+
+
+  /* The 'serial' construct doesn't allow these at all.  */
+
+#pragma acc serial num_gangs (1) /* { dg-error "'num_gangs' is not valid for '#pragma acc serial'" } */
+  ;
+#pragma acc serial num_workers (1) /* { dg-error "'num_workers' is not valid for '#pragma acc serial'" } */
+  ;
+#pragma acc serial vector_length (1) /* { dg-error "'vector_length' is not valid for '#pragma acc serial'" } */
   ;
 }

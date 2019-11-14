@@ -17,10 +17,10 @@ program pr81841
   common /c/ e, f
   !$omp threadprivate (/c/)
   !$omp parallel num_threads(8)
-  if ((e /= 32) .or. any(f /= 1.)) STOP 1
+  if ((e /= 32) .or. any(f /= 1.)) stop 1
   e = omp_get_thread_num ()
   f = e + 19.
   !$omp barrier
-  if ((e /= omp_get_thread_num ()) .or. any(f /= e + 19.)) STOP 2
+  if ((e /= omp_get_thread_num ()) .or. any(f /= e + 19.)) stop 2
   !$omp end parallel
 end

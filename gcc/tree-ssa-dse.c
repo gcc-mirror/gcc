@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
-#include "params.h"
 #include "alias.h"
 #include "tree-ssa-loop.h"
 #include "tree-ssa-dse.h"
@@ -77,7 +76,6 @@ along with GCC; see the file COPYING3.  If not see
    fact, they are the same transformation applied to different views of
    the CFG.  */
 
-void delete_dead_or_redundant_assignment (gimple_stmt_iterator *, const char *);
 static void delete_dead_or_redundant_call (gimple_stmt_iterator *, const char *);
 
 /* Bitmap of blocks that have had EH statements cleaned.  We should
@@ -239,7 +237,7 @@ setup_live_bytes_from_ref (ao_ref *ref, sbitmap live_bytes)
   if (valid_ao_ref_for_dse (ref)
       && ref->size.is_constant (&const_size)
       && (const_size / BITS_PER_UNIT
-	  <= PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)))
+	  <= param_dse_max_object_size))
     {
       bitmap_clear (live_bytes);
       bitmap_set_range (live_bytes, 0, const_size / BITS_PER_UNIT);
@@ -612,7 +610,7 @@ dse_optimize_redundant_stores (gimple *stmt)
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
     {
       /* Limit stmt walking.  */
-      if (++cnt > PARAM_VALUE (PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE))
+      if (++cnt > param_dse_max_alias_queries_per_store)
 	BREAK_FROM_IMM_USE_STMT (ui);
 
       /* If USE_STMT stores 0 into one or more of the same locations
@@ -639,7 +637,8 @@ dse_optimize_redundant_stores (gimple *stmt)
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
 	      if (is_gimple_assign (use_stmt))
-		delete_dead_or_redundant_assignment (&gsi, "redundant");
+		delete_dead_or_redundant_assignment (&gsi, "redundant",
+						     need_eh_cleanup);
 	      else if (is_gimple_call (use_stmt))
 		delete_dead_or_redundant_call (&gsi, "redundant");
 	      else
@@ -704,7 +703,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  /* Limit stmt walking.  */
-	  if (++cnt > PARAM_VALUE (PARAM_DSE_MAX_ALIAS_QUERIES_PER_STORE))
+	  if (++cnt > param_dse_max_alias_queries_per_store)
 	    {
 	      fail = true;
 	      BREAK_FROM_IMM_USE_STMT (ui);
@@ -853,7 +852,7 @@ class dse_dom_walker : public dom_walker
 public:
   dse_dom_walker (cdi_direction direction)
     : dom_walker (direction),
-    m_live_bytes (PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)),
+    m_live_bytes (param_dse_max_object_size),
     m_byte_tracking_enabled (false) {}
 
   virtual edge before_dom_children (basic_block);
@@ -900,7 +899,8 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
 /* Delete a dead store at GSI, which is a gimple assignment. */
 
 void
-delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type)
+delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type,
+				     bitmap need_eh_cleanup)
 {
   gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -915,7 +915,7 @@ delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type
 
   /* Remove the dead store.  */
   basic_block bb = gimple_bb (stmt);
-  if (gsi_remove (gsi, true))
+  if (gsi_remove (gsi, true) && need_eh_cleanup)
     bitmap_set_bit (need_eh_cleanup, bb->index);
 
   /* And release any SSA_NAMEs set in this statement back to the
@@ -1059,7 +1059,7 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	  && !by_clobber_p)
 	return;
 
-      delete_dead_or_redundant_assignment (gsi, "dead");
+      delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
     }
 }
 

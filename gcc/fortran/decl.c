@@ -1560,15 +1560,6 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 				  sym->ns->proc_name->name))
 	    retval = false;
 
-	  if ((sym->attr.allocatable || sym->attr.pointer) && !sym->as)
-	    {
-	      gfc_error ("Scalar variable %qs at %L with POINTER or "
-			 "ALLOCATABLE in procedure %qs with BIND(C) is not yet"
-			 " supported", sym->name, &(sym->declared_at),
-			 sym->ns->proc_name->name);
-	      retval = false;
-	    }
-
 	  if (sym->attr.optional == 1 && sym->attr.value)
 	    {
 	      gfc_error ("Variable %qs at %L cannot have both the OPTIONAL "
@@ -3980,6 +3971,38 @@ error_return:
 }
 
 
+/* Match a legacy nonstandard BYTE type-spec.  */
+
+static match
+match_byte_typespec (gfc_typespec *ts)
+{
+  if (gfc_match (" byte") == MATCH_YES)
+    {
+      if (!gfc_notify_std (GFC_STD_GNU, "BYTE type at %C"))
+	return MATCH_ERROR;
+
+      if (gfc_current_form == FORM_FREE)
+	{
+	  char c = gfc_peek_ascii_char ();
+	  if (!gfc_is_whitespace (c) && c != ',')
+	    return MATCH_NO;
+	}
+
+      if (gfc_validate_kind (BT_INTEGER, 1, true) < 0)
+	{
+	  gfc_error ("BYTE type used at %C "
+		     "is not available on the target machine");
+	  return MATCH_ERROR;
+	}
+
+      ts->type = BT_INTEGER;
+      ts->kind = 1;
+      return MATCH_YES;
+    }
+  return MATCH_NO;
+}
+
+
 /* Matches a declaration-type-spec (F03:R502).  If successful, sets the ts
    structure to the matched specification.  This is necessary for FUNCTION and
    IMPLICIT statements.
@@ -4012,22 +4035,10 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   /* Clear the current binding label, in case one is given.  */
   curr_binding_label = NULL;
 
-  if (gfc_match (" byte") == MATCH_YES)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "BYTE type at %C"))
-	return MATCH_ERROR;
-
-      if (gfc_validate_kind (BT_INTEGER, 1, true) < 0)
-	{
-	  gfc_error ("BYTE type used at %C "
-		     "is not available on the target machine");
-	  return MATCH_ERROR;
-	}
-
-      ts->type = BT_INTEGER;
-      ts->kind = 1;
-      return MATCH_YES;
-    }
+  /* Match BYTE type-spec.  */
+  m = match_byte_typespec (ts);
+  if (m != MATCH_NO)
+    return m;
 
   m = gfc_match (" type (");
   matched_type = (m == MATCH_YES);
@@ -7547,7 +7558,7 @@ gfc_match_entry (void)
       entry->attr.is_bind_c = 0;
 
       loc = entry->old_symbol != NULL
-	? entry->old_symbol->declared_at : gfc_current_locus; 
+	? entry->old_symbol->declared_at : gfc_current_locus;
       gfc_error_now ("BIND(C) attribute at %L can only be used for "
 		     "variables or common blocks", &loc);
      }
@@ -9059,7 +9070,6 @@ match
 gfc_match_private (gfc_statement *st)
 {
   gfc_state_data *prev;
-  char c;
 
   if (gfc_match ("private") != MATCH_YES)
     return MATCH_NO;
@@ -9083,10 +9093,14 @@ gfc_match_private (gfc_statement *st)
       return MATCH_YES;
     }
 
-  /* At this point, PRIVATE must be followed by whitespace or ::.  */
-  c = gfc_peek_ascii_char ();
-  if (!gfc_is_whitespace (c) && c != ':')
-    return MATCH_NO;
+  /* At this point in free-form source code, PRIVATE must be followed
+     by whitespace or ::.  */
+  if (gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != ':')
+	return MATCH_NO;
+    }
 
   prev = gfc_state_stack->previous;
   if (gfc_current_state () != COMP_MODULE
@@ -9108,8 +9122,6 @@ gfc_match_private (gfc_statement *st)
 match
 gfc_match_public (gfc_statement *st)
 {
-  char c;
-
   if (gfc_match ("public") != MATCH_YES)
     return MATCH_NO;
 
@@ -9127,10 +9139,14 @@ gfc_match_public (gfc_statement *st)
       return MATCH_YES;
     }
 
-  /* At this point, PUBLIC must be followed by whitespace or ::.  */
-  c = gfc_peek_ascii_char ();
-  if (!gfc_is_whitespace (c) && c != ':')
-    return MATCH_NO;
+  /* At this point in free-form source code, PUBLIC must be followed
+     by whitespace or ::.  */
+  if (gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != ':')
+	return MATCH_NO;
+    }
 
   if (gfc_current_state () != COMP_MODULE)
     {
@@ -10288,7 +10304,7 @@ gfc_match_derived_decl (void)
     }
 
   /*  In free source form, need to check for TYPE XXX as oppose to TYPEXXX.
-      But, we need to simply return for TYPE(.  */ 
+      But, we need to simply return for TYPE(.  */
   if (m == MATCH_NO && gfc_current_form == FORM_FREE)
     {
       char c = gfc_peek_ascii_char ();

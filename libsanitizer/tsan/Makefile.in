@@ -146,7 +146,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__objects_1 = tsan_clock.lo tsan_debugging.lo tsan_external.lo \
 	tsan_fd.lo tsan_flags.lo tsan_ignoreset.lo \
-	tsan_interceptors.lo tsan_interceptors_mac.lo \
+	tsan_interceptors_posix.lo tsan_interceptors_mac.lo \
 	tsan_interface_ann.lo tsan_interface_atomic.lo \
 	tsan_interface.lo tsan_interface_java.lo tsan_malloc_mac.lo \
 	tsan_md5.lo tsan_mman.lo tsan_mutex.lo tsan_mutexset.lo \
@@ -421,7 +421,7 @@ tsan_files = \
 	tsan_fd.cpp \
 	tsan_flags.cpp \
 	tsan_ignoreset.cpp \
-	tsan_interceptors.cpp \
+	tsan_interceptors_posix.cpp \
 	tsan_interceptors_mac.cpp \
 	tsan_interface_ann.cpp \
 	tsan_interface_atomic.cpp \
@@ -585,8 +585,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_fd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_ignoreset.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_ann.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_atomic.Plo@am__quote@

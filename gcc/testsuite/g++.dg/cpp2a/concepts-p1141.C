@@ -79,9 +79,9 @@ void f20(Class auto x, Class auto y) { }
 
 void driver_1()
 {
-  f19(0); // { dg-error "cannot call function" }
+  f19(0); // { dg-error "" }
   f19(empty{});
-  f20(0, empty{}); // { dg-error "cannot call function" }
+  f20(0, empty{}); // { dg-error "" }
   f20(empty{}, empty{});
 }
 

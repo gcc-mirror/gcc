@@ -5474,6 +5474,32 @@ nvptx_simt_vf ()
   return PTX_WARP_SIZE;
 }
 
+/* Return 1 if TRAIT NAME is present in the OpenMP context's
+   device trait set, return 0 if not present in any OpenMP context in the
+   whole translation unit, or -1 if not present in the current OpenMP context
+   but might be present in another OpenMP context in the same TU.  */
+
+int
+nvptx_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
+				const char *name)
+{
+  switch (trait)
+    {
+    case omp_device_kind:
+      return strcmp (name, "gpu") == 0;
+    case omp_device_arch:
+      return strcmp (name, "nvptx") == 0;
+    case omp_device_isa:
+      if (strcmp (name, "sm_30") == 0)
+	return !TARGET_SM35;
+      if (strcmp (name, "sm_35") == 0)
+	return TARGET_SM35;
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 static bool
 nvptx_welformed_vector_length_p (int l)
 {
@@ -6538,6 +6564,9 @@ nvptx_set_current_function (tree fndecl)
 
 #undef TARGET_SIMT_VF
 #define TARGET_SIMT_VF nvptx_simt_vf
+
+#undef TARGET_OMP_DEVICE_KIND_ARCH_ISA
+#define TARGET_OMP_DEVICE_KIND_ARCH_ISA nvptx_omp_device_kind_arch_isa
 
 #undef TARGET_GOACC_VALIDATE_DIMS
 #define TARGET_GOACC_VALIDATE_DIMS nvptx_goacc_validate_dims

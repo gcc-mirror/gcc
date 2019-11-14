@@ -510,6 +510,17 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
 	  candidates->safe_push (alternative);
 	}
     }
+
+  /* For all params (e.g. --param=key=value),
+     include also '--param key=value'.  */
+  const char *prefix = "--param=";
+  if (strstr (opt_text, prefix) == opt_text)
+    {
+      char *param = xstrdup (opt_text + 1);
+      gcc_assert (param[6] == '=');
+      param[6] = ' ';
+      candidates->safe_push (param);
+    }
 }
 
 /* Decode the switch beginning at ARGV for the language indicated by
@@ -959,6 +970,15 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	  num_decoded_options++;
 	  n = 1;
 	  continue;
+	}
+
+      /* Interpret "--param" "key=name" as "--param=key=name".  */
+      const char *needle = "--param";
+      if (i + 1 < argc && strcmp (opt, needle) == 0)
+	{
+	  const char *replacement
+	    = opts_concat (needle, "=", argv[i + 1], NULL);
+	  argv[++i] = replacement;
 	}
 
       n = decode_cmdline_option (argv + i, lang_mask,

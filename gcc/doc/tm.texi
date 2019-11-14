@@ -758,14 +758,6 @@ options are changed via @code{#pragma GCC optimize} or by using the
 Set target-dependent initial values of fields in @var{opts}.
 @end deftypefn
 
-@deftypefn {Common Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
-Set target-dependent default values for @option{--param} settings, using calls to @code{set_default_param_value}.
-@end deftypefn
-
-@deftypefn {Common Target Hook} bool TARGET_OPTION_VALIDATE_PARAM (int, @var{int})
-Validate target-dependent value for @option{--param} settings, using calls to @code{set_param_value}.
-@end deftypefn
-
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
@@ -6101,6 +6093,13 @@ to use it.
 
 @deftypefn {Target Hook} int TARGET_SIMT_VF (void)
 Return number of threads in SIMT thread group on the target.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_OMP_DEVICE_KIND_ARCH_ISA (enum omp_device_kind_arch_isa @var{trait}, const char *@var{name})
+Return 1 if @var{trait} @var{name} is present in the OpenMP context's
+device trait set, return 0 if not present in any OpenMP context in the
+whole translation unit, or -1 if not present in the current OpenMP context
+but might be present in another OpenMP context in the same TU.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_GOACC_VALIDATE_DIMS (tree @var{decl}, int *@var{dims}, int @var{fn_level}, unsigned @var{used})

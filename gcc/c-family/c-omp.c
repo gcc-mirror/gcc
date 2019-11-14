@@ -2173,7 +2173,7 @@ c_omp_check_context_selector (location_t loc, tree ctx)
 	"host", "nohost", "cpu", "gpu", "fpga", "any", NULL };
       static const char *const vendor[] = {
 	"amd", "arm", "bsc", "cray", "fujitsu", "gnu", "ibm", "intel",
-	"llvm", "pgi", "ti", "unknown", NULL };
+	"llvm", "nvidia", "pgi", "ti", "unknown", NULL };
       static const char *const extension[] = { NULL };
       static const char *const atomic_default_mem_order[] = {
 	"seq_cst", "relaxed", "acq_rel", NULL };
@@ -2196,8 +2196,9 @@ c_omp_check_context_selector (location_t loc, tree ctx)
 		{
 		  if (props[i].props[j] == NULL)
 		    {
-		      if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				   " score"))
+		      if (TREE_PURPOSE (t2)
+			  && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				      " score"))
 			break;
 		      if (props[i].props == atomic_default_mem_order)
 			{
@@ -2207,55 +2208,31 @@ c_omp_check_context_selector (location_t loc, tree ctx)
 				    "atomic_default_mem_order");
 			  return error_mark_node;
 			}
-		      else
+		      else if (TREE_PURPOSE (t2))
 			warning_at (loc, 0,
 				    "unknown property %qs of %qs selector",
 				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    props[i].selector);
+		      else
+			warning_at (loc, 0,
+				    "unknown property %qE of %qs selector",
+				    TREE_VALUE (t2), props[i].selector);
 		      break;
+		    }
+		  else if (TREE_PURPOSE (t2) == NULL_TREE)
+		    {
+		      const char *str = TREE_STRING_POINTER (TREE_VALUE (t2));
+		      if (!strcmp (str, props[i].props[j])
+			  && ((size_t) TREE_STRING_LENGTH (TREE_VALUE (t2))
+			      == strlen (str) + 1))
+			break;
 		    }
 		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    props[i].props[j]))
-		    {
-		      if (props[i].props == atomic_default_mem_order
-			  && t2 != TREE_VALUE (t1))
-			{
-			  tree t3 = TREE_VALUE (t1);
-			  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)),
-				       " score")
-			      && t2 == TREE_CHAIN (TREE_VALUE (t1)))
-			    break;
-			  error_at (loc,
-				    "%qs selector must have a single property",
-				    "atomic_default_mem_order");
-			  return error_mark_node;
-			}
-		      break;
-		    }
+		    break;
 		}
     }
   return ctx;
-}
-
-/* From context selector CTX, return trait-selector with name SEL in
-   trait-selector-set with name SET if any, or NULL_TREE if not found.
-   If SEL is NULL, return the list of trait-selectors in SET.  */
-
-tree
-c_omp_get_context_selector (tree ctx, const char *set, const char *sel)
-{
-  tree setid = get_identifier (set);
-  tree selid = sel ? get_identifier (sel) : NULL_TREE;
-  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
-    if (TREE_PURPOSE (t1) == setid)
-      {
-	if (sel == NULL)
-	  return TREE_VALUE (t1);
-	for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
-	  if (TREE_PURPOSE (t2) == selid)
-	    return t2;
-      }
-  return NULL_TREE;
 }
 
 /* Register VARIANT as variant of some base function marked with
@@ -2275,113 +2252,10 @@ c_omp_mark_declare_variant (location_t loc, tree variant, tree construct)
       DECL_ATTRIBUTES (variant) = attr;
       return;
     }
-  tree t1 = TREE_VALUE (attr);
-  tree t2 = construct;
-  tree simd = get_identifier ("simd");
-  while (t1 && t2)
-    {
-      if (TREE_PURPOSE (t1) != TREE_PURPOSE (t2))
-	break;
-      if (TREE_PURPOSE (t1) == simd)
-	{
-	  if ((TREE_VALUE (t1) == NULL_TREE)
-	      != (TREE_VALUE (t2) == NULL_TREE))
-	    break;
-	  if (TREE_VALUE (t1))
-	    {
-	      struct declare_variant_simd_data {
-		bool inbranch, notinbranch;
-		tree simdlen;
-		auto_vec<tree,16> data_sharing;
-		auto_vec<tree,16> aligned;
-		declare_variant_simd_data ()
-		  : inbranch(false), notinbranch(false), simdlen(NULL_TREE) {}
-	      } data[2];
-	      unsigned int i;
-	      for (i = 0; i < 2; i++)
-		for (tree c = TREE_VALUE (i ? t2 : t1);
-		     c; c = OMP_CLAUSE_CHAIN (c))
-		  {
-		    vec<tree> *v;
-		    switch (OMP_CLAUSE_CODE (c))
-		      {
-		      case OMP_CLAUSE_INBRANCH:
-			data[i].inbranch = true;
-			continue;
-		      case OMP_CLAUSE_NOTINBRANCH:
-			data[i].notinbranch = true;
-			continue;
-		      case OMP_CLAUSE_SIMDLEN:
-			data[i].simdlen = OMP_CLAUSE_SIMDLEN_EXPR (c);
-			continue;
-		      case OMP_CLAUSE_UNIFORM:
-		      case OMP_CLAUSE_LINEAR:
-			v = &data[i].data_sharing;
-			break;
-		      case OMP_CLAUSE_ALIGNED:
-			v = &data[i].aligned;
-			break;
-		      default:
-			gcc_unreachable ();
-		      }
-		    unsigned HOST_WIDE_INT argno
-		      = tree_to_uhwi (OMP_CLAUSE_DECL (c));
-		    if (argno >= v->length ())
-		      v->safe_grow_cleared (argno + 1);
-		    (*v)[argno] = c;
-		  }
-	      if (data[0].inbranch != data[1].inbranch
-		  || data[0].notinbranch != data[1].notinbranch
-		  || !simple_cst_equal (data[0].simdlen,
-					data[1].simdlen)
-		  || (data[0].data_sharing.length ()
-		      != data[1].data_sharing.length ())
-		  || (data[0].aligned.length ()
-		      != data[1].aligned.length ()))
-		break;
-	      tree c1, c2;
-	      FOR_EACH_VEC_ELT (data[0].data_sharing, i, c1)
-		{
-		  c2 = data[1].data_sharing[i];
-		  if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
-		    break;
-		  if (c1 == NULL_TREE)
-		    continue;
-		  if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_CODE (c2))
-		    break;
-		  if (OMP_CLAUSE_CODE (c1) != OMP_CLAUSE_LINEAR)
-		    continue;
-		  if (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c1)
-		      != OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c2))
-		    break;
-		  if (OMP_CLAUSE_LINEAR_KIND (c1)
-		      != OMP_CLAUSE_LINEAR_KIND (c2))
-		    break;
-		  if (!simple_cst_equal (OMP_CLAUSE_LINEAR_STEP (c1),
-					 OMP_CLAUSE_LINEAR_STEP (c2)))
-		    break;
-		}
-	      if (i < data[0].data_sharing.length ())
-		break;
-	      FOR_EACH_VEC_ELT (data[0].aligned, i, c1)
-		{
-		  c2 = data[1].aligned[i];
-		  if ((c1 == NULL_TREE) != (c2 == NULL_TREE))
-		    break;
-		  if (c1 == NULL_TREE)
-		    continue;
-		  if (!simple_cst_equal (OMP_CLAUSE_ALIGNED_ALIGNMENT (c1),
-					 OMP_CLAUSE_ALIGNED_ALIGNMENT (c2)))
-		    break;
-		}
-	      if (i < data[0].aligned.length ())
-		break;
-	    }
-	}
-      t1 = TREE_CHAIN (t1);
-      t2 = TREE_CHAIN (t2);
-    }
-  if (t1 || t2)
-    error_at (loc, "%qD used as a variant with incompatible %<constructor%> "
+  if ((TREE_VALUE (attr) != NULL_TREE) != (construct != NULL_TREE)
+      || (construct != NULL_TREE
+	  && omp_context_selector_set_compare ("construct", TREE_VALUE (attr),
+					       construct)))
+    error_at (loc, "%qD used as a variant with incompatible %<construct%> "
 		   "selector sets", variant);
 }

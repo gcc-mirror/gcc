@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-threadupdate.h"
-#include "params.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-dom.h"
@@ -165,8 +164,8 @@ record_temporary_equivalences_from_phis (edge e,
 	  /* Get an empty new VR we can pass to update_value_range and save
 	     away in the VR stack.  */
 	  vr_values *vr_values = evrp_range_analyzer->get_vr_values ();
-	  value_range *new_vr = vr_values->allocate_value_range ();
-	  new (new_vr) value_range ();
+	  value_range_equiv *new_vr = vr_values->allocate_value_range_equiv ();
+	  new (new_vr) value_range_equiv ();
 
 	  /* There are three cases to consider:
 
@@ -234,7 +233,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
   gimple_stmt_iterator gsi;
   int max_stmt_count;
 
-  max_stmt_count = PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS);
+  max_stmt_count = param_max_jump_thread_duplication_stmts;
 
   /* Walk through each statement in the block recording equivalences
      we discover.  Note any equivalences we discover are context
@@ -275,7 +274,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	     killed due to threading, grow the max count
 	     accordingly.  */
 	  if (max_stmt_count
-	      == PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS))
+	      == param_max_jump_thread_duplication_stmts)
 	    {
 	      max_stmt_count += estimate_threading_killed_stmts (e->dest);
 	      if (dump_file)

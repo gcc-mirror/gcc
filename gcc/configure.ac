@@ -1034,6 +1034,22 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
     enable_hsa=1
   else
     enable_offloading=1
+    case "$tgt" in
+      *-intelmicemul-*)
+	omp_device_property=omp-device-properties-i386
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
+	;;
+      gcn*-*)
+	omp_device_property=omp-device-properties-gcn
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
+	;;
+      nvptx*-*)
+	omp_device_property=omp-device-properties-nvptx
+	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+	;;
+    esac
+    omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
+    omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
   fi
 
   if test x"$offload_targets" = x; then
@@ -1042,6 +1058,9 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
     offload_targets="$offload_targets,$tgt"
   fi
 done
+AC_SUBST(omp_device_properties)
+AC_SUBST(omp_device_property_deps)
+
 AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
   [Define to offload targets, separated by commas.])
 if test x"$enable_offloading" != x; then
@@ -1361,7 +1380,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap memrchr posix_fallocate setlocale \
-	gcc_UNLOCKED_FUNCS madvise execv)
+	gcc_UNLOCKED_FUNCS madvise mallinfo execv)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1442,6 +1461,14 @@ gcc_AC_CHECK_DECLS(getrlimit setrlimit getrusage, , ,[
 #include "system.h"
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
+#endif
+])
+
+gcc_AC_CHECK_DECLS(mallinfo, , ,[
+#include "ansidecl.h"
+#include "system.h"
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
 #endif
 ])
 
@@ -1950,6 +1977,7 @@ AC_SUBST(extra_opt_files)
 if test x$host = x$build
 then
 	build_auto=auto-host.h
+	HAVE_AUTO_BUILD='# '
 else
 	# We create a subdir, then run autoconf in the subdir.
 	# To prevent recursion we set host and build for the new
@@ -1972,7 +2000,10 @@ else
 	GMPINC="" CPPFLAGS="${CPPFLAGS} -DGENERATOR_FILE" \
 	${realsrcdir}/configure \
 		--enable-languages=${enable_languages-all} \
-		--target=$target_alias --host=$build_alias --build=$build_alias
+		${enable_obsolete+--enable-obsolete="$enable_obsolete"} \
+		${enable_option_checking+--enable-option-checking="$enable_option_checking"} \
+		--target=$target_alias --host=$build_alias \
+		--build=$build_alias || exit # retaining $tempdir
 
 	# We just finished tests for the build machine, so rename
 	# the file auto-build.h in the gcc directory.
@@ -1980,8 +2011,10 @@ else
 	cd ..
 	rm -rf $tempdir
 	build_auto=auto-build.h
+	HAVE_AUTO_BUILD=
 fi
 AC_SUBST(build_subdir)
+AC_SUBST(HAVE_AUTO_BUILD)
 
 tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
@@ -2189,7 +2222,7 @@ do
 		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
 	fi
 done
-tmake_file="${tmake_file_}"
+tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
 out_object_file=`basename $out_file .c`.o
 common_out_object_file=`basename $common_out_file .c`.o
@@ -3470,6 +3503,18 @@ gcc_GAS_CHECK_FEATURE([line table discriminator support],
 	.loc 1 1 0 discriminator 1],,
 [AC_DEFINE(HAVE_GAS_DISCRIMINATOR, 1,
   [Define if your assembler supports the .loc discriminator sub-directive.])])
+
+# Catch the newlib flag of the same name so we can gate GCC features on it.
+AC_ARG_ENABLE(newlib-nano-formatted-io,
+[AS_HELP_STRING([--enable-newlib-nano-formatted-io], [Use nano version
+ formatted IO])],
+[case "${enableval}" in
+  yes|no)
+    ;;
+  *)
+    AC_MSG_ERROR([unknown newlib-nano-formatted-io setting $enableval])
+    ;;
+esac], [])
 
 # Thread-local storage - the check is heavily parameterized.
 conftest_s=
@@ -4901,12 +4946,6 @@ LCF0:
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
 
-    gcc_GAS_CHECK_FEATURE([tls marker support],
-      gcc_cv_as_powerpc_tls_markers, [2,20,0],,
-      [ bl __tls_get_addr(x@tlsgd)],,
-      [AC_DEFINE(HAVE_AS_TLS_MARKERS, 1,
-	  [Define if your assembler supports arg info for __tls_get_addr.])])
-
     gcc_GAS_CHECK_FEATURE([prologue entry point marker support],
       gcc_cv_as_powerpc_entry_markers, [2,26,0],-a64 --fatal-warnings,
       [ .reloc .,R_PPC64_ENTRY; nop],,
@@ -5111,6 +5150,10 @@ pointers into PC-relative form.])
       [.mspabi_attribute 4,1],,
       [AC_DEFINE(HAVE_AS_MSPABI_ATTRIBUTE, 1,
 	  [Define if your assembler supports .mspabi_attribute.])])
+    if test x$enable_newlib_nano_formatted_io = xyes; then
+      AC_DEFINE(HAVE_NEWLIB_NANO_FORMATTED_IO, 1, [Define if GCC has been
+configured with --enable-newlib-nano-formatted-io.])
+      fi
     ;;
     riscv*-*-*)
     gcc_GAS_CHECK_FEATURE([.attribute support],
@@ -6419,7 +6462,8 @@ lang_tree_files=
 all_languages=
 all_compilers=
 all_outputs='Makefile'
-# List of language makefile fragments.
+# List of language configure and makefile fragments.
+all_lang_configurefrags=
 all_lang_makefrags=
 # Additional files for gengtype
 all_gtfiles="$target_gtfiles"
@@ -6507,6 +6551,7 @@ changequote([,])dnl
 	esac
 	$ok || continue
 
+	all_lang_configurefrags="$all_lang_configurefrags \$(srcdir)/$gcc_subdir/config-lang.in"
 	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
 	if test -f $srcdir/$gcc_subdir/lang.opt; then
 	    lang_opt_files="$lang_opt_files $srcdir/$gcc_subdir/lang.opt"
@@ -6614,6 +6659,7 @@ AC_SUBST(subdirs)
 AC_SUBST(srcdir)
 AC_SUBST(all_compilers)
 AC_SUBST(all_gtfiles)
+AC_SUBST(all_lang_configurefrags)
 AC_SUBST(all_lang_makefrags)
 AC_SUBST(all_languages)
 AC_SUBST(all_selected_languages)

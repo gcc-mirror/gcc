@@ -3240,6 +3240,17 @@ add_implicitly_declared_members (tree t, tree* access_decls,
      a virtual function from a base class.  */
   declare_virt_assop_and_dtor (t);
 
+  /* If the class definition does not explicitly declare an == operator
+     function, but declares a defaulted three-way comparison operator function,
+     an == operator function is declared implicitly.  */
+  if (!classtype_has_op (t, EQ_EXPR))
+    if (tree space = classtype_has_defaulted_op (t, SPACESHIP_EXPR))
+      {
+	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
+					 NULL_TREE);
+	add_method (t, eq, false);
+      }
+
   while (*access_decls)
     {
       tree using_decl = TREE_VALUE (*access_decls);
@@ -3454,113 +3465,107 @@ check_field_decl (tree field,
        operator taking a const reference.
 
    All of these flags should be initialized before calling this
-   function.
-
-   Returns a pointer to the end of the TYPE_FIELDs chain; additional
-   fields can be added by adding to this chain.  */
+   function.   */
 
 static void
 check_field_decls (tree t, tree *access_decls,
 		   int *cant_have_const_ctor_p,
 		   int *no_const_asn_ref_p)
 {
-  tree *field;
-  tree *next;
   int cant_pack = 0;
-  int field_access = -1;
 
   /* Assume there are no access declarations.  */
   *access_decls = NULL_TREE;
-  /* Assume this class has no pointer members.  */
-  bool has_pointers = false;
-  /* Assume none of the members of this class have default
-     initializations.  */
-  bool any_default_members = false;
-  /* Assume none of the non-static data members are of non-volatile literal
-     type.  */
+  /* Effective C has things to say about classes with pointer members.  */
+  tree pointer_member = NULL_TREE;
+  /* Default initialized members affect the whole class.  */
+  tree default_init_member = NULL_TREE;
+  /* Lack of any non-static data member of non-volatile literal
+     type affects a union.  */
   bool found_nv_literal_p = false;
+  /* Standard layout requires all FIELDS have same access.  */
+  int field_access = -1;
 
-  for (field = &TYPE_FIELDS (t); *field; field = next)
+  for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
     {
-      tree x = *field;
-      tree type = TREE_TYPE (x);
-      int this_field_access;
+      tree type = TREE_TYPE (field);
 
-      next = &DECL_CHAIN (x);
-
-      if (TREE_CODE (x) == USING_DECL)
+      switch (TREE_CODE (field))
 	{
+	default:
+	  gcc_unreachable ();
+
+	case USING_DECL:
 	  /* Save the access declarations for our caller.  */
-	  *access_decls = tree_cons (NULL_TREE, x, *access_decls);
-	  continue;
-	}
+	  *access_decls = tree_cons (NULL_TREE, field, *access_decls);
+	  break;
 
-      if (TREE_CODE (x) == TYPE_DECL
-	  || TREE_CODE (x) == TEMPLATE_DECL)
-	continue;
+	case TYPE_DECL:
+	case TEMPLATE_DECL:
+	  break;
 
-      if (TREE_CODE (x) == FUNCTION_DECL)
-	/* FIXME: We should fold in the checking from check_methods.  */
-	continue;
+	case FUNCTION_DECL:
+	  /* FIXME: We should fold in the checking from check_methods.  */
+	  break;
 
-      /* If we've gotten this far, it's a data member, possibly static,
-	 or an enumerator.  */
-      if (TREE_CODE (x) != CONST_DECL)
-	DECL_CONTEXT (x) = t;
-
-      /* When this goes into scope, it will be a non-local reference.  */
-      DECL_NONLOCAL (x) = 1;
-
-      if (TREE_CODE (t) == UNION_TYPE)
-	{
-	  /* [class.union] (C++98)
-
-	     If a union contains a static data member, or a member of
-	     reference type, the program is ill-formed.
-
-	     In C++11 [class.union] says:
-	     If a union contains a non-static data member of reference type
-	     the program is ill-formed.  */
-	  if (VAR_P (x) && cxx_dialect < cxx11)
+	case CONST_DECL:
+	  DECL_NONLOCAL (field) = 1;
+	  break;
+	  
+	case VAR_DECL:
+	  if (TREE_CODE (t) == UNION_TYPE
+	      && cxx_dialect < cxx11)
 	    {
-	      error ("in C++98 %q+D may not be static because it is "
-		     "a member of a union", x);
-	      continue;
+	      /* [class.union]
+
+		 (C++98) If a union contains a static data member,
+		 ... the program is ill-formed.  */
+	      if (cxx_dialect < cxx11)
+		error ("in C++98 %q+D may not be static because it is "
+		       "a member of a union", field);
 	    }
-	  if (TYPE_REF_P (type)
-	      && TREE_CODE (x) == FIELD_DECL)
+	  goto data_member;
+	  
+	case FIELD_DECL:
+	  if (TREE_CODE (t) == UNION_TYPE)
 	    {
-	      error ("non-static data member %q+D in a union may not "
-		     "have reference type %qT", x, type);
-	      continue;
+	      /* [class.union]
+
+		 If a union contains ... or a [non-static data] member
+		 of reference type, the program is ill-formed.  */
+	      if (TYPE_REF_P (type))
+		error ("non-static data member %q+D in a union may not "
+		       "have reference type %qT", field, type);
 	    }
+
+	data_member:
+	  /* Common VAR_DECL & FIELD_DECL processing.  */
+	  DECL_CONTEXT (field) = t;
+	  DECL_NONLOCAL (field) = 1;
+
+	  /* Template instantiation can cause this.  Perhaps this
+	     should be a specific instantiation check?  */
+	  if (TREE_CODE (type) == FUNCTION_TYPE)
+	    {
+	      error ("data member %q+D invalidly declared function type", field);
+	      type = build_pointer_type (type);
+	      TREE_TYPE (field) = type;
+	    }
+	  else if (TREE_CODE (type) == METHOD_TYPE)
+	    {
+	      error ("data member %q+D invalidly declared method type", field);
+	      type = build_pointer_type (type);
+	      TREE_TYPE (field) = type;
+	    }
+
+	  break;
 	}
 
-      /* Perform error checking that did not get done in
-	 grokdeclarator.  */
-      if (TREE_CODE (type) == FUNCTION_TYPE)
-	{
-	  error ("field %q+D invalidly declared function type", x);
-	  type = build_pointer_type (type);
-	  TREE_TYPE (x) = type;
-	}
-      else if (TREE_CODE (type) == METHOD_TYPE)
-	{
-	  error ("field %q+D invalidly declared method type", x);
-	  type = build_pointer_type (type);
-	  TREE_TYPE (x) = type;
-	}
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
 
       if (type == error_mark_node)
 	continue;
-
-      if (TREE_CODE (x) == CONST_DECL || VAR_P (x))
-	continue;
-
-      /* Now it can only be a FIELD_DECL.  */
-
-      if (TREE_PRIVATE (x) || TREE_PROTECTED (x))
-	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
       /* If it is not a union and at least one non-static data member is
 	 non-literal, the whole class becomes non-literal.  Per Core/1453,
@@ -3576,22 +3581,30 @@ check_field_decls (tree t, tree *access_decls,
 	    found_nv_literal_p = true;
 	}
 
-      /* A standard-layout class is a class that:
-	 ...
-	 has the same access control (Clause 11) for all non-static data members,
-         ...  */
-      this_field_access = TREE_PROTECTED (x) ? 1 : TREE_PRIVATE (x) ? 2 : 0;
-      if (field_access == -1)
-	field_access = this_field_access;
-      else if (this_field_access != field_access)
-	CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+      int this_field_access = (TREE_PROTECTED (field) ? 1
+			       : TREE_PRIVATE (field) ? 2 : 0);
+      if (field_access != this_field_access)
+	{
+	  /* A standard-layout class is a class that:
+
+	     ... has the same access control (Clause 11) for all
+	     non-static data members, */
+	  if (field_access < 0)
+	    field_access = this_field_access;
+	  else
+	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+
+	  /* Aggregates must be public.  */
+	  if (this_field_access)
+	    CLASSTYPE_NON_AGGREGATE (t) = 1;
+	}
 
       /* If this is of reference type, check if it needs an init.  */
       if (TYPE_REF_P (type))
 	{
 	  CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
 	  CLASSTYPE_NON_STD_LAYOUT (t) = 1;
-	  if (DECL_INITIAL (x) == NULL_TREE)
+	  if (DECL_INITIAL (field) == NULL_TREE)
 	    SET_CLASSTYPE_REF_FIELDS_NEED_INIT (t, 1);
 	  if (cxx_dialect < cxx11)
 	    {
@@ -3610,35 +3623,32 @@ check_field_decls (tree t, tree *access_decls,
 	{
 	  if (!layout_pod_type_p (type) && !TYPE_PACKED (type))
 	    {
-	      warning_at
-		(DECL_SOURCE_LOCATION (x), 0,
-		 "ignoring packed attribute because of unpacked non-POD field %q#D",
-		 x);
+	      warning_at (DECL_SOURCE_LOCATION (field), 0,
+			  "ignoring packed attribute because of"
+			  " unpacked non-POD field %q#D", field);
 	      cant_pack = 1;
 	    }
-	  else if (DECL_C_BIT_FIELD (x)
-		   || TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT)
-	    DECL_PACKED (x) = 1;
+	  else if (DECL_C_BIT_FIELD (field)
+		   || TYPE_ALIGN (TREE_TYPE (field)) > BITS_PER_UNIT)
+	    DECL_PACKED (field) = 1;
 	}
 
-      if (DECL_C_BIT_FIELD (x)
-	  && integer_zerop (DECL_BIT_FIELD_REPRESENTATIVE (x)))
+      if (DECL_C_BIT_FIELD (field)
+	  && integer_zerop (DECL_BIT_FIELD_REPRESENTATIVE (field)))
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
-      else if (field_poverlapping_p (x) && is_empty_class (type))
-	{
-	  /* Empty data members also don't make a class non-empty.  */
-	  CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
-	}
+      else if (field_poverlapping_p (field) && is_empty_class (type))
+	/* Empty data members also don't make a class non-empty.  */
+	CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
       else
 	{
 	  /* The class is non-empty.  */
 	  CLASSTYPE_EMPTY_P (t) = 0;
 	  /* The class is not even nearly empty.  */
 	  CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
-	  /* If one of the data members contains an empty class,
-	     so does T.  */
+	  /* If one of the data members contains an empty class, so
+	     does T.  */
 	  if (CLASS_TYPE_P (type)
 	      && CLASSTYPE_CONTAINS_EMPTY_CLASS_P (type))
 	    CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
@@ -3649,7 +3659,7 @@ check_field_decls (tree t, tree *access_decls,
 	 for pointers to functions or pointers to members.  */
       if (TYPE_PTR_P (type)
 	  && !TYPE_PTRFN_P (type))
-	has_pointers = true;
+	pointer_member = field;
 
       if (CLASS_TYPE_P (type))
 	{
@@ -3659,23 +3669,17 @@ check_field_decls (tree t, tree *access_decls,
 	    SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT (t, 1);
 	}
 
-      if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))
+      if (DECL_MUTABLE_P (field) || TYPE_HAS_MUTABLE_P (type))
 	CLASSTYPE_HAS_MUTABLE (t) = 1;
 
-      if (DECL_MUTABLE_P (x))
+      if (DECL_MUTABLE_P (field))
 	{
-	  if (CP_TYPE_CONST_P (type))
-	    {
-	      error ("member %q+D cannot be declared both %<const%> "
-		     "and %<mutable%>", x);
-	      continue;
-	    }
 	  if (TYPE_REF_P (type))
-	    {
-	      error ("member %q+D cannot be declared as a %<mutable%> "
-		     "reference", x);
-	      continue;
-	    }
+	    error ("member %q+D cannot be declared as a %<mutable%> "
+		   "reference", field);
+	  else if (CP_TYPE_CONST_P (type))
+	    error ("member %q+D cannot be declared both %<const%> "
+		   "and %<mutable%>", field);
 	}
 
       if (! layout_pod_type_p (type))
@@ -3683,7 +3687,7 @@ check_field_decls (tree t, tree *access_decls,
 	   to be allowed in POD structs.  */
 	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
 
-      if (field_poverlapping_p (x))
+      if (field_poverlapping_p (field))
 	/* A potentially-overlapping non-static data member makes the class
 	   non-layout-POD.  */
 	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
@@ -3696,28 +3700,34 @@ check_field_decls (tree t, tree *access_decls,
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
-      if (DECL_C_BIT_FIELD (x))
-	check_bitfield_decl (x);
+      if (DECL_C_BIT_FIELD (field))
+	check_bitfield_decl (field);
 
-      if (check_field_decl (x, t, cant_have_const_ctor_p, no_const_asn_ref_p))
+      if (check_field_decl (field, t,
+			    cant_have_const_ctor_p, no_const_asn_ref_p))
 	{
-	  if (any_default_members
+	  if (default_init_member
 	      && TREE_CODE (t) == UNION_TYPE)
-	    error ("multiple fields in union %qT initialized", t);
-	  any_default_members = true;
+	    {
+	      error ("multiple fields in union %qT initialized", t);
+	      inform (DECL_SOURCE_LOCATION (default_init_member),
+		      "initialized member %q+D declared here",
+		      default_init_member);
+	    }
+	  default_init_member = field;
 	}
 
       /* Now that we've removed bit-field widths from DECL_INITIAL,
 	 anything left in DECL_INITIAL is an NSDMI that makes the class
 	 non-aggregate in C++11.  */
-      if (DECL_INITIAL (x) && cxx_dialect < cxx14)
+      if (DECL_INITIAL (field) && cxx_dialect < cxx14)
 	CLASSTYPE_NON_AGGREGATE (t) = true;
 
-      /* If any field is const, the structure type is pseudo-const.  */
       if (CP_TYPE_CONST_P (type))
 	{
+	  /* If any field is const, the structure type is pseudo-const.  */
 	  C_TYPE_FIELDS_READONLY (t) = 1;
-	  if (DECL_INITIAL (x) == NULL_TREE)
+	  if (DECL_INITIAL (field) == NULL_TREE)
 	    SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT (t, 1);
 	  if (cxx_dialect < cxx11)
 	    {
@@ -3741,10 +3751,10 @@ check_field_decls (tree t, tree *access_decls,
       /* Core issue 80: A nonstatic data member is required to have a
 	 different name from the class iff the class has a
 	 user-declared constructor.  */
-      if (constructor_name_p (DECL_NAME (x), t)
+      if (constructor_name_p (DECL_NAME (field), t)
 	  && TYPE_HAS_USER_CONSTRUCTOR (t))
-	permerror (DECL_SOURCE_LOCATION (x),
-		   "field %q#D with same name as class", x);
+	permerror (DECL_SOURCE_LOCATION (field),
+		   "field %q#D with same name as class", field);
     }
 
   /* Per CWG 2096, a type is a literal type if it is a union, and at least
@@ -3767,28 +3777,31 @@ check_field_decls (tree t, tree *access_decls,
 
      This seems enough for practical purposes.  */
   if (warn_ecpp
-      && has_pointers
+      && pointer_member
       && TYPE_HAS_USER_CONSTRUCTOR (t)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
       && !(TYPE_HAS_COPY_CTOR (t) && TYPE_HAS_COPY_ASSIGN (t)))
     {
-      warning (OPT_Weffc__, "%q#T has pointer data members", t);
-
-      if (! TYPE_HAS_COPY_CTOR (t))
+      if (warning (OPT_Weffc__, "%q#T has pointer data members", t))
 	{
-	  warning (OPT_Weffc__,
-		   "  but does not override %<%T(const %T&)%>", t, t);
-	  if (!TYPE_HAS_COPY_ASSIGN (t))
-	    warning (OPT_Weffc__, "  or %<operator=(const %T&)%>", t);
+	  if (! TYPE_HAS_COPY_CTOR (t))
+	    {
+	      warning (OPT_Weffc__,
+		       "  but does not override %<%T(const %T&)%>", t, t);
+	      if (!TYPE_HAS_COPY_ASSIGN (t))
+		warning (OPT_Weffc__, "  or %<operator=(const %T&)%>", t);
+	    }
+	  else if (! TYPE_HAS_COPY_ASSIGN (t))
+	    warning (OPT_Weffc__,
+		     "  but does not override %<operator=(const %T&)%>", t);
+	  inform (DECL_SOURCE_LOCATION (pointer_member),
+		  "pointer member %q+D declared here", pointer_member);
 	}
-      else if (! TYPE_HAS_COPY_ASSIGN (t))
-	warning (OPT_Weffc__,
-		 "  but does not override %<operator=(const %T&)%>", t);
     }
 
   /* Non-static data member initializers make the default constructor
      non-trivial.  */
-  if (any_default_members)
+  if (default_init_member)
     {
       TYPE_NEEDS_CONSTRUCTING (t) = true;
       TYPE_HAS_COMPLEX_DFLT (t) = true;
@@ -4346,15 +4359,19 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
    fields at NEXT_FIELD, and return it.  */
 
 static tree
-build_base_field_1 (tree t, tree basetype, tree *&next_field)
+build_base_field_1 (tree t, tree binfo, tree *&next_field)
 {
   /* Create the FIELD_DECL.  */
+  tree basetype = BINFO_TYPE (binfo);
   tree as_base = CLASSTYPE_AS_BASE (basetype);
   gcc_assert (as_base);
   tree decl = build_decl (input_location, FIELD_DECL, NULL_TREE, as_base);
+
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
+  TREE_PRIVATE (decl) = TREE_PRIVATE (binfo);
+  TREE_PROTECTED (decl) = TREE_PROTECTED (binfo);
   if (is_empty_class (basetype))
     /* CLASSTYPE_SIZE is one byte, but the field needs to have size zero.  */
     DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = size_zero_node;
@@ -4407,7 +4424,7 @@ build_base_field (record_layout_info rli, tree binfo,
       CLASSTYPE_EMPTY_P (t) = 0;
 
       /* Create the FIELD_DECL.  */
-      decl = build_base_field_1 (t, basetype, next_field);
+      decl = build_base_field_1 (t, binfo, next_field);
 
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
@@ -4441,7 +4458,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	 aggregate bases.  */
       if (cxx_dialect >= cxx17 && !BINFO_VIRTUAL_P (binfo))
 	{
-	  tree decl = build_base_field_1 (t, basetype, next_field);
+	  tree decl = build_base_field_1 (t, binfo, next_field);
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
 	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
 	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
@@ -5398,6 +5415,44 @@ classtype_has_depr_implicit_copy (tree t)
 	return fn;
     }
 
+  return NULL_TREE;
+}
+
+/* True iff T has a member or friend declaration of operator OP.  */
+
+bool
+classtype_has_op (tree t, tree_code op)
+{
+  tree name = ovl_op_identifier (op);
+  if (get_class_binding (t, name))
+    return true;
+  for (tree f = DECL_FRIENDLIST (TYPE_MAIN_DECL (t)); f; f = TREE_CHAIN (f))
+    if (FRIEND_NAME (f) == name)
+      return true;
+  return false;
+}
+
+
+/* If T has a defaulted member or friend declaration of OP, return it.  */
+
+tree
+classtype_has_defaulted_op (tree t, tree_code op)
+{
+  tree name = ovl_op_identifier (op);
+  for (ovl_iterator oi (get_class_binding (t, name)); oi; ++oi)
+    {
+      tree fn = *oi;
+      if (DECL_DEFAULTED_FN (fn))
+	return fn;
+    }
+  for (tree f = DECL_FRIENDLIST (TYPE_MAIN_DECL (t)); f; f = TREE_CHAIN (f))
+    if (FRIEND_NAME (f) == name)
+      for (tree l = FRIEND_DECLS (f); l; l = TREE_CHAIN (l))
+	{
+	  tree fn = TREE_VALUE (l);
+	  if (DECL_DEFAULTED_FN (fn))
+	    return fn;
+	}
   return NULL_TREE;
 }
 
@@ -7395,6 +7450,14 @@ finish_struct (tree t, tree attributes)
     popclass ();
   else
     error ("trying to finish struct, but kicked out due to previous parse errors");
+
+  if (flag_openmp)
+    for (tree decl = TYPE_FIELDS (t); decl; decl = DECL_CHAIN (decl))
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	if (tree attr = lookup_attribute ("omp declare variant base",
+					  DECL_ATTRIBUTES (decl)))
+	  omp_declare_variant_finalize (decl, attr);
 
   if (processing_template_decl && at_function_scope_p ()
       /* Lambdas are defined by the LAMBDA_EXPR.  */

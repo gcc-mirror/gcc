@@ -326,6 +326,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winaccessible-base @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
+-Wzero-length-bounds @gol
 -Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
@@ -343,7 +344,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-pragmas  -Wno-prio-ctor-dtor  -Wredundant-decls @gol
 -Wrestrict  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
--Wshadow=global,  -Wshadow=local,  -Wshadow=compatible-local @gol
+-Wshadow=global  -Wshadow=local  -Wshadow=compatible-local @gol
 -Wshift-overflow  -Wshift-overflow=@var{n} @gol
 -Wshift-count-negative  -Wshift-count-overflow  -Wshift-negative-value @gol
 -Wsign-compare  -Wsign-conversion  -Wfloat-conversion @gol
@@ -407,7 +408,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
--fallow-store-data-races @gol
+-fno-allocation-dce -fallow-store-data-races @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
 -fcaller-saves @gol
@@ -584,8 +585,9 @@ Objective-C and Objective-C++ Dialects}.
 @item Developer Options
 @xref{Developer Options,,GCC Developer Options}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--dumpfullversion  -fchecking  -fchecking=@var{n}  -fdbg-cnt-list @gol
--fdbg-cnt=@var{counter-value-list} @gol
+-dumpfullversion  -fcallgraph-info@r{[}=su,da@r{]}
+-fchecking  -fchecking=@var{n}
+-fdbg-cnt-list @gol  -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
@@ -722,6 +724,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
 -mbranch-cost=@var{cost} @gol
 -mcall-prologues  -mgas-isr-prologues  -mint8 @gol
+-mdouble=@var{bits} -mlong-double=@var{bits} @gol
 -mn_flash=@var{size}  -mno-interrupts @gol
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
 -mfract-convert-truncate @gol
@@ -1010,7 +1013,7 @@ Objective-C and Objective-C++ Dialects}.
 -mwarn-mcu @gol
 -mcode-region=  -mdata-region= @gol
 -msilicon-errata=  -msilicon-errata-warn= @gol
--mhwmult=  -minrt}
+-mhwmult=  -minrt  -mtiny-printf}
 
 @emph{NDS32 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian @gol
@@ -2412,6 +2415,9 @@ trivial move constructor.
 
 Version 13, which first appeared in G++ 8.2, fixes the accidental
 change in version 12.
+
+Version 14, which first appeared in G++ 10, corrects the mangling of
+the nullptr expression.
 
 See also @option{-Wabi}.
 
@@ -4484,6 +4490,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Winit-self @r{(only for C++)} @gol
+-Wzero-length-bounds @gol
 -Wlogical-not-parentheses @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
@@ -6355,7 +6362,7 @@ can be used to suppress such a warning.
 @opindex Wno-discarded-array-qualifiers
 @opindex Wdiscarded-array-qualifiers
 Do not warn if type qualifiers on arrays which are pointer targets
-are being discarded. Typically, the compiler warns if a
+are being discarded.  Typically, the compiler warns if a
 @code{const int (*)[]} variable is passed to a function that
 takes a @code{int (*)[]} parameter.  This option can be used to
 suppress such a warning.
@@ -6375,6 +6382,33 @@ Do not warn about incompatible integer to pointer and pointer to integer
 conversions.  This warning is about implicit conversions; for explicit
 conversions the warnings @option{-Wno-int-to-pointer-cast} and
 @option{-Wno-pointer-to-int-cast} may be used.
+
+@item -Wzero-length-bounds
+@opindex Wzero-length-bounds
+@opindex Wzero-length-bounds
+Warn about accesses to elements of zero-length array members that might
+overlap other members of the same object.  Declaring interior zero-length
+arrays is discouraged because accesses to them are undefined.  See
+@xref{Zero Length}.
+
+For example, the first two stores in function @code{bad} are diagnosed
+because the array elements overlap the subsequent members @code{b} and
+@code{c}.  The third store is diagnosed by @option{-Warray-bounds}
+because it is beyond the bounds of the enclosing object.
+
+@smallexample
+struct X @{ int a[0]; int b, c; @};
+struct X x;
+
+void bad (void)
+@{
+  x.a[0] = 0;   // -Wzero-length-bounds
+  x.a[1] = 1;   // -Wzero-length-bounds
+  x.a[2] = 2;   // -Warray-bounds
+@}
+@end smallexample
+
+Option @option{-Wzero-length-bounds} is enabled by @option{-Warray-bounds}.
 
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero
@@ -6554,9 +6588,13 @@ allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Declarations}.
 @opindex Wno-shadow
 Warn whenever a local variable or type declaration shadows another
 variable, parameter, type, class member (in C++), or instance variable
-(in Objective-C) or whenever a built-in function is shadowed. Note
+(in Objective-C) or whenever a built-in function is shadowed.  Note
 that in C++, the compiler warns if a local variable shadows an
 explicit typedef, but not if it shadows a struct/class/enum.
+If this warning is enabled, it includes also all instances of
+local shadowing.  This means that @option{-Wno-shadow=local}
+and @option{-Wno-shadow=compatible-local} are ignored when
+@option{-Wshadow} is used.
 Same as @option{-Wshadow=global}.
 
 @item -Wno-shadow-ivar @r{(Objective-C only)}
@@ -6567,20 +6605,19 @@ Objective-C method.
 
 @item -Wshadow=global
 @opindex Wshadow=global
-The default for @option{-Wshadow}. Warns for any (global) shadowing.
-This warning is enabled by @option{-Wshadow=global}.
+Warn for any shadowing.
+Same as @option{-Wshadow}.
 
 @item -Wshadow=local
 @opindex Wshadow=local
 Warn when a local variable shadows another local variable or parameter.
-This warning is enabled by @option{-Wshadow=local}.
 
 @item -Wshadow=compatible-local
 @opindex Wshadow=compatible-local
 Warn when a local variable shadows another local variable or parameter
-whose type is compatible with that of the shadowing variable. In C++,
+whose type is compatible with that of the shadowing variable.  In C++,
 type compatibility here means the type of the shadowing variable can be
-converted to that of the shadowed variable. The creation of this flag
+converted to that of the shadowed variable.  The creation of this flag
 (in addition to @option{-Wshadow=local}) is based on the idea that when
 a local variable shadows another one of incompatible type, it is most
 likely intentional, not a bug or typo, as shown in the following example:
@@ -6599,16 +6636,15 @@ for (SomeIterator i = SomeObj.begin(); i != SomeObj.end(); ++i)
 @end smallexample
 
 Since the two variable @code{i} in the example above have incompatible types,
-enabling only @option{-Wshadow=compatible-local} will not emit a warning.
+enabling only @option{-Wshadow=compatible-local} does not emit a warning.
 Because their types are incompatible, if a programmer accidentally uses one
-in place of the other, type checking will catch that and emit an error or
-warning. So not warning (about shadowing) in this case will not lead to
-undetected bugs. Use of this flag instead of @option{-Wshadow=local} can
+in place of the other, type checking is expected to catch that and emit an
+error or warning.  Use of this flag instead of @option{-Wshadow=local} can
 possibly reduce the number of warnings triggered by intentional shadowing.
-Note that this does also mean that shadowing @code{const char *i} by
-@code{char *i} will not emit a warning.
+Note that this also means that shadowing @code{const char *i} by
+@code{char *i} does not emit a warning.
 
-This warning is enabled by @option{-Wshadow=compatible-local}.
+This warning is also enabled by @option{-Wshadow=local}.
 
 @item -Wlarger-than=@var{byte-size}
 @opindex Wlarger-than=
@@ -7344,7 +7380,10 @@ is also enabled by @option{-Wextra}.
 @opindex Wold-style-definition
 @opindex Wno-old-style-definition
 Warn if an old-style function definition is used.  A warning is given
-even if there is a previous prototype.
+even if there is a previous prototype.  A definition using @samp{()}
+is not considered an old-style definition in C2X mode, because it is
+equivalent to @samp{(void)} in that case, but is considered an
+old-style definition for older standards.
 
 @item -Wmissing-parameter-type @r{(C and Objective-C only)}
 @opindex Wmissing-parameter-type
@@ -10274,6 +10313,10 @@ The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
+@item -fno-allocation-dce
+@opindex fno-allocation-dce
+Do not remove unused C++ allocations in dead code elimination.
+
 @item -fallow-store-data-races
 @opindex fallow-store-data-races
 Allow the compiler to introduce new data races on stores.
@@ -11286,16 +11329,11 @@ applied. In other cases @option{max-inline-insns-single-O2} is applied.
 
 
 @item max-inline-insns-auto
-@item max-inline-insns-auto-O2
 When you use @option{-finline-functions} (included in @option{-O3}),
 a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
-be applied.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-auto} is
-applied. In other cases @option{max-inline-insns-auto-O2} is applied.
+be applied (@option{--param max-inline-insns-auto}).
 
 @item max-inline-insns-small
 This is bound applied to calls which are considered relevant with
@@ -11316,8 +11354,8 @@ execute function prologue and epilogue
 @item inline-heuristics-hint-percent
 @item inline-heuristics-hint-percent-O2
 The scale (in percents) applied to @option{inline-insns-single},
-@option{inline-insns-single-O2}, @option{inline-insns-auto},
-@option{inline-insns-auto-O2} when inline heuristics hints that inlining is
+@option{inline-insns-single-O2}, @option{inline-insns-auto}
+when inline heuristics hints that inlining is
 very profitable (will enable later optimizations).
 
 For functions compiled with optimization levels
@@ -11526,6 +11564,11 @@ The maximum number of branches unswitched in a single loop.
 
 @item lim-expensive
 The minimum cost of an expensive expression in the loop invariant motion.
+
+@item min-loop-cond-split-prob
+When FDO profile information is available, @option{min-loop-cond-split-prob}
+specifies minimum threshold for probability of semi-invariant condition
+statement to trigger loop split.
 
 @item iv-consider-all-candidates-bound
 Bound on number of candidates for induction variables, below which
@@ -14579,6 +14622,24 @@ The files are created in the directory of the output file.
 
 @table @gcctabopt
 
+@item -fcallgraph-info
+@itemx -fcallgraph-info=@var{MARKERS}
+@opindex fcallgraph-info
+Makes the compiler output callgraph information for the program, on a
+per-object-file basis.  The information is generated in the common VCG
+format.  It can be decorated with additional, per-node and/or per-edge
+information, if a list of comma-separated markers is additionally
+specified.  When the @code{su} marker is specified, the callgraph is
+decorated with stack usage information; it is equivalent to
+@option{-fstack-usage}.  When the @code{da} marker is specified, the
+callgraph is decorated with information about dynamically allocated
+objects.
+
+When compiling with @option{-flto}, no callgraph information is output
+along with the object file.  At LTO link time, @option{-fcallgraph-info}
+may generate multiple callgraph information files next to intermediate
+LTO output files.
+
 @item -d@var{letters}
 @itemx -fdump-rtl-@var{pass}
 @itemx -fdump-rtl-@var{pass}=@var{filename}
@@ -15653,15 +15714,14 @@ Print the name and the counter upper bound for all debug counters.
 @item -fdbg-cnt=@var{counter-value-list}
 @opindex fdbg-cnt
 Set the internal debug counter lower and upper bound.  @var{counter-value-list}
-is a comma-separated list of @var{name}:@var{lower_bound}:@var{upper_bound}
-tuples which sets the lower and the upper bound of each debug
-counter @var{name}.  The @var{lower_bound} is optional and is zero
+is a comma-separated list of @var{name}:@var{lower_bound1}-@var{upper_bound1}
+[:@var{lower_bound2}-@var{upper_bound2}...] tuples which sets
+the name of the counter and list of closed intervals.
+The @var{lower_bound} is optional and is zero
 initialized if not set.
-All debug counters have the initial upper bound of @code{UINT_MAX};
-thus @code{dbg_cnt} returns true always unless the upper bound
-is set by this option.
-For example, with @option{-fdbg-cnt=dce:2:4,tail_call:10},
-@code{dbg_cnt(dce)} returns true only for third and fourth invocation.
+For example, with @option{-fdbg-cnt=dce:2-4:10-11,tail_call:10},
+@code{dbg_cnt(dce)} returns true only for second, third, fourth, tenth and
+eleventh invocation.
 For @code{dbg_cnt(tail_call)} true is returned for first 10 invocations.
 
 @item -print-file-name=@var{library}
@@ -16633,7 +16693,7 @@ aux registers.
 @opindex mea
 Generate extended arithmetic instructions.  Currently only
 @code{divaw}, @code{adds}, @code{subs}, and @code{sat16} are
-supported.  This is always enabled for @option{-mcpu=ARC700}.
+supported.  Only valid for @option{-mcpu=ARC700}.
 
 @item -mno-mpy
 @opindex mno-mpy
@@ -18284,6 +18344,17 @@ integers. The default branch cost is 0.
 @opindex mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@item -mdouble=@var{bits}
+@itemx -mlong-double=@var{bits}
+@opindex mdouble
+@opindex mlong-double
+Set the size (in bits) of the @code{double} or @code{long double} type,
+respectively.  Possible values for @var{bits} are 32 an 64.
+Whether or not a specific value for @var{bits} is allowed depends on
+the @code{--with--double=} and @code{--with-long-double=}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure options}},
+and the same applies for the default values of the options.
 
 @item -mgas-isr-prologues
 @opindex mgas-isr-prologues
@@ -23259,8 +23330,33 @@ The ISA and hardware multiply supported for the different MCUs is hard-coded
 into GCC.  However, an external @samp{devices.csv} file can be used to
 extend device support beyond those that have been hard-coded.
 
-GCC searches for the @samp{devices.csv} file on the paths specified
-with the @code{-I} and @code{-L} options.
+GCC searches for the @samp{devices.csv} file using the following methods in the
+given precedence order, where the first method takes precendence over the
+second which takes precedence over the third.
+
+@table @asis
+@item Include path specified with @code{-I} and @code{-L}
+@samp{devices.csv} will be searched for in each of the directories specified by
+include paths and linker library search paths.
+@item Path specified by the environment variable @samp{MSP430_GCC_INCLUDE_DIR}
+Define the value of the global environment variable
+@samp{MSP430_GCC_INCLUDE_DIR}
+to the full path to the directory containing devices.csv, and GCC will search
+this directory for devices.csv.  If devices.csv is found, this directory will
+also be registered as an include path, and linker library path.  Header files
+and linker scripts in this directory can therefore be used without manually
+specifying @code{-I} and @code{-L} on the command line.
+@item The @samp{msp430-elf/include/devices} directory
+Finally, GCC will examine @samp{msp430-elf/include/devices} from the
+toolchain root directory.  This directory does not exist in a default
+installation, but if the user has created it and copied @samp{devices.csv}
+there, then the MCU data will be read.  As above, this directory will
+also be registered as an include path, and linker library path.
+
+@end table
+If none of the above search methods find @samp{devices.csv}, then the
+hard-coded MCU data is used.
+
 
 @item -mwarn-mcu
 @itemx -mno-warn-mcu
@@ -23325,6 +23421,19 @@ Enable the use of a minimum runtime environment - no static
 initializers or constructors.  This is intended for memory-constrained
 devices.  The compiler includes special symbols in some objects
 that tell the linker and runtime which code fragments are required.
+
+@item -mtiny-printf
+@opindex mtiny-printf
+Enable reduced code size @code{printf} and @code{puts} library functions.
+The @samp{tiny} implementations of these functions are not reentrant, so
+must be used with caution in multi-threaded applications.
+
+Support for streams has been removed and the string to be printed will
+always be sent to stdout via the @code{write} syscall.  The string is not
+buffered before it is sent to write.
+
+This option requires Newlib Nano IO, so GCC must be configured with
+@samp{--enable-newlib-nano-formatted-io}.
 
 @item -mcode-region=
 @itemx -mdata-region=

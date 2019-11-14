@@ -64,21 +64,14 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::ptrdiff_t;
-  using std::min;
-  using std::pair;
-  using std::input_iterator_tag;
-  using std::random_access_iterator_tag;
-  using std::iterator_traits;
-
   //--------------------------------------------------
   // copy_n (not part of the C++ standard)
 
   template<typename _InputIterator, typename _Size, typename _OutputIterator>
-    pair<_InputIterator, _OutputIterator>
+    std::pair<_InputIterator, _OutputIterator>
     __copy_n(_InputIterator __first, _Size __count,
 	     _OutputIterator __result,
-	     input_iterator_tag)
+	     std::input_iterator_tag)
     {
       for ( ; __count > 0; --__count)
 	{
@@ -86,17 +79,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  ++__first;
 	  ++__result;
 	}
-      return pair<_InputIterator, _OutputIterator>(__first, __result);
+      return std::pair<_InputIterator, _OutputIterator>(__first, __result);
     }
 
   template<typename _RAIterator, typename _Size, typename _OutputIterator>
-    inline pair<_RAIterator, _OutputIterator>
+    inline std::pair<_RAIterator, _OutputIterator>
     __copy_n(_RAIterator __first, _Size __count,
 	     _OutputIterator __result,
-	     random_access_iterator_tag)
+	     std::random_access_iterator_tag)
     {
       _RAIterator __last = __first + __count;
-      return pair<_RAIterator, _OutputIterator>(__last, std::copy(__first,
+      return std::pair<_RAIterator, _OutputIterator>(__last, std::copy(__first,
 								  __last,
 								  __result));
     }
@@ -116,13 +109,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup SGIextensions
   */
   template<typename _InputIterator, typename _Size, typename _OutputIterator>
-    inline pair<_InputIterator, _OutputIterator>
+    inline std::pair<_InputIterator, _OutputIterator>
     copy_n(_InputIterator __first, _Size __count, _OutputIterator __result)
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-	    typename iterator_traits<_InputIterator>::value_type>)
+	    typename std::iterator_traits<_InputIterator>::value_type>)
 
       return __gnu_cxx::__copy_n(__first, __count, __result,
 				 std::__iterator_category(__first));
@@ -156,10 +149,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 const unsigned char* __first2,
 				 const unsigned char* __last2)
   {
-    const ptrdiff_t __len1 = __last1 - __first1;
-    const ptrdiff_t __len2 = __last2 - __first2;
+    const std::ptrdiff_t __len1 = __last1 - __first1;
+    const std::ptrdiff_t __len2 = __last2 - __first2;
     const int __result = __builtin_memcmp(__first1, __first2,
-					  min(__len1, __len2));
+					  (std::min)(__len1, __len2));
     return __result != 0 ? __result
 			 : (__len1 == __len2 ? 0 : (__len1 < __len2 ? -1 : 1));
   }
@@ -207,9 +200,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_InputIterator1>::value_type>)
+	    typename std::iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_InputIterator2>::value_type>)
+	    typename std::iterator_traits<_InputIterator2>::value_type>)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
@@ -228,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_EqualityComparableConcept<
-	    typename iterator_traits<_InputIterator>::value_type >)
+	    typename std::iterator_traits<_InputIterator>::value_type >)
       __glibcxx_function_requires(_EqualityComparableConcept<_Tp>)
       __glibcxx_requires_valid_range(__first, __last);
 
@@ -246,7 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
-	    typename iterator_traits<_InputIterator>::value_type>)
+	    typename std::iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first)
@@ -270,11 +263,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-		typename iterator_traits<_ForwardIterator>::value_type>)
+		typename std::iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
       _Distance __remaining = std::distance(__first, __last);
-      _Distance __m = min(__n, __remaining);
+      _Distance __m = (std::min)(__n, __remaining);
 
       while (__m > 0)
 	{
@@ -305,13 +298,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-		typename iterator_traits<_ForwardIterator>::value_type>)
+		typename std::iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_function_requires(_UnaryFunctionConcept<
 		_RandomNumberGenerator, _Distance, _Distance>)
       __glibcxx_requires_valid_range(__first, __last);
 
       _Distance __remaining = std::distance(__first, __last);
-      _Distance __m = min(__n, __remaining);
+      _Distance __m = (std::min)(__n, __remaining);
 
       while (__m > 0)
 	{
@@ -441,7 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_RandomAccessIteratorConcept<
 				  _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+	    typename std::iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
       return std::__is_heap(__first, __last - __first);
@@ -461,8 +454,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_RandomAccessIteratorConcept<
 				  _RandomAccessIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename iterator_traits<_RandomAccessIterator>::value_type,
-	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+	    typename std::iterator_traits<_RandomAccessIterator>::value_type,
+	    typename std::iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
       return std::__is_heap(__first, __comp, __last - __first);
@@ -488,7 +481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_ForwardIterator>::value_type>)
+	    typename std::iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last)
@@ -514,8 +507,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename iterator_traits<_ForwardIterator>::value_type,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
+	    typename std::iterator_traits<_ForwardIterator>::value_type,
+	    typename std::iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
       if (__first == __last)

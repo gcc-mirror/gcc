@@ -1287,8 +1287,8 @@
 )
 
 (define_insn "thumb2_addsi3_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	  (plus:SI (match_operand:SI 1 "s_register_operand" "l,  0, r")
 		   (match_operand:SI 2 "arm_add_operand"    "lPt,Ps,rIL"))
 	  (const_int 0)))
@@ -1321,8 +1321,8 @@
 )
 
 (define_insn "*thumb2_addsi3_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	  (plus:SI (match_operand:SI 0 "s_register_operand" "l,  r")
 		   (match_operand:SI 1 "arm_add_operand"    "lPv,rIL"))
 	  (const_int 0)))]
@@ -1359,8 +1359,8 @@
    (set_attr "type" "muls")])
 
 (define_insn "*thumb2_mulsi_short_compare0"
-  [(set (reg:CC_NOOV CC_REGNUM)
-        (compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+        (compare:CC_NZ
          (mult:SI (match_operand:SI 1 "register_operand" "%0")
 	          (match_operand:SI 2 "register_operand" "l"))
          (const_int 0)))
@@ -1372,8 +1372,8 @@
    (set_attr "type" "muls")])
 
 (define_insn "*thumb2_mulsi_short_compare0_scratch"
-  [(set (reg:CC_NOOV CC_REGNUM)
-        (compare:CC_NOOV
+  [(set (reg:CC_NZ CC_REGNUM)
+        (compare:CC_NZ
          (mult:SI (match_operand:SI 1 "register_operand" "%0")
 	          (match_operand:SI 2 "register_operand" "l"))
          (const_int 0)))
@@ -1477,15 +1477,15 @@
 )
 
 (define_peephole2
-  [(set (match_operand:CC_NOOV 0 "cc_register" "")
-	(compare:CC_NOOV (zero_extract:SI
+  [(set (match_operand:CC_NZ 0 "cc_register" "")
+	(compare:CC_NZ (zero_extract:SI
 			  (match_operand:SI 1 "low_register_operand" "")
 			  (const_int 1)
 			  (match_operand:SI 2 "const_int_operand" ""))
 			 (const_int 0)))
    (match_scratch:SI 3 "l")
    (set (pc)
-	(if_then_else (match_operator:CC_NOOV 4 "equality_operator"
+	(if_then_else (match_operator:CC_NZ 4 "equality_operator"
 		       [(match_dup 0) (const_int 0)])
 		      (match_operand 5 "" "")
 		      (match_operand 6 "" "")))]
@@ -1493,7 +1493,7 @@
    && (INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) < 32)
    && peep2_reg_dead_p (2, operands[0])"
   [(parallel [(set (match_dup 0)
-		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
+		   (compare:CC_NZ (ashift:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
 	      (clobber (match_dup 3))])
    (set (pc)
@@ -1506,15 +1506,15 @@
   ")
 
 (define_peephole2
-  [(set (match_operand:CC_NOOV 0 "cc_register" "")
-	(compare:CC_NOOV (zero_extract:SI
+  [(set (match_operand:CC_NZ 0 "cc_register" "")
+	(compare:CC_NZ (zero_extract:SI
 			  (match_operand:SI 1 "low_register_operand" "")
 			  (match_operand:SI 2 "const_int_operand" "")
 			  (const_int 0))
 			 (const_int 0)))
    (match_scratch:SI 3 "l")
    (set (pc)
-	(if_then_else (match_operator:CC_NOOV 4 "equality_operator"
+	(if_then_else (match_operator:CC_NZ 4 "equality_operator"
 		       [(match_dup 0) (const_int 0)])
 		      (match_operand 5 "" "")
 		      (match_operand 6 "" "")))]
@@ -1522,8 +1522,8 @@
    && (INTVAL (operands[2]) > 0 && INTVAL (operands[2]) < 32)
    && peep2_reg_dead_p (2, operands[0])"
   [(parallel [(set (match_dup 0)
-		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
-				    (const_int 0)))
+		   (compare:CC_NZ (ashift:SI (match_dup 1) (match_dup 2))
+				  (const_int 0)))
 	      (clobber (match_dup 3))])
    (set (pc)
 	(if_then_else (match_op_dup 4 [(match_dup 0) (const_int 0)])

@@ -6219,6 +6219,22 @@ arc_legitimize_pic_address (rtx addr)
 
   switch (GET_CODE (addr))
     {
+    case UNSPEC:
+      /* Can be one or our GOT or GOTOFFPC unspecs.  This situation
+	 happens when an address is not a legitimate constant and we
+	 need the resolve it via force_reg in
+	 prepare_move_operands.  */
+      switch (XINT (addr, 1))
+	{
+	case ARC_UNSPEC_GOT:
+	case ARC_UNSPEC_GOTOFFPC:
+	  /* Recover the symbol ref.  */
+	  addr = XVECEXP (addr, 0, 0);
+	  break;
+	default:
+	  return addr;
+	}
+      /* Fall through.  */
     case SYMBOL_REF:
       /* TLS symbols are handled in different place.  */
       if (SYMBOL_REF_TLS_MODEL (addr))
@@ -11495,8 +11511,10 @@ arc_split_ior (rtx *operands)
       emit_insn (gen_rtx_SET (operands[0],
 			      gen_rtx_IOR (SImode, op1, GEN_INT (maskx))));
       break;
-    default:
+    case 0:
       break;
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -11506,6 +11524,10 @@ bool
 arc_check_ior_const (HOST_WIDE_INT ival)
 {
   unsigned int mask = (unsigned int) (ival & 0xffffffff);
+
+  if (UNSIGNED_INT6 (ival)
+      || IS_POWEROF2_P (mask))
+    return false;
   if (__builtin_popcount (mask) <= 3)
     return true;
   if (__builtin_popcount (mask & ~0x3f) <= 1)
@@ -11526,9 +11548,6 @@ arc_split_mov_const (rtx *operands)
   /* Manage a constant.  */
   gcc_assert (CONST_INT_P (operands[1]));
   ival = INTVAL (operands[1]) & 0xffffffff;
-
-  if (SIGNED_INT12 (ival))
-    return false;
 
   /* 1. Check if we can just rotate limm by 8 but using ROR8.  */
   if (TARGET_BARREL_SHIFTER && TARGET_V2
@@ -11596,7 +11615,7 @@ arc_split_mov_const (rtx *operands)
       return true;
     }
 
-  return false;
+  gcc_unreachable ();
 }
 
 /* Helper to check Cax constraint.  */
@@ -11605,6 +11624,9 @@ bool
 arc_check_mov_const (HOST_WIDE_INT ival)
 {
   ival = ival & 0xffffffff;
+
+  if (SIGNED_INT12 (ival))
+    return false;
 
   if ((ival & ~0x8000001f) == 0)
     return true;

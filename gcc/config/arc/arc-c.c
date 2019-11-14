@@ -71,4 +71,14 @@ arc_cpu_cpp_builtins (cpp_reader * pfile)
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__big_endian__");
 
+  if (TARGET_HARD_FLOAT)
+    {
+      builtin_define ("__arc_hard_float__");
+      builtin_define ("__ARC_HARD_FLOAT__");
+    }
+  else
+    {
+      builtin_define ("__arc_soft_float__");
+      builtin_define ("__ARC_SOFT_FLOAT__");
+    }
 }

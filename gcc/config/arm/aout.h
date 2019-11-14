@@ -72,7 +72,7 @@
   "wr8",   "wr9",   "wr10",  "wr11",				\
   "wr12",  "wr13",  "wr14",  "wr15",				\
   "wcgr0", "wcgr1", "wcgr2", "wcgr3",				\
-  "cc", "vfpcc", "sfp", "afp"					\
+  "cc", "vfpcc", "sfp", "afp", "apsrq", "apsrge"		\
 }
 #endif
 

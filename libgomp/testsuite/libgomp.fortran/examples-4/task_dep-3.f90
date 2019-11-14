@@ -12,7 +12,7 @@ program example
          x = 2
       !$omp end task
       !$omp taskwait
-      if ((x .ne. 1) .and. (x .ne. 2)) STOP 1
+      if ((x .ne. 1) .and. (x .ne. 2)) stop 1
    !$omp end single
    !$omp end parallel
 end program

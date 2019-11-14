@@ -16,7 +16,7 @@
       write (line,str,iostat=istat, iomsg=msg) 1.0d0
       if (istat.ne.0) STOP 3
       read (*,str,iostat=istat, iomsg=msg) x
-      if (istat.ne.5006 .or. msg(1:15).ne."Positive width ") STOP 4
+      if (istat.ne.5006 .or. msg(1:10).ne."Zero width") STOP 4
       if (x.ne.555.25) STOP 5
       
       write (line,'(1pd24.15e11.3)') 1.0d0, 1.234

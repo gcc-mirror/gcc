@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "gimple-iterator.h"
 #include "value-prof.h"
-#include "params.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
@@ -606,8 +605,6 @@ function_instance::find_icall_target_map (gcall *stmt,
           get_identifier (afdo_string_table->get_name (callee)));
       if (node == NULL)
         continue;
-      if (!check_ic_target (stmt, node))
-        continue;
       (*map)[callee] = iter->second->total_count ();
       ret += iter->second->total_count ();
     }
@@ -1034,7 +1031,7 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
     }
 
-  if (direct_call == NULL || !check_ic_target (stmt, direct_call))
+  if (direct_call == NULL)
     {
       if (dump_file)
         fprintf (dump_file, " not transforming\n");
@@ -1631,7 +1628,7 @@ auto_profile (void)
        function before annotation, so the profile inside bar@loc_foo2
        will be useful.  */
     autofdo::stmt_set promoted_stmts;
-    for (int i = 0; i < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS); i++)
+    for (int i = 0; i < param_early_inliner_max_iterations; i++)
       {
         if (!flag_value_profile_transformations
             || !autofdo::afdo_vpt_for_early_inline (&promoted_stmts))

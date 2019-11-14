@@ -459,6 +459,7 @@ const struct c_common_resword c_common_reswords[] =
   { "char32_t",		RID_CHAR32,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
   { "const",		RID_CONST,	0 },
+  { "consteval",	RID_CONSTEVAL,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "constexpr",	RID_CONSTEXPR,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
@@ -1022,7 +1023,8 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       || mask == error_mark_node)
     return error_mark_node;
 
-  if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (mask)))
+  if (!gnu_vector_type_p (TREE_TYPE (mask))
+      || !VECTOR_INTEGER_TYPE_P (TREE_TYPE (mask)))
     {
       if (complain)
 	error_at (loc, "%<__builtin_shuffle%> last argument must "
@@ -1030,8 +1032,8 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       return error_mark_node;
     }
 
-  if (!VECTOR_TYPE_P (TREE_TYPE (v0))
-      || !VECTOR_TYPE_P (TREE_TYPE (v1)))
+  if (!gnu_vector_type_p (TREE_TYPE (v0))
+      || !gnu_vector_type_p (TREE_TYPE (v1)))
     {
       if (complain)
 	error_at (loc, "%<__builtin_shuffle%> arguments must be vectors");
@@ -1106,8 +1108,9 @@ c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
   if (error_operand_p (expr))
     return error_mark_node;
 
-  if (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
-      && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (expr)))
+  if (!gnu_vector_type_p (TREE_TYPE (expr))
+      || (!VECTOR_INTEGER_TYPE_P (TREE_TYPE (expr))
+	  && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (expr))))
     {
       if (complain)
 	error_at (loc1, "%<__builtin_convertvector%> first argument must "
@@ -1115,7 +1118,8 @@ c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
       return error_mark_node;
     }
 
-  if (!VECTOR_INTEGER_TYPE_P (type) && !VECTOR_FLOAT_TYPE_P (type))
+  if (!gnu_vector_type_p (type)
+      || (!VECTOR_INTEGER_TYPE_P (type) && !VECTOR_FLOAT_TYPE_P (type)))
     {
       if (complain)
 	error_at (loc2, "%<__builtin_convertvector%> second argument must "
@@ -4480,8 +4484,7 @@ c_common_nodes_and_builtins (void)
       va_list_ref_type_node = build_reference_type (va_list_type_node);
     }
 
-  if (!flag_preprocess_only)
-    c_define_builtins (va_list_ref_type_node, va_list_arg_type_node);
+  c_define_builtins (va_list_ref_type_node, va_list_arg_type_node);
 
   main_identifier_node = get_identifier ("main");
 
@@ -8036,7 +8039,7 @@ convert_vector_to_array_for_subscript (location_t loc,
 				       tree *vecp, tree index)
 {
   bool ret = false;
-  if (VECTOR_TYPE_P (TREE_TYPE (*vecp)))
+  if (gnu_vector_type_p (TREE_TYPE (*vecp)))
     {
       tree type = TREE_TYPE (*vecp);
 
@@ -8072,7 +8075,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
   bool integer_only_op = false;
   enum stv_conv ret = stv_firstarg;
 
-  gcc_assert (VECTOR_TYPE_P (type0) || VECTOR_TYPE_P (type1));
+  gcc_assert (gnu_vector_type_p (type0) || gnu_vector_type_p (type1));
   switch (code)
     {
       /* Most GENERIC binary expressions require homogeneous arguments.
@@ -8123,7 +8126,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
       case LT_EXPR:
       case GT_EXPR:
       /* What about UNLT_EXPR?  */
-	if (VECTOR_TYPE_P (type0))
+	if (gnu_vector_type_p (type0))
 	  {
 	    ret = stv_secondarg;
 	    std::swap (type0, type1);

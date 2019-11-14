@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-reassoc1" } */
+/* { dg-options "-O2 -fdump-tree-reassoc1 -fno-ipa-icf" } */
 
 /* We want to make sure that we reassociate in a way that has the
    constant last.  With the constant last, it's more likely to result

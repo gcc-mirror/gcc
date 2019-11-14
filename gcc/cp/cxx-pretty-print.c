@@ -2551,52 +2551,8 @@ static char const*
 get_fold_operator (tree t)
 {
   int op = int_cst_value (FOLD_EXPR_OP (t));
-  if (FOLD_EXPR_MODIFY_P (t))
-    {
-      switch (op)
-        {
-        case NOP_EXPR: return "=";
-        case PLUS_EXPR: return "+=";
-        case MINUS_EXPR: return "-=";
-        case MULT_EXPR: return "*=";
-        case TRUNC_DIV_EXPR: return "/=";
-        case TRUNC_MOD_EXPR: return "%=";
-        case BIT_XOR_EXPR: return "^=";
-        case BIT_AND_EXPR: return "&=";
-        case BIT_IOR_EXPR: return "|=";
-        case LSHIFT_EXPR: return "<<=";
-        case RSHIFT_EXPR: return ">>=";
-        default: gcc_unreachable ();
-        }
-    }
-  else
-    {
-      switch (op)
-        {
-        case PLUS_EXPR: return "+";
-        case MINUS_EXPR: return "-";
-        case MULT_EXPR: return "*";
-        case TRUNC_DIV_EXPR: return "/";
-        case TRUNC_MOD_EXPR: return "%";
-        case BIT_XOR_EXPR: return "^";
-        case BIT_AND_EXPR: return "&";
-        case BIT_IOR_EXPR: return "|";
-        case LSHIFT_EXPR: return "<<";
-        case RSHIFT_EXPR: return ">>";
-        case EQ_EXPR: return "==";
-        case NE_EXPR: return "!=";
-        case LT_EXPR: return "<";
-        case GT_EXPR: return ">";
-        case LE_EXPR: return "<=";
-        case GE_EXPR: return ">=";
-        case TRUTH_ANDIF_EXPR: return "&&";
-        case TRUTH_ORIF_EXPR: return "||";
-        case MEMBER_REF: return "->*";
-        case DOTSTAR_EXPR: return ".*";
-        case OFFSET_REF: return ".*";
-        default: return ","; /* FIXME: Not the right default.  */
-        }
-    }
+  ovl_op_info_t *info = OVL_OP_INFO (FOLD_EXPR_MODIFY_P (t), op);
+  return info->name;
 }
 
 void

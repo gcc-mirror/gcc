@@ -475,7 +475,7 @@ simd_clone_create (struct cgraph_node *old_node)
   /* The method cgraph_version_clone_with_body () will force the new
      symbol local.  Undo this, and inherit external visibility from
      the old node.  */
-  new_node->local.local = old_node->local.local;
+  new_node->local = old_node->local;
   new_node->externally_visible = old_node->externally_visible;
 
   return new_node;
@@ -1645,7 +1645,7 @@ expand_simd_clones (struct cgraph_node *node)
   tree attr = lookup_attribute ("omp declare simd",
 				DECL_ATTRIBUTES (node->decl));
   if (attr == NULL_TREE
-      || node->global.inlined_to
+      || node->inlined_to
       || lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
     return;
 

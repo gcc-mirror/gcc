@@ -1,3 +1,32 @@
+2019-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Support 64-bit double and 64-bit long double configurations.
+
+	PR target/92055
+	* config/avr/t-avr (HOST_LIBGCC2_CFLAGS): Only add -DF=SF if
+	long double is a 32-bit type.
+	* config/avr/t-avrlibc: Copy double64 and long-double64
+	multilib(s) from the vanilla one.
+	* config/avr/t-copy-libgcc: New Makefile snip.
+
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c: Define USE_TM_CLONE_REGISTRY to 0 if it's undefined and
+	the target output object format is not ELF.
+	s/defined(USE_TM_CLONE_REGISTRY)/USE_TM_CLONE_REGISTRY.
+
+2019-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR libgcc/78804
+	* fp-bit.h: Remove FLOAT_BIT_ORDER_MISMATCH.
+	* fp-bit.c (pack_d, unpack_d): Remove special cases for
+	FLOAT_BIT_ORDER_MISMATCH.
+	* config/arc/t-arc: Remove FLOAT_BIT_ORDER_MISMATCH.
+
+2019-11-01  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/t-softfp32 (softfp_extra): Add FP divide routines
+
 2019-10-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/lib2hw_mul.S: Fix wrong syntax in branch instruction.

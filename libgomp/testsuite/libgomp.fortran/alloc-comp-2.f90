@@ -22,19 +22,19 @@ contains
     type (dl), intent (in) :: obj
     integer, intent (in) :: val, cl1, cu1, cl2, cu2
     logical, intent (in) :: c, f
-    if ((c .neqv. allocated (obj%c)) .or. (f .neqv. allocated (obj%f))) STOP 1
+    if ((c .neqv. allocated (obj%c)) .or. (f .neqv. allocated (obj%f))) stop 1
     if (c) then
-      if (lbound (obj%c, 1) /= cl1 .or. ubound (obj%c, 1) /= cu1) STOP 2
-      if (lbound (obj%c, 2) /= cl2 .or. ubound (obj%c, 2) /= cu2) STOP 3
+      if (lbound (obj%c, 1) /= cl1 .or. ubound (obj%c, 1) /= cu1) stop 2
+      if (lbound (obj%c, 2) /= cl2 .or. ubound (obj%c, 2) /= cu2) stop 3
     end if
     if (val /= 0) then
-      if (obj%a /= val .or. obj%b /= val) STOP 4
-      if (obj%d /= val .or. obj%e /= val) STOP 5
+      if (obj%a /= val .or. obj%b /= val) stop 4
+      if (obj%d /= val .or. obj%e /= val) stop 5
       if (c) then
-        if (any (obj%c /= val)) STOP 6
+        if (any (obj%c /= val)) stop 6
       end if
       if (f) then
-        if (obj%f /= val) STOP 7
+        if (obj%f /= val) stop 7
       end if
     end if
   end subroutine ver_dl
@@ -43,9 +43,9 @@ contains
     integer, intent (in) :: val, hl, hu, cl1, cu1, cl2, cu2
     logical, intent (in) :: h, k, c, f
     integer :: i, j
-    if ((h .neqv. allocated (obj%h)) .or. (k .neqv. allocated (obj%k))) STOP 8
+    if ((h .neqv. allocated (obj%h)) .or. (k .neqv. allocated (obj%k))) stop 8
     if (h) then
-      if (lbound (obj%h, 1) /= hl .or. ubound (obj%h, 1) /= hu) STOP 9
+      if (lbound (obj%h, 1) /= hl .or. ubound (obj%h, 1) /= hu) stop 9
       do i = hl, hu
         call ver_dl (obj%h(i), val, c, cl1, cu1, cl2, cu2, f)
       end do
@@ -57,7 +57,7 @@ contains
     end do
     if (k) call ver_dl (obj%k, val, c, cl1, cu1, cl2, cu2, f)
     if (val /= 0) then
-      if (obj%g /= val .or. obj%i /= val) STOP 10
+      if (obj%g /= val .or. obj%i /= val) stop 10
     end if
   end subroutine ver_dt
   subroutine alloc_dl (obj, val, c, cl1, cu1, cl2, cu2, f)
@@ -122,20 +122,20 @@ contains
     logical, parameter :: T = .true.
     logical :: l
 !$omp parallel private (x, y, z)
-    if (allocated (x) .or. allocated (y) .or. allocated (z)) STOP 11
+    if (allocated (x) .or. allocated (y) .or. allocated (z)) stop 11
 !$omp end parallel
 !$omp parallel firstprivate (x, y, z)
-    if (allocated (x) .or. allocated (y) .or. allocated (z)) STOP 12
+    if (allocated (x) .or. allocated (y) .or. allocated (z)) stop 12
 !$omp end parallel
     l = F
 !$omp parallel sections lastprivate (x, y, z) firstprivate (l)
 !$omp section
     if (.not. l) then
-      if (allocated (x) .or. allocated (y) .or. allocated (z)) STOP 13
+      if (allocated (x) .or. allocated (y) .or. allocated (z)) stop 13
     end if
 !$omp section
     if (.not. l) then
-      if (allocated (x) .or. allocated (y) .or. allocated (z)) STOP 14
+      if (allocated (x) .or. allocated (y) .or. allocated (z)) stop 14
     end if
     allocate (x, y, z(-3:-3,2:3))
     call alloc_dt (x, 5, F, 0, 0, T, T, -1, -1, -1, -1, T)
@@ -148,10 +148,10 @@ contains
     call ver_dt (z(-3,3), 23, T, 0, 1, T, T, 2, 2, 2, 2, F)
 !$omp section
 !$omp end parallel sections
-    if (.not.allocated (x) .or. .not.allocated (y)) STOP 15
-    if (.not.allocated (z)) STOP 16
-    if (lbound (z, 1) /= -3 .or. ubound (z, 1) /= -3) STOP 17
-    if (lbound (z, 2) /= 2 .or. ubound (z, 2) /= 3) STOP 18
+    if (.not.allocated (x) .or. .not.allocated (y)) stop 15
+    if (.not.allocated (z)) stop 16
+    if (lbound (z, 1) /= -3 .or. ubound (z, 1) /= -3) stop 17
+    if (lbound (z, 2) /= 2 .or. ubound (z, 2) /= 3) stop 18
     call ver_dt (x, 5, F, 0, 0, T, T, -1, -1, -1, -1, T)
     call ver_dt (y, 23, T, 0, 1, T, T, 2, 2, 2, 2, F)
     call ver_dt (z(-3,2), 5, F, 0, 0, T, T, -1, -1, -1, -1, T)

@@ -172,6 +172,11 @@ struct default_hash_traits <type_pair>
     }
 };
 
+/* HACK alert: this is used to communicate with ipa-inline-transform that
+   thunk is being expanded and there is no need to clear the polymorphic
+   call target cache.  */
+bool thunk_expansion;
+
 static bool odr_types_equivalent_p (tree, tree, bool, bool *,
 				    hash_set<type_pair> *,
 				    location_t, location_t);
@@ -803,7 +808,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  return;
 	}
 
-      /* And in the last case we have either mistmatch in between two virtual
+      /* And in the last case we have either mismatch in between two virtual
 	 methods or two virtual table pointers.  */
       auto_diagnostic_group d;
       if (warning_at (DECL_SOURCE_LOCATION
@@ -2414,7 +2419,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	       || target_node->definition)
 	   && target_node->real_symbol_p ())
     {
-      gcc_assert (!target_node->global.inlined_to);
+      gcc_assert (!target_node->inlined_to);
       gcc_assert (target_node->real_symbol_p ());
       /* When sanitizing, do not assume that __cxa_pure_virtual is not called
 	 by valid program.  */
@@ -2747,6 +2752,7 @@ static void
 devirt_node_removal_hook (struct cgraph_node *n, void *d ATTRIBUTE_UNUSED)
 {
   if (cached_polymorphic_call_targets
+      && !thunk_expansion
       && cached_polymorphic_call_targets->contains (n))
     free_polymorphic_call_targets_hash ();
 }

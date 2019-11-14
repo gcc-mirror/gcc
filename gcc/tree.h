@@ -714,6 +714,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Used to indicate that this TYPE represents a compiler-generated entity.  */
 #define TYPE_ARTIFICIAL(NODE) (TYPE_CHECK (NODE)->base.nowarning_flag)
 
+/* True if the type is indivisible at the source level, i.e. if its
+   component parts cannot be accessed directly.  This is used to suppress
+   normal GNU extensions for target-specific vector types.  */
+#define TYPE_INDIVISIBLE_P(NODE) (TYPE_CHECK (NODE)->type_common.indivisible_p)
+
 /* In an IDENTIFIER_NODE, this means that assemble_name was called with
    this string as an argument.  */
 #define TREE_SYMBOL_REFERENCED(NODE) \
@@ -1617,7 +1622,8 @@ class auto_suppress_location_wrappers
    treatment if OMP_CLAUSE_SIZE is zero.  */
 #define OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
-/* Nonzero if this map clause is for an ACC parallel reduction variable.  */
+/* Nonzero if this map clause is for an OpenACC compute construct's reduction
+   variable.  */
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
@@ -4690,12 +4696,6 @@ extern tree first_field (const_tree);
 extern bool initializer_zerop (const_tree, bool * = NULL);
 extern bool initializer_each_zero_or_onep (const_tree);
 
-/* Analogous to initializer_zerop but also examines the type for
-   which the initializer is being used.  Unlike initializer_zerop,
-   considers empty strings to be zero initializers for arrays and
-   non-zero for pointers.  */
-extern bool type_initializer_zero_p (tree, tree);
-
 extern wide_int vector_cst_int_elt (const_tree, unsigned int);
 extern tree vector_cst_elt (const_tree, unsigned int);
 
@@ -5268,7 +5268,7 @@ extern tree component_ref_field_offset (tree);
    of an initialized flexible array member.  The size might be zero for
    an object with an uninitialized flexible array member or null if it
    cannot be determined.  */
-extern tree component_ref_size (tree);
+extern tree component_ref_size (tree, bool * = NULL);
 
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
@@ -6125,12 +6125,12 @@ type_has_mode_precision_p (const_tree t)
 
    Note that it is different from the DECL_IS_BUILTIN accessor.  For
    instance, user declared prototypes of C library functions are not
-   DECL_IS_BUILTIN but may be DECL_BUILT_IN.  */
+   DECL_IS_BUILTIN but may be fndecl_built_in_p.  */
 
 inline bool
 fndecl_built_in_p (const_tree node)
 {
-  return (DECL_BUILT_IN_CLASS (node) != NOT_BUILT_IN);
+  return DECL_BUILT_IN_CLASS (node) != NOT_BUILT_IN;
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function
@@ -6139,7 +6139,7 @@ fndecl_built_in_p (const_tree node)
 inline bool
 fndecl_built_in_p (const_tree node, built_in_class klass)
 {
-  return (fndecl_built_in_p (node) && DECL_BUILT_IN_CLASS (node) == klass);
+  return fndecl_built_in_p (node) && DECL_BUILT_IN_CLASS (node) == klass;
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function

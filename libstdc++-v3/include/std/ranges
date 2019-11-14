@@ -1,0 +1,112 @@
+// <ranges> -*- C++ -*-
+
+// Copyright (C) 2019 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received __a copy of the GNU General Public License and
+// __a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/ranges
+ *  This is a Standard C++ Library header.
+ *  @ingroup concepts
+ */
+
+#ifndef _GLIBCXX_RANGES
+#define _GLIBCXX_RANGES 1
+
+#if __cplusplus > 201703L
+
+#pragma GCC system_header
+
+#include <concepts>
+
+#if __cpp_lib_concepts
+
+#include <iterator>
+
+/**
+ * @defgroup ranges Ranges
+ *
+ * Components for dealing with ranges of elements.
+ */
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+namespace ranges
+{
+  // [range.range] The range concept.
+  // Defined in <bits/range_iterator.h>
+  // template<typename> concept range;
+
+  template<range _Range>
+    using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));
+
+  template<range _Range>
+    using range_value_t = iter_value_t<iterator_t<_Range>>;
+
+  template<range _Range>
+    using range_reference_t = iter_reference_t<iterator_t<_Range>>;
+
+  template<range _Range>
+    using range_rvalue_reference_t
+      = iter_rvalue_reference_t<iterator_t<_Range>>;
+
+  // [range.sized] The sized_range concept.
+  // Defined in <bits/range_iterator.h>
+  // template<typename> concept sized_range;
+
+  // [range.refinements]
+
+  template<typename _Range, typename _Tp>
+    concept output_range
+      = range<_Range> && output_iterator<iterator_t<_Range>, _Tp>;
+
+  template<typename _Tp>
+    concept input_range = range<_Tp> && input_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept forward_range
+      = input_range<_Tp> && forward_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept bidirectional_range
+      = forward_range<_Tp> && bidirectional_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept random_access_range
+      = bidirectional_range<_Tp> && random_access_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept contiguous_range
+      = random_access_range<_Tp> && contiguous_iterator<iterator_t<_Tp>>
+      && requires(_Tp& __t)
+      {
+	{ ranges::data(__t) } -> same_as<add_pointer_t<range_reference_t<_Tp>>>;
+      };
+
+  template<typename _Tp>
+    concept common_range
+      = range<_Tp> && same_as<iterator_t<_Tp>, sentinel_t<_Tp>>;
+} // namespace ranges
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
+#endif // library concepts
+#endif // C++2a
+#endif /* _GLIBCXX_RANGES */

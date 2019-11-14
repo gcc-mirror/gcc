@@ -990,6 +990,9 @@ grokfield (const cp_declarator *declarator,
   else
     flags = LOOKUP_IMPLICIT;
 
+  if (decl_spec_seq_has_spec_p (declspecs, ds_constinit))
+    flags |= LOOKUP_CONSTINIT;
+
   switch (TREE_CODE (value))
     {
     case VAR_DECL:
@@ -5477,6 +5480,17 @@ mark_used (tree decl, tsubst_flags_t complain)
     used_types_insert (DECL_CONTEXT (decl));
 
   if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_MAYBE_DELETED (decl))
+    {
+      /* ??? Switch other defaulted functions to use DECL_MAYBE_DELETED?  */
+      gcc_assert (special_function_p (decl) == sfk_comparison);
+
+      ++function_depth;
+      synthesize_method (decl);
+      --function_depth;
+    }
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
       && !maybe_instantiate_noexcept (decl, complain))
     return false;
 
@@ -5528,6 +5542,21 @@ mark_used (tree decl, tsubst_flags_t complain)
      them instantiated for reduction clauses which inline them by hand
      directly.  */
   maybe_instantiate_decl (decl);
+
+  if (flag_concepts && TREE_CODE (decl) == FUNCTION_DECL
+      && !constraints_satisfied_p (decl))
+    {
+      if (complain & tf_error)
+	{
+	  auto_diagnostic_group d;
+	  error ("use of function %qD with unsatisfied constraints",
+		 decl);
+	  location_t loc = DECL_SOURCE_LOCATION (decl);
+	  inform (loc, "declared here");
+	  diagnose_constraints (loc, decl, NULL_TREE);
+	}
+      return false;
+    }
 
   if (processing_template_decl || in_template_function ())
     return true;
@@ -5582,7 +5611,6 @@ mark_used (tree decl, tsubst_flags_t complain)
 
   /* Is it a synthesized method that needs to be synthesized?  */
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && DECL_DEFAULTED_FN (decl)
       /* A function defaulted outside the class is synthesized either by
 	 cp_finish_decl or instantiate_decl.  */

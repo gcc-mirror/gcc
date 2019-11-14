@@ -59,7 +59,6 @@
 #include "langhooks.h"
 #include "intl.h"
 #include "libfuncs.h"
-#include "params.h"
 #include "opts.h"
 #include "dumpfile.h"
 #include "target-globals.h"
@@ -384,6 +383,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef  TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
+
+#undef TARGET_CHECK_BUILTIN_CALL
+#define TARGET_CHECK_BUILTIN_CALL arm_check_builtin_call
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS arm_legitimize_address
@@ -814,6 +816,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -3521,9 +3526,8 @@ arm_option_override (void)
        but measurable, size reduction for PIC code.  Therefore, we decrease
        the bar for unrestricted expression hoisting to the cost of PIC address
        calculation, which is 2 instructions.  */
-    maybe_set_param_value (PARAM_GCSE_UNRESTRICTED_COST, 2,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_gcse_unrestricted_cost, 2);
 
   /* ARM EABI defaults to strict volatile bitfields.  */
   if (TARGET_AAPCS_BASED && flag_strict_volatile_bitfields < 0
@@ -3543,47 +3547,43 @@ arm_option_override (void)
      override the defaults unless we are tuning for a core we have
      researched values for.  */
   if (current_tune->prefetch.num_slots > 0)
-    maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			   current_tune->prefetch.num_slots,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_simultaneous_prefetches,
+			 current_tune->prefetch.num_slots);
   if (current_tune->prefetch.l1_cache_line_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			   current_tune->prefetch.l1_cache_line_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_line_size,
+			 current_tune->prefetch.l1_cache_line_size);
   if (current_tune->prefetch.l1_cache_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			   current_tune->prefetch.l1_cache_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_size,
+			 current_tune->prefetch.l1_cache_size);
 
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
-  int param_sched_autopref_queue_depth;
+  int sched_autopref_queue_depth;
 
   switch (current_tune->sched_autopref)
     {
     case tune_params::SCHED_AUTOPREF_OFF:
-      param_sched_autopref_queue_depth = -1;
+      sched_autopref_queue_depth = -1;
       break;
 
     case tune_params::SCHED_AUTOPREF_RANK:
-      param_sched_autopref_queue_depth = 0;
+      sched_autopref_queue_depth = 0;
       break;
 
     case tune_params::SCHED_AUTOPREF_FULL:
-      param_sched_autopref_queue_depth = max_insn_queue_index + 1;
+      sched_autopref_queue_depth = max_insn_queue_index + 1;
       break;
 
     default:
       gcc_unreachable ();
     }
 
-  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
-			 param_sched_autopref_queue_depth,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_sched_autopref_queue_depth,
+		       sched_autopref_queue_depth);
 
   /* Currently, for slow flash data, we just disable literal pools.  We also
      disable it for pure-code.  */
@@ -5956,8 +5956,9 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	     so we are free to use whatever conventions are
 	     appropriate.  */
 	  /* FIXME: remove CONST_CAST_TREE when cgraph is constified.  */
-	  cgraph_local_info *i = cgraph_node::local_info (CONST_CAST_TREE(decl));
-	  if (i && i->local)
+	  cgraph_node *local_info_node
+	    = cgraph_node::local_info_node (CONST_CAST_TREE (decl));
+	  if (local_info_node && local_info_node->local)
 	    return ARM_PCS_AAPCS_LOCAL;
 	}
     }
@@ -9038,17 +9039,20 @@ arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
       HOST_WIDE_INT mask, base, index;
       rtx base_reg;
 
-      /* ldr and ldrb can use a 12-bit index, ldrsb and the rest can only
-         use a 8-bit index. So let's use a 12-bit index for SImode only and
-         hope that arm_gen_constant will enable ldrb to use more bits. */
+      /* LDR and LDRB can use a 12-bit index, ldrsb and the rest can
+	 only use a 8-bit index. So let's use a 12-bit index for
+	 SImode only and hope that arm_gen_constant will enable LDRB
+	 to use more bits. */
       bits = (mode == SImode) ? 12 : 8;
       mask = (1 << bits) - 1;
       base = INTVAL (x) & ~mask;
       index = INTVAL (x) & mask;
-      if (bit_count (base & 0xffffffff) > (32 - bits)/2)
-        {
-	  /* It'll most probably be more efficient to generate the base
-	     with more bits set and use a negative index instead. */
+      if (TARGET_ARM && bit_count (base & 0xffffffff) > (32 - bits)/2)
+	{
+	  /* It'll most probably be more efficient to generate the
+	     base with more bits set and use a negative index instead.
+	     Don't do this for Thumb as negative offsets are much more
+	     limited.  */
 	  base |= mask;
 	  index -= mask;
 	}
@@ -15375,7 +15379,7 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == ROTATERT
 	  || (TARGET_32BIT && GET_CODE (x) == ZERO_EXTRACT)))
-    return CC_NOOVmode;
+    return CC_NZmode;
 
   /* A comparison of ~reg with a const is really a special
      canoncialization of compare (~const, reg), which is a reverse
@@ -15491,11 +15495,11 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	      }
 
 	    rtx clobber = gen_rtx_CLOBBER (VOIDmode, scratch);
-	    cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+	    cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
 	    rtx set
 	      = gen_rtx_SET (cc_reg,
-			     gen_rtx_COMPARE (CC_NOOVmode,
+			     gen_rtx_COMPARE (CC_NZmode,
 					      gen_rtx_IOR (SImode, x_lo, x_hi),
 					      const0_rtx));
 	    emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set,
@@ -23880,7 +23884,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	return code;
       return ARM_NV;
 
-    case E_CC_NOOVmode:
+    case E_CC_NZmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -25303,7 +25307,7 @@ thumb1_final_prescan_insn (rtx_insn *insn)
 	  cfun->machine->thumb1_cc_insn = insn;
 	  cfun->machine->thumb1_cc_op0 = SET_DEST (set);
 	  cfun->machine->thumb1_cc_op1 = const0_rtx;
-	  cfun->machine->thumb1_cc_mode = CC_NOOVmode;
+	  cfun->machine->thumb1_cc_mode = CC_NZmode;
 	  if (INSN_CODE (insn) == CODE_FOR_thumb1_subsi3_insn)
 	    {
 	      rtx src1 = XEXP (SET_SRC (set), 1);
@@ -29136,6 +29140,11 @@ arm_conditional_register_usage (void)
       if (TARGET_CALLER_INTERWORKING)
 	global_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;
     }
+
+  /* The Q and GE bits are only accessed via special ACLE patterns.  */
+  CLEAR_HARD_REG_BIT (operand_reg_set, APSRQ_REGNUM);
+  CLEAR_HARD_REG_BIT (operand_reg_set, APSRGE_REGNUM);
+
   SUBTARGET_CONDITIONAL_REGISTER_USAGE
 }
 
@@ -30480,7 +30489,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
   else
     {
       /* We have a shift-by-register.  */
-      rtx cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+      rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
       /* This alternative requires the scratch registers.  */
       gcc_assert (scratch1 && REG_P (scratch1));
@@ -31736,8 +31745,6 @@ arm_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
 
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
 
-  finalize_options_struct (&func_options);
-
   return ret;
 }
 
@@ -32369,6 +32376,26 @@ void
 arm_emit_speculation_barrier_function ()
 {
   emit_library_call (speculation_barrier_libfunc, LCT_NORMAL, VOIDmode);
+}
+
+/* Have we recorded an explicit access to the Q bit of APSR?.  */
+bool
+arm_q_bit_access (void)
+{
+  if (cfun && cfun->decl)
+    return lookup_attribute ("acle qbit",
+			     DECL_ATTRIBUTES (cfun->decl));
+  return true;
+}
+
+/* Have we recorded an explicit access to the GE bits of PSTATE?.  */
+bool
+arm_ge_bits_access (void)
+{
+  if (cfun && cfun->decl)
+    return lookup_attribute ("acle gebits",
+			     DECL_ATTRIBUTES (cfun->decl));
+  return true;
 }
 
 #if CHECKING_P

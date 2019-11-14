@@ -224,7 +224,6 @@ Classes used:
 #include "stor-layout.h"
 #include "version.h"
 #include "tree-diagnostic.h"
-#include "params.h"
 #include "toplev.h"
 #include "opts.h"
 #include "attribs.h"
@@ -16912,7 +16911,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	inform (loc, "consider using %<-fno-module-lazy%>,"
 		" reducing %<--param %s%> value,"
 		" or increasing the per-process file descriptor limit",
-		compiler_params[PARAM_LAZY_MODULES].option);
+		"?");
       ok = false;
     }
 
@@ -17415,7 +17414,7 @@ try_increase_lazy (unsigned want)
     want = lazy_hard_limit;
 
 #if HAVE_SETRLIMIT
-  if ((!lazy_limit || !PARAM_VALUE (PARAM_LAZY_MODULES))
+  if ((!lazy_limit || !param_lazy_modules)
       && lazy_hard_limit
       && want <= lazy_hard_limit)
     {
@@ -18132,7 +18131,7 @@ init_module_processing (cpp_reader *reader)
 #endif
     limit = limit > LAZY_HEADROOM ? limit - LAZY_HEADROOM : 1;
 
-    if (unsigned parm = PARAM_VALUE (PARAM_LAZY_MODULES))
+    if (unsigned parm = param_lazy_modules)
       {
 	if (parm <= limit || !lazy_hard_limit || !try_increase_lazy (parm))
 	  lazy_limit = parm;

@@ -345,7 +345,6 @@ extern void init_options_once (void);
 extern void init_options_struct (struct gcc_options *opts,
 				 struct gcc_options *opts_set);
 extern void init_opts_obstack (void);
-extern void finalize_options_struct (struct gcc_options *opts);
 extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
 							  const char **argv, 
 							  struct cl_decoded_option **decoded_options,
@@ -460,5 +459,15 @@ extern bool parse_and_check_align_values (const char *flag,
 					  auto_vec<unsigned> &result_values,
 					  bool report_error,
 					  location_t loc);
+
+/* Set OPTION in OPTS to VALUE if the option is not set in OPTS_SET.  */
+
+#define SET_OPTION_IF_UNSET(OPTS, OPTS_SET, OPTION, VALUE) \
+  do \
+  { \
+    if (!(OPTS_SET)->x_ ## OPTION) \
+      (OPTS)->x_ ## OPTION = VALUE; \
+  } \
+  while (false)
 
 #endif

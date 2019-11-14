@@ -41,3 +41,49 @@ void test01()
   typedef test_iterator::ostream_type ostream_type;
   typedef test_iterator::streambuf_type streambuf_type;
 }
+
+#if __cplusplus >= 201103L
+void test02()
+{
+  using namespace std;
+
+  using test_type = ostreambuf_iterator<char>;
+  static_assert(is_same<test_type::value_type, void>::value, "");
+#if __cplusplus <= 201703L
+  static_assert(is_same<test_type::difference_type, void>::value, "");
+#else
+  static_assert(is_same<test_type::difference_type, ptrdiff_t>::value, "");
+#endif
+  static_assert(is_same<test_type::pointer, void>::value, "");
+  static_assert(is_same<test_type::reference, void>::value, "");
+  static_assert(is_same<test_type::iterator_category, output_iterator_tag>::value, "");
+
+  static_assert(is_same<test_type::char_type, char>::value, "");
+  static_assert(is_same<test_type::traits_type, char_traits<char>>::value, "");
+  static_assert(is_same<test_type::ostream_type, ostream>::value, "");
+  static_assert(is_same<test_type::streambuf_type, streambuf>::value, "");
+}
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+void test03()
+{
+  using namespace std;
+
+  using test_type = ostreambuf_iterator<wchar_t>;
+  static_assert(is_same<test_type::value_type, void>::value, "");
+#if __cplusplus <= 201703L
+  static_assert(is_same<test_type::difference_type, void>::value, "");
+#else
+  static_assert(is_same<test_type::difference_type, ptrdiff_t>::value, "");
+#endif
+  static_assert(is_same<test_type::pointer, void>::value, "");
+  static_assert(is_same<test_type::reference, void>::value, "");
+  static_assert(is_same<test_type::iterator_category, output_iterator_tag>::value, "");
+
+  static_assert(is_same<test_type::char_type, wchar_t>::value, "");
+  static_assert(is_same<test_type::traits_type, char_traits<wchar_t>>::value, "");
+  static_assert(is_same<test_type::ostream_type, wostream>::value, "");
+  static_assert(is_same<test_type::streambuf_type, wstreambuf>::value, "");
+}
+#endif
+#endif

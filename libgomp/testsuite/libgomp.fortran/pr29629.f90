@@ -4,7 +4,7 @@
 program pr29629
   integer :: n
   n = 10000
-  if (any (func(n).ne.10000)) STOP 1
+  if (any (func(n).ne.10000)) stop 1
   contains
     function func(n)
       integer, intent(in) :: n

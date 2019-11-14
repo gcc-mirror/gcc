@@ -850,7 +850,8 @@
    (V16QI "b") (V8HI "w") (V4SI "k") (V2DI "q")
    (V16SF "k") (V8DF "q")
    (V8SF "k") (V4DF "q")
-   (V4SF "k") (V2DF "q")])
+   (V4SF "k") (V2DF "q")
+   (SF "k") (DF "q")])
 
 ;; Mapping of vector modes to VPTERNLOG suffix
 (define_mode_attr ternlogsuffix

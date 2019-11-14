@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "tree-into-ssa.h"
 #include "bitmap.h"
-#include "params.h"
 
 
 /* GIMPLE parser state.  */
@@ -354,7 +353,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
   if (cfun->curr_properties & PROP_cfg)
     {
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = entry_bb_count;
-      gcov_type t = PARAM_VALUE (PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD);
+      gcov_type t = param_gimple_fe_computed_hot_bb_threshold;
       set_hot_bb_threshold (t);
       update_max_bb_count ();
       cgraph_node::get_create (cfun->decl);
@@ -1406,10 +1405,7 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
     case CPP_STRING32:
     case CPP_WSTRING:
     case CPP_UTF8STRING:
-      expr.value = c_parser_peek_token (parser)->value;
-      set_c_expr_source_range (&expr, tok_range);
-      expr.original_code = STRING_CST;
-      c_parser_consume_token (parser);
+      expr = c_parser_string_literal (parser, false, true);
       break;
     case CPP_DOT:
       expr = c_parser_gimple_call_internal (parser);
@@ -1926,8 +1922,8 @@ c_parser_gimple_or_rtl_pass_list (c_parser *parser, c_declspecs *specs)
 	      return;
 	    }
 	  pass = xstrdup (TREE_STRING_POINTER
-				(c_parser_peek_token (parser)->value));
-	  c_parser_consume_token (parser);
+			  (c_parser_string_literal (parser, false,
+						    false).value));
 	  if (! c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<(%>"))
 	    return;
 	}
@@ -2018,7 +2014,7 @@ c_parser_gimple_declaration (gimple_parser &parser)
   struct c_declarator *declarator;
   struct c_declspecs *specs = build_null_declspecs ();
   c_parser_declspecs (parser, specs, true, true, true,
-		      true, true, cla_nonabstract_decl);
+		      true, true, true, true, cla_nonabstract_decl);
   finish_declspecs (specs);
 
   /* Provide better error recovery.  Note that a type name here is usually

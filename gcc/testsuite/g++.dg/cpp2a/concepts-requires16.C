@@ -37,11 +37,11 @@ void f7() { }
 
 void driver()
 {
-  f1<int, int>(); // { dg-error "cannot call function" }
+  f1<int, int>(); // { dg-error "" }
   f3<int, int>();
-  f3<int, void>(); // { dg-error "cannot call function" }
+  f3<int, void>(); // { dg-error "" }
   f4<int, int>();
-  f4<int, void>(); // { dg-error "cannot call function" }
+  f4<int, void>(); // { dg-error "" }
   f7<int>();
   f7<int, int>();
 }

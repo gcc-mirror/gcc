@@ -112,14 +112,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-vectorizer.h"
 #include "tree-eh.h"
 #include "gimple-fold.h"
 
 
 #define MAX_DATAREFS_NUM \
-	((unsigned) PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+	((unsigned) param_loop_max_datarefs_for_datadeps)
 
 /* Threshold controlling number of distributed partitions.  Given it may
    be unnecessary if a memory stream cost model is invented in the future,

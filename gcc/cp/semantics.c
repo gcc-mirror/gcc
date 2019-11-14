@@ -3048,6 +3048,14 @@ finish_translation_unit (void)
 
   /* Do file scope __FUNCTION__ et al.  */
   finish_fname_decls ();
+
+  if (scope_chain->omp_declare_target_attribute)
+    {
+      if (!errorcount)
+	error ("%<#pragma omp declare target%> without corresponding "
+	       "%<#pragma omp end declare target%>");
+      scope_chain->omp_declare_target_attribute = 0;
+    }
 }
 
 /* Finish a template type parameter, specified as AGGR IDENTIFIER.
@@ -4428,7 +4436,7 @@ expand_or_defer_fn_1 (tree fn)
       if (DECL_INTERFACE_KNOWN (fn))
 	/* We've already made a decision as to how this function will
 	   be handled.  */;
-      else if (!at_eof)
+      else if (!at_eof || DECL_IMMEDIATE_FUNCTION_P (fn))
 	tentative_decl_linkage (fn);
       else
 	import_export_decl (fn);
@@ -4439,6 +4447,7 @@ expand_or_defer_fn_1 (tree fn)
 	 be emitted; there may be callers in other DLLs.  */
       if (DECL_DECLARED_INLINE_P (fn)
 	  && !DECL_REALLY_EXTERN (fn)
+	  && !DECL_IMMEDIATE_FUNCTION_P (fn)
 	  && (flag_keep_inline_functions
 	      || (flag_keep_inline_dllexport
 		  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn)))))

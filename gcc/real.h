@@ -524,7 +524,7 @@ extern bool real_nextafter (REAL_VALUE_TYPE *, format_helper,
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  BUF must be large enough to contain the result.  */
-extern void get_max_float (const struct real_format *, char *, size_t);
+extern void get_max_float (const struct real_format *, char *, size_t, bool);
 
 #ifndef GENERATOR_FILE
 /* real related routines.  */

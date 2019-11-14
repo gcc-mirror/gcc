@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
-#include "params.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
@@ -182,7 +181,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 
       /* Add all thunks associated with the function.  */
       for (e = cnode->callers; e; e = e->next_caller)
-	if (e->caller->thunk.thunk_p && !e->caller->global.inlined_to)
+	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
 	  add_symbol_to_partition_1 (part, e->caller);
     }
 
@@ -233,8 +232,8 @@ contained_in_symbol (symtab_node *node)
   if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     {
       cnode = cnode->function_symbol ();
-      if (cnode->global.inlined_to)
-	cnode = cnode->global.inlined_to;
+      if (cnode->inlined_to)
+	cnode = cnode->inlined_to;
       return cnode;
     }
   else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
@@ -560,13 +559,13 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
   varpool_order.qsort (varpool_node_cmp);
 
   /* Compute partition size and create the first partition.  */
-  if (PARAM_VALUE (MIN_PARTITION_SIZE) > max_partition_size)
+  if (param_min_partition_size > max_partition_size)
     fatal_error (input_location, "min partition size cannot be greater "
 		 "than max partition size");
 
   partition_size = total_size / n_lto_partitions;
-  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
-    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
+  if (partition_size < param_min_partition_size)
+    partition_size = param_min_partition_size;
   npartitions = 1;
   partition = new_partition ("");
   if (dump_file)
@@ -816,8 +815,8 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	    fprintf (dump_file,
 		     "Total size: %" PRId64 " partition_size: %" PRId64 "\n",
 		     total_size, partition_size);
-	  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
-	    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
+	  if (partition_size < param_min_partition_size)
+	    partition_size = param_min_partition_size;
 	  npartitions ++;
 	}
     }

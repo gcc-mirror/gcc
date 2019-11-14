@@ -263,6 +263,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L
 
+#define __cpp_lib_bitops 201907L
+
   /// @cond undoc
   template<typename _Tp, typename _Up = _Tp>
     using _If_is_unsigned_integer

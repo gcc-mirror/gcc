@@ -3159,6 +3159,7 @@ directive}: @samp{#if}, @samp{#ifdef} or @samp{#ifndef}.
 * Elif::
 * @code{__has_attribute}::
 * @code{__has_cpp_attribute}::
+* @code{__has_builtin}::
 * @code{__has_include}::
 @end menu
 
@@ -3477,6 +3478,33 @@ the attribute was first introduced into the C++ standard.  For additional
 information including the dates of the introduction of current standard
 attributes, see @w{@uref{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations/,
 SD-6: SG10 Feature Test Recommendations}}.
+
+@node @code{__has_builtin}
+@subsection @code{__has_builtin}
+@cindex @code{__has_builtin}
+
+The special operator @code{__has_builtin (@var{operand})} may be used in
+constant integer contexts and in preprocessor @samp{#if} and @samp{#elif}
+expressions to test whether the symbol named by its @var{operand} is
+recognized as a built-in function by GCC in the current language and
+conformance mode.  It evaluates to a constant integer with a nonzero
+value if the argument refers to such a function, and to zero otherwise.
+The operator may also be used in preprocessor @samp{#if} and @samp{#elif}
+expressions.  The @code{__has_builtin} operator by itself, without any
+@var{operand} or parentheses, acts as a predefined macro so that support
+for it can be tested in portable code.  Thus, the recommended use of
+the operator is as follows:
+
+@smallexample
+#if defined __has_builtin
+#  if __has_builtin (__builtin_object_size)
+#    define builtin_object_size(ptr) __builtin_object_size (ptr, 2)
+#  endif
+#endif
+#ifndef builtin_object_size
+#  define builtin_object_size(ptr)   ((size_t)-1)
+#endif
+@end smallexample
 
 @node @code{__has_include}
 @subsection @code{__has_include}

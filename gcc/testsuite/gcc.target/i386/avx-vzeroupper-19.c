@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mavx -mtune=generic -dp" } */
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 
 void feat_s3_cep_dcep (int cepsize_used, float **mfc, float **feat)
 {

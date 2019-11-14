@@ -687,12 +687,6 @@
 #endif
 
 
-/* Define if your assembler supports arg info for __tls_get_addr. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_TLS_MARKERS
-#endif
-
-
 /* Define if your assembler supports vl/vst/vlm/vstm with an optional
    alignment hint argument. */
 #ifndef USED_FOR_TARGET
@@ -973,6 +967,13 @@
    */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_MADVISE
+#endif
+
+
+/* Define to 1 if we found a declaration for 'mallinfo', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_MALLINFO
 #endif
 
 
@@ -1663,6 +1664,12 @@
 #endif
 
 
+/* Define to 1 if you have the `mallinfo' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MALLINFO
+#endif
+
+
 /* Define to 1 if you have the <malloc.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MALLOC_H
@@ -1714,6 +1721,13 @@
 /* Define if read-only mmap of a plain file works. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MMAP_FILE
+#endif
+
+
+/* Define if GCC has been configured with --enable-newlib-nano-formatted-io.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_NEWLIB_NANO_FORMATTED_IO
 #endif
 
 

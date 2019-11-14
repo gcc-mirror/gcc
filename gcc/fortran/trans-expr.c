@@ -1725,7 +1725,8 @@ gfc_conv_expr_present (gfc_symbol * sym)
       /* Walk function argument list to find hidden arg.  */
       cond = DECL_ARGUMENTS (DECL_CONTEXT (decl));
       for ( ; cond != NULL_TREE; cond = TREE_CHAIN (cond))
-	if (DECL_NAME (cond) == tree_name)
+	if (DECL_NAME (cond) == tree_name
+	    && DECL_ARTIFICIAL (cond))
 	  break;
 
       gcc_assert (cond);
@@ -5239,6 +5240,9 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
 						    parmse->expr);
+      bool is_artificial = (INDIRECT_REF_P (parmse->expr)
+			    ? DECL_ARTIFICIAL (TREE_OPERAND (parmse->expr, 0))
+			    : DECL_ARTIFICIAL (parmse->expr));
 
       /* Unallocated allocatable arrays and unassociated pointer arrays
 	 need their dtype setting if they are argument associated with
@@ -5258,7 +5262,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       type = e->ts.type != BT_ASSUMED ? gfc_typenode_for_spec (&e->ts) :
 					NULL_TREE;
 
-      if (type && DECL_ARTIFICIAL (parmse->expr)
+      if (type && is_artificial
 	  && type != gfc_get_element_type (TREE_TYPE (parmse->expr)))
 	{
 	  /* Obtain the offset to the data.  */
@@ -5271,7 +5275,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 			  gfc_get_dtype_rank_type (e->rank, type));
 	}
       else if (type == NULL_TREE
-	       || (!is_subref_array (e) && !DECL_ARTIFICIAL (parmse->expr)))
+	       || (!is_subref_array (e) && !is_artificial))
 	{
 	  /* Make sure that the span is set for expressions where it
 	     might not have been done already.  */
@@ -5303,13 +5307,13 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   /* Now pass the gfc_descriptor by reference.  */
   parmse->expr = gfc_build_addr_expr (NULL_TREE, parmse->expr);
 
-  /* Variables to point to the gfc and CFI descriptors.  */
+  /* Variables to point to the gfc and CFI descriptors; cfi = NULL implies
+     that the CFI descriptor is allocated by the gfor_fndecl_gfc_to_cfi call.  */
   gfc_desc_ptr = parmse->expr;
   cfi_desc_ptr = gfc_create_var (pvoid_type_node, "cfi");
-  gfc_add_modify (&parmse->pre, cfi_desc_ptr,
-		  build_int_cst (pvoid_type_node, 0));
+  gfc_add_modify (&parmse->pre, cfi_desc_ptr, null_pointer_node);
 
-  /* Allocate the CFI descriptor and fill the fields.  */
+  /* Allocate the CFI descriptor itself and fill the fields.  */
   tmp = gfc_build_addr_expr (NULL_TREE, cfi_desc_ptr);
   tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
@@ -5323,6 +5327,10 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 
   /* The CFI descriptor is passed to the bind_C procedure.  */
   parmse->expr = cfi_desc_ptr;
+
+  /* Free the CFI descriptor.  */
+  tmp = gfc_call_free (cfi_desc_ptr);
+  gfc_prepend_expr_to_block (&parmse->post, tmp);
 
   /* Transfer values back to gfc descriptor.  */
   tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);
@@ -5742,7 +5750,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					fold_convert (TREE_TYPE (parmse.expr),
 						      integer_zero_node));
 
-			    vec_safe_push (optionalargs, tmp);
+			    vec_safe_push (optionalargs,
+					   fold_convert (boolean_type_node,
+							 tmp));
 			  }
 		      }
 		    }

@@ -27,6 +27,6 @@
 !$omp barrier
   if (j .ne. 25 .or. i .ne. (k * 10 + 14)) l = .true.
 !$omp end parallel
-  if (l) STOP 1
-  if (j .ne. 25) STOP 2
+  if (l) stop 1
+  if (j .ne. 25) stop 2
 end

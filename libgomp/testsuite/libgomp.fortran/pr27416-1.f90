@@ -6,7 +6,7 @@
 !$omp parallel num_threads (4)
   call foo (j)
 !$omp end parallel
-  if (j.ne.6+16) STOP 1
+  if (j.ne.6+16) stop 1
 end
 
 subroutine foo (j)

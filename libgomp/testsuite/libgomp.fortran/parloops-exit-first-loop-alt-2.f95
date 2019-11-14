@@ -34,7 +34,7 @@ program main
   call foo ()
 
   do i = 0, n - 1
-     if (c(i) .ne. (i + MODULO ((i * 3), 7))) STOP 1
+     if (c(i) .ne. (i + MODULO ((i * 3), 7))) stop 1
   end do
 
 end program

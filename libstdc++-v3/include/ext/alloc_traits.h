@@ -76,7 +76,8 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
   public:
     // overload construct for non-standard pointer types
     template<typename _Ptr, typename... _Args>
-      static constexpr std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
+      static _GLIBCXX14_CONSTEXPR
+      std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
       construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
       noexcept(noexcept(_Base_type::construct(__a, std::__to_address(__p),
 					      std::forward<_Args>(__args)...)))
@@ -87,7 +88,8 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
 
     // overload destroy for non-standard pointer types
     template<typename _Ptr>
-      static constexpr std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
+      static _GLIBCXX14_CONSTEXPR
+      std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
       destroy(_Alloc& __a, _Ptr __p)
       noexcept(noexcept(_Base_type::destroy(__a, std::__to_address(__p))))
       { _Base_type::destroy(__a, std::__to_address(__p)); }
@@ -95,7 +97,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     static constexpr _Alloc _S_select_on_copy(const _Alloc& __a)
     { return _Base_type::select_on_container_copy_construction(__a); }
 
-    static constexpr void _S_on_swap(_Alloc& __a, _Alloc& __b)
+    static _GLIBCXX14_CONSTEXPR void _S_on_swap(_Alloc& __a, _Alloc& __b)
     { std::__alloc_on_swap(__a, __b); }
 
     static constexpr bool _S_propagate_on_copy_assign()

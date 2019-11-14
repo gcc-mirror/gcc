@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-strlen.h"
-#include "params.h"
 #include "tree-hash-traits.h"
 #include "tree-object-size.h"
 #include "builtins.h"
@@ -193,10 +192,11 @@ static void handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *);
 
    *  +1  if SI is known to start with more than OFF nonzero characters.
 
-   *   0  if SI is known to start with OFF nonzero characters,
-	  but is not known to start with more.
+   *   0  if SI is known to start with exactly OFF nonzero characters.
 
-   *  -1  if SI might not start with OFF nonzero characters.  */
+   *  -1  if SI either does not start with OFF nonzero characters
+	  or the relationship between the number of leading nonzero
+	  characters in SI and OFF is unknown.  */
 
 static inline int
 compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off)
@@ -221,10 +221,10 @@ compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off,
   if (TREE_CODE (si->nonzero_chars) == INTEGER_CST)
     return compare_tree_int (si->nonzero_chars, off);
 
-  if (TREE_CODE (si->nonzero_chars) != SSA_NAME)
+  if (!rvals || TREE_CODE (si->nonzero_chars) != SSA_NAME)
     return -1;
 
-  const value_range *vr
+  const value_range_equiv *vr
     = (CONST_CAST (class vr_values *, rvals)
        ->get_value_range (si->nonzero_chars));
 
@@ -232,7 +232,15 @@ compare_nonzero_chars (strinfo *si, unsigned HOST_WIDE_INT off,
   if (rng != VR_RANGE || !range_int_cst_p (vr))
     return -1;
 
-  return compare_tree_int (vr->min (), off);
+  /* If the offset is less than the minimum length or if the bounds
+     of the length range are equal return the result of the comparison
+     same as in the constant case.  Otherwise return a conservative
+     result.  */
+  int cmpmin = compare_tree_int (vr->min (), off);
+  if (cmpmin > 0 || tree_int_cst_equal (vr->min (), vr->max ()))
+    return cmpmin;
+
+  return -1;
 }
 
 /* Return true if SI is known to be a zero-length string.  */
@@ -272,7 +280,8 @@ get_next_strinfo (strinfo *si)
    *OFFSET_OUT.  */
 
 static int
-get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out)
+get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out,
+		 const vr_values *rvals = NULL)
 {
   HOST_WIDE_INT off;
   struct stridxlist *list, *last = NULL;
@@ -310,7 +319,7 @@ get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out)
       unsigned HOST_WIDE_INT rel_off
 	= (unsigned HOST_WIDE_INT) off - last->offset;
       strinfo *si = get_strinfo (last->idx);
-      if (si && compare_nonzero_chars (si, rel_off) >= 0)
+      if (si && compare_nonzero_chars (si, rel_off, rvals) >= 0)
 	{
 	  if (offset_out)
 	    {
@@ -518,7 +527,7 @@ static int
 new_stridx (tree exp)
 {
   int idx;
-  if (max_stridx >= PARAM_VALUE (PARAM_MAX_TRACKED_STRLENS))
+  if (max_stridx >= param_max_tracked_strlens)
     return 0;
   if (TREE_CODE (exp) == SSA_NAME)
     {
@@ -547,7 +556,7 @@ static int
 new_addr_stridx (tree exp)
 {
   int *pidx;
-  if (max_stridx >= PARAM_VALUE (PARAM_MAX_TRACKED_STRLENS))
+  if (max_stridx >= param_max_tracked_strlens)
     return 0;
   pidx = addr_stridxptr (exp);
   if (pidx != NULL)
@@ -789,7 +798,7 @@ dump_strlen_info (FILE *fp, gimple *stmt, const vr_values *rvals)
 		  wide_int min, max;
 		  if (rvals)
 		    {
-		      const value_range *vr
+		      const value_range_equiv *vr
 			= CONST_CAST (class vr_values *, rvals)
 			->get_value_range (si->nonzero_chars);
 		      rng = vr->kind ();
@@ -981,7 +990,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	    pdata->minlen = si->nonzero_chars;
 	  else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	    {
-	      const value_range *vr
+	      const value_range_equiv *vr
 		= CONST_CAST (class vr_values *, rvals)
 		->get_value_range (si->nonzero_chars);
 	      if (vr->kind () == VR_RANGE
@@ -1021,7 +1030,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	}
       else if (pdata->minlen && TREE_CODE (pdata->minlen) == SSA_NAME)
 	{
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, rvals)
 	    ->get_value_range (si->nonzero_chars);
 	  if (vr->kind () == VR_RANGE
@@ -1072,7 +1081,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata,
   bitmap visited = NULL;
   tree maxbound = pdata->maxbound;
 
-  unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
+  unsigned limit = param_ssa_name_def_chain_limit;
   if (!get_range_strlen_dynamic (src, pdata, &visited, rvals, &limit))
     {
       /* On failure extend the length range to an impossible maximum
@@ -1872,7 +1881,7 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 		  tree adj = fold_build2_loc (loc, MINUS_EXPR,
 					      TREE_TYPE (lhs), lhs, old);
 		  adjust_related_strinfos (loc, si, adj);
-		  /* Use the constant minimim length as the lower bound
+		  /* Use the constant minimum length as the lower bound
 		     of the non-constant length.  */
 		  wide_int min = wi::to_wide (old);
 		  wide_int max
@@ -2135,7 +2144,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       strinfo *chainsi;
 
       /* If string length of src is unknown, use delayed length
-	 computation.  If string lenth of dst will be needed, it
+	 computation.  If string length of dst will be needed, it
 	 can be computed by transforming this strcpy call into
 	 stpcpy and subtracting dst from the return value.  */
 
@@ -2655,7 +2664,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 
   if (tree dstsize = compute_objsize (dst, 1))
     {
-      /* The source length is uknown.  Try to determine the destination
+      /* The source length is unknown.  Try to determine the destination
 	 size and see if it matches the specified bound.  If not, bail.
 	 Otherwise go on to see if it should be diagnosed for possible
 	 truncation.  */
@@ -2754,7 +2763,7 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
     }
 
   /* If the length argument was computed from strlen(S) for some string
-     S retrieve the strinfo index for the string (PSS->FIRST) alonng with
+     S retrieve the strinfo index for the string (PSS->FIRST) along with
      the location of the strlen() call (PSS->SECOND).  */
   stridx_strlenloc *pss = strlen_to_stridx->get (len);
   if (!pss || pss->first <= 0)
@@ -3257,7 +3266,7 @@ handle_builtin_malloc (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 /* Handle a call to memset.
    After a call to calloc, memset(,0,) is unnecessary.
    memset(malloc(n),0,n) is calloc(n,1).
-   return true when the call is transfomred, false otherwise.  */
+   return true when the call is transformed, false otherwise.  */
 
 static bool
 handle_builtin_memset (gimple_stmt_iterator *gsi, bool *zero_write)
@@ -3962,7 +3971,7 @@ class ssa_name_limit_t
 
   ssa_name_limit_t ()
     : visited (NULL),
-    ssa_def_max (PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT)) { }
+    ssa_def_max (param_ssa_name_def_chain_limit) { }
 
   int next_ssa_name (tree);
 
@@ -4030,7 +4039,7 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	       && si->nonzero_chars
 	       && TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
-	  const value_range *vr
+	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, rvals)
 	    ->get_value_range (si->nonzero_chars);
 	  if (vr->kind () != VR_RANGE
@@ -4319,7 +4328,7 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rval
     }
   else
     {
-      idx = get_addr_stridx (lhs, NULL_TREE, &offset);
+      idx = get_addr_stridx (lhs, NULL_TREE, &offset, rvals);
       if (idx > 0)
 	si = get_strinfo (idx);
     }
@@ -4453,7 +4462,7 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rval
 	     statement and return to signal the caller that it shouldn't
 	     invalidate anything.
 
-	     This is benefical for cases like:
+	     This is beneficial for cases like:
 
 	     char p[20];
 	     void foo (char *q)
@@ -5335,6 +5344,7 @@ pass_strlen::gate (function *)
 {
   return ((warn_format_overflow > 0
 	   || warn_format_trunc > 0
+	   || warn_restrict > 0
 	   || flag_optimize_strlen > 0
 	   || flag_printf_return_value)
 	  && optimize > 0);

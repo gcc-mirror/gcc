@@ -1717,7 +1717,7 @@ d_number (struct d_info *di)
 	}
       if (ret > ((INT_MAX - (peek - '0')) / 10))
         return -1;
-      ret = ret * 10 + peek - '0';
+      ret = ret * 10 + (peek - '0');
       d_advance (di, 1);
       peek = d_peek_char (di);
     }
@@ -3576,6 +3576,17 @@ d_expr_primary (struct d_info *di)
       if (type->type == DEMANGLE_COMPONENT_BUILTIN_TYPE
 	  && type->u.s_builtin.type->print != D_PRINT_DEFAULT)
 	di->expansion -= type->u.s_builtin.type->len;
+
+      if (type->type == DEMANGLE_COMPONENT_BUILTIN_TYPE
+	  && strcmp (type->u.s_builtin.type->name,
+		     cplus_demangle_builtin_types[33].name) == 0)
+	{
+	  if (d_peek_char (di) == 'E')
+	    {
+	      d_advance (di, 1);
+	      return type;
+	    }
+	}
 
       /* Rather than try to interpret the literal value, we just
 	 collect it as a string.  Note that it's possible to have a
@@ -5977,10 +5988,10 @@ d_print_mod (struct d_print_info *dpi, int options,
       d_append_string (dpi, "&&");
       return;
     case DEMANGLE_COMPONENT_COMPLEX:
-      d_append_string (dpi, "complex ");
+      d_append_string (dpi, " _Complex");
       return;
     case DEMANGLE_COMPONENT_IMAGINARY:
-      d_append_string (dpi, "imaginary ");
+      d_append_string (dpi, " _Imaginary");
       return;
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
       if (d_last_char (dpi) != '(')

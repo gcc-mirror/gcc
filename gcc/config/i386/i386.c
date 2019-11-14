@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "tm-constrs.h"
-#include "params.h"
 #include "cselib.h"
 #include "sched-int.h"
 #include "opts.h"
@@ -1119,8 +1118,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       if (target && opt_for_fn (target->decl, optimize)
 	  && !(profile_flag && !flag_fentry))
 	{
-	  cgraph_local_info *i = &target->local;
-	  if (i && i->local && i->can_change_signature)
+	  if (target->local && target->can_change_signature)
 	    {
 	      int local_regparm, globals = 0, regno;
 
@@ -1216,8 +1214,7 @@ ix86_function_sseregparm (const_tree type, const_tree decl, bool warn)
       && opt_for_fn (target->decl, optimize)
       && !(profile_flag && !flag_fentry))
     {
-      cgraph_local_info *i = &target->local;
-      if (i && i->local && i->can_change_signature)
+      if (target->local && target->can_change_signature)
 	{
 	  /* Refuse to produce wrong code when local function with SSE enabled
 	     is called from SSE disabled function.
@@ -1698,7 +1695,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		      tree fndecl,
 		      int caller)
 {
-  struct cgraph_local_info *i = NULL;
+  struct cgraph_node *local_info_node = NULL;
   struct cgraph_node *target = NULL;
 
   memset (cum, 0, sizeof (*cum));
@@ -1709,7 +1706,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
       if (target)
 	{
 	  target = target->function_symbol ();
-	  i = cgraph_node::local_info (target->decl);
+	  local_info_node = cgraph_node::local_info_node (target->decl);
 	  cum->call_abi = ix86_function_abi (target->decl);
 	}
       else
@@ -1751,7 +1748,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
      va_start so for local functions maybe_vaarg can be made aggressive
      helping K&R code.
      FIXME: once typesytem is fixed, we won't need this code anymore.  */
-  if (i && i->local && i->can_change_signature)
+  if (local_info_node && local_info_node->local
+      && local_info_node->can_change_signature)
     fntype = TREE_TYPE (target->decl);
   cum->stdarg = stdarg_p (fntype);
   cum->maybe_vaarg = (fntype
@@ -5774,7 +5772,7 @@ get_probe_interval (void)
 {
   if (flag_stack_clash_protection)
     return (HOST_WIDE_INT_1U
-	    << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL));
+	    << param_stack_clash_protection_probe_interval);
   else
     return (HOST_WIDE_INT_1U << STACK_CHECK_PROBE_INTERVAL_EXP);
 }
@@ -6943,7 +6941,7 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
   /* If we allocate less than the size of the guard statically,
      then no probing is necessary, but we do need to allocate
      the stack.  */
-  if (size < (1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE)))
+  if (size < (1 << param_stack_clash_protection_guard_size))
     {
       pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 			         GEN_INT (-size), -1,
@@ -21469,18 +21467,18 @@ static unsigned int
 ix86_max_noce_ifcvt_seq_cost (edge e)
 {
   bool predictable_p = predictable_edge_p (e);
-
-  enum compiler_param param
-    = (predictable_p
-       ? PARAM_MAX_RTL_IF_CONVERSION_PREDICTABLE_COST
-       : PARAM_MAX_RTL_IF_CONVERSION_UNPREDICTABLE_COST);
-
-  /* If we have a parameter set, use that, otherwise take a guess using
-     BRANCH_COST.  */
-  if (global_options_set.x_param_values[param])
-    return PARAM_VALUE (param);
+  if (predictable_p)
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+	return param_max_rtl_if_conversion_predictable_cost;
+    }
   else
-    return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (2);
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+	return param_max_rtl_if_conversion_unpredictable_cost;
+    }
+
+  return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (2);
 }
 
 /* Return true if SEQ is a good candidate as a replacement for the
@@ -23035,12 +23033,13 @@ ix86_run_selftests (void)
   ix86_simd_clone_compute_vecsize_and_simdlen
 
 #undef TARGET_SIMD_CLONE_ADJUST
-#define TARGET_SIMD_CLONE_ADJUST \
-  ix86_simd_clone_adjust
+#define TARGET_SIMD_CLONE_ADJUST ix86_simd_clone_adjust
 
 #undef TARGET_SIMD_CLONE_USABLE
-#define TARGET_SIMD_CLONE_USABLE \
-  ix86_simd_clone_usable
+#define TARGET_SIMD_CLONE_USABLE ix86_simd_clone_usable
+
+#undef TARGET_OMP_DEVICE_KIND_ARCH_ISA
+#define TARGET_OMP_DEVICE_KIND_ARCH_ISA ix86_omp_device_kind_arch_isa
 
 #undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
 #define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \

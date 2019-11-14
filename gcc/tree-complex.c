@@ -1144,6 +1144,16 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 	      return;
 	    }
 
+	  if (!HONOR_NANS (inner_type))
+	    {
+	      /* If we are not worrying about NaNs expand to
+		 (ar*br - ai*bi) + i(ar*bi + br*ai) directly.  */
+	      expand_complex_multiplication_components (gsi, inner_type,
+							ar, ai, br, bi,
+							&rr, &ri);
+	      break;
+	    }
+
 	  /* Else, expand x = a * b into
 	     x = (ar*br - ai*bi) + i(ar*bi + br*ai);
 	     if (isunordered (__real__ x, __imag__ x))
@@ -1151,7 +1161,7 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 
 	  tree tmpr, tmpi;
 	  expand_complex_multiplication_components (gsi, inner_type, ar, ai,
-						     br, bi, &tmpr, &tmpi);
+						    br, bi, &tmpr, &tmpi);
 
 	  gimple *check
 	    = gimple_build_cond (UNORDERED_EXPR, tmpr, tmpi,
@@ -1167,13 +1177,12 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 	    = insert_cond_bb (gsi_bb (*gsi), gsi_stmt (*gsi), check,
 			      profile_probability::very_unlikely ());
 
-
 	  gimple_stmt_iterator cond_bb_gsi = gsi_last_bb (cond_bb);
 	  gsi_insert_after (&cond_bb_gsi, gimple_build_nop (), GSI_NEW_STMT);
 
 	  tree libcall_res
 	    = expand_complex_libcall (&cond_bb_gsi, type, ar, ai, br,
-				       bi, MULT_EXPR, false);
+				      bi, MULT_EXPR, false);
 	  tree cond_real = gimplify_build1 (&cond_bb_gsi, REALPART_EXPR,
 					    inner_type, libcall_res);
 	  tree cond_imag = gimplify_build1 (&cond_bb_gsi, IMAGPART_EXPR,
@@ -1190,20 +1199,18 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 	  edge orig_to_join = find_edge (orig_bb, join_bb);
 
 	  gphi *real_phi = create_phi_node (rr, gsi_bb (*gsi));
-	  add_phi_arg (real_phi, cond_real, cond_to_join,
-			UNKNOWN_LOCATION);
+	  add_phi_arg (real_phi, cond_real, cond_to_join, UNKNOWN_LOCATION);
 	  add_phi_arg (real_phi, tmpr, orig_to_join, UNKNOWN_LOCATION);
 
 	  gphi *imag_phi = create_phi_node (ri, gsi_bb (*gsi));
-	  add_phi_arg (imag_phi, cond_imag, cond_to_join,
-			UNKNOWN_LOCATION);
+	  add_phi_arg (imag_phi, cond_imag, cond_to_join, UNKNOWN_LOCATION);
 	  add_phi_arg (imag_phi, tmpi, orig_to_join, UNKNOWN_LOCATION);
 	}
       else
 	/* If we are not worrying about NaNs expand to
 	  (ar*br - ai*bi) + i(ar*bi + br*ai) directly.  */
 	expand_complex_multiplication_components (gsi, inner_type, ar, ai,
-						      br, bi, &rr, &ri);
+						  br, bi, &rr, &ri);
       break;
 
     default:

@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-dfa.h"
 
 
@@ -1935,7 +1934,7 @@ number_of_iterations_cond (class loop *loop,
 
 tree
 simplify_replace_tree (tree expr, tree old, tree new_tree,
-		       tree (*valueize) (tree))
+		       tree (*valueize) (tree, void*), void *context)
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, se;
@@ -1951,7 +1950,7 @@ simplify_replace_tree (tree expr, tree old, tree new_tree,
     {
       if (TREE_CODE (expr) == SSA_NAME)
 	{
-	  new_tree = valueize (expr);
+	  new_tree = valueize (expr, context);
 	  if (new_tree != expr)
 	    return new_tree;
 	}
@@ -1967,7 +1966,7 @@ simplify_replace_tree (tree expr, tree old, tree new_tree,
   for (i = 0; i < n; i++)
     {
       e = TREE_OPERAND (expr, i);
-      se = simplify_replace_tree (e, old, new_tree, valueize);
+      se = simplify_replace_tree (e, old, new_tree, valueize, context);
       if (e == se)
 	continue;
 
@@ -2863,7 +2862,7 @@ finite_loop_p (class loop *loop)
 /* Bound on the number of iterations we try to evaluate.  */
 
 #define MAX_ITERATIONS_TO_TRACK \
-  ((unsigned) PARAM_VALUE (PARAM_MAX_ITERATIONS_TO_TRACK))
+  ((unsigned) param_max_iterations_to_track)
 
 /* Returns the loop phi node of LOOP such that ssa name X is derived from its
    result by a chain of operations such that all but exactly one of their

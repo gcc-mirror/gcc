@@ -105,7 +105,6 @@
 #include "emit-rtl.h"
 #include "output.h"
 #include "expr.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
@@ -1371,7 +1370,7 @@ copy_bb_p (const_basic_block bb, int code_may_grow)
     return false;
 
   if (code_may_grow && optimize_bb_for_speed_p (bb))
-    max_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
+    max_size *= param_max_grow_copy_bb_insns;
 
   FOR_BB_INSNS (bb, insn)
     {
@@ -2751,7 +2750,7 @@ duplicate_computed_gotos (function *fun)
 
   /* Never copy a block larger than this.  */
   int max_size
-    = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
+    = uncond_jump_length * param_max_goto_duplication_insns;
 
   bool changed = false;
 

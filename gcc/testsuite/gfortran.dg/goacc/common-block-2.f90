@@ -43,10 +43,11 @@ program test
   !$acc end parallel
 
   !$acc parallel firstprivate(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }
+  !$acc end parallel
+
   !$acc update device(b, /blockA/, x) ! { dg-error "Symbol .x. present on multiple clauses" }
   !$acc update self(z, /blockB/, v) ! { dg-error "Symbol .z. present on multiple clauses" }
   !$acc update host(/blockA/, c) ! { dg-error "Symbol .c. present on multiple clauses" }
-  !$acc end parallel
 
   !$acc enter data copyin(/blockB/, e, v, a, c, y) ! { dg-error "Symbol .y. present on multiple clauses" }
   !$acc exit data delete(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }

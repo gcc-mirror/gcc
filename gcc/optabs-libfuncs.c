@@ -735,10 +735,6 @@ build_libfunc_function_visibility (const char *name, symbol_visibility vis)
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
   gcc_assert (DECL_ASSEMBLER_NAME (decl));
 
-  /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
-     are the flags assigned by targetm.encode_section_info.  */
-  SET_SYMBOL_REF_DECL (XEXP (DECL_RTL (decl), 0), NULL);
-
   return decl;
 }
 

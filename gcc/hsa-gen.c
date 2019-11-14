@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "cgraph.h"
 #include "print-tree.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "hsa-common.h"
 #include "cfghooks.h"
@@ -55,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "cfganal.h"
 #include "builtins.h"
-#include "params.h"
 #include "gomp-constants.h"
 #include "internal-fn.h"
 #include "builtins.h"
@@ -5939,7 +5939,7 @@ init_prologue (void)
   unsigned index = hsa_get_number_decl_kernel_mappings ();
 
   /* Emit store to debug argument.  */
-  if (PARAM_VALUE (PARAM_HSA_GEN_DEBUG_STORES) > 0)
+  if (param_hsa_gen_debug_stores > 0)
     set_debug_value (prologue, new hsa_op_immed (1000 + index, BRIG_TYPE_U64));
 }
 

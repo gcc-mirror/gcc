@@ -44,13 +44,13 @@
     ka(6:6) = int(Z'777')
   end if
 !$omp end parallel
-  if (v) STOP 1
+  if (v) stop 1
   if (cnt .eq. 3) then
     ta = (/int(Z'f0ff03'), int(Z'f0af03'), int(Z'f0af01'), int(Z'f0af01'), int(Z'f0af01'), int(Z'f0ff0f')/)
-    if (i .ne. int(Z'777f07') .or. any (ia .ne. ta)) STOP 2
+    if (i .ne. int(Z'777f07') .or. any (ia .ne. ta)) stop 2
     ta = (/int(Z'f5a01'), int(Z'f5a09'), int(Z'f5a09'), int(Z'f5a08'), int(Z'f5f08'), int(Z'f5f00')/)
-    if (j .ne. int(Z'fff80') .or. any (ja .ne. ta)) STOP 3
+    if (j .ne. int(Z'fff80') .or. any (ja .ne. ta)) stop 3
     ta = (/int(Z'5a5a5'), int(Z'5a5a5'), int(Z'aaba2'), int(Z'aaba2'), int(Z'5aaaa'), int(Z'5addd')/)
-    if (k .ne. int(Z'54a8f') .or. any (ka .ne. ta)) STOP 4
+    if (k .ne. int(Z'54a8f') .or. any (ka .ne. ta)) stop 4
   end if
 end

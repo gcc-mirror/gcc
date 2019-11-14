@@ -746,15 +746,16 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	  || sym->attr.allocatable)
       && !DECL_ARTIFICIAL (decl))
     {
-      gfc_warning (OPT_Wsurprising,
-		   "Array %qs at %L is larger than limit set by"
-		   " %<-fmax-stack-var-size=%>, moved from stack to static"
-		   " storage. This makes the procedure unsafe when called"
-		   " recursively, or concurrently from multiple threads."
-		   " Consider using %<-frecursive%>, or increase the"
-		   " %<-fmax-stack-var-size=%> limit, or change the code to"
-		   " use an ALLOCATABLE array.",
-		   sym->name, &sym->declared_at);
+      if (flag_max_stack_var_size > 0)
+	gfc_warning (OPT_Wsurprising,
+		     "Array %qs at %L is larger than limit set by"
+		     " %<-fmax-stack-var-size=%>, moved from stack to static"
+		     " storage. This makes the procedure unsafe when called"
+		     " recursively, or concurrently from multiple threads."
+		     " Consider using %<-frecursive%>, or increase the"
+		     " %<-fmax-stack-var-size=%> limit, or change the code to"
+		     " use an ALLOCATABLE array.",
+		     sym->name, &sym->declared_at);
 
       TREE_STATIC (decl) = 1;
 
@@ -1904,13 +1905,20 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->attr.associate_var)
     GFC_DECL_ASSOCIATE_VAR_P (decl) = 1;
 
-  /* We no longer mark __def_init as read-only so it does not take up
-     space in the read-only section and dan go into the BSS instead,
-     see PR 84487.  Marking this as artificial means that OpenMP will
-     treat this as predetermined shared.  */
-  if (sym->attr.vtab
-      || (sym->name[0] == '_' && gfc_str_startswith (sym->name, "__def_init")))
-    DECL_ARTIFICIAL (decl) = 1;
+  /* We only longer mark __def_init as read-only if it actually has an
+     initializer, it does not needlessly take up space in the
+     read-only section and can go into the BSS instead, see PR 84487.
+     Marking this as artificial means that OpenMP will treat this as
+     predetermined shared.  */
+
+  bool def_init = gfc_str_startswith (sym->name, "__def_init");
+
+  if (sym->attr.vtab || def_init)
+    {
+      DECL_ARTIFICIAL (decl) = 1;
+      if (def_init && sym->value)
+	TREE_READONLY (decl) = 1;
+    }
 
   return decl;
 }
@@ -2684,9 +2692,8 @@ create_function_arglist (gfc_symbol * sym)
 	  && (!f->sym->attr.proc_pointer
 	      && f->sym->attr.flavor != FL_PROCEDURE))
 	DECL_BY_REFERENCE (parm) = 1;
-      if (f->sym->attr.optional && !f->sym->attr.value)
+      if (f->sym->attr.optional)
 	{
-	  /* With value, the argument is passed as is.  */
 	  gfc_allocate_lang_decl (parm);
 	  GFC_DECL_OPTIONAL_ARGUMENT (parm) = 1;
 	}

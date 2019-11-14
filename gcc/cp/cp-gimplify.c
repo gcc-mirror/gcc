@@ -838,11 +838,17 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  && CALL_EXPR_FN (*expr_p)
 	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
 	{
+	  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 	  enum gimplify_status t
 	    = gimplify_to_rvalue (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
 				  is_gimple_call_addr);
 	  if (t == GS_ERROR)
 	    ret = GS_ERROR;
+	  /* GIMPLE considers most pointer conversion useless, but for
+	     calls we actually care about the exact function pointer type.  */
+	  else if (TREE_TYPE (CALL_EXPR_FN (*expr_p)) != fnptrtype)
+	    CALL_EXPR_FN (*expr_p)
+	      = build1 (NOP_EXPR, fnptrtype, CALL_EXPR_FN (*expr_p));
 	}
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;
@@ -1136,6 +1142,17 @@ cp_fold_function (tree fndecl)
 {
   hash_set<tree> pset;
   cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &pset, NULL);
+}
+
+/* Turn SPACESHIP_EXPR EXPR into GENERIC.  */
+
+static tree genericize_spaceship (tree expr)
+{
+  iloc_sentinel s (cp_expr_location (expr));
+  tree type = TREE_TYPE (expr);
+  tree op0 = TREE_OPERAND (expr, 0);
+  tree op1 = TREE_OPERAND (expr, 1);
+  return genericize_spaceship (type, op0, op1);
 }
 
 /* Perform any pre-gimplification lowering of C++ front end trees to
@@ -1566,6 +1583,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
     case BREAK_STMT:
       genericize_break_stmt (stmt_p);
+      break;
+
+    case SPACESHIP_EXPR:
+      *stmt_p = genericize_spaceship (*stmt_p);
       break;
 
     case OMP_FOR:

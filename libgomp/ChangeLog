@@ -1,3 +1,433 @@
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* plugin/Makefrag.am: Add amdgcn plugin support.
+	* plugin/configfrag.ac: Likewise.
+	* plugin/plugin-gcn.c: New file.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Set up the team arena
+	and use team_malloc variants.
+	(gomp_gcn_exit_kernel): Use team_free.
+	* libgomp.h (TEAM_ARENA_SIZE): Define.
+	(TEAM_ARENA_START): Define.
+	(TEAM_ARENA_FREE): Define.
+	(TEAM_ARENA_END): Define.
+	(team_malloc): New function.
+	(team_malloc_cleared): New function.
+	(team_free): New function.
+	* team.c (gomp_new_team): Initialize and use team_malloc.
+	(free_team): Use team_free.
+	(gomp_free_thread): Use team_free.
+	(gomp_pause_host): Use team_free.
+	* work.c (gomp_init_work_share): Use team_malloc.
+	(gomp_fini_work_share): Use team_free.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add oacc-target.c.
+	* Makefile.in: Regenerate.
+	* config.h.in (PLUGIN_GCN): Add new undef.
+	* config/accel/openacc.f90 (acc_device_gcn): New parameter.
+	* config/gcn/affinity-fmt.c: New file.
+	* config/gcn/bar.c: New file.
+	* config/gcn/bar.h: New file.
+	* config/gcn/doacross.h: New file.
+	* config/gcn/icv-device.c: New file.
+	* config/gcn/oacc-target.c: New file.
+	* config/gcn/simple-bar.h: New file.
+	* config/gcn/target.c: New file.
+	* config/gcn/task.c: New file.
+	* config/gcn/team.c: New file.
+	* config/gcn/time.c: New file.
+	* configure.ac: Add amdgcn*-*-*.
+	* configure: Regenerate.
+	* configure.tgt: Add amdgcn*-*-*.
+	* libgomp-plugin.h (offload_target_type): Add OFFLOAD_TARGET_TYPE_GCN.
+	* libgomp.h (gcn_thrs): Add amdgcn variant.
+	(set_gcn_thrs): Likewise.
+	(gomp_thread): Likewise.
+	* oacc-int.h (goacc_thread): Likewise.
+	* oacc-target.c: New file.
+	* openacc.f90 (acc_device_gcn): New parameter.
+	* openacc.h (acc_device_t): Add acc_device_gcn.
+	* team.c (gomp_free_pool_helper): Add amdgcn support.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_async_construct): Add int
+	parameter.
+	* oacc-async.c (lookup_goacc_asyncqueue): Pass device number to the
+	queue constructor.
+	* oacc-host.c (host_openacc_async_construct): Add device parameter.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_openacc_async_construct): Add
+	device parameter.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* configure.tgt (nvptx*-*-*): Add "accel" directory.
+	* config/nvptx/libgomp-plugin.c: Move ...
+	* config/accel/libgomp-plugin.c: ... to here.
+	* config/nvptx/lock.c: Move ...
+	* config/accel/lock.c: ... to here.
+	* config/nvptx/mutex.c: Move ...
+	* config/accel/mutex.c: ... to here.
+	* config/nvptx/mutex.h: Move ...
+	* config/accel/mutex.h: ... to here.
+	* config/nvptx/oacc-async.c: Move ...
+	* config/accel/oacc-async.c: ... to here.
+	* config/nvptx/oacc-cuda.c: Move ...
+	* config/accel/oacc-cuda.c: ... to here.
+	* config/nvptx/oacc-host.c: Move ...
+	* config/accel/oacc-host.c: ... to here.
+	* config/nvptx/oacc-init.c: Move ...
+	* config/accel/oacc-init.c: ... to here.
+	* config/nvptx/oacc-mem.c: Move ...
+	* config/accel/oacc-mem.c: ... to here.
+	* config/nvptx/oacc-plugin.c: Move ...
+	* config/accel/oacc-plugin.c: ... to here.
+	* config/nvptx/omp-lock.h: Move ...
+	* config/accel/omp-lock.h: ... to here.
+	* config/nvptx/openacc.f90: Move ...
+	* config/accel/openacc.f90: ... to here.
+	* config/nvptx/pool.h: Move ...
+	* config/accel/pool.h: ... to here.
+	* config/nvptx/proc.c: Move ...
+	* config/accel/proc.c: ... to here.
+	* config/nvptx/ptrlock.c: Move ...
+	* config/accel/ptrlock.c: ... to here.
+	* config/nvptx/ptrlock.h: Move ...
+	* config/accel/ptrlock.h: ... to here.
+	* config/nvptx/sem.c: Move ...
+	* config/accel/sem.c: ... to here.
+	* config/nvptx/sem.h: Move ...
+	* config/accel/sem.h: ... to here.
+	* config/nvptx/thread-stacksize.h: Move ...
+	* config/accel/thread-stacksize.h: ... to here.
+
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	libgomp/
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: New test.
+	* testsuite/libgomp.oacc-fortran/parallel-dims-aux.c: New test.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f89: New test.
+
+2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_ptr-optional-1.f90: Extend.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: New.
+
+2019-11-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target9.f90: Specify 'dg-do run'.
+
+	* testsuite/libgomp.fortran/use_device_addr-3.f90: Specify 'dg-do
+	run'.
+	* testsuite/libgomp.fortran/use_device_addr-4.f90: Likewise.
+	* testsuite/libgomp.fortran/use_device_ptr-1.f90: Likewise.
+
+2019-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-1.c:
+	Add expected warnings about missing reduction clauses.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c:
+	Likewise.
+
+2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/pr66199-1.f90: Remove
+	'dg-do run' (implies torture test) as 'dg-options "O2"' is used.
+	* testsuite/libgomp.fortran/pr66199-2.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop2.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop3.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop4.f90: Ditto.
+
+2019-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92305
+	* testsuite/libgomp.fortran/allocatable2.f90: Use
+	unique numbers with 'stop'.
+	* testsuite/libgomp.fortran/use_device_addr-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-1.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/lib-15.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/pset-1.f90: Ditto.
+
+2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_addr-1.f90 (test_nullptr_1,
+	test_dummy_opt_nullptr_callee_1): Add present but unallocated test.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: Likewise.
+	* testsuite/libgomp.fortran/use_device_addr-3.f90: New.
+	* testsuite/libgomp.fortran/use_device_addr-4.f90: New.
+	* testsuite/testsuite/libgomp.fortran/use_device_ptr-1.f90: New.
+
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target9.f90: New.
+
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/aligned1.f03: Replace 'STOP' by 'stop'.
+	* testsuite/libgomp.fortran/alloc-comp-1.f90: Ditto.
+	* testsuite/libgomp.fortran/alloc-comp-2.f90: Ditto.
+	* testsuite/libgomp.fortran/alloc-comp-3.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable1.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable10.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable11.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable12.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable2.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable3.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable4.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable5.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable6.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable7.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable8.f90: Ditto.
+	* testsuite/libgomp.fortran/allocatable9.f90: Ditto.
+	* testsuite/libgomp.fortran/associate1.f90: Ditto.
+	* testsuite/libgomp.fortran/associate2.f90: Ditto.
+	* testsuite/libgomp.fortran/associate3.f90: Ditto.
+	* testsuite/libgomp.fortran/async_io_4.f90: Ditto.
+	* testsuite/libgomp.fortran/async_io_5.f90: Ditto.
+	* testsuite/libgomp.fortran/async_io_6.f90: Ditto.
+	* testsuite/libgomp.fortran/async_io_7.f90: Ditto.
+	* testsuite/libgomp.fortran/cancel-do-1.f90: Ditto.
+	* testsuite/libgomp.fortran/cancel-do-2.f90: Ditto.
+	* testsuite/libgomp.fortran/cancel-parallel-1.f90: Ditto.
+	* testsuite/libgomp.fortran/cancel-sections-1.f90: Ditto.
+	* testsuite/libgomp.fortran/cancel-taskgroup-2.f90: Ditto.
+	* testsuite/libgomp.fortran/character1.f90: Ditto.
+	* testsuite/libgomp.fortran/character2.f90: Ditto.
+	* testsuite/libgomp.fortran/collapse1.f90: Ditto.
+	* testsuite/libgomp.fortran/collapse2.f90: Ditto.
+	* testsuite/libgomp.fortran/collapse3.f90: Ditto.
+	* testsuite/libgomp.fortran/collapse4.f90: Ditto.
+	* testsuite/libgomp.fortran/crayptr1.f90: Ditto.
+	* testsuite/libgomp.fortran/crayptr2.f90: Ditto.
+	* testsuite/libgomp.fortran/crayptr3.f90: Ditto.
+	* testsuite/libgomp.fortran/declare-simd-1.f90: Ditto.
+	* testsuite/libgomp.fortran/declare-simd-3.f90: Ditto.
+	* testsuite/libgomp.fortran/declare-target-2.f90: Ditto.
+	* testsuite/libgomp.fortran/depend-1.f90: Ditto.
+	* testsuite/libgomp.fortran/depend-2.f90: Ditto.
+	* testsuite/libgomp.fortran/depend-3.f90: Ditto.
+	* testsuite/libgomp.fortran/do1.f90: Ditto.
+	* testsuite/libgomp.fortran/do2.f90: Ditto.
+	* testsuite/libgomp.fortran/do_concurrent_5.f90: Ditto.
+	* testsuite/libgomp.fortran/doacross1.f90: Ditto.
+	* testsuite/libgomp.fortran/doacross2.f90: Ditto.
+	* testsuite/libgomp.fortran/doacross3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/array_sections-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/array_sections-4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/async_target-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/async_target-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/declare_target-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/declare_target-4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/declare_target-5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/device-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/device-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/device-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-6.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-7.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/simd-8.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target-4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target-5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_data-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_data-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_data-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_data-4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_data-5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_data-6.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_data-7.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_update-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/target_update-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/task_dep-1.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/task_dep-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/task_dep-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/task_dep-4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/task_dep-5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/teams-2.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/teams-3.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/teams-4.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/teams-5.f90: Ditto.
+	* testsuite/libgomp.fortran/examples-4/teams-6.f90: Ditto.
+	* testsuite/libgomp.fortran/lastprivate1.f90: Ditto.
+	* testsuite/libgomp.fortran/lastprivate2.f90: Ditto.
+	* testsuite/libgomp.fortran/lib1.f90: Ditto.
+	* testsuite/libgomp.fortran/lib4.f90: Ditto.
+	* testsuite/libgomp.fortran/lock-1.f90: Ditto.
+	* testsuite/libgomp.fortran/lock-2.f90: Ditto.
+	* testsuite/libgomp.fortran/nested1.f90: Ditto.
+	* testsuite/libgomp.fortran/nestedfn1.f90: Ditto.
+	* testsuite/libgomp.fortran/nestedfn2.f90: Ditto.
+	* testsuite/libgomp.fortran/nestedfn3.f90: Ditto.
+	* testsuite/libgomp.fortran/nestedfn4.f90: Ditto.
+	* testsuite/libgomp.fortran/nestedfn5.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_atomic1.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_atomic2.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_atomic3.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_atomic4.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_atomic5.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_cond1.f: Ditto.
+	* testsuite/libgomp.fortran/omp_cond2.f: Ditto.
+	* testsuite/libgomp.fortran/omp_cond3.F90: Ditto.
+	* testsuite/libgomp.fortran/omp_cond4.F90: Ditto.
+	* testsuite/libgomp.fortran/omp_parse1.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_parse2.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_parse3.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_parse4.f90: Ditto.
+	* testsuite/libgomp.fortran/openmp_version-1.f: Ditto.
+	* testsuite/libgomp.fortran/openmp_version-2.f90: Ditto.
+	* testsuite/libgomp.fortran/parloops-exit-first-loop-alt-2.f95: Ditto.
+	* testsuite/libgomp.fortran/parloops-exit-first-loop-alt.f95: Ditto.
+	* testsuite/libgomp.fortran/pointer1.f90: Ditto.
+	* testsuite/libgomp.fortran/pointer2.f90: Ditto.
+	* testsuite/libgomp.fortran/pr25219.f90: Ditto.
+	* testsuite/libgomp.fortran/pr27395-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr27395-2.f90: Ditto.
+	* testsuite/libgomp.fortran/pr27416-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr27916-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr27916-2.f90: Ditto.
+	* testsuite/libgomp.fortran/pr28390.f: Ditto.
+	* testsuite/libgomp.fortran/pr29629.f90: Ditto.
+	* testsuite/libgomp.fortran/pr32550.f90: Ditto.
+	* testsuite/libgomp.fortran/pr33880.f90: Ditto.
+	* testsuite/libgomp.fortran/pr34020.f90: Ditto.
+	* testsuite/libgomp.fortran/pr35130.f90: Ditto.
+	* testsuite/libgomp.fortran/pr42162.f90: Ditto.
+	* testsuite/libgomp.fortran/pr46753.f90: Ditto.
+	* testsuite/libgomp.fortran/pr48894.f90: Ditto.
+	* testsuite/libgomp.fortran/pr49792-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr49792-2.f90: Ditto.
+	* testsuite/libgomp.fortran/pr63938-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr63938-2.f90: Ditto.
+	* testsuite/libgomp.fortran/pr65597.f90: Ditto.
+	* testsuite/libgomp.fortran/pr66199-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr71014.f90: Ditto.
+	* testsuite/libgomp.fortran/pr81304.f90: Ditto.
+	* testsuite/libgomp.fortran/pr81841.f90: Ditto.
+	* testsuite/libgomp.fortran/pr84418-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr84418-2.f90: Ditto.
+	* testsuite/libgomp.fortran/procptr1.f90: Ditto.
+	* testsuite/libgomp.fortran/recursion1.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction1.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction2.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction3.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction4.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction5.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction6.f90: Ditto.
+	* testsuite/libgomp.fortran/reference1.f90: Ditto.
+	* testsuite/libgomp.fortran/reference2.f90: Ditto.
+	* testsuite/libgomp.fortran/retval1.f90: Ditto.
+	* testsuite/libgomp.fortran/retval2.f90: Ditto.
+	* testsuite/libgomp.fortran/sharing1.f90: Ditto.
+	* testsuite/libgomp.fortran/sharing2.f90: Ditto.
+	* testsuite/libgomp.fortran/simd1.f90: Ditto.
+	* testsuite/libgomp.fortran/simd2.f90: Ditto.
+	* testsuite/libgomp.fortran/simd3.f90: Ditto.
+	* testsuite/libgomp.fortran/simd4.f90: Ditto.
+	* testsuite/libgomp.fortran/simd5.f90: Ditto.
+	* testsuite/libgomp.fortran/simd6.f90: Ditto.
+	* testsuite/libgomp.fortran/simd7.f90: Ditto.
+	* testsuite/libgomp.fortran/stack.f90: Ditto.
+	* testsuite/libgomp.fortran/strassen.f90: Ditto.
+	* testsuite/libgomp.fortran/tabs1.f90: Ditto.
+	* testsuite/libgomp.fortran/tabs2.f: Ditto.
+	* testsuite/libgomp.fortran/target1.f90: Ditto.
+	* testsuite/libgomp.fortran/target2.f90: Ditto.
+	* testsuite/libgomp.fortran/target3.f90: Ditto.
+	* testsuite/libgomp.fortran/target4.f90: Ditto.
+	* testsuite/libgomp.fortran/target5.f90: Ditto.
+	* testsuite/libgomp.fortran/target6.f90: Ditto.
+	* testsuite/libgomp.fortran/target7.f90: Ditto.
+	* testsuite/libgomp.fortran/target8.f90: Ditto.
+	* testsuite/libgomp.fortran/task1.f90: Ditto.
+	* testsuite/libgomp.fortran/task2.f90: Ditto.
+	* testsuite/libgomp.fortran/task3.f90: Ditto.
+	* testsuite/libgomp.fortran/task4.f90: Ditto.
+	* testsuite/libgomp.fortran/taskgroup1.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop1.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop2.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop3.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop4.f90: Ditto.
+	* testsuite/libgomp.fortran/threadprivate1.f90: Ditto.
+	* testsuite/libgomp.fortran/threadprivate2.f90: Ditto.
+	* testsuite/libgomp.fortran/threadprivate3.f90: Ditto.
+	* testsuite/libgomp.fortran/threadprivate4.f90: Ditto.
+	* testsuite/libgomp.fortran/udr1.f90: Ditto.
+	* testsuite/libgomp.fortran/udr10.f90: Ditto.
+	* testsuite/libgomp.fortran/udr11.f90: Ditto.
+	* testsuite/libgomp.fortran/udr12.f90: Ditto.
+	* testsuite/libgomp.fortran/udr13.f90: Ditto.
+	* testsuite/libgomp.fortran/udr14.f90: Ditto.
+	* testsuite/libgomp.fortran/udr15.f90: Ditto.
+	* testsuite/libgomp.fortran/udr2.f90: Ditto.
+	* testsuite/libgomp.fortran/udr3.f90: Ditto.
+	* testsuite/libgomp.fortran/udr4.f90: Ditto.
+	* testsuite/libgomp.fortran/udr5.f90: Ditto.
+	* testsuite/libgomp.fortran/udr6.f90: Ditto.
+	* testsuite/libgomp.fortran/udr7.f90: Ditto.
+	* testsuite/libgomp.fortran/udr8.f90: Ditto.
+	* testsuite/libgomp.fortran/udr9.f90: Ditto.
+	* testsuite/libgomp.fortran/vla1.f90: Ditto.
+	* testsuite/libgomp.fortran/vla2.f90: Ditto.
+	* testsuite/libgomp.fortran/vla3.f90: Ditto.
+	* testsuite/libgomp.fortran/vla4.f90: Ditto.
+	* testsuite/libgomp.fortran/vla5.f90: Ditto.
+	* testsuite/libgomp.fortran/vla6.f90: Ditto.
+	* testsuite/libgomp.fortran/vla7.f90: Ditto.
+	* testsuite/libgomp.fortran/vla8.f90: Ditto.
+	* testsuite/libgomp.fortran/workshare1.f90: Ditto.
+	* testsuite/libgomp.fortran/workshare2.f90: Ditto.
+
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-simd.f90: Use stop not abort.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-1.f90:
+	Ditto; add 'dg-do run' for torture testing.
+	* testsuite/libgomp.fortran/lastprivate1.f90:  Add 'dg-do run'.
+	* testsuite/libgomp.fortran/lastprivate2.f90: Ditto.
+	* testsuite/libgomp.fortran/nestedfn4.f90: Ditto.
+	* testsuite/libgomp.fortran/pr25219.f90: Ditto.
+	* testsuite/libgomp.fortran/pr28390.f: Ditto.
+	* testsuite/libgomp.fortran/pr35130.f90: Ditto.
+	* testsuite/libgomp.fortran/pr90779.f90: Ditto.
+	* testsuite/libgomp.fortran/task2.f90: Ditto.
+	* testsuite/libgomp.fortran/taskgroup1.f90: Ditto.
+	* testsuite/libgomp.fortran/taskloop1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: Ditto.
+	* testsuite/libgomp.fortran/workshare1.f90: Ditto.
+	* testsuite/libgomp.fortran/workshare2.f90: Ditto.
+
 2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/abort-1.f90: Add 'dg-do run'.

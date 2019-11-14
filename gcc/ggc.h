@@ -149,7 +149,7 @@ extern void *ggc_realloc (void *, size_t CXX_MEM_STAT_INFO);
 /* Free a block.  To be used when known for certain it's not reachable.  */
 extern void ggc_free (void *);
 
-extern void dump_ggc_loc_statistics (bool);
+extern void dump_ggc_loc_statistics ();
 
 /* Reallocator.  */
 #define GGC_RESIZEVEC(T, P, N) \
@@ -183,6 +183,18 @@ ggc_alloc (ALONE_CXX_MEM_STAT_INFO)
   else
     return static_cast<T *> (ggc_internal_alloc (sizeof (T), NULL, 0, 1
 						 PASS_MEM_STAT));
+}
+
+/* GGC allocation function that does not call finalizer for type
+   that have need_finalization_p equal to true.  User is responsible
+   for calling of the destructor.  */
+
+template<typename T>
+inline T *
+ggc_alloc_no_dtor (ALONE_CXX_MEM_STAT_INFO)
+{
+  return static_cast<T *> (ggc_internal_alloc (sizeof (T), NULL, 0, 1
+					       PASS_MEM_STAT));
 }
 
 template<typename T>
@@ -230,6 +242,16 @@ ggc_alloc_atomic (size_t s CXX_MEM_STAT_INFO)
     return ggc_internal_alloc (s PASS_MEM_STAT);
 }
 
+/* Call destructor and free the garbage collected memory.  */
+
+template <typename T>
+inline void
+ggc_delete (T *ptr)
+{
+  ptr->~T ();
+  ggc_free (ptr);
+}
+
 /* Allocate a gc-able string, and fill it with LENGTH bytes from CONTENTS.
    If LENGTH is -1, then CONTENTS is assumed to be a
    null-terminated string and the memory sized accordingly.  */
@@ -265,6 +287,9 @@ extern void stringpool_statistics (void);
 
 /* Heuristics.  */
 extern void init_ggc_heuristics (void);
+
+/* Report current heap memory use to stderr.  */
+extern void report_heap_memory_use (void);
 
 #define ggc_alloc_rtvec_sized(NELT)				\
   (rtvec_def *) ggc_internal_alloc (sizeof (struct rtvec_def)		\

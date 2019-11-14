@@ -114,7 +114,8 @@ lto_tag_name (enum LTO_tags tag)
    to free the returned name.  */
 
 char *
-lto_get_section_name (int section_type, const char *name, struct lto_file_decl_data *f)
+lto_get_section_name (int section_type, const char *name,
+		      int node_order, struct lto_file_decl_data *f)
 {
   const char *add;
   char post[32];
@@ -125,7 +126,11 @@ lto_get_section_name (int section_type, const char *name, struct lto_file_decl_d
       gcc_assert (name != NULL);
       if (name[0] == '*')
 	name++;
-      add = name;
+
+      char *buffer = (char *)xmalloc (strlen (name) + 32);
+      sprintf (buffer, "%s.%d", name, node_order);
+
+      add = buffer;
       sep = "";
     }
   else if (section_type < LTO_N_SECTION_TYPES)

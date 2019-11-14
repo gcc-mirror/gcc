@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "gimple-pretty-print.h"
 #include "tree-into-ssa.h"
-#include "params.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
    for devirtualization machinery.  */
@@ -1400,7 +1399,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
 static inline bool
 csftc_abort_walking_p (unsigned speculative)
 {
-  unsigned max = PARAM_VALUE (PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS);
+  unsigned max = param_max_speculative_devirt_maydefs;
   return speculative > max ? true : false;
 }
 

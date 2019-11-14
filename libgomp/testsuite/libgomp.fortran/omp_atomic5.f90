@@ -30,30 +30,30 @@
     d = d / 2.0
     d2 = d
 !$omp end atomic
-    if (a2 .ne. 1 .or. b2 .ne. -16 .or. c2 .ne. 3 .or. d2 .ne. 2) STOP 1
+    if (a2 .ne. 1 .or. b2 .ne. -16 .or. c2 .ne. 3 .or. d2 .ne. 2) stop 1
 !$omp atomic read seq_cst
     a2 = a
 !$omp atomic seq_cst, read
     c2 = c
-    if (a2 .ne. 5 .or. b2 .ne. -16 .or. c2 .ne. 6 .or. d2 .ne. 2) STOP 2
+    if (a2 .ne. 5 .or. b2 .ne. -16 .or. c2 .ne. 6 .or. d2 .ne. 2) stop 2
     a2 = 10
-    if (a2 .ne. 10) STOP 3
+    if (a2 .ne. 10) stop 3
 !$omp atomic capture
     a2 = a
     a = e(1) + e(6) + e(7) * 2
 !$omp endatomic
-    if (a2 .ne. 5) STOP 4
+    if (a2 .ne. 5) stop 4
 !$omp atomic read
     a2 = a
 !$omp end atomic
-    if (a2 .ne. 28) STOP 5
+    if (a2 .ne. 28) stop 5
 !$omp atomic capture seq_cst
     b2 = b
     b = e(1) + e(7) + e(5) * 2
 !$omp end atomic
-    if (b2 .ne. -16) STOP 6
+    if (b2 .ne. -16) stop 6
 !$omp atomic seq_cst, read
     b2 = b
 !$omp end atomic
-    if (b2 .ne. 24) STOP 7
+    if (b2 .ne. 24) stop 7
 end

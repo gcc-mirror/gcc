@@ -31,37 +31,33 @@ proc param_run_test { param_name param_value } {
     dg-runtest $srcdir/$subdir/blocksort-part.c "-O3 --param $param_name=$param_value" ""
 }
 
-set options_file "$objdir/../../params.options"
-if { [info exists TESTING_IN_BUILD_TREE] == 0 } {
-  return
-}
-
-set fd [open $options_file r]
-set text [read $fd]
+set srcfname params-[pid].c
+set fd [open $srcfname w]
+puts $fd ""
 close $fd
+remote_download host $srcfname
+
+set gcc_options "\{additional_flags=--help=params\}"
+set text [gcc_target_compile $srcfname $srcfname.x executable $gcc_options]
+remote_file build delete $srcfname $srcfname.x
 
 # Main loop.
 foreach params [split $text "\n"] {
-    set parts [split $params "="]
-    set name [string trim [lindex $parts 0] '"']
-    set values [split [lindex $parts 1] ","]
-    if { [llength $values] == 3 } {
-	set default [lindex $values 0]
-	set min [lindex $values 1]
-	set max [lindex $values 2]
-	set int_max "INT_MAX"
+    set parts [split $params " =<>,"]
+    if { [llength $parts] >= 8 } {
+      set param [lindex $parts 2]
+      set name [lindex $parts 3]
+      set min [lindex $parts 5]
+      set max [lindex $parts 6]
 
+      if { [ string equal $param "--param" ] && [string is integer -strict $min] && [string is integer -strict $max] } {
 	if { $min != -1 } {
-	    param_run_test $name $min
+	  param_run_test $name $min
 	}
-	if { $max != $min && $max > 0 && $max != $int_max } {
-	    param_run_test $name $max
+	if { $max != $min && $max > 0 } {
+	  param_run_test $name $max
 	}
-    }
-    if { [llength $values] == 5 } {
-	foreach v $values {
-	    param_run_test $name $v
-	}
+      }
     }
 }
 

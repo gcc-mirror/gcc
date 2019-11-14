@@ -62,7 +62,6 @@
 #include "gimple-ssa.h"
 #include "gimple-walk.h"
 #include "intl.h"
-#include "params.h"
 #include "tm-constrs.h"
 #include "tree-vectorizer.h"
 #include "target-globals.h"
@@ -80,6 +79,7 @@
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "rs6000-internal.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1427,6 +1427,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_FINISH_COST rs6000_finish_cost
 #undef TARGET_VECTORIZE_DESTROY_COST_DATA
 #define TARGET_VECTORIZE_DESTROY_COST_DATA rs6000_destroy_cost_data
+
+#undef TARGET_LOOP_UNROLL_ADJUST
+#define TARGET_LOOP_UNROLL_ADJUST rs6000_loop_unroll_adjust
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -4511,54 +4514,36 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (global_init_p)
     {
-      maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			     rs6000_cost->simultaneous_prefetches,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L1_CACHE_SIZE, rs6000_cost->l1_cache_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			     rs6000_cost->cache_line_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L2_CACHE_SIZE, rs6000_cost->l2_cache_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_simultaneous_prefetches,
+			   rs6000_cost->simultaneous_prefetches);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l1_cache_size,
+			   rs6000_cost->l1_cache_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l1_cache_line_size,
+			   rs6000_cost->cache_line_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l2_cache_size,
+			   rs6000_cost->l2_cache_size);
 
       /* Increase loop peeling limits based on performance analysis. */
-      maybe_set_param_value (PARAM_MAX_PEELED_INSNS, 400,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 400,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_max_peeled_insns, 400);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_max_completely_peeled_insns, 400);
 
       /* Use the 'model' -fsched-pressure algorithm by default.  */
-      maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM,
-			     SCHED_PRESSURE_MODEL,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_sched_pressure_algorithm,
+			   SCHED_PRESSURE_MODEL);
 
-      /* unroll very small loops 2 time if no -funroll-loops.  */
-      if (!global_options_set.x_flag_unroll_loops
-	  && !global_options_set.x_flag_unroll_all_loops)
-	{
-	  maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 2,
-				 global_options.x_param_values,
-				 global_options_set.x_param_values);
-
-	  maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 20,
-				 global_options.x_param_values,
-				 global_options_set.x_param_values);
-
-	  /* If fweb or frename-registers are not specificed in command-line,
-	     do not turn them on implicitly.  */
-	  if (!global_options_set.x_flag_web)
-	    global_options.x_flag_web = 0;
-	  if (!global_options_set.x_flag_rename_registers)
-	    global_options.x_flag_rename_registers = 0;
-	}
+      /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
+      if (((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
+	   || (global_options_set.x_flag_unroll_all_loops
+	       && flag_unroll_all_loops))
+	  && !global_options_set.x_unroll_only_small_loops)
+	unroll_only_small_loops = 0;
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
@@ -4783,15 +4768,17 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
   switch (type_of_cost)
     {
       case scalar_stmt:
-      case scalar_load:
       case scalar_store:
       case vector_stmt:
-      case vector_load:
       case vector_store:
       case vec_to_scalar:
       case scalar_to_vec:
       case cond_branch_not_taken:
         return 1;
+      case scalar_load:
+      case vector_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	  return 2;
 
       case vec_perm:
 	/* Power7 has only one permute unit, make it a bit expensive.  */
@@ -4812,42 +4799,44 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case unaligned_load:
       case vector_gather_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
-	  return 1;
+	  return 2;
 
-        if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
-          {
-            elements = TYPE_VECTOR_SUBPARTS (vectype);
-            if (elements == 2)
-              /* Double word aligned.  */
-              return 2;
+	if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
+	  {
+	    elements = TYPE_VECTOR_SUBPARTS (vectype);
+	    if (elements == 2)
+	      /* Double word aligned.  */
+	      return 4;
 
-            if (elements == 4)
-              {
-                switch (misalign)
-                  {
-                    case 8:
-                      /* Double word aligned.  */
-                      return 2;
+	    if (elements == 4)
+	      {
+		switch (misalign)
+		  {
+		  case 8:
+		    /* Double word aligned.  */
+		    return 4;
 
-                    case -1:
-                      /* Unknown misalignment.  */
-                    case 4:
-                    case 12:
-                      /* Word aligned.  */
-                      return 22;
+		  case -1:
+		    /* Unknown misalignment.  */
+		  case 4:
+		  case 12:
+		    /* Word aligned.  */
+		    return 33;
 
-                    default:
-                      gcc_unreachable ();
-                  }
-              }
-          }
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	  }
 
-        if (TARGET_ALTIVEC)
-          /* Misaligned loads are not supported.  */
-          gcc_unreachable ();
+	if (TARGET_ALTIVEC)
+	  /* Misaligned loads are not supported.  */
+	  gcc_unreachable ();
 
-        return 2;
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	return 4;
 
       case unaligned_store:
       case vector_scatter_store:
@@ -5099,6 +5088,25 @@ static void
 rs6000_destroy_cost_data (void *data)
 {
   free (data);
+}
+
+/* Implement targetm.loop_unroll_adjust.  */
+
+static unsigned
+rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+{
+   if (unroll_only_small_loops)
+    {
+      /* TODO: This is hardcoded to 10 right now.  It can be refined, for
+	 example we may want to unroll very small loops more times (4 perhaps).
+	 We also should use a PARAM for this.  */
+      if (loop->ninsns <= 10)
+	return MIN (2, nunroll);
+      else
+	return 0;
+    }
+
+  return nunroll;
 }
 
 /* Handler for the Mathematical Acceleration Subsystem (mass) interface to a
@@ -8487,41 +8495,6 @@ rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
   return dest;
 }
 
-/* Output arg setup instructions for a !TARGET_TLS_MARKERS
-   __tls_get_addr call.  */
-
-void
-rs6000_output_tlsargs (rtx *operands)
-{
-  /* Set up operands for output_asm_insn, without modifying OPERANDS.  */
-  rtx op[3];
-
-  /* The set dest of the call, ie. r3, which is also the first arg reg.  */
-  op[0] = operands[0];
-  /* The TLS symbol from global_tlsarg stashed as CALL operand 2.  */
-  op[1] = XVECEXP (operands[2], 0, 0);
-  if (XINT (operands[2], 1) == UNSPEC_TLSGD)
-    {
-      /* The GOT register.  */
-      op[2] = XVECEXP (operands[2], 0, 1);
-      if (TARGET_CMODEL != CMODEL_SMALL)
-	output_asm_insn ("addis %0,%2,%1@got@tlsgd@ha\n\t"
-			 "addi %0,%0,%1@got@tlsgd@l", op);
-      else
-	output_asm_insn ("addi %0,%2,%1@got@tlsgd", op);
-    }
-  else if (XINT (operands[2], 1) == UNSPEC_TLSLD)
-    {
-      if (TARGET_CMODEL != CMODEL_SMALL)
-	output_asm_insn ("addis %0,%1,%&@got@tlsld@ha\n\t"
-			 "addi %0,%0,%&@got@tlsld@l", op);
-      else
-	output_asm_insn ("addi %0,%1,%&@got@tlsld", op);
-    }
-  else
-    gcc_unreachable ();
-}
-
 /* Passes the tls arg value for global dynamic and local dynamic
    emit_library_call_value in rs6000_legitimize_tls_address to
    rs6000_call_aix and rs6000_call_sysv.  This is used to emit the
@@ -8540,7 +8513,8 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
     return rs6000_legitimize_tls_address_aix (addr, model);
 
   dest = gen_reg_rtx (Pmode);
-  if (model == TLS_MODEL_LOCAL_EXEC && rs6000_tls_size == 16)
+  if (model == TLS_MODEL_LOCAL_EXEC
+      && (rs6000_tls_size == 16 || rs6000_pcrel_p (cfun)))
     {
       rtx tlsreg;
 
@@ -8587,7 +8561,9 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	 them in the .got section.  So use a pointer to the .got section,
 	 not one to secondary TOC sections used by 64-bit -mminimal-toc,
 	 or to secondary GOT sections used by 32-bit -fPIC.  */
-      if (TARGET_64BIT)
+      if (rs6000_pcrel_p (cfun))
+	got = const0_rtx;
+      else if (TARGET_64BIT)
 	got = gen_rtx_REG (Pmode, 2);
       else
 	{
@@ -8623,16 +8599,10 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, addr, got),
 				    UNSPEC_TLSGD);
 	  tga = rs6000_tls_get_addr ();
+	  rtx argreg = gen_rtx_REG (Pmode, 3);
+	  emit_insn (gen_rtx_SET (argreg, arg));
 	  global_tlsarg = arg;
-	  if (TARGET_TLS_MARKERS)
-	    {
-	      rtx argreg = gen_rtx_REG (Pmode, 3);
-	      emit_insn (gen_rtx_SET (argreg, arg));
-	      emit_library_call_value (tga, dest, LCT_CONST, Pmode,
-				       argreg, Pmode);
-	    }
-	  else
-	    emit_library_call_value (tga, dest, LCT_CONST, Pmode);
+	  emit_library_call_value (tga, dest, LCT_CONST, Pmode, argreg, Pmode);
 	  global_tlsarg = NULL_RTX;
 
 	  /* Make a note so that the result of this call can be CSEd.  */
@@ -8645,16 +8615,10 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got), UNSPEC_TLSLD);
 	  tga = rs6000_tls_get_addr ();
 	  tmp1 = gen_reg_rtx (Pmode);
+	  rtx argreg = gen_rtx_REG (Pmode, 3);
+	  emit_insn (gen_rtx_SET (argreg, arg));
 	  global_tlsarg = arg;
-	  if (TARGET_TLS_MARKERS)
-	    {
-	      rtx argreg = gen_rtx_REG (Pmode, 3);
-	      emit_insn (gen_rtx_SET (argreg, arg));
-	      emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
-				       argreg, Pmode);
-	    }
-	  else
-	    emit_library_call_value (tga, tmp1, LCT_CONST, Pmode);
+	  emit_library_call_value (tga, tmp1, LCT_CONST, Pmode, argreg, Pmode);
 	  global_tlsarg = NULL_RTX;
 
 	  /* Make a note so that the result of this call can be CSEd.  */
@@ -8662,7 +8626,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  rtx uns = gen_rtx_UNSPEC (Pmode, vec, UNSPEC_TLS_GET_ADDR);
 	  set_unique_reg_note (get_last_insn (), REG_EQUAL, uns);
 
-	  if (rs6000_tls_size == 16)
+	  if (rs6000_tls_size == 16 || rs6000_pcrel_p (cfun))
 	    {
 	      if (TARGET_64BIT)
 		insn = gen_tls_dtprel_64 (dest, tmp1, addr);
@@ -8703,7 +8667,14 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  else
 	    insn = gen_tls_got_tprel_32 (tmp2, got, addr);
 	  emit_insn (insn);
-	  if (TARGET_64BIT)
+	  if (rs6000_pcrel_p (cfun))
+	    {
+	      if (TARGET_64BIT)
+		insn = gen_tls_tls_pcrel_64 (dest, tmp2, addr);
+	      else
+		insn = gen_tls_tls_pcrel_32 (dest, tmp2, addr);
+	    }
+	  else if (TARGET_64BIT)
 	    insn = gen_tls_tls_64 (dest, tmp2, addr);
 	  else
 	    insn = gen_tls_tls_32 (dest, tmp2, addr);
@@ -10249,14 +10220,6 @@ validate_condition_mode (enum rtx_code code, machine_mode mode)
 		  && code != UNEQ && code != LTGT
 		  && code != UNGT && code != UNLT
 		  && code != UNGE && code != UNLE));
-
-  /* These should never be generated except for
-     flag_finite_math_only.  */
-  gcc_assert (mode != CCFPmode
-	      || flag_finite_math_only
-	      || (code != LE && code != GE
-		  && code != UNEQ && code != LTGT
-		  && code != UNGT && code != UNLT));
 
   /* These are invalid; the information is not there.  */
   gcc_assert (mode != CCEQmode || code == EQ || code == NE);
@@ -13450,14 +13413,12 @@ rs6000_call_template_1 (rtx *operands, unsigned int funop, bool sibcall)
 
   char arg[12];
   arg[0] = 0;
-  if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
+  if (GET_CODE (operands[funop + 1]) == UNSPEC)
     {
       if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
 	sprintf (arg, "(%%%u@tlsgd)", funop + 1);
       else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
 	sprintf (arg, "(%%&@tlsld)");
-      else
-	gcc_unreachable ();
     }
 
   /* The magic 32768 offset here corresponds to the offset of
@@ -13598,7 +13559,7 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
       const char *rel64 = TARGET_64BIT ? "64" : "";
       char tls[29];
       tls[0] = 0;
-      if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
+      if (GET_CODE (operands[funop + 1]) == UNSPEC)
 	{
 	  if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
 	    sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%%u\n\t",
@@ -13606,8 +13567,6 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 	  else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
 	    sprintf (tls, ".reloc .,R_PPC%s_TLSLD,%%&\n\t",
 		     rel64);
-	  else
-	    gcc_unreachable ();
 	}
 
       const char *notoc = rs6000_pcrel_p (cfun) ? "_NOTOC" : "";
@@ -13694,7 +13653,7 @@ rs6000_pltseq_template (rtx *operands, int which)
   const char *rel64 = TARGET_64BIT ? "64" : "";
   char tls[30];
   tls[0] = 0;
-  if (TARGET_TLS_MARKERS && GET_CODE (operands[3]) == UNSPEC)
+  if (GET_CODE (operands[3]) == UNSPEC)
     {
       char off = which == RS6000_PLTSEQ_PLT_PCREL34 ? '8' : '4';
       if (XINT (operands[3], 1) == UNSPEC_TLSGD)
@@ -13703,8 +13662,6 @@ rs6000_pltseq_template (rtx *operands, int which)
       else if (XINT (operands[3], 1) == UNSPEC_TLSLD)
 	sprintf (tls, ".reloc .-%c,R_PPC%s_TLSLD,%%&\n\t",
 		 off, rel64);
-      else
-	gcc_unreachable ();
     }
 
   gcc_assert (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4);
@@ -22971,9 +22928,6 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "align-branch-targets",
     offsetof (struct gcc_options, x_TARGET_ALIGN_BRANCH_TARGETS),
     offsetof (struct cl_target_option, x_TARGET_ALIGN_BRANCH_TARGETS), },
-  { "tls-markers",
-    offsetof (struct gcc_options, x_tls_markers),
-    offsetof (struct cl_target_option, x_tls_markers), },
   { "sched-prolog",
     offsetof (struct gcc_options, x_TARGET_SCHED_PROLOG),
     offsetof (struct cl_target_option, x_TARGET_SCHED_PROLOG), },
@@ -26079,8 +26033,8 @@ rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
   rtx_tmp2 = gen_reg_rtx (V4SFmode);
   rtx_tmp3 = gen_reg_rtx (V4SFmode);
 
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp2, rtx_tmp0));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp3, rtx_tmp1));
 
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));

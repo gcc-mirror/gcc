@@ -22,7 +22,7 @@
   !$omp end single
   !$omp end parallel
   do i = 1, n
-    if (a(i) /= i + 1) STOP 1
+    if (a(i) /= i + 1) stop 1
   end do
 contains
   real function foo (x)

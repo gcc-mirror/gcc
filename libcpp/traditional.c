@@ -326,9 +326,9 @@ static inline bool
 fun_like_macro (cpp_hashnode *node)
 {
   if (cpp_builtin_macro_p (node))
-    return node->value.builtin == BT_HAS_ATTRIBUTE;
-  else
-    return node->value.macro->fun_like;
+    return (node->value.builtin == BT_HAS_ATTRIBUTE
+	    || node->value.builtin == BT_HAS_BUILTIN);
+  return node->value.macro->fun_like;
 }
 
 /* Set up state for finding the opening '(' of a function-like

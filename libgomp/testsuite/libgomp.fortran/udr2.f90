@@ -28,24 +28,24 @@ end module udr2
   do i = 1, 100
     j = j + i
   end do
-  if (any(j .ne. 5050)) STOP 1
+  if (any(j .ne. 5050)) stop 1
   j = 3
 !$omp parallel do reduction (bar : j)
   do i = 1, 100
     j = j + 4 * i
   end do
-  if (any(j .ne. (5050 * 4 + 3))) STOP 2
+  if (any(j .ne. (5050 * 4 + 3))) stop 2
 !$omp parallel do reduction (+ : d)
   do i = 1, 100
-    if (any(d%y .ne. 9)) STOP 3
+    if (any(d%y .ne. 9)) stop 3
     d%x = d%x + 8 * i
   end do
-  if (any(d%x .ne. (5050 * 8 + 7)) .or. any(d%y .ne. 9)) STOP 4
+  if (any(d%x .ne. (5050 * 8 + 7)) .or. any(d%y .ne. 9)) stop 4
   d = dt (5, 21)
 !$omp parallel do reduction (foo : d)
   do i = 1, 100
-    if (any(d%y .ne. 21)) STOP 5
+    if (any(d%y .ne. 21)) stop 5
     d%x = d%x + 8 * i
   end do
-  if (any(d%x .ne. (5050 * 8 + 5)) .or. any(d%y .ne. 21)) STOP 6
+  if (any(d%x .ne. (5050 * 8 + 5)) .or. any(d%y .ne. 21)) stop 6
 end

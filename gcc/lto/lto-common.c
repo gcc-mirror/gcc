@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "ipa-fnsummary.h"
-#include "params.h"
 #include "ipa-utils.h"
 #include "gomp-constants.h"
 #include "lto-symtab.h"
@@ -2204,7 +2203,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
 #endif
 
   /* Read and verify LTO section.  */
-  data = lto_get_section_data (file_data, LTO_section_lto, NULL, &len, false);
+  data = lto_get_summary_section_data (file_data, LTO_section_lto, &len);
   if (data == NULL)
     {
       fatal_error (input_location, "bytecode stream in file %qs generated "
@@ -2217,7 +2216,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
 		     file_data->lto_section_header.minor_version,
 		     file_data->file_name);
 
-  data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
+  data = lto_get_summary_section_data (file_data, LTO_section_decls, &len);
   if (data == NULL)
     {
       internal_error ("cannot read %<LTO_section_decls%> from %s",
@@ -2396,15 +2395,15 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
 
 static const char *
 get_section_data (struct lto_file_decl_data *file_data,
-		      enum lto_section_type section_type,
-		      const char *name,
-		      size_t *len)
+		  enum lto_section_type section_type,
+		  const char *name, int order,
+		  size_t *len)
 {
   htab_t section_hash_table = file_data->section_hash_table;
   struct lto_section_slot *f_slot;
   struct lto_section_slot s_slot;
   const char *section_name = lto_get_section_name (section_type, name,
-						   file_data);
+						   order, file_data);
   char *data = NULL;
 
   *len = 0;
@@ -2784,6 +2783,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* At this stage we know that majority of GGC memory is reachable.
      Growing the limits prevents unnecesary invocation of GGC.  */
   ggc_grow ();
+  report_heap_memory_use ();
 
   /* Set the hooks so that all of the ipa passes can read in their data.  */
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
@@ -2791,7 +2791,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_pop (TV_IPA_LTO_DECL_IN);
 
   if (!quiet_flag)
-    fprintf (stderr, "\nReading the callgraph\n");
+    fprintf (stderr, "\nReading the symbol table:");
 
   timevar_push (TV_IPA_LTO_CGRAPH_IO);
   /* Read the symtab.  */
@@ -2831,7 +2831,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_pop (TV_IPA_LTO_CGRAPH_IO);
 
   if (!quiet_flag)
-    fprintf (stderr, "Merging declarations\n");
+    fprintf (stderr, "\nMerging declarations:");
 
   timevar_push (TV_IPA_LTO_DECL_MERGE);
   /* Merge global decls.  In ltrans mode we read merged cgraph, we do not
@@ -2859,12 +2859,13 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
      is explcitly managed by ggc_free and ggc collect is not useful.
      Exception are the merged declarations.  */
   ggc_grow ();
+  report_heap_memory_use ();
 
   timevar_pop (TV_IPA_LTO_DECL_MERGE);
   /* Each pass will set the appropriate timer.  */
 
   if (!quiet_flag)
-    fprintf (stderr, "Reading summaries\n");
+    fprintf (stderr, "\nReading summaries:");
 
   /* Read the IPA summary data.  */
   if (flag_ltrans)
@@ -2891,6 +2892,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       /* Finally merge the cgraph according to the decl merging decisions.  */
       timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
 
+      if (!quiet_flag)
+	fprintf (stderr, "\nMerging symbols:");
+
       gcc_assert (!dump_file);
       dump_file = dump_begin (lto_link_dump_id, NULL);
 
@@ -2905,6 +2909,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 	 We could also just remove them while merging.  */
       symtab->remove_unreachable_nodes (dump_file);
       ggc_collect ();
+      report_heap_memory_use ();
 
       if (dump_file)
 	dump_end (lto_link_dump_id, dump_file);

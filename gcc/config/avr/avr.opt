@@ -115,6 +115,24 @@ mabsdata
 Target Report Mask(ABSDATA)
 Assume that all data in static storage can be accessed by LDS / STS.  This option is only useful for reduced Tiny devices.
 
+mdouble=
+Target Report Joined RejectNegative Var(avr_double) Init(0) Enum(avr_bits_e)
+-mdouble=<BITS>	Use <BITS> bits wide double type.
+
+mlong-double=
+Target Report Joined RejectNegative Var(avr_long_double) Init(0) Enum(avr_bits_e)
+-mlong-double=<BITS>	Use <BITS> bits wide long double type.
+
 nodevicelib
 Driver Target Report RejectNegative
 Do not link against the device-specific library lib<MCU>.a.
+
+Enum
+Name(avr_bits_e) Type(int)
+Available BITS selections:
+
+EnumValue
+Enum(avr_bits_e) String(32)  Value(32)
+
+EnumValue
+Enum(avr_bits_e) String(64) Value(64)

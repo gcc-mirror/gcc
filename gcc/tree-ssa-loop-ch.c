@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
-#include "params.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
    in the loop body are always executed when the loop is entered.  This
@@ -368,7 +367,7 @@ ch_base::copy_headers (function *fun)
 
   FOR_EACH_LOOP (loop, 0)
     {
-      int initial_limit = PARAM_VALUE (PARAM_MAX_LOOP_HEADER_INSNS);
+      int initial_limit = param_max_loop_header_insns;
       int remaining_limit = initial_limit;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,

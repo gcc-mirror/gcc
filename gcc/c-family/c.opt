@@ -346,6 +346,10 @@ Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
 
+Wzero-length-bounds
+C ObjC C++ ObjC++ Var(warn_zero_length_bounds) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about accesses to interior zero-length array members.
+
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
 Warn whenever an Objective-C assignment is being intercepted by the garbage collector.
@@ -964,7 +968,7 @@ C ObjC Var(warn_old_style_declaration) Warning EnabledBy(Wextra)
 Warn for obsolescent usage in a declaration.
 
 Wold-style-definition
-C ObjC Var(warn_old_style_definition) Warning
+C ObjC Var(warn_old_style_definition) Init(-1) Warning
 Warn if an old-style parameter definition is used.
 
 Wopenmp-simd

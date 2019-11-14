@@ -15,7 +15,7 @@ void si(CFI_cdesc_t *this, int flag, int *status)
   bool err;
   CFI_CDESC_T(1) that;
   CFI_index_t lb[] = { 0, 0 };
-  CFI_index_t ub[] = { 4, 1 };
+  CFI_index_t ub[] = { 4, 0 };
   CFI_index_t st[] = { 2, 0 };
   int chksum[] = { 9, 36, 38 };
 
@@ -50,7 +50,7 @@ void si(CFI_cdesc_t *this, int flag, int *status)
 
   if (err)
     {
-      printf("FAIL C: contiguity for flag value %i - is %i\n",flag, value);
+      printf("FAIL C: contiguity for flag value %i - is %i\n", flag, value);
       *status = 10;
       return;
     }

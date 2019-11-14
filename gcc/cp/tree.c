@@ -43,7 +43,6 @@ static hashval_t list_hash_pieces (tree, tree, tree);
 static tree build_target_expr (tree, tree, tsubst_flags_t);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
-static tree build_local_temp (tree);
 
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
@@ -525,7 +524,7 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 /* Return an undeclared local temporary of type TYPE for use in building a
    TARGET_EXPR.  */
 
-static tree
+tree
 build_local_temp (tree type)
 {
   tree slot = build_decl (input_location,
@@ -1489,7 +1488,8 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
   if (t == TYPE_CANONICAL (t))
     return t;
 
-  if (dependent_alias_template_spec_p (t))
+  if (!(flags & STF_STRIP_DEPENDENT)
+      && dependent_alias_template_spec_p (t))
     /* DR 1558: However, if the template-id is dependent, subsequent
        template argument substitution still applies to the template-id.  */
     return t;
@@ -1674,7 +1674,8 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	      && !user_facing_original_type_p (t))
 	    return t;
 	  result = strip_typedefs (DECL_ORIGINAL_TYPE (TYPE_NAME (t)),
-				   remove_attributes, flags);
+				   remove_attributes,
+				   flags | STF_STRIP_DEPENDENT);
 	}
       else
 	result = TYPE_MAIN_VARIANT (t);
@@ -4401,6 +4402,63 @@ zero_init_p (const_tree t)
   return 1;
 }
 
+/* True IFF T is a C++20 structural type (P1907R1) that can be used as a
+   non-type template parameter.  If EXPLAIN, explain why not.  */
+
+bool
+structural_type_p (tree t, bool explain)
+{
+  t = strip_array_types (t);
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
+    return true;
+  if (NULLPTR_TYPE_P (t))
+    return true;
+  if (TYPE_PTR_P (t) || TYPE_PTRMEM_P (t))
+    return true;
+  if (TYPE_REF_P (t) && !TYPE_REF_IS_RVALUE (t))
+    return true;
+  if (!CLASS_TYPE_P (t))
+    return false;
+  if (TREE_CODE (t) == UNION_TYPE)
+    {
+      if (explain)
+	inform (location_of (t), "%qT is a union", t);
+      return false;
+    }
+  if (!literal_type_p (t))
+    {
+      if (explain)
+	explain_non_literal_class (t);
+      return false;
+    }
+  if (CLASSTYPE_HAS_MUTABLE (t))
+    {
+      if (explain)
+	inform (location_of (t), "%qT has a mutable member", t);
+      return false;
+    }
+  for (tree m = next_initializable_field (TYPE_FIELDS (t)); m;
+       m = next_initializable_field (DECL_CHAIN (m)))
+    {
+      if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
+	{
+	  if (explain)
+	    inform (location_of (m), "%qD is not public", m);
+	  return false;
+	}
+      if (!structural_type_p (TREE_TYPE (m)))
+	{
+	  if (explain)
+	    {
+	      inform (location_of (m), "%qD has a non-structural type", m);
+	      structural_type_p (TREE_TYPE (m), true);
+	    }
+	  return false;
+	}
+    }
+  return true;
+}
+
 /* Handle the C++17 [[nodiscard]] attribute, which is similar to the GNU
    warn_unused_result attribute.  */
 
@@ -5065,6 +5123,9 @@ special_function_p (const_tree decl)
     return sfk_conversion;
   if (deduction_guide_p (decl))
     return sfk_deduction_guide;
+  if (DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) >= OVL_OP_EQ_EXPR
+      && DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) <= OVL_OP_SPACESHIP_EXPR)
+    return sfk_comparison;
 
   return sfk_none;
 }
@@ -5561,6 +5622,68 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
       return true;
     }
   return false;
+}
+
+/* Given an initializer INIT for a TYPE, return true if INIT is zero
+   so that it can be replaced by value initialization.  This function
+   distinguishes betwen empty strings as initializers for arrays and
+   for pointers (which make it return false).  */
+
+bool
+type_initializer_zero_p (tree type, tree init)
+{
+  if (type == error_mark_node || init == error_mark_node)
+    return false;
+
+  STRIP_NOPS (init);
+
+  if (POINTER_TYPE_P (type))
+    return TREE_CODE (init) != STRING_CST && initializer_zerop (init);
+
+  if (TREE_CODE (init) != CONSTRUCTOR)
+    return initializer_zerop (init);
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree elt_type = TREE_TYPE (type);
+      elt_type = TYPE_MAIN_VARIANT (elt_type);
+      if (elt_type == char_type_node)
+	return initializer_zerop (init);
+
+      tree elt_init;
+      unsigned HOST_WIDE_INT i;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, elt_init)
+	if (!type_initializer_zero_p (elt_type, elt_init))
+	  return false;
+      return true;
+    }
+
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return initializer_zerop (init);
+
+  if (TYPE_NON_AGGREGATE_CLASS (type))
+    return false;
+
+  tree fld = TYPE_FIELDS (type);
+
+  tree fld_init;
+  unsigned HOST_WIDE_INT i;
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, fld_init)
+    {
+      fld = next_initializable_field (fld);
+      if (!fld)
+	return true;
+
+      tree fldtype = TREE_TYPE (fld);
+      if (!type_initializer_zero_p (fldtype, fld_init))
+	return false;
+
+      fld = DECL_CHAIN (fld);
+      if (!fld)
+	break;
+    }
+
+  return true;
 }
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)

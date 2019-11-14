@@ -1,3 +1,11 @@
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* gomp-constants.h (GOMP_DEVICE_GCN): Define.
+	(GOMP_VERSION_GCN): Define.
+
 2019-08-08  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/91352

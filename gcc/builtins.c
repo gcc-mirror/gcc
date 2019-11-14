@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "gimple.h"
 #include "predict.h"
-#include "params.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"
@@ -3626,7 +3625,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
 		}
 	    }
 	  else if (TREE_CODE (off) == SSA_NAME
-	      && INTEGRAL_TYPE_P (TREE_TYPE (off)))
+		   && INTEGRAL_TYPE_P (TREE_TYPE (off)))
 	    {
 	      wide_int min, max;
 	      enum value_range_kind rng = get_range_info (off, &min, &max);
@@ -3680,7 +3679,8 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
 	  if (TREE_CODE (dest) == ARRAY_REF)
 	    {
 	      tree eltype = TREE_TYPE (dest);
-	      if (tree tpsize = TYPE_SIZE_UNIT (eltype))
+	      tree tpsize = TYPE_SIZE_UNIT (eltype);
+	      if (tpsize && TREE_CODE (tpsize) == INTEGER_CST)
 		off = fold_build2 (MULT_EXPR, size_type_node, off, tpsize);
 	      else
 		return NULL_TREE;
@@ -5405,6 +5405,10 @@ expand_builtin_alloca (tree exp)
   result
     = allocate_dynamic_stack_space (op0, 0, align, max_size, alloca_for_var);
   result = convert_memory_address (ptr_mode, result);
+
+  /* Dynamic allocations for variables are recorded during gimplification.  */
+  if (!alloca_for_var && (flag_callgraph_info & CALLGRAPH_INFO_DYNAMIC_ALLOC))
+    record_dynamic_alloc (exp);
 
   return result;
 }
@@ -7209,7 +7213,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   /* If the length of the comparision is larger than the threshold,
      do nothing.  */
   if (length > (unsigned HOST_WIDE_INT)
-	       PARAM_VALUE (BUILTIN_STRING_CMP_INLINE_LENGTH))
+	       param_builtin_string_cmp_inline_length)
     return NULL_RTX;
 
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
@@ -9034,7 +9038,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	    mode = DFmode;
 	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
 	  }
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&r, buf);
 	result = build_call_expr (isgr_fn, 2,
 				  fold_build1_loc (loc, ABS_EXPR, type, arg),
@@ -9058,7 +9062,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	    mode = DFmode;
 	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
 	  }
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&r, buf);
 	result = build_call_expr (isle_fn, 2,
 				  fold_build1_loc (loc, ABS_EXPR, type, arg),
@@ -9097,7 +9101,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	  }
 	arg = fold_build1_loc (loc, ABS_EXPR, type, arg);
 
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&rmax, buf);
 	sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (orig_mode)->emin - 1);
 	real_from_string (&rmin, buf);

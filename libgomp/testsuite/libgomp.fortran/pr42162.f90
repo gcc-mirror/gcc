@@ -49,5 +49,5 @@ program pr42162
   !$omp parallel num_threads(3)
   call sub3 (k, c)
   !$omp end parallel
-  if (k.ne.4.or.any(a.ne.2).or.any(b.ne.3).or.any(c.ne.4)) STOP 1
+  if (k.ne.4.or.any(a.ne.2).or.any(b.ne.3).or.any(c.ne.4)) stop 1
 end

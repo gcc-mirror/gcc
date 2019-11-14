@@ -46,11 +46,11 @@
     da = -1
   end if
 !$omp end parallel
-  if (v) STOP 1
+  if (v) stop 1
   if (cnt .eq. 3) then
-    if (i .ne. 4 .or. any (ia .ne. (/7, 2, 2, 5, 5, 5/))) STOP 2
-    if (r .ne. 5 .or. any (ra .ne. (/6.5, 6.5, 4., 4./))) STOP 3
-    if (d .ne. 8.5 .or. any (da .ne. (/6.5, 8.5, 8.5, 8.5, 6.5/))) STOP 4
+    if (i .ne. 4 .or. any (ia .ne. (/7, 2, 2, 5, 5, 5/))) stop 2
+    if (r .ne. 5 .or. any (ra .ne. (/6.5, 6.5, 4., 4./))) stop 3
+    if (d .ne. 8.5 .or. any (da .ne. (/6.5, 8.5, 8.5, 8.5, 6.5/))) stop 4
   end if
 
   i = 1
@@ -94,10 +94,10 @@
     da(1:4) = 6
   end if
 !$omp end parallel
-  if (v) STOP 5
+  if (v) stop 5
   if (cnt .eq. 3) then
-    if (i .ne. 1 .or. any (ia .ne. (/1, 1, -2, -2, -2, 1/))) STOP 6
-    if (r .ne. -1 .or. any (ra .ne. (/4., -1.5, -8.5, -1.5/))) STOP 7
-    if (d .ne. -2.5 .or. any (da .ne. (/2.5, 2.5, 2.5, 6., 6.5/))) STOP 8
+    if (i .ne. 1 .or. any (ia .ne. (/1, 1, -2, -2, -2, 1/))) stop 6
+    if (r .ne. -1 .or. any (ra .ne. (/4., -1.5, -8.5, -1.5/))) stop 7
+    if (d .ne. -2.5 .or. any (da .ne. (/2.5, 2.5, 2.5, 6., 6.5/))) stop 8
   end if
 end

@@ -13,7 +13,7 @@ contains
       !$omp single
         !$omp taskgroup
           !$omp task depend(in: x)
-  	  if (y.ne.1) STOP 1
+  	  if (y.ne.1) stop 1
           !$omp end task
           !$omp task depend(out: x(1:2, 1:3))
   	  y = 2
@@ -21,7 +21,7 @@ contains
         !$omp end taskgroup
         !$omp taskgroup
           !$omp task depend(in: z)
-  	  if (y.ne.2) STOP 2
+  	  if (y.ne.2) stop 2
           !$omp end task
           !$omp task depend(out: z(-2:3, 2:4))
   	  y = 3
@@ -29,7 +29,7 @@ contains
         !$omp end taskgroup
         !$omp taskgroup
           !$omp task depend(in: x)
-  	  if (y.ne.3) STOP 3
+  	  if (y.ne.3) stop 3
           !$omp end task
           !$omp task depend(out: x(1:, 1:))
   	  y = 4
@@ -37,6 +37,6 @@ contains
         !$omp end taskgroup
       !$omp end single
     !$omp end parallel
-    if (y.ne.4) STOP 4
+    if (y.ne.4) stop 4
   end subroutine
 end

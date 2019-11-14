@@ -35,7 +35,7 @@ int fn2(T t) { return 0; }
 void driver()
 {
   fn1(0); // OK
-  fn2(0); // { dg-error "cannot call function" }
+  fn2(0); // { dg-error "" }
 }
 
 // Ordering
@@ -126,7 +126,7 @@ void caller_1(T x)
 { 
   f1(x); // Unchecked dependent arg.
   f1(empty{}); // Checked non-dependent arg, but OK
-  f1(0); // { dg-error "cannot call function" }
+  f1(0); // { dg-error "" }
 }
 
 // fn3.c -- Ordering
@@ -159,7 +159,7 @@ template<typename T> requires Type<T> void ok(T) { }
 template<typename T> requires Class<T> void err(T) { }
 
 auto p1 = &ok<int>;
-auto p2 = &err<int>; // { dg-error "no matches" }
+auto p2 = &err<int>; // { dg-error "" }
 void (*p3)(int) = &ok<int>;
 void (*p4)(int) = &err<int>; // { dg-error "no matches" }
 void (*p5)(int) = &ok;
@@ -180,7 +180,7 @@ struct S2 {
 };
 
 auto p7 = &S2::ok<int>;
-auto p8 = &S2::err<int>; // { dg-error "no matches" }
+auto p8 = &S2::err<int>; // { dg-error "" }
 int (S2::*p9)(int) = &S2::ok<int>;
 int (S2::*p10)(int) = &S2::err<int>; // { dg-error "no matches" }
 int (S2::*p11)(int) = &S2::ok;

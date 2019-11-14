@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This module provide facilities for clonning functions. I.e. creating
+/* This module provide facilities for cloning functions.  I.e. creating
    new functions based on existing functions with simple modifications,
    such as replacement of parameters.
 
@@ -159,7 +159,7 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   DECL_SET_IS_OPERATOR_DELETE (new_node->decl, 0);
 
   new_node->externally_visible = 0;
-  new_node->local.local = 1;
+  new_node->local = 1;
   new_node->lowered = true;
 }
 
@@ -223,7 +223,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk = cgraph_node::create (new_decl);
   set_new_clone_decl_and_node_flags (new_thunk);
   new_thunk->definition = true;
-  new_thunk->local.can_change_signature = node->local.can_change_signature;
+  new_thunk->can_change_signature = node->can_change_signature;
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
@@ -304,12 +304,12 @@ dump_callgraph_transformation (const cgraph_node *original,
    When UPDATE_ORIGINAL is true, the counts are subtracted from the original
    function's profile to reflect the fact that part of execution is handled
    by node.  
-   When CALL_DUPLICATOIN_HOOK is true, the ipa passes are acknowledged about
+   When CALL_DUPLICATION_HOOK is true, the ipa passes are acknowledged about
    the new clone. Otherwise the caller is responsible for doing so later.
 
    If the new node is being inlined into another one, NEW_INLINED_TO should be
    the outline function the new one is (even indirectly) inlined to.  All hooks
-   will see this in node's global.inlined_to, when invoked.  Can be NULL if the
+   will see this in node's inlined_to, when invoked.  Can be NULL if the
    node is not inlined.
 
    If PARAM_ADJUSTMENTS is non-NULL, the parameter manipulation information
@@ -353,12 +353,14 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     }
   new_node->analyzed = analyzed;
   new_node->definition = definition;
-  new_node->local = local;
+  new_node->versionable = versionable;
+  new_node->can_change_signature = can_change_signature;
+  new_node->redefined_extern_inline = redefined_extern_inline;
+  new_node->tm_may_enter_irr = tm_may_enter_irr;
   new_node->externally_visible = false;
   new_node->no_reorder = no_reorder;
-  new_node->local.local = true;
-  new_node->global = global;
-  new_node->global.inlined_to = new_inlined_to;
+  new_node->local = true;
+  new_node->inlined_to = new_inlined_to;
   new_node->rtl = rtl;
   new_node->frequency = frequency;
   new_node->tp_first_run = tp_first_run;
@@ -379,7 +381,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     {
       /* Redirect calls to the old version node to point to its new
 	 version.  The only exception is when the edge was proved to
-	 be unreachable during the clonning procedure.  */
+	 be unreachable during the cloning procedure.  */
       if (!e->callee
 	  || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
         e->redirect_callee_duplicating_thunks (new_node);
@@ -525,11 +527,11 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   ipa_replace_map *map;
   char *name;
 
-  gcc_checking_assert (local.versionable);
+  gcc_checking_assert (versionable);
   /* TODO: It would be nice if we could recognize that param_adjustments do not
      actually perform any changes, but at the moment let's require it simply
      does not exist.  */
-  gcc_assert (local.can_change_signature || !param_adjustments);
+  gcc_assert (can_change_signature || !param_adjustments);
 
   /* Make a new FUNCTION_DECL tree node */
   if (!param_adjustments)
@@ -568,6 +570,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
   set_new_clone_decl_and_node_flags (new_node);
+  new_node->ipcp_clone = ipcp_clone;
   new_node->clone.tree_map = tree_map;
   if (!implicit_section)
     new_node->set_section (get_section ());
@@ -670,6 +673,11 @@ cgraph_node::find_replacement (void)
 	  n->clone_of = next_inline_clone;
 	  n = n->next_sibling_clone;
 	}
+
+      /* Update order in order to be able to find a LTO section
+	 with function body.  */
+      replacement->order = order;
+
       return replacement;
     }
   else
@@ -861,8 +869,8 @@ cgraph_node::create_version_clone (tree new_decl,
    new_version->local = local;
    new_version->externally_visible = false;
    new_version->no_reorder = no_reorder;
-   new_version->local.local = new_version->definition;
-   new_version->global = global;
+   new_version->local = new_version->definition;
+   new_version->inlined_to = inlined_to;
    new_version->rtl = rtl;
    new_version->count = count;
 
@@ -884,8 +892,6 @@ cgraph_node::create_version_clone (tree new_decl,
 	  version.  */
        e->redirect_callee (new_version);
      }
-
-   symtab->call_cgraph_duplication_hooks (this, new_version);
 
    dump_callgraph_transformation (this, new_version, suffix);
 
@@ -932,7 +938,7 @@ cgraph_node::create_version_clone_with_body
     return NULL;
 
   /* TODO: Restore an assert that we do not change signature if
-     local.can_change_signature is false.  We cannot just check that
+     can_change_signature is false.  We cannot just check that
      param_adjustments is NULL because unfortunately ipa-split removes return
      values from such functions.  */
 
@@ -988,7 +994,7 @@ cgraph_node::create_version_clone_with_body
   new_version_node->make_decl_local ();
   DECL_VIRTUAL_P (new_version_node->decl) = 0;
   new_version_node->externally_visible = 0;
-  new_version_node->local.local = 1;
+  new_version_node->local = 1;
   new_version_node->lowered = true;
   if (!implicit_section)
     new_version_node->set_section (get_section ());

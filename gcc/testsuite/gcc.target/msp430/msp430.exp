@@ -101,6 +101,25 @@ proc msp430_device_permutations_runtest { tests } {
 	if { ![runtest_file_p $runtests $test_file] } {
 	    continue
 	}
+	# The device name passed to -mmcu in the csv-using-* tests do not exist
+	# in the hard-coded data, to ensure the test fails if the method can't
+	# find the device data.
+	if { [file tail $test_file] eq "csv-using-installed.c" } {
+	    msp430_test_installed_device_data $test_file $MSP430_DEFAULT_CFLAGS
+	    continue
+	} elseif { [file tail $test_file] eq "csv-using-option.c" } {
+	    dg-runtest $test_file \
+		"-mdevices-csv-loc=[file dirname $test_file]/devices.csv" \
+		"$MSP430_DEFAULT_CFLAGS"
+	    continue
+	} elseif { [file tail $test_file] eq "csv-using-env-var.c" } {
+	    setenv MSP430_GCC_INCLUDE_DIR [file dirname $test_file]
+	    verbose -log "MSP430_GCC_INCLUDE_DIR=[file dirname $test_file]"
+	    dg-runtest $test_file "" "$MSP430_DEFAULT_CFLAGS"
+	    setenv MSP430_GCC_INCLUDE_DIR ""
+	    verbose -log "MSP430_GCC_INCLUDE_DIR=\"\""
+	    continue
+	}
 	foreach { mcu_flags } [msp430_get_opts $test_file] {
 	    if { [string match "csv-*" [file tail $test_file]] } {
 		# Specify the path to devices.csv for devices/csv-* tests with -I.
@@ -115,10 +134,74 @@ proc msp430_device_permutations_runtest { tests } {
 	    } elseif { [string match "bad-devices*" [file tail $test_file]] } {
 		dg-runtest $test_file "$mcu_flags" "-mdevices-csv-loc=[file dirname $test_file]/[file tail $test_file]sv $MSP430_DEFAULT_CFLAGS"
 	    } else {
-		dg-runtest $test_file "$mcu_flags" "$MSP430_DEFAULT_CFLAGS"
+		dg-runtest $test_file "$mcu_flags -DTESTING_HARD_DATA" "$MSP430_DEFAULT_CFLAGS"
 	    }
-	}
+        }
     }
+}
+
+
+# Return $TOOLCHAIN_ROOT/msp430-elf/include/devices/
+proc get_installed_device_data_path { } {
+    set compiler [lindex [regexp -all -inline {\S+} \
+	[board_info [target_info name] compiler]] 0]
+    # $compiler is actually a file, but normalize will still get us the desired
+    # result.
+    return [file normalize \
+	"$compiler/../../msp430-elf/include/devices/devices.csv"]
+}
+
+# If the devices.csv is installed in
+# $TOOLCHAIN_ROOT/msp430-elf/include/devices/, rename it so it doesn't
+# interfere with the hard-coded device data tests.
+proc msp430_hide_installed_devices_data { } {
+    set devices_path [get_installed_device_data_path]
+    if { [file exists $devices_path] } {
+	file rename $devices_path "$devices_path.bak"
+    }
+}
+
+# Restore devices.csv if renamed by msp430_hide_installed_devices_data.
+proc msp430_restore_installed_devices_data { } {
+    set devices_path [get_installed_device_data_path]
+    if { [file exists "$devices_path.bak"] } {
+	file rename "$devices_path.bak" $devices_path 
+    }
+}
+
+proc msp430_test_installed_device_data { name default_cflags } {
+    global subdir
+    global env
+
+    # The initial value for GCC_EXEC_PREFIX set by target-libpath.exp is not
+    # correct for cross-compilers so fix it here. GCC fixes the value itself,
+    # but not after spec functions are executed, which can cause a warning
+    # about missing devices.csv to be emitted.
+    set compiler [lindex [regexp -all -inline {\S+} \
+	[board_info [target_info name] compiler]] 0]
+    set real_exec_prefix "[file normalize "$compiler/../../lib/gcc"]/"
+    setenv GCC_EXEC_PREFIX $real_exec_prefix
+
+    msp430_restore_installed_devices_data 
+    set devices_path [get_installed_device_data_path]
+    if { [file exists $devices_path] } {
+	dg-runtest $name "" "$default_cflags"
+    } else {
+	set shorter_name "$subdir/[file tail $name]"
+	verbose -log "$shorter_name not supported, $devices_path doesn't exist."
+	unsupported $shorter_name
+    }
+    msp430_hide_installed_devices_data 
+}
+
+proc msp430_install_device_data { testsuite_dir } {
+    set devices_path [get_installed_device_data_path]
+    if { [file exists $devices_path] } {
+        return
+    }
+    set installed_path [file dirname $devices_path]
+    file mkdir $installed_path
+    file copy $testsuite_dir/msp430-devices.h $testsuite_dir/devices.csv $installed_path
 }
 
 # Load support procs.
@@ -138,11 +221,18 @@ if [info exists DEFAULT_CFLAGS] then {
 # Initialize `dg'.
 dg-init
 
+# Install then hide the devices data now, in case it is already installed. We
+# don't want it to interfere with tests until we need it to.
+msp430_install_device_data $srcdir/$subdir/devices
+msp430_hide_installed_devices_data
+
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
 	"" $MSP430_DEFAULT_CFLAGS
 
 msp430_device_permutations_runtest [lsort [glob -nocomplain $srcdir/$subdir/devices/*.\[cCS\]]]
+
+msp430_restore_installed_devices_data 
 
 # All done.
 dg-finish

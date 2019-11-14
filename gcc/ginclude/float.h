@@ -238,6 +238,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* C11 */
 
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+/* Maximum finite positive value with MANT_DIG digits in the
+   significand taking their maximum value.  */
+#undef FLT_NORM_MAX
+#undef DBL_NORM_MAX
+#undef LDBL_NORM_MAX
+#define FLT_NORM_MAX	__FLT_NORM_MAX__
+#define DBL_NORM_MAX	__DBL_NORM_MAX__
+#define LDBL_NORM_MAX	__LDBL_NORM_MAX__
+
+#endif /* C2X */
+
 #ifdef __STDC_WANT_IEC_60559_BFP_EXT__
 /* Number of decimal digits for which conversions between decimal
    character strings and binary formats, in both directions, are

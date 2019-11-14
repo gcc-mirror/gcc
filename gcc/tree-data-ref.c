@@ -93,7 +93,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "dumpfile.h"
 #include "tree-affine.h"
-#include "params.h"
 #include "builtins.h"
 #include "tree-eh.h"
 #include "ssa.h"
@@ -836,7 +835,7 @@ split_constant_offset (tree exp, tree *var, tree *off,
 void
 split_constant_offset (tree exp, tree *var, tree *off)
 {
-  unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
+  unsigned limit = param_ssa_name_def_chain_limit;
   static hash_map<tree, std::pair<tree, tree> > *cache;
   if (!cache)
     cache = new hash_map<tree, std::pair<tree, tree> > (37);
@@ -4917,7 +4916,7 @@ compute_all_dependences (vec<data_reference_p> datarefs,
   unsigned int i, j;
 
   if ((int) datarefs.length ()
-      > PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+      > param_loop_max_datarefs_for_datadeps)
     {
       struct data_dependence_relation *ddr;
 

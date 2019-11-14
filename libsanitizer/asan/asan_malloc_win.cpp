@@ -35,11 +35,8 @@ constexpr unsigned long HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010;
 constexpr unsigned long HEAP_ALLOCATE_SUPPORTED_FLAGS = (HEAP_ZERO_MEMORY);
 constexpr unsigned long HEAP_ALLOCATE_UNSUPPORTED_FLAGS =
     (~HEAP_ALLOCATE_SUPPORTED_FLAGS);
-constexpr unsigned long HEAP_FREE_SUPPORTED_FLAGS = (0);
 constexpr unsigned long HEAP_FREE_UNSUPPORTED_FLAGS =
     (~HEAP_ALLOCATE_SUPPORTED_FLAGS);
-constexpr unsigned long HEAP_REALLOC_SUPPORTED_FLAGS =
-    (HEAP_REALLOC_IN_PLACE_ONLY | HEAP_ZERO_MEMORY);
 constexpr unsigned long HEAP_REALLOC_UNSUPPORTED_FLAGS =
     (~HEAP_ALLOCATE_SUPPORTED_FLAGS);
 
@@ -54,7 +51,7 @@ size_t WINAPI HeapSize(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem);
 BOOL WINAPI HeapValidate(HANDLE hHeap, DWORD dwFlags, LPCVOID lpMem);
 }
 
-using namespace __asan;  // NOLINT
+using namespace __asan;
 
 // MT: Simply defining functions with the same signature in *.obj
 // files overrides the standard functions in the CRT.
@@ -528,10 +525,11 @@ void ReplaceSystemMalloc() {
                                      (uptr)WRAP(RtlAllocateHeap),
                                      (uptr *)&REAL(RtlAllocateHeap));
   } else {
-#define INTERCEPT_UCRT_FUNCTION(func)                                         \
-  if (!INTERCEPT_FUNCTION_DLLIMPORT("ucrtbase.dll",                           \
-                                    "api-ms-win-core-heap-l1-1-0.dll", func)) \
-    VPrintf(2, "Failed to intercept ucrtbase.dll import %s\n", #func);
+#define INTERCEPT_UCRT_FUNCTION(func)                                  \
+  if (!INTERCEPT_FUNCTION_DLLIMPORT(                                   \
+          "ucrtbase.dll", "api-ms-win-core-heap-l1-1-0.dll", func)) {  \
+    VPrintf(2, "Failed to intercept ucrtbase.dll import %s\n", #func); \
+  }
     INTERCEPT_UCRT_FUNCTION(HeapAlloc);
     INTERCEPT_UCRT_FUNCTION(HeapFree);
     INTERCEPT_UCRT_FUNCTION(HeapReAlloc);

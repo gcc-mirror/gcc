@@ -64,3 +64,34 @@ LIB2FUNCS_EXCLUDE += \
 	_fixunssfsi _fixsfdi \
 	_fixunssfdi \
 	_floatdisf _floatundisf
+
+ifneq (,$(findstring avr,$(MULTISUBDIR)))
+
+# We are not in the avr2 (default) subdir, hence copying will work.
+# In default dir, copying won'twork because the default multilib is
+# built after all the others.
+
+ifneq (,$(findstring double64,$(MULTISUBDIR)))
+
+# We are in double64/libgcc or long-double64/libgcc:
+# Just copy from the [long ]double=float multilib; we would remove any DFmode
+# bits from this multilib variant, anyway, because the current assumption
+# is that avr-libc hosts *all* the IEEE-double stuff.
+
+LIB2FUNCS_EXCLUDE := %
+LIB1ASMFUNCS :=
+libgcc-objects :=
+libgcov-objects :=
+objects :=
+
+t-copy-libgcc.dep: $(srcdir)/config/avr/t-copy-libgcc
+	-rm -f libgcc.a
+	-rm -f libgcov.a
+	cp $< $@
+
+libgcc.a libgcov.a libgcc_tm.h: t-copy-libgcc.dep
+
+Makefile: t-copy-libgcc.dep
+
+endif
+endif

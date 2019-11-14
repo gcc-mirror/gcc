@@ -16,7 +16,7 @@ contains
     j = omp_get_thread_num () .eq. 0
 !$omp endmaster
 !$omp end parallel
-    if (.not. (i .or. j)) STOP 1
+    if (.not. (i .or. j)) stop 1
   end subroutine test_master
 
   subroutine test_critical_1 (i, j)
@@ -45,7 +45,7 @@ contains
     i = i + 1
 !$omp endcritical (critical_foo)
 !$omp end parallel
-    if (n .lt. 1 .or. i .ne. n * 3 .or. j .ne. n * 3) STOP 2
+    if (n .lt. 1 .or. i .ne. n * 3 .or. j .ne. n * 3) stop 2
   end subroutine test_critical
 
   subroutine test_barrier
@@ -62,7 +62,7 @@ contains
       j = j .or. .true.
     end if
 !$omp end parallel
-    if (i .ne. 5 .or. j) STOP 3
+    if (i .ne. 5 .or. j) stop 3
   end subroutine test_barrier
 
   subroutine test_atomic
@@ -89,14 +89,14 @@ contains
     f = max (omp_get_thread_num (), f)
     if (omp_get_thread_num () .eq. 0) g = omp_get_num_threads ()
 !$omp end parallel
-    if (g .le. 0 .or. g .gt. 8) STOP 4
-    if (a .ne. 6 * g .or. b .ne. 3 ** g) STOP 5
+    if (g .le. 0 .or. g .gt. 8) stop 4
+    if (a .ne. 6 * g .or. b .ne. 3 ** g) stop 5
     if (iand (g, 1) .eq. 1) then
-      if (c .ne. 8) STOP 6
+      if (c .ne. 8) stop 6
     else if (c .ne. 0) then
-      STOP 7
+      stop 7
     end if
-    if (d .ne. 1024 / (2 ** g)) STOP 8
-    if (e .ne. 0 .or. f .ne. g - 1) STOP 9
+    if (d .ne. 1024 / (2 ** g)) stop 8
+    if (e .ne. 0 .or. f .ne. g - 1) stop 9
   end subroutine test_atomic
 end

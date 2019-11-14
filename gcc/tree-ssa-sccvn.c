@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "tree-ssa-propagate.h"
 #include "tree-cfg.h"
 #include "domwalk.h"
@@ -309,6 +308,10 @@ static vn_tables_t valid_info;
 /* Valueization hook.  Valueize NAME if it is an SSA name, otherwise
    just return it.  */
 tree (*vn_valueize) (tree);
+tree vn_valueize_wrapper (tree t, void* context ATTRIBUTE_UNUSED)
+{
+  return vn_valueize (t);
+}
 
 
 /* This represents the top of the VN lattice, which is the universal
@@ -924,6 +927,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  break;
 	case STRING_CST:
 	case INTEGER_CST:
+	case POLY_INT_CST:
 	case COMPLEX_CST:
 	case VECTOR_CST:
 	case REAL_CST:
@@ -3069,7 +3073,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
       && vr1.vuse)
     {
       ao_ref r;
-      unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
+      unsigned limit = param_sccvn_max_alias_queries_per_access;
       vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true);
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
@@ -3120,7 +3124,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
     {
       vn_reference_t wvnresult;
       ao_ref r;
-      unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
+      unsigned limit = param_sccvn_max_alias_queries_per_access;
       /* Make sure to use a valueized reference if we valueized anything.
          Otherwise preserve the full reference for advanced TBAA.  */
       if (!valuezied_anything
@@ -6412,7 +6416,7 @@ process_bb (rpo_elim &avail, basic_block bb,
       if (bb->loop_father->nb_iterations)
 	bb->loop_father->nb_iterations
 	  = simplify_replace_tree (bb->loop_father->nb_iterations,
-				   NULL_TREE, NULL_TREE, vn_valueize);
+				   NULL_TREE, NULL_TREE, &vn_valueize_wrapper);
     }
 
   /* Value-number all defs in the basic-block.  */
@@ -6980,7 +6984,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   if (iterate)
     {
       loop_p loop;
-      unsigned max_depth = PARAM_VALUE (PARAM_RPO_VN_MAX_LOOP_DEPTH);
+      unsigned max_depth = param_rpo_vn_max_loop_depth;
       FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
 	if (loop_depth (loop) > max_depth)
 	  for (unsigned i = 2;

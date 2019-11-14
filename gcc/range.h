@@ -21,13 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_H
 #define GCC_RANGE_H
 
-value_range_base range_zero (tree type);
-value_range_base range_nonzero (tree type);
-value_range_base range_intersect (const value_range_base &,
-				  const value_range_base &);
-value_range_base range_union (const value_range_base &,
-			      const value_range_base &);
-value_range_base range_invert (const value_range_base &);
-value_range_base range_positives (tree type);
-value_range_base range_negatives (tree type);
+value_range range_zero (tree type);
+value_range range_nonzero (tree type);
+value_range range_intersect (const value_range &, const value_range &);
+value_range range_union (const value_range &, const value_range &);
+value_range range_invert (const value_range &);
+value_range range_positives (tree type);
+value_range range_negatives (tree type);
 #endif // GCC_RANGE_H

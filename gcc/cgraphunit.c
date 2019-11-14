@@ -75,7 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 	   a) early optimizations. These are local passes executed in
 	      the topological order on the callgraph.
 
-	      The purpose of early optimiations is to optimize away simple
+	      The purpose of early optimizations is to optimize away simple
 	      things that may otherwise confuse IP analysis. Very simple
 	      propagation across the callgraph is done i.e. to discover
 	      functions without side effects and simple inlining is performed.
@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 	   b) early small interprocedural passes.
 
 	      Those are interprocedural passes executed only at compilation
-	      time.  These include, for example, transational memory lowering,
+	      time.  These include, for example, transactional memory lowering,
 	      unreachable code removal and other simple transformations.
 
 	   c) IP analysis stage.  All interprocedural passes do their
@@ -107,7 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 	      IP propagation. This is done based on the earlier analysis
 	      without having function bodies at hand.
 	   f) Ltrans streaming.  When doing WHOPR LTO, the program
-	      is partitioned and streamed into multple object files.
+	      is partitioned and streamed into multiple object files.
 
        Compile time and/or parallel linktime stage (ltrans)
 
@@ -118,7 +118,7 @@ along with GCC; see the file COPYING3.  If not see
 	 2) Virtual clone materialization
 	    (cgraph_materialize_clone)
 
-	    IP passes can produce copies of existing functoins (such
+	    IP passes can produce copies of existing functions (such
 	    as versioned clones or inline clones) without actually
 	    manipulating their bodies by creating virtual clones in
 	    the callgraph. At this time the virtual clones are
@@ -336,7 +336,7 @@ symbol_table::process_new_functions (void)
 	    {
 	      bool summaried_computed = ipa_fn_summaries != NULL;
 	      g->get_passes ()->execute_early_local_passes ();
-	      /* Early passes compure inline parameters to do inlining
+	      /* Early passes compute inline parameters to do inlining
 		 and splitting.  This is redundant for functions added late.
 		 Just throw away whatever it did.  */
 	      if (!summaried_computed)
@@ -391,8 +391,7 @@ cgraph_node::reset (void)
   gcc_assert (!process);
 
   /* Reset our data structures so we can analyze the function again.  */
-  memset (&local, 0, sizeof (local));
-  memset (&global, 0, sizeof (global));
+  inlined_to = NULL;
   memset (&rtl, 0, sizeof (rtl));
   analyzed = false;
   definition = false;
@@ -445,7 +444,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
       gcc_assert (!DECL_CONTEXT (decl)
 		  || TREE_CODE (DECL_CONTEXT (decl)) !=	FUNCTION_DECL);
       node->reset ();
-      node->local.redefined_extern_inline = true;
+      node->redefined_extern_inline = true;
     }
 
   /* Set definition first before calling notice_global_symbol so that
@@ -553,7 +552,7 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 	/* Bring the function into finalized state and enqueue for later
 	   analyzing and compilation.  */
 	node = cgraph_node::get_create (fndecl);
-	node->local.local = false;
+	node->local = false;
 	node->definition = true;
 	node->force_output = true;
 	if (TREE_PUBLIC (fndecl))
@@ -695,8 +694,8 @@ cgraph_node::analyze (void)
 
 /* C++ frontend produce same body aliases all over the place, even before PCH
    gets streamed out. It relies on us linking the aliases with their function
-   in order to do the fixups, but ipa-ref is not PCH safe.  Consequentely we
-   first produce aliases without links, but once C++ FE is sure he won't sream
+   in order to do the fixups, but ipa-ref is not PCH safe.  Consequently we
+   first produce aliases without links, but once C++ FE is sure he won't stream
    PCH we build the links via this function.  */
 
 void
@@ -855,7 +854,7 @@ varpool_node::finalize_decl (tree decl)
     node->no_reorder = true;
   if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
       /* Traditionally we do not eliminate static variables when not
-	 optimizing and when not doing toplevel reoder.  */
+	 optimizing and when not doing toplevel reorder.  */
       || (node->no_reorder && !DECL_COMDAT (node->decl)
 	  && !DECL_ARTIFICIAL (node->decl)))
     node->force_output = true;
@@ -876,7 +875,7 @@ varpool_node::finalize_decl (tree decl)
 /* EDGE is an polymorphic call.  Mark all possible targets as reachable
    and if there is only one target, perform trivial devirtualization. 
    REACHABLE_CALL_TARGETS collects target lists we already walked to
-   avoid udplicate work.  */
+   avoid duplicate work.  */
 
 static void
 walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
@@ -1121,7 +1120,7 @@ analyze_functions (bool first_time)
 		  && !cnode->dispatcher_function)
 		{
 		  cnode->reset ();
-		  cnode->local.redefined_extern_inline = true;
+		  cnode->redefined_extern_inline = true;
 		  continue;
 		}
 
@@ -1136,7 +1135,7 @@ analyze_functions (bool first_time)
 			|| opt_for_fn (edge->callee->decl, optimize)
 			/* Weakrefs needs to be preserved.  */
 			|| edge->callee->alias
-			/* always_inline functions are inlined aven at -O0.  */
+			/* always_inline functions are inlined even at -O0.  */
 		        || lookup_attribute
 				 ("always_inline",
 			          DECL_ATTRIBUTES (edge->callee->decl))
@@ -1230,7 +1229,7 @@ analyze_functions (bool first_time)
     {
       next = node->next;
       /* For symbols declared locally we clear TREE_READONLY when emitting
-	 the construtor (if one is needed).  For external declarations we can
+	 the constructor (if one is needed).  For external declarations we can
 	 not safely assume that the type is readonly because we may be called
 	 during its construction.  */
       if (TREE_CODE (node->decl) == VAR_DECL
@@ -1507,7 +1506,7 @@ mark_functions_to_output (void)
       if (node->analyzed
 	  && !node->thunk.thunk_p
 	  && !node->alias
-	  && !node->global.inlined_to
+	  && !node->inlined_to
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))
 	{
@@ -1532,7 +1531,7 @@ mark_functions_to_output (void)
 	{
 	  /* We should've reclaimed all functions that are not needed.  */
 	  if (flag_checking
-	      && !node->global.inlined_to
+	      && !node->inlined_to
 	      && gimple_has_body_p (decl)
 	      /* FIXME: in ltrans unit when offline copy is outside partition but inline copies
 		 are inside partition, we can end up not removing the body since we no longer
@@ -1545,7 +1544,7 @@ mark_functions_to_output (void)
 	      node->debug ();
 	      internal_error ("failed to reclaim unneeded function");
 	    }
-	  gcc_assert (node->global.inlined_to
+	  gcc_assert (node->inlined_to
 		      || !gimple_has_body_p (decl)
 		      || node->in_other_partition
 		      || node->clones
@@ -1560,7 +1559,7 @@ mark_functions_to_output (void)
       if (node->same_comdat_group && !node->process)
 	{
 	  tree decl = node->decl;
-	  if (!node->global.inlined_to
+	  if (!node->inlined_to
 	      && gimple_has_body_p (decl)
 	      /* FIXME: in an ltrans unit when the offline copy is outside a
 		 partition but inline copies are inside a partition, we can
@@ -1863,7 +1862,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       greturn *ret;
       bool alias_is_noreturn = TREE_THIS_VOLATILE (alias);
 
-      /* We may be called from expand_thunk that releses body except for
+      /* We may be called from expand_thunk that releases body except for
 	 DECL_ARGUMENTS.  In this case force_gimple_thunk is true.  */
       if (in_lto_p && !force_gimple_thunk)
 	get_untransformed_body ();
@@ -1996,7 +1995,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	  gimple_call_set_chain (call, decl);
 	}
 
-      /* Return slot optimization is always possible and in fact requred to
+      /* Return slot optimization is always possible and in fact required to
          return values with DECL_BY_REFERENCE.  */
       if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl))
 	  && (!is_gimple_reg_type (TREE_TYPE (resdecl))
@@ -2117,7 +2116,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 
   for (e = callers; e;)
     if (e->caller->thunk.thunk_p
-	&& !e->caller->global.inlined_to)
+	&& !e->caller->inlined_to)
       {
 	cgraph_node *thunk = e->caller;
 
@@ -2154,7 +2153,7 @@ cgraph_node::expand (void)
   location_t saved_loc;
 
   /* We ought to not compile any inline clones.  */
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
 
   /* __RTL functions are compiled as soon as they are parsed, so don't
      do it again.  */
@@ -2253,12 +2252,13 @@ cgraph_node::expand (void)
   if (cfun)
     pop_cfun ();
 
-  /* It would make a lot more sense to output thunks before function body to get more
-     forward and lest backwarding jumps.  This however would need solving problem
-     with comdats. See PR48668.  Also aliases must come after function itself to
-     make one pass assemblers, like one on AIX, happy.  See PR 50689.
-     FIXME: Perhaps thunks should be move before function IFF they are not in comdat
-     groups.  */
+  /* It would make a lot more sense to output thunks before function body to
+     get more forward and fewer backward jumps.  This however would need
+     solving problem with comdats.  See PR48668.  Also aliases must come after
+     function itself to make one pass assemblers, like one on AIX, happy.
+     See PR 50689.
+     FIXME: Perhaps thunks should be move before function IFF they are not in
+     comdat groups.  */
   assemble_thunks_and_aliases ();
   release_body ();
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
@@ -2267,7 +2267,7 @@ cgraph_node::expand (void)
   remove_all_references ();
 }
 
-/* Node comparer that is responsible for the order that corresponds
+/* Node comparator that is responsible for the order that corresponds
    to time when a function was launched for the first time.  */
 
 static int
@@ -2602,10 +2602,7 @@ symbol_table::compile (void)
 
   timevar_push (TV_CGRAPHOPT);
   if (pre_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption before IPA");
   if (!quiet_flag)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   state = IPA;
@@ -2637,10 +2634,7 @@ symbol_table::compile (void)
       symtab->dump (dump_file);
     }
   if (post_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption after IPA");
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
@@ -2657,14 +2651,14 @@ symbol_table::compile (void)
 
   /* When weakref support is missing, we automatically translate all
      references to NODE to references to its ultimate alias target.
-     The renaming mechanizm uses flag IDENTIFIER_TRANSPARENT_ALIAS and
+     The renaming mechanism uses flag IDENTIFIER_TRANSPARENT_ALIAS and
      TREE_CHAIN.
 
      Set up this mapping before we output any assembler but once we are sure
      that all symbol renaming is done.
 
-     FIXME: All this uglyness can go away if we just do renaming at gimple
-     level by physically rewritting the IL.  At the moment we can only redirect
+     FIXME: All this ugliness can go away if we just do renaming at gimple
+     level by physically rewriting the IL.  At the moment we can only redirect
      calls, so we need infrastructure for renaming references as well.  */
 #ifndef ASM_OUTPUT_WEAKREF
   symtab_node *node;
@@ -2713,7 +2707,7 @@ symbol_table::compile (void)
       bool error_found = false;
 
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (node->global.inlined_to
+	if (node->inlined_to
 	    || gimple_has_body_p (node->decl))
 	  {
 	    error_found = true;

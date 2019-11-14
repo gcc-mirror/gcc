@@ -8,7 +8,7 @@
   call foo (a (2:4, 3:5), nthreads)
   if (nthreads .eq. 3) then
     write (c, '(36i1)') a
-    if (c .ne. '999999999999966699966699966699999999') STOP 1
+    if (c .ne. '999999999999966699966699966699999999') stop 1
   end if
 contains
   subroutine foo (b, nthreads)
@@ -27,6 +27,6 @@ contains
 !$omp end master
     b = 2
 !$omp end parallel
-    if (err .gt. 0) STOP 2
+    if (err .gt. 0) stop 2
   end subroutine foo
 end

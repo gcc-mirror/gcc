@@ -109,14 +109,14 @@ contains
       real :: diff, a(*), b(*)
       do i = 1, n
         diff = a(i) - b(i)
-        if (diff > EPS .or. -diff > EPS) STOP 1
+        if (diff > EPS .or. -diff > EPS) stop 1
       end do
   end subroutine
 
   subroutine checkint (a, b, n)
       integer :: i, n, a(*), b(*)
       do i = 1, n
-        if (a(i) .ne. b(i)) STOP 2
+        if (a(i) .ne. b(i)) stop 2
       end do
   end subroutine
 

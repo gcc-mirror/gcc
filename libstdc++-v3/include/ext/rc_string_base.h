@@ -231,7 +231,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_construct_aux(_InIterator __beg, _InIterator __end,
 			 const _Alloc& __a, std::__false_type)
 	{
-	  typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
+	  typedef typename std::iterator_traits<_InIterator>::iterator_category
+	    _Tag;
 	  return _S_construct(__beg, __end, __a, _Tag());
 	}
 

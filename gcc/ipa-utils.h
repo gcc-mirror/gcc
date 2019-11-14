@@ -47,6 +47,9 @@ void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src, bool preserve_body = false);
 bool recursive_call_p (tree, tree);
 
+/* In ipa-prop.c  */
+void ipa_remove_useless_jump_functions ();
+
 /* In ipa-profile.c  */
 bool ipa_propagate_frequency (struct cgraph_node *node);
 
@@ -54,6 +57,7 @@ bool ipa_propagate_frequency (struct cgraph_node *node);
 
 struct odr_type_d;
 typedef odr_type_d *odr_type;
+extern bool thunk_expansion;
 void build_type_inheritance_graph (void);
 void rebuild_type_inheritance_graph (void);
 void update_type_inheritance_graph (void);

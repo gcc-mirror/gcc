@@ -969,7 +969,7 @@ extern bool preheader_removed;
 /* Software lookahead window size.
    According to the results in Nakatani and Ebcioglu [1993], window size of 16
    is enough to extract most ILP in integer code.  */
-#define MAX_WS (PARAM_VALUE (PARAM_SELSCHED_MAX_LOOKAHEAD))
+#define MAX_WS (param_selsched_max_lookahead)
 
 extern regset sel_all_regs;
 

@@ -118,9 +118,9 @@ by type.  Explanations are in the following sections.
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fallow-argument-mismatch -fallow-invalid-boz @gol
 -fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments -fdec @gol
--fdec-structure-fdec-intrinsic-ints -fdec-static -fdec-math -fdec-include @gol
--fdec-format-defaults -fdec-blank-format-item -fdefault-double-8 @gol
--fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 @gol
+-fdec-char-conversions -fdec-structure -fdec-intrinsic-ints -fdec-static @gol
+-fdec-math -fdec-include -fdec-format-defaults -fdec-blank-format-item @gol
+-fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 @gol
 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -fpad-source -ffree-form @gol
 -ffree-line-length-@var{n} -ffree-line-length-none -fimplicit-none @gol
@@ -149,10 +149,11 @@ and warnings}.
 -Wc-binding-type -Wcharacter-truncation -Wconversion @gol
 -Wdo-subscript -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only @gol
--Wintrinsics-std -Wline-truncation -Wno-align-commons -Wno-tabs @gol
--Wreal-q-constant -Wsurprising -Wunderflow -Wunused-parameter @gol
--Wrealloc-lhs -Wrealloc-lhs-all -Wfrontend-loop-interchange @gol
--Wtarget-lifetime -fmax-errors=@var{n} -fsyntax-only -pedantic @gol
+-Wintrinsics-std -Wline-truncation -Wno-align-commons @gol
+-Wno-overwrite-recursive -Wno-tabs -Wreal-q-constant -Wsurprising @gol
+-Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all @gol
+-Wfrontend-loop-interchange -Wtarget-lifetime -fmax-errors=@var{n} @gol
+-fsyntax-only -pedantic @gol
 -pedantic-errors @gol
 }
 
@@ -272,13 +273,18 @@ For details on GNU Fortran's implementation of these extensions see the
 full documentation.
 
 Other flags enabled by this switch are:
-@option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-structure}
-@option{-fdec-intrinsic-ints} @option{-fdec-static} @option{-fdec-math}
-@option{-fdec-include} @option{-fdec-blank-format-item}
+@option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-char-conversions}
+@option{-fdec-structure} @option{-fdec-intrinsic-ints} @option{-fdec-static}
+@option{-fdec-math} @option{-fdec-include} @option{-fdec-blank-format-item}
 @option{-fdec-format-defaults}
 
 If @option{-fd-lines-as-code}/@option{-fd-lines-as-comments} are unset, then
 @option{-fdec} also sets @option{-fd-lines-as-comments}.
+
+@item -fdec-char-conversions
+@opindex @code{fdec-char-conversions}
+Enable the use of character literals in assignments and data statements
+for non-character variables.
 
 @item -fdec-structure
 @opindex @code{fdec-structure}
@@ -989,7 +995,7 @@ nor has been declared as @code{EXTERNAL}.
 @opindex @code{Winteger-division}
 @cindex warnings, integer division
 @cindex warnings, division of integers
-Warn if a constant integer division truncates it result.
+Warn if a constant integer division truncates its result.
 As an example, 3/5 evaluates to 0.
 
 @item -Wintrinsics-std
@@ -1001,6 +1007,15 @@ available in the currently selected standard (with @option{-std}) and treats
 it as @code{EXTERNAL} procedure because of this.  @option{-fall-intrinsics} can
 be used to never trigger this behavior and always link to the intrinsic
 regardless of the selected standard.
+
+@item -Wno-overwrite-recursive
+@opindex @code{Woverwrite-recursive}
+@cindex  warnings, overwrite recursive
+Do not warn when @option{-fno-automatic} is used with @option{-frecursive}. Recursion
+will be broken if the relevant local variables do not have the attribute
+@code{AUTOMATIC} explicitly declared. This option can be used to suppress the warning
+when it is known that recursion is not broken. Useful for build environments that use
+@option{-Werror}.
 
 @item -Wreal-q-constant
 @opindex @code{Wreal-q-constant}
