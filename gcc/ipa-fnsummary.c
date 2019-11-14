@@ -3353,7 +3353,10 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 					        m_inline_param_summary);
 	      gcc_checking_assert (prob >= 0);
 	      gcc_checking_assert (prob <= REG_BR_PROB_BASE);
-	      time += e->time * prob / REG_BR_PROB_BASE;
+	      if (prob == REG_BR_PROB_BASE)
+	        time += e->time;
+	      else
+	        time += e->time * prob / REG_BR_PROB_BASE;
 	    }
 	  gcc_checking_assert (time >= 0);
         }
@@ -3707,7 +3710,8 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 	  sreal add_time = ((sreal)e->time * freq);
 	  int prob = e->nonconst_predicate.probability (callee_info->conds,
 							clause, es->param);
-	  add_time = add_time * prob / REG_BR_PROB_BASE;
+	  if (prob != REG_BR_PROB_BASE)
+	    add_time = add_time * prob / REG_BR_PROB_BASE;
 	  if (prob != REG_BR_PROB_BASE
 	      && dump_file && (dump_flags & TDF_DETAILS))
 	    {
