@@ -1,5 +1,10 @@
 2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (ipa_call_context::estimate_size_and_time,
+	ipa_merge_fn_summary_after_inlining): Micro optimize.
+
+2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* params.opt (max-inline-insns-single-O2): Set to 70 (instead of 30).
 
 2019-11-14  Jan Hubicka  <hubicka@ucw.cz>
