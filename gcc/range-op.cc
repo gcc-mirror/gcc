@@ -396,7 +396,8 @@ operator_equal::fold_range (value_range &r, tree type,
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
-      r = range_intersect (op1, op2);
+      r = op1;
+      r.intersect (op2);
       if (r.undefined_p ())
 	r = range_false (type);
       else
@@ -415,7 +416,10 @@ operator_equal::op1_range (value_range &r, tree type,
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
       if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	r = range_invert (op2);
+	{
+	  r = op2;
+	  r.invert ();
+	}
       else
 	r.set_varying (type);
       break;
@@ -476,7 +480,8 @@ operator_not_equal::fold_range (value_range &r, tree type,
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
-      r = range_intersect (op1, op2);
+      r = op1;
+      r.intersect (op2);
       if (r.undefined_p ())
 	r = range_true (type);
       else
@@ -495,7 +500,10 @@ operator_not_equal::op1_range (value_range &r, tree type,
       // If the result is true, the only time we know anything is if
       // OP2 is a constant.
       if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	r = range_invert (op2);
+	{
+	  r = op2;
+	  r.invert ();
+	}
       else
 	r.set_varying (type);
       break;
@@ -1974,7 +1982,8 @@ operator_logical_or::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
   if (empty_range_check (r, lh, rh))
     return;
 
-  r = range_union (lh, rh);
+  r = lh;
+  r.union_ (rh);
 }
 
 bool
@@ -2221,7 +2230,10 @@ operator_logical_not::fold_range (value_range &r, tree type,
   if (lh.varying_p () || lh.undefined_p ())
     r = lh;
   else
-    r = range_invert (lh);
+    {
+      r = lh;
+      r.invert ();
+    }
   gcc_checking_assert (lh.type() == type);
   return;
 }
@@ -2232,10 +2244,9 @@ operator_logical_not::op1_range (value_range &r,
 				 const value_range &lhs,
 				 const value_range &op2 ATTRIBUTE_UNUSED) const
 {
-  if (lhs.varying_p () || lhs.undefined_p ())
-    r = lhs;
-  else
-    r = range_invert (lhs);
+  r = lhs;
+  if (!lhs.varying_p () && !lhs.undefined_p ())
+    r.invert ();
   return true;
 }
 
@@ -3033,13 +3044,6 @@ range_tests ()
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
 
-  // [10,20] U [30,40] ==> [10,20][30,40].
-  r0 = value_range (INT (10), INT (20));
-  r1 = value_range (INT (30), INT (40));
-  r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				  value_range (INT (30), INT (40))));
-
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
   tree voidp = build_pointer_type (void_type_node);
@@ -3049,26 +3053,11 @@ range_tests ()
   r0.invert ();
   ASSERT_TRUE (r0 == r1);
 
-  // [10,20][30,40] U [25,70] => [10,70].
-  r0 = range_union (value_range (INT (10), INT (20)),
-		     value_range (INT (30), INT (40)));
-  r1 = value_range (INT (25), INT (70));
-  r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				  value_range (INT (25), INT (70))));
-
   // [10,20] U [15, 30] => [10, 30].
   r0 = value_range (INT (10), INT (20));
   r1 = value_range (INT (15), INT (30));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == value_range (INT (10), INT (30)));
-
-  // [10,20] U [25,25] => [10,20][25,25].
-  r0 = value_range (INT (10), INT (20));
-  r1 = value_range (INT (25), INT (25));
-  r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				  value_range (INT (25), INT (25))));
 
   // [15,40] U [] => [15,40].
   r0 = value_range (INT (15), INT (40));
@@ -3093,19 +3082,6 @@ range_tests ()
   r1 = value_range (INT (15), INT (30));
   r0.intersect (r1);
   ASSERT_TRUE (r0 == value_range (INT (15), INT (20)));
-
-  // [10,20][30,40] ^ [40,50] => [40,40].
-  r0 = range_union (value_range (INT (10), INT (20)),
-		     value_range (INT (30), INT (40)));
-  r1 = value_range (INT (40), INT (50));
-  r0.intersect (r1);
-  ASSERT_TRUE (r0 == value_range (INT (40), INT (40)));
-
-  // Test non-destructive intersection.
-  r0 = rold = value_range (INT (10), INT (20));
-  ASSERT_FALSE (range_intersect (r0, value_range (INT (15),
-					     INT (30))).undefined_p ());
-  ASSERT_TRUE (r0 == rold);
 
   // Test the internal sanity of wide_int's wrt HWIs.
   ASSERT_TRUE (wi::max_value (TYPE_PRECISION (boolean_type_node),

@@ -23,9 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 value_range range_zero (tree type);
 value_range range_nonzero (tree type);
-value_range range_intersect (const value_range &, const value_range &);
-value_range range_union (const value_range &, const value_range &);
-value_range range_invert (const value_range &);
 value_range range_positives (tree type);
 value_range range_negatives (tree type);
 #endif // GCC_RANGE_H
