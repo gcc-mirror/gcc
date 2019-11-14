@@ -1,5 +1,11 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	* ipa-inline.c (want_inline_small_function_p): Use
+	CIF_MAX_INLINE_INSNS_AUTO_LIMIT instead
+	of CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	* ipa-cp.c (devirtualization_time_bonus): Use opt_for_fn
 	of a callee to get value of the param.
 	* ipa-inline.c (inline_insns_auto): Use proper
