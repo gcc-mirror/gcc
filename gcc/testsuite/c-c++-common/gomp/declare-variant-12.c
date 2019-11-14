@@ -6,7 +6,7 @@
 void f01 (void);
 void f02 (void);
 void f03 (void);
-#pragma omp declare variant (f01) match (device={isa(avx512f,avx512vl)}) /* 16 */
+#pragma omp declare variant (f01) match (device={isa("avx512f","avx512vl")}) /* 16 */
 #pragma omp declare variant (f02) match (implementation={vendor(score(15):gnu)})
 #pragma omp declare variant (f03) match (user={condition(score(11):1)})
 void f04 (void);
@@ -22,7 +22,7 @@ void f10 (void);
 void f11 (void);
 void f12 (void);
 #pragma omp declare variant (f09) match (device={arch(x86_64)},user={condition(score(65):1)}) /* 64+65 */
-#pragma omp declare variant (f10) match (implementation={vendor(score(127):gnu)})
+#pragma omp declare variant (f10) match (implementation={vendor(score(127):"gnu")})
 #pragma omp declare variant (f11) match (device={isa(ssse3)}) /* 128 */
 #pragma omp declare variant (f12) match (implementation={atomic_default_mem_order(score(126):seq_cst)})
 void f13 (void);

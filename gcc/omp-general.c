@@ -652,6 +652,23 @@ omp_maybe_offloaded (void)
   return false;
 }
 
+/* Return a name from PROP, a property in selectors accepting
+   name lists.  */
+
+static const char *
+omp_context_name_list_prop (tree prop)
+{
+  if (TREE_PURPOSE (prop))
+    return IDENTIFIER_POINTER (TREE_PURPOSE (prop));
+  else
+    {
+      const char *ret = TREE_STRING_POINTER (TREE_VALUE (prop));
+      if ((size_t) TREE_STRING_LENGTH (TREE_VALUE (prop)) == strlen (ret) + 1)
+	return ret;
+      return NULL;
+    }
+}
+
 /* Return 1 if context selector matches the current OpenMP context, 0
    if it does not and -1 if it is unknown and need to be determined later.
    Some properties can be checked right away during parsing (this routine),
@@ -701,8 +718,11 @@ omp_context_selector_matches (tree ctx)
 	      if (set == 'i' && !strcmp (sel, "vendor"))
 		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
 		  {
-		    const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
-		    if (!strcmp (prop, " score") || !strcmp (prop, "gnu"))
+		    const char *prop = omp_context_name_list_prop (t3);
+		    if (prop == NULL)
+		      return 0;
+		    if ((!strcmp (prop, " score") && TREE_PURPOSE (t3))
+			|| !strcmp (prop, "gnu"))
 		      continue;
 		    return 0;
 		  }
@@ -750,7 +770,9 @@ omp_context_selector_matches (tree ctx)
 	      if (set == 'd' && !strcmp (sel, "arch"))
 		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
 		  {
-		    const char *arch = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    const char *arch = omp_context_name_list_prop (t3);
+		    if (arch == NULL)
+		      return 0;
 		    int r = 0;
 		    if (targetm.omp.device_kind_arch_isa != NULL)
 		      r = targetm.omp.device_kind_arch_isa (omp_device_arch,
@@ -844,7 +866,9 @@ omp_context_selector_matches (tree ctx)
 	      if (set == 'd' && !strcmp (sel, "kind"))
 		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
 		  {
-		    const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    const char *prop = omp_context_name_list_prop (t3);
+		    if (prop == NULL)
+		      return 0;
 		    if (!strcmp (prop, "any"))
 		      continue;
 		    if (!strcmp (prop, "host"))
@@ -903,7 +927,9 @@ omp_context_selector_matches (tree ctx)
 	      if (set == 'd' && !strcmp (sel, "isa"))
 		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
 		  {
-		    const char *isa = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
+		    const char *isa = omp_context_name_list_prop (t3);
+		    if (isa == NULL)
+		      return 0;
 		    int r = 0;
 		    if (targetm.omp.device_kind_arch_isa != NULL)
 		      r = targetm.omp.device_kind_arch_isa (omp_device_isa,
@@ -1107,6 +1133,28 @@ omp_context_selector_props_compare (const char *set, const char *sel,
 		  break;
 		}
 	      else
+		break;
+	    }
+	  else if (TREE_PURPOSE (t1)
+		   && TREE_PURPOSE (t2) == NULL_TREE
+		   && TREE_CODE (TREE_VALUE (t2)) == STRING_CST)
+	    {
+	      const char *p1 = omp_context_name_list_prop (t1);
+	      const char *p2 = omp_context_name_list_prop (t2);
+	      if (p2
+		  && strcmp (p1, p2) == 0
+		  && strcmp (p1, " score"))
+		break;
+	    }
+	  else if (TREE_PURPOSE (t1) == NULL_TREE
+		   && TREE_PURPOSE (t2)
+		   && TREE_CODE (TREE_VALUE (t1)) == STRING_CST)
+	    {
+	      const char *p1 = omp_context_name_list_prop (t1);
+	      const char *p2 = omp_context_name_list_prop (t2);
+	      if (p1
+		  && strcmp (p1, p2) == 0
+		  && strcmp (p1, " score"))
 		break;
 	    }
 	if (t2 == NULL_TREE)

@@ -2196,8 +2196,9 @@ c_omp_check_context_selector (location_t loc, tree ctx)
 		{
 		  if (props[i].props[j] == NULL)
 		    {
-		      if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				   " score"))
+		      if (TREE_PURPOSE (t2)
+			  && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				      " score"))
 			break;
 		      if (props[i].props == atomic_default_mem_order)
 			{
@@ -2207,31 +2208,28 @@ c_omp_check_context_selector (location_t loc, tree ctx)
 				    "atomic_default_mem_order");
 			  return error_mark_node;
 			}
-		      else
+		      else if (TREE_PURPOSE (t2))
 			warning_at (loc, 0,
 				    "unknown property %qs of %qs selector",
 				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    props[i].selector);
+		      else
+			warning_at (loc, 0,
+				    "unknown property %qE of %qs selector",
+				    TREE_VALUE (t2), props[i].selector);
 		      break;
+		    }
+		  else if (TREE_PURPOSE (t2) == NULL_TREE)
+		    {
+		      const char *str = TREE_STRING_POINTER (TREE_VALUE (t2));
+		      if (!strcmp (str, props[i].props[j])
+			  && ((size_t) TREE_STRING_LENGTH (TREE_VALUE (t2))
+			      == strlen (str) + 1))
+			break;
 		    }
 		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    props[i].props[j]))
-		    {
-		      if (props[i].props == atomic_default_mem_order
-			  && t2 != TREE_VALUE (t1))
-			{
-			  tree t3 = TREE_VALUE (t1);
-			  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)),
-				       " score")
-			      && t2 == TREE_CHAIN (TREE_VALUE (t1)))
-			    break;
-			  error_at (loc,
-				    "%qs selector must have a single property",
-				    "atomic_default_mem_order");
-			  return error_mark_node;
-			}
-		      break;
-		    }
+		    break;
 		}
     }
   return ctx;

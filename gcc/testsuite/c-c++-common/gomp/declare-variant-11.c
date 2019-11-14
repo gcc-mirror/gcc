@@ -4,8 +4,8 @@
 
 void f01 (void);
 void f02 (void);
-#pragma omp declare variant (f01) match (device={isa(avx512f,avx512vl)})
-#pragma omp declare variant (f02) match (device={isa(avx512bw,avx512vl,avx512f)})
+#pragma omp declare variant (f01) match (device={isa(avx512f,"avx512vl")})
+#pragma omp declare variant (f02) match (device={isa(avx512bw,avx512vl,"avx512f")})
 void f03 (void);
 void f04 (void);
 void f05 (void);
@@ -14,13 +14,13 @@ void f05 (void);
 void f06 (void);
 void f07 (void);
 void f08 (void);
-#pragma omp declare variant (f07) match (device={isa(sse4,sse3,avx)})
-#pragma omp declare variant (f08) match (device={isa(avx,sse3)})
+#pragma omp declare variant (f07) match (device={isa(sse4,sse3,"avx")})
+#pragma omp declare variant (f08) match (device={isa("avx",sse3)})
 void f09 (void);
 void f10 (void);
 void f11 (void);
 void f12 (void);
-#pragma omp declare variant (f10) match (device={isa(avx512f)})
+#pragma omp declare variant (f10) match (device={isa("avx512f")})
 #pragma omp declare variant (f11) match (user={condition(1)},device={isa(avx512f)},implementation={vendor(gnu)})
 #pragma omp declare variant (f12) match (user={condition(2 + 1)},device={isa(avx512f)})
 void f13 (void);

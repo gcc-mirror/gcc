@@ -1,3 +1,11 @@
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_context_selector): Rename
+	CTX_PROPERTY_IDLIST to CTX_PROPERTY_NAME_LIST, add CTX_PROPERTY_ID.
+	Use CTX_PROPERTY_ID for atomic_default_mem_order, only allow a single
+	identifier in that.  For CTX_PROPERTY_NAME_LIST, allow identifiers
+	and string literals.
+
 2019-11-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-tree.h (enum c_typespec_kind): Add ctsk_tagref_attrs and

@@ -19728,9 +19728,9 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
       bool allow_score = true;
       bool allow_user = false;
       int property_limit = 0;
-      enum { CTX_PROPERTY_NONE, CTX_PROPERTY_USER, CTX_PROPERTY_IDLIST,
-	     CTX_PROPERTY_EXPR, CTX_PROPERTY_SIMD } property_kind
-	= CTX_PROPERTY_NONE;
+      enum { CTX_PROPERTY_NONE, CTX_PROPERTY_USER, CTX_PROPERTY_NAME_LIST,
+	     CTX_PROPERTY_ID, CTX_PROPERTY_EXPR,
+	     CTX_PROPERTY_SIMD } property_kind = CTX_PROPERTY_NONE;
       switch (IDENTIFIER_POINTER (set)[0])
 	{
 	case 'c': /* construct */
@@ -19744,13 +19744,13 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 	  allow_score = false;
 	  allow_user = true;
 	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_IDLIST;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
 	  break;
 	case 'i': /* implementation */
 	  selectors = omp_implementation_selectors;
 	  allow_user = true;
 	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_IDLIST;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
 	  break;
 	case 'u': /* user */
 	  selectors = omp_user_selectors;
@@ -19784,6 +19784,11 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 	  if (strcmp (selectors[i], IDENTIFIER_POINTER (selector)) == 0)
 	    break;
 	}
+      if (property_kind == CTX_PROPERTY_NAME_LIST
+	  && IDENTIFIER_POINTER (set)[0] == 'i'
+	  && strcmp (IDENTIFIER_POINTER (selector),
+		     "atomic_default_mem_order") == 0)
+	property_kind = CTX_PROPERTY_ID;
 
       c_parser_consume_token (parser);
 
@@ -19859,21 +19864,41 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		}
 	      while (1);
 	      break;
-	    case CTX_PROPERTY_IDLIST:
+	    case CTX_PROPERTY_ID:
+	      if (c_parser_next_token_is (parser, CPP_KEYWORD)
+		  || c_parser_next_token_is (parser, CPP_NAME))
+		{
+		  tree prop = c_parser_peek_token (parser)->value;
+		  c_parser_consume_token (parser);
+		  properties = tree_cons (prop, NULL_TREE, properties);
+		}
+	      else
+		{
+		  c_parser_error (parser, "expected identifier");
+		  return error_mark_node;
+		}
+	      break;
+	    case CTX_PROPERTY_NAME_LIST:
 	      do
 		{
-		  tree prop;
+		  tree prop = NULL_TREE, value = NULL_TREE;
 		  if (c_parser_next_token_is (parser, CPP_KEYWORD)
 		      || c_parser_next_token_is (parser, CPP_NAME))
-		    prop = c_parser_peek_token (parser)->value;
+		    {
+		      prop = c_parser_peek_token (parser)->value;
+		      c_parser_consume_token (parser);
+		    }
+		  else if (c_parser_next_token_is (parser, CPP_STRING))
+		    value = c_parser_string_literal (parser, false,
+						     false).value;
 		  else
 		    {
-		      c_parser_error (parser, "expected identifier");
+		      c_parser_error (parser, "expected identifier or "
+					      "string literal");
 		      return error_mark_node;
 		    }
-		  c_parser_consume_token (parser);
 
-		  properties = tree_cons (prop, NULL_TREE, properties);
+		  properties = tree_cons (prop, value, properties);
 
 		  if (c_parser_next_token_is (parser, CPP_COMMA))
 		    c_parser_consume_token (parser);
@@ -19923,7 +19948,8 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 	  parens.skip_until_found_close (parser);
 	  properties = nreverse (properties);
 	}
-      else if (property_kind == CTX_PROPERTY_IDLIST
+      else if (property_kind == CTX_PROPERTY_NAME_LIST
+	       || property_kind == CTX_PROPERTY_ID
 	       || property_kind == CTX_PROPERTY_EXPR)
 	{
 	  c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>");
