@@ -1076,6 +1076,11 @@ aarch64*-*-linux*)
 	done
 	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 	;;
+aarch64*-wrs-vxworks*)
+        tm_file="${tm_file} elfos.h aarch64/aarch64-elf.h"
+        tm_file="${tm_file} vx-common.h vxworks.h aarch64/aarch64-vxworks.h"
+        tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-vxworks"
+        ;;
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	tmake_file="${tmake_file} alpha/t-linux alpha/t-alpha"

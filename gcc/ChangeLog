@@ -1,3 +1,11 @@
+2019-11-14  Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+	    Jerome Lambourg  <lambourg@adacore.com>
+
+	* config.gcc: Handle aarch64*-wrs-vxworks7*.
+	* config/aarch64/aarch64-vxworks.h: New file.
+	* config/aarch64/t-aarch64-vxworks: New file.
+
 2019-11-06  Jerome Lambourg  <lambourg@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 
