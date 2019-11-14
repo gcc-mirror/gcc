@@ -234,7 +234,10 @@ func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
     case CONST_DECL:
     case SSA_NAME:
       return;
-
+    case FIELD_DECL:
+      inchash::add_expr (DECL_FIELD_OFFSET (arg), hstate, flags);
+      inchash::add_expr (DECL_FIELD_BIT_OFFSET (arg), hstate, flags);
+      return;
     default:
       break;
     }

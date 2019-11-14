@@ -1,5 +1,10 @@
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf-gimple.c (func_checker::hash_operand): Improve
+	func_checker::hash_operand by handling of FIELD_DECLs.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.h (func_checker::func_checker): Add
 	default constructor.
 	* ipa-icf.c (sem_function::init): Make operand_equal_p
