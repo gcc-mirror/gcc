@@ -14,7 +14,7 @@ void f05 (void);
 void f06 (void);
 void f07 (void);
 void f08 (void);
-#pragma omp declare variant (f07) match (device={isa(sse4,sse3,"avx")})
+#pragma omp declare variant (f07) match (device={isa(sse4,"sse4.1","sse4.2",sse3,"avx")})
 #pragma omp declare variant (f08) match (device={isa("avx",sse3)})
 void f09 (void);
 void f10 (void);
