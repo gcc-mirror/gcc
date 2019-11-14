@@ -11283,16 +11283,11 @@ applied. In other cases @option{max-inline-insns-single-O2} is applied.
 
 
 @item max-inline-insns-auto
-@item max-inline-insns-auto-O2
 When you use @option{-finline-functions} (included in @option{-O3}),
 a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
-be applied.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-auto} is
-applied. In other cases @option{max-inline-insns-auto-O2} is applied.
+be applied (@option{--param max-inline-insns-auto}).
 
 @item max-inline-insns-small
 This is bound applied to calls which are considered relevant with
@@ -11313,8 +11308,8 @@ execute function prologue and epilogue
 @item inline-heuristics-hint-percent
 @item inline-heuristics-hint-percent-O2
 The scale (in percents) applied to @option{inline-insns-single},
-@option{inline-insns-single-O2}, @option{inline-insns-auto},
-@option{inline-insns-auto-O2} when inline heuristics hints that inlining is
+@option{inline-insns-single-O2}, @option{inline-insns-auto}
+when inline heuristics hints that inlining is
 very profitable (will enable later optimizations).
 
 For functions compiled with optimization levels

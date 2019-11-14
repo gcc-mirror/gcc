@@ -467,11 +467,7 @@ Common Joined UInteger Var(param_max_hoist_depth) Init(30) Param
 Maximum depth of search in the dominator tree for expressions to hoist.
 
 -param=max-inline-insns-auto=
-Common Joined UInteger Var(param_max_inline_insns_auto) Init(30) Param
-The maximum number of instructions when automatically inlining with -O3 and -Ofast.
-
--param=max-inline-insns-auto-O2=
-Common Joined UInteger Var(param_max_inline_insns_auto_o2) Init(15) Param
+Common Joined UInteger Var(param_max_inline_insns_auto) Init(15) Optimization Param
 The maximum number of instructions when automatically inlining.
 
 -param=max-inline-insns-recursive=
