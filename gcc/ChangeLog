@@ -1,5 +1,10 @@
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_call): Require the types
+	to have the same size.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_call): If an operand is
 	constant or external, use get_vectype_for_scalar_type
 	rather than get_same_sized_vectype to get its vector type.

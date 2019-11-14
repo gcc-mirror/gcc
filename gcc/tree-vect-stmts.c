@@ -3309,6 +3309,19 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       return false;
     }
+  /* FORNOW: we don't yet support mixtures of vector sizes for calls,
+     just mixtures of nunits.  E.g. DI->SI versions of __builtin_ctz*
+     are traditionally vectorized as two VnDI->VnDI IFN_CTZs followed
+     by a pack of the two vectors into an SI vector.  We would need
+     separate code to handle direct VnDI->VnSI IFN_CTZs.  */
+  if (TYPE_SIZE (vectype_in) != TYPE_SIZE (vectype_out))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "mismatched vector sizes %T and %T\n",
+			 vectype_in, vectype_out);
+      return false;
+    }
 
   /* FORNOW */
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
