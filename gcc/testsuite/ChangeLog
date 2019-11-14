@@ -1,5 +1,11 @@
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/92421
+	* g++.dg/torture/pr92421.C: Add -Wno-return-type to
+	dg-additional-options.  Avoid -Wwrite-string warnings, most of
+	-Wreturn-type warnings, define bf ctor.  Use struct instead of class
+	with public: at the start.
+
 	* g++.dg/cpp0x/alias-decl-pr92206-3.C: Require effective target c++14
 	rather than c++11.
 
