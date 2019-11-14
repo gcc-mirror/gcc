@@ -1,3 +1,9 @@
+2019-11-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92464
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76b.c: Adjust loop
+	bound due to load cost adjustment.
+
 2019-11-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-fallthrough-1.c, gcc.dg/c2x-attr-syntax-1.c,
