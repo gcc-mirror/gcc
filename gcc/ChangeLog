@@ -1,5 +1,9 @@
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386-options.c (ix86_omp_device_kind_arch_isa): Don't
+	change sse4.2 to sse4_2 and sse4.1 to sse4.1.
+	* config/i386/t-omp-device (omp-device-properties-i386): Likewise.
+
 	* omp-general.c (omp_context_name_list_prop): New function.
 	(omp_context_selector_matches): Use it.  Return 0 if it returns
 	NULL.

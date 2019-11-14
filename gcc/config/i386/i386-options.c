@@ -316,19 +316,13 @@ ix86_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	  HOST_WIDE_INT mask = i ? ix86_isa_flags2 : ix86_isa_flags;
 	  for (size_t n = 0; n < nopts; n++)
 	    {
-	      const char *option = opts[n].option + 2;
-	      /* -msse4.2 and -msse4.1 options contain dot, which is not valid
-		 in identifiers.  Use underscore instead, and handle sse4
-		 as an alias to sse4_2.  */
+	      /* Handle sse4 as an alias to sse4.2.  */
 	      if (opts[n].mask == OPTION_MASK_ISA_SSE4_2)
 		{
-		  option = "sse4_2";
 		  if (strcmp (name, "sse4") == 0)
 		    return (mask & opts[n].mask) != 0 ? 1 : -1;
 		}
-	      else if (opts[n].mask == OPTION_MASK_ISA_SSE4_1)
-		option = "sse4_1";
-	      if (strcmp (name, option) == 0)
+	      if (strcmp (name, opts[n].option + 2) == 0)
 		return (mask & opts[n].mask) != 0 ? 1 : -1;
 	    }
 	}

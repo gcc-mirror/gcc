@@ -1,5 +1,8 @@
 2019-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/declare-variant-11.c: Add "sse4.2" and "sse4.1"
+	test.
+
 	* c-c++-common/gomp/declare-variant-2.c: Add test for non-integral
 	score and for negative score.
 	* c-c++-common/gomp/declare-variant-3.c: Add test for zero score.
