@@ -2438,6 +2438,8 @@ gcn_init_cumulative_args (CUMULATIVE_ARGS *cum /* Argument info to init */ ,
   cfun->machine->args = cum->args;
   if (!caller && cfun->machine->normal_function)
     gcn_detect_incoming_pointer_arg (fndecl);
+
+  reinit_regs ();
 }
 
 static bool
