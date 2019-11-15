@@ -1,5 +1,11 @@
 2019-11-15  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-passes.c: Rename to...
+	* coroutine-passes.cc: ... this.
+
+2019-11-15  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (coro_promise_type_found_p): New.
 	(get_coroutine_promise_type): New.
