@@ -2923,11 +2923,6 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
   for (i = 0; i < count; i++)
     {
       struct ipa_jump_func *dst = ipa_get_ith_jump_func (args, i);
-      if (!top)
-	{
-	  ipa_set_jf_unknown (dst);
-	  continue;
-	}
       class ipa_polymorphic_call_context *dst_ctx
 	= ipa_get_ith_polymorhic_call_context (args, i);
 
@@ -2946,7 +2941,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		continue;
 
 	      dst_fid = item->value.pass_through.formal_id;
-	      if (dst_fid >= ipa_get_cs_argument_count (top))
+	      if (!top || dst_fid >= ipa_get_cs_argument_count (top))
 		{
 		  item->jftype = IPA_JF_UNKNOWN;
 		  continue;
@@ -2995,6 +2990,12 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      if (item->value.pass_through.formal_id < 0)
 		item->jftype = IPA_JF_UNKNOWN;
 	    }
+	}
+
+      if (!top)
+	{
+	  ipa_set_jf_unknown (dst);
+	  continue;
 	}
 
       if (dst->type == IPA_JF_ANCESTOR)
