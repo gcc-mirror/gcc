@@ -1,3 +1,22 @@
+2019-11-14  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/Makefile.am: Add <stop_token> header.
+        * include/Makefile.in: Regenerate.
+	* include/std/condition_variable: Add overloads for stop_token support
+	to condition_variable_any.
+	* include/std/stop_token: New file.
+	* include/std/thread: Add jthread type.
+	* include/std/version (__cpp_lib_jthread): New value.
+	* testsuite/30_threads/condition_variable_any/stop_token/1.cc: New test.
+	* testsuite/30_threads/condition_variable_any/stop_token/2.cc: New test.
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc: New test.
+	* testsuite/30_threads/jthread/1.cc: New test.
+	* testsuite/30_threads/jthread/2.cc: New test.
+	* testsuite/30_threads/jthread/jthread.cc: New test.
+	* testsuite/30_threads/stop_token/1.cc: New test.
+	* testsuite/30_threads/stop_token/2.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: New test.
+
 2019-11-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement the <array> part of C++20 p1032 Misc constexpr bits.
