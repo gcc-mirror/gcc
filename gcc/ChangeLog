@@ -1,3 +1,11 @@
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92324
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Fix
+	singedness of SLP reduction epilouge operations.  Also reduce
+	the vector width for SLP reductions before doing elementwise
+	operations if possible.
+
 2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* passes.c (skip_pass): Set epilogue_completed if skipping the

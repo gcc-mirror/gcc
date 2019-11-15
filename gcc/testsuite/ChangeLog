@@ -1,3 +1,8 @@
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92324
+	* gcc.dg/vect/pr92324-4.c: New testcase.
+
 2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69654
