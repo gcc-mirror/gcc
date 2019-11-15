@@ -4345,6 +4345,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_deprecated_attribute, NULL },
   { "fallthrough", 0, 0, false, false, false, false,
     handle_fallthrough_attribute, NULL },
+  { "maybe_unused", 0, 0, false, false, false, false,
+    handle_unused_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 

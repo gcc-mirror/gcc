@@ -1,5 +1,9 @@
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-decl.c (std_attribute_table): Add maybe_unused.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-decl.c (std_attribute_table): Add fallthrough.
 	* c-parser.c (c_parser_declaration_or_fndef): Diagnose fallthrough
 	attribute at top level.
