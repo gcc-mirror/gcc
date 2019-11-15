@@ -1,5 +1,10 @@
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-attribs.c (handle_fallthrough_attribute): Remove static.
+	* c-common.h (handle_fallthrough_attribute): Declare.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-attribs.c (handle_deprecated_attribute): Remove static.
 	* c-common.h (handle_deprecated_attribute): Declare.
 
