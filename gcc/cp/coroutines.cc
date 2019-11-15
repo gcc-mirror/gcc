@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cxx-pretty-print.h"
 #include "gcc-rich-location.h"
+#include "hash-map.h"
 
 /* DEBUG remove me.  */
 extern void debug_tree(tree);
@@ -160,47 +161,123 @@ find_promise_type (tree handle_type)
   return promise_type;
 }
 
+/* The state that we collect during parsing a coroutine.  */
+typedef struct coroutine_info {
+  tree promise_type;
+  tree handle_type;
+  tree self_h_proxy;
+  tree promise_proxy;
+  location_t first_coro_keyword;
+} coroutine_info_t;
+
+/* This is a small map, one entry per coroutine, but placed here to avoid
+   adding this overhead to every function decl.  */
+static hash_map<tree, coroutine_info_t> *fn_to_coro_info;
+
 static bool
 coro_promise_type_found_p (tree fndecl, location_t loc)
 {
   gcc_assert (fndecl != NULL_TREE);
 
-  /* FIXME: the state needs to be in a hashtab on the side and this name
-     is too long!!  */
+  /* Save the coroutine data on the side to avoid the overhead on every
+     function decl.  */
+
+  if (!fn_to_coro_info)
+    fn_to_coro_info = new hash_map<tree, struct coroutine_info>;
+
+  bool seen;
+  coroutine_info_t &info = fn_to_coro_info->get_or_insert (fndecl, &seen);
 
   /* If we don't already have a current promise type, try to look it up.  */
-  if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
+  if (!seen || info.promise_type == NULL_TREE)
     {
       /* Get the coroutine traits temple decl for the specified return and
 	 argument type list.  coroutine_traits <R, ...> */
       tree templ_decl = find_coro_traits_template_decl (loc);
       /* Find the promise type for that.  */
-      DECL_COROUTINE_PROMISE_TYPE (fndecl) = find_promise_type (templ_decl);
-      /* Find the handle type for that.  */
-      tree handle_type
-	= find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
+      info.promise_type = find_promise_type (templ_decl);
+
+      /* If we don't find it, punt on the rest.  */
+      if (info.promise_type == NULL_TREE)
+	{
+	  error_at (loc,
+		    "unable to find the promise type for this coroutine");
+	return false;
+	}
+
+      /* Try to find the handle type for the promise.  */
+      info.handle_type = find_coro_handle_type (loc, info.promise_type);
+      if (info.handle_type == NULL_TREE)
+	return false;
+
       /* Instantiate this, we're going to use it.  */
-      handle_type = complete_type_or_else (handle_type, fndecl);
-      DECL_COROUTINE_HANDLE_TYPE (fndecl) = handle_type;
-      /* Build a proxy for a handle to "self" as the param to await_suspend()
-	 calls.  */
-      DECL_COROUTINE_SELF_H_PROXY (fndecl)
-	= build_lang_decl (VAR_DECL, get_identifier ("self_h.proxy"),
-			   handle_type);
+      info.handle_type = complete_type_or_else (info.handle_type, fndecl);
+      /* Diagnostic would be emitted by complete_type_or_else.  */
+      if (info.handle_type == error_mark_node)
+	return false;
+
+      /* Build a proxy for a handle to "self" as the param to
+	 await_suspend() calls.  */
+      info.self_h_proxy =
+	build_lang_decl (VAR_DECL, get_identifier ("self_h.proxy"),
+			 info.handle_type);
+
       /* Build a proxy for the promise so that we can perform lookups.  */
-      DECL_COROUTINE_PROMISE_PROXY (fndecl)
-	= build_lang_decl (VAR_DECL, get_identifier ("promise.proxy"),
-			   DECL_COROUTINE_PROMISE_TYPE (fndecl));
+      info.promise_proxy =
+	build_lang_decl (VAR_DECL, get_identifier ("promise.proxy"),
+			 info.promise_type);
+
       /* Note where we first saw a coroutine keyword.  */
-      DECL_COROUTINE_FIRST_KEYWD_LOC (fndecl) = loc;
+      info.first_coro_keyword = loc;
     }
 
-  if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
-    {
-      error_at (loc, "unable to find the promise type for this coroutine");
-      return false;
-    }
   return true;
+}
+
+/* These function assumes that the caller has verified that the state for
+   the decl has been initialised, we try to minimise work here.  */
+static tree
+get_coroutine_promise_type (tree decl)
+{
+  gcc_checking_assert (fn_to_coro_info);
+
+  coroutine_info_t *info = fn_to_coro_info->get (decl);
+  if (!info)
+    return NULL_TREE;
+  return info->promise_type;
+}
+
+static tree
+get_coroutine_handle_type (tree decl)
+{
+  gcc_checking_assert (fn_to_coro_info);
+
+  coroutine_info_t *info = fn_to_coro_info->get (decl);
+  if (!info)
+    return NULL_TREE;
+  return info->handle_type;
+}
+
+static tree
+get_coroutine_self_handle_proxy (tree decl)
+{
+  gcc_checking_assert (fn_to_coro_info);
+
+  coroutine_info_t *info = fn_to_coro_info->get (decl);
+  if (!info)
+    return NULL_TREE;
+  return info->self_h_proxy;
+}
+
+static tree
+get_coroutine_promise_proxy (tree decl)
+{
+  gcc_checking_assert (fn_to_coro_info);
+
+  coroutine_info_t *info = fn_to_coro_info->get (decl);
+  if (!info)
+    return NULL_TREE;
+  return info->promise_proxy;
 }
 
 /* Lookup a Promise member.  */
@@ -210,7 +287,7 @@ lookup_promise_member (tree fndecl, const char * member_name,
 		       location_t loc, bool musthave)
 {
   tree pm_name = get_identifier (member_name);
-  tree promise = DECL_COROUTINE_PROMISE_TYPE(fndecl);
+  tree promise = get_coroutine_promise_type(fndecl);
   tree pm_memb = lookup_member (promise, pm_name,
 				/*protect*/1,  /*want_type*/ 0,
 				tf_warning_or_error);
@@ -296,8 +373,8 @@ coro_function_valid_p (tree fndecl)
      a keyword that triggered this.  Keywords check promise validity for
      their context and thus the promise type should be known at this point.
   */
-  gcc_assert (DECL_COROUTINE_HANDLE_TYPE(fndecl) != NULL_TREE
-	      && DECL_COROUTINE_PROMISE_TYPE(fndecl) != NULL_TREE);
+  gcc_assert (get_coroutine_handle_type(fndecl) != NULL_TREE
+	      && get_coroutine_promise_type(fndecl) != NULL_TREE);
 
   if (current_function_returns_value || current_function_returns_null)
     /* TODO: record or extract positions of returns (and the first coro
@@ -386,7 +463,7 @@ build_co_await (location_t loc, tree a, tree mode)
 
   /* The suspend method has constraints on its return type.  */
   tree awsp_func = NULL_TREE;
-  tree h_proxy = DECL_COROUTINE_SELF_H_PROXY (current_function_decl);
+  tree h_proxy = get_coroutine_self_handle_proxy (current_function_decl);
   vec<tree, va_gc>* args = make_tree_vector_single (h_proxy);
   tree awsp_call  = build_new_method_call (e_proxy, awsp_meth, &args, NULL_TREE,
 					  LOOKUP_NORMAL, &awsp_func,
@@ -488,7 +565,7 @@ finish_co_await_expr (location_t kw, tree expr)
       tree at_fn = NULL_TREE;
       vec<tree, va_gc>* args = make_tree_vector_single (expr);
       a = build_new_method_call
-	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), at_meth,  &args,
+	(get_coroutine_promise_proxy (current_function_decl), at_meth,  &args,
 	 NULL_TREE, LOOKUP_NORMAL, &at_fn, tf_warning_or_error);
 
       /* Probably it's not an error to fail here, although possibly a bit odd
@@ -562,7 +639,7 @@ finish_co_yield_expr (location_t kw, tree expr)
   tree yield_fn = NULL_TREE;
   vec<tree, va_gc>* args = make_tree_vector_single (expr);
   tree yield_call = build_new_method_call
-    (DECL_COROUTINE_PROMISE_PROXY (current_function_decl), y_meth,  &args,
+    (get_coroutine_promise_proxy (current_function_decl), y_meth,  &args,
      NULL_TREE, LOOKUP_NORMAL, &yield_fn, tf_warning_or_error);
 
   if (!yield_fn || yield_call == error_mark_node)
@@ -660,7 +737,7 @@ finish_co_return_stmt (location_t kw, tree expr)
 	return error_mark_node;
 
       co_ret_call = build_new_method_call
-	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,
+	(get_coroutine_promise_proxy (current_function_decl), crv_meth,
 	 NULL, NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
     }
   else
@@ -673,7 +750,7 @@ finish_co_return_stmt (location_t kw, tree expr)
 
       vec<tree, va_gc>* args = make_tree_vector_single (expr);
       co_ret_call = build_new_method_call
-	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,
+	(get_coroutine_promise_proxy (current_function_decl), crv_meth,
 	 &args, NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
     }
 
@@ -1392,10 +1469,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   verify_stmt_tree (fnbody);
   /* Some things we inherit from the original function.  */
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
-  tree handle_type = DECL_COROUTINE_HANDLE_TYPE (orig);
-  tree self_h_proxy = DECL_COROUTINE_SELF_H_PROXY (orig);
-  tree promise_type = DECL_COROUTINE_PROMISE_TYPE (orig);
-  tree promise_proxy = DECL_COROUTINE_PROMISE_PROXY (orig);
+  tree handle_type = get_coroutine_handle_type (orig);
+  tree self_h_proxy = get_coroutine_self_handle_proxy (orig);
+  tree promise_type = get_coroutine_promise_type (orig);
+  tree promise_proxy = get_coroutine_promise_proxy (orig);
   tree act_des_fn_type = build_function_type_list (void_type_node,
 						   coro_frame_ptr, NULL_TREE);
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
@@ -1877,7 +1954,7 @@ build_init_or_final_await (location_t loc, bool is_final)
 
   tree s_fn = NULL_TREE;
   tree setup_call = build_new_method_call
-    (DECL_COROUTINE_PROMISE_PROXY (current_function_decl), setup_meth,  NULL,
+    (get_coroutine_promise_proxy (current_function_decl), setup_meth,  NULL,
      NULL_TREE, LOOKUP_NORMAL, &s_fn, tf_warning_or_error);
 
   if (!s_fn || setup_call == error_mark_node)
@@ -2458,8 +2535,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
   gcc_assert (! VOID_TYPE_P (fn_return_type));
-  tree handle_type = DECL_COROUTINE_HANDLE_TYPE(orig);
-  tree promise_type = DECL_COROUTINE_PROMISE_TYPE(orig);
+  tree handle_type = get_coroutine_handle_type(orig);
+  tree promise_type = get_coroutine_promise_type(orig);
 
   /* 2. Types we need to define or look up.  */
 
@@ -3048,7 +3125,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					     fn_start, false /*musthave*/);
       if (!ueh_meth || ueh_meth == error_mark_node)
 	warning_at (fn_start, 0, "no member named %qs in %qT",
-		    ueh_name, DECL_COROUTINE_PROMISE_TYPE(orig));
+		    ueh_name, get_coroutine_promise_type(orig));
     } /* Else we don't check and don't care if the method is missing.  */
 
   /* ==== start to build the final functions.

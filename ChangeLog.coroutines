@@ -1,3 +1,28 @@
+2019-11-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (coro_promise_type_found_p): New.
+	(get_coroutine_promise_type): New.
+	(get_coroutine_handle_type): New.
+	(get_coroutine_self_handle_proxy): New.
+	(get_coroutine_promise_proxy): New.
+	(lookup_promise_member): Use local hash map state instead of the
+	function decl.
+	(coro_function_valid_p): Likewise.
+	(build_co_await): Likewise.
+	(finish_co_await_expr): Likewise.
+	(finish_co_yield_expr): Likewise.
+	(finish_co_return_stmt): Likewise.
+	(build_actor_fn): Likewise.
+	(build_init_or_final_await): Likewise.
+	(morph_fn_to_coro): Likewise.
+	* cp-tree.h (struct GTY): Remove coroutine state fields.
+	(DECL_COROUTINE_HANDLE_TYPE): Remove.
+	(DECL_COROUTINE_SELF_H_PROXY): Remove.
+	(DECL_COROUTINE_PROMISE_TYPE): Remove.
+	(DECL_COROUTINE_PROMISE_PROXY): Remove.
+	(DECL_COROUTINE_FIRST_KEYWD_LOC): Remove.
+
 2019-11-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
