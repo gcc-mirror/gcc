@@ -1,3 +1,9 @@
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92512
+	* tree-vect-loop.c (check_reduction_path): Fix operand index
+	computability check.  Add check for second use in COND_EXPRs.
+
 2019-11-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/92515
