@@ -1,3 +1,10 @@
+2019-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/warn/Walways-true-1.C: Check locations too.
+	* g++.dg/warn/Walways-true-2.C: Likewise.
+	* g++.dg/warn/Walways-true-3.C: Likewise.
+	* g++.dg/warn/Waddress-1.C: Check additional location.
+
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-maybe_unused-1.c,
