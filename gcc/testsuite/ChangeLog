@@ -1,3 +1,9 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-maybe_unused-1.c,
+	gcc.dg/c2x-attr-maybe_unused-2.c,
+	gcc.dg/c2x-attr-maybe_unused-3.c: New tests.
+
 2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.dg/rtl/aarch64/rtl-handle-column-numbers.c: New test.
