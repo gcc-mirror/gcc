@@ -1,5 +1,17 @@
 2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/iterator_concepts.h (weakly_incrementable): Adjust.
+	* include/std/concepts (default_constructible): Rename to
+	default_initializable and require default-list-initialization and
+	default-initialization to be valid (LWG 3149).
+	(semiregular): Adjust to new name.
+	* testsuite/std/concepts/concepts.lang/concept.defaultconstructible/
+	1.cc: Rename directory to concept.defaultinitializable and adjust to
+	new name.
+	* testsuite/std/concepts/concepts.lang/concept.defaultinitializable/
+	lwg3149.cc: New test.
+	* testsuite/util/testsuite_iterators.h (test_range): Adjust.
+
 	* src/c++17/fs_path.cc [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
 	(is_disk_designator): New helper function.
 	(path::_Parser::root_path()): Use is_disk_designator.

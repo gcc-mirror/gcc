@@ -20,28 +20,28 @@
 
 #include <concepts>
 
-static_assert( !std::default_constructible<void> );
-static_assert( std::default_constructible<void*> );
-static_assert( std::default_constructible<const void*> );
-static_assert( std::default_constructible<char> );
-static_assert( std::default_constructible<float> );
-static_assert( std::default_constructible<const int> );
-static_assert( std::default_constructible<int*> );
-static_assert( !std::default_constructible<int&> );
-static_assert( !std::default_constructible<int&&> );
-static_assert( !std::default_constructible<const int&> );
-static_assert( !std::default_constructible<int[]> );
-static_assert( std::default_constructible<int[2]> );
-static_assert( !std::default_constructible<int()> );
-static_assert( std::default_constructible<int(*)()> );
-static_assert( !std::default_constructible<int(&)()> );
+static_assert( !std::default_initializable<void> );
+static_assert( std::default_initializable<void*> );
+static_assert( std::default_initializable<const void*> );
+static_assert( std::default_initializable<char> );
+static_assert( std::default_initializable<float> );
+static_assert( !std::default_initializable<const int> );
+static_assert( std::default_initializable<int*> );
+static_assert( !std::default_initializable<int&> );
+static_assert( !std::default_initializable<int&&> );
+static_assert( !std::default_initializable<const int&> );
+static_assert( !std::default_initializable<int[]> );
+static_assert( std::default_initializable<int[2]> );
+static_assert( !std::default_initializable<int()> );
+static_assert( std::default_initializable<int(*)()> );
+static_assert( !std::default_initializable<int(&)()> );
 
 enum E { };
-static_assert( std::default_constructible<E> );
+static_assert( std::default_initializable<E> );
 enum class CE { };
-static_assert( std::default_constructible<CE> );
+static_assert( std::default_initializable<CE> );
 struct A { };
-static_assert( std::default_constructible<A> );
+static_assert( std::default_initializable<A> );
 union B { };
 static_assert( std::constructible_from<B> );
 
@@ -50,7 +50,7 @@ struct C
   C(void* = nullptr) { }
   ~C() noexcept(false) { }
 };
-static_assert( !std::default_constructible<C> );
+static_assert( !std::default_initializable<C> );
 
 class D
 {
@@ -60,4 +60,4 @@ public:
 private:
   ~D() { }
 };
-static_assert( !std::default_constructible<D> );
+static_assert( !std::default_initializable<D> );
