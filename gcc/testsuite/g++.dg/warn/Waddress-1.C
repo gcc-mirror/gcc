@@ -13,7 +13,7 @@ S s;
 T t;
 double d;
 
-void f()  { if (z) z(); }               // { dg-warning "address" }
+void f()  { if (z) z(); }               // { dg-warning "17:address" }
 
 void gl() { if (z != 0) z(); }          // { dg-warning "19:address" }
 void hl() { if (z != (ptrf)0) z(); }    // { dg-warning "19:address" }

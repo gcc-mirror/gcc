@@ -5981,15 +5981,16 @@ cp_build_addressof (location_t loc, tree arg, tsubst_flags_t complain)
    -1.  */
 
 tree
-cp_truthvalue_conversion (tree expr)
+cp_truthvalue_conversion (tree expr, tsubst_flags_t complain)
 {
   tree type = TREE_TYPE (expr);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
   if (TYPE_PTR_OR_PTRMEM_P (type)
       /* Avoid ICE on invalid use of non-static member function.  */
       || TREE_CODE (expr) == FUNCTION_DECL)
-    return build_binary_op (input_location, NE_EXPR, expr, nullptr_node, true);
+    return cp_build_binary_op (loc, NE_EXPR, expr, nullptr_node, complain);
   else
-    return c_common_truthvalue_conversion (input_location, expr);
+    return c_common_truthvalue_conversion (loc, expr);
 }
 
 /* Returns EXPR contextually converted to bool.  */

@@ -7450,7 +7450,7 @@ enum compare_bounds_t { bounds_none, bounds_either, bounds_first };
 
 extern bool cxx_mark_addressable		(tree, bool = false);
 extern int string_conv_p			(const_tree, const_tree, int);
-extern tree cp_truthvalue_conversion		(tree);
+extern tree cp_truthvalue_conversion		(tree, tsubst_flags_t);
 extern tree contextual_conv_bool		(tree, tsubst_flags_t);
 extern tree condition_conversion		(tree);
 extern tree require_complete_type		(tree);

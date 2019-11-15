@@ -1,3 +1,13 @@
+2019-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_truthvalue_conversion): Add tsubst_flags_t parameter
+	and use it in calls; also pass the location_t of the expression to
+	cp_build_binary_op and c_common_truthvalue_conversion.
+	* rtti.c (build_dynamic_cast_1): Adjust call.
+	* cvt.c (ocp_convert): Likewise.
+	* cp-gimplify.c (cp_fold): Likewise.
+	* cp-tree.h (cp_truthvalue_conversion): Update declaration.
+
 2019-11-14  Jason Merrill  <jason@redhat.com>
 
 	Implement P1816R0, class template argument deduction for aggregates.

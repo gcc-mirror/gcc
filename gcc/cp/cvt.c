@@ -841,13 +841,13 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
 	    e = build_nop (ENUM_UNDERLYING_TYPE (intype), e);
 	  if (complain & tf_warning)
-	    return cp_truthvalue_conversion (e);
+	    return cp_truthvalue_conversion (e, complain);
 	  else
 	    {
 	      /* Prevent bogus -Wint-in-bool-context warnings coming
 		 from c_common_truthvalue_conversion down the line.  */
 	      warning_sentinel w (warn_int_in_bool_context);
-	      return cp_truthvalue_conversion (e);
+	      return cp_truthvalue_conversion (e, complain);
 	    }
 	}
 
