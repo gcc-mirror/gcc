@@ -563,7 +563,7 @@ ipa_profile (void)
   histogram.release ();
   histogram_pool.release ();
 
-  /* Produce speculative calls: we saved common traget from porfiling into
+  /* Produce speculative calls: we saved common target from porfiling into
      e->common_target_id.  Now, at link time, we can look up corresponding
      function node and produce speculative call.  */
 
