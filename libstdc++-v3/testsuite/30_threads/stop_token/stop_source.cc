@@ -68,8 +68,27 @@ test02()
   VERIFY( !ssrc.stop_requested() );
 }
 
+void
+test03()
+{
+  std::stop_source s1;
+  s1.request_stop();
+  std::stop_source s2(std::nostopstate);
+  s1.swap(s2);
+  VERIFY( !s1.stop_possible() );
+  VERIFY( !s1.stop_requested() );
+  VERIFY( s2.stop_possible() );
+  VERIFY( s2.stop_requested() );
+  swap(s1, s2);
+  VERIFY( s1.stop_possible() );
+  VERIFY( s1.stop_requested() );
+  VERIFY( !s2.stop_possible() );
+  VERIFY( !s2.stop_requested() );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
 }

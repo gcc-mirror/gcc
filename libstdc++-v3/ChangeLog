@@ -1,3 +1,31 @@
+2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token: Reduce header dependencies by including
+	internal headers.
+	(stop_token::swap(stop_token&), swap(stop_token&, stop_token&)):
+	Define.
+	(operator!=(const stop_token&, const stop_token&)): Fix return value.
+	(stop_token::_Stop_cb::_Stop_cb(Cb&&)): Use std::forward instead of
+	(stop_token::_Stop_state_t) [_GLIBCXX_HAS_GTHREADS]: Use lock_guard
+	instead of unique_lock.
+	[!_GLIBCXX_HAS_GTHREADS]: Do not use mutex.
+	(stop_token::stop_token(_Stop_state)): Change parameter to lvalue
+	reference.
+	(stop_source): Remove unnecessary using-declarations for names only
+	used once.
+	(swap(stop_source&, stop_source&)): Define.
+	(stop_callback(const stop_token&, _Cb&&))
+	(stop_callback(stop_token&&, _Cb&&)): Replace lambdas with a named
+	function. Use std::forward instead of std::move. Run callbacks if a
+	stop request has already been made.
+	(stop_source::_M_execute()): Remove.
+	(stop_source::_S_execute(_Stop_cb*)): Define.
+	* include/std/version (__cpp_lib_jthread): Define conditionally.
+	* testsuite/30_threads/stop_token/stop_callback.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: Enable test for
+	immediate execution of callback.
+
 2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement the default_searcher part of C++20 p1032 Misc constexpr bits.
