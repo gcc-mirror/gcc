@@ -140,6 +140,7 @@
 #include <numbers>
 #include <ranges>
 #include <span>
+#include <stop_token>
 // #include <syncstream>
 #include <version>
 #endif
