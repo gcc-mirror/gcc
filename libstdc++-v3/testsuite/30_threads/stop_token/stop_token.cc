@@ -15,13 +15,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a -pthread" }
-// { dg-do run }
-// { dg-require-effective-target c++2a }
-// { dg-require-effective-target pthread }
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
 
 #include <stop_token>
-#include <iostream>
 #include <testsuite_hooks.h>
 
 int main()
@@ -41,7 +38,6 @@ int main()
   // register callback
   bool cb1called{false};
   auto cb1 = [&]{
-               std::cout << "cb1" << std::endl;
                cb1called = true;
              };
   {

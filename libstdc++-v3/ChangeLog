@@ -1,3 +1,14 @@
+2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add <stop_token>.
+	* include/precompiled/stdc++.h: Likewise.
+	* include/std/stop_token: Fix definition of std::nostopstate.
+	* testsuite/30_threads/headers/stop_token/synopsis.cc: New test.
+	* testsuite/30_threads/headers/thread/types_std_c++20.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: Remove unnecessary
+	dg-require directives. Remove I/O and inclusion of <iostream>.
+
 2019-11-14  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/Makefile.am: Add <stop_token> header.

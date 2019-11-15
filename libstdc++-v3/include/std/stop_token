@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class stop_callback;
 
   struct nostopstate_t { explicit nostopstate_t() = default; };
-  inline constexpr nostopstate_t nostopstate();
+  inline constexpr nostopstate_t nostopstate{};
 
   class stop_token
   {
