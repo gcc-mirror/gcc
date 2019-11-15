@@ -1359,6 +1359,7 @@ extern void warn_for_multistatement_macros (location_t, location_t,
 extern bool attribute_takes_identifier_p (const_tree);
 extern tree handle_deprecated_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
+extern tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
 extern int parse_tm_stmt_attr (tree, int);
 extern int tm_attr_to_mask (tree);
 extern tree tm_mask_to_attr (int);

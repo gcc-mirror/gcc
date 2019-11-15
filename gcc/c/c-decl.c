@@ -4343,6 +4343,8 @@ const struct attribute_spec std_attribute_table[] =
        affects_type_identity, handler, exclude } */
   { "deprecated", 0, 1, false, false, false, false,
     handle_deprecated_attribute, NULL },
+  { "fallthrough", 0, 0, false, false, false, false,
+    handle_fallthrough_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 

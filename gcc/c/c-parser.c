@@ -1927,9 +1927,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	{
 	  if (fallthru_attr_p != NULL)
 	    *fallthru_attr_p = true;
-	  tree fn = build_call_expr_internal_loc (here, IFN_FALLTHROUGH,
-						  void_type_node, 0);
-	  add_stmt (fn);
+	  if (nested)
+	    {
+	      tree fn = build_call_expr_internal_loc (here, IFN_FALLTHROUGH,
+						      void_type_node, 0);
+	      add_stmt (fn);
+	    }
+	  else
+	    pedwarn (here, OPT_Wattributes,
+		     "%<fallthrough%> attribute at top level");
 	}
       else if (empty_ok && !(have_attrs
 			     && specs->non_std_attrs_seen_p))

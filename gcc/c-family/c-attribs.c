@@ -144,7 +144,6 @@ static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
-static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
 static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
@@ -4114,7 +4113,7 @@ handle_designated_init_attribute (tree *node, tree name, tree, int,
 /* Handle a "fallthrough" attribute; arguments as in struct
    attribute_spec.handler.  */
 
-static tree
+tree
 handle_fallthrough_attribute (tree *, tree name, tree, int,
 			      bool *no_add_attrs)
 {
