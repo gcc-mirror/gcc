@@ -1,3 +1,7 @@
+2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* passes.c (should_skip_pass_p): Always run "dfinish".
+
 2019-11-15  Richard Biener  <rguenther@suse.de>
 
 	* ipa-inline.c (inline_small_functions): Move assignment

@@ -2375,7 +2375,8 @@ should_skip_pass_p (opt_pass *pass)
     return false;
 
   /* Don't skip df init; later RTL passes need it.  */
-  if (strstr (pass->name, "dfinit") != NULL)
+  if (strstr (pass->name, "dfinit") != NULL
+      || strstr (pass->name, "dfinish") != NULL)
     return false;
 
   if (!quiet_flag)
