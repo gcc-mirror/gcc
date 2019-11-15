@@ -2400,6 +2400,11 @@ skip_pass (opt_pass *pass)
   if (strcmp (pass->name, "reload") == 0)
     reload_completed = 1;
 
+  /* Similar for pass "pro_and_epilogue" and the "epilogue_completed" global
+     variable.  */
+  if (strcmp (pass->name, "pro_and_epilogue") == 0)
+    epilogue_completed = 1;
+
   /* The INSN_ADDRESSES vec is normally set up by
      shorten_branches; set it up for the benefit of passes that
      run after this.  */
