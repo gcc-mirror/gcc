@@ -1,5 +1,13 @@
 2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/fs_path.cc [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(is_disk_designator): New helper function.
+	(path::_Parser::root_path()): Use is_disk_designator.
+	(path::lexically_relative(const path&)): Implement resolution of
+	LWG 3070.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Check with
+	path components that look like a root-name.
+
 	* doc/doxygen/user.cfg.in: Add <stop_token>.
 	* include/precompiled/stdc++.h: Likewise.
 	* include/std/stop_token: Fix definition of std::nostopstate.
