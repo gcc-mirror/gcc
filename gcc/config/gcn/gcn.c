@@ -191,6 +191,17 @@ static const struct gcn_kernel_arg_type
   {"work_item_id_Z", NULL, V64SImode, FIRST_VGPR_REG + 2}
 };
 
+static const long default_requested_args
+	= (1 << PRIVATE_SEGMENT_BUFFER_ARG)
+	  | (1 << DISPATCH_PTR_ARG)
+	  | (1 << QUEUE_PTR_ARG)
+	  | (1 << KERNARG_SEGMENT_PTR_ARG)
+	  | (1 << PRIVATE_SEGMENT_WAVE_OFFSET_ARG)
+	  | (1 << WORKGROUP_ID_X_ARG)
+	  | (1 << WORK_ITEM_ID_X_ARG)
+	  | (1 << WORK_ITEM_ID_Y_ARG)
+	  | (1 << WORK_ITEM_ID_Z_ARG);
+
 /* Extract parameter settings from __attribute__((amdgpu_hsa_kernel ())).
    This function also sets the default values for some arguments.
  
@@ -201,10 +212,7 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
 				       tree list)
 {
   bool err = false;
-  args->requested = ((1 << PRIVATE_SEGMENT_BUFFER_ARG)
-		     | (1 << QUEUE_PTR_ARG)
-		     | (1 << KERNARG_SEGMENT_PTR_ARG)
-		     | (1 << PRIVATE_SEGMENT_WAVE_OFFSET_ARG));
+  args->requested = default_requested_args;
   args->nargs = 0;
 
   for (int a = 0; a < GCN_KERNEL_ARG_TYPES; a++)
@@ -242,8 +250,6 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
       args->requested |= (1 << a);
       args->order[args->nargs++] = a;
     }
-  args->requested |= (1 << WORKGROUP_ID_X_ARG);
-  args->requested |= (1 << WORK_ITEM_ID_Z_ARG);
 
   /* Requesting WORK_ITEM_ID_Z_ARG implies requesting WORK_ITEM_ID_X_ARG and
      WORK_ITEM_ID_Y_ARG.  Similarly, requesting WORK_ITEM_ID_Y_ARG implies
@@ -252,10 +258,6 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
     args->requested |= (1 << WORK_ITEM_ID_Y_ARG);
   if (args->requested & (1 << WORK_ITEM_ID_Y_ARG))
     args->requested |= (1 << WORK_ITEM_ID_X_ARG);
-
-  /* Always enable this so that kernargs is in a predictable place for
-     gomp_print, etc.  */
-  args->requested |= (1 << DISPATCH_PTR_ARG);
 
   int sgpr_regno = FIRST_SGPR_REG;
   args->nsgprs = 0;
@@ -2045,26 +2047,33 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 static void
 gcn_conditional_register_usage (void)
 {
-  int i;
+  if (!cfun || !cfun->machine)
+    return;
 
-  /* FIXME: Do we need to reset fixed_regs?  */
-
-/* Limit ourselves to 1/16 the register file for maximimum sized workgroups.
-   There are enough SGPRs not to limit those.
-   TODO: Adjust this more dynamically.  */
-  for (i = FIRST_VGPR_REG + 64; i <= LAST_VGPR_REG; i++)
-    fixed_regs[i] = 1, call_used_regs[i] = 1;
-
-  if (!cfun || !cfun->machine || cfun->machine->normal_function)
+  if (cfun->machine->normal_function)
     {
-      /* Normal functions can't know what kernel argument registers are
-         live, so just fix the bottom 16 SGPRs, and bottom 3 VGPRs.  */
-      for (i = 0; i < 16; i++)
-	fixed_regs[FIRST_SGPR_REG + i] = 1;
-      for (i = 0; i < 3; i++)
-	fixed_regs[FIRST_VGPR_REG + i] = 1;
+      /* Restrict the set of SGPRs and VGPRs used by non-kernel functions.  */
+      for (int i = SGPR_REGNO (62); i <= LAST_SGPR_REG; i++)
+	fixed_regs[i] = 1, call_used_regs[i] = 1;
+
+      for (int i = VGPR_REGNO (24); i <= LAST_VGPR_REG; i++)
+	fixed_regs[i] = 1, call_used_regs[i] = 1;
+
       return;
     }
+
+  /* If the set of requested args is the default set, nothing more needs to
+     be done.  */
+  if (cfun->machine->args.requested == default_requested_args)
+    return;
+
+  /* Requesting a set of args different from the default violates the ABI.  */
+  if (!leaf_function_p ())
+    warning (0, "A non-default set of initial values has been requested, "
+		"which violates the ABI!");
+
+  for (int i = SGPR_REGNO (0); i < SGPR_REGNO (14); i++)
+    fixed_regs[i] = 0;
 
   /* Fix the runtime argument register containing values that may be
      needed later.  DISPATCH_PTR_ARG and FLAT_SCRATCH_* should not be
@@ -2073,10 +2082,10 @@ gcn_conditional_register_usage (void)
     fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]] = 1;
   if (cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
     {
+      /* The upper 32-bits of the 64-bit descriptor are not used, so allow
+	the containing registers to be used for other purposes.  */
       fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]] = 1;
       fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] + 1] = 1;
-      fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] + 2] = 1;
-      fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] + 3] = 1;
     }
   if (cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG] >= 0)
     {
