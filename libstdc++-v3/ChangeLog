@@ -1,3 +1,10 @@
+2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the default_searcher part of C++20 p1032 Misc constexpr bits.
+	* include/std/functional
+	(default_searcher, default_searcher::operator()): Constexpr.
+	* testsuite/20_util/function_objects/constexpr_searcher.cc: New.
+
 2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h (weakly_incrementable): Adjust.
