@@ -1,5 +1,10 @@
 2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
 
+	* passes.c (skip_pass): Set epilogue_completed if skipping the
+	pro_and_epilogue pass.
+
+2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
 	* passes.c (should_skip_pass_p): Always run "dfinish".
 
 2019-11-15  Richard Biener  <rguenther@suse.de>
