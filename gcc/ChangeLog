@@ -1,3 +1,11 @@
+2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* read-rtl-function.c
+	(function_reader::add_fixup_source_location): Take additional
+	parameter of a column.
+	(function_reader::maybe_read_location): Optionally parse column
+	information and pass to add_fixup_source_location.
+
 2019-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92512

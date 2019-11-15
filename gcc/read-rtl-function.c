@@ -115,7 +115,7 @@ class function_reader : public rtx_reader
 					int operand_idx, int bb_idx);
 
   void add_fixup_source_location (file_location loc, rtx_insn *insn,
-				  const char *filename, int lineno);
+				  const char *filename, int lineno, int colno);
 
   void add_fixup_expr (file_location loc, rtx x,
 		       const char *desc);
@@ -1371,7 +1371,7 @@ function_reader::add_fixup_note_insn_basic_block (file_location loc, rtx insn,
 
 void
 function_reader::add_fixup_source_location (file_location, rtx_insn *,
-					    const char *, int)
+					    const char *, int, int)
 {
 }
 
@@ -1557,7 +1557,20 @@ function_reader::maybe_read_location (rtx_insn *insn)
       require_char (':');
       struct md_name line_num;
       read_name (&line_num);
-      add_fixup_source_location (loc, insn, filename, atoi (line_num.string));
+
+      int column = 0;
+      int ch = read_char ();
+      if (ch == ':')
+	{
+	  struct md_name column_num;
+	  read_name (&column_num);
+	  column = atoi (column_num.string);
+	}
+      else
+	unread_char (ch);
+      add_fixup_source_location (loc, insn, filename,
+				 atoi (line_num.string),
+				 column);
     }
   else
     unread_char (ch);
