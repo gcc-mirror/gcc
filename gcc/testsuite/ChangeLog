@@ -1,3 +1,7 @@
+2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/rtl/aarch64/rtl-handle-column-numbers.c: New test.
+
 2019-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92512
