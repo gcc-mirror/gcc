@@ -1,3 +1,8 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-1.c, gcc.dg/c2x-attr-deprecated-2.c,
+	gcc.dg/c2x-attr-deprecated-3.c: New tests.
+
 2019-11-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-utf8char-1.c, gcc.dg/c2x-utf8char-1.c,

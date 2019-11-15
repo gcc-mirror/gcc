@@ -4336,6 +4336,16 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 }
 
 
+/* Table of supported standard (C2x) attributes.  */
+const struct attribute_spec std_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "deprecated", 0, 1, false, false, false, false,
+    handle_deprecated_attribute, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
+};
+
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *) 0).
    Initialize the global scope.
@@ -4348,6 +4358,8 @@ c_init_decl_processing (void)
 
   /* Initialize reserved words for parser.  */
   c_parse_init ();
+
+  register_scoped_attributes (std_attribute_table, NULL);
 
   current_function_decl = NULL_TREE;
 

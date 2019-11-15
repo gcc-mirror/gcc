@@ -1,3 +1,13 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (std_attribute_table): New.
+	(c_init_decl_processing): Register attributes from
+	std_attribute_table.
+	* c-parser.c (c_parser_attribute_arguments): Add arguments
+	require_string and allow_empty_args.  All callers changed.
+	(c_parser_std_attribute): Set require_string argument for
+	"deprecated" attribute.
+
 2019-11-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_postfix_expression)

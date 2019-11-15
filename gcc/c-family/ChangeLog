@@ -1,3 +1,8 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-attribs.c (handle_deprecated_attribute): Remove static.
+	* c-common.h (handle_deprecated_attribute): Declare.
+
 2019-11-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-lex.c (lex_charconst): Make CPP_UTF8CHAR constants unsigned
