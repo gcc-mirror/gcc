@@ -1,3 +1,15 @@
+2019-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_call_expr): Don't call
+	omp_resolve_declare_variant after gimplification.
+	* omp-general.c (omp_context_selector_matches): For isa that might
+	match in some other function, defer if in declare simd function.
+	(omp_context_compute_score): Don't look for " score" in construct
+	trait set.  Set *score to -1 if it can't ever match.
+	(omp_resolve_declare_variant): If any variants need to be deferred,
+	don't punt immediately, but compute scores of all variants and if
+	ther eis a score winner that doesn't need to be deferred, return that.
+
 2019-11-15  Luo Xiong Hu  <luoxhu@linux.ibm.com>
 
 	* ipa-comdats.c: Fix comments typo.
