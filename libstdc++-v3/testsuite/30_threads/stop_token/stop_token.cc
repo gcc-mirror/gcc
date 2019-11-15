@@ -21,7 +21,76 @@
 #include <stop_token>
 #include <testsuite_hooks.h>
 
-int main()
+void
+test01()
+{
+  std::stop_source ssrc;
+  std::stop_token tok = ssrc.get_token();
+  VERIFY(tok.stop_possible());
+  VERIFY(!tok.stop_requested());
+
+  std::stop_token copy(tok);
+  VERIFY(copy == tok);
+  VERIFY(copy.stop_possible());
+  VERIFY(!copy.stop_requested());
+  VERIFY(tok.stop_possible());
+  VERIFY(!tok.stop_requested());
+
+  std::stop_token move(std::move(tok));
+  VERIFY(move != tok);
+  VERIFY(move == copy);
+  VERIFY(move.stop_possible());
+  VERIFY(!move.stop_requested());
+  VERIFY(!tok.stop_possible());
+  VERIFY(!tok.stop_requested());
+  VERIFY(copy.stop_possible());
+  VERIFY(!copy.stop_requested());
+
+  ssrc.request_stop();
+  VERIFY(move.stop_possible());
+  VERIFY(move.stop_requested());
+  VERIFY(!tok.stop_possible());
+  VERIFY(!tok.stop_requested());
+  VERIFY(copy.stop_possible());
+  VERIFY(copy.stop_requested());
+
+  tok.swap(move);
+  VERIFY(tok == copy);
+  VERIFY(!move.stop_possible());
+  VERIFY(!move.stop_requested());
+  VERIFY(tok.stop_possible());
+  VERIFY(tok.stop_requested());
+  VERIFY(copy.stop_possible());
+  VERIFY(copy.stop_requested());
+
+  swap(move, copy);
+  VERIFY(tok == move);
+  VERIFY(move.stop_possible());
+  VERIFY(move.stop_requested());
+  VERIFY(tok.stop_possible());
+  VERIFY(tok.stop_requested());
+  VERIFY(!copy.stop_possible());
+  VERIFY(!copy.stop_requested());
+}
+
+void
+test02()
+{
+  std::stop_source src1, src2;
+  std::stop_token tok = src1.get_token();
+  VERIFY(tok.stop_possible());
+  VERIFY(!tok.stop_requested());
+
+  std::stop_token copy = src2.get_token();
+  VERIFY(copy != tok);
+  copy = tok;
+  VERIFY(copy == tok);
+  copy = src2.get_token();
+  VERIFY(copy != tok);
+}
+
+void
+test03()
 {
   // create stop_source
   std::stop_source ssrc;
@@ -77,8 +146,6 @@ int main()
   b = ssrc.request_stop();
   VERIFY(!b);
 
-  // TODO verify the standard requires this
-#if 0
   // register another callback
   bool cb3called{false};
   std::stop_callback scb3{stok, [&]
@@ -92,5 +159,11 @@ int main()
   VERIFY(!cb1called);
   VERIFY(cb2called);
   VERIFY(cb3called);
-#endif
+}
+
+int main()
+{
+  test01();
+  test02();
+  test03();
 }

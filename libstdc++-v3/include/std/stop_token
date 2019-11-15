@@ -31,24 +31,25 @@
 
 #if __cplusplus > 201703L
 
-#include <type_traits>
-#include <memory>
-#include <mutex>
 #include <atomic>
+#include <bits/std_mutex.h>
+#include <ext/concurrence.h>
+#include <bits/unique_ptr.h>
+#include <bits/shared_ptr.h>
 
-#define __cpp_lib_jthread 201907L
+#ifdef _GLIBCXX_HAS_GTHREADS
+# define __cpp_lib_jthread 201907L
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  class stop_source;
-  template<typename _Callback>
-  class stop_callback;
-
+  /// Tag type indicating a stop_source should have no shared-stop-state.
   struct nostopstate_t { explicit nostopstate_t() = default; };
   inline constexpr nostopstate_t nostopstate{};
 
+  /// Allow testing whether a stop request has been made on a `stop_source`.
   class stop_token
   {
   public:
@@ -63,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator=(const stop_token& __rhs) noexcept = default;
 
     stop_token&
-    operator=(stop_token&& __rhs) noexcept;
+    operator=(stop_token&& __rhs) noexcept = default;
 
     [[nodiscard]]
     bool
@@ -79,6 +80,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return stop_possible() && _M_state->_M_stop_requested();
     }
 
+    void
+    swap(stop_token& __rhs) noexcept
+    { _M_state.swap(__rhs._M_state); }
+
     [[nodiscard]]
     friend bool
     operator==(const stop_token& __a, const stop_token& __b)
@@ -90,26 +95,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     friend bool
     operator!=(const stop_token& __a, const stop_token& __b)
     {
-      return __a._M_state == __b._M_state;
+      return __a._M_state != __b._M_state;
     }
 
-  private:
-    friend stop_source;
-    template<typename _Callback>
-    friend class stop_callback;
+    friend void
+    swap(stop_token& __lhs, stop_token& __rhs) noexcept
+    { __lhs.swap(__rhs); }
 
-    struct _Stop_cb {
+  private:
+    friend class stop_source;
+    template<typename _Callback>
+      friend class stop_callback;
+
+    struct _Stop_cb
+    {
       void(*_M_callback)(_Stop_cb*);
       _Stop_cb* _M_prev = nullptr;
       _Stop_cb* _M_next = nullptr;
 
       template<typename _Cb>
-      _Stop_cb(_Cb&& __cb)
-        : _M_callback(std::move(__cb))
-      { }
+	_Stop_cb(_Cb&& __cb)
+	: _M_callback(std::forward<_Cb>(__cb))
+	{ }
 
       bool
-      _M_linked() const
+      _M_linked() const noexcept
       {
         return (_M_prev != nullptr)
           || (_M_next != nullptr);
@@ -123,17 +133,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-    struct _Stop_state_t {
-      std::atomic<bool> _M_stopped;
-      std::mutex _M_mtx;
+    struct _Stop_state_t
+    {
+      std::atomic<bool> _M_stopped{false};
       _Stop_cb* _M_head = nullptr;
+#ifdef _GLIBCXX_HAS_GTHREADS
+      std::mutex _M_mtx;
+#endif
 
-      _Stop_state_t()
-        : _M_stopped{false}
-      { }
+      _Stop_state_t() = default;
 
       bool
-      _M_stop_requested()
+      _M_stop_requested() noexcept
       {
         return _M_stopped;
       }
@@ -144,7 +155,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         bool __stopped = false;
         if (_M_stopped.compare_exchange_strong(__stopped, true))
           {
-            std::unique_lock<std::mutex> __lck{_M_mtx};
+#ifdef _GLIBCXX_HAS_GTHREADS
+            std::lock_guard<std::mutex> __lck{_M_mtx};
+#endif
             while (_M_head)
               {
                 auto __p = _M_head;
@@ -159,7 +172,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_register_callback(_Stop_cb* __cb)
       {
-        std::unique_lock<std::mutex> __lck{_M_mtx};
+#ifdef _GLIBCXX_HAS_GTHREADS
+        std::lock_guard<std::mutex> __lck{_M_mtx};
+#endif
         if (_M_stopped)
           return false;
 
@@ -169,13 +184,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             _M_head->_M_prev = __cb;
           }
         _M_head = __cb;
-         return true;
+        return true;
       }
 
       void
       _M_remove_callback(_Stop_cb* __cb)
       {
-        std::unique_lock<std::mutex> __lck{_M_mtx};
+#ifdef _GLIBCXX_HAS_GTHREADS
+        std::lock_guard<std::mutex> __lck{_M_mtx};
+#endif
         if (__cb == _M_head)
           {
             _M_head = _M_head->_M_next;
@@ -202,18 +219,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using _Stop_state = std::shared_ptr<_Stop_state_t>;
     _Stop_state _M_state;
 
-    explicit stop_token(_Stop_state __state)
-      : _M_state{std::move(__state)}
+    explicit
+    stop_token(const _Stop_state& __state) noexcept
+    : _M_state{__state}
     { }
   };
 
-  class stop_source {
-    using _Stop_state_t = stop_token::_Stop_state_t;
-    using _Stop_state = stop_token::_Stop_state;
-
+  /// A type that allows a stop request to be made.
+  class stop_source
+  {
   public:
     stop_source()
-      : _M_state(std::make_shared<_Stop_state_t>())
+      : _M_state(std::make_shared<stop_token::_Stop_state_t>())
     { }
 
     explicit stop_source(std::nostopstate_t) noexcept
@@ -274,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     swap(stop_source& __other) noexcept
     {
-      std::swap(_M_state, __other._M_state);
+      _M_state.swap(__other._M_state);
     }
 
     [[nodiscard]]
@@ -291,59 +308,63 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __a._M_state != __b._M_state;
     }
 
+    friend void
+    swap(stop_source& __lhs, stop_source& __rhs) noexcept
+    {
+      __lhs.swap(__rhs);
+    }
+
   private:
-    _Stop_state _M_state;
+    stop_token::_Stop_state _M_state;
   };
 
+  /// A wrapper for callbacks to be run when a stop request is made.
   template<typename _Callback>
     class [[nodiscard]] stop_callback
       : private stop_token::_Stop_cb
     {
-      using _Stop_cb = stop_token::_Stop_cb;
-      using _Stop_state = stop_token::_Stop_state;
     public:
       using callback_type = _Callback;
 
       template<typename _Cb,
-               std::enable_if_t<std::is_constructible_v<_Callback, _Cb>, int> = 0>
-        explicit stop_callback(const stop_token& __token, _Cb&& __cb)
-        noexcept(std::is_nothrow_constructible_v<_Callback, _Cb>)
-        : _Stop_cb([](_Stop_cb* __that) noexcept
-                   {
-                     static_cast<stop_callback*>(__that)->_M_execute();
-                   }),
-        _M_cb(std::move(__cb))
+               enable_if_t<is_constructible_v<_Callback, _Cb>, int> = 0>
+        explicit
+	stop_callback(const stop_token& __token, _Cb&& __cb)
+        noexcept(is_nothrow_constructible_v<_Callback, _Cb>)
+        : _Stop_cb(&_S_execute), _M_cb(std::forward<_Cb>(__cb))
         {
-          auto res = __token._M_state->_M_register_callback(this);
-          if (__token._M_state && res)
-            {
-              _M_state = __token._M_state;
-            }
+	  if (auto __state = __token._M_state)
+	    {
+	      if (__state->_M_stop_requested())
+		_S_execute(this); // ensures std::terminate on throw
+	      else if (__state->_M_register_callback(this))
+		_M_state.swap(__state);
+	    }
         }
 
       template<typename _Cb,
-               std::enable_if_t<std::is_constructible_v<_Callback, _Cb>, int> = 0>
-        explicit stop_callback(stop_token&& __token, _Cb&& __cb)
-        noexcept(std::is_nothrow_constructible_v<_Callback, _Cb>)
-        : _Stop_cb([](_Stop_cb* __that) noexcept
-                   {
-                     static_cast<stop_callback*>(__that)->_M_execute();
-                   }),
-          _M_cb(std::move(__cb))
-          {
-            if (__token._M_state && __token._M_state->_M_register_callback(this))
-              {
-                std::swap(_M_state, __token._M_state);
-              }
-          }
+               enable_if_t<is_constructible_v<_Callback, _Cb>, int> = 0>
+        explicit
+	stop_callback(stop_token&& __token, _Cb&& __cb)
+        noexcept(is_nothrow_constructible_v<_Callback, _Cb>)
+        : _Stop_cb(&_S_execute), _M_cb(std::forward<_Cb>(__cb))
+	{
+	  if (auto& __state = __token._M_state)
+	    {
+	      if (__state->_M_stop_requested())
+		_S_execute(this); // ensures std::terminate on throw
+	      else if (__state->_M_register_callback(this))
+		_M_state.swap(__state);
+	    }
+	}
 
       ~stop_callback()
-        {
-          if (_M_state)
-            {
-              _M_state->_M_remove_callback(this);
-            }
-        }
+      {
+	if (_M_state)
+	  {
+	    _M_state->_M_remove_callback(this);
+	  }
+      }
 
       stop_callback(const stop_callback&) = delete;
       stop_callback& operator=(const stop_callback&) = delete;
@@ -352,12 +373,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Callback _M_cb;
-      _Stop_state _M_state = nullptr;
+      stop_token::_Stop_state _M_state = nullptr;
 
-      void
-        _M_execute() noexcept
+      static void
+      _S_execute(_Stop_cb* __that) noexcept
       {
-        _M_cb();
+	static_cast<stop_callback*>(__that)->_M_cb();
       }
     };
 
@@ -366,5 +387,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // __cplusplus >= 201703L
+#endif // __cplusplus > 201703L
 #endif // _GLIBCXX_STOP_TOKEN
