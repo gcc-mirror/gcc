@@ -1,3 +1,10 @@
+2019-11-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the <array> part of C++20 p1032 Misc constexpr bits.
+	* include/std/array (fill, swap): Make constexpr.
+	* testsuite/23_containers/array/requirements/constexpr_fill.cc: New.
+	* testsuite/23_containers/array/requirements/constexpr_swap.cc: New.
+
 2019-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h (__iter_concept_impl): Add
