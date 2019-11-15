@@ -1,5 +1,10 @@
 2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* config/gcn/gcn.h (FIXED_REGISTERS): Unfix frame pointer.
+	(CALL_USED_REGISTERS): Make frame pointer callee-saved.
+
+2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* config/gcn/gcn.c (MAX_NORMAL_SGPR_COUNT, MAX_NORMAL_VGPR_COUNT): New.
 	(gcn_conditional_register_usage): Use constants in place of hard-coded
 	values.
