@@ -1,5 +1,10 @@
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-parser.c (c_parser_std_attribute_specifier): Diagnose
+	duplicate standard attributes.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-decl.c (std_attribute_table): Add maybe_unused.
 
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>

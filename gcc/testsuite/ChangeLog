@@ -1,3 +1,8 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-4.c, gcc.dg/c2x-attr-fallthrough-4.c,
+	gcc.dg/c2x-attr-maybe_unused-4.c: New tests.
+
 2019-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/warn/Walways-true-1.C: Check locations too.
