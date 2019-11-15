@@ -1,3 +1,7 @@
+2019-11-15  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	* ipa-inline.c (inline_small_functions): Update iterator of next.
+
 2019-11-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* lra-spills.c (assign_spill_hard_regs): Check that the spill
