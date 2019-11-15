@@ -1,3 +1,9 @@
+2019-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/92515
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_builtin): Use
+	VIEW_CONVERT_EXPR to reinterpret vectors as different types.
+
 2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_regno_reg_class): Return VCC_CONDITIONAL_REG
