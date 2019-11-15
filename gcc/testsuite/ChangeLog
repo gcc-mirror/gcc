@@ -1,3 +1,7 @@
+2019-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-13.c: New test.
+
 2019-11-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR testsuite/92520
