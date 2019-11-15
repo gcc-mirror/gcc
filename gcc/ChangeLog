@@ -1,3 +1,11 @@
+2019-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/92515
+	* tree-vect-stmts.c (vectorizable_shift): Record incompatible op1
+	types when converting a vector/scalar shift into a vector/vector one,
+	using tree_nop_conversion_p instead of useless_type_conversion_p.
+	Move the conversion code to the transform block.
+
 2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* read-rtl-function.c
