@@ -1,3 +1,11 @@
+2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69654
+	* trans-expr.c (gfc_trans_structure_assign): Move assignment to
+	'cm' after treatment of C pointer types and test that the type
+	has been completely built before it. Add an assert that the
+	backend_decl for each component exists.
+
 2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-expr.c (gfc_conv_procedure_call): Fold hidden
