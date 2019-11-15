@@ -5750,21 +5750,9 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                  the rhs being int, instead of the same type as the lhs,
                  so make sure the scalar is the right type if we are
 		 dealing with vectors of long long/long/short/char.  */
-              if (dt[1] == vect_constant_def)
-		{
-		  if (!slp_node)
-		    op1 = fold_convert (TREE_TYPE (vectype), op1);
-		}
-	      else if (!useless_type_conversion_p (TREE_TYPE (vectype),
-						   TREE_TYPE (op1)))
-		{
-		  if (vec_stmt && !slp_node)
-		    {
-		      op1 = fold_convert (TREE_TYPE (vectype), op1);
-		      op1 = vect_init_vector (stmt_info, op1,
-					      TREE_TYPE (vectype), NULL);
-		    }
-		}
+	      incompatible_op1_vectype_p
+		= !tree_nop_conversion_p (TREE_TYPE (vectype),
+					  TREE_TYPE (op1));
             }
         }
     }
@@ -5818,6 +5806,14 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "transform binary/unary operation.\n");
+
+  if (incompatible_op1_vectype_p && !slp_node)
+    {
+      op1 = fold_convert (TREE_TYPE (vectype), op1);
+      if (dt[1] != vect_constant_def)
+	op1 = vect_init_vector (stmt_info, op1,
+				TREE_TYPE (vectype), NULL);
+    }
 
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
