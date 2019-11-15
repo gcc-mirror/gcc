@@ -7349,7 +7349,16 @@ finish_struct (tree t, tree attributes)
 		add_method (t, *iter, true);
 	  }
 	else if (DECL_DECLARES_FUNCTION_P (x))
-	  DECL_IN_AGGR_P (x) = false;
+	  {
+	    DECL_IN_AGGR_P (x) = false;
+	    if (DECL_VIRTUAL_P (x))
+	      CLASSTYPE_NON_AGGREGATE (t) = true;
+	  }
+	else if (TREE_CODE (x) == FIELD_DECL)
+	  {
+	    if (TREE_PROTECTED (x) || TREE_PRIVATE (x))
+	      CLASSTYPE_NON_AGGREGATE (t) = true;
+	  }
 
       /* Also add a USING_DECL for operator=.  We know there'll be (at
 	 least) one, but we don't know the signature(s).  We want name
@@ -7386,6 +7395,9 @@ finish_struct (tree t, tree attributes)
 
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
+
+      if (TYPE_HAS_USER_CONSTRUCTOR (t))
+	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
       /* Fix up any variants we've already built.  */
       for (x = TYPE_NEXT_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))

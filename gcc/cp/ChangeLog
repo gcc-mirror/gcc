@@ -1,3 +1,14 @@
+2019-11-14  Jason Merrill  <jason@redhat.com>
+
+	Implement P1816R0, class template argument deduction for aggregates.
+	* pt.c (maybe_aggr_guide, collect_ctor_idx_types): New.
+	(is_spec_or_derived): Split out from do_class_deduction.
+	(build_deduction_guide): Handle aggregate guide.
+	* class.c (finish_struct): Set CLASSTYPE_NON_AGGREGATE in a
+	template.
+	* cp-tree.h (CP_AGGREGATE_TYPE_P): An incomplete class is not an
+	aggregate.
+
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* call.c (build_conditional_expr_1): Use truth_type_for instead
