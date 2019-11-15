@@ -1,3 +1,9 @@
+2019-11-15  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/92528
+	* ipa-prop.c (update_jump_functions_after_inlining): Invalidate
+	aggregate jump function when inlined-to caller has no edge summary.
+
 2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_init_cumulative_args): Call reinit_regs.
