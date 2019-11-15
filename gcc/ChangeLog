@@ -1,3 +1,12 @@
+2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (MAX_NORMAL_SGPR_COUNT, MAX_NORMAL_VGPR_COUNT): New.
+	(gcn_conditional_register_usage): Use constants in place of hard-coded
+	values.
+	(gcn_hsa_declare_function_name): Set lower bound for number of
+	SGPRs/VGPRs in non-leaf kernels to MAX_NORMAL_SGPR_COUNT and
+	MAX_NORMAL_VGPR_COUNT.
+
 2019-11-15  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-utils.h (ipa_remove_useless_jump_functions): Remove stray

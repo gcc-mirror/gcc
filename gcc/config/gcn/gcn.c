@@ -75,6 +75,12 @@ int gcn_isa = 3;		/* Default to GCN3.  */
 
 #define LDS_SIZE 65536
 
+/* The number of registers usable by normal non-kernel functions.
+   The SGPR count includes any special extra registers such as VCC.  */
+
+#define MAX_NORMAL_SGPR_COUNT	64
+#define MAX_NORMAL_VGPR_COUNT	24
+
 /* }}}  */
 /* {{{ Initialization and options.  */
 
@@ -2053,10 +2059,12 @@ gcn_conditional_register_usage (void)
   if (cfun->machine->normal_function)
     {
       /* Restrict the set of SGPRs and VGPRs used by non-kernel functions.  */
-      for (int i = SGPR_REGNO (62); i <= LAST_SGPR_REG; i++)
+      for (int i = SGPR_REGNO (MAX_NORMAL_SGPR_COUNT - 2);
+	   i <= LAST_SGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
 
-      for (int i = VGPR_REGNO (24); i <= LAST_VGPR_REG; i++)
+      for (int i = VGPR_REGNO (MAX_NORMAL_VGPR_COUNT);
+	   i <= LAST_VGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
 
       return;
@@ -4908,10 +4916,10 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
   if (!leaf_function_p ())
     {
       /* We can't know how many registers function calls might use.  */
-      if (vgpr < 64)
-	vgpr = 64;
-      if (sgpr + extra_regs < 102)
-	sgpr = 102 - extra_regs;
+      if (vgpr < MAX_NORMAL_VGPR_COUNT)
+	vgpr = MAX_NORMAL_VGPR_COUNT;
+      if (sgpr + extra_regs < MAX_NORMAL_SGPR_COUNT)
+	sgpr = MAX_NORMAL_SGPR_COUNT - extra_regs;
     }
 
   fputs ("\t.align\t256\n", file);
