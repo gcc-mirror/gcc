@@ -1,7 +1,7 @@
 2019-11-14  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/Makefile.am: Add <stop_token> header.
-        * include/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
 	* include/std/condition_variable: Add overloads for stop_token support
 	to condition_variable_any.
 	* include/std/stop_token: New file.
@@ -9,7 +9,8 @@
 	* include/std/version (__cpp_lib_jthread): New value.
 	* testsuite/30_threads/condition_variable_any/stop_token/1.cc: New test.
 	* testsuite/30_threads/condition_variable_any/stop_token/2.cc: New test.
-	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc: New test.
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	New test.
 	* testsuite/30_threads/jthread/1.cc: New test.
 	* testsuite/30_threads/jthread/2.cc: New test.
 	* testsuite/30_threads/jthread/jthread.cc: New test.
@@ -57,7 +58,7 @@
 	* doc/xml/gnu/gpl-3.0.xml: Adjust link to "Why not LGPL".
 
 2019-11-10  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/using.xml: Switch www.hboehm.info to https.
 
 2019-11-07  Jonathan Wakely  <jwakely@redhat.com>
