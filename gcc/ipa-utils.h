@@ -47,9 +47,6 @@ void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src, bool preserve_body = false);
 bool recursive_call_p (tree, tree);
 
-/* In ipa-prop.c  */
-void ipa_remove_useless_jump_functions ();
-
 /* In ipa-profile.c  */
 bool ipa_propagate_frequency (struct cgraph_node *node);
 
