@@ -1,3 +1,11 @@
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92039
+	PR tree-optimization/91975
+	* gcc.dg/tree-ssa/cunroll-2.c: Revert to state previous to
+	unroller adjustment.
+	* g++.dg/tree-ssa/ivopts-3.C: Likewise.
+
 2019-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-variant-13.c: New test.

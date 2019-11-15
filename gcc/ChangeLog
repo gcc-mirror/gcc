@@ -1,3 +1,12 @@
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92039
+	PR tree-optimization/91975
+	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Revert
+	previous change, treat invariants consistently as non-constant.
+	(tree_estimate_loop_size): Ternary ops with just the first op
+	constant are not optimized away.
+
 2019-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_call_expr): Don't call

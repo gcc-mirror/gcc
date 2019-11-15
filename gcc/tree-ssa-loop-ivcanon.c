@@ -163,7 +163,7 @@ struct loop_size
 static bool
 constant_after_peeling (tree op, gimple *stmt, class loop *loop)
 {
-  if (is_gimple_min_invariant (op))
+  if (CONSTANT_CLASS_P (op))
     return true;
 
   /* We can still fold accesses to constant arrays when index is known.  */
@@ -195,8 +195,9 @@ constant_after_peeling (tree op, gimple *stmt, class loop *loop)
   /* Induction variables are constants when defined in loop.  */
   if (loop_containing_stmt (stmt) != loop)
     return false;
-  tree ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, op));
-  if (chrec_contains_undetermined (ev))
+  tree ev = analyze_scalar_evolution (loop, op);
+  if (chrec_contains_undetermined (ev)
+      || chrec_contains_symbols (ev))
     return false;
   return true;
 }
@@ -293,7 +294,8 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 						  stmt, loop)
 		       && (gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS
 			   || constant_after_peeling (gimple_assign_rhs2 (stmt),
-						      stmt, loop)))
+						      stmt, loop))
+		       && gimple_assign_rhs_class (stmt) != GIMPLE_TERNARY_RHS)
 		{
 		  size->constant_iv = true;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
