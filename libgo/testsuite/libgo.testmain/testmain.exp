@@ -47,7 +47,11 @@ if [info exists gluefile] {
     regsub $gluefile $object_files "" object_files
 }
 
-set comp_output [go_target_compile "$object_files _testmain.go" \
+set golibs ""
+if [info exists env(GOLIBS)] {
+    set golibs "$env(GOLIBS)"
+}
+set comp_output [go_target_compile "$object_files _testmain.go $golibs" \
 			 "./a.exe" "executable" $options]
 if ![ string match "" $comp_output ] {
     verbose -log $comp_output
