@@ -1,6 +1,9 @@
 2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
-	gcc/
+	* config/gcn/gcn.c (gcn_init_cumulative_args): Call reinit_regs.
+
+2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* config/gcn/gcn.c (gcn_expand_prologue): Remove initialization and
 	prologue use of v0.
 	(print_operand_address): Use v1 for zero vector offset.
