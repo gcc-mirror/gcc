@@ -7,4 +7,4 @@ struct array
   int a [N];
 };
 
-array a = { 1, 2, 3 };  // { dg-error "cannot deduce" }
+array a = { 1, 2, 3 };  // { dg-error "" }

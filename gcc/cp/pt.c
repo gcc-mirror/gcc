@@ -27724,28 +27724,39 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
 
 /* Returns a C++17 class deduction guide template based on the constructor
    CTOR.  As a special case, CTOR can be a RECORD_TYPE for an implicit default
-   guide, or REFERENCE_TYPE for an implicit copy/move guide.  */
+   guide, REFERENCE_TYPE for an implicit copy/move guide, or TREE_LIST for an
+   aggregate initialization guide.  */
 
 static tree
-build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
+build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t complain)
 {
-  tree type, tparms, targs, fparms, fargs, ci;
+  tree tparms, targs, fparms, fargs, ci;
   bool memtmpl = false;
   bool explicit_p;
   location_t loc;
   tree fn_tmpl = NULL_TREE;
 
-  if (TYPE_P (ctor))
+  if (outer_args)
     {
-      type = ctor;
-      bool copy_p = TYPE_REF_P (type);
-      if (copy_p)
+      ++processing_template_decl;
+      type = tsubst (type, outer_args, complain, CLASSTYPE_TI_TEMPLATE (type));
+      --processing_template_decl;
+    }
+
+  if (!DECL_DECLARES_FUNCTION_P (ctor))
+    {
+      if (TYPE_P (ctor))
 	{
-	  type = TREE_TYPE (type);
-	  fparms = tree_cons (NULL_TREE, type, void_list_node);
+	  bool copy_p = TYPE_REF_P (ctor);
+	  if (copy_p)
+	    fparms = tree_cons (NULL_TREE, type, void_list_node);
+	  else
+	    fparms = void_list_node;
 	}
+      else if (TREE_CODE (ctor) == TREE_LIST)
+	fparms = ctor;
       else
-	fparms = void_list_node;
+	gcc_unreachable ();
 
       tree ctmpl = CLASSTYPE_TI_TEMPLATE (type);
       tparms = DECL_TEMPLATE_PARMS (ctmpl);
@@ -27766,8 +27777,6 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
       if (outer_args)
 	fn_tmpl = tsubst (fn_tmpl, outer_args, complain, ctor);
       ctor = DECL_TEMPLATE_RESULT (fn_tmpl);
-
-      type = DECL_CONTEXT (ctor);
 
       tparms = DECL_TEMPLATE_PARMS (fn_tmpl);
       /* If type is a member class template, DECL_TI_ARGS (ctor) will have
@@ -27889,6 +27898,103 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   return ded_tmpl;
 }
 
+/* Add to LIST the member types for the reshaped initializer CTOR.  */
+
+static tree
+collect_ctor_idx_types (tree ctor, tree list)
+{
+  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (ctor);
+  tree idx, val; unsigned i;
+  FOR_EACH_CONSTRUCTOR_ELT (v, i, idx, val)
+    {
+      if (BRACE_ENCLOSED_INITIALIZER_P (val)
+	  && CONSTRUCTOR_NELTS (val))
+	if (tree subidx = CONSTRUCTOR_ELT (val, 0)->index)
+	  if (TREE_CODE (subidx) == FIELD_DECL)
+	    {
+	      list = collect_ctor_idx_types (val, list);
+	      continue;
+	    }
+      tree ftype = finish_decltype_type (idx, true, tf_none);
+      list = tree_cons (NULL_TREE, ftype, list);
+    }
+
+  return list;
+}
+
+/* Return a C++20 aggregate deduction candidate for TYPE initialized from
+   INIT.  */
+
+static tree
+maybe_aggr_guide (tree type, tree init)
+{
+  if (cxx_dialect < cxx2a)
+    return NULL_TREE;
+
+  if (init == NULL_TREE)
+    return NULL_TREE;
+  if (!CP_AGGREGATE_TYPE_P (type))
+    return NULL_TREE;
+
+  /* If we encounter a problem, we just won't add the candidate.  */
+  tsubst_flags_t complain = tf_none;
+
+  tree parms = NULL_TREE;
+  if (TREE_CODE (init) == CONSTRUCTOR)
+    {
+      init = reshape_init (type, init, complain);
+      if (init == error_mark_node)
+	return NULL_TREE;
+      parms = collect_ctor_idx_types (init, parms);
+    }
+  else if (TREE_CODE (init) == TREE_LIST)
+    {
+      int len = list_length (init);
+      for (tree field = TYPE_FIELDS (type);
+	   len;
+	   --len, field = DECL_CHAIN (field))
+	{
+	  field = next_initializable_field (field);
+	  if (!field)
+	    return NULL_TREE;
+	  tree ftype = finish_decltype_type (field, true, complain);
+	  parms = tree_cons (NULL_TREE, ftype, parms);
+	}
+    }
+  else
+    /* Aggregate initialization doesn't apply to an initializer expression.  */
+    return NULL_TREE;
+
+  if (parms)
+    {
+      tree last = parms;
+      parms = nreverse (parms);
+      TREE_CHAIN (last) = void_list_node;
+      tree guide = build_deduction_guide (type, parms, NULL_TREE, complain);
+      return guide;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return whether ETYPE is, or is derived from, a specialization of TMPL.  */
+
+static bool
+is_spec_or_derived (tree etype, tree tmpl)
+{
+  if (!etype || !CLASS_TYPE_P (etype))
+    return false;
+
+  tree type = TREE_TYPE (tmpl);
+  tree tparms = (INNERMOST_TEMPLATE_PARMS
+		 (DECL_TEMPLATE_PARMS (tmpl)));
+  tree targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
+  int err = unify (tparms, targs, type, etype,
+		   UNIFY_ALLOW_DERIVED, /*explain*/false);
+  ggc_free (targs);
+  return !err;
+}
+
 /* Deduce template arguments for the class template placeholder PTYPE for
    template TMPL based on the initializer INIT, and return the resulting
    type.  */
@@ -27913,16 +28019,15 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   tree type = TREE_TYPE (tmpl);
 
   bool try_list_ctor = false;
+  bool copy_init = false;
 
   releasing_vec rv_args = NULL;
   vec<tree,va_gc> *&args = *&rv_args;
-  if (init == NULL_TREE
-      || TREE_CODE (init) == TREE_LIST)
-    args = make_tree_vector_from_list (init);
+  if (init == NULL_TREE)
+    args = make_tree_vector ();
   else if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      try_list_ctor = TYPE_HAS_LIST_CTOR (type);
-      if (try_list_ctor && CONSTRUCTOR_NELTS (init) == 1)
+      if (CONSTRUCTOR_NELTS (init) == 1)
 	{
 	  /* As an exception, the first phase in 16.3.1.7 (considering the
 	     initializer list as a single argument) is omitted if the
@@ -27930,26 +28035,24 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	     where U is a specialization of C or a class derived from a
 	     specialization of C.  */
 	  tree elt = CONSTRUCTOR_ELT (init, 0)->value;
-	  if (!BRACE_ENCLOSED_INITIALIZER_P (elt))
-	    {
-	      tree etype = TREE_TYPE (elt);
-	      tree tparms = (INNERMOST_TEMPLATE_PARMS
-			     (DECL_TEMPLATE_PARMS (tmpl)));
-	      tree targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
-	      int err = unify (tparms, targs, type, etype,
-			       UNIFY_ALLOW_DERIVED, /*explain*/false);
-	      if (err == 0)
-		try_list_ctor = false;
-	      ggc_free (targs);
-	    }
+	  copy_init = is_spec_or_derived (TREE_TYPE (elt), tmpl);
 	}
+      try_list_ctor = !copy_init && TYPE_HAS_LIST_CTOR (type);
       if (try_list_ctor || is_std_init_list (type))
 	args = make_tree_vector_single (init);
       else
 	args = make_tree_vector_from_ctor (init);
     }
   else
-    args = make_tree_vector_single (init);
+    {
+      if (TREE_CODE (init) == TREE_LIST)
+	args = make_tree_vector_from_list (init);
+      else
+	args = make_tree_vector_single (init);
+
+      if (args->length() == 1)
+	copy_init = is_spec_or_derived (TREE_TYPE ((*args)[0]), tmpl);
+    }
 
   tree dname = dguide_name (tmpl);
   tree cands = lookup_qualified_name (CP_DECL_CONTEXT (tmpl), dname,
@@ -27994,7 +28097,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
       if (iter.using_p ())
 	continue;
 
-      tree guide = build_deduction_guide (*iter, outer_args, complain);
+      tree guide = build_deduction_guide (type, *iter, outer_args, complain);
       if (guide == error_mark_node)
 	return error_mark_node;
       if ((flags & LOOKUP_ONLYCONVERTING)
@@ -28005,6 +28108,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 
       saw_ctor = true;
     }
+
+  if (!copy_init)
+    if (tree guide = maybe_aggr_guide (type, init))
+      cands = lookup_add (guide, cands);
 
   tree call = error_mark_node;
 
@@ -28047,7 +28154,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 
       if (gtype)
 	{
-	  tree guide = build_deduction_guide (gtype, outer_args, complain);
+	  tree guide = build_deduction_guide (type, gtype, outer_args,
+					      complain);
 	  if (guide == error_mark_node)
 	    return error_mark_node;
 	  cands = lookup_add (guide, cands);
