@@ -2803,15 +2803,6 @@ gcn_expand_prologue ()
 				     cfun->machine->args.
 				     reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]);
 
-      if (TARGET_GCN5_PLUS)
-	{
-	  /* v0 is reserved for constant zero so that "global"
-	     memory instructions can have a nul-offset without
-	     causing reloads.  */
-	  emit_insn (gen_vec_duplicatev64si
-		     (gen_rtx_REG (V64SImode, VGPR_REGNO (0)), const0_rtx));
-	}
-
       if (cfun->machine->args.requested & (1 << FLAT_SCRATCH_INIT_ARG))
 	{
 	  rtx fs_init_lo =
@@ -2870,8 +2861,6 @@ gcn_expand_prologue ()
 		  gen_int_mode (LDS_SIZE, SImode));
 
   emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
-  if (TARGET_GCN5_PLUS)
-    emit_insn (gen_prologue_use (gen_rtx_REG (SImode, VGPR_REGNO (0))));
 
   if (cfun && cfun->machine && !cfun->machine->normal_function && flag_openmp)
     {
@@ -5327,9 +5316,9 @@ print_operand_address (FILE *file, rtx mem)
 	      /* The assembler requires a 64-bit VGPR pair here, even though
 	         the offset should be only 32-bit.  */
 	      if (vgpr_offset == NULL_RTX)
-		/* In this case, the vector offset is zero, so we use v0,
-		   which is initialized by the kernel prologue to zero.  */
-		fprintf (file, "v[0:1]");
+		/* In this case, the vector offset is zero, so we use the first
+		   lane of v1, which is initialized to zero.  */
+		fprintf (file, "v[1:2]");
 	      else if (REG_P (vgpr_offset)
 		       && VGPR_REGNO_P (REGNO (vgpr_offset)))
 		{
