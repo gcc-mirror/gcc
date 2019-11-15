@@ -1,3 +1,11 @@
+2019-11-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backport from mainline
+	PR rtl-optimization/92430
+	* cfgcleanup.c (pass_jump_after_combine::gate): New function.
+	(pass_jump_after_combine::execute): Free
+	dominance info at the beginning.
+
 2019-11-13  Claudiu Zissulescu <claziss@gmail.com>
 
 	Backport from mainline
