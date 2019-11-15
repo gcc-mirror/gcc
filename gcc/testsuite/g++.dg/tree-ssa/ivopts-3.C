@@ -70,8 +70,6 @@ int main ( int , char** ) {
     return 0;
 }
 
-// Verify that on x86_64 and i?86 we unroll the innsermost loop and
-// use three IVs for the then innermost loop
+// Verify that on x86_64 and i?86 we use a single IV for the innermost loop
 
-// { dg-final { scan-tree-dump "Selected IV set for loop \[0-9\]* at \[^ \]*:63, 127 avg niters, 3 IVs" "ivopts" { target x86_64-*-* i?86-*-* } } }
-// { dg-final { scan-tree-dump-not "Selected IV set for loop \[0-9\]* at \[^ \]*:64" "ivopts" { target x86_64-*-* i?86-*-* } } }
+// { dg-final { scan-tree-dump "Selected IV set for loop \[0-9\]* at \[^ \]*:64, 3 avg niters, 1 IVs" "ivopts" { target x86_64-*-* i?86-*-* } } }
