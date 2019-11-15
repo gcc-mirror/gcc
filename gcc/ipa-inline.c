@@ -1163,7 +1163,6 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 
       overall_growth = callee_info->growth;
 
-#if 1
       /* Look for inliner wrappers of the form:
 
 	 inline_caller ()
@@ -1215,7 +1214,6 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	      overall_growth = caller_growth;
 	    }
 	}
-#endif
       if (overall_growth > 0)
         {
 	  /* Strongly preffer functions with few callers that can be inlined
@@ -2137,23 +2135,12 @@ inline_small_functions (void)
 	    fprintf (dump_file, " Peeling recursion with depth %i\n", depth);
 
 	  gcc_checking_assert (!callee->inlined_to);
-
-	  int old_size = ipa_size_summaries->get (where)->size;
-	  sreal old_time = ipa_fn_summaries->get (where)->time;
-
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
 	  reset_edge_caches (edge->callee);
 
-	  /* If caller's size and time increased we do not need to update
-	     all edges becuase badness is not going to decrease.  */
-	  if (old_size <= ipa_size_summaries->get (where)->size
-	      && old_time <= ipa_fn_summaries->get (where)->time
-	      && 0)
-	    update_callee_keys (&edge_heap, edge->callee, updated_nodes);
-	  else
-	    update_callee_keys (&edge_heap, where, updated_nodes);
+	  update_callee_keys (&edge_heap, where, updated_nodes);
 	}
       where = edge->caller;
       if (where->inlined_to)
