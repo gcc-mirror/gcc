@@ -2813,9 +2813,11 @@ pop:
 	  /* The following make sure we can compute the operand index
 	     easily plus it mostly disallows chaining via COND_EXPR condition
 	     operands.  */
-	  || (gimple_assign_rhs1 (use_stmt) != op
-	      && gimple_assign_rhs2 (use_stmt) != op
-	      && gimple_assign_rhs3 (use_stmt) != op))
+	  || (gimple_assign_rhs1_ptr (use_stmt) != path[i].second->use
+	      && (gimple_num_ops (use_stmt) <= 2
+		  || gimple_assign_rhs2_ptr (use_stmt) != path[i].second->use)
+	      && (gimple_num_ops (use_stmt) <= 3
+		  || gimple_assign_rhs3_ptr (use_stmt) != path[i].second->use)))
 	{
 	  fail = true;
 	  break;
@@ -2828,7 +2830,18 @@ pop:
       FOR_EACH_IMM_USE_STMT (op_use_stmt, imm_iter, op)
 	if (!is_gimple_debug (op_use_stmt)
 	    && flow_bb_inside_loop_p (loop, gimple_bb (op_use_stmt)))
-	  cnt++;
+	  {
+	    /* We want to allow x + x but not x < 1 ? x : 2.  */
+	    if (is_gimple_assign (op_use_stmt)
+		&& gimple_assign_rhs_code (op_use_stmt) == COND_EXPR)
+	      {
+		use_operand_p use_p;
+		FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+		  cnt++;
+	      }
+	    else
+	      cnt++;
+	  }
       if (cnt != 1)
 	{
 	  fail = true;
