@@ -1,5 +1,10 @@
 2019-11-15  Richard Biener  <rguenther@suse.de>
 
+	* ipa-inline.c (inline_small_functions): Move assignment
+	to next before call destroying edge.
+
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92039
 	PR tree-optimization/91975
 	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Revert
