@@ -1,3 +1,10 @@
+2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_regno_reg_class): Return VCC_CONDITIONAL_REG
+	register class for VCC_LO and VCC_HI.
+	(gcn_spill_class): Use SGPR_REGS to spill registers in
+	VCC_CONDITIONAL_REG.
+
 2019-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92324

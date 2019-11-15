@@ -462,6 +462,9 @@ gcn_regno_reg_class (int regno)
     {
     case SCC_REG:
       return SCC_CONDITIONAL_REG;
+    case VCC_LO_REG:
+    case VCC_HI_REG:
+      return VCC_CONDITIONAL_REG;
     case VCCZ_REG:
       return VCCZ_CONDITIONAL_REG;
     case EXECZ_REG:
@@ -629,7 +632,8 @@ gcn_can_split_p (machine_mode, rtx op)
 static reg_class_t
 gcn_spill_class (reg_class_t c, machine_mode /*mode */ )
 {
-  if (reg_classes_intersect_p (ALL_CONDITIONAL_REGS, c))
+  if (reg_classes_intersect_p (ALL_CONDITIONAL_REGS, c)
+      || c == VCC_CONDITIONAL_REG)
     return SGPR_REGS;
   else
     return NO_REGS;
