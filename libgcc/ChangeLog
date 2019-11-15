@@ -1,3 +1,8 @@
+2019-11-15  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/m68k/linux-unwind.h (struct uw_ucontext): Use sigset_t instead
+	of __sigset_t.
+
 2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
 	    Doug Rupp <rupp@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
