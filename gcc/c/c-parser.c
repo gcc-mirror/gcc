@@ -4478,7 +4478,8 @@ c_parser_gnu_attribute_any_word (c_parser *parser)
    allow identifiers declared as types to start the arguments?  */
 
 static tree
-c_parser_attribute_arguments (c_parser *parser, bool takes_identifier)
+c_parser_attribute_arguments (c_parser *parser, bool takes_identifier,
+			      bool require_string, bool allow_empty_args)
 {
   vec<tree, va_gc> *expr_list;
   tree attr_args;
@@ -4518,7 +4519,21 @@ c_parser_attribute_arguments (c_parser *parser, bool takes_identifier)
   else
     {
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	attr_args = NULL_TREE;
+	{
+	  if (!allow_empty_args)
+	    error_at (c_parser_peek_token (parser)->location,
+		      "parentheses must be omitted if "
+		      "attribute argument list is empty");
+	  attr_args = NULL_TREE;
+	}
+      else if (require_string)
+	{
+	  /* The only valid argument for this attribute is a string
+	     literal.  Handle this specially here to avoid accepting
+	     string literals with excess parentheses.  */
+	  tree string = c_parser_string_literal (parser, false, true).value;
+	  attr_args = build_tree_list (NULL_TREE, string);
+	}
       else
 	{
 	  expr_list = c_parser_expr_list (parser, false, true,
@@ -4601,7 +4616,8 @@ c_parser_gnu_attribute (c_parser *parser, tree attrs,
 
   tree attr_args
     = c_parser_attribute_arguments (parser,
-				    attribute_takes_identifier_p (attr_name));
+				    attribute_takes_identifier_p (attr_name),
+				    false, true);
 
   attr = build_tree_list (attr_name, attr_args);
   if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
@@ -4835,8 +4851,12 @@ c_parser_std_attribute (c_parser *parser)
 	= (ns != NULL_TREE
 	   && strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0
 	   && attribute_takes_identifier_p (name));
+      bool require_string
+	= (ns == NULL_TREE
+	   && strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0);
       TREE_VALUE (attribute)
-	= c_parser_attribute_arguments (parser, takes_identifier);
+	= c_parser_attribute_arguments (parser, takes_identifier,
+					require_string, false);
     }
   else
     c_parser_balanced_token_sequence (parser);
