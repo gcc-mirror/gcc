@@ -138,9 +138,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept constructible_from
       = destructible<_Tp> && is_constructible_v<_Tp, _Args...>;
 
-  /// [concept.defaultconstructible], concept default_constructible
+  /// [concept.defaultinitializable], concept default_initializable
   template<typename _Tp>
-    concept default_constructible = constructible_from<_Tp>;
+    concept default_initializable = constructible_from<_Tp>
+      && requires
+      {
+	_Tp{};
+	(void) ::new _Tp;
+      };
 
   /// [concept.moveconstructible], concept move_constructible
   template<typename _Tp>
@@ -249,7 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && assignable_from<_Tp&, const _Tp&>;
 
   template<typename _Tp>
-    concept semiregular = copyable<_Tp> && default_constructible<_Tp>;
+    concept semiregular = copyable<_Tp> && default_initializable<_Tp>;
 
   // [concepts.compare], comparison concepts
 
