@@ -1,3 +1,8 @@
+2019-11-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR testsuite/92520
+	* gcc.dg/ipa/inline-9.c: Fix template.
+
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-fallthrough-2.c,
