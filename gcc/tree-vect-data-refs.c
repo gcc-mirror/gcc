@@ -3508,10 +3508,13 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       dr_vec_info *dr_info_b = loop_vinfo->lookup_dr (DDR_B (ddr));
       stmt_vec_info stmt_info_b = dr_info_b->stmt;
 
+      bool preserves_scalar_order_p
+	= vect_preserves_scalar_order_p (dr_info_a, dr_info_b);
+
       /* Skip the pair if inter-iteration dependencies are irrelevant
 	 and intra-iteration dependencies are guaranteed to be honored.  */
       if (ignore_step_p
-	  && (vect_preserves_scalar_order_p (dr_info_a, dr_info_b)
+	  && (preserves_scalar_order_p
 	      || vectorizable_with_step_bound_p (dr_info_a, dr_info_b,
 						 &lower_bound)))
 	{
@@ -3629,11 +3632,21 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 					   stmt_info_b->stmt);
 	}
 
+      dr_with_seg_len dr_a (dr_info_a->dr, segment_length_a,
+			    access_size_a, align_a);
+      dr_with_seg_len dr_b (dr_info_b->dr, segment_length_b,
+			    access_size_b, align_b);
+      /* Canonicalize the order to be the one that's needed for accurate
+	 RAW, WAR and WAW flags, in cases where the data references are
+	 well-ordered.  The order doesn't really matter otherwise,
+	 but we might as well be consistent.  */
+      if (get_later_stmt (stmt_info_a, stmt_info_b) == stmt_info_a)
+	std::swap (dr_a, dr_b);
+
       dr_with_seg_len_pair_t dr_with_seg_len_pair
-	(dr_with_seg_len (dr_info_a->dr, segment_length_a,
-			  access_size_a, align_a),
-	 dr_with_seg_len (dr_info_b->dr, segment_length_b,
-			  access_size_b, align_b));
+	(dr_a, dr_b, (preserves_scalar_order_p
+		      ? dr_with_seg_len_pair_t::WELL_ORDERED
+		      : dr_with_seg_len_pair_t::REORDERED));
 
       comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
     }

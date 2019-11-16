@@ -1502,7 +1502,12 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
       if (comp_res == 0)
 	comp_res = data_ref_compare_tree (DR_INIT (dr_a), DR_INIT (dr_b));
       if (comp_res > 0)
-	std::swap (alias_pair->first, alias_pair->second);
+	{
+	  std::swap (alias_pair->first, alias_pair->second);
+	  alias_pair->flags |= DR_ALIAS_SWAPPED;
+	}
+      else
+	alias_pair->flags |= DR_ALIAS_UNSWAPPED;
     }
 
   /* Sort the collected data ref pairs so that we can scan them once to
@@ -1514,10 +1519,13 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
   for (i = 1; i < alias_pairs->length (); ++i)
     {
       /* Deal with two ddrs (dr_a1, dr_b1) and (dr_a2, dr_b2).  */
-      dr_with_seg_len *dr_a1 = &(*alias_pairs)[i-1].first,
-		      *dr_b1 = &(*alias_pairs)[i-1].second,
-		      *dr_a2 = &(*alias_pairs)[i].first,
-		      *dr_b2 = &(*alias_pairs)[i].second;
+      dr_with_seg_len_pair_t *alias_pair1 = &(*alias_pairs)[i - 1];
+      dr_with_seg_len_pair_t *alias_pair2 = &(*alias_pairs)[i];
+
+      dr_with_seg_len *dr_a1 = &alias_pair1->first;
+      dr_with_seg_len *dr_b1 = &alias_pair1->second;
+      dr_with_seg_len *dr_a2 = &alias_pair2->first;
+      dr_with_seg_len *dr_b2 = &alias_pair2->second;
 
       /* Remove duplicate data ref pairs.  */
       if (*dr_a1 == *dr_a2 && *dr_b1 == *dr_b2)
@@ -1526,6 +1534,7 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	    dump_printf (MSG_NOTE, "found equal ranges %T, %T and %T, %T\n",
 			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
 			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
+	  alias_pair1->flags |= alias_pair2->flags;
 	  alias_pairs->ordered_remove (i--);
 	  continue;
 	}
@@ -1631,9 +1640,25 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	    dump_printf (MSG_NOTE, "merging ranges for %T, %T and %T, %T\n",
 			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
 			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
+	  alias_pair1->flags |= alias_pair2->flags;
 	  alias_pairs->ordered_remove (i);
 	  i--;
 	}
+    }
+
+  /* Try to restore the original dr_with_seg_len order within each
+     dr_with_seg_len_pair_t.  If we ended up combining swapped and
+     unswapped pairs into the same check, we have to invalidate any
+     RAW, WAR and WAW information for it.  */
+  FOR_EACH_VEC_ELT (*alias_pairs, i, alias_pair)
+    {
+      unsigned int swap_mask = (DR_ALIAS_SWAPPED | DR_ALIAS_UNSWAPPED);
+      unsigned int swapped = (alias_pair->flags & swap_mask);
+      if (swapped == DR_ALIAS_SWAPPED)
+	std::swap (alias_pair->first, alias_pair->second);
+      else if (swapped != DR_ALIAS_UNSWAPPED)
+	alias_pair->flags |= DR_ALIAS_ARBITRARY;
+      alias_pair->flags &= ~swap_mask;
     }
 }
 
