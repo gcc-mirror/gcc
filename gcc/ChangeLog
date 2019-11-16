@@ -1,5 +1,14 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-data-ref.c (prune_runtime_alias_test_list): Sort the
+	two accesses in each dr_with_seg_len_pair_t before trying to
+	combine separate dr_with_seg_len_pair_ts.
+	* tree-loop-distribution.c (compute_alias_check_pairs): Don't do
+	that here.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list): Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md
 	(scatter_store<SVE_FULL_SD:mode><v_int_equiv>): Extend to...
 	(scatter_store<SVE_24:mode><v_int_container>): ...this.

@@ -3477,7 +3477,6 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   /* First, we collect all data ref pairs for aliasing checks.  */
   FOR_EACH_VEC_ELT (may_alias_ddrs, i, ddr)
     {
-      int comp_res;
       poly_uint64 lower_bound;
       tree segment_length_a, segment_length_b;
       unsigned HOST_WIDE_INT access_size_a, access_size_b;
@@ -3593,14 +3592,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       align_a = vect_vfa_align (dr_info_a);
       align_b = vect_vfa_align (dr_info_b);
 
-      comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (dr_info_a->dr),
-					DR_BASE_ADDRESS (dr_info_b->dr));
-      if (comp_res == 0)
-	comp_res = data_ref_compare_tree (DR_OFFSET (dr_info_a->dr),
-					  DR_OFFSET (dr_info_b->dr));
-
       /* See whether the alias is known at compilation time.  */
-      if (comp_res == 0
+      if (operand_equal_p (DR_BASE_ADDRESS (dr_info_a->dr),
+			   DR_BASE_ADDRESS (dr_info_b->dr), 0)
+	  && operand_equal_p (DR_OFFSET (dr_info_a->dr),
+			      DR_OFFSET (dr_info_b->dr), 0)
 	  && TREE_CODE (DR_STEP (dr_info_a->dr)) == INTEGER_CST
 	  && TREE_CODE (DR_STEP (dr_info_b->dr)) == INTEGER_CST
 	  && poly_int_tree_p (segment_length_a)
@@ -3638,10 +3634,6 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 			  access_size_a, align_a),
 	 dr_with_seg_len (dr_info_b->dr, segment_length_b,
 			  access_size_b, align_b));
-
-      /* Canonicalize pairs by sorting the two DR members.  */
-      if (comp_res > 0)
-	std::swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
 
       comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
     }
