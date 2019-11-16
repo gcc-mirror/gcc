@@ -12901,6 +12901,21 @@ aarch64_extending_load_p (stmt_vec_info stmt_info)
 	  && DR_IS_READ (STMT_VINFO_DATA_REF (def_stmt_info)));
 }
 
+/* Return true if STMT_INFO is an integer truncation.  */
+static bool
+aarch64_integer_truncation_p (stmt_vec_info stmt_info)
+{
+  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
+    return false;
+
+  tree lhs_type = TREE_TYPE (gimple_assign_lhs (assign));
+  tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (assign));
+  return (INTEGRAL_TYPE_P (lhs_type)
+	  && INTEGRAL_TYPE_P (rhs_type)
+	  && TYPE_PRECISION (lhs_type) < TYPE_PRECISION (rhs_type));
+}
+
 /* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
    for STMT_INFO, which has cost kind KIND.  Adjust the cost as necessary
    for SVE targets.  */
@@ -12917,6 +12932,11 @@ aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
      will fold to this form during combine, and that the extension therefore
      comes for free.  */
   if (kind == vector_stmt && aarch64_extending_load_p (stmt_info))
+    stmt_cost = 0;
+
+  /* For similar reasons, vector_stmt integer truncations are a no-op,
+     because we can just ignore the unused upper bits of the source.  */
+  if (kind == vector_stmt && aarch64_integer_truncation_p (stmt_info))
     stmt_cost = 0;
 
   return stmt_cost;
