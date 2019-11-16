@@ -339,10 +339,10 @@
 ;; Fully-packed SVE vector modes that have 64-bit elements.
 (define_mode_iterator SVE_FULL_D [VNx2DI VNx2DF])
 
-;; All partial SVE modes.
-(define_mode_iterator SVE_PARTIAL [VNx2QI
-				   VNx4QI VNx2HI
-				   VNx8QI VNx4HI VNx2SI])
+;; All partial SVE integer modes.
+(define_mode_iterator SVE_PARTIAL_I [VNx8QI VNx4QI VNx2QI
+				     VNx4HI VNx2HI
+				     VNx2SI])
 
 ;; Modes involved in extending or truncating SVE data, for 8 elements per
 ;; 128-bit block.

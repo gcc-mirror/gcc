@@ -1,5 +1,11 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_PARTIAL): Rename to...
+	(SVE_PARTIAL_I): ...this.
+	* config/aarch64/aarch64-sve.md: Apply the above renaming throughout.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_ALL): Rename to...
 	(SVE_FULL): ...this.
 	(SVE_I): Rename to...
