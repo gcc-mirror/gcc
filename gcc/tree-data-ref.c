@@ -1486,13 +1486,32 @@ void
 prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 			       poly_uint64)
 {
+  /* Canonicalize each pair so that the base components are ordered wrt
+     data_ref_compare_tree.  This allows the loop below to merge more
+     cases.  */
+  unsigned int i;
+  dr_with_seg_len_pair_t *alias_pair;
+  FOR_EACH_VEC_ELT (*alias_pairs, i, alias_pair)
+    {
+      data_reference_p dr_a = alias_pair->first.dr;
+      data_reference_p dr_b = alias_pair->second.dr;
+      int comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (dr_a),
+					    DR_BASE_ADDRESS (dr_b));
+      if (comp_res == 0)
+	comp_res = data_ref_compare_tree (DR_OFFSET (dr_a), DR_OFFSET (dr_b));
+      if (comp_res == 0)
+	comp_res = data_ref_compare_tree (DR_INIT (dr_a), DR_INIT (dr_b));
+      if (comp_res > 0)
+	std::swap (alias_pair->first, alias_pair->second);
+    }
+
   /* Sort the collected data ref pairs so that we can scan them once to
      combine all possible aliasing checks.  */
   alias_pairs->qsort (comp_dr_with_seg_len_pair);
 
   /* Scan the sorted dr pairs and check if we can combine alias checks
      of two neighboring dr pairs.  */
-  for (size_t i = 1; i < alias_pairs->length (); ++i)
+  for (i = 1; i < alias_pairs->length (); ++i)
     {
       /* Deal with two ddrs (dr_a1, dr_b1) and (dr_a2, dr_b2).  */
       dr_with_seg_len *dr_a1 = &(*alias_pairs)[i-1].first,

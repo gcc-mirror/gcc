@@ -2456,12 +2456,6 @@ compute_alias_check_pairs (class loop *loop, vec<ddr_p> *alias_ddrs,
       struct data_reference *dr_a = DDR_A (ddr);
       struct data_reference *dr_b = DDR_B (ddr);
       tree seg_length_a, seg_length_b;
-      int comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (dr_a),
-					    DR_BASE_ADDRESS (dr_b));
-
-      if (comp_res == 0)
-	comp_res = data_ref_compare_tree (DR_OFFSET (dr_a), DR_OFFSET (dr_b));
-      gcc_assert (comp_res != 0);
 
       if (latch_dominated_by_data_ref (loop, dr_a))
 	seg_length_a = data_ref_segment_size (dr_a, niters_plus_one);
@@ -2483,10 +2477,6 @@ compute_alias_check_pairs (class loop *loop, vec<ddr_p> *alias_ddrs,
       dr_with_seg_len_pair_t dr_with_seg_len_pair
 	(dr_with_seg_len (dr_a, seg_length_a, access_size_a, align_a),
 	 dr_with_seg_len (dr_b, seg_length_b, access_size_b, align_b));
-
-      /* Canonicalize pairs by sorting the two DR members.  */
-      if (comp_res > 0)
-	std::swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
 
       comp_alias_pairs->safe_push (dr_with_seg_len_pair);
     }
