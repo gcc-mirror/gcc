@@ -53,3 +53,5 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump {flags: [^\n]*ARBITRARY\n} "vect" { target vect_int } } } */
+/* { dg-final { scan-tree-dump "using an address-based overlap test" "vect" } } */
+/* { dg-final { scan-tree-dump-not "using an index-based" "vect" } } */
