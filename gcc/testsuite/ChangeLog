@@ -1,5 +1,21 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/reduc_3.c: Split multi-vector cases out
+	into...
+	* gcc.target/aarch64/sve/reduc_3_costly.c: ...this new test,
+	passing -fno-vect-cost-model for them.
+	* gcc.target/aarch64/sve/slp_6.c: Add -fno-vect-cost-model.
+	* gcc.target/aarch64/sve/slp_7.c,
+	* gcc.target/aarch64/sve/slp_7_run.c: Split multi-vector cases out
+	into...
+	* gcc.target/aarch64/sve/slp_7_costly.c,
+	* gcc.target/aarch64/sve/slp_7_costly_run.c: ...these new tests,
+	passing -fno-vect-cost-model for them.
+	* gcc.target/aarch64/sve/while_7.c: Add -fno-vect-cost-model.
+	* gcc.target/aarch64/sve/while_9.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/bb-slp-4.c: Expect the block to be vectorized
 	with -fno-vect-cost-model.
 	* gcc.dg/vect/bb-slp-bool-1.c: New test.
