@@ -1302,12 +1302,12 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated gather loads.
-(define_expand "gather_load<mode><v_int_equiv>"
-  [(set (match_operand:SVE_FULL_SD 0 "register_operand")
-	(unspec:SVE_FULL_SD
+(define_expand "gather_load<mode><v_int_container>"
+  [(set (match_operand:SVE_24 0 "register_operand")
+	(unspec:SVE_24
 	  [(match_dup 5)
 	   (match_operand:DI 1 "aarch64_sve_gather_offset_<Vesize>")
-	   (match_operand:<V_INT_EQUIV> 2 "register_operand")
+	   (match_operand:<V_INT_CONTAINER> 2 "register_operand")
 	   (match_operand:DI 3 "const_int_operand")
 	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>")
 	   (mem:BLK (scratch))]
@@ -1320,85 +1320,116 @@
 
 ;; Predicated gather loads for 32-bit elements.  Operand 3 is true for
 ;; unsigned extension and false for signed extension.
-(define_insn "mask_gather_load<mode><v_int_equiv>"
-  [(set (match_operand:SVE_FULL_S 0 "register_operand" "=w, w, w, w, w, w")
-	(unspec:SVE_FULL_S
+(define_insn "mask_gather_load<mode><v_int_container>"
+  [(set (match_operand:SVE_4 0 "register_operand" "=w, w, w, w, w, w")
+	(unspec:SVE_4
 	  [(match_operand:VNx4BI 5 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
-	   (match_operand:DI 1 "aarch64_sve_gather_offset_w" "Z, vgw, rk, rk, rk, rk")
+	   (match_operand:DI 1 "aarch64_sve_gather_offset_<Vesize>" "Z, vgw, rk, rk, rk, rk")
 	   (match_operand:VNx4SI 2 "register_operand" "w, w, w, w, w, w")
 	   (match_operand:DI 3 "const_int_operand" "Ui1, Ui1, Z, Ui1, Z, Ui1")
-	   (match_operand:DI 4 "aarch64_gather_scale_operand_w" "Ui1, Ui1, Ui1, Ui1, i, i")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>" "Ui1, Ui1, Ui1, Ui1, i, i")
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
   "@
-   ld1w\t%0.s, %5/z, [%2.s]
-   ld1w\t%0.s, %5/z, [%2.s, #%1]
-   ld1w\t%0.s, %5/z, [%1, %2.s, sxtw]
-   ld1w\t%0.s, %5/z, [%1, %2.s, uxtw]
-   ld1w\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
-   ld1w\t%0.s, %5/z, [%1, %2.s, uxtw %p4]"
+   ld1<Vesize>\t%0.s, %5/z, [%2.s]
+   ld1<Vesize>\t%0.s, %5/z, [%2.s, #%1]
+   ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw]
+   ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw]
+   ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
+   ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw %p4]"
 )
 
 ;; Predicated gather loads for 64-bit elements.  The value of operand 3
 ;; doesn't matter in this case.
-(define_insn "mask_gather_load<mode><v_int_equiv>"
-  [(set (match_operand:SVE_FULL_D 0 "register_operand" "=w, w, w, w")
-	(unspec:SVE_FULL_D
+(define_insn "mask_gather_load<mode><v_int_container>"
+  [(set (match_operand:SVE_2 0 "register_operand" "=w, w, w, w")
+	(unspec:SVE_2
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl, Upl, Upl")
-	   (match_operand:DI 1 "aarch64_sve_gather_offset_d" "Z, vgd, rk, rk")
+	   (match_operand:DI 1 "aarch64_sve_gather_offset_<Vesize>" "Z, vgd, rk, rk")
 	   (match_operand:VNx2DI 2 "register_operand" "w, w, w, w")
 	   (match_operand:DI 3 "const_int_operand")
-	   (match_operand:DI 4 "aarch64_gather_scale_operand_d" "Ui1, Ui1, Ui1, i")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>" "Ui1, Ui1, Ui1, i")
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
   "@
-   ld1d\t%0.d, %5/z, [%2.d]
-   ld1d\t%0.d, %5/z, [%2.d, #%1]
-   ld1d\t%0.d, %5/z, [%1, %2.d]
-   ld1d\t%0.d, %5/z, [%1, %2.d, lsl %p4]"
+   ld1<Vesize>\t%0.d, %5/z, [%2.d]
+   ld1<Vesize>\t%0.d, %5/z, [%2.d, #%1]
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d]
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, lsl %p4]"
 )
 
-;; Likewise, but with the offset being sign-extended from 32 bits.
-(define_insn "*mask_gather_load<mode><v_int_equiv>_sxtw"
-  [(set (match_operand:SVE_FULL_D 0 "register_operand" "=w, w")
-	(unspec:SVE_FULL_D
+;; Likewise, but with the offset being extended from 32 bits.
+(define_insn_and_rewrite "*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked"
+  [(set (match_operand:SVE_2 0 "register_operand" "=w, w")
+	(unspec:SVE_2
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl")
 	   (match_operand:DI 1 "register_operand" "rk, rk")
 	   (unspec:VNx2DI
-	     [(match_dup 5)
+	     [(match_operand 6)
+	      (ANY_EXTEND:VNx2DI
+		(match_operand:VNx2SI 2 "register_operand" "w, w"))]
+	     UNSPEC_PRED_X)
+	   (match_operand:DI 3 "const_int_operand")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>" "Ui1, i")
+	   (mem:BLK (scratch))]
+	  UNSPEC_LD1_GATHER))]
+  "TARGET_SVE"
+  "@
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, <su>xtw]
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, <su>xtw %p4]"
+  "&& !CONSTANT_P (operands[6])"
+  {
+    operands[6] = CONSTM1_RTX (VNx2BImode);
+  }
+)
+
+;; Likewise, but with the offset being truncated to 32 bits and then
+;; sign-extended.
+(define_insn_and_rewrite "*mask_gather_load<mode><v_int_container>_sxtw"
+  [(set (match_operand:SVE_2 0 "register_operand" "=w, w")
+	(unspec:SVE_2
+	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl")
+	   (match_operand:DI 1 "register_operand" "rk, rk")
+	   (unspec:VNx2DI
+	     [(match_operand 6)
 	      (sign_extend:VNx2DI
 		(truncate:VNx2SI
 		  (match_operand:VNx2DI 2 "register_operand" "w, w")))]
 	     UNSPEC_PRED_X)
 	   (match_operand:DI 3 "const_int_operand")
-	   (match_operand:DI 4 "aarch64_gather_scale_operand_d" "Ui1, i")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>" "Ui1, i")
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
   "@
-   ld1d\t%0.d, %5/z, [%1, %2.d, sxtw]
-   ld1d\t%0.d, %5/z, [%1, %2.d, sxtw %p4]"
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw]
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw %p4]"
+  "&& !CONSTANT_P (operands[6])"
+  {
+    operands[6] = CONSTM1_RTX (VNx2BImode);
+  }
 )
 
-;; Likewise, but with the offset being zero-extended from 32 bits.
-(define_insn "*mask_gather_load<mode><v_int_equiv>_uxtw"
-  [(set (match_operand:SVE_FULL_D 0 "register_operand" "=w, w")
-	(unspec:SVE_FULL_D
+;; Likewise, but with the offset being truncated to 32 bits and then
+;; zero-extended.
+(define_insn "*mask_gather_load<mode><v_int_container>_uxtw"
+  [(set (match_operand:SVE_2 0 "register_operand" "=w, w")
+	(unspec:SVE_2
 	  [(match_operand:VNx2BI 5 "register_operand" "Upl, Upl")
 	   (match_operand:DI 1 "register_operand" "rk, rk")
 	   (and:VNx2DI
 	     (match_operand:VNx2DI 2 "register_operand" "w, w")
 	     (match_operand:VNx2DI 6 "aarch64_sve_uxtw_immediate"))
 	   (match_operand:DI 3 "const_int_operand")
-	   (match_operand:DI 4 "aarch64_gather_scale_operand_d" "Ui1, i")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>" "Ui1, i")
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
   "@
-   ld1d\t%0.d, %5/z, [%1, %2.d, uxtw]
-   ld1d\t%0.d, %5/z, [%1, %2.d, uxtw %p4]"
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw]
+   ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw %p4]"
 )
 
 ;; -------------------------------------------------------------------------

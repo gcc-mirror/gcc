@@ -1,5 +1,25 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_24, SVE_2, SVE_4): New mode
+	iterators.
+	* config/aarch64/aarch64-sve.md
+	(gather_load<SVE_FULL_SD:mode><v_int_equiv>): Extend to...
+	(gather_load<SVE_24:mode><v_int_container>): ...this.
+	(mask_gather_load<SVE_FULL_S:mode><v_int_equiv>): Extend to...
+	(mask_gather_load<SVE_4:mode><v_int_container>): ...this.
+	(mask_gather_load<SVE_FULL_D:mode><v_int_equiv>): Extend to...
+	(mask_gather_load<SVE_2:mode><v_int_container>): ...this.
+	(*mask_gather_load<SVE_2:mode><v_int_container>_<su>xtw_unpacked):
+	New pattern.
+	(*mask_gather_load<SVE_FULL_D:mode><v_int_equiv>_sxtw): Extend to...
+	(*mask_gather_load<SVE_2:mode><v_int_equiv>_sxtw): ...this.
+	Allow the nominal extension predicate to be different from the
+	load predicate.
+	(*mask_gather_load<SVE_FULL_D:mode><v_int_equiv>_uxtw): Extend to...
+	(*mask_gather_load<SVE_2:mode><v_int_equiv>_uxtw): ...this.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md
 	(trunc<SVE_HSDI:mode><SVE_PARTIAL_I:mode>2): New pattern.
 	* config/aarch64/aarch64.c (aarch64_integer_truncation_p): New
