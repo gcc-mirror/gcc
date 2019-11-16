@@ -364,6 +364,16 @@
 				VNx4SI VNx2SI
 				VNx2DI])
 
+;; SVE modes with 2 or 4 elements.
+(define_mode_iterator SVE_24 [VNx2QI VNx2HI VNx2HF VNx2SI VNx2SF VNx2DI VNx2DF
+			      VNx4QI VNx4HI VNx4HF VNx4SI VNx4SF])
+
+;; SVE modes with 2 elements.
+(define_mode_iterator SVE_2 [VNx2QI VNx2HI VNx2HF VNx2SI VNx2SF VNx2DI VNx2DF])
+
+;; SVE modes with 4 elements.
+(define_mode_iterator SVE_4 [VNx4QI VNx4HI VNx4HF VNx4SI VNx4SF])
+
 ;; Modes involved in extending or truncating SVE data, for 8 elements per
 ;; 128-bit block.
 (define_mode_iterator VNx8_NARROW [VNx8QI])
@@ -1112,6 +1122,31 @@
 (define_mode_attr v_fp_equiv [(VNx8HI "vnx8hf") (VNx8HF "vnx8hf")
 			      (VNx4SI "vnx4sf") (VNx4SF "vnx4sf")
 			      (VNx2DI "vnx2df") (VNx2DF "vnx2df")])
+
+;; Maps full and partial vector modes of any element type to a full-vector
+;; integer mode with the same number of units.
+(define_mode_attr V_INT_CONTAINER [(VNx16QI "VNx16QI") (VNx8QI "VNx8HI")
+				   (VNx4QI "VNx4SI") (VNx2QI "VNx2DI")
+				   (VNx8HI "VNx8HI") (VNx4HI "VNx4SI")
+				   (VNx2HI "VNx2DI")
+				   (VNx4SI "VNx4SI") (VNx2SI "VNx2DI")
+				   (VNx2DI "VNx2DI")
+				   (VNx8HF "VNx8HI") (VNx4HF "VNx4SI")
+				   (VNx2HF "VNx2DI")
+				   (VNx4SF "VNx4SI") (VNx2SF "VNx2SI")
+				   (VNx2DF "VNx2DI")])
+
+;; Lower-case version of V_INT_CONTAINER.
+(define_mode_attr v_int_container [(VNx16QI "vnx16qi") (VNx8QI "vnx8hi")
+				   (VNx4QI "vnx4si") (VNx2QI "vnx2di")
+				   (VNx8HI "vnx8hi") (VNx4HI "vnx4si")
+				   (VNx2HI "vnx2di")
+				   (VNx4SI "vnx4si") (VNx2SI "vnx2di")
+				   (VNx2DI "vnx2di")
+				   (VNx8HF "vnx8hi") (VNx4HF "vnx4si")
+				   (VNx2HF "vnx2di")
+				   (VNx4SF "vnx4si") (VNx2SF "vnx2di")
+				   (VNx2DF "vnx2di")])
 
 ;; Mode for vector conditional operations where the comparison has
 ;; different type from the lhs.
