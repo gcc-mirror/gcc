@@ -1,5 +1,7 @@
 2019-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ranges: Revert accidentally committed changes.
+
 	* include/std/thread (jthread::jthread()): Use nostopstate constant.
 	(jthread::jthread(Callable&&, Args&&...)): Use helper function to
 	create std::thread instead of indirection through a lambda. Use
