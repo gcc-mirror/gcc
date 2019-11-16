@@ -1,5 +1,10 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/clastb_8.c: Use assembly tests to
+	check for fully-masked loops.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/reduc_3.c: Split multi-vector cases out
 	into...
 	* gcc.target/aarch64/sve/reduc_3_costly.c: ...this new test,
