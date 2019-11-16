@@ -2818,33 +2818,33 @@
 ;; -------------------------------------------------------------------------
 
 ;; Predicated SXT[BHW].
-(define_insn "@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL:mode>"
+(define_insn "@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w")
 	(unspec:SVE_FULL_HSDI
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
 	   (sign_extend:SVE_FULL_HSDI
-	     (truncate:SVE_PARTIAL
+	     (truncate:SVE_PARTIAL_I
 	       (match_operand:SVE_FULL_HSDI 2 "register_operand" "w")))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE && (~<narrower_mask> & <self_mask>) == 0"
-  "sxt<SVE_PARTIAL:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>"
+  "sxt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>"
 )
 
 ;; Predicated SXT[BHW] with merging.
-(define_insn "@aarch64_cond_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL:mode>"
+(define_insn "@aarch64_cond_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w, ?&w, ?&w")
 	(unspec:SVE_FULL_HSDI
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (sign_extend:SVE_FULL_HSDI
-	     (truncate:SVE_PARTIAL
+	     (truncate:SVE_PARTIAL_I
 	       (match_operand:SVE_FULL_HSDI 2 "register_operand" "w, w, w")))
 	   (match_operand:SVE_FULL_HSDI 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && (~<narrower_mask> & <self_mask>) == 0"
   "@
-   sxt<SVE_PARTIAL:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
-   movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;sxt<SVE_PARTIAL:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
-   movprfx\t%0, %3\;sxt<SVE_PARTIAL:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>"
+   sxt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
+   movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;sxt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
+   movprfx\t%0, %3\;sxt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>"
   [(set_attr "movprfx" "*,yes,yes")]
 )
 
