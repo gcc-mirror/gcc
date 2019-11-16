@@ -1,5 +1,15 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-alias-check-8.c: Test for the RAW flag.
+	* gcc.dg/vect/vect-alias-check-9.c: Test for the ARBITRARY flag.
+	(TEST_VALUE): Use a higher value for early iterations.
+	* gcc.dg/vect/vect-alias-check-14.c: New test.
+	* gcc.dg/vect/vect-alias-check-15.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-16.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-17.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/scatter_store_1.c (TEST_LOOP): Start at 0.
 	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
 	* gcc.target/aarch64/sve/scatter_store_2.c: Update accordingly.

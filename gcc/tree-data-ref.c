@@ -1452,6 +1452,54 @@ comp_dr_with_seg_len_pair (const void *pa_, const void *pb_)
   return 0;
 }
 
+/* Dump information about ALIAS_PAIR, indenting each line by INDENT.  */
+
+static void
+dump_alias_pair (dr_with_seg_len_pair_t *alias_pair, const char *indent)
+{
+  dump_printf (MSG_NOTE, "%sreference:      %T vs. %T\n", indent,
+	       DR_REF (alias_pair->first.dr),
+	       DR_REF (alias_pair->second.dr));
+
+  dump_printf (MSG_NOTE, "%ssegment length: %T", indent,
+	       alias_pair->first.seg_len);
+  if (!operand_equal_p (alias_pair->first.seg_len,
+			alias_pair->second.seg_len, 0))
+    dump_printf (MSG_NOTE, " vs. %T", alias_pair->second.seg_len);
+
+  dump_printf (MSG_NOTE, "\n%saccess size:    ", indent);
+  dump_dec (MSG_NOTE, alias_pair->first.access_size);
+  if (maybe_ne (alias_pair->first.access_size, alias_pair->second.access_size))
+    {
+      dump_printf (MSG_NOTE, " vs. ");
+      dump_dec (MSG_NOTE, alias_pair->second.access_size);
+    }
+
+  dump_printf (MSG_NOTE, "\n%salignment:      %d", indent,
+	       alias_pair->first.align);
+  if (alias_pair->first.align != alias_pair->second.align)
+    dump_printf (MSG_NOTE, " vs. %d", alias_pair->second.align);
+
+  dump_printf (MSG_NOTE, "\n%sflags:         ", indent);
+  if (alias_pair->flags & DR_ALIAS_RAW)
+    dump_printf (MSG_NOTE, " RAW");
+  if (alias_pair->flags & DR_ALIAS_WAR)
+    dump_printf (MSG_NOTE, " WAR");
+  if (alias_pair->flags & DR_ALIAS_WAW)
+    dump_printf (MSG_NOTE, " WAW");
+  if (alias_pair->flags & DR_ALIAS_ARBITRARY)
+    dump_printf (MSG_NOTE, " ARBITRARY");
+  if (alias_pair->flags & DR_ALIAS_SWAPPED)
+    dump_printf (MSG_NOTE, " SWAPPED");
+  if (alias_pair->flags & DR_ALIAS_UNSWAPPED)
+    dump_printf (MSG_NOTE, " UNSWAPPED");
+  if (alias_pair->flags & DR_ALIAS_MIXED_STEPS)
+    dump_printf (MSG_NOTE, " MIXED_STEPS");
+  if (alias_pair->flags == 0)
+    dump_printf (MSG_NOTE, " <none>");
+  dump_printf (MSG_NOTE, "\n");
+}
+
 /* Merge alias checks recorded in ALIAS_PAIRS and remove redundant ones.
    FACTOR is number of iterations that each data reference is accessed.
 
@@ -1655,6 +1703,8 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
      dr_with_seg_len_pair_t.  If we ended up combining swapped and
      unswapped pairs into the same check, we have to invalidate any
      RAW, WAR and WAW information for it.  */
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE, "merged alias checks:\n");
   FOR_EACH_VEC_ELT (*alias_pairs, i, alias_pair)
     {
       unsigned int swap_mask = (DR_ALIAS_SWAPPED | DR_ALIAS_UNSWAPPED);
@@ -1664,6 +1714,8 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
       else if (swapped != DR_ALIAS_UNSWAPPED)
 	alias_pair->flags |= DR_ALIAS_ARBITRARY;
       alias_pair->flags &= ~swap_mask;
+      if (dump_enabled_p ())
+	dump_alias_pair (alias_pair, "  ");
     }
 }
 

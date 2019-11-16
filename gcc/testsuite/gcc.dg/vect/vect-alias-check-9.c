@@ -17,7 +17,7 @@ typedef unsigned long long ull;
   M (sll) M (ull) \
   M (float) M (double)
 
-#define TEST_VALUE(I) ((I) * 5 / 2)
+#define TEST_VALUE(I) ((I) * 17 / 2)
 
 #define ADD_TEST(TYPE)				\
   void __attribute__((noinline, noclone))	\
@@ -51,3 +51,5 @@ main (void)
   FOR_EACH_TYPE (DO_TEST)
   return 0;
 }
+
+/* { dg-final { scan-tree-dump {flags: [^\n]*ARBITRARY\n} "vect" { target vect_int } } } */

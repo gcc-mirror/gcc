@@ -17,35 +17,32 @@ typedef unsigned long long ull;
   M (sll) M (ull) \
   M (float) M (double)
 
-#define TEST_VALUE(I) ((I) * 5 / 2)
-
 #define ADD_TEST(TYPE)				\
-  TYPE a_##TYPE[N * 2];				\
   void __attribute__((noinline, noclone))	\
-  test_##TYPE (int x, int y)			\
+  test_##TYPE (TYPE *x, TYPE *y)		\
   {						\
     for (int i = 0; i < N; ++i)			\
-      a_##TYPE[i + x] += a_##TYPE[i + y];	\
+      {						\
+	x[i] = i;				\
+	y[i] = 42 - i * 2;			\
+      }						\
   }
 
 #define DO_TEST(TYPE)						\
   for (int i = 0; i < DIST * 2; ++i)				\
     {								\
-      for (int j = 0; j < N + DIST * 2; ++j)			\
-	a_##TYPE[j] = TEST_VALUE (j);				\
-      test_##TYPE (i, DIST);					\
+      TYPE a[N + DIST * 2] = {};				\
+      test_##TYPE (a + DIST, a + i);				\
       for (int j = 0; j < N + DIST * 2; ++j)			\
 	{							\
-	  TYPE expected;					\
-	  if (j < i || j >= i + N)				\
-	    expected = TEST_VALUE (j);				\
-	  else if (i <= DIST)					\
-	    expected = ((TYPE) TEST_VALUE (j)			\
-			+ (TYPE) TEST_VALUE (j - i + DIST));	\
-	  else							\
-	    expected = ((TYPE) TEST_VALUE (j)			\
-			+ a_##TYPE[j - i + DIST]);		\
-	  if (expected != a_##TYPE[j])				\
+	  TYPE expected = 0;					\
+	  if (i > DIST && j >= i && j < i + N)			\
+	    expected = 42 - (j - i) * 2;			\
+	  if (j >= DIST && j < DIST + N)			\
+	    expected = j - DIST;				\
+	  if (i <= DIST && j >= i && j < i + N)			\
+	    expected = 42 - (j - i) * 2;			\
+	  if (expected != a[j])					\
 	    __builtin_abort ();					\
 	}							\
     }
@@ -59,4 +56,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump {flags: *WAR\n} "vect" { target vect_int } } } */
+/* { dg-final { scan-tree-dump {flags: *WAW\n} "vect" { target vect_int } } } */
