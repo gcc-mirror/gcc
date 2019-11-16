@@ -799,7 +799,7 @@ vect_prologue_cost_for_slp_op (slp_tree node, stmt_vec_info stmt_info,
   /* Without looking at the actual initializer a vector of
      constants can be implemented as load from the constant pool.
      When all elements are the same we can use a splat.  */
-  tree vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op));
+  tree vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), node);
   unsigned group_size = SLP_TREE_SCALAR_STMTS (node).length ();
   unsigned num_vects_to_check;
   unsigned HOST_WIDE_INT const_nunits;
@@ -3298,7 +3298,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* If all arguments are external or constant defs, infer the vector type
      from the scalar type.  */
   if (!vectype_in)
-    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type);
+    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type, slp_node);
   if (vec_stmt)
     gcc_assert (vectype_in);
   if (!vectype_in)
@@ -4087,7 +4087,8 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 	&& bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
       {
 	tree arg_type = TREE_TYPE (gimple_call_arg (stmt, i));
-	arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type);
+	arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type,
+							  slp_node);
 	if (arginfo[i].vectype == NULL
 	    || (simd_clone_subparts (arginfo[i].vectype)
 		> bestn->simdclone->simdlen))
@@ -4803,7 +4804,7 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* If op0 is an external or constant def, infer the vector type
      from the scalar type.  */
   if (!vectype_in)
-    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type);
+    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type, slp_node);
   if (vec_stmt)
     gcc_assert (vectype_in);
   if (!vectype_in)
@@ -5604,7 +5605,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* If op0 is an external or constant def, infer the vector type
      from the scalar type.  */
   if (!vectype)
-    vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0));
+    vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0), slp_node);
   if (vec_stmt)
     gcc_assert (vectype);
   if (!vectype)
@@ -5703,7 +5704,8 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                          "vector/vector shift/rotate found.\n");
 
       if (!op1_vectype)
-	op1_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op1));
+	op1_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op1),
+						   slp_node);
       incompatible_op1_vectype_p
 	= (op1_vectype == NULL_TREE
 	   || maybe_ne (TYPE_VECTOR_SUBPARTS (op1_vectype),
@@ -6051,7 +6053,8 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  vectype = vectype_out;
 	}
       else
-	vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0));
+	vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op0),
+					       slp_node);
     }
   if (vec_stmt)
     gcc_assert (vectype);
@@ -9794,7 +9797,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
    condition operands are supportable using vec_is_simple_use.  */
 
 static bool
-vect_is_simple_cond (tree cond, vec_info *vinfo,
+vect_is_simple_cond (tree cond, vec_info *vinfo, slp_tree slp_node,
 		     tree *comp_vectype, enum vect_def_type *dts,
 		     tree vectype)
 {
@@ -9858,7 +9861,8 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 	scalar_type = build_nonstandard_integer_type
 	  (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype))),
 	   TYPE_UNSIGNED (scalar_type));
-      *comp_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+      *comp_vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
+						   slp_node);
     }
 
   return true;
@@ -9965,7 +9969,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   then_clause = gimple_assign_rhs2 (stmt);
   else_clause = gimple_assign_rhs3 (stmt);
 
-  if (!vect_is_simple_cond (cond_expr, stmt_info->vinfo,
+  if (!vect_is_simple_cond (cond_expr, stmt_info->vinfo, slp_node,
 			    &comp_vectype, &dts[0], slp_node ? NULL : vectype)
       || !comp_vectype)
     return false;
@@ -10444,7 +10448,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* Invariant comparison.  */
   if (!vectype)
     {
-      vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1));
+      vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1),
+					     slp_node);
       if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype), nunits))
 	return false;
     }
@@ -11252,31 +11257,93 @@ get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
 /* Function get_vectype_for_scalar_type.
 
    Returns the vector type corresponding to SCALAR_TYPE as supported
-   by the target.  */
+   by the target.  If GROUP_SIZE is nonzero and we're performing BB
+   vectorization, make sure that the number of elements in the vector
+   is no bigger than GROUP_SIZE.  */
 
 tree
-get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type)
+get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type,
+			     unsigned int group_size)
 {
+  /* For BB vectorization, we should always have a group size once we've
+     constructed the SLP tree; the only valid uses of zero GROUP_SIZEs
+     are tentative requests during things like early data reference
+     analysis and pattern recognition.  */
+  if (is_a <bb_vec_info> (vinfo))
+    gcc_assert (vinfo->slp_instances.is_empty () || group_size != 0);
+  else
+    group_size = 0;
+
   tree vectype = get_related_vectype_for_scalar_type (vinfo->vector_mode,
 						      scalar_type);
   if (vectype && vinfo->vector_mode == VOIDmode)
     vinfo->vector_mode = TYPE_MODE (vectype);
 
+  /* Register the natural choice of vector type, before the group size
+     has been applied.  */
   if (vectype)
     vinfo->used_vector_modes.add (TYPE_MODE (vectype));
 
+  /* If the natural choice of vector type doesn't satisfy GROUP_SIZE,
+     try again with an explicit number of elements.  */
+  if (vectype
+      && group_size
+      && maybe_ge (TYPE_VECTOR_SUBPARTS (vectype), group_size))
+    {
+      /* Start with the biggest number of units that fits within
+	 GROUP_SIZE and halve it until we find a valid vector type.
+	 Usually either the first attempt will succeed or all will
+	 fail (in the latter case because GROUP_SIZE is too small
+	 for the target), but it's possible that a target could have
+	 a hole between supported vector types.
+
+	 If GROUP_SIZE is not a power of 2, this has the effect of
+	 trying the largest power of 2 that fits within the group,
+	 even though the group is not a multiple of that vector size.
+	 The BB vectorizer will then try to carve up the group into
+	 smaller pieces.  */
+      unsigned int nunits = 1 << floor_log2 (group_size);
+      do
+	{
+	  vectype = get_related_vectype_for_scalar_type (vinfo->vector_mode,
+							 scalar_type, nunits);
+	  nunits /= 2;
+	}
+      while (nunits > 1 && !vectype);
+    }
+
   return vectype;
+}
+
+/* Return the vector type corresponding to SCALAR_TYPE as supported
+   by the target.  NODE, if nonnull, is the SLP tree node that will
+   use the returned vector type.  */
+
+tree
+get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type, slp_tree node)
+{
+  unsigned int group_size = 0;
+  if (node)
+    {
+      group_size = SLP_TREE_SCALAR_OPS (node).length ();
+      if (group_size == 0)
+	group_size = SLP_TREE_SCALAR_STMTS (node).length ();
+    }
+  return get_vectype_for_scalar_type (vinfo, scalar_type, group_size);
 }
 
 /* Function get_mask_type_for_scalar_type.
 
    Returns the mask type corresponding to a result of comparison
-   of vectors of specified SCALAR_TYPE as supported by target.  */
+   of vectors of specified SCALAR_TYPE as supported by target.
+   NODE, if nonnull, is the SLP tree node that will use the returned
+   vector type.  */
 
 tree
-get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type)
+get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type,
+			       slp_tree node)
 {
-  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type, node);
 
   if (!vectype)
     return NULL;
@@ -11963,6 +12030,9 @@ vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
 
 /* Try to compute the vector types required to vectorize STMT_INFO,
    returning true on success and false if vectorization isn't possible.
+   If GROUP_SIZE is nonzero and we're performing BB vectorization,
+   take sure that the number of elements in the vectors is no bigger
+   than GROUP_SIZE.
 
    On success:
 
@@ -11980,10 +12050,20 @@ vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
 opt_result
 vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 				tree *stmt_vectype_out,
-				tree *nunits_vectype_out)
+				tree *nunits_vectype_out,
+				unsigned int group_size)
 {
   vec_info *vinfo = stmt_info->vinfo;
   gimple *stmt = stmt_info->stmt;
+
+  /* For BB vectorization, we should always have a group size once we've
+     constructed the SLP tree; the only valid uses of zero GROUP_SIZEs
+     are tentative requests during things like early data reference
+     analysis and pattern recognition.  */
+  if (is_a <bb_vec_info> (vinfo))
+    gcc_assert (vinfo->slp_instances.is_empty () || group_size != 0);
+  else
+    group_size = 0;
 
   *stmt_vectype_out = NULL_TREE;
   *nunits_vectype_out = NULL_TREE;
@@ -12015,7 +12095,7 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 
   tree vectype;
   tree scalar_type = NULL_TREE;
-  if (STMT_VINFO_VECTYPE (stmt_info))
+  if (group_size == 0 && STMT_VINFO_VECTYPE (stmt_info))
     {
       *stmt_vectype_out = vectype = STMT_VINFO_VECTYPE (stmt_info);
       if (dump_enabled_p ())
@@ -12024,15 +12104,17 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
     }
   else
     {
-      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
-      if (gimple_call_internal_p (stmt, IFN_MASK_STORE))
+      if (data_reference *dr = STMT_VINFO_DATA_REF (stmt_info))
+	scalar_type = TREE_TYPE (DR_REF (dr));
+      else if (gimple_call_internal_p (stmt, IFN_MASK_STORE))
 	scalar_type = TREE_TYPE (gimple_call_arg (stmt, 3));
       else
 	scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
 
       /* Pure bool ops don't participate in number-of-units computation.
 	 For comparisons use the types being compared.  */
-      if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type)
+      if (!STMT_VINFO_DATA_REF (stmt_info)
+	  && VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type)
 	  && is_gimple_assign (stmt)
 	  && gimple_assign_rhs_code (stmt) != COND_EXPR)
 	{
@@ -12052,9 +12134,16 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 	}
 
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "get vectype for scalar type: %T\n", scalar_type);
-      vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+	{
+	  if (group_size)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "get vectype for scalar type (group size %d):"
+			     " %T\n", group_size, scalar_type);
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "get vectype for scalar type: %T\n", scalar_type);
+	}
+      vectype = get_vectype_for_scalar_type (vinfo, scalar_type, group_size);
       if (!vectype)
 	return opt_result::failure_at (stmt,
 				       "not vectorized:"
@@ -12085,7 +12174,8 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "get vectype for smallest scalar type: %T\n",
 			     scalar_type);
-	  nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+	  nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
+							group_size);
 	  if (!nunits_vectype)
 	    return opt_result::failure_at
 	      (stmt, "not vectorized: unsupported data-type %T\n",
@@ -12113,10 +12203,11 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 
 /* Try to determine the correct vector type for STMT_INFO, which is a
    statement that produces a scalar boolean result.  Return the vector
-   type on success, otherwise return NULL_TREE.  */
+   type on success, otherwise return NULL_TREE.  NODE, if nonnull,
+   is the SLP tree node that will use the returned vector type.  */
 
 opt_tree
-vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
+vect_get_mask_type_for_stmt (stmt_vec_info stmt_info, slp_tree node)
 {
   vec_info *vinfo = stmt_info->vinfo;
   gimple *stmt = stmt_info->stmt;
@@ -12128,7 +12219,7 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
       && !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
     {
       scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-      mask_type = get_mask_type_for_scalar_type (vinfo, scalar_type);
+      mask_type = get_mask_type_for_scalar_type (vinfo, scalar_type, node);
 
       if (!mask_type)
 	return opt_tree::failure_at (stmt,

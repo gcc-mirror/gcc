@@ -4368,9 +4368,8 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
-      STMT_VINFO_VECTYPE (stmt_info)
-	= get_vectype_for_scalar_type (vinfo, scalar_type);
-      if (!STMT_VINFO_VECTYPE (stmt_info))
+      tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+      if (!vectype)
         {
           if (dump_enabled_p ())
             {
@@ -4403,13 +4402,18 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "got vectype for stmt: %G%T\n",
-			     stmt_info->stmt, STMT_VINFO_VECTYPE (stmt_info));
+			     stmt_info->stmt, vectype);
 	}
 
       /* Adjust the minimal vectorization factor according to the
 	 vector type.  */
-      vf = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+      vf = TYPE_VECTOR_SUBPARTS (vectype);
       *min_vf = upper_bound (*min_vf, vf);
+
+      /* Leave the BB vectorizer to pick the vector type later, based on
+	 the final dataref group size and SLP node size.  */
+      if (is_a <loop_vec_info> (vinfo))
+	STMT_VINFO_VECTYPE (stmt_info) = vectype;
 
       if (gatherscatter != SG_NONE)
 	{
