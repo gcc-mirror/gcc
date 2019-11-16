@@ -1,5 +1,20 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/gather_load_extend_1.c: New test.
+	* gcc.target/aarch64/sve/gather_load_extend_2.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_3.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_4.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_5.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_6.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_7.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_8.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_9.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_10.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_11.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_12.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/gather_load_1.c (TEST_LOOP): Start at 0.
 	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
 	* gcc.target/aarch64/sve/gather_load_2.c: Update accordingly.
