@@ -1889,6 +1889,8 @@ create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
       else
 	*cond_expr = part_cond_expr;
     }
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE, "using an index-based overlap test\n");
   return true;
 }
 
@@ -2036,6 +2038,8 @@ create_intersect_range_checks (class loop *loop, tree *cond_expr,
     = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
 	fold_build2 (cmp_code, boolean_type_node, seg_a_max, seg_b_min),
 	fold_build2 (cmp_code, boolean_type_node, seg_b_max, seg_a_min));
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE, "using an address-based overlap test\n");
 }
 
 /* Create a conditional expression that represents the run-time checks for

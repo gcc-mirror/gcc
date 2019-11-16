@@ -1,5 +1,10 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-data-ref.c (create_intersect_range_checks_index)
+	(create_intersect_range_checks): Print dump messages.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-data-ref.c (dump_alias_pair): New function.
 	(prune_runtime_alias_test_list): Use it to dump each merged alias pair.
 
