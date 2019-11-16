@@ -1,5 +1,84 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-modes.def: Define partial SVE vector
+	float modes.
+	* config/aarch64/aarch64-protos.h (aarch64_sve_pred_mode): New
+	function.
+	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Handle the
+	new vector float modes.
+	(aarch64_sve_container_bits): New function.
+	(aarch64_sve_pred_mode): Likewise.
+	(aarch64_get_mask_mode): Use it.
+	(aarch64_sve_element_int_mode): Handle structure modes and partial
+	modes.
+	(aarch64_sve_container_int_mode): New function.
+	(aarch64_vectorize_related_mode): Return SVE modes when given
+	SVE modes.  Handle partial modes, taking the preferred number
+	of units from the size of the given mode.
+	(aarch64_hard_regno_mode_ok): Allow partial modes to be stored
+	in registers.
+	(aarch64_expand_sve_ld1rq): Use the mode form of aarch64_sve_pred_mode.
+	(aarch64_expand_sve_const_vector): Handle partial SVE vectors.
+	(aarch64_split_sve_subreg_move): Use the mode form of
+	aarch64_sve_pred_mode.
+	(aarch64_secondary_reload): Handle partial modes in the same way
+	as full big-endian vectors.
+	(aarch64_vector_mode_supported_p): Allow partial SVE vectors.
+	(aarch64_autovectorize_vector_modes): Try unpacked SVE vectors,
+	merging with the Advanced SIMD modes.  If two modes have the
+	same size, try the Advanced SIMD mode first.
+	(aarch64_simd_valid_immediate): Use the container rather than
+	the element mode for INDEX constants.
+	(aarch64_simd_vector_alignment): Make the alignment of partial
+	SVE vector modes the same as their minimum size.
+	(aarch64_evpc_sel): Use the mode form of aarch64_sve_pred_mode.
+	* config/aarch64/aarch64-sve.md (mov<SVE_FULL:mode>): Extend to...
+	(mov<SVE_ALL:mode>): ...this.
+	(movmisalign<SVE_FULL:mode>): Extend to...
+	(movmisalign<SVE_ALL:mode>): ...this.
+	(*aarch64_sve_mov<mode>_le): Rename to...
+	(*aarch64_sve_mov<mode>_ldr_str): ...this.
+	(*aarch64_sve_mov<SVE_FULL:mode>_be): Rename and extend to...
+	(*aarch64_sve_mov<SVE_ALL:mode>_no_ldr_str): ...this.  Handle
+	partial modes regardless of endianness.
+	(aarch64_sve_reload_be): Rename to...
+	(aarch64_sve_reload_mem): ...this and enable for little-endian.
+	Use aarch64_sve_pred_mode to get the appropriate predicate mode.
+	(@aarch64_pred_mov<SVE_FULL:mode>): Extend to...
+	(@aarch64_pred_mov<SVE_ALL:mode>): ...this.
+	(*aarch64_sve_mov<SVE_FULL:mode>_subreg_be): Extend to...
+	(*aarch64_sve_mov<SVE_ALL:mode>_subreg_be): ...this.
+	(@aarch64_sve_reinterpret<SVE_FULL:mode>): Extend to...
+	(@aarch64_sve_reinterpret<SVE_ALL:mode>): ...this.
+	(*aarch64_sve_reinterpret<SVE_FULL:mode>): Extend to...
+	(*aarch64_sve_reinterpret<SVE_ALL:mode>): ...this.
+	(maskload<SVE_FULL:mode><vpred>): Extend to...
+	(maskload<SVE_ALL:mode><vpred>): ...this.
+	(maskstore<SVE_FULL:mode><vpred>): Extend to...
+	(maskstore<SVE_ALL:mode><vpred>): ...this.
+	(vec_duplicate<SVE_FULL:mode>): Extend to...
+	(vec_duplicate<SVE_ALL:mode>): ...this.
+	(*vec_duplicate<SVE_FULL:mode>_reg): Extend to...
+	(*vec_duplicate<SVE_ALL:mode>_reg): ...this.
+	(sve_ld1r<SVE_FULL:mode>): Extend to...
+	(sve_ld1r<SVE_ALL:mode>): ...this.
+	(vec_series<SVE_FULL_I:mode>): Extend to...
+	(vec_series<SVE_I:mode>): ...this.
+	(*vec_series<SVE_FULL_I:mode>_plus): Extend to...
+	(*vec_series<SVE_I:mode>_plus): ...this.
+	(@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>): Avoid
+	new VPRED ambiguity.
+	(@aarch64_cond_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>): Likewise.
+	(add<SVE_FULL_I:mode>3): Extend to...
+	(add<SVE_I:mode>3): ...this.
+	* config/aarch64/iterators.md (SVE_ALL, SVE_I): New mode iterators.
+	(Vetype, Vesize, VEL, Vel, vwcore): Handle partial SVE vector modes.
+	(VPRED, vpred): Likewise.
+	(Vctype): New iterator.
+	(vw): Remove SVE modes.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_PARTIAL): Rename to...
 	(SVE_PARTIAL_I): ...this.
 	* config/aarch64/aarch64-sve.md: Apply the above renaming throughout.
