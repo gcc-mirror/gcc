@@ -1555,13 +1555,6 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	  if (!ordered_p (init_a1, init_a2))
 	    continue;
 
-	  /* Make sure dr_a1 starts left of dr_a2.  */
-	  if (maybe_gt (init_a1, init_a2))
-	    {
-	      std::swap (*dr_a1, *dr_a2);
-	      std::swap (init_a1, init_a2);
-	    }
-
 	  /* Work out what the segment length would be if we did combine
 	     DR_A1 and DR_A2:
 
@@ -1578,7 +1571,10 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 
 	     The lengths both have sizetype, so the sign is taken from
 	     the step instead.  */
-	  if (!operand_equal_p (dr_a1->seg_len, dr_a2->seg_len, 0))
+	  poly_uint64 new_seg_len = 0;
+	  bool new_seg_len_p = !operand_equal_p (dr_a1->seg_len,
+						 dr_a2->seg_len, 0);
+	  if (new_seg_len_p)
 	    {
 	      poly_uint64 seg_len_a1, seg_len_a2;
 	      if (!poly_int_tree_p (dr_a1->seg_len, &seg_len_a1)
@@ -1596,14 +1592,24 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      int sign_a = tree_int_cst_sgn (indicator_a);
 	      int sign_b = tree_int_cst_sgn (indicator_b);
 
-	      poly_uint64 new_seg_len;
 	      if (sign_a <= 0 && sign_b <= 0)
 		new_seg_len = lower_bound (seg_len_a1, seg_len_a2);
 	      else if (sign_a >= 0 && sign_b >= 0)
 		new_seg_len = upper_bound (seg_len_a1, seg_len_a2);
 	      else
 		continue;
+	    }
+	  /* At this point we're committed to merging the refs.  */
 
+	  /* Make sure dr_a1 starts left of dr_a2.  */
+	  if (maybe_gt (init_a1, init_a2))
+	    {
+	      std::swap (*dr_a1, *dr_a2);
+	      std::swap (init_a1, init_a2);
+	    }
+
+	  if (new_seg_len_p)
+	    {
 	      dr_a1->seg_len = build_int_cst (TREE_TYPE (dr_a1->seg_len),
 					      new_seg_len);
 	      dr_a1->align = MIN (dr_a1->align, known_alignment (new_seg_len));
