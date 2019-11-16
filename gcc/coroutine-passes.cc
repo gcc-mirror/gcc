@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static tree
 lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
-		    struct walk_stmt_info * wi ATTRIBUTE_UNUSED)
+		    struct walk_stmt_info *wi ATTRIBUTE_UNUSED)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
@@ -66,7 +66,7 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       ggoto *g = gimple_build_goto (dest);
       gsi_replace (gsi, g, false /* don't re-do EH.  */);
       *handled_ops_p = true;
-     return NULL_TREE;
+      return NULL_TREE;
     }
 
   tree decl = gimple_call_fndecl (stmt);
@@ -74,126 +74,126 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     {
       unsigned call_idx = 0;
       switch (DECL_FUNCTION_CODE (decl))
-      {
-      default:
-	break;
-      case BUILT_IN_CORO_PROMISE:
 	{
-	  /* If we are discarding this, then skip it; the function has no
-	     side-effects.  */
-	  tree lhs = gimple_call_lhs (stmt);
-	  if (!lhs)
-	    {
-	      gsi_remove (gsi, true);
-	      *handled_ops_p = true;
-	      return NULL_TREE;
-	    }
-	  /* The coro frame starts with two pointers (to the resume and
-	     destroy() functions).  These are followed by the promise which
-	     is aligned as per type [or user attribute].
-	     The input pointer is the first argument.
-	     The promise alignment is the second and the third is a bool
-	     that is true when we are converting from a promise ptr to a
-	     frame pointer, and false for the inverse.  */
-	  tree ptr = gimple_call_arg (stmt, 0);
-	  tree align_t = gimple_call_arg (stmt, 1);
-	  tree from = gimple_call_arg (stmt, 2);
-	  gcc_assert (TREE_CODE (align_t) == INTEGER_CST);
-	  gcc_assert (TREE_CODE (from) == INTEGER_CST);
-	  bool dir = wi::to_wide (from) != 0;
-	  tree vptr = build_pointer_type (void_type_node);
-	  HOST_WIDE_INT promise_align = TREE_INT_CST_LOW (align_t);
-	  HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
-	  HOST_WIDE_INT align = TYPE_ALIGN_UNIT (vptr);
-	  align = MAX (align, promise_align);
-	  psize *= 2; /* Start with two pointers.  */
-	  psize = ROUND_UP (psize, align);
-	  HOST_WIDE_INT offs = dir ? -psize : psize;
-	  tree repl = build2 (POINTER_PLUS_EXPR, vptr, ptr,
-			      build_int_cst (sizetype, offs));
-	  gassign *grpl = gimple_build_assign (lhs, repl);
-	  gsi_replace (gsi, grpl, true);
-	  *handled_ops_p = true;
+	default:
+	  break;
+	case BUILT_IN_CORO_PROMISE:
+	  {
+	    /* If we are discarding this, then skip it; the function has no
+	       side-effects.  */
+	    tree lhs = gimple_call_lhs (stmt);
+	    if (!lhs)
+	      {
+		gsi_remove (gsi, true);
+		*handled_ops_p = true;
+		return NULL_TREE;
+	      }
+	    /* The coro frame starts with two pointers (to the resume and
+	       destroy() functions).  These are followed by the promise which
+	       is aligned as per type [or user attribute].
+	       The input pointer is the first argument.
+	       The promise alignment is the second and the third is a bool
+	       that is true when we are converting from a promise ptr to a
+	       frame pointer, and false for the inverse.  */
+	    tree ptr = gimple_call_arg (stmt, 0);
+	    tree align_t = gimple_call_arg (stmt, 1);
+	    tree from = gimple_call_arg (stmt, 2);
+	    gcc_assert (TREE_CODE (align_t) == INTEGER_CST);
+	    gcc_assert (TREE_CODE (from) == INTEGER_CST);
+	    bool dir = wi::to_wide (from) != 0;
+	    tree vptr = build_pointer_type (void_type_node);
+	    HOST_WIDE_INT promise_align = TREE_INT_CST_LOW (align_t);
+	    HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
+	    HOST_WIDE_INT align = TYPE_ALIGN_UNIT (vptr);
+	    align = MAX (align, promise_align);
+	    psize *= 2; /* Start with two pointers.  */
+	    psize = ROUND_UP (psize, align);
+	    HOST_WIDE_INT offs = dir ? -psize : psize;
+	    tree repl = build2 (POINTER_PLUS_EXPR, vptr, ptr,
+				build_int_cst (sizetype, offs));
+	    gassign *grpl = gimple_build_assign (lhs, repl);
+	    gsi_replace (gsi, grpl, true);
+	    *handled_ops_p = true;
+	  }
+	  break;
+	case BUILT_IN_CORO_DESTROY:
+	  call_idx = 1;
+	  /* FALLTHROUGH */
+	case BUILT_IN_CORO_RESUME:
+	  {
+	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
+	    tree vptr = build_pointer_type (void_type_node);
+	    HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
+	    HOST_WIDE_INT offset = call_idx * psize;
+	    tree fntype = TREE_TYPE (decl);
+	    tree fntype_ptr = build_pointer_type (fntype);
+	    tree fntype_ppp = build_pointer_type (fntype_ptr);
+	    tree indirect = fold_build2 (MEM_REF, fntype_ptr, ptr,
+					 wide_int_to_tree (fntype_ppp, offset));
+	    tree f_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (fntype_ptr));
+	    gassign *get_fptr = gimple_build_assign (f_ptr_tmp, indirect);
+	    gsi_insert_before (gsi, get_fptr, GSI_SAME_STMT);
+	    gimple_call_set_fn (static_cast<gcall *> (stmt), f_ptr_tmp);
+	    *handled_ops_p = true;
+	  }
+	  break;
+	case BUILT_IN_CORO_IS_SUSPENDED:
+	  {
+	    /* If we are discarding this, then skip it; the function has no
+	       side-effects.  */
+	    tree lhs = gimple_call_lhs (stmt);
+	    if (!lhs)
+	      {
+		gsi_remove (gsi, true);
+		*handled_ops_p = true;
+		return NULL_TREE;
+	      }
+	    /* When we're suspended, the destroy fn is set to non-null
+	       this is offset from the frame start by one.  */
+	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
+	    tree vptr = build_pointer_type (void_type_node);
+	    tree vpp = build_pointer_type (vptr);
+	    HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
+	    tree indirect
+	      = fold_build2 (MEM_REF, vpp, ptr, wide_int_to_tree (vpp, psize));
+	    tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (vptr));
+	    gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
+	    gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
+	    tree done = fold_build2 (NE_EXPR, boolean_type_node, d_ptr_tmp,
+				     wide_int_to_tree (vptr, 0));
+	    gassign *get_res = gimple_build_assign (lhs, done);
+	    gsi_replace (gsi, get_res, true);
+	    *handled_ops_p = true;
+	  }
+	  break;
+	case BUILT_IN_CORO_DONE:
+	  {
+	    /* If we are discarding this, then skip it; the function has no
+	       side-effects.  */
+	    tree lhs = gimple_call_lhs (stmt);
+	    if (!lhs)
+	      {
+		gsi_remove (gsi, true);
+		*handled_ops_p = true;
+		return NULL_TREE;
+	      }
+	    /* When we're done, the resume fn is set to NULL.  */
+	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
+	    tree vptr = build_pointer_type (void_type_node);
+	    tree vpp = build_pointer_type (vptr);
+	    tree indirect
+	      = fold_build2 (MEM_REF, vpp, ptr, wide_int_to_tree (vpp, 0));
+	    tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (vptr));
+	    gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
+	    gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
+	    tree done = fold_build2 (EQ_EXPR, boolean_type_node, d_ptr_tmp,
+				     wide_int_to_tree (vptr, 0));
+	    gassign *get_res = gimple_build_assign (lhs, done);
+	    gsi_replace (gsi, get_res, true);
+	    *handled_ops_p = true;
+	  }
+	  break;
 	}
-	break;
-      case BUILT_IN_CORO_DESTROY:
-	call_idx = 1;
-	/* FALLTHROUGH */
-      case BUILT_IN_CORO_RESUME:
-	{
-	  tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	  tree vptr = build_pointer_type (void_type_node);
-	  HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
-	  HOST_WIDE_INT offset = call_idx * psize;
-	  tree fntype = TREE_TYPE (decl);
-	  tree fntype_ptr = build_pointer_type (fntype);
-	  tree fntype_ppp = build_pointer_type (fntype_ptr);
-	  tree indirect = fold_build2 (MEM_REF, fntype_ptr, ptr,
-				       wide_int_to_tree (fntype_ppp, offset));
-	  tree f_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (fntype_ptr));
-	  gassign *get_fptr = gimple_build_assign (f_ptr_tmp, indirect);
-	  gsi_insert_before (gsi, get_fptr, GSI_SAME_STMT);
-	  gimple_call_set_fn (static_cast<gcall *>(stmt), f_ptr_tmp);
-	  *handled_ops_p = true;
-	}
-	break;
-      case BUILT_IN_CORO_IS_SUSPENDED:
-	{
-	  /* If we are discarding this, then skip it; the function has no
-	     side-effects.  */
-	  tree lhs = gimple_call_lhs (stmt);
-	  if (!lhs)
-	    {
-	      gsi_remove (gsi, true);
-	      *handled_ops_p = true;
-	      return NULL_TREE;
-	    }
-	  /* When we're suspended, the destroy fn is set to non-null
-	     this is offset from the frame start by one.  */
-	  tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	  tree vptr = build_pointer_type (void_type_node);
-	  tree vpp = build_pointer_type (vptr);
-	  HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
-	  tree indirect = fold_build2 (MEM_REF, vpp, ptr,
-				       wide_int_to_tree (vpp, psize));
-	  tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (vptr));
-	  gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
-	  gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
-	  tree done = fold_build2 (NE_EXPR, boolean_type_node, d_ptr_tmp,
-				   wide_int_to_tree (vptr, 0));
-	  gassign *get_res = gimple_build_assign (lhs, done);
-	  gsi_replace (gsi, get_res, true);
-	  *handled_ops_p = true;
-	}
-	break;
-      case BUILT_IN_CORO_DONE:
-	{
-	  /* If we are discarding this, then skip it; the function has no
-	     side-effects.  */
-	  tree lhs = gimple_call_lhs (stmt);
-	  if (!lhs)
-	    {
-	      gsi_remove (gsi, true);
-	      *handled_ops_p = true;
-	      return NULL_TREE;
-	    }
-	  /* When we're done, the resume fn is set to NULL.  */
-	  tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	  tree vptr = build_pointer_type (void_type_node);
-	  tree vpp = build_pointer_type (vptr);
-	  tree indirect = fold_build2 (MEM_REF, vpp, ptr,
-				       wide_int_to_tree (vpp, 0));
-	  tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (vptr));
-	  gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
-	  gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
-	  tree done = fold_build2 (EQ_EXPR, boolean_type_node, d_ptr_tmp,
-				   wide_int_to_tree (vptr, 0));
-	  gassign *get_res = gimple_build_assign (lhs, done);
-	  gsi_replace (gsi, get_res, true);
-	  *handled_ops_p = true;
-	}
-	break;
-      }
     }
   return NULL_TREE;
 }
@@ -216,37 +216,36 @@ execute_lower_coro_builtins (void)
 
 namespace {
 
-const pass_data pass_data_coroutine_lower_builtins  =
-{
-  GIMPLE_PASS, /* type */
+const pass_data pass_data_coroutine_lower_builtins = {
+  GIMPLE_PASS,		 /* type */
   "coro-lower-builtins", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0  /* todo_flags_finish */
+  OPTGROUP_NONE,	 /* optinfo_flags */
+  TV_NONE,		 /* tv_id */
+  0,			 /* properties_required */
+  0,			 /* properties_provided */
+  0,			 /* properties_destroyed */
+  0,			 /* todo_flags_start */
+  0			 /* todo_flags_finish */
 };
 
 class pass_coroutine_lower_builtins : public gimple_opt_pass
 {
 public:
-  pass_coroutine_lower_builtins  (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_coroutine_lower_builtins , ctxt)
+  pass_coroutine_lower_builtins (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_coroutine_lower_builtins, ctxt)
   {}
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_coroutines; };
 
   virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
-    {
-      return execute_lower_coro_builtins ();
-    }
+  {
+    return execute_lower_coro_builtins ();
+  }
 
 }; // class pass_coroutine_lower_builtins
 
-} // anon namespace
+} // namespace
 
 gimple_opt_pass *
 make_pass_coroutine_lower_builtins (gcc::context *ctxt)
@@ -262,12 +261,12 @@ static void
 move_edge_and_update (edge e, basic_block old_bb, basic_block new_bb)
 {
   if (dump_file)
-    fprintf (dump_file, "redirecting edge from bb %u to bb %u\n",
-	     old_bb->index, new_bb->index);
+    fprintf (dump_file, "redirecting edge from bb %u to bb %u\n", old_bb->index,
+	     new_bb->index);
 
   e = redirect_edge_and_branch (e, new_bb);
   if (!e && dump_file)
-      fprintf (dump_file, "failed to redirect edge ..  \n");
+    fprintf (dump_file, "failed to redirect edge ..  \n");
 
   /* Die if we failed.  */
   gcc_checking_assert (e);
@@ -281,7 +280,7 @@ execute_early_expand_coro_ifns (void)
 
   /* Some of the possible YIELD points will hopefully have been removed by
      earlier optimisations, record the ones that are present.  */
-  hash_map <int_hash <HOST_WIDE_INT, -1, -2>, tree> destinations;
+  hash_map<int_hash<HOST_WIDE_INT, -1, -2>, tree> destinations;
   hash_set<tree> to_remove;
   bool changed = false;
 
@@ -305,70 +304,76 @@ execute_early_expand_coro_ifns (void)
 	    break;
 	  case IFN_CO_YIELD:
 	    {
-	    /* .CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB, FRAME_PTR);
-	       NUM = await number.
-	       FINAL = 1 if this is the final_suspend() await.
-	       RES_LAB = resume point label.
-	       DEST_LAB = destroy point label.
-	       FRAME_PTR = is a null pointer with the type of the coro
-			   frame, so that we can resize, if needed.
-	    */
-	    if (dump_file)
-	      fprintf (dump_file, "saw CO_YIELD in BB %u\n", bb->index);
-	    tree num = gimple_call_arg (stmt, 0); /* yield point.  */
-	    HOST_WIDE_INT idx = TREE_INT_CST_LOW (num);
-	    bool existed;
-	    tree res_tgt = TREE_OPERAND (gimple_call_arg (stmt, 2), 0);
-	    tree &res_dest = destinations.get_or_insert (idx, &existed);
-	    if (existed && dump_file)
-	      {
-		fprintf (dump_file, "duplicate YIELD RESUME point ("
-				     HOST_WIDE_INT_PRINT_DEC ") ?\n", idx);
+	      /* .CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB, FRAME_PTR);
+		 NUM = await number.
+		 FINAL = 1 if this is the final_suspend() await.
+		 RES_LAB = resume point label.
+		 DEST_LAB = destroy point label.
+		 FRAME_PTR = is a null pointer with the type of the coro
+			     frame, so that we can resize, if needed.
+	      */
+	      if (dump_file)
+		fprintf (dump_file, "saw CO_YIELD in BB %u\n", bb->index);
+	      tree num = gimple_call_arg (stmt, 0); /* yield point.  */
+	      HOST_WIDE_INT idx = TREE_INT_CST_LOW (num);
+	      bool existed;
+	      tree res_tgt = TREE_OPERAND (gimple_call_arg (stmt, 2), 0);
+	      tree &res_dest = destinations.get_or_insert (idx, &existed);
+	      if (existed && dump_file)
+		{
+		  fprintf (
+		    dump_file,
+		    "duplicate YIELD RESUME point (" HOST_WIDE_INT_PRINT_DEC
+		    ") ?\n",
+		    idx);
+		  debug_gimple_stmt (stmt);
+		}
+	      else
+		res_dest = res_tgt;
+	      tree dst_tgt = TREE_OPERAND (gimple_call_arg (stmt, 3), 0);
+	      tree &dst_dest = destinations.get_or_insert (idx + 1, &existed);
+	      if (existed && dump_file)
+		{
+		  fprintf (
+		    dump_file,
+		    "duplicate YIELD DESTROY point (" HOST_WIDE_INT_PRINT_DEC
+		    ") ?\n",
+		    idx + 1);
+		  debug_gimple_stmt (stmt);
+		}
+	      else
+		dst_dest = dst_tgt;
+	      to_remove.add (res_tgt);
+	      to_remove.add (dst_tgt);
+	      /* lose the co_yield.  */
+	      gsi_remove (&gsi, true);
+	      stmt = gsi_stmt (gsi); /* next. */
+	      /* lose the copy present at O0.  */
+	      if (is_gimple_assign (stmt))
+		{
+		  gsi_remove (&gsi, true);
+		  stmt = gsi_stmt (gsi);
+		}
+	      /* Simplify the switch or if following.  */
+	      if (gswitch *gsw = dyn_cast<gswitch *> (stmt))
+		{
+		  gimple_switch_set_index (gsw, integer_zero_node);
+		  fold_stmt (&gsi);
+		}
+	      else if (gcond *gif = dyn_cast<gcond *> (stmt))
+		{
+		  if (gimple_cond_code (gif) == EQ_EXPR)
+		    gimple_cond_make_true (gif);
+		  else
+		    gimple_cond_make_false (gif);
+		  fold_stmt (&gsi);
+		}
+	      else
 		debug_gimple_stmt (stmt);
-	      }
-	    else
-	      res_dest = res_tgt;
-	    tree dst_tgt = TREE_OPERAND (gimple_call_arg (stmt, 3), 0);
-	    tree &dst_dest = destinations.get_or_insert (idx+1, &existed);
-	    if (existed && dump_file)
-	      {
-		fprintf (dump_file, "duplicate YIELD DESTROY point ("
-				     HOST_WIDE_INT_PRINT_DEC ") ?\n", idx+1);
-		debug_gimple_stmt (stmt);
-	      }
-	    else
-	      dst_dest = dst_tgt;
-	    to_remove.add (res_tgt);
-	    to_remove.add (dst_tgt);
-	    /* lose the co_yield.  */
-	    gsi_remove (&gsi, true);
-	    stmt = gsi_stmt (gsi); /* next. */
-	    /* lose the copy present at O0.  */
-	    if (is_gimple_assign (stmt))
-	      {
-		gsi_remove (&gsi, true);
-		stmt = gsi_stmt (gsi);
-	       }
-	    /* Simplify the switch or if following.  */
-	    if (gswitch *gsw = dyn_cast <gswitch *> (stmt))
-	      {
-		gimple_switch_set_index (gsw, integer_zero_node);
-		fold_stmt (&gsi);
-	      }
-	    else if (gcond *gif = dyn_cast <gcond*> (stmt))
-	      {
-		if (gimple_cond_code (gif) == EQ_EXPR)
-		  gimple_cond_make_true (gif);
-		else
-		  gimple_cond_make_false (gif);
-		fold_stmt (&gsi);
-	      }
-	    else
-	      debug_gimple_stmt (stmt);
-	    changed = true;
-	    if (gsi_end_p (gsi))
-	      break;
-	    continue;
+	      changed = true;
+	      if (gsi_end_p (gsi))
+		break;
+	      continue;
 	    }
 	  default:
 	    gsi_next (&gsi);
@@ -407,8 +412,10 @@ execute_early_expand_coro_ifns (void)
 		   associated was elided during earlier optimisations, so we
 		    don't need to fix up the switch targets.  */
 		if (dump_file)
-		  fprintf (dump_file, "yield point " HOST_WIDE_INT_PRINT_DEC
-			   " not used, removing it .. \n", idx);
+		  fprintf (dump_file,
+			   "yield point " HOST_WIDE_INT_PRINT_DEC
+			   " not used, removing it .. \n",
+			   idx);
 		gsi_remove (&gsi, true);
 		release_defs (stmt);
 	      }
@@ -445,7 +452,7 @@ execute_early_expand_coro_ifns (void)
 	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	  {
 	    gimple *stmt = gsi_stmt (gsi);
-	    if (glabel *glab = dyn_cast <glabel*> (stmt))
+	    if (glabel *glab = dyn_cast<glabel *> (stmt))
 	      {
 		tree rem = gimple_label_label (glab);
 		if (to_remove.contains (rem))
@@ -471,37 +478,36 @@ execute_early_expand_coro_ifns (void)
 
 namespace {
 
-const pass_data pass_data_coroutine_early_expand_ifns  =
-{
-  GIMPLE_PASS, /* type */
+const pass_data pass_data_coroutine_early_expand_ifns = {
+  GIMPLE_PASS,		    /* type */
   "coro-early-expand-ifns", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  (PROP_cfg), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0  /* todo_flags_finish, set this in the fn. */
+  OPTGROUP_NONE,	    /* optinfo_flags */
+  TV_NONE,		    /* tv_id */
+  (PROP_cfg),		    /* properties_required */
+  0,			    /* properties_provided */
+  0,			    /* properties_destroyed */
+  0,			    /* todo_flags_start */
+  0			    /* todo_flags_finish, set this in the fn. */
 };
 
 class pass_coroutine_early_expand_ifns : public gimple_opt_pass
 {
 public:
-  pass_coroutine_early_expand_ifns  (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_coroutine_early_expand_ifns , ctxt)
+  pass_coroutine_early_expand_ifns (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_coroutine_early_expand_ifns, ctxt)
   {}
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_coroutines; };
 
   virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
-    {
-      return execute_early_expand_coro_ifns ();
-    }
+  {
+    return execute_early_expand_coro_ifns ();
+  }
 
 }; // class pass_coroutine_expand_ifns
 
-} // anon namespace
+} // namespace
 
 gimple_opt_pass *
 make_pass_coroutine_early_expand_ifns (gcc::context *ctxt)
@@ -538,10 +544,11 @@ execute_finalize_frame (void)
 	      tree size = gimple_call_arg (stmt, 0);
 	      gassign *grpl = gimple_build_assign (lhs, size);
 	      gsi_replace (&gsi, grpl, true);
-	      //update_gimple_call (&gsi, builtin_decl_explicit (BUILT_IN_MALLOC), 1, size);
+	      // update_gimple_call (&gsi, builtin_decl_explicit
+	      // (BUILT_IN_MALLOC), 1, size);
 	      changed = true;
 	    }
-	    //gsi_next (&gsi);
+	    // gsi_next (&gsi);
 	    break;
 	  default:
 	    gsi_next (&gsi);
@@ -556,43 +563,43 @@ execute_finalize_frame (void)
       return todoflags;
     }
   else if (dump_file)
-    fprintf (dump_file, "called frame expansion for %s\n", IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+    fprintf (dump_file, "called frame expansion for %s\n",
+	     IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
   return 0;
 }
 
 namespace {
 
-const pass_data pass_data_coroutine_finalize_frame  =
-{
-  GIMPLE_PASS, /* type */
+const pass_data pass_data_coroutine_finalize_frame = {
+  GIMPLE_PASS,		 /* type */
   "coro-finalize-frame", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
+  OPTGROUP_NONE,	 /* optinfo_flags */
+  TV_NONE,		 /* tv_id */
   (PROP_cfg | PROP_ssa), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0  /* todo_flags_finish, set this in the fn. */
+  0,			 /* properties_provided */
+  0,			 /* properties_destroyed */
+  0,			 /* todo_flags_start */
+  0			 /* todo_flags_finish, set this in the fn. */
 };
 
 class pass_coroutine_finalize_frame : public gimple_opt_pass
 {
 public:
   pass_coroutine_finalize_frame (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_coroutine_finalize_frame , ctxt)
+    : gimple_opt_pass (pass_data_coroutine_finalize_frame, ctxt)
   {}
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_coroutines; };
 
   virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
-    {
-      return execute_finalize_frame ();
-    }
+  {
+    return execute_finalize_frame ();
+  }
 
 }; // class pass_coroutine_finalize_frame
 
-} // anon namespace
+} // namespace
 
 gimple_opt_pass *
 make_pass_coroutine_finalize_frame (gcc::context *ctxt)
