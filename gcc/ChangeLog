@@ -1,5 +1,18 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_HSDI): New mode iterator.
+	(narrower_mask): Handle VNx4HI, VNx2HI and VNx2SI.
+	* config/aarch64/aarch64-sve.md
+	(<ANY_EXTEND:optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2): New pattern.
+	(*<ANY_EXTEND:optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2): Likewise.
+	(@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>): Update
+	comment.  Avoid new narrower_mask ambiguity.
+	(@aarch64_cond_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>): Likewise.
+	(*cond_uxt<mode>_2): Update comment.
+	(*cond_uxt<mode>_any): Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-modes.def: Define partial SVE vector
 	float modes.
 	* config/aarch64/aarch64-protos.h (aarch64_sve_pred_mode): New

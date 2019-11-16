@@ -71,8 +71,7 @@
 ;; == Unary arithmetic
 ;; ---- [INT] General unary arithmetic corresponding to rtx codes
 ;; ---- [INT] General unary arithmetic corresponding to unspecs
-;; ---- [INT] Sign extension
-;; ---- [INT] Zero extension
+;; ---- [INT] Sign and zero extension
 ;; ---- [INT] Logical inverse
 ;; ---- [FP<-INT] General unary arithmetic that maps to unspecs
 ;; ---- [FP] General unary arithmetic corresponding to unspecs
@@ -2812,15 +2811,44 @@
 )
 
 ;; -------------------------------------------------------------------------
-;; ---- [INT] Sign extension
+;; ---- [INT] Sign and zero extension
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - SXTB
 ;; - SXTH
 ;; - SXTW
+;; - UXTB
+;; - UXTH
+;; - UXTW
 ;; -------------------------------------------------------------------------
 
-;; Predicated SXT[BHW].
+;; Unpredicated sign and zero extension from a narrower mode.
+(define_expand "<optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2"
+  [(set (match_operand:SVE_HSDI 0 "register_operand")
+	(unspec:SVE_HSDI
+	  [(match_dup 2)
+	   (ANY_EXTEND:SVE_HSDI
+	     (match_operand:SVE_PARTIAL_I 1 "register_operand"))]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE && (~<SVE_HSDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
+  {
+    operands[2] = aarch64_ptrue_reg (<SVE_HSDI:VPRED>mode);
+  }
+)
+
+;; Predicated sign and zero extension from a narrower mode.
+(define_insn "*<optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2"
+  [(set (match_operand:SVE_HSDI 0 "register_operand" "=w")
+	(unspec:SVE_HSDI
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "register_operand" "Upl")
+	   (ANY_EXTEND:SVE_HSDI
+	     (match_operand:SVE_PARTIAL_I 2 "register_operand" "w"))]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE && (~<SVE_HSDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
+  "<su>xt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>"
+)
+
+;; Predicated truncate-and-sign-extend operations.
 (define_insn "@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w")
 	(unspec:SVE_FULL_HSDI
@@ -2829,11 +2857,12 @@
 	     (truncate:SVE_PARTIAL_I
 	       (match_operand:SVE_FULL_HSDI 2 "register_operand" "w")))]
 	  UNSPEC_PRED_X))]
-  "TARGET_SVE && (~<narrower_mask> & <self_mask>) == 0"
+  "TARGET_SVE
+   && (~<SVE_FULL_HSDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
   "sxt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>"
 )
 
-;; Predicated SXT[BHW] with merging.
+;; Predicated truncate-and-sign-extend operations with merging.
 (define_insn "@aarch64_cond_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w, ?&w, ?&w")
 	(unspec:SVE_FULL_HSDI
@@ -2843,7 +2872,8 @@
 	       (match_operand:SVE_FULL_HSDI 2 "register_operand" "w, w, w")))
 	   (match_operand:SVE_FULL_HSDI 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && (~<narrower_mask> & <self_mask>) == 0"
+  "TARGET_SVE
+   && (~<SVE_FULL_HSDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
   "@
    sxt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
    movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;sxt<SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
@@ -2851,17 +2881,11 @@
   [(set_attr "movprfx" "*,yes,yes")]
 )
 
-;; -------------------------------------------------------------------------
-;; ---- [INT] Zero extension
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - UXTB
-;; - UXTH
-;; - UXTW
-;; -------------------------------------------------------------------------
-
-;; Match UXT[BHW] as a conditional AND of a constant, merging with the
+;; Predicated truncate-and-zero-extend operations, merging with the
 ;; first input.
+;;
+;; The canonical form of this operation is an AND of a constant rather
+;; than (zero_extend (truncate ...)).
 (define_insn "*cond_uxt<mode>_2"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_I
@@ -2878,7 +2902,7 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
-;; Match UXT[BHW] as a conditional AND of a constant, merging with an
+;; Predicated truncate-and-zero-extend operations, merging with an
 ;; independent value.
 ;;
 ;; The earlyclobber isn't needed for the first alternative, but omitting
