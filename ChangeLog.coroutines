@@ -1,5 +1,11 @@
 2019-11-16  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/c-family/
+	* c.opt: Remove coroutines-ts alias for the command line
+	flag.  Do not enable coroutines for Objective-C++.
+
+2019-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc: Lots of whitespace fixes.
 	
