@@ -1,5 +1,16 @@
 2019-11-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (cceq_ior_compare): Rename to...
+	(@cceq_ior_compare_<mode> for GPR): ... this.  Allow GPR instead of
+	just SI.
+	(cceq_rev_compare): Rename to...
+	(@cceq_rev_compare_<mode> for GPR): ... this.  Allow GPR instead of
+	just SI.
+	(define_split for <bd>tf_<mode>): Add SImode first argument to
+	gen_cceq_ior_compare.
+
+2019-11-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* common/config/powerpcspe: Delete.
 
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
