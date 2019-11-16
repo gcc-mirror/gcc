@@ -284,10 +284,6 @@
 ;; count.
 (define_mode_iterator VMUL_CHANGE_NLANES [V4HI V8HI V2SI V4SI V2SF V4SF])
 
-;; All SVE vector modes.
-(define_mode_iterator SVE_ALL [VNx16QI VNx8HI VNx4SI VNx2DI
-			       VNx8HF VNx4SF VNx2DF])
-
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator VNx8HI_ONLY [VNx8HI])
 (define_mode_iterator VNx4SI_ONLY [VNx4SI])
@@ -302,38 +298,46 @@
 				  VNx64QI VNx32HI VNx16SI VNx8DI
 				  VNx32HF VNx16SF VNx8DF])
 
-;; SVE integer vector modes that have 8-bit, 16-bit or 32-bit elements.
-(define_mode_iterator SVE_BHSI [VNx16QI VNx8HI VNx4SI])
+;; All fully-packed SVE vector modes.
+(define_mode_iterator SVE_FULL [VNx16QI VNx8HI VNx4SI VNx2DI
+			        VNx8HF VNx4SF VNx2DF])
 
-;; SVE integer vector modes that have 16-bit, 32-bit or 64-bit elements.
-(define_mode_iterator SVE_HSDI [VNx8HI VNx4SI VNx2DI])
+;; All fully-packed SVE integer vector modes.
+(define_mode_iterator SVE_FULL_I [VNx16QI VNx8HI VNx4SI VNx2DI])
 
-;; SVE floating-point vector modes that have 16-bit or 32-bit elements.
-(define_mode_iterator SVE_HSF [VNx8HF VNx4SF])
+;; All fully-packed SVE floating-point vector modes.
+(define_mode_iterator SVE_FULL_F [VNx8HF VNx4SF VNx2DF])
 
-;; SVE integer vector modes that have 32-bit or 64-bit elements.
-(define_mode_iterator SVE_SDI [VNx4SI VNx2DI])
+;; Fully-packed SVE integer vector modes that have 8-bit, 16-bit or 32-bit
+;; elements.
+(define_mode_iterator SVE_FULL_BHSI [VNx16QI VNx8HI VNx4SI])
 
-;; SVE floating-point vector modes that have 32-bit or 64-bit elements.
-(define_mode_iterator SVE_SDF [VNx4SF VNx2DF])
+;; Fully-packed SVE vector modes that have 16-bit, 32-bit or 64-bit elements.
+(define_mode_iterator SVE_FULL_HSD [VNx8HI VNx4SI VNx2DI VNx8HF VNx4SF VNx2DF])
 
-;; All SVE vector modes that have 16-bit, 32-bit or 64-bit elements.
-(define_mode_iterator SVE_HSD [VNx8HI VNx4SI VNx2DI VNx8HF VNx4SF VNx2DF])
+;; Fully-packed SVE integer vector modes that have 16-bit, 32-bit or 64-bit
+;; elements.
+(define_mode_iterator SVE_FULL_HSDI [VNx8HI VNx4SI VNx2DI])
 
-;; All SVE vector modes that have 32-bit or 64-bit elements.
-(define_mode_iterator SVE_SD [VNx4SI VNx2DI VNx4SF VNx2DF])
+;; Fully-packed SVE floating-point vector modes that have 16-bit or 32-bit
+;; elements.
+(define_mode_iterator SVE_FULL_HSF [VNx8HF VNx4SF])
 
-;; All SVE vector modes that have 32-bit elements.
-(define_mode_iterator SVE_S [VNx4SI VNx4SF])
+;; Fully-packed SVE vector modes that have 32-bit or 64-bit elements.
+(define_mode_iterator SVE_FULL_SD [VNx4SI VNx2DI VNx4SF VNx2DF])
 
-;; All SVE vector modes that have 64-bit elements.
-(define_mode_iterator SVE_D [VNx2DI VNx2DF])
+;; Fully-packed SVE integer vector modes that have 32-bit or 64-bit elements.
+(define_mode_iterator SVE_FULL_SDI [VNx4SI VNx2DI])
 
-;; All SVE integer vector modes.
-(define_mode_iterator SVE_I [VNx16QI VNx8HI VNx4SI VNx2DI])
+;; Fully-packed SVE floating-point vector modes that have 32-bit or 64-bit
+;; elements.
+(define_mode_iterator SVE_FULL_SDF [VNx4SF VNx2DF])
 
-;; All SVE floating-point vector modes.
-(define_mode_iterator SVE_F [VNx8HF VNx4SF VNx2DF])
+;; Fully-packed SVE vector modes that have 32-bit elements.
+(define_mode_iterator SVE_FULL_S [VNx4SI VNx4SF])
+
+;; Fully-packed SVE vector modes that have 64-bit elements.
+(define_mode_iterator SVE_FULL_D [VNx2DI VNx2DF])
 
 ;; All partial SVE modes.
 (define_mode_iterator SVE_PARTIAL [VNx2QI
