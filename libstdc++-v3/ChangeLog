@@ -1,3 +1,15 @@
+2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the <tuple> part of C++20 p1032 Misc constexpr bits.
+	* include/std/tuple (_Head_base, _Tuple_impl(allocator_arg_t,...)
+	(_M_assign, tuple(allocator_arg_t,...), _Inherited, operator=, _M_swap)
+	(swap, pair(piecewise_construct_t,): Constexpr.
+	* (__uses_alloc0::_Sink::operator=, __uses_alloc_t): Constexpr.
+	* testsuite/20_util/tuple/cons/constexpr_allocator_arg_t.cc: New test.
+	* testsuite/20_util/tuple/constexpr_swap.cc : New test.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Extra error for C++20.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: : Extra error for C++20.
+
 2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stop_token: Reduce header dependencies by including
