@@ -425,31 +425,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using native_handle_type = std::thread::native_handle_type;
 
     jthread() noexcept
-    : _M_stop_source{ nostopstate_t{ } }
+    : _M_stop_source{nostopstate}
     { }
 
     template<typename _Callable, typename... _Args,
-             typename = std::enable_if_t<!std::is_same_v<std::decay_t<_Callable>, jthread>>>
-    explicit
-    jthread(_Callable&& __f, _Args&&... __args)
-      : _M_thread{[](stop_token __token, auto&& __cb, auto&&... __args)
-                  {
-                    if constexpr(std::is_invocable_v<_Callable, stop_token, _Args...>)
-                      {
-                        std::invoke(std::forward<decltype(__cb)>(__cb),
-                                    std::move(__token),
-                                    std::forward<decltype(__args)>(__args)...);
-                      }
-                    else
-                      {
-                        std::invoke(std::forward<decltype(__cb)>(__cb),
-                                    std::forward<decltype(__args)>(__args)...);
-                      }
-                  },
-                  _M_stop_source.get_token(),
-                  std::forward<_Callable>(__f),
-                  std::forward<_Args>(__args)...}
-    { }
+	     typename = enable_if_t<!is_same_v<remove_cvref_t<_Callable>,
+					       jthread>>>
+      explicit
+      jthread(_Callable&& __f, _Args&&... __args)
+      : _M_thread{_S_create(_M_stop_source, std::forward<_Callable>(__f),
+			    std::forward<_Args>(__args)...)}
+      { }
 
     jthread(const jthread&) = delete;
     jthread(jthread&&) noexcept = default;
@@ -476,7 +462,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::swap(_M_thread, __other._M_thread);
     }
 
-    bool
+    [[nodiscard]] bool
     joinable() const noexcept
     {
       return _M_thread.joinable();
@@ -494,19 +480,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_thread.detach();
     }
 
-    id
+    [[nodiscard]] id
     get_id() const noexcept
     {
       _M_thread.get_id();
     }
 
-    native_handle_type
+    [[nodiscard]] native_handle_type
     native_handle()
     {
       return _M_thread.native_handle();
     }
 
-    static unsigned
+    [[nodiscard]] static unsigned
     hardware_concurrency() noexcept
     {
       return std::thread::hardware_concurrency();
@@ -529,7 +515,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return get_stop_source().request_stop();
     }
 
+    friend void swap(jthread& __lhs, jthread& __rhs) noexcept
+    {
+      __lhs.swap(__rhs);
+    }
+
   private:
+    template<typename _Callable, typename... _Args>
+      static thread
+      _S_create(stop_source& __ssrc, _Callable&& __f, _Args&&... __args)
+      {
+	if constexpr(is_invocable_v<_Callable, stop_token, _Args...>)
+	  return thread{std::forward<_Callable>(__f), __ssrc.get_token(),
+			std::forward<_Args>(__args)...};
+	else
+	  return thread{std::forward<_Callable>(__f),
+			std::forward<_Args>(__args)...};
+      }
+
     stop_source _M_stop_source;
     std::thread _M_thread;
   };

@@ -1,3 +1,14 @@
+2019-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/thread (jthread::jthread()): Use nostopstate constant.
+	(jthread::jthread(Callable&&, Args&&...)): Use helper function to
+	create std::thread instead of indirection through a lambda. Use
+	remove_cvref_t instead of decay_t.
+	(jthread::joinable(), jthread::get_id(), jthread::native_handle())
+	(jthread::hardware_concurrency()): Add nodiscard attribute.
+	(swap(jthread&. jthread&)): Define hidden friend.
+	(jthread::_S_create): New helper function for constructor.
+
 2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement the <tuple> part of C++20 p1032 Misc constexpr bits.
