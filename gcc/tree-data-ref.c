@@ -1617,6 +1617,11 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      std::swap (init_a1, init_a2);
 	    }
 
+	  /* The DR_Bs are equal, so only the DR_As can introduce
+	     mixed steps.  */
+	  if (!operand_equal_p (DR_STEP (dr_a1->dr), DR_STEP (dr_a2->dr), 0))
+	    alias_pair1->flags |= DR_ALIAS_MIXED_STEPS;
+
 	  if (new_seg_len_p)
 	    {
 	      dr_a1->seg_len = build_int_cst (TREE_TYPE (dr_a1->seg_len),
@@ -1662,11 +1667,14 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
     }
 }
 
-/* Given LOOP's two data references and segment lengths described by DR_A
-   and DR_B, create expression checking if the two addresses ranges intersect
-   with each other based on index of the two addresses.  This can only be
-   done if DR_A and DR_B referring to the same (array) object and the index
-   is the only difference.  For example:
+/* Try to generate a runtime condition that is true if ALIAS_PAIR is
+   free of aliases, using a condition based on index values instead
+   of a condition based on addresses.  Return true on success,
+   storing the condition in *COND_EXPR.
+
+   This can only be done if the two data references in ALIAS_PAIR access
+   the same array object and the index is the only difference.  For example,
+   if the two data references are DR_A and DR_B:
 
                        DR_A                           DR_B
       data-ref         arr[i]                         arr[j]
@@ -1689,10 +1697,12 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 
 static bool
 create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
-				     const dr_with_seg_len& dr_a,
-				     const dr_with_seg_len& dr_b)
+				     const dr_with_seg_len_pair_t &alias_pair)
 {
-  if (integer_zerop (DR_STEP (dr_a.dr))
+  const dr_with_seg_len &dr_a = alias_pair.first;
+  const dr_with_seg_len &dr_b = alias_pair.second;
+  if ((alias_pair.flags & DR_ALIAS_MIXED_STEPS)
+      || integer_zerop (DR_STEP (dr_a.dr))
       || integer_zerop (DR_STEP (dr_b.dr))
       || DR_NUM_DIMENSIONS (dr_a.dr) != DR_NUM_DIMENSIONS (dr_b.dr))
     return false;
@@ -1914,24 +1924,26 @@ get_segment_min_max (const dr_with_seg_len &d, tree *seg_min_out,
   *seg_max_out = fold_build_pointer_plus (addr_base, max_reach);
 }
 
-/* Given two data references and segment lengths described by DR_A and DR_B,
-   create expression checking if the two addresses ranges intersect with
-   each other:
+/* Generate a runtime condition that is true if ALIAS_PAIR is free of aliases,
+   storing the condition in *COND_EXPR.  The fallback is to generate a
+   a test that the two accesses do not overlap:
 
-     ((DR_A_addr_0 + DR_A_segment_length_0) <= DR_B_addr_0)
-     || (DR_B_addr_0 + DER_B_segment_length_0) <= DR_A_addr_0))  */
+     end_a <= start_b || end_b <= start_a.  */
 
 static void
 create_intersect_range_checks (class loop *loop, tree *cond_expr,
-			       const dr_with_seg_len& dr_a,
-			       const dr_with_seg_len& dr_b)
+			       const dr_with_seg_len_pair_t &alias_pair)
 {
+  const dr_with_seg_len& dr_a = alias_pair.first;
+  const dr_with_seg_len& dr_b = alias_pair.second;
   *cond_expr = NULL_TREE;
-  if (create_intersect_range_checks_index (loop, cond_expr, dr_a, dr_b))
+  if (create_intersect_range_checks_index (loop, cond_expr, alias_pair))
     return;
 
   unsigned HOST_WIDE_INT min_align;
   tree_code cmp_code;
+  /* We don't have to check DR_ALIAS_MIXED_STEPS here, since both versions
+     are equivalent.  This is just an optimization heuristic.  */
   if (TREE_CODE (DR_STEP (dr_a.dr)) == INTEGER_CST
       && TREE_CODE (DR_STEP (dr_b.dr)) == INTEGER_CST)
     {
@@ -1988,18 +2000,19 @@ create_runtime_alias_checks (class loop *loop,
   tree part_cond_expr;
 
   fold_defer_overflow_warnings ();
-  for (size_t i = 0, s = alias_pairs->length (); i < s; ++i)
+  dr_with_seg_len_pair_t *alias_pair;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (*alias_pairs, i, alias_pair)
     {
-      const dr_with_seg_len& dr_a = (*alias_pairs)[i].first;
-      const dr_with_seg_len& dr_b = (*alias_pairs)[i].second;
-
+      gcc_assert (alias_pair->flags);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE,
 		     "create runtime check for data references %T and %T\n",
-		     DR_REF (dr_a.dr), DR_REF (dr_b.dr));
+		     DR_REF (alias_pair->first.dr),
+		     DR_REF (alias_pair->second.dr));
 
       /* Create condition expression for each pair data references.  */
-      create_intersect_range_checks (loop, &part_cond_expr, dr_a, dr_b);
+      create_intersect_range_checks (loop, &part_cond_expr, *alias_pair);
       if (*cond_expr)
 	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				  *cond_expr, part_cond_expr);

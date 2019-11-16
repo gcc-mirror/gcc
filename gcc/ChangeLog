@@ -1,5 +1,18 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-data-ref.h (DR_ALIAS_MIXED_STEPS): New flag.
+	* tree-data-ref.c (prune_runtime_alias_test_list): Set it when
+	merging data references with different steps.
+	(create_intersect_range_checks_index): Take a
+	dr_with_seg_len_pair_t instead of two dr_with_seg_lens.
+	Bail out if DR_ALIAS_MIXED_STEPS is set.
+	(create_intersect_range_checks): Take a dr_with_seg_len_pair_t
+	instead of two dr_with_seg_lens.  Update call to
+	create_intersect_range_checks_index.
+	(create_runtime_alias_checks): Update call accordingly.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-data-ref.h (DR_ALIAS_RAW, DR_ALIAS_WAR, DR_ALIAS_WAW)
 	(DR_ALIAS_ARBITRARY, DR_ALIAS_SWAPPED, DR_ALIAS_UNSWAPPED): New flags.
 	(dr_with_seg_len_pair_t::sequencing): New enum.

@@ -250,6 +250,12 @@ public:
 	Temporary flags that indicate whether there is a pair P whose
 	DRs have or haven't been swapped around.
 
+   DR_ALIAS_MIXED_STEPS:
+	The DR_STEP for one of the data references in the pair does not
+	accurately describe that reference for all members of P.  (Note
+	that the flag does not say anything about whether the DR_STEPs
+	of the two references in the pair are the same.)
+
    The ordering assumption mentioned above is that for every pair
    (DR_A, DR_B) in P:
 
@@ -287,6 +293,7 @@ const unsigned int DR_ALIAS_WAW = 1U << 2;
 const unsigned int DR_ALIAS_ARBITRARY = 1U << 3;
 const unsigned int DR_ALIAS_SWAPPED = 1U << 4;
 const unsigned int DR_ALIAS_UNSWAPPED = 1U << 5;
+const unsigned int DR_ALIAS_MIXED_STEPS = 1U << 6;
 
 /* This struct contains two dr_with_seg_len objects with aliasing data
    refs.  Two comparisons are generated from them.  */
