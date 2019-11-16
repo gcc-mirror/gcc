@@ -1,5 +1,12 @@
 2019-11-16  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* constexpr.c (potential_constant_expression_1): Amend comments.
+	* parser.c (cp_parser_unary_expression): Likewise.
+	(cp_parser_jump_statement): Likewise.
+
+2019-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* coroutine-builtins.def: Tidy whitespace.
 	(BUILT_IN_CORO_IS_SUSPENDED): Delete.

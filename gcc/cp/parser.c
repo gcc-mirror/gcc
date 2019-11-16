@@ -8337,12 +8337,12 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    /* Consume the `co_await' token.  */
 	    cp_lexer_consume_token (parser->lexer);
-	    /* Parse the cast-expression.  */
+	    /* Parse its cast-expression.  */
 	    expr = cp_parser_simple_cast_expression (parser);
 	    if (expr == error_mark_node)
 	      return error_mark_node;
 
-	    /* Do the Section 8.3.8 dance of the awaitable.  */
+	    /* Handle [expr.await].  */
 	    return cp_expr (finish_co_await_expr (kw_loc, expr));
 	  }
 
@@ -13029,7 +13029,8 @@ cp_parser_jump_statement (cp_parser* parser)
 	  /* If the next token is a `;', then there is no
 	     expression.  */
 	  expr = NULL_TREE;
-	/* Build the return-statement.  */
+	/* Build the return-statement, check co-return first, since type
+	   deduction is not valid there.  */
 	if (keyword == RID_CO_RETURN)
 	  statement = finish_co_return_stmt (token->location, expr);
 	else if (FNDECL_USED_AUTO (current_function_decl) && in_discarded_stmt)
