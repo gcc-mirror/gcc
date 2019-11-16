@@ -371,8 +371,20 @@
 ;; SVE modes with 2 elements.
 (define_mode_iterator SVE_2 [VNx2QI VNx2HI VNx2HF VNx2SI VNx2SF VNx2DI VNx2DF])
 
+;; SVE integer modes with 2 elements, excluding the widest element.
+(define_mode_iterator SVE_2BHSI [VNx2QI VNx2HI VNx2SI])
+
+;; SVE integer modes with 2 elements, excluding the narrowest element.
+(define_mode_iterator SVE_2HSDI [VNx2HI VNx2SI VNx2DI])
+
 ;; SVE modes with 4 elements.
 (define_mode_iterator SVE_4 [VNx4QI VNx4HI VNx4HF VNx4SI VNx4SF])
+
+;; SVE integer modes with 4 elements, excluding the widest element.
+(define_mode_iterator SVE_4BHI [VNx4QI VNx4HI])
+
+;; SVE integer modes with 4 elements, excluding the narrowest element.
+(define_mode_iterator SVE_4HSI [VNx4HI VNx4SI])
 
 ;; Modes involved in extending or truncating SVE data, for 8 elements per
 ;; 128-bit block.
@@ -1443,6 +1455,7 @@
 
 ;; Code iterator for sign/zero extension
 (define_code_iterator ANY_EXTEND [sign_extend zero_extend])
+(define_code_iterator ANY_EXTEND2 [sign_extend zero_extend])
 
 ;; All division operations (signed/unsigned)
 (define_code_iterator ANY_DIV [div udiv])

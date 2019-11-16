@@ -1,5 +1,45 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_2BHSI, SVE_2HSDI, SVE_4BHI)
+	(SVE_4HSI): New mode iterators.
+	(ANY_EXTEND2): New code iterator.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_gather_load_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>):
+	Extend to...
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	...this, handling extension to partial modes as well as full modes.
+	Describe the extension as a predicated rather than unpredicated
+	extension.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>):
+	Likewise extend to...
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	...this, making the same adjustments.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_sxtw):
+	Likewise extend to...
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>_sxtw)
+	...this, making the same adjustments.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_uxtw):
+	Likewise extend to...
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>_uxtw)
+	...this, making the same adjustments.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked):
+	New pattern.
+	(*aarch64_ldff1_gather<mode>_sxtw): Canonicalize to a constant
+	extension predicate.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>)
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_uxtw):
+	Describe the extension as a predicated rather than unpredicated
+	extension.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>_sxtw):
+	Likewise.  Canonicalize to a constant extension predicate.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svld1_gather_extend_impl::expand): Add an extra predicate for
+	the extension.
+	(svldff1_gather_extend_impl::expand): Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_24, SVE_2, SVE_4): New mode
 	iterators.
 	* config/aarch64/aarch64-sve.md

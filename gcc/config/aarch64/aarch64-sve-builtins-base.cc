@@ -1097,6 +1097,8 @@ public:
     /* Put the predicate last, since the extending gathers use the same
        operand order as mask_gather_load_optab.  */
     e.rotate_inputs_left (0, 5);
+    /* Add a constant predicate for the extension rtx.  */
+    e.args.quick_push (CONSTM1_RTX (VNx16BImode));
     insn_code icode = code_for_aarch64_gather_load (extend_rtx_code (),
 						    e.vector_mode (0),
 						    e.memory_vector_mode ());
@@ -1234,6 +1236,8 @@ public:
     /* Put the predicate last, since ldff1_gather uses the same operand
        order as mask_gather_load_optab.  */
     e.rotate_inputs_left (0, 5);
+    /* Add a constant predicate for the extension rtx.  */
+    e.args.quick_push (CONSTM1_RTX (VNx16BImode));
     insn_code icode = code_for_aarch64_ldff1_gather (extend_rtx_code (),
 						     e.vector_mode (0),
 						     e.memory_vector_mode ());
