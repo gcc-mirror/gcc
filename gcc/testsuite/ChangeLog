@@ -1,5 +1,20 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/load_extend_1.c: New test.
+	* gcc.target/aarch64/sve/load_extend_2.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_3.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_4.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_5.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_6.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_7.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_8.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_9.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_10.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_4.c: Add
+	--param aarch64-sve-compare-costs=0.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/cost_model_1.c: Expect the loop to be
 	vectorized with bytes stored in 32-bit containers.
 	* gcc.target/aarch64/sve/extend_1.c: New test.
