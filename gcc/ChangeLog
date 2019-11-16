@@ -1,5 +1,21 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md
+	(scatter_store<SVE_FULL_SD:mode><v_int_equiv>): Extend to...
+	(scatter_store<SVE_24:mode><v_int_container>): ...this.
+	(mask_scatter_store<SVE_FULL_S:mode><v_int_equiv>): Extend to...
+	(mask_scatter_store<SVE_4:mode><v_int_equiv>): ...this.
+	(mask_scatter_store<SVE_FULL_D:mode><v_int_equiv>): Extend to...
+	(mask_scatter_store<SVE_2:mode><v_int_equiv>): ...this.
+	(*mask_scatter_store<mode><v_int_container>_<su>xtw_unpacked): New
+	pattern.
+	(*mask_scatter_store<SVE_FULL_D:mode><v_int_equiv>_sxtw): Extend to...
+	(*mask_scatter_store<SVE_2:mode><v_int_equiv>_sxtw): ...this.
+	(*mask_scatter_store<SVE_FULL_D:mode><v_int_equiv>_uxtw): Extend to...
+	(*mask_scatter_store<SVE_2:mode><v_int_equiv>_uxtw): ...this.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_2BHSI, SVE_2HSDI, SVE_4BHI)
 	(SVE_4HSI): New mode iterators.
 	(ANY_EXTEND2): New code iterator.

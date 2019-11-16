@@ -1,5 +1,18 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/scatter_store_1.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
+	* gcc.target/aarch64/sve/scatter_store_2.c: Update accordingly.
+	* gcc.target/aarch64/sve/scatter_store_3.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
+	* gcc.target/aarch64/sve/scatter_store_4.c: Update accordingly.
+	* gcc.target/aarch64/sve/scatter_store_5.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit, 16-bit and 32-bit elements.
+	* gcc.target/aarch64/sve/scatter_store_8.c: New test.
+	* gcc.target/aarch64/sve/scatter_store_9.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/gather_load_extend_1.c: New test.
 	* gcc.target/aarch64/sve/gather_load_extend_2.c: Likewise.
 	* gcc.target/aarch64/sve/gather_load_extend_3.c: Likewise.
