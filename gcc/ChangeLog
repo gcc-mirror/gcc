@@ -1,5 +1,17 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (can_duplicate_and_interleave_p): Take an
+	element type rather than an element mode.
+	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.
+	Use get_vectype_for_scalar_type to query the natural types
+	for a given element type rather than basing everything on
+	GET_MODE_SIZE (vinfo->vector_mode).  Limit int_mode_for_size
+	query to MAX_FIXED_MODE_SIZE.
+	(duplicate_and_interleave): Update call accordingly.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_get_vector_types_for_stmt): Take an
 	optional maximum nunits.
 	(get_vectype_for_scalar_type): Likewise.  Also declare a form that
