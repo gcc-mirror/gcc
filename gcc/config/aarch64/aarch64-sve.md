@@ -984,7 +984,7 @@
   [(set (reg:VNx16BI FFR_REGNUM)
 	(match_operand:VNx16BI 0 "aarch64_simd_reg_or_minus_one" "Dm, Upa"))
    (set (reg:VNx16BI FFRT_REGNUM)
-	(match_dup 0))]
+	(unspec:VNx16BI [(match_dup 0)] UNSPEC_WRFFR))]
   "TARGET_SVE"
   "@
    setffr
