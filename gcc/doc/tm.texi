@@ -6008,7 +6008,7 @@ against lower halves of vectors recursively until the specified mode is
 reached.  The default is @var{mode} which means no splitting.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES (vector_modes *@var{modes}, bool @var{all})
+@deftypefn {Target Hook} {unsigned int} TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES (vector_modes *@var{modes}, bool @var{all})
 If using the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}
 is not the only approach worth considering, this hook should add one mode to
 @var{modes} for each useful alternative approach.  These modes are then
@@ -6024,9 +6024,19 @@ element mode.
 If @var{all} is true, add suitable vector modes even when they are generally
 not expected to be worthwhile.
 
+The hook returns a bitmask of flags that control how the modes in
+@var{modes} are used.  The flags are:
+@table @code
+@item VECT_COMPARE_COSTS
+Tells the loop vectorizer to try all the provided modes and pick the one
+with the lowest cost.  By default the vectorizer will choose the first
+mode that works.
+@end table
+
 The hook does not need to do anything if the vector returned by
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant
-for autovectorization.  The default implementation does nothing.
+for autovectorization.  The default implementation adds no modes and
+returns 0.
 @end deftypefn
 
 @deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_RELATED_MODE (machine_mode @var{vector_mode}, scalar_mode @var{element_mode}, poly_uint64 @var{nunits})

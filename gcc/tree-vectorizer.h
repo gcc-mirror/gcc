@@ -601,6 +601,13 @@ public:
   /* Cost of a single scalar iteration.  */
   int single_scalar_iteration_cost;
 
+  /* The cost of the vector prologue and epilogue, including peeled
+     iterations and set-up code.  */
+  int vec_outside_cost;
+
+  /* The cost of the vector loop body.  */
+  int vec_inside_cost;
+
   /* Is the loop vectorizable? */
   bool vectorizable;
 

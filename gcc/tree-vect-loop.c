@@ -829,6 +829,8 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     scan_map (NULL),
     slp_unrolling_factor (1),
     single_scalar_iteration_cost (0),
+    vec_outside_cost (0),
+    vec_inside_cost (0),
     vectorizable (false),
     can_fully_mask_p (true),
     fully_masked_p (false),
@@ -2374,6 +2376,80 @@ again:
   goto start_over;
 }
 
+/* Return true if vectorizing a loop using NEW_LOOP_VINFO appears
+   to be better than vectorizing it using OLD_LOOP_VINFO.  Assume that
+   OLD_LOOP_VINFO is better unless something specifically indicates
+   otherwise.
+
+   Note that this deliberately isn't a partial order.  */
+
+static bool
+vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
+			  loop_vec_info old_loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (new_loop_vinfo);
+  gcc_assert (LOOP_VINFO_LOOP (old_loop_vinfo) == loop);
+
+  poly_int64 new_vf = LOOP_VINFO_VECT_FACTOR (new_loop_vinfo);
+  poly_int64 old_vf = LOOP_VINFO_VECT_FACTOR (old_loop_vinfo);
+
+  /* Always prefer a VF of loop->simdlen over any other VF.  */
+  if (loop->simdlen)
+    {
+      bool new_simdlen_p = known_eq (new_vf, loop->simdlen);
+      bool old_simdlen_p = known_eq (old_vf, loop->simdlen);
+      if (new_simdlen_p != old_simdlen_p)
+	return new_simdlen_p;
+    }
+
+  /* Limit the VFs to what is likely to be the maximum number of iterations,
+     to handle cases in which at least one loop_vinfo is fully-masked.  */
+  HOST_WIDE_INT estimated_max_niter = likely_max_stmt_executions_int (loop);
+  if (estimated_max_niter != -1)
+    {
+      if (known_le (estimated_max_niter, new_vf))
+	new_vf = estimated_max_niter;
+      if (known_le (estimated_max_niter, old_vf))
+	old_vf = estimated_max_niter;
+    }
+
+  /* Check whether the (fractional) cost per scalar iteration is lower
+     or higher: new_inside_cost / new_vf vs. old_inside_cost / old_vf.  */
+  poly_widest_int rel_new = (new_loop_vinfo->vec_inside_cost
+			     * poly_widest_int (old_vf));
+  poly_widest_int rel_old = (old_loop_vinfo->vec_inside_cost
+			     * poly_widest_int (new_vf));
+  if (maybe_lt (rel_old, rel_new))
+    return false;
+  if (known_lt (rel_new, rel_old))
+    return true;
+
+  /* If there's nothing to choose between the loop bodies, see whether
+     there's a difference in the prologue and epilogue costs.  */
+  if (new_loop_vinfo->vec_outside_cost != old_loop_vinfo->vec_outside_cost)
+    return new_loop_vinfo->vec_outside_cost < old_loop_vinfo->vec_outside_cost;
+
+  return false;
+}
+
+/* Decide whether to replace OLD_LOOP_VINFO with NEW_LOOP_VINFO.  Return
+   true if we should.  */
+
+static bool
+vect_joust_loop_vinfos (loop_vec_info new_loop_vinfo,
+			loop_vec_info old_loop_vinfo)
+{
+  if (!vect_better_loop_vinfo_p (new_loop_vinfo, old_loop_vinfo))
+    return false;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "***** Preferring vector mode %s to vector mode %s\n",
+		     GET_MODE_NAME (new_loop_vinfo->vector_mode),
+		     GET_MODE_NAME (old_loop_vinfo->vector_mode));
+  return true;
+}
+
 /* Function vect_analyze_loop.
 
    Apply a set of analyses on LOOP, and create a loop_vec_info struct
@@ -2385,8 +2461,9 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   auto_vector_modes vector_modes;
 
   /* Autodetect first vector size we try.  */
-  targetm.vectorize.autovectorize_vector_modes (&vector_modes,
-						loop->simdlen != 0);
+  unsigned int autovec_flags
+    = targetm.vectorize.autovectorize_vector_modes (&vector_modes,
+						    loop->simdlen != 0);
   unsigned int mode_i = 0;
 
   DUMP_VECT_SCOPE ("analyze_loop_nest");
@@ -2409,6 +2486,8 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   machine_mode next_vector_mode = VOIDmode;
   poly_uint64 lowest_th = 0;
   unsigned vectorized_loops = 0;
+  bool pick_lowest_cost_p = ((autovec_flags & VECT_COMPARE_COSTS)
+			     && !unlimited_cost_model (loop));
 
   bool vect_epilogues = false;
   opt_result res = opt_result::success ();
@@ -2429,6 +2508,34 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 
       bool fatal = false;
 
+      /* When pick_lowest_cost_p is true, we should in principle iterate
+	 over all the loop_vec_infos that LOOP_VINFO could replace and
+	 try to vectorize LOOP_VINFO under the same conditions.
+	 E.g. when trying to replace an epilogue loop, we should vectorize
+	 LOOP_VINFO as an epilogue loop with the same VF limit.  When trying
+	 to replace the main loop, we should vectorize LOOP_VINFO as a main
+	 loop too.
+
+	 However, autovectorize_vector_modes is usually sorted as follows:
+
+	 - Modes that naturally produce lower VFs usually follow modes that
+	   naturally produce higher VFs.
+
+	 - When modes naturally produce the same VF, maskable modes
+	   usually follow unmaskable ones, so that the maskable mode
+	   can be used to vectorize the epilogue of the unmaskable mode.
+
+	 This order is preferred because it leads to the maximum
+	 epilogue vectorization opportunities.  Targets should only use
+	 a different order if they want to make wide modes available while
+	 disparaging them relative to earlier, smaller modes.  The assumption
+	 in that case is that the wider modes are more expensive in some
+	 way that isn't reflected directly in the costs.
+
+	 There should therefore be few interesting cases in which
+	 LOOP_VINFO fails when treated as an epilogue loop, succeeds when
+	 treated as a standalone loop, and ends up being genuinely cheaper
+	 than FIRST_LOOP_VINFO.  */
       if (vect_epilogues)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
@@ -2476,13 +2583,34 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
 	      simdlen = 0;
 	    }
+	  else if (pick_lowest_cost_p && first_loop_vinfo)
+	    {
+	      /* Keep trying to roll back vectorization attempts while the
+		 loop_vec_infos they produced were worse than this one.  */
+	      vec<loop_vec_info> &vinfos = first_loop_vinfo->epilogue_vinfos;
+	      while (!vinfos.is_empty ()
+		     && vect_joust_loop_vinfos (loop_vinfo, vinfos.last ()))
+		{
+		  gcc_assert (vect_epilogues);
+		  delete vinfos.pop ();
+		}
+	      if (vinfos.is_empty ()
+		  && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
+		{
+		  delete first_loop_vinfo;
+		  first_loop_vinfo = opt_loop_vec_info::success (NULL);
+		  LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
+		}
+	    }
 
 	  if (first_loop_vinfo == NULL)
 	    {
 	      first_loop_vinfo = loop_vinfo;
 	      lowest_th = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
 	    }
-	  else if (vect_epilogues)
+	  else if (vect_epilogues
+		   /* For now only allow one epilogue loop.  */
+		   && first_loop_vinfo->epilogue_vinfos.is_empty ())
 	    {
 	      first_loop_vinfo->epilogue_vinfos.safe_push (loop_vinfo);
 	      poly_uint64 th = LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
@@ -2506,12 +2634,14 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 			    && param_vect_epilogues_nomask
 			    && LOOP_VINFO_PEELING_FOR_NITER (first_loop_vinfo)
 			    && !loop->simduid
-			    /* For now only allow one epilogue loop.  */
-			    && first_loop_vinfo->epilogue_vinfos.is_empty ());
+			    /* For now only allow one epilogue loop, but allow
+			       pick_lowest_cost_p to replace it.  */
+			    && (first_loop_vinfo->epilogue_vinfos.is_empty ()
+				|| pick_lowest_cost_p));
 
 	  /* Commit to first_loop_vinfo if we have no reason to try
 	     alternatives.  */
-	  if (!simdlen && !vect_epilogues)
+	  if (!simdlen && !vect_epilogues && !pick_lowest_cost_p)
 	    break;
 	}
       else
@@ -3509,7 +3639,11 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	       &vec_inside_cost, &vec_epilogue_cost);
 
   vec_outside_cost = (int)(vec_prologue_cost + vec_epilogue_cost);
-  
+
+  /* Stash the costs so that we can compare two loop_vec_infos.  */
+  loop_vinfo->vec_inside_cost = vec_inside_cost;
+  loop_vinfo->vec_outside_cost = vec_outside_cost;
+
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "Cost model analysis: \n");

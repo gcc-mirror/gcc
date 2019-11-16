@@ -1,5 +1,28 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.h (VECT_COMPARE_COSTS): New constant.
+	* target.def (autovectorize_vector_modes): Return a bitmask of flags.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_autovectorize_vector_modes): Update accordingly.
+	* targhooks.c (default_autovectorize_vector_modes): Likewise.
+	* config/aarch64/aarch64.c (aarch64_autovectorize_vector_modes):
+	Likewise.
+	* config/arc/arc.c (arc_autovectorize_vector_modes): Likewise.
+	* config/arm/arm.c (arm_autovectorize_vector_modes): Likewise.
+	* config/i386/i386.c (ix86_autovectorize_vector_modes): Likewise.
+	* config/mips/mips.c (mips_autovectorize_vector_modes): Likewise.
+	* tree-vectorizer.h (_loop_vec_info::vec_outside_cost)
+	(_loop_vec_info::vec_inside_cost): New member variables.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize them.
+	(vect_better_loop_vinfo_p, vect_joust_loop_vinfos): New functions.
+	(vect_analyze_loop): When autovectorize_vector_modes returns
+	VECT_COMPARE_COSTS, try vectorizing the loop with each available
+	vector mode and picking the one with the lowest cost.
+	(vect_estimate_min_profitable_iters): Record the computed costs
+	in the loop_vec_info.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (can_duplicate_and_interleave_p): Take an
 	element type rather than an element mode.
 	* tree-vect-slp.c (can_duplicate_and_interleave_p): Likewise.

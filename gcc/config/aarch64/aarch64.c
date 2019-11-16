@@ -15935,7 +15935,7 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 
 /* Return a list of possible vector sizes for the vectorizer
    to iterate over.  */
-static void
+static unsigned int
 aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_SVE)
@@ -15961,6 +15961,8 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
      TODO: We could similarly support limited forms of V2QImode and V2HImode
      for this case.  */
   modes->safe_push (V2SImode);
+
+  return 0;
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
