@@ -1743,7 +1743,9 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 
    We can create expression based on index rather than address:
 
-     (i_0 + 4 < j_0 || j_0 + 4 < i_0)
+     (unsigned) (i_0 - j_0 + 3) <= 6
+
+   i.e. the indices are less than 4 apart.
 
    Note evolution step of index needs to be considered in comparison.  */
 
@@ -1780,15 +1782,8 @@ create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
   if (neg_step)
     {
       abs_step = -abs_step;
-      seg_len1 = -seg_len1;
-      seg_len2 = -seg_len2;
-    }
-  else
-    {
-      /* Include the access size in the length, so that we only have one
-	 tree addition below.  */
-      seg_len1 += dr_a.access_size;
-      seg_len2 += dr_b.access_size;
+      seg_len1 = (-wi::to_poly_wide (dr_a.seg_len)).force_uhwi ();
+      seg_len2 = (-wi::to_poly_wide (dr_b.seg_len)).force_uhwi ();
     }
 
   /* Infer the number of iterations with which the memory segment is accessed
@@ -1802,16 +1797,13 @@ create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
       || !can_div_trunc_p (seg_len2 + abs_step - 1, abs_step, &niter_len2))
     return false;
 
-  poly_uint64 niter_access1 = 0, niter_access2 = 0;
-  if (neg_step)
-    {
-      /* Divide each access size by the byte step, rounding up.  */
-      if (!can_div_trunc_p (dr_a.access_size - abs_step - 1,
-			    abs_step, &niter_access1)
-	  || !can_div_trunc_p (dr_b.access_size + abs_step - 1,
-			       abs_step, &niter_access2))
-	return false;
-    }
+  /* Divide each access size by the byte step, rounding up.  */
+  poly_uint64 niter_access1, niter_access2;
+  if (!can_div_trunc_p (dr_a.access_size + abs_step - 1,
+			abs_step, &niter_access1)
+      || !can_div_trunc_p (dr_b.access_size + abs_step - 1,
+			   abs_step, &niter_access2))
+    return false;
 
   unsigned int i;
   for (i = 0; i < DR_NUM_DIMENSIONS (dr_a.dr); i++)
@@ -1851,38 +1843,87 @@ create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
 	 index of data reference.  Like segment length, index length is
 	 linear function of the number of iterations with index_step as
 	 the coefficient, i.e, niter_len * idx_step.  */
-      tree idx_len1 = fold_build2 (MULT_EXPR, TREE_TYPE (min1), idx_step,
-				   build_int_cst (TREE_TYPE (min1),
-						  niter_len1));
-      tree idx_len2 = fold_build2 (MULT_EXPR, TREE_TYPE (min2), idx_step,
-				   build_int_cst (TREE_TYPE (min2),
-						  niter_len2));
-      tree max1 = fold_build2 (PLUS_EXPR, TREE_TYPE (min1), min1, idx_len1);
-      tree max2 = fold_build2 (PLUS_EXPR, TREE_TYPE (min2), min2, idx_len2);
-      /* Adjust ranges for negative step.  */
+      offset_int abs_idx_step = offset_int::from (wi::to_wide (idx_step),
+						  SIGNED);
       if (neg_step)
-	{
-	  /* IDX_LEN1 and IDX_LEN2 are negative in this case.  */
-	  std::swap (min1, max1);
-	  std::swap (min2, max2);
+	abs_idx_step = -abs_idx_step;
+      poly_offset_int idx_len1 = abs_idx_step * niter_len1;
+      poly_offset_int idx_len2 = abs_idx_step * niter_len2;
+      poly_offset_int idx_access1 = abs_idx_step * niter_access1;
+      poly_offset_int idx_access2 = abs_idx_step * niter_access2;
 
-	  /* As with the lengths just calculated, we've measured the access
-	     sizes in iterations, so multiply them by the index step.  */
-	  tree idx_access1
-	    = fold_build2 (MULT_EXPR, TREE_TYPE (min1), idx_step,
-			   build_int_cst (TREE_TYPE (min1), niter_access1));
-	  tree idx_access2
-	    = fold_build2 (MULT_EXPR, TREE_TYPE (min2), idx_step,
-			   build_int_cst (TREE_TYPE (min2), niter_access2));
+      gcc_assert (known_ge (idx_len1, 0)
+		  && known_ge (idx_len2, 0)
+		  && known_ge (idx_access1, 0)
+		  && known_ge (idx_access2, 0));
 
-	  /* MINUS_EXPR because the above values are negative.  */
-	  max1 = fold_build2 (MINUS_EXPR, TREE_TYPE (max1), max1, idx_access1);
-	  max2 = fold_build2 (MINUS_EXPR, TREE_TYPE (max2), max2, idx_access2);
-	}
-      tree part_cond_expr
-	= fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-	    fold_build2 (LE_EXPR, boolean_type_node, max1, min2),
-	    fold_build2 (LE_EXPR, boolean_type_node, max2, min1));
+      /* Each access has the following pattern, with lengths measured
+	 in units of INDEX:
+
+	      <-- idx_len -->
+	      <--- A: -ve step --->
+	      +-----+-------+-----+-------+-----+
+	      | n-1 | ..... |  0  | ..... | n-1 |
+	      +-----+-------+-----+-------+-----+
+			    <--- B: +ve step --->
+			    <-- idx_len -->
+			    |
+			   min
+
+	 where "n" is the number of scalar iterations covered by the segment
+	 and where each access spans idx_access units.
+
+	 A is the range of bytes accessed when the step is negative,
+	 B is the range when the step is positive.
+
+	 When checking for general overlap, we need to test whether
+	 the range:
+
+	   [min1 + low_offset1, min2 + high_offset1 + idx_access1 - 1]
+
+	 overlaps:
+
+	   [min2 + low_offset2, min2 + high_offset2 + idx_access2 - 1]
+
+	 where:
+
+	    low_offsetN = +ve step ? 0 : -idx_lenN;
+	   high_offsetN = +ve step ? idx_lenN : 0;
+
+	 This is equivalent to testing whether:
+
+	   min1 + low_offset1 <= min2 + high_offset2 + idx_access2 - 1
+	   && min2 + low_offset2 <= min1 + high_offset1 + idx_access1 - 1
+
+	 Converting this into a single test, there is an overlap if:
+
+	   0 <= min2 - min1 + bias <= limit
+
+	 where  bias = high_offset2 + idx_access2 - 1 - low_offset1
+	       limit = (high_offset1 - low_offset1 + idx_access1 - 1)
+		     + (high_offset2 - low_offset2 + idx_access2 - 1)
+	  i.e. limit = idx_len1 + idx_access1 - 1 + idx_len2 + idx_access2 - 1
+
+	 Combining the tests requires limit to be computable in an unsigned
+	 form of the index type; if it isn't, we fall back to the usual
+	 pointer-based checks.  */
+      poly_offset_int limit = (idx_len1 + idx_access1 - 1
+			       + idx_len2 + idx_access2 - 1);
+      tree utype = unsigned_type_for (TREE_TYPE (min1));
+      if (!wi::fits_to_tree_p (limit, utype))
+	return false;
+
+      poly_offset_int low_offset1 = neg_step ? -idx_len1 : 0;
+      poly_offset_int high_offset2 = neg_step ? 0 : idx_len2;
+      poly_offset_int bias = high_offset2 + idx_access2 - 1 - low_offset1;
+
+      tree subject = fold_build2 (MINUS_EXPR, utype,
+				  fold_convert (utype, min2),
+				  fold_convert (utype, min1));
+      subject = fold_build2 (PLUS_EXPR, utype, subject,
+			     wide_int_to_tree (utype, bias));
+      tree part_cond_expr = fold_build2 (GT_EXPR, boolean_type_node, subject,
+					 wide_int_to_tree (utype, limit));
       if (*cond_expr)
 	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				  *cond_expr, part_cond_expr);

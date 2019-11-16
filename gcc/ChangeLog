@@ -1,5 +1,10 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-data-ref.c (create_intersect_range_checks_index): Rewrite
+	the index tests to have the form (unsigned T) (B - A + bias) <= limit.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-data-ref.c (create_intersect_range_checks_index)
 	(create_intersect_range_checks): Print dump messages.
 
