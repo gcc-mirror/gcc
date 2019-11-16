@@ -1,5 +1,11 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-data-ref.c (prune_runtime_alias_test_list): Delay
+	swapping the dr_as based on init values until we've decided
+	whether to merge them.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-data-ref.c (prune_runtime_alias_test_list): Sort the
 	two accesses in each dr_with_seg_len_pair_t before trying to
 	combine separate dr_with_seg_len_pair_ts.
