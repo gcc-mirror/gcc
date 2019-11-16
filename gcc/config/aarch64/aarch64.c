@@ -12879,6 +12879,49 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
+/* Return true if STMT_INFO extends the result of a load.  */
+static bool
+aarch64_extending_load_p (stmt_vec_info stmt_info)
+{
+  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
+    return false;
+
+  tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
+  tree lhs_type = TREE_TYPE (gimple_assign_lhs (assign));
+  tree rhs_type = TREE_TYPE (rhs);
+  if (!INTEGRAL_TYPE_P (lhs_type)
+      || !INTEGRAL_TYPE_P (rhs_type)
+      || TYPE_PRECISION (lhs_type) <= TYPE_PRECISION (rhs_type))
+    return false;
+
+  stmt_vec_info def_stmt_info = stmt_info->vinfo->lookup_def (rhs);
+  return (def_stmt_info
+	  && STMT_VINFO_DATA_REF (def_stmt_info)
+	  && DR_IS_READ (STMT_VINFO_DATA_REF (def_stmt_info)));
+}
+
+/* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
+   for STMT_INFO, which has cost kind KIND.  Adjust the cost as necessary
+   for SVE targets.  */
+static unsigned int
+aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+			      unsigned int stmt_cost)
+{
+  /* Unlike vec_promote_demote, vector_stmt conversions do not change the
+     vector register size or number of units.  Integer promotions of this
+     type therefore map to SXT[BHW] or UXT[BHW].
+
+     Most loads have extending forms that can do the sign or zero extension
+     on the fly.  Optimistically assume that a load followed by an extension
+     will fold to this form during combine, and that the extension therefore
+     comes for free.  */
+  if (kind == vector_stmt && aarch64_extending_load_p (stmt_info))
+    stmt_cost = 0;
+
+  return stmt_cost;
+}
+
 /* Implement targetm.vectorize.add_stmt_cost.  */
 static unsigned
 aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
@@ -12893,6 +12936,9 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost =
 	    aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+
+      if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
+	stmt_cost = aarch64_sve_adjust_stmt_cost (kind, stmt_info, stmt_cost);
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is

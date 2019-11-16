@@ -1,5 +1,32 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_load_<ANY_EXTEND:optab><VNx8_WIDE:mode><VNx8_NARROW:mode>):
+	(@aarch64_load_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
+	(@aarch64_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>):
+	Combine into...
+	(@aarch64_load_<ANY_EXTEND:optab><SVE_HSDI:mode><SVE_PARTIAL_I:mode>):
+	...this new pattern, handling extension to partial modes as well
+	as full modes.  Describe the extension as a predicated rather than
+	unpredicated extension.
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><VNx8_WIDE:mode><VNx8_NARROW:mode>)
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>):
+	Combine into...
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><SVE_HSDI:mode><SVE_PARTIAL_I:mode>):
+	...this new pattern, handling extension to partial modes as well
+	as full modes.  Describe the extension as a predicated rather than
+	unpredicated extension.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::use_contiguous_load_insn): Add an extra
+	predicate for extending loads.
+	* config/aarch64/aarch64.c (aarch64_extending_load_p): New function.
+	(aarch64_sve_adjust_stmt_cost): Likewise.
+	(aarch64_add_stmt_cost): Use aarch64_sve_adjust_stmt_cost to adjust
+	the cost of SVE vector stmts.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_HSDI): New mode iterator.
 	(narrower_mask): Handle VNx4HI, VNx2HI and VNx2SI.
 	* config/aarch64/aarch64-sve.md
