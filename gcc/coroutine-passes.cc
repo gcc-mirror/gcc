@@ -137,35 +137,6 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    *handled_ops_p = true;
 	  }
 	  break;
-	case BUILT_IN_CORO_IS_SUSPENDED:
-	  {
-	    /* If we are discarding this, then skip it; the function has no
-	       side-effects.  */
-	    tree lhs = gimple_call_lhs (stmt);
-	    if (!lhs)
-	      {
-		gsi_remove (gsi, true);
-		*handled_ops_p = true;
-		return NULL_TREE;
-	      }
-	    /* When we're suspended, the destroy fn is set to non-null
-	       this is offset from the frame start by one.  */
-	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	    tree vptr = build_pointer_type (void_type_node);
-	    tree vpp = build_pointer_type (vptr);
-	    HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
-	    tree indirect
-	      = fold_build2 (MEM_REF, vpp, ptr, wide_int_to_tree (vpp, psize));
-	    tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (vptr));
-	    gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
-	    gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
-	    tree done = fold_build2 (NE_EXPR, boolean_type_node, d_ptr_tmp,
-				     wide_int_to_tree (vptr, 0));
-	    gassign *get_res = gimple_build_assign (lhs, done);
-	    gsi_replace (gsi, get_res, true);
-	    *handled_ops_p = true;
-	  }
-	  break;
 	case BUILT_IN_CORO_DONE:
 	  {
 	    /* If we are discarding this, then skip it; the function has no

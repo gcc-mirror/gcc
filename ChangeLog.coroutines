@@ -1,5 +1,25 @@
 2019-11-16  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-builtins.def: Tidy whitespace.
+	(BUILT_IN_CORO_IS_SUSPENDED): Delete.
+	(BUILT_IN_CORO_NOOP): Delete.
+	* coroutine-passes.cc (lower_coro_builtin): Remove lowering for
+	__builtin_coro_suspended.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro-builtins.C: Remove checks for
+	__builtin_coro_suspended, __builtin_coro_noop.
+	* g++.dg/coroutines/torture/check-suspended.C: Remove.
+	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C: Only
+	test suspended state if __builtin_coro_suspended is available.
+
+	libstdc++-v3/
+	* include/experimental/coroutine: Remove references to
+	__builtin_coro_suspended.
+
+2019-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/c-family/
 	* c.opt: Remove coroutines-ts alias for the command line
 	flag.  Do not enable coroutines for Objective-C++.

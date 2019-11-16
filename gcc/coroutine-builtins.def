@@ -31,37 +31,19 @@ along with GCC; see the file COPYING3.  If not see
    coroutines.  */
 
 /* This has to come before all the coroutine builtins.  */
-DEF_BUILTIN_STUB(BEGIN_COROUTINE_BUILTINS, (const char *)0)
+DEF_BUILTIN_STUB (BEGIN_COROUTINE_BUILTINS, (const char *) 0)
 
-DEF_COROUTINE_BUILTIN(BUILT_IN_CORO_PROMISE, "promise",
-		      BT_FN_PTR_PTR_SIZE_BOOL, ATTR_CONST_NOTHROW_LEAF_LIST)
+DEF_COROUTINE_BUILTIN (BUILT_IN_CORO_PROMISE, "promise",
+		       BT_FN_PTR_PTR_SIZE_BOOL, ATTR_CONST_NOTHROW_LEAF_LIST)
 
-DEF_COROUTINE_BUILTIN(BUILT_IN_CORO_RESUME, "resume",
-		      BT_FN_VOID_PTR, ATTR_NULL)
+DEF_COROUTINE_BUILTIN (BUILT_IN_CORO_RESUME, "resume", BT_FN_VOID_PTR,
+		       ATTR_NULL)
 
-DEF_COROUTINE_BUILTIN(BUILT_IN_CORO_DESTROY, "destroy",
-		      BT_FN_VOID_PTR, ATTR_NULL)
+DEF_COROUTINE_BUILTIN (BUILT_IN_CORO_DESTROY, "destroy", BT_FN_VOID_PTR,
+		       ATTR_NULL)
 
-DEF_COROUTINE_BUILTIN(BUILT_IN_CORO_DONE, "done",
-		      BT_FN_BOOL_PTR, ATTR_NOTHROW_LEAF_LIST)
-
-DEF_COROUTINE_BUILTIN(BUILT_IN_CORO_IS_SUSPENDED, "is_suspended",
-		      BT_FN_BOOL_PTR, ATTR_NOTHROW_LEAF_LIST)
-
-DEF_COROUTINE_BUILTIN(BUILT_IN_CORO_NOOP, "noop",
-		      BT_FN_PTR, ATTR_CONST_NOTHROW_LEAF_LIST)
-
-/* Clang impl also defines these - but so far unused in this impl.
- size_t __builtin_coro_size,() nothrow
- void * __builtin_coro_frame() nothrow
- void * __builtin_coro_free(void *) nothrow
- void * __builtin_coro_id(const int, void *, void *, void *) nothrow
- bool __builtin_coro_alloc() nothrow
- void * __builtin_coro_begin(void *) nothrow
- bool __builtin_coro_end(void *, const bool) nothrow
- char __builtin_coro_suspend(const bool) nothrow
- bool __builtin_coro_param(void *, void *) nothrow
- */
+DEF_COROUTINE_BUILTIN (BUILT_IN_CORO_DONE, "done", BT_FN_BOOL_PTR,
+		       ATTR_NOTHROW_LEAF_LIST)
 
 /* This has to come after all the coroutine builtins.  */
-DEF_BUILTIN_STUB(END_COROUTINE_BUILTINS, (const char *)0)
+DEF_BUILTIN_STUB (END_COROUTINE_BUILTINS, (const char *) 0)

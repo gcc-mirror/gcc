@@ -101,16 +101,9 @@ namespace std _GLIBCXX_VISIBILITY (default)
     void operator() () const { resume (); }
     void resume () const { __builtin_coro_resume (__fr_ptr); }
     void destroy () const { __builtin_coro_destroy (__fr_ptr); }
-    bool suspended_p () const { return __builtin_coro_is_suspended (__fr_ptr); }
 
   protected:
     void *__fr_ptr;
-
-  private:
-    bool __is_suspended () const noexcept
-    {
-      return __builtin_coro_is_suspended (__fr_ptr);
-    }
   };
 
   // [coroutine.handle.compare]

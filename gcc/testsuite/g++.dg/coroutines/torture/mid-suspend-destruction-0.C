@@ -111,7 +111,7 @@ int main ()
       abort();
     }
 
-#if ! __clang__
+#if __has_builtin (__builtin_coro_suspended)
   if (! x.handle.suspended_p())
     {
       PRINT ("main: f() should be suspended, but says it isn't");
