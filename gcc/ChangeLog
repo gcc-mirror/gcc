@@ -1,3 +1,11 @@
+2019-11-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.h (do_estimate_edge_time): Add nonspec_time
+	parameter.
+	(estimate_edge_time): Use it.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Add
+	ret_nonspec_time parameter.
+
 2019-11-15  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/m68k/linux.h (MUSL_DYNAMIC_LINKER): Define.
