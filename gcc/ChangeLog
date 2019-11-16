@@ -1,5 +1,13 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.opt (--param=aarch64-sve-compare-costs):
+	New option.
+	* doc/invoke.texi: Document it.
+	* config/aarch64/aarch64.c (aarch64_autovectorize_vector_modes):
+	By default, return VECT_COMPARE_COSTS for SVE.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.h (VECT_COMPARE_COSTS): New constant.
 	* target.def (autovectorize_vector_modes): Return a bitmask of flags.
 	* doc/tm.texi: Regenerate.

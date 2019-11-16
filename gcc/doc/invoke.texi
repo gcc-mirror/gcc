@@ -11179,8 +11179,8 @@ without notice in future releases.
 In order to get minimal, maximal and default value of a parameter,
 one can use @option{--help=param -Q} options.
 
-In each case, the @var{value} is an integer.  The allowable choices for
-@var{name} are:
+In each case, the @var{value} is an integer.  The following choices
+of @var{name} are recognized for all targets:
 
 @table @gcctabopt
 @item predictable-branch-outcome
@@ -12396,6 +12396,20 @@ statements or when determining their validity prior to issuing
 diagnostics.
 
 @end table
+
+The following choices of @var{name} are available on AArch64 targets:
+
+@table @gcctabopt
+@item aarch64-sve-compare-costs
+When vectorizing for SVE, consider using ``unpacked'' vectors for
+smaller elements and use the cost model to pick the cheapest approach.
+Also use the cost model to choose between SVE and Advanced SIMD vectorization.
+
+Using unpacked vectors includes storing smaller elements in larger
+containers and accessing elements with extending loads and truncating
+stores.
+@end table
+
 @end table
 
 @node Instrumentation Options

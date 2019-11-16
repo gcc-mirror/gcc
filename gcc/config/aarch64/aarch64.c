@@ -15962,7 +15962,15 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
      for this case.  */
   modes->safe_push (V2SImode);
 
-  return 0;
+  unsigned int flags = 0;
+  /* Consider enabling VECT_COMPARE_COSTS for SVE, both so that we
+     can compare SVE against Advanced SIMD and so that we can compare
+     multiple SVE vectorization approaches against each other.  There's
+     not really any point doing this for Advanced SIMD only, since the
+     first mode that works should always be the best.  */
+  if (TARGET_SVE && aarch64_sve_compare_costs)
+    flags |= VECT_COMPARE_COSTS;
+  return flags;
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
