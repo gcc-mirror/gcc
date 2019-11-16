@@ -1,3 +1,52 @@
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_get_vector_types_for_stmt): Take an
+	optional maximum nunits.
+	(get_vectype_for_scalar_type): Likewise.  Also declare a form that
+	takes an slp_tree.
+	(get_mask_type_for_scalar_type): Take an optional slp_tree.
+	(vect_get_mask_type_for_stmt): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Don't store
+	the vector type in STMT_VINFO_VECTYPE for BB vectorization.
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Use
+	vect_get_vector_types_for_stmt instead of STMT_VINFO_VECTYPE
+	to get an assumed vector type for data references.
+	* tree-vect-slp.c (vect_update_shared_vectype): New function.
+	(vect_update_all_shared_vectypes): Likewise.
+	(vect_build_slp_tree_1): Pass the group size to
+	vect_get_vector_types_for_stmt.  Use vect_update_shared_vectype
+	for BB vectorization.
+	(vect_build_slp_tree_2): Call vect_update_all_shared_vectypes
+	before building the vectof from scalars.
+	(vect_analyze_slp_instance): Pass the group size to
+	get_vectype_for_scalar_type.
+	(vect_slp_analyze_node_operations_1): Don't recompute the vector
+	types for BB vectorization here; just handle the case in which
+	we deferred the choice for booleans.
+	(vect_get_constant_vectors): Pass the slp_tree to
+	get_vectype_for_scalar_type.
+	* tree-vect-stmts.c (vect_prologue_cost_for_slp_op): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_comparison): Likewise.
+	(vect_is_simple_cond): Take the slp_tree as argument and
+	pass it to get_vectype_for_scalar_type.
+	(vectorizable_condition): Update call accordingly.
+	(get_vectype_for_scalar_type): Take a group_size argument.
+	For BB vectorization, limit the the vector to that number
+	of elements.  Also define an overload that takes an slp_tree.
+	(get_mask_type_for_scalar_type): Add an slp_tree argument and
+	pass it to get_vectype_for_scalar_type.
+	(vect_get_vector_types_for_stmt): Add a group_size argument
+	and pass it to get_vectype_for_scalar_type.  Don't use the
+	cached vector type for BB vectorization if a group size is given.
+	Handle data references in that case.
+	(vect_get_mask_type_for_stmt): Take an slp_tree argument and
+	pass it to get_mask_type_for_scalar_type.
+
 2019-11-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.h (do_estimate_edge_time): Add nonspec_time

@@ -1,3 +1,11 @@
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-4.c: Expect the block to be vectorized
+	with -fno-vect-cost-model.
+	* gcc.dg/vect/bb-slp-bool-1.c: New test.
+	* gcc.target/aarch64/vect_mixed_sizes_14.c: Likewise.
+	* gcc.target/i386/pr84101.c: XFAIL for -m32.
+
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-deprecated-4.c, gcc.dg/c2x-attr-fallthrough-4.c,
