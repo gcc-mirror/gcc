@@ -1,4 +1,19 @@
-2019-10-22  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* cp-demangle.c (d_print_init): Remove const from 4th param.
+	(cplus_demangle_fill_name): Initialize d->d_counting.
+	(cplus_demangle_fill_extended_operator): Likewise.
+	(cplus_demangle_fill_ctor): Likewise.
+	(cplus_demangle_fill_dtor): Likewise.
+	(d_make_empty): Likewise.
+	(d_count_templates_scopes): Remobe const from 3rd param,
+	Return on dc->d_counting > 1,
+	Increment dc->d_counting.
+        * cp-demint.c (cplus_demangle_fill_component): Initialize d->d_counting.
+	(cplus_demangle_fill_builtin_type): Likewise.
+	(cplus_demangle_fill_operator): Likewise.
+
+2019-11-16  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
 
 	* cplus-dem.c (cplus_demangle): Use rust_demangle directly.
 	(rust_demangle): Remove.

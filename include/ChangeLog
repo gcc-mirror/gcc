@@ -1,4 +1,9 @@
-2019-10-22  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* demangle.h (struct demangle_component): Add member
+	d_counting.
+
+2019-11-16  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
 
 	* demangle.h (rust_demangle_callback): Add.
 
