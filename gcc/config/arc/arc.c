@@ -609,7 +609,7 @@ arc_preferred_simd_mode (scalar_mode mode)
 /* Implements target hook
    TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES.  */
 
-static void
+static unsigned int
 arc_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_PLUS_QMACW)
@@ -617,6 +617,7 @@ arc_autovectorize_vector_modes (vector_modes *modes, bool)
       modes->quick_push (V4HImode);
       modes->quick_push (V2HImode);
     }
+  return 0;
 }
 
 
