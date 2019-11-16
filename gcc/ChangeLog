@@ -1,5 +1,10 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md (aarch64_wrffr): Wrap the FFRT
+	output in UNSPEC_WRFFR.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-data-ref.c (create_intersect_range_checks_index): Rewrite
 	the index tests to have the form (unsigned T) (B - A + bias) <= limit.
 
