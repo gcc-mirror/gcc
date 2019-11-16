@@ -2476,7 +2476,9 @@ compute_alias_check_pairs (class loop *loop, vec<ddr_p> *alias_ddrs,
 
       dr_with_seg_len_pair_t dr_with_seg_len_pair
 	(dr_with_seg_len (dr_a, seg_length_a, access_size_a, align_a),
-	 dr_with_seg_len (dr_b, seg_length_b, access_size_b, align_b));
+	 dr_with_seg_len (dr_b, seg_length_b, access_size_b, align_b),
+	 /* ??? Would WELL_ORDERED be safe?  */
+	 dr_with_seg_len_pair_t::REORDERED);
 
       comp_alias_pairs->safe_push (dr_with_seg_len_pair);
     }

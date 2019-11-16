@@ -1,5 +1,25 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-data-ref.h (DR_ALIAS_RAW, DR_ALIAS_WAR, DR_ALIAS_WAW)
+	(DR_ALIAS_ARBITRARY, DR_ALIAS_SWAPPED, DR_ALIAS_UNSWAPPED): New flags.
+	(dr_with_seg_len_pair_t::sequencing): New enum.
+	(dr_with_seg_len_pair_t::flags): New member variable.
+	(dr_with_seg_len_pair_t::dr_with_seg_len_pair_t): Take a sequencing
+	parameter and initialize the flags member variable.
+	* tree-loop-distribution.c (compute_alias_check_pairs): Update
+	call accordingly.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list): Likewise.
+	Ensure the two data references in an alias pair are in statement
+	order, if there is a defined order.
+	* tree-data-ref.c (prune_runtime_alias_test_list): Use
+	DR_ALIAS_SWAPPED and DR_ALIAS_UNSWAPPED to record whether we've
+	swapped the references in a dr_with_seg_len_pair_t.  OR together
+	the flags when merging two dr_with_seg_len_pair_ts.  After merging,
+	try to restore the original dr_with_seg_len order, updating the
+	flags if that fails.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-data-ref.c (prune_runtime_alias_test_list): Delay
 	swapping the dr_as based on init values until we've decided
 	whether to merge them.
