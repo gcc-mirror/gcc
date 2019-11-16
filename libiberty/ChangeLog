@@ -1,3 +1,28 @@
+2019-10-22  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* cplus-dem.c (cplus_demangle): Use rust_demangle directly.
+	(rust_demangle): Remove.
+	* rust-demangle.c (is_prefixed_hash): Rename to is_legacy_prefixed_hash.
+	(parse_lower_hex_nibble): Rename to decode_lower_hex_nibble.
+	(parse_legacy_escape): Rename to decode_legacy_escape.
+	(rust_is_mangled): Remove.
+	(struct rust_demangler): Add.
+	(peek): Add.
+	(next): Add.
+	(struct rust_mangled_ident): Add.
+	(parse_ident): Add.
+	(rust_demangle_sym): Remove.
+	(print_str): Add.
+	(PRINT): Add.
+	(print_ident): Add.
+	(rust_demangle_callback): Add.
+	(struct str_buf): Add.
+	(str_buf_reserve): Add.
+	(str_buf_append): Add.
+	(str_buf_demangle_callback): Add.
+	(rust_demangle): Add.
+	* rust-demangle.h: Remove.
+
 2019-11-15  Miguel Saldivar  <saldivarcher@gmail.com>
 
 	* testsuite/demangle-expected: Fix test.
