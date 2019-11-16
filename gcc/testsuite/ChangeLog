@@ -1,5 +1,13 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/mixed_size_1.c: New test.
+	* gcc.target/aarch64/sve/mixed_size_2.c: Likewise.
+	* gcc.target/aarch64/sve/mixed_size_3.c: Likewise.
+	* gcc.target/aarch64/sve/mixed_size_4.c: Likewise.
+	* gcc.target/aarch64/sve/mixed_size_5.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/clastb_8.c: Use assembly tests to
 	check for fully-masked loops.
 

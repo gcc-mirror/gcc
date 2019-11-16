@@ -546,8 +546,8 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "mov<mode>"
-  [(set (match_operand:SVE_FULL 0 "nonimmediate_operand")
-	(match_operand:SVE_FULL 1 "general_operand"))]
+  [(set (match_operand:SVE_ALL 0 "nonimmediate_operand")
+	(match_operand:SVE_ALL 1 "general_operand"))]
   "TARGET_SVE"
   {
     /* Use the predicated load and store patterns where possible.
@@ -576,8 +576,8 @@
 )
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:SVE_FULL 0 "nonimmediate_operand")
-	(match_operand:SVE_FULL 1 "general_operand"))]
+  [(set (match_operand:SVE_ALL 0 "nonimmediate_operand")
+	(match_operand:SVE_ALL 1 "general_operand"))]
   "TARGET_SVE"
   {
     /* Equivalent to a normal move for our purpooses.  */
@@ -586,10 +586,11 @@
   }
 )
 
-;; Unpredicated moves (bytes or little-endian).  Only allow memory operations
-;; during and after RA; before RA we want the predicated load and store
-;; patterns to be used instead.
-(define_insn "*aarch64_sve_mov<mode>_le"
+;; Unpredicated moves that can use LDR and STR, i.e. full vectors for which
+;; little-endian ordering is acceptable.  Only allow memory operations during
+;; and after RA; before RA we want the predicated load and store patterns to
+;; be used instead.
+(define_insn "*aarch64_sve_mov<mode>_ldr_str"
   [(set (match_operand:SVE_FULL 0 "aarch64_sve_nonimmediate_operand" "=w, Utr, w, w")
 	(match_operand:SVE_FULL 1 "aarch64_sve_general_operand" "Utr, w, w, Dn"))]
   "TARGET_SVE
@@ -604,35 +605,37 @@
    * return aarch64_output_sve_mov_immediate (operands[1]);"
 )
 
-;; Unpredicated moves (non-byte big-endian).  Memory accesses require secondary
-;; reloads.
-(define_insn "*aarch64_sve_mov<mode>_be"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w, w")
-	(match_operand:SVE_FULL 1 "aarch64_nonmemory_operand" "w, Dn"))]
-  "TARGET_SVE && BYTES_BIG_ENDIAN && <MODE>mode != VNx16QImode"
+;; Unpredicated moves that cannot use LDR and STR, i.e. partial vectors
+;; or vectors for which little-endian ordering isn't acceptable.  Memory
+;; accesses require secondary reloads.
+(define_insn "*aarch64_sve_mov<mode>_no_ldr_str"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w")
+	(match_operand:SVE_ALL 1 "aarch64_nonmemory_operand" "w, Dn"))]
+  "TARGET_SVE
+   && <MODE>mode != VNx16QImode
+   && (BYTES_BIG_ENDIAN
+       || maybe_ne (BYTES_PER_SVE_VECTOR, GET_MODE_SIZE (<MODE>mode)))"
   "@
    mov\t%0.d, %1.d
    * return aarch64_output_sve_mov_immediate (operands[1]);"
 )
 
-;; Handle big-endian memory reloads.  We use byte PTRUE for all modes
-;; to try to encourage reuse.
-;; This pattern needs constraints due to TARGET_SECONDARY_RELOAD hook.
-(define_expand "aarch64_sve_reload_be"
+;; Handle memory reloads for modes that can't use LDR and STR.  We use
+;; byte PTRUE for all modes to try to encourage reuse.  This pattern
+;; needs constraints because it is returned by TARGET_SECONDARY_RELOAD.
+(define_expand "aarch64_sve_reload_mem"
   [(parallel
      [(set (match_operand 0)
 	   (match_operand 1))
       (clobber (match_operand:VNx16BI 2 "register_operand" "=Upl"))])]
-  "TARGET_SVE && BYTES_BIG_ENDIAN"
+  "TARGET_SVE"
   {
     /* Create a PTRUE.  */
     emit_move_insn (operands[2], CONSTM1_RTX (VNx16BImode));
 
     /* Refer to the PTRUE in the appropriate mode for this move.  */
     machine_mode mode = GET_MODE (operands[0]);
-    machine_mode pred_mode
-      = aarch64_sve_pred_mode (GET_MODE_UNIT_SIZE (mode)).require ();
-    rtx pred = gen_lowpart (pred_mode, operands[2]);
+    rtx pred = gen_lowpart (aarch64_sve_pred_mode (mode), operands[2]);
 
     /* Emit a predicated load or store.  */
     aarch64_emit_sve_pred_move (operands[0], pred, operands[1]);
@@ -644,18 +647,18 @@
 ;; Note that this pattern is generated directly by aarch64_emit_sve_pred_move,
 ;; so changes to this pattern will need changes there as well.
 (define_insn_and_split "@aarch64_pred_mov<mode>"
-  [(set (match_operand:SVE_FULL 0 "nonimmediate_operand" "=w, w, m")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "nonimmediate_operand" "=w, w, m")
+	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (match_operand:SVE_FULL 2 "nonimmediate_operand" "w, m, w")]
+	   (match_operand:SVE_ALL 2 "nonimmediate_operand" "w, m, w")]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[2], <MODE>mode))"
   "@
    #
-   ld1<Vesize>\t%0.<Vetype>, %1/z, %2
-   st1<Vesize>\t%2.<Vetype>, %1, %0"
+   ld1<Vesize>\t%0.<Vctype>, %1/z, %2
+   st1<Vesize>\t%2.<Vctype>, %1, %0"
   "&& register_operand (operands[0], <MODE>mode)
    && register_operand (operands[2], <MODE>mode)"
   [(set (match_dup 0) (match_dup 2))]
@@ -666,8 +669,8 @@
 ;; for details.  We use a special predicate for operand 2 to reduce
 ;; the number of patterns.
 (define_insn_and_split "*aarch64_sve_mov<mode>_subreg_be"
-  [(set (match_operand:SVE_FULL 0 "aarch64_sve_nonimmediate_operand" "=w")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "aarch64_sve_nonimmediate_operand" "=w")
+	(unspec:SVE_ALL
 	  [(match_operand:VNx16BI 1 "register_operand" "Upl")
 	   (match_operand 2 "aarch64_any_register_operand" "w")]
 	  UNSPEC_REV_SUBREG))]
@@ -685,8 +688,8 @@
 ;; This is equivalent to a subreg on little-endian targets but not for
 ;; big-endian; see the comment at the head of the file for details.
 (define_expand "@aarch64_sve_reinterpret<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(unspec:SVE_ALL
 	  [(match_operand 1 "aarch64_any_register_operand")]
 	  UNSPEC_REINTERPRET))]
   "TARGET_SVE"
@@ -702,8 +705,8 @@
 ;; A pattern for handling type punning on big-endian targets.  We use a
 ;; special predicate for operand 1 to reduce the number of patterns.
 (define_insn_and_split "*aarch64_sve_reinterpret<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
 	  [(match_operand 1 "aarch64_any_register_operand" "w")]
 	  UNSPEC_REINTERPRET))]
   "TARGET_SVE"
@@ -1141,13 +1144,13 @@
 
 ;; Predicated LD1.
 (define_insn "maskload<mode><vpred>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
-	   (match_operand:SVE_FULL 1 "memory_operand" "m")]
+	   (match_operand:SVE_ALL 1 "memory_operand" "m")]
 	  UNSPEC_LD1_SVE))]
   "TARGET_SVE"
-  "ld1<Vesize>\t%0.<Vetype>, %2/z, %1"
+  "ld1<Vesize>\t%0.<Vctype>, %2/z, %1"
 )
 
 ;; Unpredicated LD[234].
@@ -1940,14 +1943,14 @@
 
 ;; Predicated ST1.
 (define_insn "maskstore<mode><vpred>"
-  [(set (match_operand:SVE_FULL 0 "memory_operand" "+m")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "memory_operand" "+m")
+	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
-	   (match_operand:SVE_FULL 1 "register_operand" "w")
+	   (match_operand:SVE_ALL 1 "register_operand" "w")
 	   (match_dup 0)]
 	  UNSPEC_ST1_SVE))]
   "TARGET_SVE"
-  "st1<Vesize>\t%1.<Vetype>, %2, %0"
+  "st1<Vesize>\t%1.<Vctype>, %2, %0"
 )
 
 ;; Unpredicated ST[234].  This is always a full update, so the dependence
@@ -2283,8 +2286,8 @@
 
 (define_expand "vec_duplicate<mode>"
   [(parallel
-    [(set (match_operand:SVE_FULL 0 "register_operand")
-	  (vec_duplicate:SVE_FULL
+    [(set (match_operand:SVE_ALL 0 "register_operand")
+	  (vec_duplicate:SVE_ALL
 	    (match_operand:<VEL> 1 "aarch64_sve_dup_operand")))
      (clobber (scratch:VNx16BI))])]
   "TARGET_SVE"
@@ -2304,8 +2307,8 @@
 ;; the load at the first opportunity in order to allow the PTRUE to be
 ;; optimized with surrounding code.
 (define_insn_and_split "*vec_duplicate<mode>_reg"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w, w, w")
-	(vec_duplicate:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w, w")
+	(vec_duplicate:SVE_ALL
 	  (match_operand:<VEL> 1 "aarch64_sve_dup_operand" "r, w, Uty")))
    (clobber (match_scratch:VNx16BI 2 "=X, X, Upl"))]
   "TARGET_SVE"
@@ -2364,12 +2367,12 @@
 ;; be used by combine to optimize selects of a a vec_duplicate<mode>
 ;; with zero.
 (define_insn "sve_ld1r<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (vec_duplicate:SVE_FULL
+	   (vec_duplicate:SVE_ALL
 	     (match_operand:<VEL> 2 "aarch64_sve_ld1r_operand" "Uty"))
-	   (match_operand:SVE_FULL 3 "aarch64_simd_imm_zero")]
+	   (match_operand:SVE_ALL 3 "aarch64_simd_imm_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
   "ld1r<Vesize>\t%0.<Vetype>, %1/z, %2"
@@ -2431,29 +2434,29 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "vec_series<mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, w, w")
-	(vec_series:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, w")
+	(vec_series:SVE_I
 	  (match_operand:<VEL> 1 "aarch64_sve_index_operand" "Usi, r, r")
 	  (match_operand:<VEL> 2 "aarch64_sve_index_operand" "r, Usi, r")))]
   "TARGET_SVE"
   "@
-   index\t%0.<Vetype>, #%1, %<vw>2
-   index\t%0.<Vetype>, %<vw>1, #%2
-   index\t%0.<Vetype>, %<vw>1, %<vw>2"
+   index\t%0.<Vctype>, #%1, %<vwcore>2
+   index\t%0.<Vctype>, %<vwcore>1, #%2
+   index\t%0.<Vctype>, %<vwcore>1, %<vwcore>2"
 )
 
 ;; Optimize {x, x, x, x, ...} + {0, n, 2*n, 3*n, ...} if n is in range
 ;; of an INDEX instruction.
 (define_insn "*vec_series<mode>_plus"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w")
-	(plus:SVE_FULL_I
-	  (vec_duplicate:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(plus:SVE_I
+	  (vec_duplicate:SVE_I
 	    (match_operand:<VEL> 1 "register_operand" "r"))
-	  (match_operand:SVE_FULL_I 2 "immediate_operand")))]
+	  (match_operand:SVE_I 2 "immediate_operand")))]
   "TARGET_SVE && aarch64_check_zero_based_sve_index_immediate (operands[2])"
   {
     operands[2] = aarch64_check_zero_based_sve_index_immediate (operands[2]);
-    return "index\t%0.<Vetype>, %<vw>1, #%2";
+    return "index\t%0.<Vctype>, %<vwcore>1, #%2";
   }
 )
 
@@ -2821,7 +2824,7 @@
 (define_insn "@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w")
 	(unspec:SVE_FULL_HSDI
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	  [(match_operand:<SVE_FULL_HSDI:VPRED> 1 "register_operand" "Upl")
 	   (sign_extend:SVE_FULL_HSDI
 	     (truncate:SVE_PARTIAL_I
 	       (match_operand:SVE_FULL_HSDI 2 "register_operand" "w")))]
@@ -2834,7 +2837,7 @@
 (define_insn "@aarch64_cond_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w, ?&w, ?&w")
 	(unspec:SVE_FULL_HSDI
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	  [(match_operand:<SVE_FULL_HSDI:VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (sign_extend:SVE_FULL_HSDI
 	     (truncate:SVE_PARTIAL_I
 	       (match_operand:SVE_FULL_HSDI 2 "register_operand" "w, w, w")))
@@ -3386,10 +3389,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "add<mode>3"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, w, w, ?w, ?w, w")
-	(plus:SVE_FULL_I
-	  (match_operand:SVE_FULL_I 1 "register_operand" "%0, 0, 0, w, w, w")
-	  (match_operand:SVE_FULL_I 2 "aarch64_sve_add_operand" "vsa, vsn, vsi, vsa, vsn, w")))]
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, w, ?w, ?w, w")
+	(plus:SVE_I
+	  (match_operand:SVE_I 1 "register_operand" "%0, 0, 0, w, w, w")
+	  (match_operand:SVE_I 2 "aarch64_sve_add_operand" "vsa, vsn, vsi, vsa, vsn, w")))]
   "TARGET_SVE"
   "@
    add\t%0.<Vetype>, %0.<Vetype>, #%D2
