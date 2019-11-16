@@ -264,7 +264,7 @@ vect_get_place_in_interleaving_chain (stmt_vec_info stmt_info,
   return -1;
 }
 
-/* Check whether it is possible to load COUNT elements of type ELT_MODE
+/* Check whether it is possible to load COUNT elements of type ELT_TYPE
    using the method implemented by duplicate_and_interleave.  Return true
    if so, returning the number of intermediate vectors in *NVECTORS_OUT
    (if nonnull) and the type of each intermediate vector in *VECTOR_TYPE_OUT
@@ -272,26 +272,37 @@ vect_get_place_in_interleaving_chain (stmt_vec_info stmt_info,
 
 bool
 can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
-				machine_mode elt_mode,
-				unsigned int *nvectors_out,
+				tree elt_type, unsigned int *nvectors_out,
 				tree *vector_type_out,
 				tree *permutes)
 {
-  poly_int64 elt_bytes = count * GET_MODE_SIZE (elt_mode);
-  poly_int64 nelts;
+  tree base_vector_type = get_vectype_for_scalar_type (vinfo, elt_type, count);
+  if (!base_vector_type || !VECTOR_MODE_P (TYPE_MODE (base_vector_type)))
+    return false;
+
+  machine_mode base_vector_mode = TYPE_MODE (base_vector_type);
+  poly_int64 elt_bytes = count * GET_MODE_UNIT_SIZE (base_vector_mode);
   unsigned int nvectors = 1;
   for (;;)
     {
       scalar_int_mode int_mode;
       poly_int64 elt_bits = elt_bytes * BITS_PER_UNIT;
-      if (multiple_p (GET_MODE_SIZE (vinfo->vector_mode), elt_bytes, &nelts)
-	  && int_mode_for_size (elt_bits, 0).exists (&int_mode))
+      if (int_mode_for_size (elt_bits, 1).exists (&int_mode))
 	{
+	  /* Get the natural vector type for this SLP group size.  */
 	  tree int_type = build_nonstandard_integer_type
 	    (GET_MODE_BITSIZE (int_mode), 1);
-	  tree vector_type = build_vector_type (int_type, nelts);
-	  if (VECTOR_MODE_P (TYPE_MODE (vector_type)))
+	  tree vector_type
+	    = get_vectype_for_scalar_type (vinfo, int_type, count);
+	  if (vector_type
+	      && VECTOR_MODE_P (TYPE_MODE (vector_type))
+	      && known_eq (GET_MODE_SIZE (TYPE_MODE (vector_type)),
+			   GET_MODE_SIZE (base_vector_mode)))
 	    {
+	      /* Try fusing consecutive sequences of COUNT / NVECTORS elements
+		 together into elements of type INT_TYPE and using the result
+		 to build NVECTORS vectors.  */
+	      poly_uint64 nelts = GET_MODE_NUNITS (TYPE_MODE (vector_type));
 	      vec_perm_builder sel1 (nelts, 2, 3);
 	      vec_perm_builder sel2 (nelts, 2, 3);
 	      poly_int64 half_nelts = exact_div (nelts, 2);
@@ -491,7 +502,7 @@ again:
 	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
 	      && (TREE_CODE (type) == BOOLEAN_TYPE
 		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
-						      TYPE_MODE (type))))
+						      type)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3552,7 +3563,7 @@ duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
   unsigned int nvectors = 1;
   tree new_vector_type;
   tree permutes[2];
-  if (!can_duplicate_and_interleave_p (vinfo, nelts, TYPE_MODE (element_type),
+  if (!can_duplicate_and_interleave_p (vinfo, nelts, element_type,
 				       &nvectors, &new_vector_type,
 				       permutes))
     gcc_unreachable ();
