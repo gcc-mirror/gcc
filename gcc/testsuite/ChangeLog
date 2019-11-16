@@ -1,5 +1,22 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/cost_model_1.c: Expect the loop to be
+	vectorized with bytes stored in 32-bit containers.
+	* gcc.target/aarch64/sve/extend_1.c: New test.
+	* gcc.target/aarch64/sve/extend_2.c: New test.
+	* gcc.target/aarch64/sve/extend_3.c: New test.
+	* gcc.target/aarch64/sve/extend_4.c: New test.
+	* gcc.target/aarch64/sve/load_const_offset_3.c: Add
+	--param aarch64-sve-compare-costs=0.
+	* gcc.target/aarch64/sve/mask_struct_store_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1_run.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/mixed_size_1.c: New test.
 	* gcc.target/aarch64/sve/mixed_size_2.c: Likewise.
 	* gcc.target/aarch64/sve/mixed_size_3.c: Likewise.

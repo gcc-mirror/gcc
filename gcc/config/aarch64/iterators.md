@@ -359,6 +359,11 @@
 			     VNx4SI VNx2SI
 			     VNx2DI])
 
+;; SVE integer vector modes whose elements are 16 bits or wider.
+(define_mode_iterator SVE_HSDI [VNx8HI VNx4HI VNx2HI
+				VNx4SI VNx2SI
+				VNx2DI])
+
 ;; Modes involved in extending or truncating SVE data, for 8 elements per
 ;; 128-bit block.
 (define_mode_iterator VNx8_NARROW [VNx8QI])
@@ -1364,9 +1369,10 @@
 			     (VNx2HI "0x22")
 			     (VNx2SI "0x24")])
 
-;; For full vector modes, the mask of narrower modes, encoded as above.
-(define_mode_attr narrower_mask [(VNx8HI "0x81")
-				 (VNx4SI "0x43")
+;; For SVE_HSDI vector modes, the mask of narrower modes, encoded as above.
+(define_mode_attr narrower_mask [(VNx8HI "0x81") (VNx4HI "0x41")
+				 (VNx2HI "0x21")
+				 (VNx4SI "0x43") (VNx2SI "0x23")
 				 (VNx2DI "0x27")])
 
 ;; The constraint to use for an SVE [SU]DOT, FMUL, FMLA or FMLS lane index.
