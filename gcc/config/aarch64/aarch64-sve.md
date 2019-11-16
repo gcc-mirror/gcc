@@ -72,6 +72,7 @@
 ;; ---- [INT] General unary arithmetic corresponding to rtx codes
 ;; ---- [INT] General unary arithmetic corresponding to unspecs
 ;; ---- [INT] Sign and zero extension
+;; ---- [INT] Truncation
 ;; ---- [INT] Logical inverse
 ;; ---- [FP<-INT] General unary arithmetic that maps to unspecs
 ;; ---- [FP] General unary arithmetic corresponding to unspecs
@@ -2886,6 +2887,29 @@
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;uxt%e3\t%0.<Vetype>, %1/m, %2.<Vetype>
    movprfx\t%0, %4\;uxt%e3\t%0.<Vetype>, %1/m, %2.<Vetype>"
   [(set_attr "movprfx" "*,yes,yes")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Truncation
+;; -------------------------------------------------------------------------
+;; The patterns in this section are synthetic.
+;; -------------------------------------------------------------------------
+
+;; Truncate to a partial SVE vector from either a full vector or a
+;; wider partial vector.  This is a no-op, because we can just ignore
+;; the unused upper bits of the source.
+(define_insn_and_split "trunc<SVE_HSDI:mode><SVE_PARTIAL_I:mode>2"
+  [(set (match_operand:SVE_PARTIAL_I 0 "register_operand" "=w")
+	(truncate:SVE_PARTIAL_I
+	  (match_operand:SVE_HSDI 1 "register_operand" "w")))]
+  "TARGET_SVE && (~<SVE_HSDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    operands[1] = aarch64_replace_reg_mode (operands[1],
+					    <SVE_PARTIAL_I:MODE>mode);
+  }
 )
 
 ;; -------------------------------------------------------------------------

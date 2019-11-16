@@ -1,6 +1,14 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve.md
+	(trunc<SVE_HSDI:mode><SVE_PARTIAL_I:mode>2): New pattern.
+	* config/aarch64/aarch64.c (aarch64_integer_truncation_p): New
+	function.
+	(aarch64_sve_adjust_stmt_cost): Call it.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md
 	(@aarch64_load_<ANY_EXTEND:optab><VNx8_WIDE:mode><VNx8_NARROW:mode>):
 	(@aarch64_load_<ANY_EXTEND:optab><VNx4_WIDE:mode><VNx4_NARROW:mode>)
 	(@aarch64_load_<ANY_EXTEND:optab><VNx2_WIDE:mode><VNx2_NARROW:mode>):
