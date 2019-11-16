@@ -1,5 +1,11 @@
 2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-alias-check-18.c: New test.
+	* gcc.dg/vect/vect-alias-check-19.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-20.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-alias-check-1.c: Test for the type of alias check.
 	* gcc.dg/vect/vect-alias-check-8.c: Likewise.
 	* gcc.dg/vect/vect-alias-check-9.c: Likewise.
