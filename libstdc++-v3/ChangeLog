@@ -1,3 +1,9 @@
+2019-11-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Repair the <tuple> part of C++20 p1032 Misc constexpr bits.
+	* include/bits/uses_allocator.h (__uses_alloc0::_Sink::operaror=)
+	(__use_alloc(const _Alloc&)) : Constexpr.
+
 2019-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/string_view (basic_string_view(It, End)): Add range
