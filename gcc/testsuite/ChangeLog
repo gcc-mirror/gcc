@@ -1,3 +1,7 @@
+2019-11-17  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/complex-6.c: Do not run dump scan tests for rx target.
+
 2019-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/spaceship-err3.C: New test.
