@@ -924,7 +924,7 @@ lookup_comparison_result (tree type, const char *name_str,
 	  if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
 	    qualified_name_lookup_error (type, name, decl, input_location);
 	  else
-	    error ("%<%T::%D%> is not a static data member", type, decl);
+	    error ("%qD is not a static data member", decl);
 	  inform (input_location, "determining value of %qs", "operator<=>");
 	}
       return error_mark_node;
@@ -951,7 +951,7 @@ lookup_comparison_category (comp_cat_tag tag,
 	  if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
 	    qualified_name_lookup_error (std_node, name, decl, input_location);
 	  else
-	    error ("%<std::%D%> is not a type", decl);
+	    error ("%qD is not a type", decl);
 	  inform (input_location, "forming type of %qs", "operator<=>");
 	}
       return error_mark_node;
