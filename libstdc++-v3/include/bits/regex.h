@@ -2056,8 +2056,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	 match_results<_Bi_iter, _Alloc>& __rhs) noexcept
     { __lhs.swap(__rhs); }
 
-
 _GLIBCXX_END_NAMESPACE_CXX11
+
+#if __cplusplus > 201703L
+namespace ranges::__detail
+{
+  template<typename _Tp> inline constexpr bool __enable_view_impl;
+  template<typename _Bi_iter, typename _Alloc>
+    inline constexpr bool __enable_view_impl<match_results<_Bi_iter, _Alloc>>
+      = false;
+} // namespace ranges::__detail
+#endif // C++20
 
   // [28.11.2] Function template regex_match
   /**
