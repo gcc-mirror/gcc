@@ -46,8 +46,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "cfghooks.h"
 
-/* Iterate through the statements in the sequence, lowering the coro
-   FE builtins.  */
+/* Here we:
+   * lower the internal function that implements an exit from scope.
+   * expand the builtins that are used to implement the library
+     interfaces to the coroutine frame.  */
 
 static tree
 lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
@@ -59,6 +61,8 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   if (gimple_code (stmt) != GIMPLE_CALL)
     return NULL_TREE;
 
+  /* This internal function implements an exit from scope without
+     performing any cleanups; it jumpt directly to the label provided.  */
   if (gimple_call_internal_p (stmt)
       && gimple_call_internal_fn (stmt) == IFN_CO_SUSPN)
     {
@@ -69,6 +73,8 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       return NULL_TREE;
     }
 
+  /* The remaining builtins implement the library interfaces to the coro
+     frame.  */
   tree decl = gimple_call_fndecl (stmt);
   if (decl && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
     {
@@ -224,9 +230,45 @@ make_pass_coroutine_lower_builtins (gcc::context *ctxt)
   return new pass_coroutine_lower_builtins (ctxt);
 }
 
-/* Iterate the function exanding the IFNs.  */
+/* Expand the renaming coroutine IFNs.
 
-/* Early pipeline version - only needs cfg - no use of vdefs.  */
+   In the front end we construct a single actor function that contains
+   the coroutine state machine.
+
+   The actor function has three entry conditions:
+    1. from the ramp, resume point 0 - to initial-suspend.
+    2. when resume () is executed (resume point N).
+    3. from the destroy () shim when that is executed.
+
+   The actor function begins with two dispatchers; one for resume and
+   one for destroy (where the initial entry from the ramp is a special-
+   case of resume point 0).
+
+   Each suspend point and each dispatch entry is marked with an IFN such
+   that we can connect the relevant dispatchers to their target labels.
+
+   So, if we have:
+
+   CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB, FRAME_PTR)
+
+   This is await point NUM, and is the final await if FINAL is non-zero.
+   The resume point is RES_LAB, and the destroy point is DEST_LAB.
+
+   We expect to find a CO_ACTOR (NUM) in the resume dispatcher and a
+   CO_ACTOR (NUM+1) in the destroy dispatcher.
+
+   Initially, the intent of keeping the resume and destroy paths together
+   is that the conditionals controlling them are identical, and thus there
+   would be duplication of any optimisation of those paths if the split
+   were earlier.
+
+   Subsequent inlining of the actor (and DCE) is then able to extract the
+   resume and destroy paths as separate functions if that is found
+   profitable by the optimisers.
+
+   Once we have remade the connections to their correct postions, we elide
+   the labels that the front end inserted.
+*/
 
 static void
 move_edge_and_update (edge e, basic_block old_bb, basic_block new_bb)
@@ -481,7 +523,10 @@ make_pass_coroutine_early_expand_ifns (gcc::context *ctxt)
   return new pass_coroutine_early_expand_ifns (ctxt);
 }
 
-/* Optimize (not yet) and lower frame allocation.  */
+/* Optimize (not yet) and lower frame allocation.
+
+   This is a place-holder for an optimisation to remove unused frame
+   entries and re-size the frame to minimum.  */
 
 static unsigned int
 execute_finalize_frame (void)
@@ -508,13 +553,12 @@ execute_finalize_frame (void)
 	    {
 	      tree lhs = gimple_call_lhs (stmt);
 	      tree size = gimple_call_arg (stmt, 0);
+	      /* Right now, this is a trivial operation - copy through
+		 the size computed during initial layout.  */
 	      gassign *grpl = gimple_build_assign (lhs, size);
 	      gsi_replace (&gsi, grpl, true);
-	      // update_gimple_call (&gsi, builtin_decl_explicit
-	      // (BUILT_IN_MALLOC), 1, size);
 	      changed = true;
 	    }
-	    // gsi_next (&gsi);
 	    break;
 	  default:
 	    gsi_next (&gsi);
@@ -555,7 +599,10 @@ public:
     : gimple_opt_pass (pass_data_coroutine_finalize_frame, ctxt)
   {}
 
-  /* opt_pass methods: */
+  /* opt_pass methods:
+     FIXME: we should not execute this for every function, even when
+     coroutines are enabled, it should be only for the ramp - or any
+     function into which the ramp is inlined.  */
   virtual bool gate (function *) { return flag_coroutines; };
 
   virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)

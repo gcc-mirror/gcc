@@ -2731,6 +2731,7 @@ struct GTY(()) lang_decl_fn {
     struct cp_token_cache * GTY ((tag ("1"))) pending_inline_info;
     tree GTY ((tag ("0"))) saved_auto_return_type;
   } GTY ((desc ("%1.pending_inline_p"))) u;
+
 };
 
 /* DECL_LANG_SPECIFIC for namespaces.  */

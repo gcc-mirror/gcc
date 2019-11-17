@@ -1,6 +1,23 @@
 2019-11-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
+	* coroutine-builtins.def: Update comments.
+	* coroutine-passes.cc: Likewise.
+	* internal-fn.c: Likewise.
+
+	gcc/c-family/
+	* c-common.h: Likewise.
+
+	gcc/cp/
+	* coroutines.cc: Likewise.
+	* tree.c: Likewise.
+
+	libstdc++-v3/
+	* include/experimental/coroutine: Likewise.
+
+2019-11-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
 	* coroutine-passes.cc: Delete unused code.
 
 2019-11-16  Iain Sandoe  <iain@sandoe.co.uk>

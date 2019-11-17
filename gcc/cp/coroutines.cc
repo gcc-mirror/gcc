@@ -58,7 +58,56 @@ lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
 static tree build_co_await (location_t, tree, tree);
 
+/* GCC C++ coroutines implementation.
+
+  The user authors a function that becomes a coroutine (lazily) by
+  making use of any of the co_await, co_yield or co_return keywords.
+
+  Unlike a regular function, where the activation record is placed on the
+  stack, and is destroyed on function exit, a coroutine has some state that
+  persists between calls - the coroutine frame (analogous to a stack frame).
+
+  We transform the user's function into three pieces:
+  1. A so-called ramp function, that establishes the coroutine frame and
+     begins execution of the coroutine.
+  2. An actor function that contains the state machine corresponding to the
+     user's suspend/resume structure.
+  3. A stub function that calls the actor function in 'destroy' mode.
+
+  The actor function is executed:
+   * from "resume point 0" by the ramp.
+   * from resume point N ( > 0 ) for handle.resume() calls.
+   * from the destroy stub for destroy point N for handle.destroy() calls.
+
+  The functions in this file carry out the necessary analysis of, and
+  transforms to, the AST to perform this.
+
+  The C++ coroutine design makes use of some helper functions that are
+  authored in a so-called "promise" class provided by the user.
+
+  At parse time (or post substitution) the type of the coroutine promise
+  will be determined.  At that point, we can look up the required promise
+  class methods and issue diagnostics if they are missing or incorrect.  To
+  avoid repeating these actions at code-gen time, we make use of temporary
+  'proxy' variables for the coroutine handle and the promise - which will
+  eventually be instantiated in the coroutine frame.
+
+  Each of the keywords will expand to a code sequence (although co_yield is
+  just syntactic sugar for a co_await).
+
+  We defer the analysis and transformatin until template expansion is
+  complete so that we have complete types at that time.
+
+*/
+
 /* ================= Parse, Semantics and Type checking ================= */
+
+/* This initial set of routines are helper for the parsing and template
+   expansion phases.
+
+   At the completion of this, we will have completed trees for each of the
+   keywords, but making use of proxy variables for the self-handle and the
+   promise class instance.  */
 
 /* Lookup std::experimental.  */
 static tree
@@ -161,7 +210,8 @@ find_promise_type (tree handle_type)
   return promise_type;
 }
 
-/* The state that we collect during parsing a coroutine.  */
+/* The state that we collect during parsing (and template expansion) for
+   a coroutine.  */
 typedef struct coroutine_info
 {
   tree promise_type;
@@ -299,7 +349,8 @@ lookup_promise_member (tree fndecl, const char *member_name, location_t loc,
   return pm_memb;
 }
 
-/* Here we will check the constraints that are comon to all keywords.  */
+/* Here we check the constraints that are common to all keywords (since the
+   presence of a coroutine keyword makes the function into a coroutine).  */
 
 static bool
 coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
@@ -311,10 +362,10 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
       return false;
     }
 
-  /* This is arranged in order of prohibitions in the TS.  */
+  /* This is arranged in order of prohibitions in the std.  */
   if (DECL_MAIN_P (fndecl))
     {
-      // [6.6.1, main shall not be a coroutine].
+      // [main shall not be a coroutine].
       error_at (kw_loc,
 		"%qs cannot be used in"
 		" the %<main%> function",
@@ -324,7 +375,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (DECL_DECLARED_CONSTEXPR_P (fndecl))
     {
-      // [10.1.5, not constexpr specifier].
+      // [not constexpr specifier].
       error_at (kw_loc,
 		"%qs cannot be used in"
 		" a %<constexpr%> function",
@@ -335,7 +386,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (FNDECL_USED_AUTO (fndecl))
     {
-      // [10.1.6.4, not auto specifier].
+      // [not auto specifier].
       error_at (kw_loc,
 		"%qs cannot be used in"
 		" a function with a deduced return type",
@@ -345,7 +396,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (varargs_function_p (fndecl))
     {
-      // [11.4.4, shall not be varargs].
+      // [shall not be varargs].
       error_at (kw_loc,
 		"%qs cannot be used in"
 		" a varargs function",
@@ -355,14 +406,14 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (DECL_CONSTRUCTOR_P (fndecl))
     {
-      // [15.1, A constructor shall not be a coroutine.
+      // [a constructor shall not be a coroutine.]
       error_at (kw_loc, "%qs cannot be used in a constructor", kw_name);
       return false;
     }
 
   if (DECL_DESTRUCTOR_P (fndecl))
     {
-      // [15.2, A destructor shall not be a coroutine.
+      // [a destructor shall not be a coroutine.]
       error_at (kw_loc, "%qs cannot be used in a destructor", kw_name);
       return false;
     }
@@ -394,7 +445,7 @@ coro_function_valid_p (tree fndecl)
   return true;
 }
 
-/*  This performs 8.3.8 bullet 3.3 and validates the interface obtained.
+/*  This performs [expr.await] bullet 3.3 and validates the interface obtained.
     It is also used to build the initial and final suspend points.
 
     A is the original await expr.
@@ -456,9 +507,9 @@ build_co_await (location_t loc, tree a, tree mode)
     return error_mark_node;
 
   /* To complete the lookups, we need an instance of 'e' which is built from
-     'o' according to 8.3.8 3.4.  However, we don't want to materialise 'e'
-     here (it might need to be placed in the coroutine frame) so we will make
-     a temp placeholder instead. */
+     'o' according to [expr.await] 3.4.  However, we don't want to materialise
+     'e' here (it might need to be placed in the coroutine frame) so we will
+     make a temp placeholder instead. */
   tree e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
 
   /* I suppose we could check that this is contextually convertible to bool.  */
@@ -594,7 +645,7 @@ finish_co_await_expr (location_t kw, tree expr)
 
 /* Take the EXPR given and attempt to build:
      co_await p.yield_value (expr);
-   per 8.21 §1.
+   per [expr.yield] para 1.
 */
 tree
 finish_co_yield_expr (location_t kw, tree expr)
@@ -638,8 +689,8 @@ finish_co_yield_expr (location_t kw, tree expr)
        the promise type, and obtain its return type.  */
     return error_mark_node;
 
-  /* The incoming expr is "e" per 8.21 §1, lookup and build a call for
-     p.yield_value(e).  */
+  /* The incoming expr is "e" per [expr.yield] para 1, lookup and build a
+     call for p.yield_value(e).  */
   tree y_meth = lookup_promise_member (current_function_decl, "yield_value", kw,
 				       true /*musthave*/);
   if (!y_meth || y_meth == error_mark_node)
@@ -778,7 +829,59 @@ finish_co_return_stmt (location_t kw, tree expr)
   return expr;
 }
 
-/* ================= Morph and Expand. ================= */
+/* ================= Morph and Expand. =================
+
+   The entry point here is morph_fn_to_coro () which is called from
+   finish_function () when we have completed any template expansion.
+
+   This is preceded by helper functions that implement the phases below.
+
+   The process proceeds in four phases.
+
+   A Initial framing.
+     The user's function body is wrapped in the initial and final suspend
+     points and we begin building the coroutine frame.
+     We build empty decls for the actor and destroyer functions at this
+     time too.
+     When exceptions are enabled, the user's function body will also be
+     wrapped in a try-catch block with the catch invoking the promise
+     class 'unhandled_exception' method.
+
+   B Analysis.
+     The user's function body is analysed to determine the suspend points,
+     if any, and to capture local variables that might persist across such
+     suspensions.  In most cases, it is not necessary to capture compiler
+     temporaries, since the tree-lowering nests the suspensions correctly.
+     However, in the case of a captured reference, there is a lifetime
+     extension to the end of the full expression - which can mean across a
+     suspend point in which case it must be promoted to a frame variable.
+
+     At the conclusion of analysis, we have a conservative frame layout and
+     maps of the local variables to their frame entry points.
+
+   C Build the ramp function.
+     Carry out the allocation for the coroutine frame (NOTE; the actual size
+     computation is deferred until late in the middle end to allow for future
+     optimisations that will be allowed to elide unused frame entries).
+     We build the return object.
+
+   D Build and expand the actor and destroyer function bodies.
+     The destroyer is a trivial shim that sets a bit to indicate that the
+     destroy dispatcher should be used and then calls into the actor.
+
+     The actor function is the implementation of the user's state machine.
+     The current suspend point is noted in an index.
+     Each suspend point is encoded as a pair of internal functions, one in
+     the relevant dispatcher, and one representing the suspend point.
+
+     During this process, the user's local variables and the proxies for the
+     self-handle and the promise class instanceare re-written to their
+     coroutine frame equivalents.
+
+     The complete bodies for the ramp, actor and destroy function are passed
+     back to finish_function for folding and gimplification.
+
+*/
 
 /* Helpers to build EXPR_STMT and void-cast EXPR_STMT, common ops.  */
 static tree
@@ -886,7 +989,7 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
   return stmt_list;
 }
 
-/* Callback that rewrites co_return as per 9.6.3.1
+/* Callback that rewrites co_return as per [stmt.return.coroutine]
    - for co_return;
    { p.return_void (); goto final_suspend; }
    - for co_return [void expr];
@@ -977,7 +1080,7 @@ co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
     the first operand is the [currently unused] handle for suspend.
     the second operand is the var to be copy-initialised
     the third operand is 'o' (the initialiser for the second)
-			      as defined in 8.3.8 (3.3)
+			      as defined in [await.expr] (3.3)
     the fourth operand is the mode as per the comment on build_co_await ().
 
    When we leave:
@@ -1721,12 +1824,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Add in our function body with the co_returns rewritten to final form.  */
   add_stmt (fnbody);
 
-  /* 9.6.3.1 (2.2 : 3) if p.return_void() is a valid expression, flowing
-     off the end of a coroutine is equivalent to co_return; otherwise UB.
+  /* [stmt.return.coroutine] (2.2 : 3) if p.return_void() is a valid
+     expression, flowing off the end of a coroutine is equivalent to
+     co_return; otherwise UB.
      We just inject the call to p.return_void() here, and fall through to
      the final_suspend: label (eliding the goto).  If the function body has
-     a co_return, then this statement will most likely be unreachable and
-     eliminated.  */
+     a co_return, then this statement will be unreachable and DCEd.  */
   if (return_void != NULL_TREE)
     add_stmt (return_void);
 
@@ -1915,7 +2018,7 @@ static tree
 get_fn_local_identifier (tree orig, const char *append)
 {
   /* Figure out the bits we need to generate names for the outlined things
-     For consistency this needs to behave the same way as
+     For consistency, this needs to behave the same way as
      ASM_FORMAT_PRIVATE_NAME does. */
   tree nm = DECL_NAME (orig);
   const char *sep, *pfx = "";
@@ -3129,7 +3232,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* ==== start to build the final functions.
      We push_deferring_access_checks to avoid these routines being seen as
-     nested by the middle end.  */
+     nested by the middle end, we are doing the outlining here.  */
 
   push_deferring_access_checks (dk_no_check);
 

@@ -33,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 /* This has to come before all the coroutine builtins.  */
 DEF_BUILTIN_STUB (BEGIN_COROUTINE_BUILTINS, (const char *) 0)
 
+/* These are the builtins that are externally-visible and used by the
+   standard library implementation of the coroutine header.  */
+
 DEF_COROUTINE_BUILTIN (BUILT_IN_CORO_PROMISE, "promise",
 		       BT_FN_PTR_PTR_SIZE_BOOL, ATTR_CONST_NOTHROW_LEAF_LIST)
 

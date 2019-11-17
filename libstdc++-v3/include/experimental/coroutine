@@ -32,7 +32,7 @@
 
 #pragma GCC system_header
 
-// It's possible that earlier versions would work, but they are untested.
+// It is very likely that earlier versions would work, but they are untested.
 #if __cplusplus >= 201402L
 
 #include <bits/c++config.h>

@@ -5031,10 +5031,10 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 
     case CO_AWAIT_EXPR:
       if (TREE_OPERAND (*tp, 1))
-	/* Operand 1 is var (probably not interesting).  */
+	/* Operand 1 is frame variable.  */
 	WALK_SUBTREE (TREE_OPERAND (*tp, 1));
       if (TREE_OPERAND (*tp, 2))
-	/* Operand 2 has the intialiser, and we need to walk any subtrees
+	/* Operand 2 has the initialiser, and we need to walk any subtrees
 	   there.  */
 	WALK_SUBTREE (TREE_OPERAND (*tp, 2));
       break;
