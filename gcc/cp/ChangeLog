@@ -1,3 +1,10 @@
+2019-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* method.c (lookup_comparison_result): Use %qD instead of %<%T::%D%>
+	to print the decl.
+	(lookup_comparison_category): Use %qD instead of %<std::%D%> to print
+	the decl.
+
 2019-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_truthvalue_conversion): Add tsubst_flags_t parameter
