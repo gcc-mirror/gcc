@@ -1,5 +1,9 @@
 2019-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/string_view (basic_string_view(It, End)): Add range
+	constructor and deduction guide from P1391R4.
+	* testsuite/21_strings/basic_string_view/cons/char/range.cc: New test.
+
 	* include/bits/regex.h (match_results): Specialize __enable_view_impl.
 	* include/bits/stl_set.h (set): Likewise.
 	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
