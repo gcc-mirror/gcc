@@ -1,3 +1,22 @@
+2019-11-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg): Change argument 1 to
+	volatile void *.  Remove trap check.
+	(__kernel_cmpxchg2): Likewise.
+	(FETCH_AND_OP_2): Adjust operand types.
+	(OP_AND_FETCH_2): Likewise.
+	(FETCH_AND_OP_WORD): Likewise.
+	(OP_AND_FETCH_WORD): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(__sync_val_compare_and_swap_4): Likewise.
+	(__sync_bool_compare_and_swap_4): Likewise.
+	(SYNC_LOCK_TEST_AND_SET_2): Likewise.
+	(__sync_lock_test_and_set_4): Likewise.
+	(SYNC_LOCK_RELEASE_1): Likewise.  Use __kernel_cmpxchg2 for release.
+	(__sync_lock_release_4): Adjust operand types.  Use __kernel_cmpxchg
+	for release.
+	(__sync_lock_release_8): Remove.
+
 2019-11-15  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/m68k/linux-unwind.h (struct uw_ucontext): Use sigset_t instead
