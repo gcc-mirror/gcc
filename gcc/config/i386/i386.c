@@ -18959,7 +18959,7 @@ ix86_vec_cost (machine_mode mode, int cost)
       && TARGET_SSE_SPLIT_REGS)
     return cost * 2;
   if (GET_MODE_BITSIZE (mode) > 128
-      && TARGET_AVX128_OPTIMAL)
+      && TARGET_AVX256_SPLIT_REGS)
     return cost * GET_MODE_BITSIZE (mode) / 128;
   return cost;
 }
@@ -21297,7 +21297,7 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
 	return 1;
 
       /* Account for targets that splits wide vectors into multiple parts.  */
-      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (mode) > 128)
+      if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 128)
 	div = GET_MODE_BITSIZE (mode) / 128;
       else if (TARGET_SSE_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 64)
 	div = GET_MODE_BITSIZE (mode) / 64;
@@ -21384,7 +21384,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
    vectors.  If AVX512F is enabled then try vectorizing with 512bit,
    256bit and 128bit vectors.  */
 
-static void
+static unsigned int
 ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
@@ -21414,6 +21414,8 @@ ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
 
   if (TARGET_MMX_WITH_SSE)
     modes->safe_push (V8QImode);
+
+  return 0;
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */

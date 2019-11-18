@@ -13,11 +13,15 @@
   f_##DATA_TYPE (DATA_TYPE *restrict dest, DATA_TYPE *restrict src,	\
 		 INDEX##BITS *indices, int n)				\
   {									\
-    for (int i = 9; i < n; ++i)						\
+    for (int i = 0; i < n; ++i)						\
       dest[indices[i]] = src[i] + 1;					\
   }
 
 #define TEST_ALL(T)				\
+  T (int8_t, 32)				\
+  T (uint8_t, 32)				\
+  T (int16_t, 32)				\
+  T (uint16_t, 32)				\
   T (int32_t, 32)				\
   T (uint32_t, 32)				\
   T (float, 32)					\
@@ -27,5 +31,7 @@
 
 TEST_ALL (TEST_LOOP)
 
+/* { dg-final { scan-assembler-times {\tst1b\tz[0-9]+\.s, p[0-7], \[x[0-9]+, z[0-9]+.s, sxtw\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1h\tz[0-9]+\.s, p[0-7], \[x[0-9]+, z[0-9]+.s, sxtw 1\]\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+\.s, p[0-7], \[x[0-9]+, z[0-9]+.s, sxtw 2\]\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d, p[0-7], \[x[0-9]+, z[0-9]+.d, lsl 3\]\n} 3 } } */

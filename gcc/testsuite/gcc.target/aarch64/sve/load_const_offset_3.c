@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -ftree-vectorize -save-temps -msve-vector-bits=256" } */
+/* { dg-options "-O2 -ftree-vectorize -save-temps -msve-vector-bits=256 --param aarch64-sve-compare-costs=0" } */
 
 #include "load_const_offset_2.c"
 

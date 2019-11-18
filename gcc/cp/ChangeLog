@@ -1,3 +1,31 @@
+2019-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* method.c (lookup_comparison_result): Use %qD instead of %<%T::%D%>
+	to print the decl.
+	(lookup_comparison_category): Use %qD instead of %<std::%D%> to print
+	the decl.
+
+2019-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_truthvalue_conversion): Add tsubst_flags_t parameter
+	and use it in calls; also pass the location_t of the expression to
+	cp_build_binary_op and c_common_truthvalue_conversion.
+	* rtti.c (build_dynamic_cast_1): Adjust call.
+	* cvt.c (ocp_convert): Likewise.
+	* cp-gimplify.c (cp_fold): Likewise.
+	* cp-tree.h (cp_truthvalue_conversion): Update declaration.
+
+2019-11-14  Jason Merrill  <jason@redhat.com>
+
+	Implement P1816R0, class template argument deduction for aggregates.
+	* pt.c (maybe_aggr_guide, collect_ctor_idx_types): New.
+	(is_spec_or_derived): Split out from do_class_deduction.
+	(build_deduction_guide): Handle aggregate guide.
+	* class.c (finish_struct): Set CLASSTYPE_NON_AGGREGATE in a
+	template.
+	* cp-tree.h (CP_AGGREGATE_TYPE_P): An incomplete class is not an
+	aggregate.
+
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* call.c (build_conditional_expr_1): Use truth_type_for instead

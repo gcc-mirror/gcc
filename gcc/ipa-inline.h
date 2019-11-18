@@ -46,7 +46,7 @@ int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_growth (struct cgraph_node *);
 bool growth_positive_p (struct cgraph_node *, struct cgraph_edge *, int);
 int do_estimate_edge_size (struct cgraph_edge *edge);
-sreal do_estimate_edge_time (struct cgraph_edge *edge);
+sreal do_estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL);
 ipa_hints do_estimate_edge_hints (struct cgraph_edge *edge);
 void reset_node_cache (struct cgraph_node *node);
 void initialize_growth_caches ();
@@ -99,7 +99,7 @@ estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
   if (edge_growth_cache == NULL
       || (entry = edge_growth_cache->get (edge)) == NULL
       || entry->time == 0)
-    return do_estimate_edge_time (edge);
+    return do_estimate_edge_time (edge, nonspec_time);
   if (nonspec_time)
     *nonspec_time = edge_growth_cache->get (edge)->nonspec_time;
   return entry->time;

@@ -1,3 +1,10 @@
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* charset.c (narrow_str_to_charconst): Make CPP_UTF8CHAR constants
+	unsigned for C.
+	* init.c (lang_defaults): Set utf8_char_literals for GNUC2X and
+	STDC2X.
+
 2019-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91370 - Implement P1041R4 and P1139R2 - Stronger Unicode reqs

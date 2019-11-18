@@ -682,7 +682,7 @@ namespace __gnu_test
       auto
       get_iterator(T* p)
       {
-	if constexpr (std::default_constructible<Iter<T>>)
+	if constexpr (std::default_initializable<Iter<T>>)
 	  return Iter<T>(p, &bounds);
 	else
 	  return iterator(p, &bounds);

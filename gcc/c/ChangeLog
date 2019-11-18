@@ -1,3 +1,34 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_std_attribute_specifier): Diagnose
+	duplicate standard attributes.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (std_attribute_table): Add maybe_unused.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (std_attribute_table): Add fallthrough.
+	* c-parser.c (c_parser_declaration_or_fndef): Diagnose fallthrough
+	attribute at top level.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (std_attribute_table): New.
+	(c_init_decl_processing): Register attributes from
+	std_attribute_table.
+	* c-parser.c (c_parser_attribute_arguments): Add arguments
+	require_string and allow_empty_args.  All callers changed.
+	(c_parser_std_attribute): Set require_string argument for
+	"deprecated" attribute.
+
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression)
+	(c_parser_check_literal_zero): Handle CPP_UTF8CHAR.
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Likewise.
+
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-typeck.c (build_conditional_expr): Use truth_type_for instead

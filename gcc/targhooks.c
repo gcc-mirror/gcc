@@ -1300,9 +1300,10 @@ default_split_reduction (machine_mode mode)
 
 /* By default only the preferred vector mode is tried.  */
 
-void
+unsigned int
 default_autovectorize_vector_modes (vector_modes *, bool)
 {
+  return 0;
 }
 
 /* The default implementation of TARGET_VECTORIZE_RELATED_MODE.  */

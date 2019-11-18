@@ -1927,9 +1927,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	{
 	  if (fallthru_attr_p != NULL)
 	    *fallthru_attr_p = true;
-	  tree fn = build_call_expr_internal_loc (here, IFN_FALLTHROUGH,
-						  void_type_node, 0);
-	  add_stmt (fn);
+	  if (nested)
+	    {
+	      tree fn = build_call_expr_internal_loc (here, IFN_FALLTHROUGH,
+						      void_type_node, 0);
+	      add_stmt (fn);
+	    }
+	  else
+	    pedwarn (here, OPT_Wattributes,
+		     "%<fallthrough%> attribute at top level");
 	}
       else if (empty_ok && !(have_attrs
 			     && specs->non_std_attrs_seen_p))
@@ -4478,7 +4484,8 @@ c_parser_gnu_attribute_any_word (c_parser *parser)
    allow identifiers declared as types to start the arguments?  */
 
 static tree
-c_parser_attribute_arguments (c_parser *parser, bool takes_identifier)
+c_parser_attribute_arguments (c_parser *parser, bool takes_identifier,
+			      bool require_string, bool allow_empty_args)
 {
   vec<tree, va_gc> *expr_list;
   tree attr_args;
@@ -4518,7 +4525,21 @@ c_parser_attribute_arguments (c_parser *parser, bool takes_identifier)
   else
     {
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	attr_args = NULL_TREE;
+	{
+	  if (!allow_empty_args)
+	    error_at (c_parser_peek_token (parser)->location,
+		      "parentheses must be omitted if "
+		      "attribute argument list is empty");
+	  attr_args = NULL_TREE;
+	}
+      else if (require_string)
+	{
+	  /* The only valid argument for this attribute is a string
+	     literal.  Handle this specially here to avoid accepting
+	     string literals with excess parentheses.  */
+	  tree string = c_parser_string_literal (parser, false, true).value;
+	  attr_args = build_tree_list (NULL_TREE, string);
+	}
       else
 	{
 	  expr_list = c_parser_expr_list (parser, false, true,
@@ -4601,7 +4622,8 @@ c_parser_gnu_attribute (c_parser *parser, tree attrs,
 
   tree attr_args
     = c_parser_attribute_arguments (parser,
-				    attribute_takes_identifier_p (attr_name));
+				    attribute_takes_identifier_p (attr_name),
+				    false, true);
 
   attr = build_tree_list (attr_name, attr_args);
   if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
@@ -4835,8 +4857,12 @@ c_parser_std_attribute (c_parser *parser)
 	= (ns != NULL_TREE
 	   && strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0
 	   && attribute_takes_identifier_p (name));
+      bool require_string
+	= (ns == NULL_TREE
+	   && strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0);
       TREE_VALUE (attribute)
-	= c_parser_attribute_arguments (parser, takes_identifier);
+	= c_parser_attribute_arguments (parser, takes_identifier,
+					require_string, false);
     }
   else
     c_parser_balanced_token_sequence (parser);
@@ -4847,6 +4873,9 @@ c_parser_std_attribute (c_parser *parser)
 static tree
 c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
 {
+  bool seen_deprecated = false;
+  bool seen_fallthrough = false;
+  bool seen_maybe_unused = false;
   location_t loc = c_parser_peek_token (parser)->location;
   if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
     return NULL_TREE;
@@ -4872,8 +4901,55 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
       tree attribute = c_parser_std_attribute (parser);
       if (attribute != error_mark_node)
 	{
-	  TREE_CHAIN (attribute) = attributes;
-	  attributes = attribute;
+	  bool duplicate = false;
+	  tree name = get_attribute_name (attribute);
+	  tree ns = get_attribute_namespace (attribute);
+	  if (ns == NULL_TREE)
+	    {
+	      /* Some standard attributes may appear at most once in
+		 each attribute list.  Diagnose duplicates and remove
+		 them from the list to avoid subsequent diagnostics
+		 such as the more general one for multiple
+		 "fallthrough" attributes in the same place (including
+		 in separate attribute lists in the same attribute
+		 specifier sequence, which is not a constraint
+		 violation).  */
+	      if (is_attribute_p ("deprecated", name))
+		{
+		  if (seen_deprecated)
+		    {
+		      error ("attribute %<deprecated%> can appear at most "
+			     "once in an attribute-list");
+		      duplicate = true;
+		    }
+		  seen_deprecated = true;
+		}
+	      else if (is_attribute_p ("fallthrough", name))
+		{
+		  if (seen_fallthrough)
+		    {
+		      error ("attribute %<fallthrough%> can appear at most "
+			     "once in an attribute-list");
+		      duplicate = true;
+		    }
+		  seen_fallthrough = true;
+		}
+	      else if (is_attribute_p ("maybe_unused", name))
+		{
+		  if (seen_maybe_unused)
+		    {
+		      error ("attribute %<maybe_unused%> can appear at most "
+			     "once in an attribute-list");
+		      duplicate = true;
+		    }
+		  seen_maybe_unused = true;
+		}
+	    }
+	  if (!duplicate)
+	    {
+	      TREE_CHAIN (attribute) = attributes;
+	      attributes = attribute;
+	    }
 	}
       if (c_parser_next_token_is_not (parser, CPP_COMMA))
 	break;
@@ -8783,6 +8859,7 @@ c_parser_postfix_expression (c_parser *parser)
     case CPP_CHAR:
     case CPP_CHAR16:
     case CPP_CHAR32:
+    case CPP_UTF8CHAR:
     case CPP_WCHAR:
       expr.value = c_parser_peek_token (parser)->value;
       /* For the purpose of warning when a pointer is compared with
@@ -10459,6 +10536,7 @@ c_parser_check_literal_zero (c_parser *parser, unsigned *literal_zero_mask,
     case CPP_WCHAR:
     case CPP_CHAR16:
     case CPP_CHAR32:
+    case CPP_UTF8CHAR:
       /* If a parameter is literal zero alone, remember it
 	 for -Wmemset-transposed-args warning.  */
       if (integer_zerop (tok->value)

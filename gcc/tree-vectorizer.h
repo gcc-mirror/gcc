@@ -601,6 +601,13 @@ public:
   /* Cost of a single scalar iteration.  */
   int single_scalar_iteration_cost;
 
+  /* The cost of the vector prologue and epilogue, including peeled
+     iterations and set-up code.  */
+  int vec_outside_cost;
+
+  /* The cost of the vector loop body.  */
+  int vec_inside_cost;
+
   /* Is the loop vectorizable? */
   bool vectorizable;
 
@@ -1631,8 +1638,9 @@ extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
 /* In tree-vect-stmts.c.  */
 extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
 						 poly_uint64 = 0);
-extern tree get_vectype_for_scalar_type (vec_info *, tree);
-extern tree get_mask_type_for_scalar_type (vec_info *, tree);
+extern tree get_vectype_for_scalar_type (vec_info *, tree, unsigned int = 0);
+extern tree get_vectype_for_scalar_type (vec_info *, tree, slp_tree);
+extern tree get_mask_type_for_scalar_type (vec_info *, tree, slp_tree = 0);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_chooses_same_modes_p (vec_info *, machine_mode);
 extern bool vect_get_loop_mask_type (loop_vec_info);
@@ -1684,8 +1692,8 @@ extern void optimize_mask_stores (class loop*);
 extern gcall *vect_gen_while (tree, tree, tree);
 extern tree vect_gen_while_not (gimple_seq *, tree, tree, tree);
 extern opt_result vect_get_vector_types_for_stmt (stmt_vec_info, tree *,
-						  tree *);
-extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info);
+						  tree *, unsigned int = 0);
+extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info, slp_tree = 0);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
@@ -1794,8 +1802,7 @@ extern void vect_get_slp_defs (slp_tree, vec<vec<tree> > *, unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);
 extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);
-extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int,
-					    machine_mode,
+extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int, tree,
 					    unsigned int * = NULL,
 					    tree * = NULL, tree * = NULL);
 extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,

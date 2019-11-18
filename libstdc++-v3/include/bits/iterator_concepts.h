@@ -506,7 +506,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Requirements on types that can be incremented with ++.
   template<typename _Iter>
-    concept weakly_incrementable = default_constructible<_Iter>
+    concept weakly_incrementable = default_initializable<_Iter>
       && movable<_Iter>
       && requires(_Iter __i)
       {

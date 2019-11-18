@@ -2468,7 +2468,7 @@ print_operand (FILE * file, rtx op, int letter)
 	  unsigned long value_long;
 	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op),
 				       value_long);
-	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, value_long);
+	  fprintf (file, "0x%lx", value_long);
 	}
       else
 	{
@@ -2527,7 +2527,7 @@ print_operand (FILE * file, rtx op, int letter)
       print_operand_address (file, XEXP (op, 0));
     }
   else if (letter == 'm')
-    fprintf (file, HOST_WIDE_INT_PRINT_DEC, (1L << INTVAL (op)));
+    fprintf (file, "%ld", (1L << INTVAL (op)));
   else
     output_addr_const (file, op);
 }

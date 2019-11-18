@@ -829,6 +829,8 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     scan_map (NULL),
     slp_unrolling_factor (1),
     single_scalar_iteration_cost (0),
+    vec_outside_cost (0),
+    vec_inside_cost (0),
     vectorizable (false),
     can_fully_mask_p (true),
     fully_masked_p (false),
@@ -2374,6 +2376,80 @@ again:
   goto start_over;
 }
 
+/* Return true if vectorizing a loop using NEW_LOOP_VINFO appears
+   to be better than vectorizing it using OLD_LOOP_VINFO.  Assume that
+   OLD_LOOP_VINFO is better unless something specifically indicates
+   otherwise.
+
+   Note that this deliberately isn't a partial order.  */
+
+static bool
+vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
+			  loop_vec_info old_loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (new_loop_vinfo);
+  gcc_assert (LOOP_VINFO_LOOP (old_loop_vinfo) == loop);
+
+  poly_int64 new_vf = LOOP_VINFO_VECT_FACTOR (new_loop_vinfo);
+  poly_int64 old_vf = LOOP_VINFO_VECT_FACTOR (old_loop_vinfo);
+
+  /* Always prefer a VF of loop->simdlen over any other VF.  */
+  if (loop->simdlen)
+    {
+      bool new_simdlen_p = known_eq (new_vf, loop->simdlen);
+      bool old_simdlen_p = known_eq (old_vf, loop->simdlen);
+      if (new_simdlen_p != old_simdlen_p)
+	return new_simdlen_p;
+    }
+
+  /* Limit the VFs to what is likely to be the maximum number of iterations,
+     to handle cases in which at least one loop_vinfo is fully-masked.  */
+  HOST_WIDE_INT estimated_max_niter = likely_max_stmt_executions_int (loop);
+  if (estimated_max_niter != -1)
+    {
+      if (known_le (estimated_max_niter, new_vf))
+	new_vf = estimated_max_niter;
+      if (known_le (estimated_max_niter, old_vf))
+	old_vf = estimated_max_niter;
+    }
+
+  /* Check whether the (fractional) cost per scalar iteration is lower
+     or higher: new_inside_cost / new_vf vs. old_inside_cost / old_vf.  */
+  poly_widest_int rel_new = (new_loop_vinfo->vec_inside_cost
+			     * poly_widest_int (old_vf));
+  poly_widest_int rel_old = (old_loop_vinfo->vec_inside_cost
+			     * poly_widest_int (new_vf));
+  if (maybe_lt (rel_old, rel_new))
+    return false;
+  if (known_lt (rel_new, rel_old))
+    return true;
+
+  /* If there's nothing to choose between the loop bodies, see whether
+     there's a difference in the prologue and epilogue costs.  */
+  if (new_loop_vinfo->vec_outside_cost != old_loop_vinfo->vec_outside_cost)
+    return new_loop_vinfo->vec_outside_cost < old_loop_vinfo->vec_outside_cost;
+
+  return false;
+}
+
+/* Decide whether to replace OLD_LOOP_VINFO with NEW_LOOP_VINFO.  Return
+   true if we should.  */
+
+static bool
+vect_joust_loop_vinfos (loop_vec_info new_loop_vinfo,
+			loop_vec_info old_loop_vinfo)
+{
+  if (!vect_better_loop_vinfo_p (new_loop_vinfo, old_loop_vinfo))
+    return false;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "***** Preferring vector mode %s to vector mode %s\n",
+		     GET_MODE_NAME (new_loop_vinfo->vector_mode),
+		     GET_MODE_NAME (old_loop_vinfo->vector_mode));
+  return true;
+}
+
 /* Function vect_analyze_loop.
 
    Apply a set of analyses on LOOP, and create a loop_vec_info struct
@@ -2385,8 +2461,9 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   auto_vector_modes vector_modes;
 
   /* Autodetect first vector size we try.  */
-  targetm.vectorize.autovectorize_vector_modes (&vector_modes,
-						loop->simdlen != 0);
+  unsigned int autovec_flags
+    = targetm.vectorize.autovectorize_vector_modes (&vector_modes,
+						    loop->simdlen != 0);
   unsigned int mode_i = 0;
 
   DUMP_VECT_SCOPE ("analyze_loop_nest");
@@ -2409,6 +2486,8 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   machine_mode next_vector_mode = VOIDmode;
   poly_uint64 lowest_th = 0;
   unsigned vectorized_loops = 0;
+  bool pick_lowest_cost_p = ((autovec_flags & VECT_COMPARE_COSTS)
+			     && !unlimited_cost_model (loop));
 
   bool vect_epilogues = false;
   opt_result res = opt_result::success ();
@@ -2429,6 +2508,34 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 
       bool fatal = false;
 
+      /* When pick_lowest_cost_p is true, we should in principle iterate
+	 over all the loop_vec_infos that LOOP_VINFO could replace and
+	 try to vectorize LOOP_VINFO under the same conditions.
+	 E.g. when trying to replace an epilogue loop, we should vectorize
+	 LOOP_VINFO as an epilogue loop with the same VF limit.  When trying
+	 to replace the main loop, we should vectorize LOOP_VINFO as a main
+	 loop too.
+
+	 However, autovectorize_vector_modes is usually sorted as follows:
+
+	 - Modes that naturally produce lower VFs usually follow modes that
+	   naturally produce higher VFs.
+
+	 - When modes naturally produce the same VF, maskable modes
+	   usually follow unmaskable ones, so that the maskable mode
+	   can be used to vectorize the epilogue of the unmaskable mode.
+
+	 This order is preferred because it leads to the maximum
+	 epilogue vectorization opportunities.  Targets should only use
+	 a different order if they want to make wide modes available while
+	 disparaging them relative to earlier, smaller modes.  The assumption
+	 in that case is that the wider modes are more expensive in some
+	 way that isn't reflected directly in the costs.
+
+	 There should therefore be few interesting cases in which
+	 LOOP_VINFO fails when treated as an epilogue loop, succeeds when
+	 treated as a standalone loop, and ends up being genuinely cheaper
+	 than FIRST_LOOP_VINFO.  */
       if (vect_epilogues)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
@@ -2476,13 +2583,34 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
 	      simdlen = 0;
 	    }
+	  else if (pick_lowest_cost_p && first_loop_vinfo)
+	    {
+	      /* Keep trying to roll back vectorization attempts while the
+		 loop_vec_infos they produced were worse than this one.  */
+	      vec<loop_vec_info> &vinfos = first_loop_vinfo->epilogue_vinfos;
+	      while (!vinfos.is_empty ()
+		     && vect_joust_loop_vinfos (loop_vinfo, vinfos.last ()))
+		{
+		  gcc_assert (vect_epilogues);
+		  delete vinfos.pop ();
+		}
+	      if (vinfos.is_empty ()
+		  && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
+		{
+		  delete first_loop_vinfo;
+		  first_loop_vinfo = opt_loop_vec_info::success (NULL);
+		  LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
+		}
+	    }
 
 	  if (first_loop_vinfo == NULL)
 	    {
 	      first_loop_vinfo = loop_vinfo;
 	      lowest_th = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
 	    }
-	  else if (vect_epilogues)
+	  else if (vect_epilogues
+		   /* For now only allow one epilogue loop.  */
+		   && first_loop_vinfo->epilogue_vinfos.is_empty ())
 	    {
 	      first_loop_vinfo->epilogue_vinfos.safe_push (loop_vinfo);
 	      poly_uint64 th = LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
@@ -2506,12 +2634,14 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 			    && param_vect_epilogues_nomask
 			    && LOOP_VINFO_PEELING_FOR_NITER (first_loop_vinfo)
 			    && !loop->simduid
-			    /* For now only allow one epilogue loop.  */
-			    && first_loop_vinfo->epilogue_vinfos.is_empty ());
+			    /* For now only allow one epilogue loop, but allow
+			       pick_lowest_cost_p to replace it.  */
+			    && (first_loop_vinfo->epilogue_vinfos.is_empty ()
+				|| pick_lowest_cost_p));
 
 	  /* Commit to first_loop_vinfo if we have no reason to try
 	     alternatives.  */
-	  if (!simdlen && !vect_epilogues)
+	  if (!simdlen && !vect_epilogues && !pick_lowest_cost_p)
 	    break;
 	}
       else
@@ -2813,9 +2943,11 @@ pop:
 	  /* The following make sure we can compute the operand index
 	     easily plus it mostly disallows chaining via COND_EXPR condition
 	     operands.  */
-	  || (gimple_assign_rhs1 (use_stmt) != op
-	      && gimple_assign_rhs2 (use_stmt) != op
-	      && gimple_assign_rhs3 (use_stmt) != op))
+	  || (gimple_assign_rhs1_ptr (use_stmt) != path[i].second->use
+	      && (gimple_num_ops (use_stmt) <= 2
+		  || gimple_assign_rhs2_ptr (use_stmt) != path[i].second->use)
+	      && (gimple_num_ops (use_stmt) <= 3
+		  || gimple_assign_rhs3_ptr (use_stmt) != path[i].second->use)))
 	{
 	  fail = true;
 	  break;
@@ -2828,7 +2960,18 @@ pop:
       FOR_EACH_IMM_USE_STMT (op_use_stmt, imm_iter, op)
 	if (!is_gimple_debug (op_use_stmt)
 	    && flow_bb_inside_loop_p (loop, gimple_bb (op_use_stmt)))
-	  cnt++;
+	  {
+	    /* We want to allow x + x but not x < 1 ? x : 2.  */
+	    if (is_gimple_assign (op_use_stmt)
+		&& gimple_assign_rhs_code (op_use_stmt) == COND_EXPR)
+	      {
+		use_operand_p use_p;
+		FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+		  cnt++;
+	      }
+	    else
+	      cnt++;
+	  }
       if (cnt != 1)
 	{
 	  fail = true;
@@ -3496,7 +3639,11 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	       &vec_inside_cost, &vec_epilogue_cost);
 
   vec_outside_cost = (int)(vec_prologue_cost + vec_epilogue_cost);
-  
+
+  /* Stash the costs so that we can compare two loop_vec_infos.  */
+  loop_vinfo->vec_inside_cost = vec_inside_cost;
+  loop_vinfo->vec_outside_cost = vec_outside_cost;
+
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "Cost model analysis: \n");
@@ -4930,6 +5077,8 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       bool reduce_with_shift;
       tree vec_temp;
 
+      gcc_assert (slp_reduc || new_phis.length () == 1);
+
       /* See if the target wants to do the final (shift) reduction
 	 in a vector mode of smaller size and first reduce upper/lower
 	 halves against each other.  */
@@ -4937,6 +5086,21 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       tree stype = TREE_TYPE (vectype);
       unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
       unsigned nunits1 = nunits;
+      if ((mode1 = targetm.vectorize.split_reduction (mode)) != mode
+	  && new_phis.length () == 1)
+	{
+	  nunits1 = GET_MODE_NUNITS (mode1).to_constant ();
+	  /* For SLP reductions we have to make sure lanes match up, but
+	     since we're doing individual element final reduction reducing
+	     vector width here is even more important.
+	     ???  We can also separate lanes with permutes, for the common
+	     case of power-of-two group-size odd/even extracts would work.  */
+	  if (slp_reduc && nunits != nunits1)
+	    {
+	      nunits1 = least_common_multiple (nunits1, group_size);
+	      gcc_assert (exact_log2 (nunits1) != -1 && nunits1 <= nunits);
+	    }
+	}
       if (!slp_reduc
 	  && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
 	nunits1 = GET_MODE_NUNITS (mode1).to_constant ();
@@ -4958,7 +5122,6 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       new_temp = new_phi_result;
       while (nunits > nunits1)
 	{
-	  gcc_assert (!slp_reduc);
 	  nunits /= 2;
 	  vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
 							  stype, nunits);
@@ -5113,6 +5276,8 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 
 	  int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
 	  int element_bitsize = tree_to_uhwi (bitsize);
+	  tree compute_type = TREE_TYPE (vectype);
+	  gimple_seq stmts = NULL;
           FOR_EACH_VEC_ELT (new_phis, i, new_phi)
             {
               int bit_offset;
@@ -5120,12 +5285,8 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
                 vec_temp = PHI_RESULT (new_phi);
               else
                 vec_temp = gimple_assign_lhs (new_phi);
-              tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
-				 bitsize_zero_node);
-              epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
-              new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-              gimple_assign_set_lhs (epilog_stmt, new_temp);
-              gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	      new_temp = gimple_build (&stmts, BIT_FIELD_REF, compute_type,
+				       vec_temp, bitsize, bitsize_zero_node);
 
               /* In SLP we don't need to apply reduction operation, so we just
                  collect s' values in SCALAR_RESULTS.  */
@@ -5137,14 +5298,9 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
                    bit_offset += element_bitsize)
                 {
                   tree bitpos = bitsize_int (bit_offset);
-                  tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp,
-                                     bitsize, bitpos);
-
-                  epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
-                  new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
-                  gimple_assign_set_lhs (epilog_stmt, new_name);
-                  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-
+		  new_name = gimple_build (&stmts, BIT_FIELD_REF,
+					   compute_type, vec_temp,
+					   bitsize, bitpos);
                   if (slp_reduc)
                     {
                       /* In SLP we don't need to apply reduction operation, so 
@@ -5153,13 +5309,8 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
                       scalar_results.safe_push (new_name);
                     }
                   else
-                    {
-		      epilog_stmt = gimple_build_assign (new_scalar_dest, code,
-							 new_name, new_temp);
-                      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-                      gimple_assign_set_lhs (epilog_stmt, new_temp);
-                      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-                    }
+		    new_temp = gimple_build (&stmts, code, compute_type,
+					     new_name, new_temp);
                 }
             }
 
@@ -5170,24 +5321,28 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
           if (slp_reduc)
             {
               tree res, first_res, new_res;
-	      gimple *new_stmt;
             
               /* Reduce multiple scalar results in case of SLP unrolling.  */
               for (j = group_size; scalar_results.iterate (j, &res);
                    j++)
                 {
                   first_res = scalar_results[j % group_size];
-		  new_stmt = gimple_build_assign (new_scalar_dest, code,
-						  first_res, res);
-                  new_res = make_ssa_name (new_scalar_dest, new_stmt);
-                  gimple_assign_set_lhs (new_stmt, new_res);
-                  gsi_insert_before (&exit_gsi, new_stmt, GSI_SAME_STMT);
+		  new_res = gimple_build (&stmts, code, compute_type,
+					  first_res, res);
                   scalar_results[j % group_size] = new_res;
                 }
+	      for (k = 0; k < group_size; k++)
+		scalar_results[k] = gimple_convert (&stmts, scalar_type,
+						    scalar_results[k]);
             }
           else
-            /* Not SLP - we have one scalar to keep in SCALAR_RESULTS.  */
-            scalar_results.safe_push (new_temp);
+	    {
+	      /* Not SLP - we have one scalar to keep in SCALAR_RESULTS.  */
+	      new_temp = gimple_convert (&stmts, scalar_type, new_temp);
+	      scalar_results.safe_push (new_temp);
+	    }
+
+	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
         }
 
       if ((STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
@@ -6344,10 +6499,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	 that value needs to be repeated for every instance of the
 	 statement within the initial vector.  */
       unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
-      scalar_mode elt_mode = SCALAR_TYPE_MODE (TREE_TYPE (vectype_out));
       if (!neutral_op
 	  && !can_duplicate_and_interleave_p (loop_vinfo, group_size,
-					      elt_mode))
+					      TREE_TYPE (vectype_out)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

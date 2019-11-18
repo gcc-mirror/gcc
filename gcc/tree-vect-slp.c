@@ -264,7 +264,7 @@ vect_get_place_in_interleaving_chain (stmt_vec_info stmt_info,
   return -1;
 }
 
-/* Check whether it is possible to load COUNT elements of type ELT_MODE
+/* Check whether it is possible to load COUNT elements of type ELT_TYPE
    using the method implemented by duplicate_and_interleave.  Return true
    if so, returning the number of intermediate vectors in *NVECTORS_OUT
    (if nonnull) and the type of each intermediate vector in *VECTOR_TYPE_OUT
@@ -272,26 +272,37 @@ vect_get_place_in_interleaving_chain (stmt_vec_info stmt_info,
 
 bool
 can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
-				machine_mode elt_mode,
-				unsigned int *nvectors_out,
+				tree elt_type, unsigned int *nvectors_out,
 				tree *vector_type_out,
 				tree *permutes)
 {
-  poly_int64 elt_bytes = count * GET_MODE_SIZE (elt_mode);
-  poly_int64 nelts;
+  tree base_vector_type = get_vectype_for_scalar_type (vinfo, elt_type, count);
+  if (!base_vector_type || !VECTOR_MODE_P (TYPE_MODE (base_vector_type)))
+    return false;
+
+  machine_mode base_vector_mode = TYPE_MODE (base_vector_type);
+  poly_int64 elt_bytes = count * GET_MODE_UNIT_SIZE (base_vector_mode);
   unsigned int nvectors = 1;
   for (;;)
     {
       scalar_int_mode int_mode;
       poly_int64 elt_bits = elt_bytes * BITS_PER_UNIT;
-      if (multiple_p (GET_MODE_SIZE (vinfo->vector_mode), elt_bytes, &nelts)
-	  && int_mode_for_size (elt_bits, 0).exists (&int_mode))
+      if (int_mode_for_size (elt_bits, 1).exists (&int_mode))
 	{
+	  /* Get the natural vector type for this SLP group size.  */
 	  tree int_type = build_nonstandard_integer_type
 	    (GET_MODE_BITSIZE (int_mode), 1);
-	  tree vector_type = build_vector_type (int_type, nelts);
-	  if (VECTOR_MODE_P (TYPE_MODE (vector_type)))
+	  tree vector_type
+	    = get_vectype_for_scalar_type (vinfo, int_type, count);
+	  if (vector_type
+	      && VECTOR_MODE_P (TYPE_MODE (vector_type))
+	      && known_eq (GET_MODE_SIZE (TYPE_MODE (vector_type)),
+			   GET_MODE_SIZE (base_vector_mode)))
 	    {
+	      /* Try fusing consecutive sequences of COUNT / NVECTORS elements
+		 together into elements of type INT_TYPE and using the result
+		 to build NVECTORS vectors.  */
+	      poly_uint64 nelts = GET_MODE_NUNITS (TYPE_MODE (vector_type));
 	      vec_perm_builder sel1 (nelts, 2, 3);
 	      vec_perm_builder sel2 (nelts, 2, 3);
 	      poly_int64 half_nelts = exact_div (nelts, 2);
@@ -491,7 +502,7 @@ again:
 	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
 	      && (TREE_CODE (type) == BOOLEAN_TYPE
 		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
-						      TYPE_MODE (type))))
+						      type)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -605,6 +616,77 @@ again:
 
   *swap = swapped;
   return 0;
+}
+
+/* Try to assign vector type VECTYPE to STMT_INFO for BB vectorization.
+   Return true if we can, meaning that this choice doesn't conflict with
+   existing SLP nodes that use STMT_INFO.  */
+
+static bool
+vect_update_shared_vectype (stmt_vec_info stmt_info, tree vectype)
+{
+  tree old_vectype = STMT_VINFO_VECTYPE (stmt_info);
+  if (old_vectype && useless_type_conversion_p (vectype, old_vectype))
+    return true;
+
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+      && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
+    {
+      /* We maintain the invariant that if any statement in the group is
+	 used, all other members of the group have the same vector type.  */
+      stmt_vec_info first_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      stmt_vec_info member_info = first_info;
+      for (; member_info; member_info = DR_GROUP_NEXT_ELEMENT (member_info))
+	if (STMT_VINFO_NUM_SLP_USES (member_info) > 0
+	    || is_pattern_stmt_p (member_info))
+	  break;
+
+      if (!member_info)
+	{
+	  for (member_info = first_info; member_info;
+	       member_info = DR_GROUP_NEXT_ELEMENT (member_info))
+	    STMT_VINFO_VECTYPE (member_info) = vectype;
+	  return true;
+	}
+    }
+  else if (STMT_VINFO_NUM_SLP_USES (stmt_info) == 0
+	   && !is_pattern_stmt_p (stmt_info))
+    {
+      STMT_VINFO_VECTYPE (stmt_info) = vectype;
+      return true;
+    }
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		       "Build SLP failed: incompatible vector"
+		       " types for: %G", stmt_info->stmt);
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "    old vector type: %T\n", old_vectype);
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "    new vector type: %T\n", vectype);
+    }
+  return false;
+}
+
+/* Try to infer and assign a vector type to all the statements in STMTS.
+   Used only for BB vectorization.  */
+
+static bool
+vect_update_all_shared_vectypes (vec<stmt_vec_info> stmts)
+{
+  tree vectype, nunits_vectype;
+  if (!vect_get_vector_types_for_stmt (stmts[0], &vectype,
+				       &nunits_vectype, stmts.length ()))
+    return false;
+
+  stmt_vec_info stmt_info;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (stmts, i, stmt_info)
+    if (!vect_update_shared_vectype (stmt_info, vectype))
+      return false;
+
+  return true;
 }
 
 /* Return true if call statements CALL1 and CALL2 are similar enough
@@ -753,6 +835,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
   stmt_vec_info stmt_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
+      vec_info *vinfo = stmt_info->vinfo;
       gimple *stmt = stmt_info->stmt;
       swap[i] = 0;
       matches[i] = false;
@@ -786,7 +869,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
 
       tree nunits_vectype;
       if (!vect_get_vector_types_for_stmt (stmt_info, &vectype,
-					   &nunits_vectype)
+					   &nunits_vectype, group_size)
 	  || (nunits_vectype
 	      && !vect_record_max_nunits (stmt_info, group_size,
 					  nunits_vectype, max_nunits)))
@@ -797,6 +880,10 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	}
 
       gcc_assert (vectype);
+
+      if (is_a <bb_vec_info> (vinfo)
+	  && !vect_update_shared_vectype (stmt_info, vectype))
+	continue;
 
       if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
@@ -1336,7 +1423,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
 		if (SLP_TREE_DEF_TYPE (grandchild) != vect_external_def)
 		  break;
-	      if (!grandchild)
+	      if (!grandchild
+		  && vect_update_all_shared_vectypes (oprnd_info->def_stmts))
 		{
 		  /* Roll back.  */
 		  this_tree_size = old_tree_size;
@@ -1377,7 +1465,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	     do extra work to cancel the pattern so the uses see the
 	     scalar version.  */
 	  && !is_pattern_stmt_p (stmt_info)
-	  && !oprnd_info->any_pattern)
+	  && !oprnd_info->any_pattern
+	  && vect_update_all_shared_vectypes (oprnd_info->def_stmts))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -1474,7 +1563,9 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
 		    if (SLP_TREE_DEF_TYPE (grandchild) != vect_external_def)
 		      break;
-		  if (!grandchild)
+		  if (!grandchild
+		      && (vect_update_all_shared_vectypes
+			  (oprnd_info->def_stmts)))
 		    {
 		      /* Roll back.  */
 		      this_tree_size = old_tree_size;
@@ -2010,8 +2101,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       scalar_type = TREE_TYPE (DR_REF (dr));
-      vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
       group_size = DR_GROUP_SIZE (stmt_info);
+      vectype = get_vectype_for_scalar_type (vinfo, scalar_type, group_size);
     }
   else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
@@ -2650,22 +2741,13 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
      Memory accesses already got their vector type assigned
      in vect_analyze_data_refs.  */
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  if (bb_vinfo
-      && ! STMT_VINFO_DATA_REF (stmt_info))
+  if (bb_vinfo && STMT_VINFO_VECTYPE (stmt_info) == boolean_type_node)
     {
-      tree vectype, nunits_vectype;
-      if (!vect_get_vector_types_for_stmt (stmt_info, &vectype,
-					   &nunits_vectype))
-	/* We checked this when building the node.  */
-	gcc_unreachable ();
-      if (vectype == boolean_type_node)
-	{
-	  vectype = vect_get_mask_type_for_stmt (stmt_info);
-	  if (!vectype)
-	    /* vect_get_mask_type_for_stmt has already explained the
-	       failure.  */
-	    return false;
-	}
+      tree vectype = vect_get_mask_type_for_stmt (stmt_info, node);
+      if (!vectype)
+	/* vect_get_mask_type_for_stmt has already explained the
+	   failure.  */
+	return false;
 
       stmt_vec_info sstmt_info;
       unsigned int i;
@@ -3481,7 +3563,7 @@ duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
   unsigned int nvectors = 1;
   tree new_vector_type;
   tree permutes[2];
-  if (!can_duplicate_and_interleave_p (vinfo, nelts, TYPE_MODE (element_type),
+  if (!can_duplicate_and_interleave_p (vinfo, nelts, element_type,
 				       &nvectors, &new_vector_type,
 				       permutes))
     gcc_unreachable ();
@@ -3594,7 +3676,7 @@ vect_get_constant_vectors (slp_tree op_node, slp_tree slp_node,
       && vect_mask_constant_operand_p (stmt_vinfo))
     vector_type = truth_type_for (stmt_vectype);
   else
-    vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op));
+    vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), op_node);
 
   /* ???  For lane-reducing ops we should also have the required number
      of vector stmts initialized rather than second-guessing here.  */

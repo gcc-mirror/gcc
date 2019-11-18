@@ -1925,10 +1925,20 @@ element mode.\n\
 If @var{all} is true, add suitable vector modes even when they are generally\n\
 not expected to be worthwhile.\n\
 \n\
+The hook returns a bitmask of flags that control how the modes in\n\
+@var{modes} are used.  The flags are:\n\
+@table @code\n\
+@item VECT_COMPARE_COSTS\n\
+Tells the loop vectorizer to try all the provided modes and pick the one\n\
+with the lowest cost.  By default the vectorizer will choose the first\n\
+mode that works.\n\
+@end table\n\
+\n\
 The hook does not need to do anything if the vector returned by\n\
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant\n\
-for autovectorization.  The default implementation does nothing.",
- void,
+for autovectorization.  The default implementation adds no modes and\n\
+returns 0.",
+ unsigned int,
  (vector_modes *modes, bool all),
  default_autovectorize_vector_modes)
 

@@ -218,6 +218,14 @@ enum omp_device_kind_arch_isa {
   omp_device_isa
 };
 
+/* Flags returned by TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES:
+
+   VECT_COMPARE_COSTS
+       Tells the loop vectorizer to try all the provided modes and
+       pick the one with the lowest cost.  By default the vectorizer
+       will choose the first mode that works.  */
+const unsigned int VECT_COMPARE_COSTS = 1U << 0;
+
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;
 #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME) PARAMS;

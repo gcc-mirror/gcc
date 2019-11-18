@@ -6173,13 +6173,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	// convert arg0 and arg1 to match the type of the permute
 	// for the VEC_PERM_EXPR operation.
 	tree permute_type = (TREE_TYPE (permute));
-	tree arg0_ptype = gimple_convert (&stmts, loc, permute_type, arg0);
-	tree arg1_ptype = gimple_convert (&stmts, loc, permute_type, arg1);
+	tree arg0_ptype = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+					permute_type, arg0);
+	tree arg1_ptype = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+					permute_type, arg1);
 	tree lhs_ptype = gimple_build (&stmts, loc, VEC_PERM_EXPR,
 				      permute_type, arg0_ptype, arg1_ptype,
 				      permute);
 	// Convert the result back to the desired lhs type upon completion.
-	tree temp = gimple_convert (&stmts, loc, TREE_TYPE (lhs), lhs_ptype);
+	tree temp = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+				  TREE_TYPE (lhs), lhs_ptype);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 	g = gimple_build_assign (lhs, temp);
 	gimple_set_location (g, loc);

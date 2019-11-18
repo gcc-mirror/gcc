@@ -1,3 +1,150 @@
+2019-11-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Repair the <tuple> part of C++20 p1032 Misc constexpr bits.
+	* include/bits/uses_allocator.h (__uses_alloc0::_Sink::operaror=)
+	(__use_alloc(const _Alloc&)) : Constexpr.
+
+2019-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(It, End)): Add range
+	constructor and deduction guide from P1391R4.
+	* testsuite/21_strings/basic_string_view/cons/char/range.cc: New test.
+
+	* include/bits/regex.h (match_results): Specialize __enable_view_impl.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* include/debug/multiset.h (__debug::multiset): Likewise.
+	* include/debug/set.h (__debug::set): Likewise.
+	* include/debug/unordered_set (__debug::unordered_set)
+	(__debug::unordered_multiset): Likewise.
+	* include/std/ranges (ranges::view, ranges::enable_view)
+	(ranges::view_interface, ranges::subrange, ranges::empty_view)
+	(ranges::single_view, ranges::views::single, ranges::iota_view)
+	(ranges::views::iota): Define for C++20.
+	* testsuite/std/ranges/empty_view.cc: New test.
+	* testsuite/std/ranges/iota_view.cc: New test.
+	* testsuite/std/ranges/single_view.cc: New test.
+	* testsuite/std/ranges/view.cc: New test.
+
+2019-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges: Revert accidentally committed changes.
+
+	* include/std/thread (jthread::jthread()): Use nostopstate constant.
+	(jthread::jthread(Callable&&, Args&&...)): Use helper function to
+	create std::thread instead of indirection through a lambda. Use
+	remove_cvref_t instead of decay_t.
+	(jthread::joinable(), jthread::get_id(), jthread::native_handle())
+	(jthread::hardware_concurrency()): Add nodiscard attribute.
+	(swap(jthread&. jthread&)): Define hidden friend.
+	(jthread::_S_create): New helper function for constructor.
+
+2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the <tuple> part of C++20 p1032 Misc constexpr bits.
+	* include/std/tuple (_Head_base, _Tuple_impl(allocator_arg_t,...)
+	(_M_assign, tuple(allocator_arg_t,...), _Inherited, operator=, _M_swap)
+	(swap, pair(piecewise_construct_t,): Constexpr.
+	* (__uses_alloc0::_Sink::operator=, __uses_alloc_t): Constexpr.
+	* testsuite/20_util/tuple/cons/constexpr_allocator_arg_t.cc: New test.
+	* testsuite/20_util/tuple/constexpr_swap.cc : New test.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Extra error for C++20.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: : Extra error for C++20.
+
+2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token: Reduce header dependencies by including
+	internal headers.
+	(stop_token::swap(stop_token&), swap(stop_token&, stop_token&)):
+	Define.
+	(operator!=(const stop_token&, const stop_token&)): Fix return value.
+	(stop_token::_Stop_cb::_Stop_cb(Cb&&)): Use std::forward instead of
+	(stop_token::_Stop_state_t) [_GLIBCXX_HAS_GTHREADS]: Use lock_guard
+	instead of unique_lock.
+	[!_GLIBCXX_HAS_GTHREADS]: Do not use mutex.
+	(stop_token::stop_token(_Stop_state)): Change parameter to lvalue
+	reference.
+	(stop_source): Remove unnecessary using-declarations for names only
+	used once.
+	(swap(stop_source&, stop_source&)): Define.
+	(stop_callback(const stop_token&, _Cb&&))
+	(stop_callback(stop_token&&, _Cb&&)): Replace lambdas with a named
+	function. Use std::forward instead of std::move. Run callbacks if a
+	stop request has already been made.
+	(stop_source::_M_execute()): Remove.
+	(stop_source::_S_execute(_Stop_cb*)): Define.
+	* include/std/version (__cpp_lib_jthread): Define conditionally.
+	* testsuite/30_threads/stop_token/stop_callback.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: Enable test for
+	immediate execution of callback.
+
+2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the default_searcher part of C++20 p1032 Misc constexpr bits.
+	* include/std/functional
+	(default_searcher, default_searcher::operator()): Constexpr.
+	* testsuite/20_util/function_objects/constexpr_searcher.cc: New.
+
+2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (weakly_incrementable): Adjust.
+	* include/std/concepts (default_constructible): Rename to
+	default_initializable and require default-list-initialization and
+	default-initialization to be valid (LWG 3149).
+	(semiregular): Adjust to new name.
+	* testsuite/std/concepts/concepts.lang/concept.defaultconstructible/
+	1.cc: Rename directory to concept.defaultinitializable and adjust to
+	new name.
+	* testsuite/std/concepts/concepts.lang/concept.defaultinitializable/
+	lwg3149.cc: New test.
+	* testsuite/util/testsuite_iterators.h (test_range): Adjust.
+
+	* src/c++17/fs_path.cc [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(is_disk_designator): New helper function.
+	(path::_Parser::root_path()): Use is_disk_designator.
+	(path::lexically_relative(const path&)): Implement resolution of
+	LWG 3070.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Check with
+	path components that look like a root-name.
+
+	* doc/doxygen/user.cfg.in: Add <stop_token>.
+	* include/precompiled/stdc++.h: Likewise.
+	* include/std/stop_token: Fix definition of std::nostopstate.
+	* testsuite/30_threads/headers/stop_token/synopsis.cc: New test.
+	* testsuite/30_threads/headers/thread/types_std_c++20.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: Remove unnecessary
+	dg-require directives. Remove I/O and inclusion of <iostream>.
+
+2019-11-14  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/Makefile.am: Add <stop_token> header.
+	* include/Makefile.in: Regenerate.
+	* include/std/condition_variable: Add overloads for stop_token support
+	to condition_variable_any.
+	* include/std/stop_token: New file.
+	* include/std/thread: Add jthread type.
+	* include/std/version (__cpp_lib_jthread): New value.
+	* testsuite/30_threads/condition_variable_any/stop_token/1.cc: New test.
+	* testsuite/30_threads/condition_variable_any/stop_token/2.cc: New test.
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	New test.
+	* testsuite/30_threads/jthread/1.cc: New test.
+	* testsuite/30_threads/jthread/2.cc: New test.
+	* testsuite/30_threads/jthread/jthread.cc: New test.
+	* testsuite/30_threads/stop_token/1.cc: New test.
+	* testsuite/30_threads/stop_token/2.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: New test.
+
+2019-11-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the <array> part of C++20 p1032 Misc constexpr bits.
+	* include/std/array (fill, swap): Make constexpr.
+	* testsuite/23_containers/array/requirements/constexpr_fill.cc: New.
+	* testsuite/23_containers/array/requirements/constexpr_swap.cc: New.
+
 2019-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h (__iter_concept_impl): Add
@@ -31,7 +178,7 @@
 	* doc/xml/gnu/gpl-3.0.xml: Adjust link to "Why not LGPL".
 
 2019-11-10  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/using.xml: Switch www.hboehm.info to https.
 
 2019-11-07  Jonathan Wakely  <jwakely@redhat.com>

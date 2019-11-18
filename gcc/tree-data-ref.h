@@ -222,19 +222,113 @@ public:
   unsigned int align;
 };
 
+/* Flags that describe a potential alias between two dr_with_seg_lens.
+   In general, each pair of dr_with_seg_lens represents a composite of
+   multiple access pairs P, so testing flags like DR_IS_READ on the DRs
+   does not give meaningful information.
+
+   DR_ALIAS_RAW:
+	There is a pair in P for which the second reference is a read
+	and the first is a write.
+
+   DR_ALIAS_WAR:
+	There is a pair in P for which the second reference is a write
+	and the first is a read.
+
+   DR_ALIAS_WAW:
+	There is a pair in P for which both references are writes.
+
+   DR_ALIAS_ARBITRARY:
+	Either
+	(a) it isn't possible to classify one pair in P as RAW, WAW or WAR; or
+	(b) there is a pair in P that breaks the ordering assumption below.
+
+	This flag overrides the RAW, WAR and WAW flags above.
+
+   DR_ALIAS_UNSWAPPED:
+   DR_ALIAS_SWAPPED:
+	Temporary flags that indicate whether there is a pair P whose
+	DRs have or haven't been swapped around.
+
+   DR_ALIAS_MIXED_STEPS:
+	The DR_STEP for one of the data references in the pair does not
+	accurately describe that reference for all members of P.  (Note
+	that the flag does not say anything about whether the DR_STEPs
+	of the two references in the pair are the same.)
+
+   The ordering assumption mentioned above is that for every pair
+   (DR_A, DR_B) in P:
+
+   (1) The original code accesses n elements for DR_A and n elements for DR_B,
+       interleaved as follows:
+
+	 one access of size DR_A.access_size at DR_A.dr
+	 one access of size DR_B.access_size at DR_B.dr
+	 one access of size DR_A.access_size at DR_A.dr + STEP_A
+	 one access of size DR_B.access_size at DR_B.dr + STEP_B
+	 one access of size DR_A.access_size at DR_A.dr + STEP_A * 2
+	 one access of size DR_B.access_size at DR_B.dr + STEP_B * 2
+	 ...
+
+   (2) The new code accesses the same data in exactly two chunks:
+
+	 one group of accesses spanning |DR_A.seg_len| + DR_A.access_size
+	 one group of accesses spanning |DR_B.seg_len| + DR_B.access_size
+
+   A pair might break this assumption if the DR_A and DR_B accesses
+   in the original or the new code are mingled in some way.  For example,
+   if DR_A.access_size represents the effect of two individual writes
+   to nearby locations, the pair breaks the assumption if those writes
+   occur either side of the access for DR_B.
+
+   Note that DR_ALIAS_ARBITRARY describes whether the ordering assumption
+   fails to hold for any individual pair in P.  If the assumption *does*
+   hold for every pair in P, it doesn't matter whether it holds for the
+   composite pair or not.  In other words, P should represent the complete
+   set of pairs that the composite pair is testing, so only the ordering
+   of two accesses in the same member of P matters.  */
+const unsigned int DR_ALIAS_RAW = 1U << 0;
+const unsigned int DR_ALIAS_WAR = 1U << 1;
+const unsigned int DR_ALIAS_WAW = 1U << 2;
+const unsigned int DR_ALIAS_ARBITRARY = 1U << 3;
+const unsigned int DR_ALIAS_SWAPPED = 1U << 4;
+const unsigned int DR_ALIAS_UNSWAPPED = 1U << 5;
+const unsigned int DR_ALIAS_MIXED_STEPS = 1U << 6;
+
 /* This struct contains two dr_with_seg_len objects with aliasing data
    refs.  Two comparisons are generated from them.  */
 
 class dr_with_seg_len_pair_t
 {
 public:
-  dr_with_seg_len_pair_t (const dr_with_seg_len& d1,
-			       const dr_with_seg_len& d2)
-    : first (d1), second (d2) {}
+  /* WELL_ORDERED indicates that the ordering assumption described above
+     DR_ALIAS_ARBITRARY holds.  REORDERED indicates that it doesn't.  */
+  enum sequencing { WELL_ORDERED, REORDERED };
+
+  dr_with_seg_len_pair_t (const dr_with_seg_len &,
+			  const dr_with_seg_len &, sequencing);
 
   dr_with_seg_len first;
   dr_with_seg_len second;
+  unsigned int flags;
 };
+
+inline dr_with_seg_len_pair_t::
+dr_with_seg_len_pair_t (const dr_with_seg_len &d1, const dr_with_seg_len &d2,
+			sequencing seq)
+  : first (d1), second (d2), flags (0)
+{
+  if (DR_IS_READ (d1.dr) && DR_IS_WRITE (d2.dr))
+    flags |= DR_ALIAS_WAR;
+  else if (DR_IS_WRITE (d1.dr) && DR_IS_READ (d2.dr))
+    flags |= DR_ALIAS_RAW;
+  else if (DR_IS_WRITE (d1.dr) && DR_IS_WRITE (d2.dr))
+    flags |= DR_ALIAS_WAW;
+  else
+    gcc_unreachable ();
+  if (seq == REORDERED)
+    flags |= DR_ALIAS_ARBITRARY;
+}
 
 enum data_dependence_direction {
   dir_positive,

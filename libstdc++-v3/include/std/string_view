@@ -130,6 +130,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_len{__len}, _M_str{__str}
       { }
 
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
+	requires same_as<iter_value_t<_It>, _CharT>
+	  && (!convertible_to<_End, size_type>)
+	constexpr
+	basic_string_view(_It __first, _End __last)
+	: _M_len(__last - __first), _M_str(std::to_address(__first))
+	{ }
+#endif
+
       constexpr basic_string_view&
       operator=(const basic_string_view&) noexcept = default;
 
@@ -456,6 +466,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t	    _M_len;
       const _CharT* _M_str;
     };
+
+#if __cplusplus > 201703L && __cpp_lib_concepts && __cpp_deduction_guides
+  template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
+    basic_string_view(_It, _End) -> basic_string_view<iter_value_t<_It>>;
+#endif
 
   // [string.view.comparison], non-member basic_string_view comparison function
 

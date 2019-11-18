@@ -3391,7 +3391,10 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   /* Remember the original function pointer type.  */
   fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 
-  if (flag_openmp && fndecl)
+  if (flag_openmp
+      && fndecl
+      && cfun
+      && (cfun->curr_properties & PROP_gimple_any) == 0)
     {
       tree variant = omp_resolve_declare_variant (fndecl);
       if (variant != fndecl)

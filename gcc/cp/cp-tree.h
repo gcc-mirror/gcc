@@ -4251,7 +4251,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define CP_AGGREGATE_TYPE_P(TYPE)				\
   (TREE_CODE (TYPE) == VECTOR_TYPE				\
    || TREE_CODE (TYPE) == ARRAY_TYPE				\
-   || (CLASS_TYPE_P (TYPE) && !CLASSTYPE_NON_AGGREGATE (TYPE)))
+   || (CLASS_TYPE_P (TYPE) && COMPLETE_TYPE_P (TYPE) && !CLASSTYPE_NON_AGGREGATE (TYPE)))
 
 /* Nonzero for a class type means that the class type has a
    user-declared constructor.  */
@@ -7450,7 +7450,7 @@ enum compare_bounds_t { bounds_none, bounds_either, bounds_first };
 
 extern bool cxx_mark_addressable		(tree, bool = false);
 extern int string_conv_p			(const_tree, const_tree, int);
-extern tree cp_truthvalue_conversion		(tree);
+extern tree cp_truthvalue_conversion		(tree, tsubst_flags_t);
 extern tree contextual_conv_bool		(tree, tsubst_flags_t);
 extern tree condition_conversion		(tree);
 extern tree require_complete_type		(tree);

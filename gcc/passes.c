@@ -2375,7 +2375,8 @@ should_skip_pass_p (opt_pass *pass)
     return false;
 
   /* Don't skip df init; later RTL passes need it.  */
-  if (strstr (pass->name, "dfinit") != NULL)
+  if (strstr (pass->name, "dfinit") != NULL
+      || strstr (pass->name, "dfinish") != NULL)
     return false;
 
   if (!quiet_flag)
@@ -2398,6 +2399,11 @@ skip_pass (opt_pass *pass)
      things depend on this (e.g. instructions in .md files).  */
   if (strcmp (pass->name, "reload") == 0)
     reload_completed = 1;
+
+  /* Similar for pass "pro_and_epilogue" and the "epilogue_completed" global
+     variable.  */
+  if (strcmp (pass->name, "pro_and_epilogue") == 0)
+    epilogue_completed = 1;
 
   /* The INSN_ADDRESSES vec is normally set up by
      shorten_branches; set it up for the benefit of passes that

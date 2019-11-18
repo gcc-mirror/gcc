@@ -1,3 +1,256 @@
+2019-11-17  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/complex-6.c: Do not run dump scan tests for rx target.
+
+2019-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-err3.C: New test.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-alias-check-18.c: New test.
+	* gcc.dg/vect/vect-alias-check-19.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-20.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-alias-check-1.c: Test for the type of alias check.
+	* gcc.dg/vect/vect-alias-check-8.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-9.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-10.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-11.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-12.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-13.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-14.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-15.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-16.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-17.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-alias-check-8.c: Test for the RAW flag.
+	* gcc.dg/vect/vect-alias-check-9.c: Test for the ARBITRARY flag.
+	(TEST_VALUE): Use a higher value for early iterations.
+	* gcc.dg/vect/vect-alias-check-14.c: New test.
+	* gcc.dg/vect/vect-alias-check-15.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-16.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-17.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/scatter_store_1.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
+	* gcc.target/aarch64/sve/scatter_store_2.c: Update accordingly.
+	* gcc.target/aarch64/sve/scatter_store_3.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
+	* gcc.target/aarch64/sve/scatter_store_4.c: Update accordingly.
+	* gcc.target/aarch64/sve/scatter_store_5.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit, 16-bit and 32-bit elements.
+	* gcc.target/aarch64/sve/scatter_store_8.c: New test.
+	* gcc.target/aarch64/sve/scatter_store_9.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/gather_load_extend_1.c: New test.
+	* gcc.target/aarch64/sve/gather_load_extend_2.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_3.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_4.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_5.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_6.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_7.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_8.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_9.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_10.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_11.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_extend_12.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/gather_load_1.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
+	* gcc.target/aarch64/sve/gather_load_2.c: Update accordingly.
+	* gcc.target/aarch64/sve/gather_load_3.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit and 16-bit elements.
+	* gcc.target/aarch64/sve/gather_load_4.c: Update accordingly.
+	* gcc.target/aarch64/sve/gather_load_5.c (TEST_LOOP): Start at 0.
+	(TEST_ALL): Add tests for 8-bit, 16-bit and 32-bit elements.
+	* gcc.target/aarch64/sve/gather_load_6.c: Add
+	--param aarch64-sve-compare-costs=0.
+	(TEST_LOOP): Start at 0.
+	* gcc.target/aarch64/sve/gather_load_7.c: Add
+	--param aarch64-sve-compare-costs=0.
+	* gcc.target/aarch64/sve/gather_load_8.c: New test.
+	* gcc.target/aarch64/sve/gather_load_9.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_6.c: Add
+	--param aarch64-sve-compare-costs=0.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mask_struct_load_1.c: Add
+	--param aarch64-sve-compare-costs=0.
+	* gcc.target/aarch64/sve/mask_struct_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/pack_1.c: Likewise.
+	* gcc.target/aarch64/sve/truncate_1.c: New test.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/load_extend_1.c: New test.
+	* gcc.target/aarch64/sve/load_extend_2.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_3.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_4.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_5.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_6.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_7.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_8.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_9.c: Likewise.
+	* gcc.target/aarch64/sve/load_extend_10.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_4.c: Add
+	--param aarch64-sve-compare-costs=0.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_1.c: Expect the loop to be
+	vectorized with bytes stored in 32-bit containers.
+	* gcc.target/aarch64/sve/extend_1.c: New test.
+	* gcc.target/aarch64/sve/extend_2.c: New test.
+	* gcc.target/aarch64/sve/extend_3.c: New test.
+	* gcc.target/aarch64/sve/extend_4.c: New test.
+	* gcc.target/aarch64/sve/load_const_offset_3.c: Add
+	--param aarch64-sve-compare-costs=0.
+	* gcc.target/aarch64/sve/mask_struct_store_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1_run.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mixed_size_1.c: New test.
+	* gcc.target/aarch64/sve/mixed_size_2.c: Likewise.
+	* gcc.target/aarch64/sve/mixed_size_3.c: Likewise.
+	* gcc.target/aarch64/sve/mixed_size_4.c: Likewise.
+	* gcc.target/aarch64/sve/mixed_size_5.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/clastb_8.c: Use assembly tests to
+	check for fully-masked loops.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_3.c: Split multi-vector cases out
+	into...
+	* gcc.target/aarch64/sve/reduc_3_costly.c: ...this new test,
+	passing -fno-vect-cost-model for them.
+	* gcc.target/aarch64/sve/slp_6.c: Add -fno-vect-cost-model.
+	* gcc.target/aarch64/sve/slp_7.c,
+	* gcc.target/aarch64/sve/slp_7_run.c: Split multi-vector cases out
+	into...
+	* gcc.target/aarch64/sve/slp_7_costly.c,
+	* gcc.target/aarch64/sve/slp_7_costly_run.c: ...these new tests,
+	passing -fno-vect-cost-model for them.
+	* gcc.target/aarch64/sve/while_7.c: Add -fno-vect-cost-model.
+	* gcc.target/aarch64/sve/while_9.c: Likewise.
+
+2019-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-4.c: Expect the block to be vectorized
+	with -fno-vect-cost-model.
+	* gcc.dg/vect/bb-slp-bool-1.c: New test.
+	* gcc.target/aarch64/vect_mixed_sizes_14.c: Likewise.
+	* gcc.target/i386/pr84101.c: XFAIL for -m32.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-4.c, gcc.dg/c2x-attr-fallthrough-4.c,
+	gcc.dg/c2x-attr-maybe_unused-4.c: New tests.
+
+2019-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/warn/Walways-true-1.C: Check locations too.
+	* g++.dg/warn/Walways-true-2.C: Likewise.
+	* g++.dg/warn/Walways-true-3.C: Likewise.
+	* g++.dg/warn/Waddress-1.C: Check additional location.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-maybe_unused-1.c,
+	gcc.dg/c2x-attr-maybe_unused-2.c,
+	gcc.dg/c2x-attr-maybe_unused-3.c: New tests.
+
+2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/rtl/aarch64/rtl-handle-column-numbers.c: New test.
+
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92512
+	* gcc.dg/torture/pr92512.c: New testcase.
+
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92324
+	* gcc.dg/vect/pr92324-4.c: New testcase.
+
+2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69654
+	* gfortran.dg/derived_init_6.f90: New test.
+
+2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/rtl/aarch64/test-epilogue-set.c: New test.
+
+2019-11-15  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/rtl/aarch64/missed-pass-error.c: New test.
+
+2019-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92039
+	PR tree-optimization/91975
+	* gcc.dg/tree-ssa/cunroll-2.c: Revert to state previous to
+	unroller adjustment.
+	* g++.dg/tree-ssa/ivopts-3.C: Likewise.
+
+2019-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-13.c: New test.
+
+2019-11-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR testsuite/92520
+	* gcc.dg/ipa/inline-9.c: Fix template.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-fallthrough-2.c,
+	gcc.dg/c2x-attr-fallthrough-3.c: New tests.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-1.c, gcc.dg/c2x-attr-deprecated-2.c,
+	gcc.dg/c2x-attr-deprecated-3.c: New tests.
+
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-utf8char-1.c, gcc.dg/c2x-utf8char-1.c,
+	gcc.dg/c2x-utf8char-2.c, gcc.dg/c2x-utf8char-3.c,
+	gcc.dg/gnu2x-utf8char-1.c: New tests.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/92366
+	* gcc.dg/vect/bb-slp-40.c: Use dg-additional-options instead
+	of dg-options.  Remove expected counts.
+	* gcc.dg/vect/bb-slp-41.c: Remove dg-options and explicit
+	dg-do run.  Suppress vectorization of foo.
+	* gcc.dg/vect/bb-slp-42.c: New test.
+
 2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/vect/bb-slp-div-2.c: New test.

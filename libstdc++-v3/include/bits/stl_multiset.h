@@ -1039,6 +1039,16 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       { return __set._M_t; }
     };
 
+#if __cplusplus > 201703L
+namespace ranges::__detail
+{
+  template<typename _Tp> inline constexpr bool __enable_view_impl;
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline constexpr bool
+      __enable_view_impl<_GLIBCXX_STD_C::multiset<_Key, _Compare, _Alloc>>
+	= false;
+} // namespace ranges::__detail
+#endif // C++20
 #endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION

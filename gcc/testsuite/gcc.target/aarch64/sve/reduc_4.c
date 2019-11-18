@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -ffast-math" } */
+/* { dg-options "-O2 -ftree-vectorize -ffast-math --param aarch64-sve-compare-costs=0" } */
 
 double
 f (double *restrict a, double *restrict b, int *lookup)
