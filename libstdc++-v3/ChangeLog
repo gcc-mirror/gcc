@@ -1,3 +1,11 @@
+2019-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits::construct)
+	(allocator_traits::destroy, allocator_traits::max_size): Add unused
+	attributes to parameters that are not used in C++20.
+	* include/std/bit (__ceil2): Add braces around assertion to avoid
+	-Wmissing-braces warning.
+
 2019-11-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Repair the <tuple> part of C++20 p1032 Misc constexpr bits.
