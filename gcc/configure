@@ -29690,6 +29690,15 @@ if test "${with_long_double_128+set}" = set; then :
   withval=$with_long_double_128; gcc_cv_target_ldbl128="$with_long_double_128"
 else
 
+      case "$target" in
+	s390*-*-linux-musl*)
+	  gcc_cv_target_ldbl128=yes
+	  ;;
+	powerpc*-*-linux-musl*)
+	  gcc_cv_target_ldbl128=no
+	  ;;
+	*)
+
 if test $glibc_version_major -gt 2 \
   || ( test $glibc_version_major -eq 2 && test $glibc_version_minor -ge 4 ); then :
   gcc_cv_target_ldbl128=yes
@@ -29701,6 +29710,10 @@ else
       && gcc_cv_target_ldbl128=yes
 
 fi
+
+	  ;;
+      esac
+
 fi
 
     ;;

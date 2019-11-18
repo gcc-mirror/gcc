@@ -1,5 +1,11 @@
 2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
+	* configure.ac (gcc_cv_target_ldbl128): Set for powerpc*-*-linux-musl*
+	and s390*-*-linux-musl* targets.
+	* configure: Regenerate.
+
+2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
 	* config/s390/linux.h (MUSL_DYNAMIC_LINKER32): Define.
 	(MUSL_DYNAMIC_LINKER64): Define.
 
