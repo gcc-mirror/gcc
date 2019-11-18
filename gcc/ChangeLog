@@ -1,5 +1,12 @@
 2019-11-18  Martin Liska  <mliska@suse.cz>
 
+	* dbgcnt.c (dbg_cnt_set_limit_by_name): Provide error
+	message for an unknown counter.
+	(dbg_cnt_process_single_pair): Support 0 as minimum value.
+	(dbg_cnt_process_opt): Remove unreachable code.
+
+2019-11-18  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/92529
 	* ipa-icf-gimple.c (func_checker::compare_gimple_assign):
 	Compare LHS types of NOP_EXPR.

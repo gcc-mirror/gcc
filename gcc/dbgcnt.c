@@ -150,7 +150,11 @@ dbg_cnt_set_limit_by_name (const char *name, unsigned int low,
       break;
 
   if (i < 0)
-    return false;
+    {
+      error ("cannot find a valid counter name %qs of %<-fdbg-cnt=%> option",
+	     name);
+      return false;
+    }
 
   return dbg_cnt_set_limit_by_index ((enum debug_counter) i, name, low, high);
 }
@@ -172,8 +176,9 @@ dbg_cnt_process_single_pair (char *name, char *str)
 
   if (value2 == NULL)
     {
-      low = 1;
       high = strtol (value1, NULL, 10);
+      /* Let's allow 0:0.  */
+      low = high == 0 ? 0 : 1;
     }
   else
     {
@@ -209,15 +214,6 @@ dbg_cnt_process_opt (const char *arg)
 	}
       start += strlen (tokens[i]) + 1;
     }
-
-   if (i != tokens.length ())
-     {
-       char *buffer = XALLOCAVEC (char, start + 2);
-       sprintf (buffer, "%*c", start + 1, '^');
-       error ("cannot find a valid counter:value pair:");
-       error ("%<-fdbg-cnt=%s%>", arg);
-       error ("           %s", buffer);
-     }
 }
 
 /* Print name, limit and count of all counters.   */
