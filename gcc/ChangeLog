@@ -1,3 +1,10 @@
+2019-11-18  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/92508
+	* ipa-inline.c (inline_small_functions): Add new edges after reseting
+	caches.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Fix sanity check.
+
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/sourcebuild.texi (vect_check_ptrs): Document.
