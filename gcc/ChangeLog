@@ -1,3 +1,9 @@
+2019-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92558
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): When
+	reducting the width of a reduction vector def update new_phis.
+
 2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* configure.ac (gcc_cv_target_ldbl128): Set for powerpc*-*-linux-musl*
