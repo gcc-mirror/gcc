@@ -1,3 +1,18 @@
+2019-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/addressof2.C: Test locations too.
+	* g++.dg/cpp0x/rv-lvalue-req.C: Likewise.
+	* g++.dg/expr/crash2.C: Likewise.
+	* g++.dg/expr/lval1.C: Likewise.
+	* g++.dg/expr/unary2.C: Likewise.
+	* g++.dg/ext/lvaddr.C: Likewise.
+	* g++.dg/ext/lvalue1.C: Likewise.
+	* g++.dg/tree-ssa/pr20280.C: Likewise.
+	* g++.dg/warn/Wplacement-new-size.C: Likewise.
+	* g++.old-deja/g++.brendan/alignof.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof2.C: Likewise.
+	* g++.old-deja/g++.law/temps1.C: Likewise.
+
 2019-11-18  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92493

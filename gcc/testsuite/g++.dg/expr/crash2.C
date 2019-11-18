@@ -8,7 +8,7 @@ int& foo::x=temp;
 
 int main() {
   int x = 3;
-  &foo::x = x; // { dg-error "" }
+  &foo::x = x; // { dg-error "3:lvalue required" }
   return 0;
 }
 
