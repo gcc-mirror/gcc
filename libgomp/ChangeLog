@@ -1,3 +1,7 @@
+2019-11-18  Maciej W. Rozycki  <macro@wdc.com>
+
+	* testsuite/Makefile.in: Regenerate.
+
 2019-11-15  Andrew Stubbs  <ams@codesourcery.com>
 
 	* testsuite/libgomp.c/target-print-1.c: New file.
