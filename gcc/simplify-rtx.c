@@ -2125,12 +2125,17 @@ simplify_associative_operation (enum rtx_code code, machine_mode mode,
   return 0;
 }
 
-/* Return a mask describing the COMPARISON.  */
+/* Return a mask describing the COMPARISON.  Treat NE as unsigned
+   if OTHER_COMPARISON is.  */
 static int
-comparison_to_mask (enum rtx_code comparison)
+comparison_to_mask (rtx_code comparison, rtx_code other_comparison)
 {
   switch (comparison)
     {
+    case LTU:
+      return 32;
+    case GTU:
+      return 16;
     case LT:
       return 8;
     case GT:
@@ -2140,6 +2145,10 @@ comparison_to_mask (enum rtx_code comparison)
     case UNORDERED:
       return 1;
 
+    case LEU:
+      return 34;
+    case GEU:
+      return 18;
     case LTGT:
       return 12;
     case LE:
@@ -2156,7 +2165,10 @@ comparison_to_mask (enum rtx_code comparison)
     case ORDERED:
       return 14;
     case NE:
-      return 13;
+      return (other_comparison == LTU
+	      || other_comparison == LEU
+	      || other_comparison == GTU
+	      || other_comparison == GEU ? 48 : 13);
     case UNLE:
       return 11;
     case UNGE:
@@ -2173,6 +2185,10 @@ mask_to_comparison (int mask)
 {
   switch (mask)
     {
+    case 32:
+      return LTU;
+    case 16:
+      return GTU;
     case 8:
       return LT;
     case 4:
@@ -2182,6 +2198,10 @@ mask_to_comparison (int mask)
     case 1:
       return UNORDERED;
 
+    case 34:
+      return LEU;
+    case 18:
+      return GEU;
     case 12:
       return LTGT;
     case 10:
@@ -2197,6 +2217,7 @@ mask_to_comparison (int mask)
 
     case 14:
       return ORDERED;
+    case 48:
     case 13:
       return NE;
     case 11:
@@ -2216,8 +2237,9 @@ rtx
 simplify_logical_relational_operation (enum rtx_code code, machine_mode mode,
 				       rtx op0, rtx op1)
 {
-  /* We only handle IOR of two relational operations.  */
-  if (code != IOR)
+  /* We only handle AND if we can ignore unordered cases.  */
+  bool honor_nans_p = HONOR_NANS (GET_MODE (op0));
+  if (code != IOR && (code != AND || honor_nans_p))
     return 0;
 
   if (!(COMPARISON_P (op0) && COMPARISON_P (op1)))
@@ -2230,18 +2252,20 @@ simplify_logical_relational_operation (enum rtx_code code, machine_mode mode,
   enum rtx_code code0 = GET_CODE (op0);
   enum rtx_code code1 = GET_CODE (op1);
 
-  /* We don't handle unsigned comparisons currently.  */
-  if (code0 == LTU || code0 == GTU || code0 == LEU || code0 == GEU)
-    return 0;
-  if (code1 == LTU || code1 == GTU || code1 == LEU || code1 == GEU)
-    return 0;
+  int mask0 = comparison_to_mask (code0, code1);
+  int mask1 = comparison_to_mask (code1, code0);
 
-  int mask0 = comparison_to_mask (code0);
-  int mask1 = comparison_to_mask (code1);
+  /* Reject combinations of signed and unsigned comparisons,
+     with ORDERED being signed.  */
+  if (((mask0 & 13) && (mask1 & 48)) || ((mask1 & 13) && (mask0 & 48)))
+    return NULL_RTX;
 
-  int mask = mask0 | mask1;
+  int mask = (code == IOR ? mask0 | mask1 : mask0 & mask1);
 
-  if (mask == 15)
+  if (mask == 0)
+    return const0_rtx;
+
+  if (mask == 50 || mask == 15)
     return const_true_rtx;
 
   code = mask_to_comparison (mask);
@@ -3448,6 +3472,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	return tem;
 
       tem = simplify_associative_operation (code, mode, op0, op1);
+      if (tem)
+	return tem;
+
+      tem = simplify_logical_relational_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
       break;
