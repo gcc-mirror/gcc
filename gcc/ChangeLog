@@ -1,3 +1,11 @@
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lra-constraints.c (valid_address_p): Take the operand and a
+	constraint as argument.  If the operand is a MEM and the constraint
+	is a memory constraint, check whether the eliminated form of the
+	MEM already satisfies the constraint.
+	(process_address_1): Update calls accordingly.
+
 2019-11-18  Tom Tromey  <tromey@adacore.com>
 
 	* doc/tm.texi: Rebuild.
