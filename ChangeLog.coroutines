@@ -1,5 +1,11 @@
 2019-11-18  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (captures_temporary): Correct condition on the
+	early return from this callback.
+
+2019-11-18  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r278390.
 
 2019-11-17  Iain Sandoe  <iain@sandoe.co.uk>

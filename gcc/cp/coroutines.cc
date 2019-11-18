@@ -2152,7 +2152,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 {
   /* Stop recursing if we see an await expression, the subtrees
      of that will be handled when it it processed.  */
-  if (TREE_CODE (*stmt) == CO_AWAIT_EXPR && TREE_CODE (*stmt) == CO_YIELD_EXPR)
+  if (TREE_CODE (*stmt) == CO_AWAIT_EXPR || TREE_CODE (*stmt) == CO_YIELD_EXPR)
     {
       *do_subtree = 0;
       return NULL_TREE;
