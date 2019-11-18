@@ -1,3 +1,7 @@
+2019-11-18  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/rtl/aarch64/unspecified-pass-error.c: New test.
+
 2019-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp

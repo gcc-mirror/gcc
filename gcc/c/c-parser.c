@@ -21574,11 +21574,9 @@ c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass)
       return;
     }
 
- /*  If a pass name was provided for START_WITH_PASS, run the backend
-     accordingly now, on the cfun created above, transferring
-     ownership of START_WITH_PASS.  */
-  if (start_with_pass)
-    run_rtl_passes (start_with_pass);
+ /*  Run the backend on the cfun created above, transferring ownership of
+     START_WITH_PASS.  */
+  run_rtl_passes (start_with_pass);
 }
 
 #include "gt-c-c-parser.h"
