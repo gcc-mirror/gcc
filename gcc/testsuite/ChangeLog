@@ -1,3 +1,15 @@
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_f16.c: Remove XFAIL.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_u64.c: Likewise.
+
 2019-11-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92516

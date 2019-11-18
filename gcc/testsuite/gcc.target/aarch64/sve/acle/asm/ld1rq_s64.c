@@ -12,7 +12,7 @@ TEST_LOAD (ld1rq_s64_base, svint64_t, int64_t,
 	   z0 = svld1rq (p0, x0))
 
 /*
-** ld1rq_s64_index: { xfail *-*-* }
+** ld1rq_s64_index:
 **	ld1rqd	z0\.d, p0/z, \[x0, x1, lsl 3\]
 **	ret
 */
