@@ -1,3 +1,8 @@
+2019-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91962 - ICE with reference binding and qualification conversion.
+	* call.c (convert_like_real) <case ck_ref_bind>: Check need_temporary_p.
+
 2019-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* method.c (lookup_comparison_result): Use %qD instead of %<%T::%D%>
