@@ -5198,6 +5198,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	  new_temp = make_ssa_name (vectype1);
 	  epilog_stmt = gimple_build_assign (new_temp, code, dst1, dst2);
 	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	  new_phis[0] = epilog_stmt;
 	}
 
       if (reduce_with_shift && !slp_reduc)
