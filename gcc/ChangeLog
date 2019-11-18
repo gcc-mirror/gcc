@@ -1,5 +1,15 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* fold-const.c (native_encode_vector): Turn into a wrapper function,
+	splitting the main code out into...
+	(native_encode_vector_part): ...this new function.
+	(native_decode_vector_tree): New function.
+	(fold_view_convert_vector_encoding): Likewise.
+	(fold_view_convert_expr): Use it for converting VECTOR_CSTs
+	to VECTOR_TYPEs.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-data-ref.c (create_intersect_range_checks_index): If the
 	alias pair describes simple WAW and WAR dependencies, just check
 	whether the first B access overlaps later A accesses.

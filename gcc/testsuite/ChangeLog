@@ -1,5 +1,9 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/general/temporaries_1.c: New test.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-alias-check-8.c: Expect WAR/WAW checks to be used.
 	* gcc.dg/vect/vect-alias-check-14.c: Likewise.
 	* gcc.dg/vect/vect-alias-check-15.c: Likewise.
