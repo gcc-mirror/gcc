@@ -1531,3 +1531,10 @@ vxworks)
 		;;
 	esac
 esac
+
+case ${host} in
+*-*-musl*)
+  # The gthr weak references are unsafe with static linking
+  tmake_file="$tmake_file t-gthr-noweak"
+  ;;
+esac

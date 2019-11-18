@@ -1,3 +1,8 @@
+2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.host: Add t-gthr-noweak on *-*-musl*.
+	* config/t-gthr-noweak: New file.
+
 2019-11-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__kernel_cmpxchg): Change argument 1 to
