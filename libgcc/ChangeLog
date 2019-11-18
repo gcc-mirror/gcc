@@ -1,5 +1,6 @@
 2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
+	PR libgcc/91737
 	* config.host: Add t-gthr-noweak on *-*-musl*.
 	* config/t-gthr-noweak: New file.
 
