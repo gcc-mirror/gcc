@@ -1,3 +1,8 @@
+2019-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91962 - ICE with reference binding and qualification conversion.
+	* g++.dg/cpp0x/ref-bind7.C: New test.
+
 2019-11-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92528

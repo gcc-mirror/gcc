@@ -7598,7 +7598,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	/* direct_reference_binding might have inserted a ck_qual under
 	   this ck_ref_bind for the benefit of conversion sequence ranking.
 	   Ignore the conversion; we'll create our own below.  */
-	if (next_conversion (convs)->kind == ck_qual)
+	if (next_conversion (convs)->kind == ck_qual
+	    && !convs->need_temporary_p)
 	  {
 	    gcc_assert (same_type_p (TREE_TYPE (expr),
 				     next_conversion (convs)->type));
