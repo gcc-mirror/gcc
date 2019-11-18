@@ -1,3 +1,9 @@
+2019-11-18  Tom Tromey  <tromey@adacore.com>
+
+	* doc/tm.texi: Rebuild.
+	* doc/tm.texi.in (Misc): Don't document MODIFY_JNI_METHOD_CALL.
+	* config/i386/cygming.h (MODIFY_JNI_METHOD_CALL): Don't define.
+
 2019-11-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92516
