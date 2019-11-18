@@ -1,3 +1,8 @@
+2019-11-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92493
+	* gcc.dg/pr92493.c: New test.
+
 2019-11-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-attr-syntax-1.c, gcc.dg/c11-attr-syntax-2.c,
