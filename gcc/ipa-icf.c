@@ -1410,6 +1410,8 @@ sem_function::init (ipa_icf_gimple::func_checker *checker)
       hstate.add_flag (cnode->thunk.virtual_offset_p);
       gcode_hash = hstate.end ();
     }
+
+  m_checker = NULL;
 }
 
 /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */

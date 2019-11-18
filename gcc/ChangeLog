@@ -1,3 +1,9 @@
+2019-11-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92525
+	* ipa-icf.c (sem_function::init): Unset m_checker
+	at the end of the function.
+
 2019-11-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92558
