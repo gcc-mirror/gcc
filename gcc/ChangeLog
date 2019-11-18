@@ -1,5 +1,14 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-data-ref.c (create_intersect_range_checks_index): If the
+	alias pair describes simple WAW and WAR dependencies, just check
+	whether the first B access overlaps later A accesses.
+	(create_waw_or_war_checks): New function that performs the same
+	optimization on addresses.
+	(create_intersect_range_checks): Call it.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* lra-constraints.c (valid_address_p): Take the operand and a
 	constraint as argument.  If the operand is a MEM and the constraint
 	is a memory constraint, check whether the eliminated form of the

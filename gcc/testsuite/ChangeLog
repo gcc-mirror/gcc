@@ -1,5 +1,17 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-alias-check-8.c: Expect WAR/WAW checks to be used.
+	* gcc.dg/vect/vect-alias-check-14.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-15.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-18.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-19.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_1.c: Update expected sequence.
+	* gcc.target/aarch64/sve/var_stride_2.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_3.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_5.c: Likewise.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/asm/ld1rq_f16.c: Remove XFAIL.
 	* gcc.target/aarch64/sve/acle/asm/ld1rq_f32.c: Likewise.
 	* gcc.target/aarch64/sve/acle/asm/ld1rq_f64.c: Likewise.
