@@ -2136,9 +2136,8 @@ inline_small_functions (void)
 
 	  gcc_checking_assert (!callee->inlined_to);
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
-	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
-
 	  reset_edge_caches (edge->callee);
+	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
 	  update_callee_keys (&edge_heap, where, updated_nodes);
 	}
