@@ -1,3 +1,8 @@
+2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/s390/linux.h (MUSL_DYNAMIC_LINKER32): Define.
+	(MUSL_DYNAMIC_LINKER64): Define.
+
 2019-11-18  Martin Liska  <mliska@suse.cz>
 
 	* dbgcnt.c (dbg_cnt_set_limit_by_name): Provide error
