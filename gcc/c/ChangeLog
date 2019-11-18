@@ -1,3 +1,8 @@
+2019-11-18  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* c-parser.c (c_parser_parse_rtl_body): Always call
+	run_rtl_passes, even if startwith pass is not provided.
+
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_std_attribute_specifier): Diagnose
