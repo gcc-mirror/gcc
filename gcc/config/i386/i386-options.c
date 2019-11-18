@@ -2674,7 +2674,7 @@ ix86_option_override_internal (bool main_args_p,
 
   /* Enable 128-bit AVX instruction generation
      for the auto-vectorizer.  */
-  if (TARGET_AVX128_OPTIMAL
+  if (ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
       && (opts_set->x_prefer_vector_width_type == PVW_NONE))
     opts->x_prefer_vector_width_type = PVW_AVX128;
 
