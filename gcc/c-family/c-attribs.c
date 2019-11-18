@@ -115,8 +115,6 @@ static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_wrap_attribute (tree *, tree, tree, int, bool *);
 static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
-static tree handle_deprecated_attribute (tree *, tree, tree, int,
-					 bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
 					  bool *);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
@@ -146,7 +144,6 @@ static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
-static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
 static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
@@ -3468,7 +3465,7 @@ handle_novops_attribute (tree *node, tree ARG_UNUSED (name),
 /* Handle a "deprecated" attribute; arguments as in
    struct attribute_spec.handler.  */
 
-static tree
+tree
 handle_deprecated_attribute (tree *node, tree name,
 			     tree args, int flags,
 			     bool *no_add_attrs)
@@ -4116,7 +4113,7 @@ handle_designated_init_attribute (tree *node, tree name, tree, int,
 /* Handle a "fallthrough" attribute; arguments as in struct
    attribute_spec.handler.  */
 
-static tree
+tree
 handle_fallthrough_attribute (tree *, tree name, tree, int,
 			      bool *no_add_attrs)
 {

@@ -136,7 +136,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-ssa-propagate.h"
 #include "dbgcnt.h"
-#include "params.h"
 #include "builtins.h"
 #include "cfgloop.h"
 #include "stor-layout.h"
@@ -2195,7 +2194,7 @@ fold_builtin_alloca_with_align (gimple *stmt)
   size = tree_to_uhwi (arg);
 
   /* Heuristic: don't fold large allocas.  */
-  threshold = (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_LARGE_STACK_FRAME);
+  threshold = (unsigned HOST_WIDE_INT)param_large_stack_frame;
   /* In case the alloca is located at function entry, it has the same lifetime
      as a declared array, so we allow a larger size.  */
   block = gimple_block (stmt);

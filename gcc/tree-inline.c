@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "except.h"
 #include "debug.h"
-#include "params.h"
 #include "value-prof.h"
 #include "cfgloop.h"
 #include "builtins.h"
@@ -1812,7 +1811,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  /* If the inlined function has too many debug markers,
 	     don't copy them.  */
 	  if (id->src_cfun->debug_marker_count
-	      > PARAM_VALUE (PARAM_MAX_DEBUG_MARKER_COUNT))
+	      > param_max_debug_marker_count)
 	    return stmts;
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));

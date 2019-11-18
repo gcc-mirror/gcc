@@ -2573,9 +2573,9 @@ cp_fold (tree x)
 	{
 	  warning_sentinel s (warn_int_in_bool_context);
 	  if (!VOID_TYPE_P (TREE_TYPE (op1)))
-	    op1 = cp_truthvalue_conversion (op1);
+	    op1 = cp_truthvalue_conversion (op1, tf_warning_or_error);
 	  if (!VOID_TYPE_P (TREE_TYPE (op2)))
-	    op2 = cp_truthvalue_conversion (op2);
+	    op2 = cp_truthvalue_conversion (op2, tf_warning_or_error);
 	}
       else if (VOID_TYPE_P (TREE_TYPE (x)))
 	{

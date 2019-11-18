@@ -1,6 +1,7 @@
 /* Test F2008 18.5: ISO_Fortran_binding.h functions.  */
 
 #include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
@@ -33,13 +34,34 @@ int elemental_mult_c(CFI_cdesc_t * a_desc, CFI_cdesc_t * b_desc,
       || c_desc->rank != 2)
     return err;
 
-  for (idx[0] = 0; idx[0] < a_desc->dim[0].extent; idx[0]++)
-    for (idx[1] = 0; idx[1] < a_desc->dim[1].extent; idx[1]++)
-      {
-	res_addr = CFI_address (a_desc, idx);
-	*res_addr = *(int*)CFI_address (b_desc, idx)
-		    * *(int*)CFI_address (c_desc, idx);
-      }
+  if (a_desc->attribute == CFI_attribute_other)
+    {
+      assert (a_desc->dim[0].lower_bound == 0);
+      assert (a_desc->dim[1].lower_bound == 0);
+      for (idx[0] = 0; idx[0] < a_desc->dim[0].extent; idx[0]++)
+	for (idx[1] = 0; idx[1] < a_desc->dim[1].extent; idx[1]++)
+	  {
+	    res_addr = CFI_address (a_desc, idx);
+	    *res_addr = *(int*)CFI_address (b_desc, idx)
+			* *(int*)CFI_address (c_desc, idx);
+	  }
+    }
+  else
+    {
+      assert (a_desc->attribute == CFI_attribute_allocatable
+	      || a_desc->attribute == CFI_attribute_pointer);
+      for (idx[0] = a_desc->dim[0].lower_bound;
+	   idx[0] < a_desc->dim[0].extent + a_desc->dim[0].lower_bound;
+	   idx[0]++)
+	for (idx[1] = a_desc->dim[1].lower_bound;
+	     idx[1] < a_desc->dim[1].extent + a_desc->dim[1].lower_bound;
+	     idx[1]++)
+	  {
+	    res_addr = CFI_address (a_desc, idx);
+	    *res_addr = *(int*)CFI_address (b_desc, idx)
+			* *(int*)CFI_address (c_desc, idx);
+	  }
+    }
 
   return 0;
 }
@@ -57,15 +79,16 @@ int allocate_c(CFI_cdesc_t * da, CFI_index_t lower[], CFI_index_t upper[])
   CFI_index_t idx[2];
   int *res_addr;
 
+  if (da->attribute == CFI_attribute_other) return err;
   if (CFI_allocate(da, lower, upper, 0)) return err;
+  assert (da->dim[0].lower_bound == lower[0]);
+  assert (da->dim[1].lower_bound == lower[1]);
 
-
-  for (idx[0] = 0; idx[0] < da->dim[0].extent; idx[0]++)
-    for (idx[1] = 0; idx[1] < da->dim[1].extent; idx[1]++)
+  for (idx[0] = lower[0]; idx[0] < da->dim[0].extent + lower[0]; idx[0]++)
+    for (idx[1] = lower[1]; idx[1] < da->dim[1].extent + lower[1]; idx[1]++)
       {
 	res_addr = CFI_address (da, idx);
-	*res_addr = (int)((idx[0] + da->dim[0].lower_bound)
-			  * (idx[1] + da->dim[1].lower_bound));
+	*res_addr = (int)(idx[0] * idx[1]);
       }
 
   return 0;
@@ -86,6 +109,7 @@ int establish_c(CFI_cdesc_t * desc)
 		      CFI_attribute_pointer,
 		      CFI_type_struct,
 		      sizeof(t), 1, extent);
+  assert (desc->dim[0].lower_bound == 0);
   for (idx[0] = 0; idx[0] < extent[0]; idx[0]++)
     {
       res_addr = (t*)CFI_address (desc, idx);
@@ -118,10 +142,11 @@ float section_c(int *std_case, CFI_cdesc_t * source, int *low, int *str)
 			  CFI_type_float, 0, 1, NULL);
       if (ind) return -1.0;
       ind = CFI_section((CFI_cdesc_t *)&section, source, lower, NULL, strides);
+      assert (section.dim[0].lower_bound == lower[0]);
       if (ind) return -2.0;
 
       /* Sum over the section  */
-      for (idx[0] = 0; idx[0] < section.dim[0].extent; idx[0]++)
+      for (idx[0] = lower[0]; idx[0] < section.dim[0].extent + lower[0]; idx[0]++)
         ans += *(float*)CFI_address ((CFI_cdesc_t*)&section, idx);
       return ans;
     }
@@ -138,10 +163,12 @@ float section_c(int *std_case, CFI_cdesc_t * source, int *low, int *str)
       if (ind) return -1.0;
       ind = CFI_section((CFI_cdesc_t *)&section, source,
 			lower, upper, strides);
+      assert (section.rank == 1);
+      assert (section.dim[0].lower_bound == lower[0]);
       if (ind) return -2.0;
 
       /* Sum over the section  */
-      for (idx[0] = 0; idx[0] < section.dim[0].extent; idx[0]++)
+      for (idx[0] = lower[0]; idx[0] < section.dim[0].extent + lower[0]; idx[0]++)
         ans += *(float*)CFI_address ((CFI_cdesc_t*)&section, idx);
       return ans;
     }
@@ -166,6 +193,8 @@ double select_part_c (CFI_cdesc_t * source)
 		      CFI_type_double_Complex, sizeof(double _Complex),
 		      2, extent);
   (void)CFI_select_part(comp_cdesc, source, offsetof(t,y), 0);
+  assert (comp_cdesc->dim[0].lower_bound == 0);
+  assert (comp_cdesc->dim[1].lower_bound == 0);
 
   /* Sum over comp_cdesc[4,:]  */
   size = comp_cdesc->dim[1].extent;

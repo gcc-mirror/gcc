@@ -5431,7 +5431,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       tree elem_type = TREE_TYPE (vectype);
       tree zero = build_int_cst (elem_type, 0);
       tree zero_vec = build_vector_from_val (vectype, zero);
-      tree cmp_type = build_same_sized_truth_vector_type (vectype);
+      tree cmp_type = truth_type_for (vectype);
       ifexp = build2 (NE_EXPR, cmp_type, ifexp, zero_vec);
     }
 
@@ -11340,7 +11340,7 @@ build_vec_cmp (tree_code code, tree type,
 {
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
-  tree cmp_type = build_same_sized_truth_vector_type (type);
+  tree cmp_type = truth_type_for (type);
   tree cmp = build2 (code, cmp_type, arg0, arg1);
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }

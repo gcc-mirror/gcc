@@ -4153,9 +4153,10 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	   && STMT_VINFO_DATA_REF (stmt_vinfo))
     {
       stmt_vec_info pattern_stmt_info;
-      vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-      gcc_assert (vectype != NULL_TREE);
-      if (!VECTOR_MODE_P (TYPE_MODE (vectype)))
+      tree nunits_vectype;
+      if (!vect_get_vector_types_for_stmt (stmt_vinfo, &vectype,
+					   &nunits_vectype)
+	  || !VECTOR_MODE_P (TYPE_MODE (vectype)))
 	return NULL;
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
@@ -4214,7 +4215,7 @@ build_mask_conversion (tree mask, tree vectype, stmt_vec_info stmt_vinfo)
   gimple *stmt;
   tree masktype, tmp;
 
-  masktype = build_same_sized_truth_vector_type (vectype);
+  masktype = truth_type_for (vectype);
   tmp = vect_recog_temp_ssa_var (TREE_TYPE (masktype), NULL);
   stmt = gimple_build_assign (tmp, CONVERT_EXPR, mask);
   append_pattern_def_seq (stmt_vinfo, stmt, masktype);

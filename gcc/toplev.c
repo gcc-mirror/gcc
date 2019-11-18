@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "intl.h"
 #include "tree-diagnostic.h"
-#include "params.h"
 #include "reload.h"
 #include "lra.h"
 #include "dwarf2asm.h"
@@ -679,7 +678,7 @@ print_version (FILE *file, const char *indent, bool show_global_state)
       fprintf (file,
 	       file == stderr ? _(fmt4) : fmt4,
 	       indent, *indent != 0 ? " " : "",
-	       PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
+	       param_ggc_min_expand, param_ggc_min_heapsize);
 
       print_plugins_versions (file, indent);
     }
@@ -1241,9 +1240,6 @@ general_init (const char *argv0, bool init_signals)
   /* Initialize register usage now so switches may override.  */
   init_reg_sets ();
 
-  /* Register the language-independent parameters.  */
-  global_init_params ();
-
   /* This must be done after global_init_params but before argument
      processing.  */
   init_ggc_heuristics ();
@@ -1263,7 +1259,6 @@ general_init (const char *argv0, bool init_signals)
 
   statistics_early_init ();
   debuginfo_early_init ();
-  finish_params ();
 }
 
 /* Return true if the current target supports -fsection-anchors.  */
@@ -1863,7 +1858,7 @@ process_options (void)
 
   if (flag_checking >= 2)
     hash_table_sanitize_eq_limit
-      = PARAM_VALUE (PARAM_HASH_TABLE_VERIFICATION_LIMIT);
+      = param_hash_table_verification_limit;
 
   /* Please don't change global_options after this point, those changes won't
      be reflected in optimization_{default,current}_node.  */
@@ -2469,10 +2464,6 @@ toplev::finalize (void)
   gcse_c_finalize ();
   ipa_cp_c_finalize ();
   ira_costs_c_finalize ();
-  params_c_finalize ();
-
-  finalize_options_struct (&global_options);
-  finalize_options_struct (&global_options_set);
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */

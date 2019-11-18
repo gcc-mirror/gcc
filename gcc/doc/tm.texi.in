@@ -736,10 +736,6 @@ options are changed via @code{#pragma GCC optimize} or by using the
 
 @hook TARGET_OPTION_INIT_STRUCT
 
-@hook TARGET_OPTION_DEFAULT_PARAMS
-
-@hook TARGET_OPTION_VALIDATE_PARAM
-
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
@@ -4179,7 +4175,9 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_SPLIT_REDUCTION
 
-@hook TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
+@hook TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+
+@hook TARGET_VECTORIZE_RELATED_MODE
 
 @hook TARGET_VECTORIZE_GET_MASK_MODE
 

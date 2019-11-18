@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "gimple.h"
 #include "predict.h"
-#include "params.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"
@@ -7214,7 +7213,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   /* If the length of the comparision is larger than the threshold,
      do nothing.  */
   if (length > (unsigned HOST_WIDE_INT)
-	       PARAM_VALUE (BUILTIN_STRING_CMP_INLINE_LENGTH))
+	       param_builtin_string_cmp_inline_length)
     return NULL_RTX;
 
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
@@ -9039,7 +9038,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	    mode = DFmode;
 	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
 	  }
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&r, buf);
 	result = build_call_expr (isgr_fn, 2,
 				  fold_build1_loc (loc, ABS_EXPR, type, arg),
@@ -9063,7 +9062,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	    mode = DFmode;
 	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
 	  }
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&r, buf);
 	result = build_call_expr (isle_fn, 2,
 				  fold_build1_loc (loc, ABS_EXPR, type, arg),
@@ -9102,7 +9101,7 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	  }
 	arg = fold_build1_loc (loc, ABS_EXPR, type, arg);
 
-	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf), false);
 	real_from_string (&rmax, buf);
 	sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (orig_mode)->emin - 1);
 	real_from_string (&rmin, buf);

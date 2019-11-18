@@ -3496,8 +3496,8 @@ proc check_effective_target_arm_vfp_ok_nocache { } {
     global et_arm_vfp_flags
     set et_arm_vfp_flags ""
     if { [check_effective_target_arm32] } {
-	foreach flags {"-mfpu=vfp" "-mfpu=vfp -mfloat-abi=softfp" "-mpu=vfp -mfloat-abi=hard"} {
-	    if { [check_no_compiler_messages_nocache arm_fp_ok object {
+	foreach flags {"-mfpu=vfp" "-mfpu=vfp -mfloat-abi=softfp" "-mfpu=vfp -mfloat-abi=hard"} {
+	    if { [check_no_compiler_messages_nocache arm_vfp_ok object {
 		#ifndef __ARM_FP
 		#error __ARM_FP not defined
 		#endif

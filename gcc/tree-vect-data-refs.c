@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "expr.h"
 #include "builtins.h"
-#include "params.h"
 #include "tree-cfg.h"
 #include "tree-hash-traits.h"
 #include "vec-perm-indices.h"
@@ -185,7 +184,7 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  if ((unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) == 0)
+  if ((unsigned) param_vect_max_version_for_alias_checks == 0)
     return opt_result::failure_at (vect_location,
 				   "will not create alias checks, as"
 				   " --param vect-max-version-for-alias-checks"
@@ -2086,7 +2085,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       if (do_peeling)
         {
           unsigned max_allowed_peel
-            = PARAM_VALUE (PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT);
+	    = param_vect_max_peeling_for_alignment;
 	  if (flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
 	    max_allowed_peel = 0;
           if (max_allowed_peel != (unsigned)-1)
@@ -2227,7 +2226,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
               if (known_alignment_for_access_p (dr_info)
                   || LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).length ()
-                     >= (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS))
+		  >= (unsigned) param_vect_max_version_for_alignment_checks)
                 {
                   do_versioning = false;
                   break;
@@ -3478,7 +3477,6 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   /* First, we collect all data ref pairs for aliasing checks.  */
   FOR_EACH_VEC_ELT (may_alias_ddrs, i, ddr)
     {
-      int comp_res;
       poly_uint64 lower_bound;
       tree segment_length_a, segment_length_b;
       unsigned HOST_WIDE_INT access_size_a, access_size_b;
@@ -3510,10 +3508,13 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       dr_vec_info *dr_info_b = loop_vinfo->lookup_dr (DDR_B (ddr));
       stmt_vec_info stmt_info_b = dr_info_b->stmt;
 
+      bool preserves_scalar_order_p
+	= vect_preserves_scalar_order_p (dr_info_a, dr_info_b);
+
       /* Skip the pair if inter-iteration dependencies are irrelevant
 	 and intra-iteration dependencies are guaranteed to be honored.  */
       if (ignore_step_p
-	  && (vect_preserves_scalar_order_p (dr_info_a, dr_info_b)
+	  && (preserves_scalar_order_p
 	      || vectorizable_with_step_bound_p (dr_info_a, dr_info_b,
 						 &lower_bound)))
 	{
@@ -3594,14 +3595,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       align_a = vect_vfa_align (dr_info_a);
       align_b = vect_vfa_align (dr_info_b);
 
-      comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (dr_info_a->dr),
-					DR_BASE_ADDRESS (dr_info_b->dr));
-      if (comp_res == 0)
-	comp_res = data_ref_compare_tree (DR_OFFSET (dr_info_a->dr),
-					  DR_OFFSET (dr_info_b->dr));
-
       /* See whether the alias is known at compilation time.  */
-      if (comp_res == 0
+      if (operand_equal_p (DR_BASE_ADDRESS (dr_info_a->dr),
+			   DR_BASE_ADDRESS (dr_info_b->dr), 0)
+	  && operand_equal_p (DR_OFFSET (dr_info_a->dr),
+			      DR_OFFSET (dr_info_b->dr), 0)
 	  && TREE_CODE (DR_STEP (dr_info_a->dr)) == INTEGER_CST
 	  && TREE_CODE (DR_STEP (dr_info_b->dr)) == INTEGER_CST
 	  && poly_int_tree_p (segment_length_a)
@@ -3634,15 +3632,21 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 					   stmt_info_b->stmt);
 	}
 
-      dr_with_seg_len_pair_t dr_with_seg_len_pair
-	(dr_with_seg_len (dr_info_a->dr, segment_length_a,
-			  access_size_a, align_a),
-	 dr_with_seg_len (dr_info_b->dr, segment_length_b,
-			  access_size_b, align_b));
+      dr_with_seg_len dr_a (dr_info_a->dr, segment_length_a,
+			    access_size_a, align_a);
+      dr_with_seg_len dr_b (dr_info_b->dr, segment_length_b,
+			    access_size_b, align_b);
+      /* Canonicalize the order to be the one that's needed for accurate
+	 RAW, WAR and WAW flags, in cases where the data references are
+	 well-ordered.  The order doesn't really matter otherwise,
+	 but we might as well be consistent.  */
+      if (get_later_stmt (stmt_info_a, stmt_info_b) == stmt_info_a)
+	std::swap (dr_a, dr_b);
 
-      /* Canonicalize pairs by sorting the two DR members.  */
-      if (comp_res > 0)
-	std::swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
+      dr_with_seg_len_pair_t dr_with_seg_len_pair
+	(dr_a, dr_b, (preserves_scalar_order_p
+		      ? dr_with_seg_len_pair_t::WELL_ORDERED
+		      : dr_with_seg_len_pair_t::REORDERED));
 
       comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
     }
@@ -3656,10 +3660,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "improved number of alias checks from %d to %d\n",
 		     may_alias_ddrs.length (), count);
-  unsigned limit = PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS);
+  unsigned limit = param_vect_max_version_for_alias_checks;
   if (flag_simd_cost_model == VECT_COST_MODEL_CHEAP)
-    limit = default_param_value
-	      (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) * 6 / 10;
+    limit = param_vect_max_version_for_alias_checks * 6 / 10;
   if (count > limit)
     return opt_result::failure_at
       (vect_location,
@@ -4370,9 +4373,8 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
-      STMT_VINFO_VECTYPE (stmt_info)
-	= get_vectype_for_scalar_type (vinfo, scalar_type);
-      if (!STMT_VINFO_VECTYPE (stmt_info))
+      tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+      if (!vectype)
         {
           if (dump_enabled_p ())
             {
@@ -4405,13 +4407,18 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "got vectype for stmt: %G%T\n",
-			     stmt_info->stmt, STMT_VINFO_VECTYPE (stmt_info));
+			     stmt_info->stmt, vectype);
 	}
 
       /* Adjust the minimal vectorization factor according to the
 	 vector type.  */
-      vf = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+      vf = TYPE_VECTOR_SUBPARTS (vectype);
       *min_vf = upper_bound (*min_vf, vf);
+
+      /* Leave the BB vectorizer to pick the vector type later, based on
+	 the final dataref group size and SLP node size.  */
+      if (is_a <loop_vec_info> (vinfo))
+	STMT_VINFO_VECTYPE (stmt_info) = vectype;
 
       if (gatherscatter != SG_NONE)
 	{

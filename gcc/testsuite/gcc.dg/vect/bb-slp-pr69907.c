@@ -18,5 +18,6 @@ void foo(unsigned *p1, unsigned short *p2)
 }
 
 /* Disable for SVE because for long or variable-length vectors we don't
-   get an unrolled epilogue loop.  */
-/* { dg-final { scan-tree-dump "BB vectorization with gaps at the end of a load is not supported" "slp1" { target { ! aarch64_sve } } } } */
+   get an unrolled epilogue loop.  Also disable for AArch64 Advanced SIMD,
+   because there we can vectorize the epilogue using mixed vector sizes.  */
+/* { dg-final { scan-tree-dump "BB vectorization with gaps at the end of a load is not supported" "slp1" { target { ! aarch64*-*-* } } } } */

@@ -303,6 +303,20 @@ supportable_convert_operation (enum tree_code code,
       return true;
     }
 
+  if (GET_MODE_UNIT_PRECISION (m1) > GET_MODE_UNIT_PRECISION (m2)
+      && can_extend_p (m1, m2, TYPE_UNSIGNED (vectype_in)))
+    {
+      *code1 = code;
+      return true;
+    }
+
+  if (GET_MODE_UNIT_PRECISION (m1) < GET_MODE_UNIT_PRECISION (m2)
+      && convert_optab_handler (trunc_optab, m1, m2) != CODE_FOR_nothing)
+    {
+      *code1 = code;
+      return true;
+    }
+
   /* Now check for builtin.  */
   if (targetm.vectorize.builtin_conversion
       && targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in))

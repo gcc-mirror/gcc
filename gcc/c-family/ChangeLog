@@ -1,3 +1,54 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-attribs.c (handle_fallthrough_attribute): Remove static.
+	* c-common.h (handle_fallthrough_attribute): Declare.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-attribs.c (handle_deprecated_attribute): Remove static.
+	* c-common.h (handle_deprecated_attribute): Declare.
+
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.c (lex_charconst): Make CPP_UTF8CHAR constants unsigned
+	char for C.
+
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_check_context_selector): Add nvidia to the list of
+	valid vendors.
+
+	* c-omp.c (c_omp_check_context_selector): Handle name lists
+	containing string literals.  Don't diagnose atomic_default_mem_order
+	with multiple props.
+
+2019-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (builtin_define_float_constants): Also define
+	NORM_MAX constants.  Update call to get_max_float.
+	(LAZY_HEX_FP_VALUES_CNT): Update value to include NORM_MAX
+	constants.
+
+2019-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Do not look through typedefs.
+	(dump_forward_type): Do not generate a declaration for function types.
+	(dump_nested_type) <ARRAY_TYPE>: Do not generate a nested declaration
+	of the component type if it is declared in another file.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options):
+	Use SET_OPTION_IF_UNSET.
+
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/c-family/
+	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_SERIAL enumeration
+	constant.
+	* c-pragma.c (oacc_pragmas): Add "serial" entry.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.h (gnu_vector_type_p): New function.

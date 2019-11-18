@@ -1,3 +1,122 @@
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_std_attribute_specifier): Diagnose
+	duplicate standard attributes.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (std_attribute_table): Add maybe_unused.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (std_attribute_table): Add fallthrough.
+	* c-parser.c (c_parser_declaration_or_fndef): Diagnose fallthrough
+	attribute at top level.
+
+2019-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (std_attribute_table): New.
+	(c_init_decl_processing): Register attributes from
+	std_attribute_table.
+	* c-parser.c (c_parser_attribute_arguments): Add arguments
+	require_string and allow_empty_args.  All callers changed.
+	(c_parser_std_attribute): Set require_string argument for
+	"deprecated" attribute.
+
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression)
+	(c_parser_check_literal_zero): Handle CPP_UTF8CHAR.
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Likewise.
+
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-typeck.c (build_conditional_expr): Use truth_type_for instead
+	of build_same_sized_truth_vector_type.
+	(build_vec_cmp): Likewise.
+
+2019-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_context_selector): Don't require score
+	argument to fit into shwi, just to be INTEGER_CST.  Diagnose
+	negative score.
+
+	* c-parser.c (c_parser_omp_context_selector): Rename
+	CTX_PROPERTY_IDLIST to CTX_PROPERTY_NAME_LIST, add CTX_PROPERTY_ID.
+	Use CTX_PROPERTY_ID for atomic_default_mem_order, only allow a single
+	identifier in that.  For CTX_PROPERTY_NAME_LIST, allow identifiers
+	and string literals.
+
+2019-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (enum c_typespec_kind): Add ctsk_tagref_attrs and
+	ctsk_tagfirstref_attrs.
+	(struct c_declspecs): Update description of attrs.  Add
+	postfix_attrs and non_std_attrs_seen_p.  Increase size of
+	typespec_kind bit-field.
+	(c_warn_unused_attributes): New declaration.
+	(parser_xref_tag): Update prototype.
+	* c-decl.c (c_warn_unused_attributes): New function.
+	(shadow_tag_warned): Handle ctsk_tagfirstref_attrs and
+	ctsk_tagref_attrs.  Handle attribute declarations.
+	(check_compound_literal_type): Handle ctsk_tagfirstref_attrs.
+	(grokdeclarator): Handle standard attributes.
+	(parser_xref_tag): Add arguments have_std_attrs and attrs.  Apply
+	attributes to incomplete type reference.
+	(xref_tag): Update call to parser_xref_tag.
+	(declspecs_add_addrspace, declspecs_add_type)
+	(declspecs_add_scspec, declspecs_add_attrs): Set
+	non_std_attrs_seen_p.
+	(finish_declspecs): Apply postfix standard attributes to type.
+	* c-parser.c (c_token_starts_declspecs)
+	(c_token_starts_declaration, c_parser_next_token_starts_declspecs)
+	(c_parser_next_tokens_start_declaration): Update comments.
+	(c_parser_consume_token, c_parser_consume_pragma): Handle moving
+	parser->tokens[2] to parser->tokens[1].
+	(c_parser_nth_token_starts_std_attributes)
+	(c_parser_std_attribute_specifier_sequence): New functions.
+	(c_parser_declaration_or_fndef): Add arguments have_attrs and
+	attrs.  All callers changed.  Handle standard attributes.
+	(c_parser_parms_declarator, c_parser_parms_list_declarator)
+	(c_parser_parameter_declaration): Add argument have_gnu_attrs.
+	All callers changed.
+	(c_parser_declspecs): Add arguments start_std_attr_ok and
+	end_std_attr_ok.  All callers changed.  Handle standard
+	attributes.
+	(c_parser_enum_specifier, c_parser_struct_or_union_specifier)
+	(c_parser_direct_declarator, c_parser_direct_declarator_inner)
+	(c_parser_compound_statement_nostart, c_parser_all_labels)
+	(c_parser_label, c_parser_statement, c_parser_for_statement):
+	Handle standard attributes.
+	* c-parser.h (c_parser_declspecs): Update prototype.
+	* gimple-parser.c (c_parser_gimple_declaration): Update call to
+	c_parser_declspecs.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c: Do not include params.h.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (c_parser_parse_gimple_body): Replace old parameter syntax
+	with the new one, include opts.h if needed.  Use SET_OPTION_IF_UNSET
+	macro.
+
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/c/
+	* c-parser.c (OACC_SERIAL_CLAUSE_MASK): New macro.
+	(c_parser_oacc_kernels_parallel): Rename function to...
+	(c_parser_oacc_compute): ... this.  Handle PRAGMA_OACC_SERIAL.
+	(c_parser_omp_construct): Update accordingly.
+
+
+2019-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_translation_unit): Diagnose declare target
+	without corresponding end declare target.
+
 2019-11-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-convert.c (convert): Only handle vector conversions if one of

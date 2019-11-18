@@ -1,3 +1,77 @@
+2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69654
+	* trans-expr.c (gfc_trans_structure_assign): Move assignment to
+	'cm' after treatment of C pointer types and test that the type
+	has been completely built before it. Add an assert that the
+	backend_decl for each component exists.
+
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_procedure_call): Fold hidden
+	is-present argument to the right type.
+
+2019-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81651
+	* module.c (gzopen_included_file, gzopen_included_file_1)
+	(gzopen_intrinsic_module, bad_module, gfc_use_module): Use fully
+	qualified module path for error reporting.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* options.c (gfc_init_options):
+	Use SET_OPTION_IF_UNSET.
+
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/fortran/
+	* gfortran.h (gfc_statement): Add ST_OACC_SERIAL_LOOP,
+	ST_OACC_END_SERIAL_LOOP, ST_OACC_SERIAL and ST_OACC_END_SERIAL
+	enumeration constants.
+	(gfc_exec_op): Add EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL
+	enumeration constants.
+	* match.h (gfc_match_oacc_serial): New prototype.
+	(gfc_match_oacc_serial_loop): Likewise.
+	* dump-parse-tree.c (show_omp_node, show_code_node): Handle
+	EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* match.c (match_exit_cycle): Handle EXEC_OACC_SERIAL_LOOP.
+	* openmp.c (OACC_SERIAL_CLAUSES): New macro.
+	(gfc_match_oacc_serial_loop): New function.
+	(gfc_match_oacc_serial): Likewise.
+	(oacc_is_loop): Handle EXEC_OACC_SERIAL_LOOP.
+	(resolve_omp_clauses): Handle EXEC_OACC_SERIAL.
+	(oacc_code_to_statement): Handle EXEC_OACC_SERIAL and
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_resolve_oacc_directive): Likewise.
+	* parse.c (decode_oacc_directive) <'s'>: Add case for "serial"
+	and "serial loop".
+	(next_statement): Handle ST_OACC_SERIAL_LOOP and ST_OACC_SERIAL.
+	(gfc_ascii_statement): Likewise.  Handle ST_OACC_END_SERIAL_LOOP
+	and ST_OACC_END_SERIAL.
+	(parse_oacc_structured_block): Handle ST_OACC_SERIAL.
+	(parse_oacc_loop): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_END_SERIAL_LOOP.
+	(parse_executable): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_SERIAL.
+	(is_oacc): Handle EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* resolve.c (gfc_resolve_blocks, gfc_resolve_code): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_oacc_construct): Handle
+	EXEC_OACC_SERIAL.
+	(gfc_trans_oacc_combined_directive): Handle
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_trans_oacc_directive): Handle EXEC_OACC_SERIAL_LOOP and
+	EXEC_OACC_SERIAL.
+	* trans.c (trans_code): Likewise.
+
+2019-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/91828
+	* simplify.c (gfc_simplify_fraction): Remove fallback path for
+	MPFR < 3.1.0.
+
 2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 

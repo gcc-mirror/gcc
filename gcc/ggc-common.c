@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "diagnostic-core.h"
 #include "ggc-internal.h"
-#include "params.h"
 #include "hosthooks.h"
 #include "plugin.h"
 #include "options.h"
@@ -814,8 +813,8 @@ void
 init_ggc_heuristics (void)
 {
 #if !defined ENABLE_GC_CHECKING && !defined ENABLE_GC_ALWAYS_COLLECT
-  set_default_param_value (GGC_MIN_EXPAND, ggc_min_expand_heuristic ());
-  set_default_param_value (GGC_MIN_HEAPSIZE, ggc_min_heapsize_heuristic ());
+  param_ggc_min_expand = ggc_min_expand_heuristic ();
+  param_ggc_min_heapsize = ggc_min_heapsize_heuristic ();
 #endif
 }
 

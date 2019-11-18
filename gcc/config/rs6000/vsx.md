@@ -4526,6 +4526,12 @@
 		     (const_int 0)))]
   "TARGET_P9_VECTOR"
 {
+  if (<CODE> == UNORDERED && !HONOR_NANS (DFmode))
+    {
+      emit_move_insn (operands[0], const0_rtx);
+      DONE;
+    }
+
   operands[3] = gen_reg_rtx (CCFPmode);
 })
 
@@ -4554,6 +4560,12 @@
 		     (const_int 0)))]
   "TARGET_P9_VECTOR"
 {
+  if (<CODE> == UNORDERED && !HONOR_NANS (<MODE>mode))
+    {
+      emit_move_insn (operands[0], const0_rtx);
+      DONE;
+    }
+
   operands[3] = gen_reg_rtx (CCFPmode);
 })
 

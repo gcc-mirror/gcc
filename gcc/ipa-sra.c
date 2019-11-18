@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-sra.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "tree-inline.h"
 #include "ipa-utils.h"
@@ -1266,7 +1265,7 @@ allocate_access (gensum_param_desc *desc,
 		 HOST_WIDE_INT offset, HOST_WIDE_INT size)
 {
   if (desc->access_count
-      == (unsigned) PARAM_VALUE (PARAM_IPA_SRA_MAX_REPLACEMENTS))
+      == (unsigned) param_ipa_sra_max_replacements)
     {
       disqualify_split_candidate (desc, "Too many replacement candidates");
       return NULL;
@@ -2280,8 +2279,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
       if (!desc->by_ref || optimize_function_for_size_p (fun))
 	param_size_limit = cur_param_size;
       else
-	param_size_limit = (PARAM_VALUE (PARAM_IPA_SRA_PTR_GROWTH_FACTOR)
-			   * cur_param_size);
+	param_size_limit = param_ipa_sra_ptr_growth_factor * cur_param_size;
       if (nonarg_acc_size > param_size_limit
 	  || (!desc->by_ref && nonarg_acc_size == param_size_limit))
 	{
@@ -2501,7 +2499,7 @@ ipa_sra_summarize_function (cgraph_node *node)
 	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
 				      by_ref_count
 				      * last_basic_block_for_fn (fun));
-	  aa_walking_limit = PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
+	  aa_walking_limit = param_ipa_max_aa_steps;
 	  scan_function (node, fun);
 
 	  if (dump_file)
@@ -3337,7 +3335,7 @@ pull_accesses_from_callee (isra_param_desc *param_desc,
       return NULL;
 
     if ((prop_count + pclen
-	 > (unsigned) PARAM_VALUE (PARAM_IPA_SRA_MAX_REPLACEMENTS))
+	 > (unsigned) param_ipa_sra_max_replacements)
 	|| size_would_violate_limit_p (param_desc,
 				       param_desc->size_reached + prop_size))
       return "propagating accesses would violate the count or size limit";

@@ -407,7 +407,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
--fallow-store-data-races @gol
+-fno-allocation-dce -fallow-store-data-races @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
 -fcaller-saves @gol
@@ -10271,6 +10271,10 @@ The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
+@item -fno-allocation-dce
+@opindex fno-allocation-dce
+Do not remove unused C++ allocations in dead code elimination.
+
 @item -fallow-store-data-races
 @opindex fallow-store-data-races
 Allow the compiler to introduce new data races on stores.
@@ -11179,8 +11183,8 @@ without notice in future releases.
 In order to get minimal, maximal and default value of a parameter,
 one can use @option{--help=param -Q} options.
 
-In each case, the @var{value} is an integer.  The allowable choices for
-@var{name} are:
+In each case, the @var{value} is an integer.  The following choices
+of @var{name} are recognized for all targets:
 
 @table @gcctabopt
 @item predictable-branch-outcome
@@ -11283,16 +11287,11 @@ applied. In other cases @option{max-inline-insns-single-O2} is applied.
 
 
 @item max-inline-insns-auto
-@item max-inline-insns-auto-O2
 When you use @option{-finline-functions} (included in @option{-O3}),
 a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
-be applied.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-auto} is
-applied. In other cases @option{max-inline-insns-auto-O2} is applied.
+be applied (@option{--param max-inline-insns-auto}).
 
 @item max-inline-insns-small
 This is bound applied to calls which are considered relevant with
@@ -11313,8 +11312,8 @@ execute function prologue and epilogue
 @item inline-heuristics-hint-percent
 @item inline-heuristics-hint-percent-O2
 The scale (in percents) applied to @option{inline-insns-single},
-@option{inline-insns-single-O2}, @option{inline-insns-auto},
-@option{inline-insns-auto-O2} when inline heuristics hints that inlining is
+@option{inline-insns-single-O2}, @option{inline-insns-auto}
+when inline heuristics hints that inlining is
 very profitable (will enable later optimizations).
 
 For functions compiled with optimization levels
@@ -12401,6 +12400,20 @@ statements or when determining their validity prior to issuing
 diagnostics.
 
 @end table
+
+The following choices of @var{name} are available on AArch64 targets:
+
+@table @gcctabopt
+@item aarch64-sve-compare-costs
+When vectorizing for SVE, consider using ``unpacked'' vectors for
+smaller elements and use the cost model to pick the cheapest approach.
+Also use the cost model to choose between SVE and Advanced SIMD vectorization.
+
+Using unpacked vectors includes storing smaller elements in larger
+containers and accessing elements with extending loads and truncating
+stores.
+@end table
+
 @end table
 
 @node Instrumentation Options
@@ -15660,15 +15673,14 @@ Print the name and the counter upper bound for all debug counters.
 @item -fdbg-cnt=@var{counter-value-list}
 @opindex fdbg-cnt
 Set the internal debug counter lower and upper bound.  @var{counter-value-list}
-is a comma-separated list of @var{name}:@var{lower_bound}:@var{upper_bound}
-tuples which sets the lower and the upper bound of each debug
-counter @var{name}.  The @var{lower_bound} is optional and is zero
+is a comma-separated list of @var{name}:@var{lower_bound1}-@var{upper_bound1}
+[:@var{lower_bound2}-@var{upper_bound2}...] tuples which sets
+the name of the counter and list of closed intervals.
+The @var{lower_bound} is optional and is zero
 initialized if not set.
-All debug counters have the initial upper bound of @code{UINT_MAX};
-thus @code{dbg_cnt} returns true always unless the upper bound
-is set by this option.
-For example, with @option{-fdbg-cnt=dce:2:4,tail_call:10},
-@code{dbg_cnt(dce)} returns true only for third and fourth invocation.
+For example, with @option{-fdbg-cnt=dce:2-4:10-11,tail_call:10},
+@code{dbg_cnt(dce)} returns true only for second, third, fourth, tenth and
+eleventh invocation.
 For @code{dbg_cnt(tail_call)} true is returned for first 10 invocations.
 
 @item -print-file-name=@var{library}

@@ -370,4 +370,15 @@ enum cf_protection_level
   CF_FULL = CF_BRANCH | CF_RETURN,
   CF_SET = 1 << 2
 };
+
+/* Parloops schedule type.  */
+enum parloops_schedule_type
+{
+  PARLOOPS_SCHEDULE_STATIC = 0,
+  PARLOOPS_SCHEDULE_DYNAMIC,
+  PARLOOPS_SCHEDULE_GUIDED,
+  PARLOOPS_SCHEDULE_AUTO,
+  PARLOOPS_SCHEDULE_RUNTIME
+};
+
 #endif /* ! GCC_FLAG_TYPES_H */

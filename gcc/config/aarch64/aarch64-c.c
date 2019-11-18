@@ -69,6 +69,8 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define ("__ARM_FEATURE_UNALIGNED");
   builtin_define ("__ARM_PCS_AAPCS64");
   builtin_define_with_int_value ("__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE / 8);
+
+  builtin_define ("__GCC_ASM_FLAG_OUTPUTS__");
 }
 
 /* Undefine/redefine macros that depend on the current backend state and may

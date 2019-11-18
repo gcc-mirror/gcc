@@ -1622,7 +1622,8 @@ class auto_suppress_location_wrappers
    treatment if OMP_CLAUSE_SIZE is zero.  */
 #define OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
-/* Nonzero if this map clause is for an ACC parallel reduction variable.  */
+/* Nonzero if this map clause is for an OpenACC compute construct's reduction
+   variable.  */
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
@@ -4442,8 +4443,7 @@ extern tree build_reference_type_for_mode (tree, machine_mode, bool);
 extern tree build_reference_type (tree);
 extern tree build_vector_type_for_mode (tree, machine_mode);
 extern tree build_vector_type (tree, poly_int64);
-extern tree build_truth_vector_type (poly_uint64, poly_uint64);
-extern tree build_same_sized_truth_vector_type (tree vectype);
+extern tree build_truth_vector_type_for_mode (poly_uint64, machine_mode);
 extern tree build_opaque_vector_type (tree, poly_int64);
 extern tree build_index_type (tree);
 extern tree build_array_type (tree, tree, bool = false);

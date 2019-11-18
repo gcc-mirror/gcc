@@ -185,15 +185,18 @@ static tree scan_omp_1_op (tree *, int *, void *);
       *handled_ops_p = false; \
       break;
 
-/* Return true if CTX corresponds to an oacc parallel region.  */
+/* Return true if CTX corresponds to an OpenACC 'parallel' or 'serial'
+   region.  */
 
 static bool
-is_oacc_parallel (omp_context *ctx)
+is_oacc_parallel_or_serial (omp_context *ctx)
 {
   enum gimple_code outer_type = gimple_code (ctx->stmt);
   return ((outer_type == GIMPLE_OMP_TARGET)
-	  && (gimple_omp_target_kind (ctx->stmt)
-	      == GF_OMP_TARGET_KIND_OACC_PARALLEL));
+	  && ((gimple_omp_target_kind (ctx->stmt)
+	       == GF_OMP_TARGET_KIND_OACC_PARALLEL)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_SERIAL)));
 }
 
 /* Return true if CTX corresponds to an oacc kernels region.  */
@@ -1149,7 +1152,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  goto do_private;
 
 	case OMP_CLAUSE_REDUCTION:
-	  if (is_oacc_parallel (ctx) || is_oacc_kernels (ctx))
+	  if (is_oacc_parallel_or_serial (ctx) || is_oacc_kernels (ctx))
 	    ctx->local_reduction_clauses
 	      = tree_cons (NULL, c, ctx->local_reduction_clauses);
 	  /* FALLTHRU */
@@ -2391,7 +2394,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
     {
       omp_context *tgt = enclosing_target_ctx (outer_ctx);
 
-      if (!tgt || is_oacc_parallel (tgt))
+      if (!tgt || is_oacc_parallel_or_serial (tgt))
 	for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	  {
 	    char const *check = NULL;
@@ -2417,7 +2420,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 	    if (check && OMP_CLAUSE_OPERAND (c, 0))
 	      error_at (gimple_location (stmt),
 			"argument not permitted on %qs clause in"
-			" OpenACC %<parallel%>", check);
+			" OpenACC %<parallel%> or %<serial%>", check);
 	  }
 
       if (tgt && is_oacc_kernels (tgt))
@@ -2945,6 +2948,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  {
 		  case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 		  case GF_OMP_TARGET_KIND_OACC_KERNELS:
+		  case GF_OMP_TARGET_KIND_OACC_SERIAL:
 		    ok = true;
 		    break;
 
@@ -3393,6 +3397,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      stmt_name = "target exit data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_PARALLEL: stmt_name = "parallel"; break;
 	    case GF_OMP_TARGET_KIND_OACC_KERNELS: stmt_name = "kernels"; break;
+	    case GF_OMP_TARGET_KIND_OACC_SERIAL: stmt_name = "serial"; break;
 	    case GF_OMP_TARGET_KIND_OACC_DATA: stmt_name = "data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_UPDATE: stmt_name = "update"; break;
 	    case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
@@ -3410,6 +3415,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      ctx_stmt_name = "parallel"; break;
 	    case GF_OMP_TARGET_KIND_OACC_KERNELS:
 	      ctx_stmt_name = "kernels"; break;
+	    case GF_OMP_TARGET_KIND_OACC_SERIAL:
+	      ctx_stmt_name = "serial"; break;
 	    case GF_OMP_TARGET_KIND_OACC_DATA: ctx_stmt_name = "data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 	      ctx_stmt_name = "host_data"; break;
@@ -4057,11 +4064,8 @@ omp_clause_aligned_alignment (tree clause)
   /* Otherwise return implementation defined alignment.  */
   unsigned int al = 1;
   opt_scalar_mode mode_iter;
-  auto_vector_sizes sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&sizes, true);
-  poly_uint64 vs = 0;
-  for (unsigned int i = 0; i < sizes.length (); ++i)
-    vs = ordered_max (vs, sizes[i]);
+  auto_vector_modes modes;
+  targetm.vectorize.autovectorize_vector_modes (&modes, true);
   static enum mode_class classes[]
     = { MODE_INT, MODE_VECTOR_INT, MODE_FLOAT, MODE_VECTOR_FLOAT };
   for (int i = 0; i < 4; i += 2)
@@ -4072,19 +4076,18 @@ omp_clause_aligned_alignment (tree clause)
 	machine_mode vmode = targetm.vectorize.preferred_simd_mode (mode);
 	if (GET_MODE_CLASS (vmode) != classes[i + 1])
 	  continue;
-	while (maybe_ne (vs, 0U)
-	       && known_lt (GET_MODE_SIZE (vmode), vs)
-	       && GET_MODE_2XWIDER_MODE (vmode).exists ())
-	  vmode = GET_MODE_2XWIDER_MODE (vmode).require ();
+	machine_mode alt_vmode;
+	for (unsigned int j = 0; j < modes.length (); ++j)
+	  if (related_vector_mode (modes[j], mode).exists (&alt_vmode)
+	      && known_ge (GET_MODE_SIZE (alt_vmode), GET_MODE_SIZE (vmode)))
+	    vmode = alt_vmode;
 
 	tree type = lang_hooks.types.type_for_mode (mode, 1);
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)
 	  continue;
-	poly_uint64 nelts = exact_div (GET_MODE_SIZE (vmode),
-				       GET_MODE_SIZE (mode));
-	type = build_vector_type (type, nelts);
-	if (TYPE_MODE (type) != vmode)
-	  continue;
+	type = build_vector_type_for_mode (type, vmode);
+	/* The functions above are not allowed to return invalid modes.  */
+	gcc_assert (TYPE_MODE (type) == vmode);
 	if (TYPE_ALIGN_UNIT (type) > al)
 	  al = TYPE_ALIGN_UNIT (type);
       }
@@ -6711,8 +6714,10 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		    break;
 
 		  case GIMPLE_OMP_TARGET:
-		    if (gimple_omp_target_kind (probe->stmt)
-			!= GF_OMP_TARGET_KIND_OACC_PARALLEL)
+		    if ((gimple_omp_target_kind (probe->stmt)
+			 != GF_OMP_TARGET_KIND_OACC_PARALLEL)
+			&& (gimple_omp_target_kind (probe->stmt)
+			    != GF_OMP_TARGET_KIND_OACC_SERIAL))
 		      goto do_lookup;
 
 		    cls = gimple_omp_target_clauses (probe->stmt);
@@ -7518,7 +7523,7 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
 
   /* In a parallel region, loops are implicitly INDEPENDENT.  */
   omp_context *tgt = enclosing_target_ctx (ctx);
-  if (!tgt || is_oacc_parallel (tgt))
+  if (!tgt || is_oacc_parallel_or_serial (tgt))
     tag |= OLF_INDEPENDENT;
 
   if (tag & OLF_TILE)
@@ -11357,6 +11362,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GF_OMP_TARGET_KIND_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL:
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
+    case GF_OMP_TARGET_KIND_OACC_SERIAL:
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
@@ -11489,7 +11495,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	if (!maybe_lookup_field (var, ctx))
 	  continue;
 
-	/* Don't remap oacc parallel reduction variables, because the
+	/* Don't remap compute constructs' reduction variables, because the
 	   intermediate result must be local to each gang.  */
 	if (offloaded && !(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 			   && OMP_CLAUSE_MAP_IN_REDUCTION (c)))
@@ -11531,7 +11537,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	break;
 
       case OMP_CLAUSE_FIRSTPRIVATE:
-	if (is_oacc_parallel (ctx))
+	if (is_oacc_parallel_or_serial (ctx))
 	  goto oacc_firstprivate;
 	map_cnt++;
 	var = OMP_CLAUSE_DECL (c);
@@ -11905,7 +11911,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    break;
 
 	  case OMP_CLAUSE_FIRSTPRIVATE:
-	    if (is_oacc_parallel (ctx))
+	    if (is_oacc_parallel_or_serial (ctx))
 	      goto oacc_firstprivate_map;
 	    ovar = OMP_CLAUSE_DECL (c);
 	    if (omp_is_reference (ovar))
@@ -12509,7 +12515,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimple_seq fork_seq = NULL;
       gimple_seq join_seq = NULL;
 
-      if (is_oacc_parallel (ctx))
+      if (is_oacc_parallel_or_serial (ctx))
 	{
 	  /* If there are reductions on the offloaded region itself, treat
 	     them as a dummy GANG loop.  */

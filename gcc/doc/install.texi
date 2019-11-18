@@ -384,7 +384,7 @@ and @option{--with-gmp-include}.
 The in-tree build is only supported with the GMP version that
 download_prerequisites installs.
 
-@item MPFR Library version 2.4.2 (or later)
+@item MPFR Library version 3.1.0 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
 @uref{https://www.mpfr.org}.  If an MPFR source distribution is found
@@ -4390,7 +4390,7 @@ The OpenRISC 1000 32-bit processor with delay slots.
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
-You will need GNU binutils 2.15 or newer.
+You will need GNU binutils 2.20 or newer.
 
 @html
 <hr />

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -msve-vector-bits=scalable" } */
+/* { dg-options "-O2 -ftree-vectorize -msve-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include <stdint.h>
 

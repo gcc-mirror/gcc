@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "gimple-iterator.h"
 #include "value-prof.h"
-#include "params.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
@@ -1629,7 +1628,7 @@ auto_profile (void)
        function before annotation, so the profile inside bar@loc_foo2
        will be useful.  */
     autofdo::stmt_set promoted_stmts;
-    for (int i = 0; i < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS); i++)
+    for (int i = 0; i < param_early_inliner_max_iterations; i++)
       {
         if (!flag_value_profile_transformations
             || !autofdo::afdo_vpt_for_early_inline (&promoted_stmts))

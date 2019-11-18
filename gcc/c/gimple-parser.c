@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "tree-into-ssa.h"
 #include "bitmap.h"
-#include "params.h"
 
 
 /* GIMPLE parser state.  */
@@ -354,7 +353,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
   if (cfun->curr_properties & PROP_cfg)
     {
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = entry_bb_count;
-      gcov_type t = PARAM_VALUE (PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD);
+      gcov_type t = param_gimple_fe_computed_hot_bb_threshold;
       set_hot_bb_threshold (t);
       update_max_bb_count ();
       cgraph_node::get_create (cfun->decl);
@@ -1396,6 +1395,7 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
     case CPP_CHAR:
     case CPP_CHAR16:
     case CPP_CHAR32:
+    case CPP_UTF8CHAR:
     case CPP_WCHAR:
       expr.value = c_parser_peek_token (parser)->value;
       set_c_expr_source_range (&expr, tok_range);
@@ -2015,7 +2015,7 @@ c_parser_gimple_declaration (gimple_parser &parser)
   struct c_declarator *declarator;
   struct c_declspecs *specs = build_null_declspecs ();
   c_parser_declspecs (parser, specs, true, true, true,
-		      true, true, cla_nonabstract_decl);
+		      true, true, true, true, cla_nonabstract_decl);
   finish_declspecs (specs);
 
   /* Provide better error recovery.  Note that a type name here is usually

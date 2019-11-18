@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
-#include "params.h"
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "regcprop.h"
@@ -775,7 +774,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
   vec.quick_push (pro);
 
   unsigned max_grow_size = get_uncond_jump_length ();
-  max_grow_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
+  max_grow_size *= param_max_grow_copy_bb_insns;
 
   while (!vec.is_empty () && pro != entry)
     {

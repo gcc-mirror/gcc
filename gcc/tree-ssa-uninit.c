@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa.h"
-#include "params.h"
 #include "tree-cfg.h"
 #include "cfghooks.h"
 
@@ -545,7 +544,7 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
   bool found_cd_chain = false;
   size_t cur_chain_len = 0;
 
-  if (*num_calls > PARAM_VALUE (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS))
+  if (*num_calls > param_uninit_control_dep_attempts)
     return false;
   ++*num_calls;
 

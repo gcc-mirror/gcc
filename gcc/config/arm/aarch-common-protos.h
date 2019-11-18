@@ -23,6 +23,8 @@
 #ifndef GCC_AARCH_COMMON_PROTOS_H
 #define GCC_AARCH_COMMON_PROTOS_H
 
+#include "hard-reg-set.h"
+
 extern int aarch_accumulator_forwarding (rtx_insn *, rtx_insn *);
 extern bool aarch_rev16_p (rtx);
 extern bool aarch_rev16_shleft_mask_imm_p (rtx, machine_mode);
@@ -141,5 +143,9 @@ struct cpu_cost_table
   const struct vector_cost_table vect;
 };
 
+rtx_insn *
+arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
+		    vec<const char *> &constraints,
+		    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs);
 
 #endif /* GCC_AARCH_COMMON_PROTOS_H */

@@ -298,6 +298,7 @@ public:
 /* Vectorizer state common between loop and basic-block vectorization.  */
 class vec_info {
 public:
+  typedef hash_set<int_hash<machine_mode, E_VOIDmode, E_BLKmode> > mode_set;
   enum vec_kind { bb, loop };
 
   vec_info (vec_kind, void *, vec_info_shared *);
@@ -335,9 +336,13 @@ public:
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
 
-  /* The vector size for this loop in bytes, or 0 if we haven't picked
-     a size yet.  */
-  poly_uint64 vector_size;
+  /* The set of vector modes used in the vectorized region.  */
+  mode_set used_vector_modes;
+
+  /* The argument we should pass to related_vector_mode when looking up
+     the vector mode for a scalar mode, or VOIDmode if we haven't yet
+     made any decisions about which vector modes to use.  */
+  machine_mode vector_mode;
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
@@ -489,7 +494,7 @@ public:
 
   /* Threshold of number of iterations below which vectorization will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
-     PARAM_MIN_VECT_LOOP_BOUND.  */
+     param_min_vect_loop_bound.  */
   unsigned int th;
 
   /* When applying loop versioning, the vector form should only be used
@@ -595,6 +600,13 @@ public:
 
   /* Cost of a single scalar iteration.  */
   int single_scalar_iteration_cost;
+
+  /* The cost of the vector prologue and epilogue, including peeled
+     iterations and set-up code.  */
+  int vec_outside_cost;
+
+  /* The cost of the vector loop body.  */
+  int vec_inside_cost;
 
   /* Is the loop vectorizable? */
   bool vectorizable;
@@ -1556,6 +1568,17 @@ vect_get_scalar_dr_size (dr_vec_info *dr_info)
   return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_info->dr))));
 }
 
+/* Return true if LOOP_VINFO requires a runtime check for whether the
+   vector loop is profitable.  */
+
+inline bool
+vect_apply_runtime_profitability_check_p (loop_vec_info loop_vinfo)
+{
+  unsigned int th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
+  return (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  && th >= vect_vf_for_cost (loop_vinfo));
+}
+
 /* Source location + hotness information. */
 extern dump_user_location_t vect_location;
 
@@ -1613,10 +1636,13 @@ extern bool vect_can_advance_ivs_p (loop_vec_info);
 extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
 
 /* In tree-vect-stmts.c.  */
-extern tree get_vectype_for_scalar_type (vec_info *, tree);
-extern tree get_vectype_for_scalar_type_and_size (tree, poly_uint64);
-extern tree get_mask_type_for_scalar_type (vec_info *, tree);
+extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
+						 poly_uint64 = 0);
+extern tree get_vectype_for_scalar_type (vec_info *, tree, unsigned int = 0);
+extern tree get_vectype_for_scalar_type (vec_info *, tree, slp_tree);
+extern tree get_mask_type_for_scalar_type (vec_info *, tree, slp_tree = 0);
 extern tree get_same_sized_vectype (tree, tree);
+extern bool vect_chooses_same_modes_p (vec_info *, machine_mode);
 extern bool vect_get_loop_mask_type (loop_vec_info);
 extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
 				stmt_vec_info * = NULL, gimple ** = NULL);
@@ -1627,9 +1653,9 @@ extern bool supportable_widening_operation (enum tree_code, stmt_vec_info,
 					    tree, tree, enum tree_code *,
 					    enum tree_code *, int *,
 					    vec<tree> *);
-extern bool supportable_narrowing_operation (vec_info *, enum tree_code, tree,
-					     tree, enum tree_code *,
-					     int *, vec<tree> *);
+extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
+					     enum tree_code *, int *,
+					     vec<tree> *);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);
@@ -1650,6 +1676,7 @@ extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
 extern bool vect_transform_stmt (stmt_vec_info, gimple_stmt_iterator *,
 				 slp_tree, slp_instance);
 extern void vect_remove_stores (stmt_vec_info);
+extern bool vect_nop_conversion_p (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern void vect_get_load_cost (stmt_vec_info, int, bool,
@@ -1665,8 +1692,8 @@ extern void optimize_mask_stores (class loop*);
 extern gcall *vect_gen_while (tree, tree, tree);
 extern tree vect_gen_while_not (gimple_seq *, tree, tree, tree);
 extern opt_result vect_get_vector_types_for_stmt (stmt_vec_info, tree *,
-						  tree *);
-extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info);
+						  tree *, unsigned int = 0);
+extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info, slp_tree = 0);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
@@ -1729,8 +1756,8 @@ extern opt_loop_vec_info vect_analyze_loop (class loop *, vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
-extern tree vect_halve_mask_nunits (vec_info *, tree);
-extern tree vect_double_mask_nunits (vec_info *, tree);
+extern tree vect_halve_mask_nunits (tree, machine_mode);
+extern tree vect_double_mask_nunits (tree, machine_mode);
 extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
 				   unsigned int, tree, tree);
 extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
@@ -1775,8 +1802,7 @@ extern void vect_get_slp_defs (slp_tree, vec<vec<tree> > *, unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);
 extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);
-extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int,
-					    machine_mode,
+extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int, tree,
 					    unsigned int * = NULL,
 					    tree * = NULL, tree * = NULL);
 extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,

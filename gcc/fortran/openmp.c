@@ -1964,6 +1964,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
    | OMP_CLAUSE_COPY | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT		      \
    | OMP_CLAUSE_CREATE | OMP_CLAUSE_PRESENT | OMP_CLAUSE_DEFAULT	      \
    | OMP_CLAUSE_WAIT)
+#define OACC_SERIAL_CLAUSES \
+  (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_REDUCTION	      \
+   | OMP_CLAUSE_COPY | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT		      \
+   | OMP_CLAUSE_CREATE | OMP_CLAUSE_PRESENT | OMP_CLAUSE_DEVICEPTR	      \
+   | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULT	      \
+   | OMP_CLAUSE_WAIT)
 #define OACC_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_DEVICEPTR  | OMP_CLAUSE_COPY	      \
    | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT | OMP_CLAUSE_CREATE		      \
@@ -1977,6 +1983,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
   (OACC_LOOP_CLAUSES | OACC_PARALLEL_CLAUSES)
 #define OACC_KERNELS_LOOP_CLAUSES \
   (OACC_LOOP_CLAUSES | OACC_KERNELS_CLAUSES)
+#define OACC_SERIAL_LOOP_CLAUSES \
+  (OACC_LOOP_CLAUSES | OACC_SERIAL_CLAUSES)
 #define OACC_HOST_DATA_CLAUSES omp_mask (OMP_CLAUSE_USE_DEVICE)
 #define OACC_DECLARE_CLAUSES \
   (omp_mask (OMP_CLAUSE_COPY) | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT	      \
@@ -2035,6 +2043,20 @@ match
 gfc_match_oacc_kernels (void)
 {
   return match_acc (EXEC_OACC_KERNELS, OACC_KERNELS_CLAUSES);
+}
+
+
+match
+gfc_match_oacc_serial_loop (void)
+{
+  return match_acc (EXEC_OACC_SERIAL_LOOP, OACC_SERIAL_LOOP_CLAUSES);
+}
+
+
+match
+gfc_match_oacc_serial (void)
+{
+  return match_acc (EXEC_OACC_SERIAL, OACC_SERIAL_CLAUSES);
 }
 
 
@@ -3783,6 +3805,7 @@ oacc_is_loop (gfc_code *code)
 {
   return code->op == EXEC_OACC_PARALLEL_LOOP
 	 || code->op == EXEC_OACC_KERNELS_LOOP
+	 || code->op == EXEC_OACC_SERIAL_LOOP
 	 || code->op == EXEC_OACC_LOOP;
 }
 
@@ -4626,7 +4649,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				 n->sym->name, name, &n->where);
 		  }
 		if (code
-		    && (oacc_is_loop (code) || code->op == EXEC_OACC_PARALLEL))
+		    && (oacc_is_loop (code)
+			|| code->op == EXEC_OACC_PARALLEL
+			|| code->op == EXEC_OACC_SERIAL))
 		  check_array_not_assumed (n->sym, n->where, name);
 		else if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array %qs in %s clause at %L",
@@ -5818,6 +5843,8 @@ oacc_code_to_statement (gfc_code *code)
       return ST_OACC_PARALLEL;
     case EXEC_OACC_KERNELS:
       return ST_OACC_KERNELS;
+    case EXEC_OACC_SERIAL:
+      return ST_OACC_SERIAL;
     case EXEC_OACC_DATA:
       return ST_OACC_DATA;
     case EXEC_OACC_HOST_DATA:
@@ -5826,6 +5853,8 @@ oacc_code_to_statement (gfc_code *code)
       return ST_OACC_PARALLEL_LOOP;
     case EXEC_OACC_KERNELS_LOOP:
       return ST_OACC_KERNELS_LOOP;
+    case EXEC_OACC_SERIAL_LOOP:
+      return ST_OACC_SERIAL_LOOP;
     case EXEC_OACC_LOOP:
       return ST_OACC_LOOP;
     case EXEC_OACC_ATOMIC:
@@ -6163,6 +6192,7 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
     {
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS:
+    case EXEC_OACC_SERIAL:
     case EXEC_OACC_DATA:
     case EXEC_OACC_HOST_DATA:
     case EXEC_OACC_UPDATE:
@@ -6174,6 +6204,7 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
       break;
     case EXEC_OACC_PARALLEL_LOOP:
     case EXEC_OACC_KERNELS_LOOP:
+    case EXEC_OACC_SERIAL_LOOP:
     case EXEC_OACC_LOOP:
       resolve_oacc_loop (code);
       break;

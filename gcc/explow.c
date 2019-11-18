@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "common/common-target.h"
 #include "output.h"
-#include "params.h"
 
 static rtx break_out_memory_refs (rtx);
 static void anti_adjust_stack_and_probe_stack_clash (rtx);
@@ -1837,7 +1836,7 @@ compute_stack_clash_protection_loop_data (rtx *rounded_size, rtx *last_addr,
 {
   /* Round SIZE down to STACK_CLASH_PROTECTION_PROBE_INTERVAL */
   *probe_interval
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+    = 1 << param_stack_clash_protection_probe_interval;
   *rounded_size = simplify_gen_binary (AND, Pmode, size,
 				        GEN_INT (-*probe_interval));
 

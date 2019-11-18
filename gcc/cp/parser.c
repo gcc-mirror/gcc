@@ -40252,6 +40252,10 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 
    # pragma acc parallel oacc-parallel-clause[optseq] new-line
      structured-block
+
+   OpenACC 2.6:
+
+   # pragma acc serial oacc-serial-clause[optseq] new-line
 */
 
 #define OACC_KERNELS_CLAUSE_MASK					\
@@ -40287,9 +40291,24 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)       \
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
+#define OACC_SERIAL_CLAUSE_MASK						\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRIVATE)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
+
 static tree
-cp_parser_oacc_kernels_parallel (cp_parser *parser, cp_token *pragma_tok,
-				 char *p_name, bool *if_p)
+cp_parser_oacc_compute (cp_parser *parser, cp_token *pragma_tok,
+			char *p_name, bool *if_p)
 {
   omp_clause_mask mask;
   enum tree_code code;
@@ -40304,6 +40323,11 @@ cp_parser_oacc_kernels_parallel (cp_parser *parser, cp_token *pragma_tok,
       strcat (p_name, " parallel");
       mask = OACC_PARALLEL_CLAUSE_MASK;
       code = OACC_PARALLEL;
+      break;
+    case PRAGMA_OACC_SERIAL:
+      strcat (p_name, " serial");
+      mask = OACC_SERIAL_CLAUSE_MASK;
+      code = OACC_SERIAL;
       break;
     default:
       gcc_unreachable ();
@@ -40517,9 +40541,9 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
       bool allow_score = true;
       bool allow_user = false;
       int property_limit = 0;
-      enum { CTX_PROPERTY_NONE, CTX_PROPERTY_USER, CTX_PROPERTY_IDLIST,
-	     CTX_PROPERTY_EXPR, CTX_PROPERTY_SIMD } property_kind
-	= CTX_PROPERTY_NONE;
+      enum { CTX_PROPERTY_NONE, CTX_PROPERTY_USER, CTX_PROPERTY_NAME_LIST,
+	     CTX_PROPERTY_ID, CTX_PROPERTY_EXPR,
+	     CTX_PROPERTY_SIMD } property_kind = CTX_PROPERTY_NONE;
       switch (IDENTIFIER_POINTER (set)[0])
 	{
 	case 'c': /* construct */
@@ -40533,13 +40557,13 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 	  allow_score = false;
 	  allow_user = true;
 	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_IDLIST;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
 	  break;
 	case 'i': /* implementation */
 	  selectors = omp_implementation_selectors;
 	  allow_user = true;
 	  property_limit = 3;
-	  property_kind = CTX_PROPERTY_IDLIST;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
 	  break;
 	case 'u': /* user */
 	  selectors = omp_user_selectors;
@@ -40572,6 +40596,11 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 	  if (strcmp (selectors[i], IDENTIFIER_POINTER (selector)) == 0)
 	    break;
 	}
+      if (property_kind == CTX_PROPERTY_NAME_LIST
+	  && IDENTIFIER_POINTER (set)[0] == 'i'
+	  && strcmp (IDENTIFIER_POINTER (selector),
+		     "atomic_default_mem_order") == 0)
+	property_kind = CTX_PROPERTY_ID;
 
       cp_lexer_consume_token (parser->lexer);
 
@@ -40613,11 +40642,16 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		  if (score != error_mark_node)
 		    {
 		      score = fold_non_dependent_expr (score);
-		      if (!value_dependent_expression_p (score)
-			  && (!INTEGRAL_TYPE_P (TREE_TYPE (score))
-			      || !tree_fits_shwi_p (score)))
+		      if (value_dependent_expression_p (score))
+			properties = tree_cons (get_identifier (" score"),
+						score, properties);
+		      else if (!INTEGRAL_TYPE_P (TREE_TYPE (score))
+			       || TREE_CODE (score) != INTEGER_CST)
 			error_at (token->location, "score argument must be "
 				  "constant integer expression");
+		      else if (tree_int_cst_sgn (score) < 0)
+			error_at (token->location, "score argument must be "
+				  "non-negative");
 		      else
 			properties = tree_cons (get_identifier (" score"),
 						score, properties);
@@ -40660,21 +40694,40 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		}
 	      while (1);
 	      break;
-	    case CTX_PROPERTY_IDLIST:
+	    case CTX_PROPERTY_ID:
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_KEYWORD)
+		  || cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+		{
+		  tree prop = cp_lexer_peek_token (parser->lexer)->u.value;
+		  cp_lexer_consume_token (parser->lexer);
+		  properties = tree_cons (prop, NULL_TREE, properties);
+		}
+	      else
+		{
+		  cp_parser_error (parser, "expected identifier");
+		  return error_mark_node;
+		}
+	      break;
+	    case CTX_PROPERTY_NAME_LIST:
 	      do
 		{
-		  tree prop;
+		  tree prop = NULL_TREE, value = NULL_TREE;
 		  if (cp_lexer_next_token_is (parser->lexer, CPP_KEYWORD)
 		      || cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-		    prop = cp_lexer_peek_token (parser->lexer)->u.value;
+		    {
+		      prop = cp_lexer_peek_token (parser->lexer)->u.value;
+		      cp_lexer_consume_token (parser->lexer);
+		    }
+		  else if (cp_lexer_next_token_is (parser->lexer, CPP_STRING))
+		    value = cp_parser_string_literal (parser, false, false);
 		  else
 		    {
-		      cp_parser_error (parser, "expected identifier");
+		      cp_parser_error (parser, "expected identifier or "
+					       "string literal");
 		      return error_mark_node;
 		    }
-		  cp_lexer_consume_token (parser->lexer);
 
-		  properties = tree_cons (prop, NULL_TREE, properties);
+		  properties = tree_cons (prop, value, properties);
 
 		  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 		    cp_lexer_consume_token (parser->lexer);
@@ -40721,7 +40774,8 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 
 	  properties = nreverse (properties);
 	}
-      else if (property_kind == CTX_PROPERTY_IDLIST
+      else if (property_kind == CTX_PROPERTY_NAME_LIST
+	       || property_kind == CTX_PROPERTY_ID
 	       || property_kind == CTX_PROPERTY_EXPR)
 	{
 	  cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
@@ -42124,9 +42178,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       break;
     case PRAGMA_OACC_KERNELS:
     case PRAGMA_OACC_PARALLEL:
+    case PRAGMA_OACC_SERIAL:
       strcpy (p_name, "#pragma acc");
-      stmt = cp_parser_oacc_kernels_parallel (parser, pragma_tok, p_name,
-					      if_p);
+      stmt = cp_parser_oacc_compute (parser, pragma_tok, p_name, if_p);
       break;
     case PRAGMA_OACC_LOOP:
       strcpy (p_name, "#pragma acc");
@@ -42793,8 +42847,9 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OACC_DATA:
     case PRAGMA_OACC_HOST_DATA:
     case PRAGMA_OACC_KERNELS:
-    case PRAGMA_OACC_PARALLEL:
     case PRAGMA_OACC_LOOP:
+    case PRAGMA_OACC_PARALLEL:
+    case PRAGMA_OACC_SERIAL:
     case PRAGMA_OMP_ATOMIC:
     case PRAGMA_OMP_CRITICAL:
     case PRAGMA_OMP_DISTRIBUTE:

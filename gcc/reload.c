@@ -105,7 +105,6 @@ a register with any other reload.  */
 #include "rtl-error.h"
 #include "reload.h"
 #include "addresses.h"
-#include "params.h"
 #include "function-abi.h"
 
 /* True if X is a constant that can be forced into the constant pool.
@@ -6717,7 +6716,7 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 	continue;
       num++;
       if (p == 0 || LABEL_P (p)
-	  || num > PARAM_VALUE (PARAM_MAX_RELOAD_SEARCH_INSNS))
+	  || num > param_max_reload_search_insns)
 	return 0;
 
       /* Don't reuse register contents from before a setjmp-type

@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-ubsan.h"
-#include "params.h"
 #include "gcc-rich-location.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -1498,7 +1497,7 @@ comptypes (tree t1, tree t2, int strict)
 	   perform a deep check. */
 	return structural_comptypes (t1, t2, strict);
 
-      if (flag_checking && USE_CANONICAL_TYPES)
+      if (flag_checking && param_use_canonical_types)
 	{
 	  bool result = structural_comptypes (t1, t2, strict);
 	  
@@ -1519,7 +1518,7 @@ comptypes (tree t1, tree t2, int strict)
 	  
 	  return result;
 	}
-      if (!flag_checking && USE_CANONICAL_TYPES)
+      if (!flag_checking && param_use_canonical_types)
 	return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
       else
 	return structural_comptypes (t1, t2, strict);
@@ -4326,7 +4325,7 @@ build_vec_cmp (tree_code code, tree type,
 {
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
-  tree cmp_type = build_same_sized_truth_vector_type(type);
+  tree cmp_type = truth_type_for (type);
   tree cmp = build2 (code, cmp_type, arg0, arg1);
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
@@ -5224,6 +5223,13 @@ cp_build_binary_op (const op_location_t &location,
 			  "types %qT and %qT", type0, type1);
 	    }
 
+	  if (resultcode == SPACESHIP_EXPR)
+	    {
+	      if (complain & tf_error)
+		sorry_at (location, "three-way comparison of vectors");
+	      return error_mark_node;
+	    }
+
 	  /* Always construct signed integer vector type.  */
 	  intt = c_common_type_for_size
 	    (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type0))), 0);
@@ -5975,15 +5981,16 @@ cp_build_addressof (location_t loc, tree arg, tsubst_flags_t complain)
    -1.  */
 
 tree
-cp_truthvalue_conversion (tree expr)
+cp_truthvalue_conversion (tree expr, tsubst_flags_t complain)
 {
   tree type = TREE_TYPE (expr);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
   if (TYPE_PTR_OR_PTRMEM_P (type)
       /* Avoid ICE on invalid use of non-static member function.  */
       || TREE_CODE (expr) == FUNCTION_DECL)
-    return build_binary_op (input_location, NE_EXPR, expr, nullptr_node, true);
+    return cp_build_binary_op (loc, NE_EXPR, expr, nullptr_node, complain);
   else
-    return c_common_truthvalue_conversion (input_location, expr);
+    return c_common_truthvalue_conversion (loc, expr);
 }
 
 /* Returns EXPR contextually converted to bool.  */

@@ -159,6 +159,11 @@ ada_demangle (const char *mangled, int options);
 extern char *
 dlang_demangle (const char *mangled, int options);
 
+extern int
+rust_demangle_callback (const char *mangled, int options,
+                        demangle_callbackref callback, void *opaque);
+
+
 extern char *
 rust_demangle (const char *mangled, int options);
 
@@ -463,6 +468,7 @@ struct demangle_component
      Initialize to zero.  Private to d_print_comp.
      All other fields are final after initialization.  */
   int d_printing;
+  int d_counting;
 
   union
   {

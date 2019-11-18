@@ -131,21 +131,24 @@ range_operator::wi_fold (value_range &r, tree type,
 			 const wide_int &rh_lb ATTRIBUTE_UNUSED,
 			 const wide_int &rh_ub ATTRIBUTE_UNUSED) const
 {
+  gcc_checking_assert (value_range::supports_type_p (type));
   r = value_range (type);
 }
 
 // The default for fold is to break all ranges into sub-ranges and
 // invoke the wi_fold method on each sub-range pair.
 
-void
+bool
 range_operator::fold_range (value_range &r, tree type,
 			    const value_range &lh,
 			    const value_range &rh) const
 {
+  gcc_checking_assert (value_range::supports_type_p (type));
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
 
   value_range tmp;
+  r.set_undefined ();
   for (unsigned x = 0; x < lh.num_pairs (); ++x)
     for (unsigned y = 0; y < rh.num_pairs (); ++y)
       {
@@ -156,8 +159,9 @@ range_operator::fold_range (value_range &r, tree type,
 	wi_fold (tmp, type, lh_lb, lh_ub, rh_lb, rh_ub);
 	r.union_ (tmp);
 	if (r.varying_p ())
-	  return;
+	  return true;
       }
+  return true;
 }
 
 // The default for op1_range is to return false.
@@ -212,7 +216,7 @@ value_range_from_overflowed_bounds (value_range &r, tree type,
   if (covers || wi::cmp (tmin, tmax, sgn) > 0)
     r = value_range (type);
   else
-    r = value_range (VR_ANTI_RANGE, type, tmin, tmax);
+    r = value_range (type, tmin, tmax, VR_ANTI_RANGE);
 }
 
 // Create and return a range from a pair of wide-ints.  MIN_OVF and
@@ -363,7 +367,7 @@ get_bool_state (value_range &r, const value_range &lhs, tree val_type)
 class operator_equal : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -374,13 +378,13 @@ public:
 			  const value_range &val) const;
 } op_equal;
 
-void
+bool
 operator_equal::fold_range (value_range &r, tree type,
 			    const value_range &op1,
 			    const value_range &op2) const
 {
   if (empty_range_check (r, op1, op2))
-    return;
+    return true;
 
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
@@ -396,12 +400,14 @@ operator_equal::fold_range (value_range &r, tree type,
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
-      r = range_intersect (op1, op2);
+      r = op1;
+      r.intersect (op2);
       if (r.undefined_p ())
 	r = range_false (type);
       else
 	r = range_true_and_false (type);
     }
+  return true;
 }
 
 bool
@@ -415,7 +421,10 @@ operator_equal::op1_range (value_range &r, tree type,
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
       if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	r = range_invert (op2);
+	{
+	  r = op2;
+	  r.invert ();
+	}
       else
 	r.set_varying (type);
       break;
@@ -443,7 +452,7 @@ operator_equal::op2_range (value_range &r, tree type,
 class operator_not_equal : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -454,13 +463,13 @@ public:
 			  const value_range &op1) const;
 } op_not_equal;
 
-void
+bool
 operator_not_equal::fold_range (value_range &r, tree type,
 				const value_range &op1,
 				const value_range &op2) const
 {
   if (empty_range_check (r, op1, op2))
-    return;
+    return true;
 
   // We can be sure the values are always equal or not if both ranges
   // consist of a single value, and then compare them.
@@ -476,12 +485,14 @@ operator_not_equal::fold_range (value_range &r, tree type,
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
-      r = range_intersect (op1, op2);
+      r = op1;
+      r.intersect (op2);
       if (r.undefined_p ())
 	r = range_true (type);
       else
 	r = range_true_and_false (type);
     }
+  return true;
 }
 
 bool
@@ -495,7 +506,10 @@ operator_not_equal::op1_range (value_range &r, tree type,
       // If the result is true, the only time we know anything is if
       // OP2 is a constant.
       if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	r = range_invert (op2);
+	{
+	  r = op2;
+	  r.invert ();
+	}
       else
 	r.set_varying (type);
       break;
@@ -569,7 +583,7 @@ build_ge (value_range &r, tree type, const wide_int &val)
 class operator_lt :  public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -580,13 +594,13 @@ public:
 			  const value_range &op1) const;
 } op_lt;
 
-void
+bool
 operator_lt::fold_range (value_range &r, tree type,
 			 const value_range &op1,
 			 const value_range &op2) const
 {
   if (empty_range_check (r, op1, op2))
-    return;
+    return true;
 
   signop sign = TYPE_SIGN (op1.type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
@@ -597,6 +611,7 @@ operator_lt::fold_range (value_range &r, tree type,
     r = range_false (type);
   else
     r = range_true_and_false (type);
+  return true;
 }
 
 bool
@@ -645,7 +660,7 @@ operator_lt::op2_range (value_range &r, tree type,
 class operator_le :  public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -656,13 +671,13 @@ public:
 			  const value_range &op1) const;
 } op_le;
 
-void
+bool
 operator_le::fold_range (value_range &r, tree type,
 			 const value_range &op1,
 			 const value_range &op2) const
 {
   if (empty_range_check (r, op1, op2))
-    return;
+    return true;
 
   signop sign = TYPE_SIGN (op1.type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
@@ -673,6 +688,7 @@ operator_le::fold_range (value_range &r, tree type,
     r = range_false (type);
   else
     r = range_true_and_false (type);
+  return true;
 }
 
 bool
@@ -721,7 +737,7 @@ operator_le::op2_range (value_range &r, tree type,
 class operator_gt :  public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -732,12 +748,12 @@ public:
 			  const value_range &op1) const;
 } op_gt;
 
-void
+bool
 operator_gt::fold_range (value_range &r, tree type,
 			 const value_range &op1, const value_range &op2) const
 {
   if (empty_range_check (r, op1, op2))
-    return;
+    return true;
 
   signop sign = TYPE_SIGN (op1.type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
@@ -748,6 +764,7 @@ operator_gt::fold_range (value_range &r, tree type,
     r = range_false (type);
   else
     r = range_true_and_false (type);
+  return true;
 }
 
 bool
@@ -795,7 +812,7 @@ operator_gt::op2_range (value_range &r, tree type,
 class operator_ge :  public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -806,13 +823,13 @@ public:
 			  const value_range &op1) const;
 } op_ge;
 
-void
+bool
 operator_ge::fold_range (value_range &r, tree type,
 			 const value_range &op1,
 			 const value_range &op2) const
 {
   if (empty_range_check (r, op1, op2))
-    return;
+    return true;
 
   signop sign = TYPE_SIGN (op1.type ());
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
@@ -823,6 +840,7 @@ operator_ge::fold_range (value_range &r, tree type,
     r = range_false (type);
   else
     r = range_true_and_false (type);
+  return true;
 }
 
 bool
@@ -901,8 +919,7 @@ operator_plus::op1_range (value_range &r, tree type,
 			  const value_range &lhs,
 			  const value_range &op2) const
 {
-  range_op_handler (MINUS_EXPR, type)->fold_range (r, type, lhs, op2);
-  return true;
+  return range_op_handler (MINUS_EXPR, type)->fold_range (r, type, lhs, op2);
 }
 
 bool
@@ -910,8 +927,7 @@ operator_plus::op2_range (value_range &r, tree type,
 			  const value_range &lhs,
 			  const value_range &op1) const
 {
-  range_op_handler (MINUS_EXPR, type)->fold_range (r, type, lhs, op1);
-  return true;
+  return range_op_handler (MINUS_EXPR, type)->fold_range (r, type, lhs, op1);
 }
 
 
@@ -948,8 +964,7 @@ operator_minus::op1_range (value_range &r, tree type,
 			   const value_range &lhs,
 			   const value_range &op2) const
 {
-  range_op_handler (PLUS_EXPR, type)->fold_range (r, type, lhs, op2);
-  return true;
+  return range_op_handler (PLUS_EXPR, type)->fold_range (r, type, lhs, op2);
 }
 
 bool
@@ -957,8 +972,7 @@ operator_minus::op2_range (value_range &r, tree type,
 			   const value_range &lhs,
 			   const value_range &op1) const
 {
-  fold_range (r, type, op1, lhs);
-  return true;
+  return fold_range (r, type, op1, lhs);
 }
 
 
@@ -1342,10 +1356,7 @@ operator_exact_divide::op1_range (value_range &r, tree type,
   // If op2 is a multiple of 2, we would be able to set some non-zero bits.
   if (op2.singleton_p (&offset)
       && !integer_zerop (offset))
-    {
-      range_op_handler (MULT_EXPR, type)->fold_range (r, type, lhs, op2);
-      return true;
-    }
+    return range_op_handler (MULT_EXPR, type)->fold_range (r, type, lhs, op2);
   return false;
 }
 
@@ -1353,7 +1364,7 @@ operator_exact_divide::op1_range (value_range &r, tree type,
 class operator_lshift : public cross_product_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
 
@@ -1366,13 +1377,13 @@ public:
 				const wide_int &) const;
 } op_lshift;
 
-void
+bool
 operator_lshift::fold_range (value_range &r, tree type,
 			     const value_range &op1,
 			     const value_range &op2) const
 {
   if (undefined_shift_range_check (r, type, op2))
-    return;
+    return true;
 
   // Transform left shifts by constants into multiplies.
   if (op2.singleton_p ())
@@ -1386,14 +1397,15 @@ operator_lshift::fold_range (value_range &r, tree type,
       bool saved_flag_wrapv_pointer = flag_wrapv_pointer;
       flag_wrapv = 1;
       flag_wrapv_pointer = 1;
-      range_op_handler (MULT_EXPR, type)->fold_range (r, type, op1, mult);
+      bool b = range_op_handler (MULT_EXPR, type)->fold_range (r, type, op1,
+							       mult);
       flag_wrapv = saved_flag_wrapv;
       flag_wrapv_pointer = saved_flag_wrapv_pointer;
-      return;
+      return b;
     }
-
-  // Otherwise, invoke the generic fold routine.
-  range_operator::fold_range (r, type, op1, op2);
+  else
+    // Otherwise, invoke the generic fold routine.
+    return range_operator::fold_range (r, type, op1, op2);
 }
 
 void
@@ -1477,7 +1489,7 @@ operator_lshift::wi_op_overflows (wide_int &res, tree type,
 class operator_rshift : public cross_product_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual void wi_fold (value_range &r, tree type,
@@ -1510,16 +1522,16 @@ operator_rshift::wi_op_overflows (wide_int &res,
   return false;
 }
 
-void
+bool
 operator_rshift::fold_range (value_range &r, tree type,
 			     const value_range &op1,
 			     const value_range &op2) const
 {
+  // Invoke the generic fold routine if not undefined..
   if (undefined_shift_range_check (r, type, op2))
-    return;
+    return true;
 
-  // Otherwise, invoke the generic fold routine.
-  range_operator::fold_range (r, type, op1, op2);
+  return range_operator::fold_range (r, type, op1, op2);
 }
 
 void
@@ -1534,7 +1546,7 @@ operator_rshift::wi_fold (value_range &r, tree type,
 class operator_cast: public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -1543,13 +1555,13 @@ public:
 
 } op_convert;
 
-void
+bool
 operator_cast::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 			   const value_range &lh,
 			   const value_range &rh) const
 {
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
   
   tree inner = lh.type ();
   tree outer = rh.type ();
@@ -1589,8 +1601,9 @@ operator_cast::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 	    }
 	}
       r = value_range (type);
-      return;
+      break;
     }
+  return true;
 }
 
 bool
@@ -1636,11 +1649,11 @@ operator_cast::op1_range (value_range &r, tree type,
 	  // *not* in the RHS is 0 or -1.
 	  unsigned prec = TYPE_PRECISION (type);
 	  if (lhs.zero_p ())
-	    r = value_range (VR_ANTI_RANGE, type,
-			     wi::minus_one (prec), wi::minus_one (prec));
+	    r = value_range (type, wi::minus_one (prec), wi::minus_one (prec),
+			     VR_ANTI_RANGE);
 	  else
-	    r = value_range (VR_ANTI_RANGE, type,
-			     wi::zero (prec), wi::zero (prec));
+	    r = value_range (type, wi::zero (prec), wi::zero (prec),
+			     VR_ANTI_RANGE);
 	  // And intersect it with what we know about op2.
 	  r.intersect (op2);
 	}
@@ -1673,7 +1686,7 @@ operator_cast::op1_range (value_range &r, tree type,
 class operator_logical_and : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &lh,
 			   const value_range &rh) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -1685,13 +1698,13 @@ public:
 } op_logical_and;
 
 
-void
+bool
 operator_logical_and::fold_range (value_range &r, tree type,
 				  const value_range &lh,
 				  const value_range &rh) const
 {
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
 
   // 0 && anything is 0.
   if ((wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (lh.upper_bound (), 0))
@@ -1704,6 +1717,7 @@ operator_logical_and::fold_range (value_range &r, tree type,
     r = range_true_and_false (type);
   else
     r = range_true (type);
+  return true;
 }
 
 bool
@@ -1955,7 +1969,7 @@ operator_bitwise_and::op2_range (value_range &r, tree type,
 class operator_logical_or : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &lh,
 			   const value_range &rh) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -1966,15 +1980,17 @@ public:
 			  const value_range &op1) const;
 } op_logical_or;
 
-void
+bool
 operator_logical_or::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 				 const value_range &lh,
 				 const value_range &rh) const
 {
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
 
-  r = range_union (lh, rh);
+  r = lh;
+  r.union_ (rh);
+  return true;
 }
 
 bool
@@ -2188,7 +2204,7 @@ operator_trunc_mod::wi_fold (value_range &r, tree type,
 class operator_logical_not : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &lh,
 			   const value_range &rh) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -2210,20 +2226,23 @@ public:
 // 	 b_2 = x_1 < 20		[0,0] = x_1 < 20,   false, so x_1 == [20, 255]
 //   which is the result we are looking for.. so.. pass it through.
 
-void
+bool
 operator_logical_not::fold_range (value_range &r, tree type,
 				  const value_range &lh,
 				  const value_range &rh ATTRIBUTE_UNUSED) const
 {
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
 
   if (lh.varying_p () || lh.undefined_p ())
     r = lh;
   else
-    r = range_invert (lh);
+    {
+      r = lh;
+      r.invert ();
+    }
   gcc_checking_assert (lh.type() == type);
-  return;
+  return true;
 }
 
 bool
@@ -2232,10 +2251,9 @@ operator_logical_not::op1_range (value_range &r,
 				 const value_range &lhs,
 				 const value_range &op2 ATTRIBUTE_UNUSED) const
 {
-  if (lhs.varying_p () || lhs.undefined_p ())
-    r = lhs;
-  else
-    r = range_invert (lhs);
+  r = lhs;
+  if (!lhs.varying_p () && !lhs.undefined_p ())
+    r.invert ();
   return true;
 }
 
@@ -2243,7 +2261,7 @@ operator_logical_not::op1_range (value_range &r,
 class operator_bitwise_not : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &lh,
 			   const value_range &rh) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -2251,19 +2269,19 @@ public:
 			  const value_range &op2) const;
 } op_bitwise_not;
 
-void
+bool
 operator_bitwise_not::fold_range (value_range &r, tree type,
 				  const value_range &lh,
 				  const value_range &rh) const
 {
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
 
   // ~X is simply -1 - X.
   value_range minusone (type, wi::minus_one (TYPE_PRECISION (type)),
 			wi::minus_one (TYPE_PRECISION (type)));
-  range_op_handler (MINUS_EXPR, type)->fold_range (r, type, minusone, lh);
-  return;
+  return range_op_handler (MINUS_EXPR, type)->fold_range (r, type, minusone,
+							  lh);
 }
 
 bool
@@ -2272,32 +2290,32 @@ operator_bitwise_not::op1_range (value_range &r, tree type,
 				 const value_range &op2) const
 {
   // ~X is -1 - X and since bitwise NOT is involutary...do it again.
-  fold_range (r, type, lhs, op2);
-  return true;
+  return fold_range (r, type, lhs, op2);
 }
 
 
 class operator_cst : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
 } op_integer_cst;
 
-void
+bool
 operator_cst::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 			  const value_range &lh,
 			  const value_range &rh ATTRIBUTE_UNUSED) const
 {
   r = lh;
+  return true;
 }
 
 
 class operator_identity : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -2305,12 +2323,13 @@ public:
 			  const value_range &op2) const;
 } op_identity;
 
-void
+bool
 operator_identity::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 			       const value_range &lh,
 			       const value_range &rh ATTRIBUTE_UNUSED) const
 {
   r = lh;
+  return true;
 }
 
 bool
@@ -2359,7 +2378,7 @@ operator_abs::wi_fold (value_range &r, tree type,
   wide_int max_value = wi::max_value (prec, sign);
   if (!TYPE_OVERFLOW_UNDEFINED (type) && wi::eq_p (lh_lb, min_value))
     {
-      r = value_range (type, lh_lb, lh_ub);
+      r = value_range (type);
       return;
     }
 
@@ -2473,7 +2492,7 @@ operator_absu::wi_fold (value_range &r, tree type,
 class operator_negate : public range_operator
 {
  public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -2481,16 +2500,17 @@ class operator_negate : public range_operator
 			  const value_range &op2) const;
 } op_negate;
 
-void
+bool
 operator_negate::fold_range (value_range &r, tree type,
 			     const value_range &lh,
 			     const value_range &rh) const
 {
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
   // -X is simply 0 - X.
-  range_op_handler (MINUS_EXPR, type)->fold_range (r, type,
-						   range_zero (type), lh);
+  return range_op_handler (MINUS_EXPR, type)->fold_range (r, type,
+							  range_zero (type),
+							  lh);
 }
 
 bool
@@ -2499,15 +2519,14 @@ operator_negate::op1_range (value_range &r, tree type,
 			    const value_range &op2) const
 {
   // NEGATE is involutory.
-  fold_range (r, type, lhs, op2);
-  return true;
+  return fold_range (r, type, lhs, op2);
 }
 
 
 class operator_addr_expr : public range_operator
 {
 public:
-  virtual void fold_range (value_range &r, tree type,
+  virtual bool fold_range (value_range &r, tree type,
 			   const value_range &op1,
 			   const value_range &op2) const;
   virtual bool op1_range (value_range &r, tree type,
@@ -2515,13 +2534,13 @@ public:
 			  const value_range &op2) const;
 } op_addr;
 
-void
+bool
 operator_addr_expr::fold_range (value_range &r, tree type,
 				const value_range &lh,
 				const value_range &rh) const
 {
   if (empty_range_check (r, lh, rh))
-    return;
+    return true;
 
   // Return a non-null pointer of the LHS type (passed in op2).
   if (lh.zero_p ())
@@ -2530,6 +2549,7 @@ operator_addr_expr::fold_range (value_range &r, tree type,
     r = range_nonzero (type);
   else
     r = value_range (type);
+  return true;
 }
 
 bool
@@ -2537,8 +2557,7 @@ operator_addr_expr::op1_range (value_range &r, tree type,
 			       const value_range &lhs,
 			       const value_range &op2) const
 {
-  operator_addr_expr::fold_range (r, type, lhs, op2);
-  return true;
+  return operator_addr_expr::fold_range (r, type, lhs, op2);
 }
 
 
@@ -2796,17 +2815,17 @@ range_cast (value_range &r, tree type)
 {
   value_range tmp = r;
   range_operator *op = range_op_handler (CONVERT_EXPR, type);
-  op->fold_range (r, type, tmp, value_range (type));
+  // Call op_convert, if it fails, the result is varying.
+  if (!op->fold_range (r, type, tmp, value_range (type)))
+    r = value_range (type);
 }
 
 #if CHECKING_P
 #include "selftest.h"
 #include "stor-layout.h"
 
-// Ideally this should go in namespace selftest, but range_tests
-// needs to be a friend of class value_range so it can access
-// value_range::m_max_pairs.
-
+namespace selftest
+{
 #define INT(N) build_int_cst (integer_type_node, (N))
 #define UINT(N) build_int_cstu (unsigned_type_node, (N))
 #define INT16(N) build_int_cst (short_integer_type_node, (N))
@@ -2816,14 +2835,6 @@ range_cast (value_range &r, tree type)
 #define UINT128(N) build_int_cstu (u128_type, (N))
 #define UCHAR(N) build_int_cstu (unsigned_char_type_node, (N))
 #define SCHAR(N) build_int_cst (signed_char_type_node, (N))
-
-#define RANGE3(A,B,C,D,E,F)		\
-( i1 = value_range (INT (A), INT (B)),	\
-  i2 = value_range (INT (C), INT (D)),	\
-  i3 = value_range (INT (E), INT (F)),	\
-  i1.union_ (i2),			\
-  i1.union_ (i3),			\
-  i1 )
 
 // Run all of the selftests within this file.
 
@@ -2835,7 +2846,7 @@ range_tests ()
   value_range r0, r1, rold;
 
   // Test that NOT(255) is [0..254] in 8-bit land.
-  value_range not_255 (VR_ANTI_RANGE, UCHAR (255), UCHAR (255));
+  value_range not_255 (UCHAR (255), UCHAR (255), VR_ANTI_RANGE);
   ASSERT_TRUE (not_255 == value_range (UCHAR (0), UCHAR (254)));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
@@ -2876,33 +2887,30 @@ range_tests ()
   ASSERT_TRUE (r0 == value_range (UINT(6), maxuint));
 
   // Check that ~[10,MAX] => [0,9] for unsigned int.
-  r0 = value_range (VR_RANGE, UINT(10), maxuint);
+  r0 = value_range (UINT(10), maxuint);
   r0.invert ();
   ASSERT_TRUE (r0 == value_range (UINT (0), UINT (9)));
 
   // Check that ~[0,5] => [6,MAX] for unsigned 128-bit numbers.
-  r0 = value_range (VR_ANTI_RANGE, UINT128 (0), UINT128 (5));
+  r0 = value_range (UINT128 (0), UINT128 (5), VR_ANTI_RANGE);
   r1 = value_range (UINT128(6), build_minus_one_cst (u128_type));
   ASSERT_TRUE (r0 == r1);
 
   // Check that [~5] is really [-MIN,4][6,MAX].
-  r0 = value_range (VR_ANTI_RANGE, INT (5), INT (5));
+  r0 = value_range (INT (5), INT (5), VR_ANTI_RANGE);
   r1 = value_range (minint, INT (4));
   r1.union_ (value_range (INT (6), maxint));
   ASSERT_FALSE (r1.undefined_p ());
   ASSERT_TRUE (r0 == r1);
 
   r1 = value_range (INT (5), INT (5));
-  r1.check ();
   value_range r2 (r1);
   ASSERT_TRUE (r1 == r2);
 
   r1 = value_range (INT (5), INT (10));
-  r1.check ();
 
   r1 = value_range (integer_type_node,
 	       wi::to_wide (INT (5)), wi::to_wide (INT (10)));
-  r1.check ();
   ASSERT_TRUE (r1.contains_p (INT (7)));
 
   r1 = value_range (SCHAR (0), SCHAR (20));
@@ -3046,43 +3054,6 @@ range_tests ()
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
 
-  if (value_range::m_max_pairs > 2)
-    {
-      // ([10,20] U [5,8]) U [1,3] ==> [1,3][5,8][10,20].
-      r0 = value_range (INT (10), INT (20));
-      r1 = value_range (INT (5), INT (8));
-      r0.union_ (r1);
-      r1 = value_range (INT (1), INT (3));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (1, 3, 5, 8, 10, 20));
-
-      // [1,3][5,8][10,20] U [-5,0] => [-5,3][5,8][10,20].
-      r1 = value_range (INT (-5), INT (0));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (-5, 3, 5, 8, 10, 20));
-    }
-
-  // [10,20] U [30,40] ==> [10,20][30,40].
-  r0 = value_range (INT (10), INT (20));
-  r1 = value_range (INT (30), INT (40));
-  r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				  value_range (INT (30), INT (40))));
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40] U [50,60] ==> [10,20][30,40][50,60].
-      r1 = value_range (INT (50), INT (60));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (10, 20, 30, 40, 50, 60));
-      // [10,20][30,40][50,60] U [70, 80] ==> [10,20][30,40][50,60][70,80].
-      r1 = value_range (INT (70), INT (80));
-      r0.union_ (r1);
-
-      r2 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r2.union_ (value_range (INT (70), INT (80)));
-      ASSERT_TRUE (r0 == r2);
-    }
-
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
   tree voidp = build_pointer_type (void_type_node);
@@ -3092,74 +3063,11 @@ range_tests ()
   r0.invert ();
   ASSERT_TRUE (r0 == r1);
 
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40][50,60] U [6,35] => [6,40][50,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (6), INT (35));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (value_range (INT (6), INT (40)),
-				      value_range (INT (50), INT (60))));
-
-      // [10,20][30,40][50,60] U [6,60] => [6,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (6), INT (60));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == value_range (INT (6), INT (60)));
-
-      // [10,20][30,40][50,60] U [6,70] => [6,70].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (6), INT (70));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == value_range (INT (6), INT (70)));
-
-      // [10,20][30,40][50,60] U [35,70] => [10,20][30,70].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (35), INT (70));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				      value_range (INT (30), INT (70))));
-    }
-
-  // [10,20][30,40] U [25,70] => [10,70].
-  r0 = range_union (value_range (INT (10), INT (20)),
-		     value_range (INT (30), INT (40)));
-  r1 = value_range (INT (25), INT (70));
-  r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				  value_range (INT (25), INT (70))));
-
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40][50,60] U [15,35] => [10,40][50,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (15), INT (35));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (40)),
-				      value_range (INT (50), INT (60))));
-    }
-
   // [10,20] U [15, 30] => [10, 30].
   r0 = value_range (INT (10), INT (20));
   r1 = value_range (INT (15), INT (30));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == value_range (INT (10), INT (30)));
-
-  // [10,20] U [25,25] => [10,20][25,25].
-  r0 = value_range (INT (10), INT (20));
-  r1 = value_range (INT (25), INT (25));
-  r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (value_range (INT (10), INT (20)),
-				  value_range (INT (25), INT (25))));
-
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,20][30,40][50,60] U [35,35] => [10,20][30,40][50,60].
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = value_range (INT (35), INT (35));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (10, 20, 30, 40, 50, 60));
-    }
 
   // [15,40] U [] => [15,40].
   r0 = value_range (INT (15), INT (40));
@@ -3179,79 +3087,11 @@ range_tests ()
   r0.union_ (r1);
   ASSERT_TRUE (r0 == value_range (INT (9), INT (20)));
 
-  if (value_range::m_max_pairs > 2)
-    {
-      // [10,10][12,12][20,100] ^ [15,200].
-      r0 = RANGE3 (10, 10, 12, 12, 20, 100);
-      r1 = value_range (INT (15), INT (200));
-      r0.intersect (r1);
-      ASSERT_TRUE (r0 == value_range (INT (20), INT (100)));
-
-      // [10,20][30,40][50,60] ^ [15,25][38,51][55,70]
-      // => [15,20][38,40][50,51][55,60]
-      r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = RANGE3 (15, 25, 38, 51, 55, 70);
-      r0.intersect (r1);
-      if (value_range::m_max_pairs == 3)
-	{
-	  // When pairs==3, we don't have enough space, so
-	  //  conservatively handle things.  Thus, the ...[50,60].
-	  ASSERT_TRUE (r0 == RANGE3 (15, 20, 38, 40, 50, 60));
-	}
-      else
-	{
-	  r2 = RANGE3 (15, 20, 38, 40, 50, 51);
-	  r2.union_ (value_range (INT (55), INT (60)));
-	  ASSERT_TRUE (r0 == r2);
-	}
-
-      // [15,20][30,40][50,60] ^ [15,35][40,90][100,200]
-      // => [15,20][30,35][40,60]
-      r0 = RANGE3 (15, 20, 30, 40, 50, 60);
-      r1 = RANGE3 (15, 35, 40, 90, 100, 200);
-      r0.intersect (r1);
-      if (value_range::m_max_pairs == 3)
-	{
-	  // When pairs==3, we don't have enough space, so
-	  // conservatively handle things.
-	  ASSERT_TRUE (r0 == RANGE3 (15, 20, 30, 35, 40, 60));
-	}
-      else
-	{
-	  r2 = RANGE3 (15, 20, 30, 35, 40, 40);
-	  r2.union_ (value_range (INT (50), INT (60)));
-	  ASSERT_TRUE (r0 == r2);
-	}
-
-      // Test cases where a union inserts a sub-range inside a larger
-      // range.
-      //
-      // [8,10][135,255] U [14,14] => [8,10][14,14][135,255]
-      r0 = range_union (value_range (INT (8), INT (10)),
-			 value_range (INT (135), INT (255)));
-      r1 = value_range (INT (14), INT (14));
-      r0.union_ (r1);
-      ASSERT_TRUE (r0 == RANGE3 (8, 10, 14, 14, 135, 255));
-    }
-
   // [10,20] ^ [15,30] => [15,20].
   r0 = value_range (INT (10), INT (20));
   r1 = value_range (INT (15), INT (30));
   r0.intersect (r1);
   ASSERT_TRUE (r0 == value_range (INT (15), INT (20)));
-
-  // [10,20][30,40] ^ [40,50] => [40,40].
-  r0 = range_union (value_range (INT (10), INT (20)),
-		     value_range (INT (30), INT (40)));
-  r1 = value_range (INT (40), INT (50));
-  r0.intersect (r1);
-  ASSERT_TRUE (r0 == value_range (INT (40), INT (40)));
-
-  // Test non-destructive intersection.
-  r0 = rold = value_range (INT (10), INT (20));
-  ASSERT_FALSE (range_intersect (r0, value_range (INT (15),
-					     INT (30))).undefined_p ());
-  ASSERT_TRUE (r0 == rold);
 
   // Test the internal sanity of wide_int's wrt HWIs.
   ASSERT_TRUE (wi::max_value (TYPE_PRECISION (boolean_type_node),
@@ -3267,4 +3107,7 @@ range_tests ()
   r0.invert ();
   ASSERT_TRUE (r0.nonzero_p ());
 }
+
+} // namespace selftest
+
 #endif // CHECKING_P

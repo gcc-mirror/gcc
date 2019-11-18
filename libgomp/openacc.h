@@ -55,6 +55,7 @@ typedef enum acc_device_t {
   /* acc_device_host_nonshm = 3 removed.  */
   acc_device_not_host = 4,
   acc_device_nvidia = 5,
+  acc_device_gcn = 8,
   _ACC_device_hwm,
   /* Ensure enumeration is layout compatible with int.  */
   _ACC_highest = __INT_MAX__,

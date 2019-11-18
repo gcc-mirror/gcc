@@ -231,7 +231,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-affine.h"
 #include "builtins.h"
 
@@ -2194,7 +2193,7 @@ determine_unroll_factor (vec<chain_p> chains)
 {
   chain_p chain;
   unsigned factor = 1, af, nfactor, i;
-  unsigned max = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
+  unsigned max = param_max_unroll_times;
 
   FOR_EACH_VEC_ELT (chains, i, chain)
     {

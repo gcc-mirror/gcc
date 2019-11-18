@@ -36,6 +36,7 @@
 #else
 
 #include <chrono>
+
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #include <ext/concurrence.h>
@@ -44,6 +45,11 @@
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
 #include <bits/cxxabi_forced.h>
+
+#if __cplusplus > 201703L
+#define __cpp_lib_jthread 201907L
+#include <stop_token>
+#endif
 
 #if defined(_GLIBCXX_HAS_GTHREADS)
 
@@ -360,6 +366,84 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait_for(_Lock& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p)
       { return wait_until(__lock, __clock_t::now() + __rtime, std::move(__p)); }
+
+#ifdef __cpp_lib_jthread
+    template <class _Lock, class _Predicate>
+    bool wait_on(_Lock& __lock,
+                 stop_token __stoken,
+                 _Predicate __p)
+    {
+      if (__stoken.stop_requested())
+        {
+          return __p();
+        }
+ 
+      std::stop_callback __cb(__stoken, [this] { notify_all(); });
+      shared_ptr<mutex> __mutex = _M_mutex;
+      while (!__p())
+        {
+          unique_lock<mutex> __my_lock(*__mutex);
+          if (__stoken.stop_requested())
+            {
+              return false;
+            }
+          // *__mutex must be unlocked before re-locking __lock so move
+          // ownership of *__mutex lock to an object with shorter lifetime.
+          _Unlock<_Lock> __unlock(__lock);
+          unique_lock<mutex> __my_lock2(std::move(__my_lock));
+          _M_cond.wait(__my_lock2);
+        }
+      return true;
+    }
+
+    template <class _Lock, class _Clock, class _Duration, class _Predicate>
+    bool wait_on_until(_Lock& __lock,
+                       stop_token __stoken,
+                       const chrono::time_point<_Clock, _Duration>& __abs_time,
+                       _Predicate __p)
+    {
+      if (__stoken.stop_requested())
+        {
+          return __p();
+        }
+
+      std::stop_callback __cb(__stoken, [this] { notify_all(); });
+      shared_ptr<mutex> __mutex = _M_mutex;
+      while (!__p())
+        {
+          bool __stop;
+          {
+            unique_lock<mutex> __my_lock(*__mutex);
+            if (__stoken.stop_requested())
+              {
+                return false;
+              }
+            _Unlock<_Lock> __u(__lock);
+            unique_lock<mutex> __my_lock2(std::move(__my_lock));
+            const auto __status = _M_cond.wait_until(__my_lock2, __abs_time);
+            __stop = (__status == std::cv_status::timeout) || __stoken.stop_requested();
+          }
+          if (__stop)
+            {
+              return __p();
+            }
+        }
+      return true;
+    }
+
+    template <class _Lock, class _Rep, class _Period, class _Predicate>
+    bool wait_on_for(_Lock& __lock,
+                     stop_token __stoken,
+                     const chrono::duration<_Rep, _Period>& __rel_time,
+                     _Predicate __p)
+    {
+      auto __abst = std::chrono::steady_clock::now() + __rel_time;
+      return wait_on_until(__lock,
+                           std::move(__stoken),
+                           __abst,
+                           std::move(__p));
+    }
+#endif
   };
 
   } // end inline namespace

@@ -46,3 +46,8 @@ struct F
 static_assert( ! std::relation<F, long, long> );
 static_assert( std::relation<F&, int, int> );
 static_assert( std::relation<const F&, const int, const int> );
+
+// [concept.equiv]
+static_assert( std::equivalence_relation<bool(*)(int, int), short, long> );
+static_assert( ! std::equivalence_relation<F, long, long> );
+static_assert( std::equivalence_relation<const F&, const int, const int> );

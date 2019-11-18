@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "tree-inline.h"
 #include "gimple-pretty-print.h"
-#include "params.h"
 #include "cfganal.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
@@ -180,7 +179,7 @@ simple_edge_hints (struct cgraph_edge *edge)
    size, since we always need both metrics eventually.  */
 
 sreal
-do_estimate_edge_time (struct cgraph_edge *edge)
+do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
 {
   sreal time, nonspec_time;
   int size;
@@ -189,7 +188,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   clause_t clause, nonspec_clause;
   vec<tree> known_vals;
   vec<ipa_polymorphic_call_context> known_contexts;
-  vec<ipa_agg_jump_function_p> known_aggs;
+  vec<ipa_agg_value_set> known_aggs;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
   int min_size = -1;
 
@@ -211,6 +210,20 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 	  time = e->entry.time;
 	  nonspec_time = e->entry.nonspec_time;
 	  hints = e->entry.hints;
+	  if (flag_checking
+	      && !edge->callee->count.ipa_p ())
+	    {
+	      sreal chk_time, chk_nonspec_time;
+	      int chk_size, chk_min_size;
+
+	      ipa_hints chk_hints;
+	      ctx.estimate_size_and_time (&chk_size, &chk_min_size,
+					  &chk_time, &chk_nonspec_time,
+					  &chk_hints);
+	      gcc_assert (chk_size == size && chk_time == time
+		  	  && chk_nonspec_time == nonspec_time
+			  && chk_hints == hints);
+	    }
 	}
       else
 	{
@@ -262,6 +275,8 @@ do_estimate_edge_time (struct cgraph_edge *edge)
       hints |= simple_edge_hints (edge);
       entry->hints = hints + 1;
     }
+  if (ret_nonspec_time)
+    *ret_nonspec_time = nonspec_time;
   return time;
 }
 
@@ -295,7 +310,7 @@ do_estimate_edge_size (struct cgraph_edge *edge)
   clause_t clause, nonspec_clause;
   vec<tree> known_vals;
   vec<ipa_polymorphic_call_context> known_contexts;
-  vec<ipa_agg_jump_function_p> known_aggs;
+  vec<ipa_agg_value_set> known_aggs;
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
 
@@ -334,7 +349,7 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   clause_t clause, nonspec_clause;
   vec<tree> known_vals;
   vec<ipa_polymorphic_call_context> known_contexts;
-  vec<ipa_agg_jump_function_p> known_aggs;
+  vec<ipa_agg_value_set> known_aggs;
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
 
@@ -442,8 +457,8 @@ offline_size (struct cgraph_node *node, ipa_size_summary *info)
       else if (DECL_COMDAT (node->decl)
 	       && node->can_remove_if_no_direct_calls_p ())
 	return (info->size
-	        * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY))
-	        + 50) / 100;
+		* (100 - param_comdat_sharing_probability)
+		+ 50) / 100;
     }
   return 0;
 }

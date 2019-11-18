@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfganal.h"
 #include "tree-cfg.h"
-#include "params.h"
 #include "dumpfile.h"
 #include "builtins.h"
 

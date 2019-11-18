@@ -354,11 +354,8 @@ can_conditionally_move_p (machine_mode mode)
 opt_machine_mode
 qimode_for_vec_perm (machine_mode mode)
 {
-  machine_mode qimode;
-  if (GET_MODE_INNER (mode) != QImode
-      && mode_for_vector (QImode, GET_MODE_SIZE (mode)).exists (&qimode)
-      && VECTOR_MODE_P (qimode))
-    return qimode;
+  if (GET_MODE_INNER (mode) != QImode)
+    return related_vector_mode (mode, QImode, GET_MODE_SIZE (mode));
   return opt_machine_mode ();
 }
 
@@ -588,22 +585,21 @@ can_vec_mask_load_store_p (machine_mode mode,
   if (!VECTOR_MODE_P (vmode))
     return false;
 
-  if ((targetm.vectorize.get_mask_mode
-       (GET_MODE_NUNITS (vmode), GET_MODE_SIZE (vmode)).exists (&mask_mode))
+  if (targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
       && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
-  auto_vector_sizes vector_sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, true);
-  for (unsigned int i = 0; i < vector_sizes.length (); ++i)
+  auto_vector_modes vector_modes;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
+  for (unsigned int i = 0; i < vector_modes.length (); ++i)
     {
-      poly_uint64 cur = vector_sizes[i];
+      poly_uint64 cur = GET_MODE_SIZE (vector_modes[i]);
       poly_uint64 nunits;
       if (!multiple_p (cur, GET_MODE_SIZE (smode), &nunits))
 	continue;
       if (mode_for_vector (smode, nunits).exists (&vmode)
 	  && VECTOR_MODE_P (vmode)
-	  && targetm.vectorize.get_mask_mode (nunits, cur).exists (&mask_mode)
+	  && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
 	  && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
 	return true;
     }

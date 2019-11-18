@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "dumpfile.h"
 #include "cselib.h"
-#include "params.h"
 #include "function-abi.h"
 
 /* A list of cselib_val structures.  */
@@ -2297,7 +2296,7 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      p = &(*p)->next;
 	      continue;
 	    }
-	  if (num_mems < PARAM_VALUE (PARAM_MAX_CSELIB_MEMORY_LOCATIONS)
+	  if (num_mems < param_max_cselib_memory_locations
 	      && ! canon_anti_dependence (x, false, mem_rtx,
 					  GET_MODE (mem_rtx), mem_addr))
 	    {

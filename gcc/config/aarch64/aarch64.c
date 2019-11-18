@@ -55,7 +55,6 @@
 #include "reload.h"
 #include "langhooks.h"
 #include "opts.h"
-#include "params.h"
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "gimple-iterator.h"
@@ -1626,6 +1625,11 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx4HImode:
     /* Partial SVE SI vector.  */
     case E_VNx2SImode:
+    /* Partial SVE HF vectors.  */
+    case E_VNx2HFmode:
+    case E_VNx4HFmode:
+    /* Partial SVE SF vector.  */
+    case E_VNx2SFmode:
       return TARGET_SVE ? VEC_SVE_DATA | VEC_PARTIAL : 0;
 
     case E_VNx16QImode:
@@ -1754,6 +1758,22 @@ aarch64_array_mode_supported_p (machine_mode mode,
   return false;
 }
 
+/* MODE is some form of SVE vector mode.  For data modes, return the number
+   of vector register bits that each element of MODE occupies, such as 64
+   for both VNx2DImode and VNx2SImode (where each 32-bit value is stored
+   in a 64-bit container).  For predicate modes, return the number of
+   data bits controlled by each significant predicate bit.  */
+
+static unsigned int
+aarch64_sve_container_bits (machine_mode mode)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  poly_uint64 vector_bits = (vec_flags & (VEC_PARTIAL | VEC_SVE_PRED)
+			     ? BITS_PER_SVE_VECTOR
+			     : GET_MODE_BITSIZE (mode));
+  return vector_element_size (vector_bits, GET_MODE_NUNITS (mode));
+}
+
 /* Return the SVE predicate mode to use for elements that have
    ELEM_NBYTES bytes, if such a mode exists.  */
 
@@ -1774,20 +1794,26 @@ aarch64_sve_pred_mode (unsigned int elem_nbytes)
   return opt_machine_mode ();
 }
 
+/* Return the SVE predicate mode that should be used to control
+   SVE mode MODE.  */
+
+machine_mode
+aarch64_sve_pred_mode (machine_mode mode)
+{
+  unsigned int bits = aarch64_sve_container_bits (mode);
+  return aarch64_sve_pred_mode (bits / BITS_PER_UNIT).require ();
+}
+
 /* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */
 
 static opt_machine_mode
-aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
+aarch64_get_mask_mode (machine_mode mode)
 {
-  if (TARGET_SVE && known_eq (nbytes, BYTES_PER_SVE_VECTOR))
-    {
-      unsigned int elem_nbytes = vector_element_size (nbytes, nunits);
-      machine_mode pred_mode;
-      if (aarch64_sve_pred_mode (elem_nbytes).exists (&pred_mode))
-	return pred_mode;
-    }
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if (vec_flags & VEC_SVE_DATA)
+    return aarch64_sve_pred_mode (mode);
 
-  return default_get_mask_mode (nunits, nbytes);
+  return default_get_mask_mode (mode);
 }
 
 /* Return the SVE vector mode that has NUNITS elements of mode INNER_MODE.  */
@@ -1811,13 +1837,27 @@ aarch64_sve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
 static scalar_int_mode
 aarch64_sve_element_int_mode (machine_mode mode)
 {
-  unsigned int elt_bits = vector_element_size (BITS_PER_SVE_VECTOR,
+  poly_uint64 vector_bits = (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+			     ? BITS_PER_SVE_VECTOR
+			     : GET_MODE_BITSIZE (mode));
+  unsigned int elt_bits = vector_element_size (vector_bits,
 					       GET_MODE_NUNITS (mode));
   return int_mode_for_size (elt_bits, 0).require ();
 }
 
+/* Return an integer element mode that contains exactly
+   aarch64_sve_container_bits (MODE) bits.  This is wider than
+   aarch64_sve_element_int_mode if MODE is a partial vector,
+   otherwise it's the same.  */
+
+static scalar_int_mode
+aarch64_sve_container_int_mode (machine_mode mode)
+{
+  return int_mode_for_size (aarch64_sve_container_bits (mode), 0).require ();
+}
+
 /* Return the integer vector mode associated with SVE mode MODE.
-   Unlike mode_for_int_vector, this can handle the case in which
+   Unlike related_int_vector_mode, this can handle the case in which
    MODE is a predicate (and thus has a different total size).  */
 
 machine_mode
@@ -1825,6 +1865,61 @@ aarch64_sve_int_mode (machine_mode mode)
 {
   scalar_int_mode int_mode = aarch64_sve_element_int_mode (mode);
   return aarch64_sve_data_mode (int_mode, GET_MODE_NUNITS (mode)).require ();
+}
+
+/* Implement TARGET_VECTORIZE_RELATED_MODE.  */
+
+static opt_machine_mode
+aarch64_vectorize_related_mode (machine_mode vector_mode,
+				scalar_mode element_mode,
+				poly_uint64 nunits)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (vector_mode);
+
+  /* If we're operating on SVE vectors, try to return an SVE mode.  */
+  poly_uint64 sve_nunits;
+  if ((vec_flags & VEC_SVE_DATA)
+      && multiple_p (BYTES_PER_SVE_VECTOR,
+		     GET_MODE_SIZE (element_mode), &sve_nunits))
+    {
+      machine_mode sve_mode;
+      if (maybe_ne (nunits, 0U))
+	{
+	  /* Try to find a full or partial SVE mode with exactly
+	     NUNITS units.  */
+	  if (multiple_p (sve_nunits, nunits)
+	      && aarch64_sve_data_mode (element_mode,
+					nunits).exists (&sve_mode))
+	    return sve_mode;
+	}
+      else
+	{
+	  /* Take the preferred number of units from the number of bytes
+	     that fit in VECTOR_MODE.  We always start by "autodetecting"
+	     a full vector mode with preferred_simd_mode, so vectors
+	     chosen here will also be full vector modes.  Then
+	     autovectorize_vector_modes tries smaller starting modes
+	     and thus smaller preferred numbers of units.  */
+	  sve_nunits = ordered_min (sve_nunits, GET_MODE_SIZE (vector_mode));
+	  if (aarch64_sve_data_mode (element_mode,
+				     sve_nunits).exists (&sve_mode))
+	    return sve_mode;
+	}
+    }
+
+  /* Prefer to use 1 128-bit vector instead of 2 64-bit vectors.  */
+  if ((vec_flags & VEC_ADVSIMD)
+      && known_eq (nunits, 0U)
+      && known_eq (GET_MODE_BITSIZE (vector_mode), 64U)
+      && maybe_ge (GET_MODE_BITSIZE (element_mode)
+		   * GET_MODE_NUNITS (vector_mode), 128U))
+    {
+      machine_mode res = aarch64_simd_container_mode (element_mode, 128);
+      if (VECTOR_MODE_P (res))
+	return res;
+    }
+
+  return default_vectorize_related_mode (vector_mode, element_mode, nunits);
 }
 
 /* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
@@ -1888,11 +1983,6 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     return mode == DImode;
 
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-  /* At the moment, partial vector modes are only useful for memory
-     references, but that could change in future.  */
-  if (vec_flags & VEC_PARTIAL)
-    return false;
-
   if (vec_flags & VEC_SVE_PRED)
     return pr_or_ffr_regnum_p (regno);
 
@@ -3996,8 +4086,7 @@ aarch64_expand_sve_ld1rq (rtx dest, rtx src)
     }
 
   machine_mode mode = GET_MODE (dest);
-  unsigned int elem_bytes = GET_MODE_UNIT_SIZE (mode);
-  machine_mode pred_mode = aarch64_sve_pred_mode (elem_bytes).require ();
+  machine_mode pred_mode = aarch64_sve_pred_mode (mode);
   rtx ptrue = aarch64_ptrue_reg (pred_mode);
   emit_insn (gen_aarch64_sve_ld1rq (mode, dest, src, ptrue));
   return true;
@@ -4018,7 +4107,26 @@ aarch64_expand_sve_const_vector (rtx target, rtx src)
   unsigned int nelts_per_pattern = CONST_VECTOR_NELTS_PER_PATTERN (src);
   scalar_mode elt_mode = GET_MODE_INNER (mode);
   unsigned int elt_bits = GET_MODE_BITSIZE (elt_mode);
-  unsigned int encoded_bits = npatterns * nelts_per_pattern * elt_bits;
+  unsigned int container_bits = aarch64_sve_container_bits (mode);
+  unsigned int encoded_bits = npatterns * nelts_per_pattern * container_bits;
+
+  if (nelts_per_pattern == 1
+      && encoded_bits <= 128
+      && container_bits != elt_bits)
+    {
+      /* We have a partial vector mode and a constant whose full-vector
+	 equivalent would occupy a repeating 128-bit sequence.  Build that
+	 full-vector equivalent instead, so that we have the option of
+	 using LD1RQ and Advanced SIMD operations.  */
+      unsigned int repeat = container_bits / elt_bits;
+      machine_mode full_mode = aarch64_full_sve_mode (elt_mode).require ();
+      rtx_vector_builder builder (full_mode, npatterns * repeat, 1);
+      for (unsigned int i = 0; i < npatterns; ++i)
+	for (unsigned int j = 0; j < repeat; ++j)
+	  builder.quick_push (CONST_VECTOR_ENCODED_ELT (src, i));
+      target = aarch64_target_reg (target, full_mode);
+      return aarch64_expand_sve_const_vector (target, builder.build ());
+    }
 
   if (nelts_per_pattern == 1 && encoded_bits == 128)
     {
@@ -4711,8 +4819,7 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
     std::swap (mode_with_wider_elts, mode_with_narrower_elts);
 
   unsigned int unspec = aarch64_sve_rev_unspec (mode_with_narrower_elts);
-  unsigned int wider_bytes = GET_MODE_UNIT_SIZE (mode_with_wider_elts);
-  machine_mode pred_mode = aarch64_sve_pred_mode (wider_bytes).require ();
+  machine_mode pred_mode = aarch64_sve_pred_mode (mode_with_wider_elts);
 
   /* Get the operands in the appropriate modes and emit the instruction.  */
   ptrue = gen_lowpart (pred_mode, ptrue);
@@ -5589,7 +5696,7 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
   HOST_WIDE_INT stack_clash_probe_interval
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+    = 1 << param_stack_clash_protection_guard_size;
 
   /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
   xops[0] = reg1;
@@ -6842,7 +6949,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 					bool final_adjustment_p)
 {
   HOST_WIDE_INT guard_size
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+    = 1 << param_stack_clash_protection_guard_size;
   HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
   HOST_WIDE_INT min_probe_threshold
     = (final_adjustment_p
@@ -7364,7 +7471,7 @@ aarch64_expand_epilogue (bool for_sibcall)
      for each allocation.  For stack clash we are in a usable state if
      the adjustment is less than GUARD_SIZE - GUARD_USED_BY_CALLER.  */
   HOST_WIDE_INT guard_size
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+    = 1 << param_stack_clash_protection_guard_size;
   HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
 
   /* We can re-use the registers when:
@@ -9952,19 +10059,21 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			  machine_mode mode,
 			  secondary_reload_info *sri)
 {
-  /* Use aarch64_sve_reload_be for SVE reloads that cannot be handled
-     directly by the *aarch64_sve_mov<mode>_[lb]e move patterns.  See the
-     comment at the head of aarch64-sve.md for more details about the
-     big-endian handling.  */
-  if (BYTES_BIG_ENDIAN
-      && reg_class_subset_p (rclass, FP_REGS)
+  /* Use aarch64_sve_reload_mem for SVE memory reloads that cannot use
+     LDR and STR.  See the comment at the head of aarch64-sve.md for
+     more details about the big-endian handling.  */
+  if (reg_class_subset_p (rclass, FP_REGS)
       && !((REG_P (x) && HARD_REGISTER_P (x))
 	   || aarch64_simd_valid_immediate (x, NULL))
-      && mode != VNx16QImode
-      && aarch64_sve_data_mode_p (mode))
+      && mode != VNx16QImode)
     {
-      sri->icode = CODE_FOR_aarch64_sve_reload_be;
-      return NO_REGS;
+      unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+      if ((vec_flags & VEC_SVE_DATA)
+	  && ((vec_flags & VEC_PARTIAL) || BYTES_BIG_ENDIAN))
+	{
+	  sri->icode = CODE_FOR_aarch64_sve_reload_mem;
+	  return NO_REGS;
+	}
     }
 
   /* If we have to disable direct literal pool loads and stores because the
@@ -12538,7 +12647,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     gcc_assert (use_rsqrt_p (mode));
 
   machine_mode mmsk = (VECTOR_MODE_P (mode)
-		       ? mode_for_int_vector (mode).require ()
+		       ? related_int_vector_mode (mode).require ()
 		       : int_mode_for_mode (mode).require ());
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
@@ -12770,6 +12879,69 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
+/* Return true if STMT_INFO extends the result of a load.  */
+static bool
+aarch64_extending_load_p (stmt_vec_info stmt_info)
+{
+  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
+    return false;
+
+  tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
+  tree lhs_type = TREE_TYPE (gimple_assign_lhs (assign));
+  tree rhs_type = TREE_TYPE (rhs);
+  if (!INTEGRAL_TYPE_P (lhs_type)
+      || !INTEGRAL_TYPE_P (rhs_type)
+      || TYPE_PRECISION (lhs_type) <= TYPE_PRECISION (rhs_type))
+    return false;
+
+  stmt_vec_info def_stmt_info = stmt_info->vinfo->lookup_def (rhs);
+  return (def_stmt_info
+	  && STMT_VINFO_DATA_REF (def_stmt_info)
+	  && DR_IS_READ (STMT_VINFO_DATA_REF (def_stmt_info)));
+}
+
+/* Return true if STMT_INFO is an integer truncation.  */
+static bool
+aarch64_integer_truncation_p (stmt_vec_info stmt_info)
+{
+  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
+    return false;
+
+  tree lhs_type = TREE_TYPE (gimple_assign_lhs (assign));
+  tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (assign));
+  return (INTEGRAL_TYPE_P (lhs_type)
+	  && INTEGRAL_TYPE_P (rhs_type)
+	  && TYPE_PRECISION (lhs_type) < TYPE_PRECISION (rhs_type));
+}
+
+/* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
+   for STMT_INFO, which has cost kind KIND.  Adjust the cost as necessary
+   for SVE targets.  */
+static unsigned int
+aarch64_sve_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+			      unsigned int stmt_cost)
+{
+  /* Unlike vec_promote_demote, vector_stmt conversions do not change the
+     vector register size or number of units.  Integer promotions of this
+     type therefore map to SXT[BHW] or UXT[BHW].
+
+     Most loads have extending forms that can do the sign or zero extension
+     on the fly.  Optimistically assume that a load followed by an extension
+     will fold to this form during combine, and that the extension therefore
+     comes for free.  */
+  if (kind == vector_stmt && aarch64_extending_load_p (stmt_info))
+    stmt_cost = 0;
+
+  /* For similar reasons, vector_stmt integer truncations are a no-op,
+     because we can just ignore the unused upper bits of the source.  */
+  if (kind == vector_stmt && aarch64_integer_truncation_p (stmt_info))
+    stmt_cost = 0;
+
+  return stmt_cost;
+}
+
 /* Implement targetm.vectorize.add_stmt_cost.  */
 static unsigned
 aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
@@ -12784,6 +12956,9 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost =
 	    aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+
+      if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
+	stmt_cost = aarch64_sve_adjust_stmt_cost (kind, stmt_info, stmt_cost);
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
@@ -13306,73 +13481,60 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
   /* We don't mind passing in global_options_set here as we don't use
      the *options_set structs anyway.  */
-  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
-			 queue_depth,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_sched_autopref_queue_depth, queue_depth);
 
   /* Set up parameters to be used in prefetching algorithm.  Do not
      override the defaults unless we are tuning for a core we have
      researched values for.  */
   if (aarch64_tune_params.prefetch->num_slots > 0)
-    maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			   aarch64_tune_params.prefetch->num_slots,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_simultaneous_prefetches,
+			 aarch64_tune_params.prefetch->num_slots);
   if (aarch64_tune_params.prefetch->l1_cache_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			   aarch64_tune_params.prefetch->l1_cache_size,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_l1_cache_size,
+			 aarch64_tune_params.prefetch->l1_cache_size);
   if (aarch64_tune_params.prefetch->l1_cache_line_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			   aarch64_tune_params.prefetch->l1_cache_line_size,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_l1_cache_line_size,
+			 aarch64_tune_params.prefetch->l1_cache_line_size);
   if (aarch64_tune_params.prefetch->l2_cache_size >= 0)
-    maybe_set_param_value (PARAM_L2_CACHE_SIZE,
-			   aarch64_tune_params.prefetch->l2_cache_size,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_l2_cache_size,
+			 aarch64_tune_params.prefetch->l2_cache_size);
   if (!aarch64_tune_params.prefetch->prefetch_dynamic_strides)
-    maybe_set_param_value (PARAM_PREFETCH_DYNAMIC_STRIDES,
-			   0,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_prefetch_dynamic_strides, 0);
   if (aarch64_tune_params.prefetch->minimum_stride >= 0)
-    maybe_set_param_value (PARAM_PREFETCH_MINIMUM_STRIDE,
-			   aarch64_tune_params.prefetch->minimum_stride,
-			   opts->x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_prefetch_minimum_stride,
+			 aarch64_tune_params.prefetch->minimum_stride);
 
   /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
-
-  /* If the user hasn't changed it via configure then set the default to 64 KB
-     for the backend.  */
-  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
-			 DEFAULT_STK_CLASH_GUARD_SIZE == 0
-			   ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_sched_pressure_algorithm,
+		       SCHED_PRESSURE_MODEL);
 
   /* Validate the guard size.  */
-  int guard_size = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+  int guard_size = param_stack_clash_protection_guard_size;
+
+  if (guard_size != 12 && guard_size != 16)
+    error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
+	   "size.  Given value %d (%llu KB) is out of range",
+	   guard_size, (1ULL << guard_size) / 1024ULL);
 
   /* Enforce that interval is the same size as size so the mid-end does the
      right thing.  */
-  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL,
-			 guard_size,
-			 opts->x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_stack_clash_protection_probe_interval,
+		       guard_size);
 
   /* The maybe_set calls won't update the value if the user has explicitly set
      one.  Which means we need to validate that probing interval and guard size
      are equal.  */
   int probe_interval
-    = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+    = param_stack_clash_protection_probe_interval;
   if (guard_size != probe_interval)
     error ("stack clash guard size %<%d%> must be equal to probing interval "
 	   "%<%d%>", guard_size, probe_interval);
@@ -15831,7 +15993,7 @@ static bool
 aarch64_vector_mode_supported_p (machine_mode mode)
 {
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-  return vec_flags != 0 && (vec_flags & (VEC_STRUCT | VEC_PARTIAL)) == 0;
+  return vec_flags != 0 && (vec_flags & VEC_STRUCT) == 0;
 }
 
 /* Return the full-width SVE vector mode for element mode MODE, if one
@@ -15929,13 +16091,85 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 
 /* Return a list of possible vector sizes for the vectorizer
    to iterate over.  */
-static void
-aarch64_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+static unsigned int
+aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
 {
-  if (TARGET_SVE)
-    sizes->safe_push (BYTES_PER_SVE_VECTOR);
-  sizes->safe_push (16);
-  sizes->safe_push (8);
+  static const machine_mode sve_modes[] = {
+    /* Try using full vectors for all element types.  */
+    VNx16QImode,
+
+    /* Try using 16-bit containers for 8-bit elements and full vectors
+       for wider elements.  */
+    VNx8QImode,
+
+    /* Try using 32-bit containers for 8-bit and 16-bit elements and
+       full vectors for wider elements.  */
+    VNx4QImode,
+
+    /* Try using 64-bit containers for all element types.  */
+    VNx2QImode
+  };
+
+  static const machine_mode advsimd_modes[] = {
+    /* Try using 128-bit vectors for all element types.  */
+    V16QImode,
+
+    /* Try using 64-bit vectors for 8-bit elements and 128-bit vectors
+       for wider elements.  */
+    V8QImode,
+
+    /* Try using 64-bit vectors for 16-bit elements and 128-bit vectors
+       for wider elements.
+
+       TODO: We could support a limited form of V4QImode too, so that
+       we use 32-bit vectors for 8-bit elements.  */
+    V4HImode,
+
+    /* Try using 64-bit vectors for 32-bit elements and 128-bit vectors
+       for 64-bit elements.
+
+       TODO: We could similarly support limited forms of V2QImode and V2HImode
+       for this case.  */
+    V2SImode
+  };
+
+  /* Try using N-byte SVE modes only after trying N-byte Advanced SIMD mode.
+     This is because:
+
+     - If we can't use N-byte Advanced SIMD vectors then the placement
+       doesn't matter; we'll just continue as though the Advanced SIMD
+       entry didn't exist.
+
+     - If an SVE main loop with N bytes ends up being cheaper than an
+       Advanced SIMD main loop with N bytes then by default we'll replace
+       the Advanced SIMD version with the SVE one.
+
+     - If an Advanced SIMD main loop with N bytes ends up being cheaper
+       than an SVE main loop with N bytes then by default we'll try to
+       use the SVE loop to vectorize the epilogue instead.  */
+  unsigned int sve_i = TARGET_SVE ? 0 : ARRAY_SIZE (sve_modes);
+  unsigned int advsimd_i = 0;
+  while (advsimd_i < ARRAY_SIZE (advsimd_modes))
+    {
+      if (sve_i < ARRAY_SIZE (sve_modes)
+	  && maybe_gt (GET_MODE_NUNITS (sve_modes[sve_i]),
+		       GET_MODE_NUNITS (advsimd_modes[advsimd_i])))
+	modes->safe_push (sve_modes[sve_i++]);
+      else
+	modes->safe_push (advsimd_modes[advsimd_i++]);
+    }
+  while (sve_i < ARRAY_SIZE (sve_modes))
+    modes->safe_push (sve_modes[sve_i++]);
+
+  unsigned int flags = 0;
+  /* Consider enabling VECT_COMPARE_COSTS for SVE, both so that we
+     can compare SVE against Advanced SIMD and so that we can compare
+     multiple SVE vectorization approaches against each other.  There's
+     not really any point doing this for Advanced SIMD only, since the
+     first mode that works should always be the best.  */
+  if (TARGET_SVE && aarch64_sve_compare_costs)
+    flags |= VECT_COMPARE_COSTS;
+  return flags;
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
@@ -16472,7 +16706,14 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 	return false;
 
       if (info)
-	*info = simd_immediate_info (elt_mode, base, step);
+	{
+	  /* Get the corresponding container mode.  E.g. an INDEX on V2SI
+	     should yield two integer values per 128-bit block, meaning
+	     that we need to treat it in the same way as V2DI and then
+	     ignore the upper 32 bits of each element.  */
+	  elt_mode = aarch64_sve_container_int_mode (mode);
+	  *info = simd_immediate_info (elt_mode, base, step);
+	}
       return true;
     }
   else if (GET_CODE (op) == CONST_VECTOR
@@ -16941,9 +17182,9 @@ aarch64_simd_vector_alignment (const_tree type)
      direct way we have of identifying real SVE predicate types.  */
   if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_BOOL)
     return 16;
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-    return 128;
-  return wi::umin (wi::to_wide (TYPE_SIZE (type)), 128).to_uhwi ();
+  widest_int min_size
+    = constant_lower_bound (wi::to_poly_widest (TYPE_SIZE (type)));
+  return wi::umin (min_size, 128).to_uhwi ();
 }
 
 /* Implement target hook TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
@@ -19082,7 +19323,7 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  machine_mode sel_mode = mode_for_int_vector (d->vmode).require ();
+  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
   if (d->one_vector_p)
     emit_unspec2 (d->target, UNSPEC_TBL, d->op0, force_reg (sel_mode, sel));
@@ -19119,7 +19360,7 @@ aarch64_evpc_sel (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  machine_mode pred_mode = aarch64_sve_pred_mode (unit_size).require ();
+  machine_mode pred_mode = aarch64_sve_pred_mode (vmode);
 
   rtx_vector_builder builder (pred_mode, n_patterns, 2);
   for (int i = 0; i < n_patterns * 2; i++)
@@ -19448,9 +19689,7 @@ void
 aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
 			  rtx *ops)
 {
-  machine_mode pred_mode
-    = aarch64_get_mask_mode (GET_MODE_NUNITS (cmp_mode),
-			     GET_MODE_SIZE (cmp_mode)).require ();
+  machine_mode pred_mode = aarch64_get_mask_mode (cmp_mode).require ();
   rtx pred = gen_reg_rtx (pred_mode);
   if (FLOAT_MODE_P (cmp_mode))
     {
@@ -21771,9 +22010,9 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   aarch64_builtin_vectorized_function
 
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  aarch64_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  aarch64_autovectorize_vector_modes
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV \
@@ -21806,6 +22045,8 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_VECTORIZE_VEC_PERM_CONST \
   aarch64_vectorize_vec_perm_const
 
+#undef TARGET_VECTORIZE_RELATED_MODE
+#define TARGET_VECTORIZE_RELATED_MODE aarch64_vectorize_related_mode
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE aarch64_get_mask_mode
 #undef TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
@@ -21946,6 +22187,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

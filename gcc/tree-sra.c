@@ -96,7 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "builtins.h"
 #include "tree-sra.h"
@@ -2787,16 +2786,21 @@ analyze_all_variable_accesses (void)
   unsigned i;
   bool optimize_speed_p = !optimize_function_for_size_p (cfun);
 
-  enum compiler_param param = optimize_speed_p
-			? PARAM_SRA_MAX_SCALARIZATION_SIZE_SPEED
-			: PARAM_SRA_MAX_SCALARIZATION_SIZE_SIZE;
-
   /* If the user didn't set PARAM_SRA_MAX_SCALARIZATION_SIZE_<...>,
      fall back to a target default.  */
   unsigned HOST_WIDE_INT max_scalarization_size
-    = global_options_set.x_param_values[param]
-      ? PARAM_VALUE (param)
-      : get_move_ratio (optimize_speed_p) * UNITS_PER_WORD;
+    = get_move_ratio (optimize_speed_p) * UNITS_PER_WORD;
+
+  if (optimize_speed_p)
+    {
+      if (global_options_set.x_param_sra_max_scalarization_size_speed)
+	max_scalarization_size = param_sra_max_scalarization_size_speed;
+    }
+  else
+    {
+      if (global_options_set.x_param_sra_max_scalarization_size_size)
+	max_scalarization_size = param_sra_max_scalarization_size_size;
+    }
 
   max_scalarization_size *= BITS_PER_UNIT;
 

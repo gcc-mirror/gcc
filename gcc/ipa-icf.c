@@ -877,14 +877,9 @@ sem_function::equals_private (sem_item *item)
     }
 
   /* Checking all basic blocks.  */
-  push_cfun (DECL_STRUCT_FUNCTION (decl));
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
     if(!m_checker->compare_bb (bb_sorted[i], m_compared_func->bb_sorted[i]))
-      {
-	pop_cfun ();
-	return return_false ();
-      }
-  pop_cfun ();
+      return return_false ();
 
   auto_vec <int> bb_dict;
 
@@ -1340,8 +1335,9 @@ sem_function::merge (sem_item *alias_item)
 /* Semantic item initialization function.  */
 
 void
-sem_function::init (void)
+sem_function::init (ipa_icf_gimple::func_checker *checker)
 {
+  m_checker = checker;
   if (in_lto_p)
     get_node ()->get_untransformed_body ();
 
@@ -1416,161 +1412,6 @@ sem_function::init (void)
     }
 }
 
-/* Accumulate to HSTATE a hash of expression EXP.
-   Identical to inchash::add_expr, but guaranteed to be stable across LTO
-   and DECL equality classes.  */
-
-void
-sem_item::add_expr (const_tree exp, inchash::hash &hstate)
-{
-  if (exp == NULL_TREE)
-    {
-      hstate.merge_hash (0);
-      return;
-    }
-
-  /* Handled component can be matched in a cureful way proving equivalence
-     even if they syntactically differ.  Just skip them.  */
-  STRIP_NOPS (exp);
-  while (handled_component_p (exp))
-    exp = TREE_OPERAND (exp, 0);
-
-  enum tree_code code = TREE_CODE (exp);
-  hstate.add_int (code);
-
-  switch (code)
-    {
-    /* Use inchash::add_expr for everything that is LTO stable.  */
-    case VOID_CST:
-    case INTEGER_CST:
-    case REAL_CST:
-    case FIXED_CST:
-    case STRING_CST:
-    case COMPLEX_CST:
-    case VECTOR_CST:
-      inchash::add_expr (exp, hstate);
-      break;
-    case CONSTRUCTOR:
-      {
-	unsigned HOST_WIDE_INT idx;
-	tree value;
-
-	hstate.add_hwi (int_size_in_bytes (TREE_TYPE (exp)));
-
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
-	  if (value)
-	    add_expr (value, hstate);
-	break;
-      }
-    case ADDR_EXPR:
-    case FDESC_EXPR:
-      add_expr (get_base_address (TREE_OPERAND (exp, 0)), hstate);
-      break;
-    case SSA_NAME:
-    case VAR_DECL:
-    case CONST_DECL:
-    case PARM_DECL:
-      hstate.add_hwi (int_size_in_bytes (TREE_TYPE (exp)));
-      break;
-    case MEM_REF:
-    case POINTER_PLUS_EXPR:
-    case MINUS_EXPR:
-    case RANGE_EXPR:
-      add_expr (TREE_OPERAND (exp, 0), hstate);
-      add_expr (TREE_OPERAND (exp, 1), hstate);
-      break;
-    case PLUS_EXPR:
-      {
-	inchash::hash one, two;
-	add_expr (TREE_OPERAND (exp, 0), one);
-	add_expr (TREE_OPERAND (exp, 1), two);
-	hstate.add_commutative (one, two);
-      }
-      break;
-    CASE_CONVERT:
-      hstate.add_hwi (int_size_in_bytes (TREE_TYPE (exp)));
-      return add_expr (TREE_OPERAND (exp, 0), hstate);
-    default:
-      break;
-    }
-}
-
-/* Accumulate to HSTATE a hash of type t.
-   TYpes that may end up being compatible after LTO type merging needs to have
-   the same hash.  */
-
-void
-sem_item::add_type (const_tree type, inchash::hash &hstate)
-{
-  if (type == NULL_TREE)
-    {
-      hstate.merge_hash (0);
-      return;
-    }
-
-  type = TYPE_MAIN_VARIANT (type);
-
-  hstate.add_int (TYPE_MODE (type));
-
-  if (TREE_CODE (type) == COMPLEX_TYPE)
-    {
-      hstate.add_int (COMPLEX_TYPE);
-      sem_item::add_type (TREE_TYPE (type), hstate);
-    }
-  else if (INTEGRAL_TYPE_P (type))
-    {
-      hstate.add_int (INTEGER_TYPE);
-      hstate.add_flag (TYPE_UNSIGNED (type));
-      hstate.add_int (TYPE_PRECISION (type));
-    }
-  else if (VECTOR_TYPE_P (type))
-    {
-      hstate.add_int (VECTOR_TYPE);
-      hstate.add_int (TYPE_PRECISION (type));
-      sem_item::add_type (TREE_TYPE (type), hstate);
-    }
-  else if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      hstate.add_int (ARRAY_TYPE);
-      /* Do not hash size, so complete and incomplete types can match.  */
-      sem_item::add_type (TREE_TYPE (type), hstate);
-    }
-  else if (RECORD_OR_UNION_TYPE_P (type))
-    {
-      /* Incomplete types must be skipped here.  */
-      if (!COMPLETE_TYPE_P (type))
-	{
-	  hstate.add_int (RECORD_TYPE);
-	  return;
-	}
-
-      hashval_t *val = m_type_hash_cache.get (type);
-
-      if (!val)
-	{
-	  inchash::hash hstate2;
-	  unsigned nf;
-	  tree f;
-	  hashval_t hash;
-
-	  hstate2.add_int (RECORD_TYPE);
-	  for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
-	    if (TREE_CODE (f) == FIELD_DECL)
-	      {
-		add_type (TREE_TYPE (f), hstate2);
-		nf++;
-	      }
-
-	  hstate2.add_int (nf);
-	  hash = hstate2.end ();
-	  hstate.add_hwi (hash);
-	  m_type_hash_cache.put (type, hash);
-	}
-      else
-        hstate.add_hwi (*val);
-    }
-}
-
 /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */
 
 void
@@ -1583,27 +1424,19 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
   switch (code)
     {
     case GIMPLE_SWITCH:
-      add_expr (gimple_switch_index (as_a <gswitch *> (stmt)), hstate);
+      m_checker->hash_operand (gimple_switch_index (as_a <gswitch *> (stmt)),
+			     hstate, 0);
       break;
     case GIMPLE_ASSIGN:
       hstate.add_int (gimple_assign_rhs_code (stmt));
       if (commutative_tree_code (gimple_assign_rhs_code (stmt))
 	  || commutative_ternary_tree_code (gimple_assign_rhs_code (stmt)))
 	{
-	  inchash::hash one, two;
-
-	  add_expr (gimple_assign_rhs1 (stmt), one);
-	  add_type (TREE_TYPE (gimple_assign_rhs1 (stmt)), one);
-	  add_expr (gimple_assign_rhs2 (stmt), two);
-	  hstate.add_commutative (one, two);
+	  m_checker->hash_operand (gimple_assign_rhs1 (stmt), hstate, 0);
+	  m_checker->hash_operand (gimple_assign_rhs2 (stmt), hstate, 0);
 	  if (commutative_ternary_tree_code (gimple_assign_rhs_code (stmt)))
-	    {
-	      add_expr (gimple_assign_rhs3 (stmt), hstate);
-	      add_type (TREE_TYPE (gimple_assign_rhs3 (stmt)), hstate);
-	    }
-	  add_expr (gimple_assign_lhs (stmt), hstate);
-	  add_type (TREE_TYPE (gimple_assign_lhs (stmt)), two);
-	  break;
+	    m_checker->hash_operand (gimple_assign_rhs3 (stmt), hstate, 0);
+	  m_checker->hash_operand (gimple_assign_lhs (stmt), hstate, 0);
 	}
       /* fall through */
     case GIMPLE_CALL:
@@ -1613,11 +1446,7 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
     case GIMPLE_RETURN:
       /* All these statements are equivalent if their operands are.  */
       for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
-	{
-	  add_expr (gimple_op (stmt, i), hstate);
-	  if (gimple_op (stmt, i))
-	    add_type (TREE_TYPE (gimple_op (stmt, i)), hstate);
-	}
+	m_checker->hash_operand (gimple_op (stmt, i), hstate, 0);
       /* Consider nocf_check attribute in hash as it affects code
  	 generation.  */
       if (code == GIMPLE_CALL
@@ -1653,7 +1482,8 @@ sem_function::compare_polymorphic_p (void)
    semantic function item.  */
 
 sem_function *
-sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
+sem_function::parse (cgraph_node *node, bitmap_obstack *stack,
+		     func_checker *checker)
 {
   tree fndecl = node->decl;
   function *func = DECL_STRUCT_FUNCTION (fndecl);
@@ -1674,8 +1504,7 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
     return NULL;
 
   sem_function *f = new sem_function (node, stack);
-
-  f->init ();
+  f->init (checker);
 
   return f;
 }
@@ -2043,17 +1872,37 @@ sem_variable::equals (tree t1, tree t2)
 /* Parser function that visits a varpool NODE.  */
 
 sem_variable *
-sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
+sem_variable::parse (varpool_node *node, bitmap_obstack *stack,
+		     func_checker *checker)
 {
   if (TREE_THIS_VOLATILE (node->decl) || DECL_HARD_REGISTER (node->decl)
       || node->alias)
     return NULL;
 
   sem_variable *v = new sem_variable (node, stack);
-
-  v->init ();
+  v->init (checker);
 
   return v;
+}
+
+/* Semantic variable initialization function.  */
+
+void
+sem_variable::init (ipa_icf_gimple::func_checker *checker)
+{
+  decl = get_node ()->decl;
+
+  /* All WPA streamed in symbols should have their hashes computed at compile
+     time.  At this point, the constructor may not be in memory at all.
+     DECL_INITIAL (decl) would be error_mark_node in that case.  */
+  if (!m_hash_set)
+    {
+      gcc_assert (!node->lto_file_data);
+      inchash::hash hstate;
+      hstate.add_int (456346417);
+      checker->hash_operand (DECL_INITIAL (decl), hstate, 0);
+      set_hash (hstate.end ());
+    }
 }
 
 /* References independent hash function.  */
@@ -2061,22 +1910,7 @@ sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 hashval_t
 sem_variable::get_hash (void)
 {
-  if (m_hash_set)
-    return m_hash;
-
-  /* All WPA streamed in symbols should have their hashes computed at compile
-     time.  At this point, the constructor may not be in memory at all.
-     DECL_INITIAL (decl) would be error_mark_node in that case.  */
-  gcc_assert (!node->lto_file_data);
-  tree ctor = DECL_INITIAL (decl);
-  inchash::hash hstate;
-
-  hstate.add_int (456346417);
-  if (DECL_SIZE (decl) && tree_fits_shwi_p (DECL_SIZE (decl)))
-    hstate.add_hwi (tree_to_shwi (DECL_SIZE (decl)));
-  add_expr (ctor, hstate);
-  set_hash (hstate.end ());
-
+  gcc_checking_assert (m_hash_set);
   return m_hash;
 }
 
@@ -2566,7 +2400,7 @@ sem_item_optimizer::execute (void)
 
   dump_cong_classes ();
 
-  parse_nonsingleton_classes ();
+  unsigned int loaded_symbols = parse_nonsingleton_classes ();
   subdivide_classes_by_equality ();
 
   if (dump_file)
@@ -2579,7 +2413,7 @@ sem_item_optimizer::execute (void)
   process_cong_reduction ();
   dump_cong_classes ();
   checking_verify_classes ();
-  bool merged_p = merge_classes (prev_class_count);
+  bool merged_p = merge_classes (prev_class_count, loaded_symbols);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     symtab->dump (dump_file);
@@ -2595,10 +2429,13 @@ sem_item_optimizer::parse_funcs_and_vars (void)
 {
   cgraph_node *cnode;
 
+  /* Create dummy func_checker for hashing purpose.  */
+  func_checker checker;
+
   if (flag_ipa_icf_functions)
     FOR_EACH_DEFINED_FUNCTION (cnode)
     {
-      sem_function *f = sem_function::parse (cnode, &m_bmstack);
+      sem_function *f = sem_function::parse (cnode, &m_bmstack, &checker);
       if (f)
 	{
 	  m_items.safe_push (f);
@@ -2611,7 +2448,7 @@ sem_item_optimizer::parse_funcs_and_vars (void)
   if (flag_ipa_icf_variables)
     FOR_EACH_DEFINED_VARIABLE (vnode)
     {
-      sem_variable *v = sem_variable::parse (vnode, &m_bmstack);
+      sem_variable *v = sem_variable::parse (vnode, &m_bmstack, &checker);
 
       if (v)
 	{
@@ -2750,15 +2587,18 @@ sem_item_optimizer::build_graph (void)
 /* Semantic items in classes having more than one element and initialized.
    In case of WPA, we load function body.  */
 
-void
+unsigned int
 sem_item_optimizer::parse_nonsingleton_classes (void)
 {
   unsigned int counter = 0;
 
+  /* Create dummy func_checker for hashing purpose.  */
+  func_checker checker;
+
   for (unsigned i = 0; i < m_items.length (); i++)
     if (m_items[i]->cls->members.length () > 1)
       {
-	m_items[i]->init ();
+	m_items[i]->init (&checker);
 	++counter;
       }
 
@@ -2767,6 +2607,8 @@ sem_item_optimizer::parse_nonsingleton_classes (void)
       float f = m_items.length () ? 100.0f * counter / m_items.length () : 0.0f;
       fprintf (dump_file, "Init called for %u items (%.2f%%).\n", counter, f);
     }
+
+  return counter;
 }
 
 /* Equality function for semantic items is used to subdivide existing
@@ -3374,10 +3216,12 @@ sort_congruence_class_groups_by_decl_uid (const void *a, const void *b)
 /* After reduction is done, we can declare all items in a group
    to be equal. PREV_CLASS_COUNT is start number of classes
    before reduction. True is returned if there's a merge operation
-   processed. */
+   processed.  LOADED_SYMBOLS is number of symbols that were loaded
+   in WPA.  */
 
 bool
-sem_item_optimizer::merge_classes (unsigned int prev_class_count)
+sem_item_optimizer::merge_classes (unsigned int prev_class_count,
+				   unsigned int loaded_symbols)
 {
   unsigned int item_count = m_items.length ();
   unsigned int class_count = m_classes_count;
@@ -3440,8 +3284,10 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	       non_singular_classes_count : 0.0f,
 	       non_singular_classes_count);
       fprintf (dump_file, "Equal symbols: %u\n", equal_items);
-      fprintf (dump_file, "Fraction of visited symbols: %.2f%%\n\n",
-	       item_count ? 100.0f * equal_items / item_count : 0.0f);
+      unsigned total = equal_items + non_singular_classes_count;
+      fprintf (dump_file, "Totally needed symbols: %u"
+	       ", fraction of loaded symbols: %.2f%%\n\n", total,
+	       loaded_symbols ? 100.0f * total / loaded_symbols: 0.0f);
     }
 
   unsigned int l;

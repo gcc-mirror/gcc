@@ -45,4 +45,5 @@ test01()
   alloc_type a;
   std::tuple<X> t(std::allocator_arg, a); // this is required to be ill-formed
   // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
+  // { dg-error "no matching function for call" "" { target c++2a } 0 }
 }

@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-cfgcleanup.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-iterator.h"
 #include "gimple-pretty-print.h"
@@ -1404,15 +1403,14 @@ get_cond_branch_to_split_loop (struct loop *loop, gcond *cond)
   profile_probability prob = invar_branch->probability;
   if (prob.reliable_p ())
     {
-      int thres = PARAM_VALUE (PARAM_MIN_LOOP_COND_SPLIT_PROB);
+      int thres = param_min_loop_cond_split_prob;
 
       if (prob < profile_probability::always ().apply_scale (thres, 100))
 	return NULL;
     }
 
   /* Add a threshold for increased code size to disable loop split.  */
-  if (compute_added_num_insns (loop, invar_branch)
-      > PARAM_VALUE (PARAM_MAX_PEELED_INSNS))
+  if (compute_added_num_insns (loop, invar_branch) > param_max_peeled_insns)
     return NULL;
 
   return invar_branch;

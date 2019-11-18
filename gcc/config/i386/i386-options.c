@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "tm-constrs.h"
-#include "params.h"
 #include "cselib.h"
 #include "sched-int.h"
 #include "opts.h"
@@ -317,19 +316,13 @@ ix86_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	  HOST_WIDE_INT mask = i ? ix86_isa_flags2 : ix86_isa_flags;
 	  for (size_t n = 0; n < nopts; n++)
 	    {
-	      const char *option = opts[n].option + 2;
-	      /* -msse4.2 and -msse4.1 options contain dot, which is not valid
-		 in identifiers.  Use underscore instead, and handle sse4
-		 as an alias to sse4_2.  */
+	      /* Handle sse4 as an alias to sse4.2.  */
 	      if (opts[n].mask == OPTION_MASK_ISA_SSE4_2)
 		{
-		  option = "sse4_2";
 		  if (strcmp (name, "sse4") == 0)
 		    return (mask & opts[n].mask) != 0 ? 1 : -1;
 		}
-	      else if (opts[n].mask == OPTION_MASK_ISA_SSE4_1)
-		option = "sse4_1";
-	      if (strcmp (name, option) == 0)
+	      if (strcmp (name, opts[n].option + 2) == 0)
 		return (mask & opts[n].mask) != 0 ? 1 : -1;
 	    }
 	}
@@ -1341,8 +1334,6 @@ ix86_valid_target_attribute_p (tree fndecl,
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
     }
 
-  finalize_options_struct (&func_options);
-
   return ret;
 }
 
@@ -1608,12 +1599,12 @@ ix86_recompute_optlev_based_flags (struct gcc_options *opts,
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
-      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
-	opts->x_flag_omit_frame_pointer = !USE_IX86_FRAME_POINTER;
+      if (opts->x_optimize >= 1)
+	SET_OPTION_IF_UNSET (opts, opts_set, flag_omit_frame_pointer,
+			     !USE_IX86_FRAME_POINTER);
       if (opts->x_flag_asynchronous_unwind_tables
-	  && !opts_set->x_flag_unwind_tables
 	  && TARGET_64BIT_MS_ABI)
-	opts->x_flag_unwind_tables = 1;
+	SET_OPTION_IF_UNSET (opts, opts_set, flag_unwind_tables, 1);
       if (opts->x_flag_asynchronous_unwind_tables == 2)
 	opts->x_flag_unwind_tables
 	  = opts->x_flag_asynchronous_unwind_tables = 1;
@@ -1622,9 +1613,9 @@ ix86_recompute_optlev_based_flags (struct gcc_options *opts,
     }
   else
     {
-      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
-	opts->x_flag_omit_frame_pointer
-	  = !(USE_IX86_FRAME_POINTER || opts->x_optimize_size);
+      if (opts->x_optimize >= 1)
+	  SET_OPTION_IF_UNSET (opts, opts_set, flag_omit_frame_pointer,
+			       !(USE_IX86_FRAME_POINTER || opts->x_optimize_size));
       if (opts->x_flag_asynchronous_unwind_tables == 2)
 	opts->x_flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
       if (opts->x_flag_pcc_struct_return == 2)
@@ -1824,8 +1815,7 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_ix86_pmode = TARGET_LP64_P (opts->x_ix86_isa_flags)
 			 ? PMODE_DI : PMODE_SI;
 
-  if (!opts_set->x_ix86_abi)
-    opts->x_ix86_abi = DEFAULT_ABI;
+  SET_OPTION_IF_UNSET (opts, opts_set, ix86_abi, DEFAULT_ABI);
 
   if (opts->x_ix86_abi == MS_ABI && TARGET_X32_P (opts->x_ix86_isa_flags))
     error ("%<-mabi=ms%> not supported with X32 ABI");
@@ -1846,8 +1836,8 @@ ix86_option_override_internal (bool main_args_p,
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this
      option.  */
-  if (!opts_set->x_flag_ms_extensions)
-    opts->x_flag_ms_extensions = (MS_ABI == DEFAULT_ABI);
+  SET_OPTION_IF_UNSET (opts, opts_set, flag_ms_extensions,
+		       (MS_ABI == DEFAULT_ABI));
 
   if (opts_set->x_ix86_cmodel)
     {
@@ -2370,8 +2360,8 @@ ix86_option_override_internal (bool main_args_p,
   ix86_default_align (opts);
 
   /* Provide default for -mbranch-cost= value.  */
-  if (!opts_set->x_ix86_branch_cost)
-    opts->x_ix86_branch_cost = ix86_tune_cost->branch_cost;
+  SET_OPTION_IF_UNSET (opts, opts_set, ix86_branch_cost,
+		       ix86_tune_cost->branch_cost);
 
   if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
     {
@@ -2477,8 +2467,8 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   /* Set the default value for -mstackrealign.  */
-  if (!opts_set->x_ix86_force_align_arg_pointer)
-    opts->x_ix86_force_align_arg_pointer = STACK_REALIGN_DEFAULT;
+  SET_OPTION_IF_UNSET (opts, opts_set, ix86_force_align_arg_pointer,
+		       STACK_REALIGN_DEFAULT);
 
   ix86_default_incoming_stack_boundary = PREFERRED_STACK_BOUNDARY;
 
@@ -2618,22 +2608,14 @@ ix86_option_override_internal (bool main_args_p,
   if (!TARGET_SCHEDULE)
     opts->x_flag_schedule_insns_after_reload = opts->x_flag_schedule_insns = 0;
 
-  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			 ix86_tune_cost->simultaneous_prefetches,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			 ix86_tune_cost->prefetch_block,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			 ix86_tune_cost->l1_cache_size,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE,
-			 ix86_tune_cost->l2_cache_size,
-			 opts->x_param_values,
-			 opts_set->x_param_values);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_simultaneous_prefetches,
+		       ix86_tune_cost->simultaneous_prefetches);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_line_size,
+		       ix86_tune_cost->prefetch_block);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_size,
+		       ix86_tune_cost->l1_cache_size);
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l2_cache_size,
+		       ix86_tune_cost->l2_cache_size);
 
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
@@ -2692,7 +2674,7 @@ ix86_option_override_internal (bool main_args_p,
 
   /* Enable 128-bit AVX instruction generation
      for the auto-vectorizer.  */
-  if (TARGET_AVX128_OPTIMAL
+  if (ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
       && (opts_set->x_prefer_vector_width_type == PVW_NONE))
     opts->x_prefer_vector_width_type = PVW_AVX128;
 
@@ -2868,19 +2850,14 @@ ix86_option_override_internal (bool main_args_p,
       = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
 
   if (ix86_tune_features [X86_TUNE_AVOID_256FMA_CHAINS])
-    maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 256,
-			   opts->x_param_values,
-			   opts_set->x_param_values);
+    SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 256);
   else if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])
-    maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 128,
-			   opts->x_param_values,
-			   opts_set->x_param_values);
+    SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 128);
 
   /* PR86952: jump table usage with retpolines is slow.
      The PR provides some numbers about the slowness.  */
-  if (ix86_indirect_branch != indirect_branch_keep
-      && !opts_set->x_flag_jump_tables)
-    opts->x_flag_jump_tables = 0;
+  if (ix86_indirect_branch != indirect_branch_keep)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_jump_tables, 0);
 
   return true;
 }

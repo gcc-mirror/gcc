@@ -20,12 +20,13 @@
 
 ;; Integer average (floor).
 (define_expand "<u>avg<mode>3_floor"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(unspec:SVE_FULL_I
 	  [(match_dup 3)
-	   (unspec:SVE_I [(match_operand:SVE_I 1 "register_operand")
-			  (match_operand:SVE_I 2 "register_operand")]
-			 HADD)]
+	   (unspec:SVE_FULL_I
+	     [(match_operand:SVE_FULL_I 1 "register_operand")
+	      (match_operand:SVE_FULL_I 2 "register_operand")]
+	     HADD)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   {
@@ -35,12 +36,13 @@
 
 ;; Integer average (rounding).
 (define_expand "<u>avg<mode>3_ceil"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(unspec:SVE_FULL_I
 	  [(match_dup 3)
-	   (unspec:SVE_I [(match_operand:SVE_I 1 "register_operand")
-			  (match_operand:SVE_I 2 "register_operand")]
-			 RHADD)]
+	   (unspec:SVE_FULL_I
+	     [(match_operand:SVE_FULL_I 1 "register_operand")
+	      (match_operand:SVE_FULL_I 2 "register_operand")]
+	     RHADD)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   {
@@ -50,12 +52,13 @@
 
 ;; Predicated halving addsub.
 (define_insn "*<sur>h<addsub><mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (unspec:SVE_I [(match_operand:SVE_I 2 "register_operand" "%0, w")
-			  (match_operand:SVE_I 3 "register_operand" "w, w")]
-			 HADDSUB)]
+	   (unspec:SVE_FULL_I
+	     [(match_operand:SVE_FULL_I 2 "register_operand" "%0, w")
+	      (match_operand:SVE_FULL_I 3 "register_operand" "w, w")]
+	     HADDSUB)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   "@
@@ -67,17 +70,18 @@
 ;; Multiply long top / bottom.
 (define_insn "<su>mull<bt><Vwide>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(unspec:<VWIDE> [(match_operand:SVE_BHSI 1 "register_operand" "w")
-			 (match_operand:SVE_BHSI 2 "register_operand" "w")]
-			MULLBT))]
+	(unspec:<VWIDE>
+	  [(match_operand:SVE_FULL_BHSI 1 "register_operand" "w")
+	   (match_operand:SVE_FULL_BHSI 2 "register_operand" "w")]
+	  MULLBT))]
   "TARGET_SVE2"
   "<su>mull<bt>\t%0.<Vewtype>, %1.<Vetype>, %2.<Vetype>"
 )
 
 ;; (Rounding) Right shift narrow bottom.
 (define_insn "<r>shrnb<mode>"
-  [(set (match_operand:SVE_BHSI 0 "register_operand" "=w")
-        (unspec:SVE_BHSI
+  [(set (match_operand:SVE_FULL_BHSI 0 "register_operand" "=w")
+        (unspec:SVE_FULL_BHSI
 	  [(match_operand:<VWIDE> 1 "register_operand" "w")
 	   (match_operand 2 "aarch64_simd_shift_imm_offset_<Vel>" "")]
 	  SHRNB))]
@@ -87,9 +91,9 @@
 
 ;; (Rounding) Right shift narrow top.
 (define_insn "<r>shrnt<mode>"
-  [(set (match_operand:SVE_BHSI 0 "register_operand" "=w")
-	(unspec:SVE_BHSI
-	  [(match_operand:SVE_BHSI 1 "register_operand" "0")
+  [(set (match_operand:SVE_FULL_BHSI 0 "register_operand" "=w")
+	(unspec:SVE_FULL_BHSI
+	  [(match_operand:SVE_FULL_BHSI 1 "register_operand" "0")
 	   (match_operand:<VWIDE> 2 "register_operand" "w")
 	   (match_operand 3 "aarch64_simd_shift_imm_offset_<Vel>" "i")]
 	  SHRNT))]
@@ -99,12 +103,13 @@
 
 ;; Unpredicated integer multiply-high-with-(round-and-)scale.
 (define_expand "<su>mulh<r>s<mode>3"
-  [(set (match_operand:SVE_BHSI 0 "register_operand")
-	(unspec:SVE_BHSI
+  [(set (match_operand:SVE_FULL_BHSI 0 "register_operand")
+	(unspec:SVE_FULL_BHSI
 	  [(match_dup 3)
-	   (unspec:SVE_BHSI [(match_operand:SVE_BHSI 1 "register_operand")
-			     (match_operand:SVE_BHSI 2 "register_operand")]
-			    MULHRS)]
+	   (unspec:SVE_FULL_BHSI
+	     [(match_operand:SVE_FULL_BHSI 1 "register_operand")
+	      (match_operand:SVE_FULL_BHSI 2 "register_operand")]
+	     MULHRS)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   {
@@ -125,15 +130,15 @@
 
 ;; Unpredicated signed / unsigned shift-right accumulate.
 (define_insn_and_rewrite "*aarch64_sve2_sra<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w")
-	(plus:SVE_I
-	  (unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w")
+	(plus:SVE_FULL_I
+	  (unspec:SVE_FULL_I
 	    [(match_operand 4)
-	     (SHIFTRT:SVE_I
-	       (match_operand:SVE_I 2 "register_operand" "w")
-	       (match_operand:SVE_I 3 "aarch64_simd_rshift_imm" "Dr"))]
+	     (SHIFTRT:SVE_FULL_I
+	       (match_operand:SVE_FULL_I 2 "register_operand" "w")
+	       (match_operand:SVE_FULL_I 3 "aarch64_simd_rshift_imm" "Dr"))]
 	    UNSPEC_PRED_X)
-	 (match_operand:SVE_I 1 "register_operand" "0")))]
+	 (match_operand:SVE_FULL_I 1 "register_operand" "0")))]
   "TARGET_SVE2"
   "<sra_op>sra\t%0.<Vetype>, %2.<Vetype>, #%3"
   "&& !CONSTANT_P (operands[4])"
@@ -144,12 +149,12 @@
 
 ;; Unpredicated 3-way exclusive OR.
 (define_insn "*aarch64_sve2_eor3<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, w, ?&w")
-	(xor:SVE_I
-	  (xor:SVE_I
-	    (match_operand:SVE_I 1 "register_operand" "0, w, w, w")
-	    (match_operand:SVE_I 2 "register_operand" "w, 0, w, w"))
-	  (match_operand:SVE_I 3 "register_operand" "w, w, 0, w")))]
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, w, w, ?&w")
+	(xor:SVE_FULL_I
+	  (xor:SVE_FULL_I
+	    (match_operand:SVE_FULL_I 1 "register_operand" "0, w, w, w")
+	    (match_operand:SVE_FULL_I 2 "register_operand" "w, 0, w, w"))
+	  (match_operand:SVE_FULL_I 3 "register_operand" "w, w, 0, w")))]
   "TARGET_SVE2"
   "@
   eor3\t%0.d, %0.d, %2.d, %3.d
@@ -161,14 +166,14 @@
 
 ;; Use NBSL for vector NOR.
 (define_insn_and_rewrite "*aarch64_sve2_nor<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_I
 	  [(match_operand 3)
-	   (and:SVE_I
-	     (not:SVE_I
-	       (match_operand:SVE_I 1 "register_operand" "%0, w"))
-	     (not:SVE_I
-	       (match_operand:SVE_I 2 "register_operand" "w, w")))]
+	   (and:SVE_FULL_I
+	     (not:SVE_FULL_I
+	       (match_operand:SVE_FULL_I 1 "register_operand" "%0, w"))
+	     (not:SVE_FULL_I
+	       (match_operand:SVE_FULL_I 2 "register_operand" "w, w")))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   "@
@@ -183,14 +188,14 @@
 
 ;; Use NBSL for vector NAND.
 (define_insn_and_rewrite "*aarch64_sve2_nand<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_I
 	  [(match_operand 3)
-	   (ior:SVE_I
-	     (not:SVE_I
-	       (match_operand:SVE_I 1 "register_operand" "%0, w"))
-	     (not:SVE_I
-	       (match_operand:SVE_I 2 "register_operand" "w, w")))]
+	   (ior:SVE_FULL_I
+	     (not:SVE_FULL_I
+	       (match_operand:SVE_FULL_I 1 "register_operand" "%0, w"))
+	     (not:SVE_FULL_I
+	       (match_operand:SVE_FULL_I 2 "register_operand" "w, w")))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   "@
@@ -206,13 +211,13 @@
 ;; Unpredicated bitwise select.
 ;; (op3 ? bsl_mov : bsl_dup) == (((bsl_mov ^ bsl_dup) & op3) ^ bsl_dup)
 (define_insn "*aarch64_sve2_bsl<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(xor:SVE_I
-	  (and:SVE_I
-	    (xor:SVE_I
-	      (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
-	      (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
-	    (match_operand:SVE_I 3 "register_operand" "w, w"))
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(xor:SVE_FULL_I
+	  (and:SVE_FULL_I
+	    (xor:SVE_FULL_I
+	      (match_operand:SVE_FULL_I 1 "register_operand" "<bsl_1st>, w")
+	      (match_operand:SVE_FULL_I 2 "register_operand" "<bsl_2nd>, w"))
+	    (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))
 	  (match_dup BSL_DUP)))]
   "TARGET_SVE2"
   "@
@@ -224,16 +229,16 @@
 ;; Unpredicated bitwise inverted select.
 ;; (~(op3 ? bsl_mov : bsl_dup)) == (~(((bsl_mov ^ bsl_dup) & op3) ^ bsl_dup))
 (define_insn_and_rewrite "*aarch64_sve2_nbsl<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_I
 	  [(match_operand 4)
-	   (not:SVE_I
-	     (xor:SVE_I
-	       (and:SVE_I
-		 (xor:SVE_I
-		   (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
-		   (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
-		 (match_operand:SVE_I 3 "register_operand" "w, w"))
+	   (not:SVE_FULL_I
+	     (xor:SVE_FULL_I
+	       (and:SVE_FULL_I
+		 (xor:SVE_FULL_I
+		   (match_operand:SVE_FULL_I 1 "register_operand" "<bsl_1st>, w")
+		   (match_operand:SVE_FULL_I 2 "register_operand" "<bsl_2nd>, w"))
+		 (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))
 	       (match_dup BSL_DUP)))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
@@ -250,17 +255,17 @@
 ;; Unpredicated bitwise select with inverted first operand.
 ;; (op3 ? ~bsl_mov : bsl_dup) == ((~(bsl_mov ^ bsl_dup) & op3) ^ bsl_dup)
 (define_insn_and_rewrite "*aarch64_sve2_bsl1n<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(xor:SVE_I
-	  (and:SVE_I
-	    (unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(xor:SVE_FULL_I
+	  (and:SVE_FULL_I
+	    (unspec:SVE_FULL_I
 	      [(match_operand 4)
-	       (not:SVE_I
-		 (xor:SVE_I
-		   (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
-		   (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w")))]
+	       (not:SVE_FULL_I
+		 (xor:SVE_FULL_I
+		   (match_operand:SVE_FULL_I 1 "register_operand" "<bsl_1st>, w")
+		   (match_operand:SVE_FULL_I 2 "register_operand" "<bsl_2nd>, w")))]
 	      UNSPEC_PRED_X)
-	    (match_operand:SVE_I 3 "register_operand" "w, w"))
+	    (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))
 	  (match_dup BSL_DUP)))]
   "TARGET_SVE2"
   "@
@@ -276,17 +281,17 @@
 ;; Unpredicated bitwise select with inverted second operand.
 ;; (bsl_dup ? bsl_mov : ~op3) == ((bsl_dup & bsl_mov) | (~op3 & ~bsl_dup))
 (define_insn_and_rewrite "*aarch64_sve2_bsl2n<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(ior:SVE_I
-	  (and:SVE_I
-	    (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
-	    (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
-	  (unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(ior:SVE_FULL_I
+	  (and:SVE_FULL_I
+	    (match_operand:SVE_FULL_I 1 "register_operand" "<bsl_1st>, w")
+	    (match_operand:SVE_FULL_I 2 "register_operand" "<bsl_2nd>, w"))
+	  (unspec:SVE_FULL_I
 	    [(match_operand 4)
-	     (and:SVE_I
-	       (not:SVE_I
-		 (match_operand:SVE_I 3 "register_operand" "w, w"))
-	       (not:SVE_I
+	     (and:SVE_FULL_I
+	       (not:SVE_FULL_I
+		 (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))
+	       (not:SVE_FULL_I
 		 (match_dup BSL_DUP)))]
 	    UNSPEC_PRED_X)))]
   "TARGET_SVE2"
@@ -303,18 +308,18 @@
 ;; Unpredicated bitwise select with inverted second operand, alternative form.
 ;; (bsl_dup ? bsl_mov : ~op3) == ((bsl_dup & bsl_mov) | (~bsl_dup & ~op3))
 (define_insn_and_rewrite "*aarch64_sve2_bsl2n<mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
-	(ior:SVE_I
-	  (and:SVE_I
-	    (match_operand:SVE_I 1 "register_operand" "<bsl_1st>, w")
-	    (match_operand:SVE_I 2 "register_operand" "<bsl_2nd>, w"))
-	  (unspec:SVE_I
+  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
+	(ior:SVE_FULL_I
+	  (and:SVE_FULL_I
+	    (match_operand:SVE_FULL_I 1 "register_operand" "<bsl_1st>, w")
+	    (match_operand:SVE_FULL_I 2 "register_operand" "<bsl_2nd>, w"))
+	  (unspec:SVE_FULL_I
 	    [(match_operand 4)
-	     (and:SVE_I
-	       (not:SVE_I
+	     (and:SVE_FULL_I
+	       (not:SVE_FULL_I
 		 (match_dup BSL_DUP))
-	       (not:SVE_I
-		 (match_operand:SVE_I 3 "register_operand" "w, w")))]
+	       (not:SVE_FULL_I
+		 (match_operand:SVE_FULL_I 3 "register_operand" "w, w")))]
 	    UNSPEC_PRED_X)))]
   "TARGET_SVE2"
   "@

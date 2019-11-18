@@ -106,6 +106,69 @@ extern void gomp_aligned_free (void *);
    GCC's builtin alloca().  */
 #define gomp_alloca(x)  __builtin_alloca(x)
 
+/* Optimized allocators for team-specific data that will die with the team.  */
+
+#ifdef __AMDGCN__
+/* The arena is initialized in config/gcn/team.c.  */
+#define TEAM_ARENA_SIZE  64*1024  /* Must match the value in plugin-gcn.c.  */
+#define TEAM_ARENA_START 16  /* LDS offset of free pointer.  */
+#define TEAM_ARENA_FREE  24  /* LDS offset of free pointer.  */
+#define TEAM_ARENA_END   32  /* LDS offset of end pointer.  */
+
+static inline void * __attribute__((malloc))
+team_malloc (size_t size)
+{
+  /* 4-byte align the size.  */
+  size = (size + 3) & ~3;
+
+  /* Allocate directly from the arena.
+     The compiler does not support DS atomics, yet. */
+  void *result;
+  asm ("ds_add_rtn_u64 %0, %1, %2\n\ts_waitcnt 0"
+       : "=v"(result) : "v"(TEAM_ARENA_FREE), "v"(size), "e"(1L) : "memory");
+
+  /* Handle OOM.  */
+  if (result + size > *(void * __lds *)TEAM_ARENA_END)
+    {
+      /* While this is experimental, let's make sure we know when OOM
+	 happens.  */
+      const char msg[] = "GCN team arena exhausted\n";
+      write (2, msg, sizeof(msg)-1);
+
+      /* Fall back to using the heap (slowly).  */
+      result = gomp_malloc (size);
+    }
+  return result;
+}
+
+static inline void * __attribute__((malloc))
+team_malloc_cleared (size_t size)
+{
+  char *result = team_malloc (size);
+
+  /* Clear the allocated memory.  */
+  __builtin_memset (result, 0, size);
+
+  return result;
+}
+
+static inline void
+team_free (void *ptr)
+{
+  /* The whole arena is freed when the kernel exits.
+     However, if we fell back to using heap then we should free it.
+     It would be better if this function could be a no-op, but at least
+     LDS loads are cheap.  */
+  if (ptr < *(void * __lds *)TEAM_ARENA_START
+      || ptr >= *(void * __lds *)TEAM_ARENA_END)
+    free (ptr);
+}
+#else
+#define team_malloc(...) gomp_malloc (__VA_ARGS__)
+#define team_malloc_cleared(...) gomp_malloc_cleared (__VA_ARGS__)
+#define team_free(...) free (__VA_ARGS__)
+#endif
+
 /* error.c */
 
 extern void gomp_vdebug (int, const char *, va_list);
@@ -691,6 +754,24 @@ static inline struct gomp_thread *gomp_thread (void)
   int tid;
   asm ("mov.u32 %0, %%tid.y;" : "=r" (tid));
   return nvptx_thrs + tid;
+}
+#elif defined __AMDGCN__
+static inline struct gomp_thread *gcn_thrs (void)
+{
+  /* The value is at the bottom of LDS.  */
+  struct gomp_thread * __lds *thrs = (struct gomp_thread * __lds *)4;
+  return *thrs;
+}
+static inline void set_gcn_thrs (struct gomp_thread *val)
+{
+  /* The value is at the bottom of LDS.  */
+  struct gomp_thread * __lds *thrs = (struct gomp_thread * __lds *)4;
+  *thrs = val;
+}
+static inline struct gomp_thread *gomp_thread (void)
+{
+  int tid = __builtin_gcn_dim_pos(1);
+  return gcn_thrs () + tid;
 }
 #elif defined HAVE_TLS || defined USE_EMUTLS
 extern __thread struct gomp_thread gomp_tls_data;

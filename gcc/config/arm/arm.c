@@ -59,7 +59,6 @@
 #include "langhooks.h"
 #include "intl.h"
 #include "libfuncs.h"
-#include "params.h"
 #include "opts.h"
 #include "dumpfile.h"
 #include "target-globals.h"
@@ -289,7 +288,7 @@ static bool arm_builtin_support_vector_misalignment (machine_mode mode,
 static void arm_conditional_register_usage (void);
 static enum flt_eval_method arm_excess_precision (enum excess_precision_type);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
-static void arm_autovectorize_vector_sizes (vector_sizes *, bool);
+static unsigned int arm_autovectorize_vector_modes (vector_modes *, bool);
 static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
@@ -525,9 +524,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_ARRAY_MODE_SUPPORTED_P arm_array_mode_supported_p
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arm_preferred_simd_mode
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  arm_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  arm_autovectorize_vector_modes
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
@@ -817,6 +816,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -3524,9 +3526,8 @@ arm_option_override (void)
        but measurable, size reduction for PIC code.  Therefore, we decrease
        the bar for unrestricted expression hoisting to the cost of PIC address
        calculation, which is 2 instructions.  */
-    maybe_set_param_value (PARAM_GCSE_UNRESTRICTED_COST, 2,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_gcse_unrestricted_cost, 2);
 
   /* ARM EABI defaults to strict volatile bitfields.  */
   if (TARGET_AAPCS_BASED && flag_strict_volatile_bitfields < 0
@@ -3546,47 +3547,43 @@ arm_option_override (void)
      override the defaults unless we are tuning for a core we have
      researched values for.  */
   if (current_tune->prefetch.num_slots > 0)
-    maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			   current_tune->prefetch.num_slots,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_simultaneous_prefetches,
+			 current_tune->prefetch.num_slots);
   if (current_tune->prefetch.l1_cache_line_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			   current_tune->prefetch.l1_cache_line_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_line_size,
+			 current_tune->prefetch.l1_cache_line_size);
   if (current_tune->prefetch.l1_cache_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			   current_tune->prefetch.l1_cache_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_size,
+			 current_tune->prefetch.l1_cache_size);
 
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
-  int param_sched_autopref_queue_depth;
+  int sched_autopref_queue_depth;
 
   switch (current_tune->sched_autopref)
     {
     case tune_params::SCHED_AUTOPREF_OFF:
-      param_sched_autopref_queue_depth = -1;
+      sched_autopref_queue_depth = -1;
       break;
 
     case tune_params::SCHED_AUTOPREF_RANK:
-      param_sched_autopref_queue_depth = 0;
+      sched_autopref_queue_depth = 0;
       break;
 
     case tune_params::SCHED_AUTOPREF_FULL:
-      param_sched_autopref_queue_depth = max_insn_queue_index + 1;
+      sched_autopref_queue_depth = max_insn_queue_index + 1;
       break;
 
     default:
       gcc_unreachable ();
     }
 
-  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
-			 param_sched_autopref_queue_depth,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_sched_autopref_queue_depth,
+		       sched_autopref_queue_depth);
 
   /* Currently, for slow flash data, we just disable literal pools.  We also
      disable it for pure-code.  */
@@ -15382,7 +15379,7 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == ROTATERT
 	  || (TARGET_32BIT && GET_CODE (x) == ZERO_EXTRACT)))
-    return CC_NOOVmode;
+    return CC_NZmode;
 
   /* A comparison of ~reg with a const is really a special
      canoncialization of compare (~const, reg), which is a reverse
@@ -15498,11 +15495,11 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	      }
 
 	    rtx clobber = gen_rtx_CLOBBER (VOIDmode, scratch);
-	    cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+	    cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
 	    rtx set
 	      = gen_rtx_SET (cc_reg,
-			     gen_rtx_COMPARE (CC_NOOVmode,
+			     gen_rtx_COMPARE (CC_NZmode,
 					      gen_rtx_IOR (SImode, x_lo, x_hi),
 					      const0_rtx));
 	    emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set,
@@ -23887,7 +23884,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	return code;
       return ARM_NV;
 
-    case E_CC_NOOVmode:
+    case E_CC_NZmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -25310,7 +25307,7 @@ thumb1_final_prescan_insn (rtx_insn *insn)
 	  cfun->machine->thumb1_cc_insn = insn;
 	  cfun->machine->thumb1_cc_op0 = SET_DEST (set);
 	  cfun->machine->thumb1_cc_op1 = const0_rtx;
-	  cfun->machine->thumb1_cc_mode = CC_NOOVmode;
+	  cfun->machine->thumb1_cc_mode = CC_NZmode;
 	  if (INSN_CODE (insn) == CODE_FOR_thumb1_subsi3_insn)
 	    {
 	      rtx src1 = XEXP (SET_SRC (set), 1);
@@ -29018,14 +29015,15 @@ arm_vector_alignment (const_tree type)
   return align;
 }
 
-static void
-arm_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+static unsigned int
+arm_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (!TARGET_NEON_VECTORIZE_DOUBLE)
     {
-      sizes->safe_push (16);
-      sizes->safe_push (8);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V8QImode);
     }
+  return 0;
 }
 
 static bool
@@ -30492,7 +30490,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
   else
     {
       /* We have a shift-by-register.  */
-      rtx cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+      rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
       /* This alternative requires the scratch registers.  */
       gcc_assert (scratch1 && REG_P (scratch1));
@@ -31747,8 +31745,6 @@ arm_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
   DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = cur_tree;
 
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
-
-  finalize_options_struct (&func_options);
 
   return ret;
 }

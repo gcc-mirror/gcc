@@ -47,6 +47,13 @@ static inline bool is_dir_sep(path::value_type ch)
 #endif
 }
 
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+static inline bool is_disk_designator(std::wstring_view s)
+{
+  return s.length() == 2 && s[1] == L':';
+}
+#endif
+
 struct path::_Parser
 {
   using string_view_type = std::basic_string_view<value_type>;
@@ -117,7 +124,7 @@ struct path::_Parser
 	  ++pos;
       }
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    else if (len > 1 && input[1] == L':')
+    else if (is_disk_designator(input.substr(0, 2)))
       {
 	// got disk designator
 	root.first.str = input.substr(0, 2);
@@ -1747,6 +1754,19 @@ path::lexically_relative(const path& base) const
   if (!has_root_directory() && base.has_root_directory())
     return ret;
   auto [a, b] = std::mismatch(begin(), end(), base.begin(), base.end());
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3070. path::lexically_relative causes surprising results if a filename
+  // can also be a root-name
+  if (!empty())
+    for (auto& p : _M_cmpts)
+      if (p._M_type() == _Type::_Filename && is_disk_designator(p.native()))
+	return ret;
+  if (!base.empty())
+    for (auto i = b, end = base.end(); i != end; ++i)
+      if (i->_M_type() == _Type::_Filename && is_disk_designator(i->native()))
+	return ret;
+#endif
   if (a == end() && b == base.end())
     ret = ".";
   else

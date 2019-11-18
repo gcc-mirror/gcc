@@ -201,7 +201,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
-#include "params.h"
 #include "tree-ssa-sccvn.h"
 #include "cfgloop.h"
 #include "tree-eh.h"
@@ -1469,7 +1468,7 @@ find_clusters_1 (same_succ *same_succ)
   unsigned int i, j;
   bitmap_iterator bi, bj;
   int nr_comparisons;
-  int max_comparisons = PARAM_VALUE (PARAM_MAX_TAIL_MERGE_COMPARISONS);
+  int max_comparisons = param_max_tail_merge_comparisons;
 
   EXECUTE_IF_SET_IN_BITMAP (same_succ->bbs, 0, i, bi)
     {
@@ -1731,7 +1730,7 @@ tail_merge_optimize (unsigned int todo)
   int nr_bbs_removed;
   bool loop_entered = false;
   int iteration_nr = 0;
-  int max_iterations = PARAM_VALUE (PARAM_MAX_TAIL_MERGE_ITERATIONS);
+  int max_iterations = param_max_tail_merge_iterations;
 
   if (!flag_tree_tail_merge
       || max_iterations == 0)

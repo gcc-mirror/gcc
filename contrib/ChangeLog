@@ -1,3 +1,7 @@
+2019-11-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* download_prerequisites: Use http instead of ftp for downloading.
+
 2019-11-08  Martin Liska  <mliska@suse.cz>
 
 	* mklog: The script fails for patches that contain:

@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "intl.h"
 #include "debug.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "tm-constrs.h"
 #include "sel-sched.h"
@@ -7307,7 +7306,7 @@ ia64_adjust_cost (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn,
 
   if (dw == MIN_DEP_WEAK)
     /* Store and load are likely to alias, use higher cost to avoid stall.  */
-    return PARAM_VALUE (PARAM_SCHED_MEM_TRUE_DEP_COST);
+    return param_sched_mem_true_dep_cost;
   else if (dw > MIN_DEP_WEAK)
     {
       /* Store and load are less likely to alias.  */

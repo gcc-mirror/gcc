@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify.h"
 #include "tree-dfa.h"
-#include "params.h"
 #include "langhooks-def.h"
 #include "tree-diagnostic.h"
 #include "except.h"
@@ -1553,15 +1552,15 @@ wide_int_to_tree_1 (tree type, const wide_int_ref &pcst)
 	  if (TYPE_SIGN (type) == UNSIGNED)
 	    {
 	      /* Cache [0, N).  */
-	      limit = INTEGER_SHARE_LIMIT;
-	      if (IN_RANGE (hwi, 0, INTEGER_SHARE_LIMIT - 1))
+	      limit = param_integer_share_limit;
+	      if (IN_RANGE (hwi, 0, param_integer_share_limit - 1))
 		ix = hwi;
 	    }
 	  else
 	    {
 	      /* Cache [-1, N).  */
-	      limit = INTEGER_SHARE_LIMIT + 1;
-	      if (IN_RANGE (hwi, -1, INTEGER_SHARE_LIMIT - 1))
+	      limit = param_integer_share_limit + 1;
+	      if (IN_RANGE (hwi, -1, param_integer_share_limit - 1))
 		ix = hwi + 1;
 	    }
 	  break;
@@ -1737,23 +1736,24 @@ cache_integer_cst (tree t)
       if (TYPE_UNSIGNED (type))
 	{
 	  /* Cache 0..N */
-	  limit = INTEGER_SHARE_LIMIT;
+	  limit = param_integer_share_limit;
 
 	  /* This is a little hokie, but if the prec is smaller than
-	     what is necessary to hold INTEGER_SHARE_LIMIT, then the
+	     what is necessary to hold param_integer_share_limit, then the
 	     obvious test will not get the correct answer.  */
 	  if (prec < HOST_BITS_PER_WIDE_INT)
 	    {
-	      if (tree_to_uhwi (t) < (unsigned HOST_WIDE_INT) INTEGER_SHARE_LIMIT)
+	      if (tree_to_uhwi (t)
+		  < (unsigned HOST_WIDE_INT) param_integer_share_limit)
 		ix = tree_to_uhwi (t);
 	    }
-	  else if (wi::ltu_p (wi::to_wide (t), INTEGER_SHARE_LIMIT))
+	  else if (wi::ltu_p (wi::to_wide (t), param_integer_share_limit))
 	    ix = tree_to_uhwi (t);
 	}
       else
 	{
 	  /* Cache -1..N */
-	  limit = INTEGER_SHARE_LIMIT + 1;
+	  limit = param_integer_share_limit + 1;
 
 	  if (integer_minus_onep (t))
 	    ix = 0;
@@ -1761,10 +1761,10 @@ cache_integer_cst (tree t)
 	    {
 	      if (prec < HOST_BITS_PER_WIDE_INT)
 		{
-		  if (tree_to_shwi (t) < INTEGER_SHARE_LIMIT)
+		  if (tree_to_shwi (t) < param_integer_share_limit)
 		    ix = tree_to_shwi (t) + 1;
 		}
-	      else if (wi::ltu_p (wi::to_wide (t), INTEGER_SHARE_LIMIT))
+	      else if (wi::ltu_p (wi::to_wide (t), param_integer_share_limit))
 		ix = tree_to_shwi (t) + 1;
 	    }
 	}
@@ -10873,44 +10873,44 @@ build_vector_type (tree innertype, poly_int64 nunits)
   return make_vector_type (innertype, nunits, VOIDmode);
 }
 
-/* Build truth vector with specified length and number of units.  */
+/* Build a truth vector with NUNITS units, giving it mode MASK_MODE.  */
 
 tree
-build_truth_vector_type (poly_uint64 nunits, poly_uint64 vector_size)
+build_truth_vector_type_for_mode (poly_uint64 nunits, machine_mode mask_mode)
 {
-  machine_mode mask_mode
-    = targetm.vectorize.get_mask_mode (nunits, vector_size).else_blk ();
+  gcc_assert (mask_mode != BLKmode);
 
-  poly_uint64 vsize;
-  if (mask_mode == BLKmode)
-    vsize = vector_size * BITS_PER_UNIT;
-  else
-    vsize = GET_MODE_BITSIZE (mask_mode);
-
+  poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
   unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
-
   tree bool_type = build_nonstandard_boolean_type (esize);
 
   return make_vector_type (bool_type, nunits, mask_mode);
 }
 
-/* Returns a vector type corresponding to a comparison of VECTYPE.  */
+/* Build a vector type that holds one boolean result for each element of
+   vector type VECTYPE.  The public interface for this operation is
+   truth_type_for.  */
 
-tree
-build_same_sized_truth_vector_type (tree vectype)
+static tree
+build_truth_vector_type_for (tree vectype)
 {
-  if (VECTOR_BOOLEAN_TYPE_P (vectype))
-    return vectype;
+  machine_mode vector_mode = TYPE_MODE (vectype);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
-  poly_uint64 size = GET_MODE_SIZE (TYPE_MODE (vectype));
+  machine_mode mask_mode;
+  if (VECTOR_MODE_P (vector_mode)
+      && targetm.vectorize.get_mask_mode (vector_mode).exists (&mask_mode))
+    return build_truth_vector_type_for_mode (nunits, mask_mode);
 
-  if (known_eq (size, 0U))
-    size = tree_to_uhwi (TYPE_SIZE_UNIT (vectype));
+  poly_uint64 vsize = tree_to_poly_uint64 (TYPE_SIZE (vectype));
+  unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
+  tree bool_type = build_nonstandard_boolean_type (esize);
 
-  return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (vectype), size);
+  return make_vector_type (bool_type, nunits, BLKmode);
 }
 
-/* Similarly, but builds a variant type with TYPE_VECTOR_OPAQUE set.  */
+/* Like build_vector_type, but builds a variant type with TYPE_VECTOR_OPAQUE
+   set.  */
 
 tree
 build_opaque_vector_type (tree innertype, poly_int64 nunits)
@@ -11469,7 +11469,7 @@ build_call_expr (tree fndecl, int n, ...)
    It will get gimplified later into an ordinary internal function.  */
 
 tree
-build_call_expr_internal_loc_array (location_t loc, enum internal_fn ifn,
+build_call_expr_internal_loc_array (location_t loc, internal_fn ifn,
 				    tree type, int n, const tree *args)
 {
   tree t = build_call_1 (type, NULL_TREE, n);
@@ -11714,8 +11714,7 @@ truth_type_for (tree type)
     {
       if (VECTOR_BOOLEAN_TYPE_P (type))
 	return type;
-      return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (type),
-				      GET_MODE_SIZE (TYPE_MODE (type)));
+      return build_truth_vector_type_for (type);
     }
   else
     return boolean_type_node;

@@ -186,9 +186,13 @@ enum c_typespec_kind {
      kind of tag, in which case this is only valid if shadowing that
      tag in an inner scope.  */
   ctsk_tagref,
+  /* Likewise, with standard attributes present in the reference.  */
+  ctsk_tagref_attrs,
   /* A reference to a tag, not previously declared in a visible
      scope.  */
   ctsk_tagfirstref,
+  /* Likewise, with standard attributes present in the reference.  */
+  ctsk_tagfirstref_attrs,
   /* A definition of a tag such as "struct foo { int a; }".  */
   ctsk_tagdef,
   /* A typedef name.  */
@@ -311,10 +315,15 @@ struct c_declspecs {
   tree expr;
   /* The attributes from a typedef decl.  */
   tree decl_attr;
-  /* When parsing, the attributes.  Outside the parser, this will be
-     NULL; attributes (possibly from multiple lists) will be passed
-     separately.  */
+  /* When parsing, the GNU attributes and prefix standard attributes.
+     Outside the parser, this will be NULL; attributes (possibly from
+     multiple lists) will be passed separately.  */
   tree attrs;
+  /* When parsing, postfix standard attributes (which appertain to the
+     type specified by the preceding declaration specifiers, unlike
+     prefix standard attributes which appertain to the declaration or
+     declarations as a whole).  */
+  tree postfix_attrs;
   /* The pass to start compiling a __GIMPLE or __RTL function with.  */
   char *gimple_or_rtl_pass;
   /* ENTRY BB count.  */
@@ -335,13 +344,17 @@ struct c_declspecs {
   ENUM_BITFIELD (c_typespec_keyword) typespec_word : 8;
   /* The kind of type specifier if one has been seen, ctsk_none
      otherwise.  */
-  ENUM_BITFIELD (c_typespec_kind) typespec_kind : 3;
+  ENUM_BITFIELD (c_typespec_kind) typespec_kind : 4;
   ENUM_BITFIELD (c_declspec_il) declspec_il : 3;
   /* Whether any expressions in typeof specifiers may appear in
      constant expressions.  */
   BOOL_BITFIELD expr_const_operands : 1;
   /* Whether any declaration specifiers have been seen at all.  */
   BOOL_BITFIELD declspecs_seen_p : 1;
+  /* Whether any declaration specifiers other than standard attributes
+     have been seen at all.  If only standard attributes have been
+     seen, this is an attribute-declaration.  */
+  BOOL_BITFIELD non_std_attrs_seen_p : 1;
   /* Whether something other than a storage class specifier or
      attribute has been seen.  This is used to warn for the
      obsolescent usage of storage class specifiers other than at the
@@ -582,6 +595,7 @@ extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
 extern tree c_simulate_builtin_function_decl (tree);
+extern void c_warn_unused_attributes (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree);
@@ -595,7 +609,8 @@ extern void store_parm_decls_from (struct c_arg_info *);
 extern void temp_store_parm_decls (tree, tree);
 extern void temp_pop_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
-extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree);
+extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree,
+					  bool, tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *, location_t);
 extern struct c_declarator *build_attrs_declarator (tree,

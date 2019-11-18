@@ -125,7 +125,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-affine.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-address.h"
@@ -152,8 +151,8 @@ avg_loop_niter (class loop *loop)
     {
       niter = likely_max_stmt_executions_int (loop);
 
-      if (niter == -1 || niter > PARAM_VALUE (PARAM_AVG_LOOP_NITER))
-	return PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      if (niter == -1 || niter > param_avg_loop_niter)
+	return param_avg_loop_niter;
     }
 
   return niter;
@@ -716,19 +715,19 @@ struct iv_ca_delta
 /* Bound on number of candidates below that all candidates are considered.  */
 
 #define CONSIDER_ALL_CANDIDATES_BOUND \
-  ((unsigned) PARAM_VALUE (PARAM_IV_CONSIDER_ALL_CANDIDATES_BOUND))
+  ((unsigned) param_iv_consider_all_candidates_bound)
 
 /* If there are more iv occurrences, we just give up (it is quite unlikely that
    optimizing such a loop would help, and it would take ages).  */
 
 #define MAX_CONSIDERED_GROUPS \
-  ((unsigned) PARAM_VALUE (PARAM_IV_MAX_CONSIDERED_USES))
+  ((unsigned) param_iv_max_considered_uses)
 
 /* If there are at most this number of ivs in the set, try removing unnecessary
    ivs from the set always.  */
 
 #define ALWAYS_PRUNE_CAND_SET_BOUND \
-  ((unsigned) PARAM_VALUE (PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND))
+  ((unsigned) param_iv_always_prune_cand_set_bound)
 
 /* The list of trees for that the decl_rtl field must be reset is stored
    here.  */

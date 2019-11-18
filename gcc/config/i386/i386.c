@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "tm-constrs.h"
-#include "params.h"
 #include "cselib.h"
 #include "sched-int.h"
 #include "opts.h"
@@ -5773,7 +5772,7 @@ get_probe_interval (void)
 {
   if (flag_stack_clash_protection)
     return (HOST_WIDE_INT_1U
-	    << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL));
+	    << param_stack_clash_protection_probe_interval);
   else
     return (HOST_WIDE_INT_1U << STACK_CHECK_PROBE_INTERVAL_EXP);
 }
@@ -6942,7 +6941,7 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
   /* If we allocate less than the size of the guard statically,
      then no probing is necessary, but we do need to allocate
      the stack.  */
-  if (size < (1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE)))
+  if (size < (1 << param_stack_clash_protection_guard_size))
     {
       pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 			         GEN_INT (-size), -1,
@@ -18960,7 +18959,7 @@ ix86_vec_cost (machine_mode mode, int cost)
       && TARGET_SSE_SPLIT_REGS)
     return cost * 2;
   if (GET_MODE_BITSIZE (mode) > 128
-      && TARGET_AVX128_OPTIMAL)
+      && TARGET_AVX256_SPLIT_REGS)
     return cost * GET_MODE_BITSIZE (mode) / 128;
   return cost;
 }
@@ -21298,7 +21297,7 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
 	return 1;
 
       /* Account for targets that splits wide vectors into multiple parts.  */
-      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (mode) > 128)
+      if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 128)
 	div = GET_MODE_BITSIZE (mode) / 128;
       else if (TARGET_SSE_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 64)
 	div = GET_MODE_BITSIZE (mode) / 64;
@@ -21385,43 +21384,47 @@ ix86_preferred_simd_mode (scalar_mode mode)
    vectors.  If AVX512F is enabled then try vectorizing with 512bit,
    256bit and 128bit vectors.  */
 
-static void
-ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
+static unsigned int
+ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
     {
-      sizes->safe_push (64);
-      sizes->safe_push (32);
-      sizes->safe_push (16);
+      modes->safe_push (V64QImode);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
     }
   else if (TARGET_AVX512F && all)
     {
-      sizes->safe_push (32);
-      sizes->safe_push (16);
-      sizes->safe_push (64);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V64QImode);
     }
   else if (TARGET_AVX && !TARGET_PREFER_AVX128)
     {
-      sizes->safe_push (32);
-      sizes->safe_push (16);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
     }
   else if (TARGET_AVX && all)
     {
-      sizes->safe_push (16);
-      sizes->safe_push (32);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V32QImode);
     }
   else if (TARGET_MMX_WITH_SSE)
-    sizes->safe_push (16);
+    modes->safe_push (V16QImode);
 
   if (TARGET_MMX_WITH_SSE)
-    sizes->safe_push (8);
+    modes->safe_push (V8QImode);
+
+  return 0;
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
 
 static opt_machine_mode
-ix86_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
+ix86_get_mask_mode (machine_mode data_mode)
 {
+  unsigned vector_size = GET_MODE_SIZE (data_mode);
+  unsigned nunits = GET_MODE_NUNITS (data_mode);
   unsigned elem_size = vector_size / nunits;
 
   /* Scalar mask case.  */
@@ -21468,18 +21471,18 @@ static unsigned int
 ix86_max_noce_ifcvt_seq_cost (edge e)
 {
   bool predictable_p = predictable_edge_p (e);
-
-  enum compiler_param param
-    = (predictable_p
-       ? PARAM_MAX_RTL_IF_CONVERSION_PREDICTABLE_COST
-       : PARAM_MAX_RTL_IF_CONVERSION_UNPREDICTABLE_COST);
-
-  /* If we have a parameter set, use that, otherwise take a guess using
-     BRANCH_COST.  */
-  if (global_options_set.x_param_values[param])
-    return PARAM_VALUE (param);
+  if (predictable_p)
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+	return param_max_rtl_if_conversion_predictable_cost;
+    }
   else
-    return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (2);
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+	return param_max_rtl_if_conversion_unpredictable_cost;
+    }
+
+  return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (2);
 }
 
 /* Return true if SEQ is a good candidate as a replacement for the
@@ -22951,9 +22954,9 @@ ix86_run_selftests (void)
 #undef TARGET_VECTORIZE_SPLIT_REDUCTION
 #define TARGET_VECTORIZE_SPLIT_REDUCTION \
   ix86_split_reduction
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  ix86_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  ix86_autovectorize_vector_modes
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE ix86_get_mask_mode
 #undef TARGET_VECTORIZE_INIT_COST

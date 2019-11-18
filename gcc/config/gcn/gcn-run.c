@@ -72,6 +72,7 @@ uint64_t main_kernel = 0;
 hsa_executable_t executable = { 0 };
 
 hsa_region_t kernargs_region = { 0 };
+hsa_region_t heap_region = { 0 };
 uint32_t kernarg_segment_size = 0;
 uint32_t group_segment_size = 0;
 uint32_t private_segment_size = 0;
@@ -135,6 +136,8 @@ struct hsa_runtime_fn_info
 					hsa_signal_t *signal);
   hsa_status_t (*hsa_memory_allocate_fn) (hsa_region_t region, size_t size,
 					  void **ptr);
+  hsa_status_t (*hsa_memory_assign_agent_fn) (void *ptr, hsa_agent_t agent,
+					      hsa_access_permission_t access);
   hsa_status_t (*hsa_memory_copy_fn) (void *dst, const void *src,
 				      size_t size);
   hsa_status_t (*hsa_memory_free_fn) (void *ptr);
@@ -204,6 +207,7 @@ init_hsa_runtime_functions (void)
   DLSYM_FN (hsa_executable_freeze)
   DLSYM_FN (hsa_signal_create)
   DLSYM_FN (hsa_memory_allocate)
+  DLSYM_FN (hsa_memory_assign_agent)
   DLSYM_FN (hsa_memory_copy)
   DLSYM_FN (hsa_memory_free)
   DLSYM_FN (hsa_signal_destroy)
@@ -282,7 +286,8 @@ get_gpu_agent (hsa_agent_t agent, void *data __attribute__ ((unused)))
    suitable one has been found.  */
 
 static hsa_status_t
-get_kernarg_region (hsa_region_t region, void *data __attribute__ ((unused)))
+get_memory_region (hsa_region_t region, hsa_region_t *retval,
+		   hsa_region_global_flag_t kind)
 {
   /* Reject non-global regions.  */
   hsa_region_segment_t segment;
@@ -294,14 +299,28 @@ get_kernarg_region (hsa_region_t region, void *data __attribute__ ((unused)))
   hsa_region_global_flag_t flags;
   hsa_fns.hsa_region_get_info_fn (region, HSA_REGION_INFO_GLOBAL_FLAGS,
 				  &flags);
-  if (flags & HSA_REGION_GLOBAL_FLAG_KERNARG)
+  if (flags & kind)
     {
-      kernargs_region = region;
+      *retval = region;
       return HSA_STATUS_INFO_BREAK;
     }
 
   /* The region was not suitable.  */
   return HSA_STATUS_SUCCESS;
+}
+
+static hsa_status_t
+get_kernarg_region (hsa_region_t region, void *data __attribute__((unused)))
+{
+  return get_memory_region (region, &kernargs_region,
+			    HSA_REGION_GLOBAL_FLAG_KERNARG);
+}
+
+static hsa_status_t
+get_heap_region (hsa_region_t region, void *data __attribute__((unused)))
+{
+  return get_memory_region (region, &heap_region,
+			    HSA_REGION_GLOBAL_FLAG_COARSE_GRAINED);
 }
 
 /* Initialize the HSA Runtime library and GPU device.  */
@@ -338,6 +357,13 @@ init_device ()
 						  NULL),
 	    status == HSA_STATUS_SUCCESS || status == HSA_STATUS_INFO_BREAK,
 	    "Locate kernargs memory");
+
+  /* Select a memory region for the kernel heap.
+     The call-back function, get_heap_region, does the selection.  */
+  XHSA_CMP (hsa_fns.hsa_agent_iterate_regions_fn (device, get_heap_region,
+						  NULL),
+	    status == HSA_STATUS_SUCCESS || status == HSA_STATUS_INFO_BREAK,
+	    "Locate device memory");
 }
 
 
@@ -593,10 +619,10 @@ found_main:;
    __flat_scalar GCN address space).  */
 
 static void *
-device_malloc (size_t size)
+device_malloc (size_t size, hsa_region_t region)
 {
   void *result;
-  XHSA (hsa_fns.hsa_memory_allocate_fn (kernargs_region, size, &result),
+  XHSA (hsa_fns.hsa_memory_allocate_fn (region, size, &result),
 	"Allocate device memory");
   return result;
 }
@@ -634,13 +660,13 @@ struct kernargs
     } queue[1024];
     unsigned int consumed;
   } output_data;
-
-  struct heap
-  {
-    int64_t size;
-    char data[0];
-  } heap;
 };
+
+struct heap
+{
+  int64_t size;
+  char data[0];
+} heap;
 
 /* Print any console output from the kernel.
    We print all entries from "consumed" to the next entry without a "written"
@@ -811,13 +837,19 @@ main (int argc, char *argv[])
 
   /* Allocate device memory for both function parameters and the argv
      data.  */
-  size_t heap_size = 10 * 1024 * 1024;	/* 10MB.  */
-  struct kernargs *kernargs = device_malloc (sizeof (*kernargs) + heap_size);
+  struct kernargs *kernargs = device_malloc (sizeof (*kernargs),
+					     kernargs_region);
   struct argdata
   {
     int64_t argv_data[kernel_argc];
     char strings[args_size];
-  } *args = device_malloc (sizeof (struct argdata));
+  } *args = device_malloc (sizeof (struct argdata), kernargs_region);
+
+  size_t heap_size = 10 * 1024 * 1024;	/* 10MB.  */
+  struct heap *heap = device_malloc (heap_size, heap_region);
+  XHSA (hsa_fns.hsa_memory_assign_agent_fn (heap, device,
+					    HSA_ACCESS_PERMISSION_RW),
+	"Assign heap to device agent");
 
   /* Write the data to the target.  */
   kernargs->argc = kernel_argc;
@@ -837,8 +869,8 @@ main (int argc, char *argv[])
       memcpy (&args->strings[offset], kernel_argv[i], arg_len + 1);
       offset += arg_len;
     }
-  kernargs->heap_ptr = (int64_t) &kernargs->heap;
-  kernargs->heap.size = heap_size;
+  kernargs->heap_ptr = (int64_t) heap;
+  hsa_fns.hsa_memory_copy_fn (&heap->size, &heap_size, sizeof (heap_size));
 
   /* Run constructors on the GPU.  */
   run (init_array_kernel, kernargs);

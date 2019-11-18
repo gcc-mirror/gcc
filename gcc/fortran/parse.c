@@ -683,6 +683,9 @@ decode_oacc_directive (void)
       matcha ("end parallel loop", gfc_match_omp_eos_error,
 	      ST_OACC_END_PARALLEL_LOOP);
       matcha ("end parallel", gfc_match_omp_eos_error, ST_OACC_END_PARALLEL);
+      matcha ("end serial loop", gfc_match_omp_eos_error,
+	      ST_OACC_END_SERIAL_LOOP);
+      matcha ("end serial", gfc_match_omp_eos_error, ST_OACC_END_SERIAL);
       matcha ("enter data", gfc_match_oacc_enter_data, ST_OACC_ENTER_DATA);
       matcha ("exit data", gfc_match_oacc_exit_data, ST_OACC_EXIT_DATA);
       break;
@@ -704,6 +707,10 @@ decode_oacc_directive (void)
       break;
     case 'r':
       match ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
+      break;
+    case 's':
+      matcha ("serial loop", gfc_match_oacc_serial_loop, ST_OACC_SERIAL_LOOP);
+      matcha ("serial", gfc_match_oacc_serial, ST_OACC_SERIAL);
       break;
     case 'u':
       matcha ("update", gfc_match_oacc_update, ST_OACC_UPDATE);
@@ -1583,7 +1590,8 @@ next_statement (void)
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
-  case ST_OACC_KERNELS_LOOP: case ST_OACC_ATOMIC
+  case ST_OACC_KERNELS_LOOP: case ST_OACC_SERIAL_LOOP: case ST_OACC_SERIAL: \
+  case ST_OACC_ATOMIC
 
 /* Declaration statements */
 
@@ -2156,6 +2164,18 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OACC_END_KERNELS_LOOP:
       p = "!$ACC END KERNELS LOOP";
+      break;
+    case ST_OACC_SERIAL_LOOP:
+      p = "!$ACC SERIAL LOOP";
+      break;
+    case ST_OACC_END_SERIAL_LOOP:
+      p = "!$ACC END SERIAL LOOP";
+      break;
+    case ST_OACC_SERIAL:
+      p = "!$ACC SERIAL";
+      break;
+    case ST_OACC_END_SERIAL:
+      p = "!$ACC END SERIAL";
       break;
     case ST_OACC_DATA:
       p = "!$ACC DATA";
@@ -5065,6 +5085,9 @@ parse_oacc_structured_block (gfc_statement acc_st)
     case ST_OACC_KERNELS:
       acc_end_st = ST_OACC_END_KERNELS;
       break;
+    case ST_OACC_SERIAL:
+      acc_end_st = ST_OACC_END_SERIAL;
+      break;
     case ST_OACC_DATA:
       acc_end_st = ST_OACC_END_DATA;
       break;
@@ -5096,7 +5119,7 @@ parse_oacc_structured_block (gfc_statement acc_st)
   pop_state ();
 }
 
-/* Parse the statements of OpenACC loop/parallel loop/kernels loop.  */
+/* Parse the statements of OpenACC 'loop', or combined compute 'loop'.  */
 
 static gfc_statement
 parse_oacc_loop (gfc_statement acc_st)
@@ -5149,6 +5172,7 @@ parse_oacc_loop (gfc_statement acc_st)
     gfc_warning (0, "Redundant !$ACC END LOOP at %C");
   if ((acc_st == ST_OACC_PARALLEL_LOOP && st == ST_OACC_END_PARALLEL_LOOP) ||
       (acc_st == ST_OACC_KERNELS_LOOP && st == ST_OACC_END_KERNELS_LOOP) ||
+      (acc_st == ST_OACC_SERIAL_LOOP && st == ST_OACC_END_SERIAL_LOOP) ||
       (acc_st == ST_OACC_LOOP && st == ST_OACC_END_LOOP))
     {
       gcc_assert (new_st.op == EXEC_NOP);
@@ -5488,6 +5512,7 @@ parse_executable (gfc_statement st)
 
 	case ST_OACC_PARALLEL_LOOP:
 	case ST_OACC_KERNELS_LOOP:
+	case ST_OACC_SERIAL_LOOP:
 	case ST_OACC_LOOP:
 	  st = parse_oacc_loop (st);
 	  if (st == ST_IMPLIED_ENDDO)
@@ -5496,6 +5521,7 @@ parse_executable (gfc_statement st)
 
 	case ST_OACC_PARALLEL:
 	case ST_OACC_KERNELS:
+	case ST_OACC_SERIAL:
 	case ST_OACC_DATA:
 	case ST_OACC_HOST_DATA:
 	  parse_oacc_structured_block (st);
@@ -6544,6 +6570,8 @@ is_oacc (gfc_state_data *sd)
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS_LOOP:
     case EXEC_OACC_KERNELS:
+    case EXEC_OACC_SERIAL_LOOP:
+    case EXEC_OACC_SERIAL:
     case EXEC_OACC_DATA:
     case EXEC_OACC_HOST_DATA:
     case EXEC_OACC_LOOP:

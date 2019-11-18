@@ -334,7 +334,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 		 bitmaps.  Ugh.  */
 	      value_range_equiv *new_vr
 		= vr_values->allocate_value_range_equiv ();
-	      new_vr->set (vr.kind (), vr.min (), vr.max ());
+	      new_vr->set (vr.min (), vr.max (), NULL, vr.kind ());
 	      vr.equiv_clear ();
 	      push_value_range (output, new_vr);
 	    }

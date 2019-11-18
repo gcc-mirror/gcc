@@ -13202,6 +13202,11 @@ grokdeclarator (const cp_declarator *declarator,
 	      ;  /* We already issued a permerror.  */
 	    else if (decl && DECL_NAME (decl))
 	      {
+		if (initialized)
+		  /* Kludge: We need funcdef_flag to be true in do_friend for
+		     in-class defaulted functions, but that breaks grokfndecl.
+		     So set it here.  */
+		  funcdef_flag = true;
 		if (template_class_depth (current_class_type) == 0)
 		  {
 		    decl = check_explicit_specialization
@@ -16845,6 +16850,10 @@ finish_function (bool inline_p)
 	}
     }
 
+  /* Remember that we were in class scope.  */
+  if (current_class_name)
+    ctype = current_class_type;
+
   if (DECL_DELETED_FN (fndecl))
     {
       DECL_INITIAL (fndecl) = error_mark_node;
@@ -16902,10 +16911,6 @@ finish_function (bool inline_p)
 
       current_function_return_value = NULL_TREE;
     }
-
-  /* Remember that we were in class scope.  */
-  if (current_class_name)
-    ctype = current_class_type;
 
   /* Must mark the RESULT_DECL as being in this function.  */
   DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;

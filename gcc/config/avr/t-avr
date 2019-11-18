@@ -59,8 +59,7 @@ AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 
 .PHONY: avr-mcus
 
-avr-mcus: $(srcdir)/config/avr/t-multilib \
-	  $(srcdir)/doc/avr-mmcu.texi ; @true
+avr-mcus: $(srcdir)/doc/avr-mmcu.texi ; @true
 
 # Make sure that native -mmcu= support is in sync with -mmcu= documentation.
 gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
