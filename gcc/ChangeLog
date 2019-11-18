@@ -1,3 +1,11 @@
+2019-11-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2019-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (rs6000_set_fpscr_drn): Use ULL on big
+	hexadecimal literal.
+
 2019-11-15  Tamar Christina  <tamar.christina@arm.com>
 
 	Backport from mainline
