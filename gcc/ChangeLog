@@ -1,3 +1,9 @@
+2019-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/92462
+	* alias.c (find_base_term): Restrict the look through ANDs.
+	(find_base_value): Likewise.
+
 2019-11-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Add support for AVR devices from the 0-series.

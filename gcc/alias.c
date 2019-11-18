@@ -1464,9 +1464,11 @@ find_base_value (rtx src)
       return find_base_value (XEXP (src, 1));
 
     case AND:
-      /* If the second operand is constant set the base
-	 address to the first operand.  */
-      if (CONST_INT_P (XEXP (src, 1)) && INTVAL (XEXP (src, 1)) != 0)
+      /* Look through aligning ANDs.  And AND with zero or one with
+         the LSB set isn't one (see for example PR92462).  */
+      if (CONST_INT_P (XEXP (src, 1))
+	  && INTVAL (XEXP (src, 1)) != 0
+	  && (INTVAL (XEXP (src, 1)) & 1) == 0)
 	return find_base_value (XEXP (src, 0));
       return 0;
 
@@ -2024,7 +2026,11 @@ find_base_term (rtx x, vec<std::pair<cselib_val *,
       }
 
     case AND:
-      if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) != 0)
+      /* Look through aligning ANDs.  And AND with zero or one with
+         the LSB set isn't one (see for example PR92462).  */
+      if (CONST_INT_P (XEXP (x, 1))
+	  && INTVAL (XEXP (x, 1)) != 0
+	  && (INTVAL (XEXP (x, 1)) & 1) == 0)
 	return find_base_term (XEXP (x, 0), visited_vals);
       return 0;
 
