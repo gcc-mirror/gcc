@@ -1,3 +1,9 @@
+2019-11-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92529
+	* ipa-icf-gimple.c (func_checker::compare_gimple_assign):
+	Compare LHS types of NOP_EXPR.
+
 2019-11-18  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* run-rtl-passes.c (run_rtl_passes): Accept and handle empty
