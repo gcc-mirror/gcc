@@ -1,5 +1,32 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/sourcebuild.texi (vect_check_ptrs): Document.
+	* optabs.def (check_raw_ptrs_optab, check_war_ptrs_optab): New optabs.
+	* doc/md.texi: Document them.
+	* internal-fn.def (IFN_CHECK_RAW_PTRS, IFN_CHECK_WAR_PTRS): New
+	internal functions.
+	* internal-fn.h (internal_check_ptrs_fn_supported_p): Declare.
+	* internal-fn.c (check_ptrs_direct): New macro.
+	(expand_check_ptrs_optab_fn): Likewise.
+	(direct_check_ptrs_optab_supported_p): Likewise.
+	(internal_check_ptrs_fn_supported_p): New fuction.
+	* tree-data-ref.c: Include internal-fn.h.
+	(create_ifn_alias_checks): New function.
+	(create_intersect_range_checks): Use it.
+	* config/aarch64/iterators.md (SVE2_WHILE_PTR): New int iterator.
+	(optab, cmp_op): Handle it.
+	(raw_war, unspec): New int attributes.
+	* config/aarch64/aarch64.md (UNSPEC_WHILERW, UNSPEC_WHILE_WR): New
+	constants.
+	* config/aarch64/predicates.md (aarch64_bytes_per_sve_vector_operand):
+	New predicate.
+	* config/aarch64/aarch64-sve2.md (check_<raw_war>_ptrs<mode>): New
+	expander.
+	(@aarch64_sve2_while<cmp_op><GPI:mode><PRED_ALL:mode>_ptest): New
+	pattern.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree.c (build_vector_from_ctor): Directly return a zero vector for
 	empty constructors.
 

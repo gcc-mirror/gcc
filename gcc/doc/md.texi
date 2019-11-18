@@ -5076,6 +5076,37 @@ for (i = 1; i < GET_MODE_NUNITS (@var{n}); i++)
   operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
 @end smallexample
 
+@cindex @code{check_raw_ptrs@var{m}} instruction pattern
+@item @samp{check_raw_ptrs@var{m}}
+Check whether, given two pointers @var{a} and @var{b} and a length @var{len},
+a write of @var{len} bytes at @var{a} followed by a read of @var{len} bytes
+at @var{b} can be split into interleaved byte accesses
+@samp{@var{a}[0], @var{b}[0], @var{a}[1], @var{b}[1], @dots{}}
+without affecting the dependencies between the bytes.  Set operand 0
+to true if the split is possible and false otherwise.
+
+Operands 1, 2 and 3 provide the values of @var{a}, @var{b} and @var{len}
+respectively.  Operand 4 is a constant integer that provides the known
+common alignment of @var{a} and @var{b}.  All inputs have mode @var{m}.
+
+This split is possible if:
+
+@smallexample
+@var{a} == @var{b} || @var{a} + @var{len} <= @var{b} || @var{b} + @var{len} <= @var{a}
+@end smallexample
+
+You should only define this pattern if the target has a way of accelerating
+the test without having to do the individual comparisons.
+
+@cindex @code{check_war_ptrs@var{m}} instruction pattern
+@item @samp{check_war_ptrs@var{m}}
+Like @samp{check_raw_ptrs@var{m}}, but with the read and write swapped round.
+The split is possible in this case if:
+
+@smallexample
+@var{b} <= @var{a} || @var{a} + @var{len} <= @var{b}
+@end smallexample
+
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for

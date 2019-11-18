@@ -221,6 +221,8 @@ extern int internal_fn_mask_index (internal_fn);
 extern int internal_fn_stored_value_index (internal_fn);
 extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
 						    tree, tree, int);
+extern bool internal_check_ptrs_fn_supported_p (internal_fn, tree,
+						poly_uint64, unsigned int);
 
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);

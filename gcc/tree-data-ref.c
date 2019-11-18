@@ -96,6 +96,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-eh.h"
 #include "ssa.h"
+#include "internal-fn.h"
 
 static struct datadep_stats
 {
@@ -1719,6 +1720,80 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
     }
 }
 
+/* A subroutine of create_intersect_range_checks, with a subset of the
+   same arguments.  Try to use IFN_CHECK_RAW_PTRS and IFN_CHECK_WAR_PTRS
+   to optimize cases in which the references form a simple RAW, WAR or
+   WAR dependence.  */
+
+static bool
+create_ifn_alias_checks (tree *cond_expr,
+			 const dr_with_seg_len_pair_t &alias_pair)
+{
+  const dr_with_seg_len& dr_a = alias_pair.first;
+  const dr_with_seg_len& dr_b = alias_pair.second;
+
+  /* Check for cases in which:
+
+     (a) we have a known RAW, WAR or WAR dependence
+     (b) the accesses are well-ordered in both the original and new code
+	 (see the comment above the DR_ALIAS_* flags for details); and
+     (c) the DR_STEPs describe all access pairs covered by ALIAS_PAIR.  */
+  if (alias_pair.flags & ~(DR_ALIAS_RAW | DR_ALIAS_WAR | DR_ALIAS_WAW))
+    return false;
+
+  /* Make sure that both DRs access the same pattern of bytes,
+     with a constant length and and step.  */
+  poly_uint64 seg_len;
+  if (!operand_equal_p (dr_a.seg_len, dr_b.seg_len, 0)
+      || !poly_int_tree_p (dr_a.seg_len, &seg_len)
+      || maybe_ne (dr_a.access_size, dr_b.access_size)
+      || !operand_equal_p (DR_STEP (dr_a.dr), DR_STEP (dr_b.dr), 0)
+      || !tree_fits_uhwi_p (DR_STEP (dr_a.dr)))
+    return false;
+
+  unsigned HOST_WIDE_INT bytes = tree_to_uhwi (DR_STEP (dr_a.dr));
+  tree addr_a = DR_BASE_ADDRESS (dr_a.dr);
+  tree addr_b = DR_BASE_ADDRESS (dr_b.dr);
+
+  /* See whether the target suports what we want to do.  WAW checks are
+     equivalent to WAR checks here.  */
+  internal_fn ifn = (alias_pair.flags & DR_ALIAS_RAW
+		     ? IFN_CHECK_RAW_PTRS
+		     : IFN_CHECK_WAR_PTRS);
+  unsigned int align = MIN (dr_a.align, dr_b.align);
+  poly_uint64 full_length = seg_len + bytes;
+  if (!internal_check_ptrs_fn_supported_p (ifn, TREE_TYPE (addr_a),
+					   full_length, align))
+    {
+      full_length = seg_len + dr_a.access_size;
+      if (!internal_check_ptrs_fn_supported_p (ifn, TREE_TYPE (addr_a),
+					       full_length, align))
+	return false;
+    }
+
+  /* Commit to using this form of test.  */
+  addr_a = fold_build_pointer_plus (addr_a, DR_OFFSET (dr_a.dr));
+  addr_a = fold_build_pointer_plus (addr_a, DR_INIT (dr_a.dr));
+
+  addr_b = fold_build_pointer_plus (addr_b, DR_OFFSET (dr_b.dr));
+  addr_b = fold_build_pointer_plus (addr_b, DR_INIT (dr_b.dr));
+
+  *cond_expr = build_call_expr_internal_loc (UNKNOWN_LOCATION,
+					     ifn, boolean_type_node,
+					     4, addr_a, addr_b,
+					     size_int (full_length),
+					     size_int (align));
+
+  if (dump_enabled_p ())
+    {
+      if (ifn == IFN_CHECK_RAW_PTRS)
+	dump_printf (MSG_NOTE, "using an IFN_CHECK_RAW_PTRS test\n");
+      else
+	dump_printf (MSG_NOTE, "using an IFN_CHECK_WAR_PTRS test\n");
+    }
+  return true;
+}
+
 /* Try to generate a runtime condition that is true if ALIAS_PAIR is
    free of aliases, using a condition based on index values instead
    of a condition based on addresses.  Return true on success,
@@ -2238,6 +2313,9 @@ create_intersect_range_checks (class loop *loop, tree *cond_expr,
   const dr_with_seg_len& dr_b = alias_pair.second;
   *cond_expr = NULL_TREE;
   if (create_intersect_range_checks_index (loop, cond_expr, alias_pair))
+    return;
+
+  if (create_ifn_alias_checks (cond_expr, alias_pair))
     return;
 
   if (create_waw_or_war_checks (cond_expr, alias_pair))
