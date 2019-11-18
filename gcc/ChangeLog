@@ -1,3 +1,36 @@
+2019-11-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cfgloop.c (get_loop_body_in_custom_order): New.
+	* cfgloop.h (get_loop_body_in_custom_order): New prototype.
+	* tree-loop-distribution.c (class loop_distribution): New.
+	(bb_top_order_cmp): Remove.
+	(bb_top_order_cmp_r): New.
+	(create_rdg_vertices): Move into class loop_distribution.
+	(stmts_from_loop): Same as above.
+	(update_for_merge): Same as above.
+	(partition_merge_into): Same as above.
+	(get_data_dependence): Same as above.
+	(data_dep_in_cycle_p): Same as above.
+	(update_type_for_merge): Same as above.
+	(build_rdg_partition_for-vertex): Same as above.
+	(classify_builtin_ldst): Same as above.
+	(classify_partition): Same as above.
+	(share_memory_accesses): Same as above.
+	(rdg_build_partitions): Same as above.
+	(pg_add_dependence_edges): Same as above.
+	(build_partition_graph): Same as above.
+	(merge_dep_scc_partitions): Same as above.
+	(break_alias_scc_partitions): Same as above.
+	(finalize_partitions): Same as above.
+	(distribute_loop): Same as above.
+	(bb_top_order_init): New method
+	(bb_top_order_destroy): New method.
+	(get_bb_top_order_index_size): New method.
+	(get_bb_top_order_index_index): New method.
+	(get_bb_top_order_index_index): New method.
+	(loop_distribution::execute): New method.
+	(pass_loop_distribution::execute): Instantiate loop_distribution.
+
 2019-11-18  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/92508
