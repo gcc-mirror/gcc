@@ -1,5 +1,16 @@
 2019-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/thread: Reduce header dependencies.
+	(jthread::get_id()): Add missing return.
+	(jthread::get_stop_token()): Avoid unnecessary stop_source temporary.
+	(jthread::_S_create): Check is_invocable using decayed types. Add
+	static assertion.
+	* testsuite/30_threads/jthread/1.cc: Add dg-require-gthreads.
+	* testsuite/30_threads/jthread/2.cc: Likewise.
+	* testsuite/30_threads/jthread/3.cc: New test.
+	* testsuite/30_threads/jthread/jthread.cc: Add missing directives for
+	pthread and gthread support. Use VERIFY instead of assert.
+
 	* include/bits/alloc_traits.h (allocator_traits::construct)
 	(allocator_traits::destroy, allocator_traits::max_size): Add unused
 	attributes to parameters that are not used in C++20.

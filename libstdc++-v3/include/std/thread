@@ -35,23 +35,26 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <chrono>
-#include <memory>
-#include <tuple>
-#include <cerrno>
-
-#if __cplusplus > 201703L
-#define __cpp_lib_jthread 201907L
-#include <functional>
-#include <stop_token>
-#endif
-
-#include <bits/functexcept.h>
-#include <bits/functional_hash.h>
-#include <bits/invoke.h>
-#include <bits/gthr.h>
+#include <bits/c++config.h>
 
 #if defined(_GLIBCXX_HAS_GTHREADS)
+#include <bits/gthr.h>
+
+#include <chrono> // std::chrono::*
+#include <memory> // std::unique_ptr
+#include <tuple>  // std::tuple
+
+#if __cplusplus > 201703L
+# include <stop_token> // std::stop_source, std::stop_token, std::nostopstate
+#endif
+
+#ifdef _GLIBCXX_USE_NANOSLEEP
+# include <cerrno>  // errno, EINTR
+# include <time.h>  // nanosleep
+#endif
+
+#include <bits/functional_hash.h> // std::hash
+#include <bits/invoke.h>	  // std::__invoke
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -483,7 +486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     [[nodiscard]] id
     get_id() const noexcept
     {
-      _M_thread.get_id();
+      return _M_thread.get_id();
     }
 
     [[nodiscard]] native_handle_type
@@ -512,7 +515,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     bool request_stop() noexcept
     {
-      return get_stop_source().request_stop();
+      return _M_stop_source.request_stop();
     }
 
     friend void swap(jthread& __lhs, jthread& __rhs) noexcept
@@ -525,12 +528,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static thread
       _S_create(stop_source& __ssrc, _Callable&& __f, _Args&&... __args)
       {
-	if constexpr(is_invocable_v<_Callable, stop_token, _Args...>)
+	if constexpr(is_invocable_v<decay_t<_Callable>, stop_token,
+				    decay_t<_Args>...>)
 	  return thread{std::forward<_Callable>(__f), __ssrc.get_token(),
 			std::forward<_Args>(__args)...};
 	else
-	  return thread{std::forward<_Callable>(__f),
-			std::forward<_Args>(__args)...};
+	  {
+	    static_assert(is_invocable_v<decay_t<_Callable>,
+					 decay_t<_Args>...>,
+			  "std::thread arguments must be invocable after"
+			  " conversion to rvalues");
+	    return thread{std::forward<_Callable>(__f),
+			  std::forward<_Args>(__args)...};
+	  }
       }
 
     stop_source _M_stop_source;
@@ -539,9 +549,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_jthread
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-
 #endif // _GLIBCXX_HAS_GTHREADS
-
 #endif // C++11
-
 #endif // _GLIBCXX_THREAD

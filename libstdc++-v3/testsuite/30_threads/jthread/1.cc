@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
+// { dg-require-gthreads "" }
 
 #include <thread>
 

@@ -15,14 +15,31 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
+// { dg-options "-std=gnu++2a -pthread" }
 // { dg-do compile { target c++2a } }
+// { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
 
-#include <version>
+#include <thread>
 
-#ifndef __cpp_lib_jthread
-# error "Feature-test macro for jthread missing in <version>"
-#elif __cpp_lib_jthread != 201907L
-# error "Feature-test macro for jthread has wrong value in <version>"
-#endif
+struct RvalCallable
+{
+  void operator()() && { }
+};
+
+void test01()
+{
+  RvalCallable r;
+  std::jthread t(r);
+}
+
+struct RvalCallableWithToken
+{
+  void operator()(std::stop_token) && { }
+};
+
+void test02()
+{
+  RvalCallableWithToken r;
+  std::jthread t(r);
+}
