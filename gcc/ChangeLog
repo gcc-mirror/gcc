@@ -1,3 +1,9 @@
+2019-11-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92493
+	* gimple-ssa-sprintf.c (get_origin_and_offset): Remove spurious
+	assignment.
+
 2019-11-18  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cfgloop.c (get_loop_body_in_custom_order): New.
