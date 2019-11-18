@@ -1,3 +1,17 @@
+2019-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	Add support for AVR devices from the 0-series.
+
+	PR target/92545
+	* config/avr/avr-arch.h (avr_mcu_t) <flash_pm_offset>: New field.
+	* config/avr/avr-devices.c (avr_mcu_types): Adjust initializers.
+	* config/avr/avr-mcus.def (AVR_MCU): Add respective field.
+	* config/avr/specs.h (LINK_SPEC) <%(link_pm_base_address)>: Add.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu)
+	<*cpp, *cpp_mcu, *cpp_avrlibc, *link_pm_base_address>: Emit code
+	for spec definitions.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2019-11-18  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/92448

@@ -97,7 +97,7 @@ static const char help_dev_lib_name[] =
   "#     #include <avr/io.h>\n"
   "#\n"
   "# will include the desired device header.  For ATmega8A the supplement\n"
-  "# to *cpp would read\n"
+  "# to *cpp_avrlibc would read\n"
   "#\n"
   "#     -D__AVR_DEV_LIB_NAME__=m8a\n"
   "\n";
@@ -132,6 +132,14 @@ print_mcu (const avr_mcu_t *mcu)
   bool rcall = (mcu->dev_attribute & AVR_ISA_RCALL);
   bool is_arch = mcu->macro == NULL;
   bool is_device = ! is_arch;
+  int flash_pm_offset = 0;
+
+  if (arch->flash_pm_offset
+      && mcu->flash_pm_offset
+      && mcu->flash_pm_offset != arch->flash_pm_offset)
+    {
+      flash_pm_offset = mcu->flash_pm_offset;
+    }
 
   if (is_arch
       && (ARCH_AVR2 == arch_id
@@ -262,6 +270,14 @@ print_mcu (const avr_mcu_t *mcu)
       fprintf (f, "\n\n");
     }
 
+  if (is_device
+      && flash_pm_offset)
+    {
+      fprintf (f, "*link_pm_base_address:\n");
+      fprintf (f, "\t--defsym=__RODATA_PM_OFFSET=0x%x", flash_pm_offset);
+      fprintf (f, "\n\n");
+    }
+
   // Specs known to GCC.
 
   if (is_device)
@@ -273,10 +289,26 @@ print_mcu (const avr_mcu_t *mcu)
 
 #if defined (WITH_AVRLIBC)
       fprintf (f, "%s\n", help_dev_lib_name);
+
+      fprintf (f, "*cpp_avrlibc:\n");
+      fprintf (f, "\t-D__AVR_DEVICE_NAME__=%s", mcu->name);
+      fprintf (f, "\n\n");
 #endif // WITH_AVRLIBC
 
+      fprintf (f, "*cpp_mcu:\n");
+      fprintf (f, "\t-D%s", mcu->macro);
+      if (flash_pm_offset)
+	{
+	  fprintf (f, " -U__AVR_PM_BASE_ADDRESS__");
+	  fprintf (f, " -D__AVR_PM_BASE_ADDRESS__=0x%x", flash_pm_offset);
+	}
+      fprintf (f, "\n\n");
+
       fprintf (f, "*cpp:\n");
-      fprintf (f, "\t-D%s -D__AVR_DEVICE_NAME__=%s", mcu->macro, mcu->name);
+      fprintf (f, "\t%%(cpp_mcu)");
+#if defined (WITH_AVRLIBC)
+      fprintf (f, " %%(cpp_avrlibc)");
+#endif // WITH_AVRLIBC
       fprintf (f, "\n\n");
     }
 
