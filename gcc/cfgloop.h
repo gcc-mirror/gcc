@@ -376,6 +376,8 @@ extern basic_block *get_loop_body_in_dom_order (const class loop *);
 extern basic_block *get_loop_body_in_bfs_order (const class loop *);
 extern basic_block *get_loop_body_in_custom_order (const class loop *,
 			       int (*) (const void *, const void *));
+extern basic_block *get_loop_body_in_custom_order (const class loop *, void *,
+			       int (*) (const void *, const void *, void *));
 
 extern vec<edge> get_loop_exit_edges (const class loop *);
 extern edge single_exit (const class loop *);

@@ -980,6 +980,19 @@ get_loop_body_in_custom_order (const class loop *loop,
   return bbs;
 }
 
+/* Same as above, but use gcc_sort_r instead of qsort.  */
+
+basic_block *
+get_loop_body_in_custom_order (const class loop *loop, void *data,
+			       int (*bb_comparator) (const void *, const void *, void *))
+{
+  basic_block *bbs = get_loop_body (loop);
+
+  gcc_sort_r (bbs, loop->num_nodes, sizeof (basic_block), bb_comparator, data);
+
+  return bbs;
+}
+
 /* Get body of a LOOP in breadth first sort order.  */
 
 basic_block *
