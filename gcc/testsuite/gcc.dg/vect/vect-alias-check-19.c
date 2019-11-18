@@ -58,5 +58,5 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump {flags: *WAW\n} "vect" { target vect_int } } } */
-/* { dg-final { scan-tree-dump "using an index-based overlap test" "vect" } } */
+/* { dg-final { scan-tree-dump "using an index-based WAR/WAW test" "vect" } } */
 /* { dg-final { scan-tree-dump-not "using an address-based" "vect" } } */
