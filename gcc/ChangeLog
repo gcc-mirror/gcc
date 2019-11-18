@@ -1,3 +1,18 @@
+2019-11-18  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/92448
+	* config/i386/i386-expand.c (ix86_expand_set_or_cpymem):
+	Replace TARGET_AVX128_OPTIMAL with TARGET_AVX256_SPLIT_REGS.
+	* config/i386/i386-option.c (ix86_vec_cost): Ditto.
+	(ix86_reassociation_width): Ditto.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Replace TARGET_AVX128_OPTIAML with
+	ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
+	* config/i386/i386.h (TARGET_AVX256_SPLIT_REGS): New macro.
+	(TARGET_AVX128_OPTIMAL): Deleted.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_SPLIT_REGS): New
+	DEF_TUNE.
+
 2019-11-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (cceq_ior_compare): Rename to...
