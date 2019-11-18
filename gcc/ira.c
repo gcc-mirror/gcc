@@ -516,7 +516,8 @@ setup_alloc_regs (bool use_hard_frame_p)
 #endif
   COPY_HARD_REG_SET (no_unit_alloc_regs, fixed_nonglobal_reg_set);
   if (! use_hard_frame_p)
-    SET_HARD_REG_BIT (no_unit_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+    add_to_hard_reg_set (&no_unit_alloc_regs, Pmode,
+			 HARD_FRAME_POINTER_REGNUM);
   setup_class_hard_regs ();
 }
 
@@ -2275,6 +2276,7 @@ ira_setup_eliminable_regset (void)
 {
   int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
+  int fp_reg_count = hard_regno_nregs (HARD_FRAME_POINTER_REGNUM, Pmode);
 
   /* Setup is_leaf as frame_pointer_required may use it.  This function
      is called by sched_init before ira if scheduling is enabled.  */
@@ -2303,7 +2305,8 @@ ira_setup_eliminable_regset (void)
        frame pointer in LRA.  */
 
   if (frame_pointer_needed)
-    df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
+    for (i = 0; i < fp_reg_count; i++)
+      df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM + i, true);
     
   COPY_HARD_REG_SET (ira_no_alloc_regs, no_unit_alloc_regs);
   CLEAR_HARD_REG_SET (eliminable_regset);
@@ -2333,17 +2336,21 @@ ira_setup_eliminable_regset (void)
     }
   if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
     {
-      if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
-	{
-	  SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
-	  if (frame_pointer_needed)
-	    SET_HARD_REG_BIT (ira_no_alloc_regs, HARD_FRAME_POINTER_REGNUM);
-	}
-      else if (frame_pointer_needed)
-	error ("%s cannot be used in asm here",
-	       reg_names[HARD_FRAME_POINTER_REGNUM]);
-      else
-	df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
+      for (i = 0; i < fp_reg_count; i++)
+	if (!TEST_HARD_REG_BIT (crtl->asm_clobbers,
+				HARD_FRAME_POINTER_REGNUM + i))
+	  {
+	    SET_HARD_REG_BIT (eliminable_regset,
+			      HARD_FRAME_POINTER_REGNUM + i);
+	    if (frame_pointer_needed)
+	      SET_HARD_REG_BIT (ira_no_alloc_regs,
+				HARD_FRAME_POINTER_REGNUM + i);
+	  }
+	else if (frame_pointer_needed)
+	  error ("%s cannot be used in asm here",
+		 reg_names[HARD_FRAME_POINTER_REGNUM + i]);
+	else
+	  df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM + i, true);
     }
 }
 

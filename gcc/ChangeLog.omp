@@ -1,3 +1,66 @@
+2019-11-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline:
+
+	2019-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* ira.c (setup_alloc_regs): Setup no_unit_alloc_regs for
+	frame pointer in multiple registers.
+	(ira_setup_eliminable_regset): Setup eliminable_regset,
+	ira_no_alloc_regs and regs_ever_live for frame pointer in
+	multiple registers.
+
+	2019-11-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lra-spills.c (assign_spill_hard_regs): Do not spill into
+	registers in eliminable_regset.
+
+	2019-11-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lra-spills.c (assign_spill_hard_regs): Check that the spill
+	register is suitable for the mode.
+
+	2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_regno_reg_class): Return VCC_CONDITIONAL_REG
+	register class for VCC_LO and VCC_HI.
+	(gcn_spill_class): Use SGPR_REGS to spill registers in
+	VCC_CONDITIONAL_REG.
+
+	2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_expand_prologue): Remove initialization and
+	prologue use of v0.
+	(print_operand_address): Use v1 for zero vector offset.
+
+	2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_init_cumulative_args): Call reinit_regs.
+
+	2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (default_requested_args): New.
+	(gcn_parse_amdgpu_hsa_kernel_attribute): Initialize requested args
+	set with default_requested_args.
+	(gcn_conditional_register_usage): Limit register usage of non-kernel
+	functions.  Reassign fixed registers if a non-standard set of args is
+	requested.
+	* config/gcn/gcn.h (FIXED_REGISTERS): Fix registers according to ABI.
+
+	2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.c (MAX_NORMAL_SGPR_COUNT, MAX_NORMAL_VGPR_COUNT): New.
+	(gcn_conditional_register_usage): Use constants in place of hard-coded
+	values.
+	(gcn_hsa_declare_function_name): Set lower bound for number of
+	SGPRs/VGPRs in non-leaf kernels to MAX_NORMAL_SGPR_COUNT and
+	MAX_NORMAL_VGPR_COUNT.
+
+	2019-11-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.h (FIXED_REGISTERS): Unfix frame pointer.
+	(CALL_USED_REGISTERS): Make frame pointer callee-saved.
+
 2019-10-16  Julian Brown  <julian@codesourcery.com>
 
 	* config/gcn/gcn-protos.h (gcn_goacc_adjust_gangprivate_decl): Rename
