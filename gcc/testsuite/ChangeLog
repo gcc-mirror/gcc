@@ -1,5 +1,9 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/asm/ptest_pmore.c: New test.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/general/temporaries_1.c: New test.
 
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
