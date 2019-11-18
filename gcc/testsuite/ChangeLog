@@ -1,3 +1,10 @@
+2019-11-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-attr-syntax-1.c, gcc.dg/c11-attr-syntax-2.c,
+	gcc.dg/c11-attr-syntax-3.c, gcc.dg/c2x-attr-syntax-4.c: New tests.
+	* gcc.dg/c2x-attr-deprecated-1.c: Also test struct [[deprecated]].
+	* gcc.dg/c2x-attr-fallthrough-1.c: Also test [[__fallthrough__]].
+
 2019-11-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91962 - ICE with reference binding and qualification conversion.

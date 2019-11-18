@@ -89,3 +89,11 @@ f11 (void)
 {
   return y.b; /* { dg-warning "deprecated" } */
 }
+
+struct [[deprecated]] s { int x; };
+
+void
+f12 (void)
+{
+  struct s var; /* { dg-warning "deprecated" } */
+}

@@ -16,6 +16,12 @@ f (int a)
     case 3:
       b += 7;
       break;
+    case 4:
+      b = 5;
+      [[__fallthrough__]];
+    case 5:
+      b += 1;
+      break;
     }
   return b;
 }
