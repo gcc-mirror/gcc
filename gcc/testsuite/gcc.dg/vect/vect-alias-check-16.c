@@ -62,5 +62,6 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump {flags: *RAW\n} "vect" { target vect_int } } } */
-/* { dg-final { scan-tree-dump "using an address-based overlap test" "vect" } } */
+/* { dg-final { scan-tree-dump "using an address-based overlap test" "vect" { target { ! vect_check_ptrs } } } } */
+/* { dg-final { scan-tree-dump "using an IFN_CHECK_RAW_PTRS test" "vect" { target vect_check_ptrs } } } */
 /* { dg-final { scan-tree-dump-not "using an index-based" "vect" } } */

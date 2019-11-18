@@ -118,6 +118,7 @@ init_internal_fns ()
 #define fold_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
 #define mask_fold_left_direct { 1, 1, false }
+#define check_ptrs_direct { 0, 0, false }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -3006,6 +3007,9 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_mask_fold_left_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
+#define expand_check_ptrs_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 4)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -3095,6 +3099,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
+#define direct_check_ptrs_optab_supported_p direct_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 
@@ -3570,6 +3575,24 @@ internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
   return (icode != CODE_FOR_nothing
 	  && insn_operand_matches (icode, 2 + output_ops, GEN_INT (unsigned_p))
 	  && insn_operand_matches (icode, 3 + output_ops, GEN_INT (scale)));
+}
+
+/* Return true if the target supports IFN_CHECK_{RAW,WAR}_PTRS function IFN
+   for pointers of type TYPE when the accesses have LENGTH bytes and their
+   common byte alignment is ALIGN.  */
+
+bool
+internal_check_ptrs_fn_supported_p (internal_fn ifn, tree type,
+				    poly_uint64 length, unsigned int align)
+{
+  machine_mode mode = TYPE_MODE (type);
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, mode);
+  if (icode == CODE_FOR_nothing)
+    return false;
+  rtx length_rtx = immed_wide_int_const (length, mode);
+  return (insn_operand_matches (icode, 3, length_rtx)
+	  && insn_operand_matches (icode, 4, GEN_INT (align)));
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */

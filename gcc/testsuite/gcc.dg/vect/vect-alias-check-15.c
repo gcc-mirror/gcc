@@ -57,5 +57,6 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump {flags: *WAW\n} "vect" { target vect_int } } } */
-/* { dg-final { scan-tree-dump "using an address-based WAR/WAW test" "vect" } } */
+/* { dg-final { scan-tree-dump "using an address-based WAR/WAW test" "vect" { target { ! vect_check_ptrs } } } } */
+/* { dg-final { scan-tree-dump "using an IFN_CHECK_WAR_PTRS test" "vect" { target vect_check_ptrs } } } */
 /* { dg-final { scan-tree-dump-not "using an index-based" "vect" } } */

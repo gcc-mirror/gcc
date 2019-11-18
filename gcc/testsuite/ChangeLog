@@ -1,5 +1,17 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* lib/target-supports.exp (check_effective_target_vect_check_ptrs):
+	New procedure.
+	* gcc.dg/vect/vect-alias-check-14.c: Expect IFN_CHECK_WAR to be
+	used, if available.
+	* gcc.dg/vect/vect-alias-check-15.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-16.c: Likewise IFN_CHECK_RAW.
+	* gcc.target/aarch64/sve2/whilerw_1.c: New test.
+	* gcc.target/aarch64/sve2/whilewr_1.c: Likewise.
+	* gcc.target/aarch64/sve2/whilewr_2.c: Likewise.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/asm/ptest_pmore.c: New test.
 
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
