@@ -1858,6 +1858,9 @@ make_vector (unsigned log2_npatterns,
 tree
 build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
 {
+  if (vec_safe_length (v) == 0)
+    return build_zero_cst (type);
+
   unsigned HOST_WIDE_INT idx, nelts;
   tree value;
 

@@ -1,5 +1,10 @@
 2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree.c (build_vector_from_ctor): Directly return a zero vector for
+	empty constructors.
+
+2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* cse.c (cse_insn): Delete no-op register moves too.
 	* simplify-rtx.c (comparison_to_mask): Handle unsigned comparisons.
 	Take a second comparison to control the value for NE.
