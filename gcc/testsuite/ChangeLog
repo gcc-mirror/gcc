@@ -1,3 +1,12 @@
+2019-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92516
+	* g++.dg/vect/slp-pr92516.cc: New testcase.
+
+2019-11-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-ctor-1.c: New testcase.
+
 2019-11-18  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/ipa-icf-36.c: Remove 'all-all-all'.

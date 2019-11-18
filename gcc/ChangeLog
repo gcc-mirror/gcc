@@ -1,3 +1,27 @@
+2019-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92516
+	* tree-vect-slp.c (vect_analyze_slp_instance): Add bst_map
+	argument, hoist bst_map creation/destruction to ...
+	(vect_analyze_slp): ... here, forming a true graph with
+	SLP instances being the entries.
+	(vect_detect_hybrid_slp_stmts): Remove wrapper.
+	(vect_detect_hybrid_slp): Use one visited set for all
+	graph entries.
+	(vect_slp_analyze_node_operations): Simplify visited/lvisited
+	to hash-sets of slp_tree.
+	(vect_slp_analyze_operations): Likewise.
+	(vect_bb_slp_scalar_cost): Remove wrapper.
+	(vect_bb_vectorization_profitable_p): Use one visited set for
+	all graph entries.
+	(vect_schedule_slp_instance): Elide bst_map use.
+	(vect_schedule_slp): Likewise.
+
+2019-11-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_analyze_slp_instance): When a CTOR
+	was vectorized with just external refs fail.
+
 2019-11-18  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/92525
