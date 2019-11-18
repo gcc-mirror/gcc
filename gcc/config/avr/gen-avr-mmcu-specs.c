@@ -274,7 +274,7 @@ print_mcu (const avr_mcu_t *mcu)
       && flash_pm_offset)
     {
       fprintf (f, "*link_pm_base_address:\n");
-      fprintf (f, "\t--defsym=__RODATA_PM_OFFSET=0x%x", flash_pm_offset);
+      fprintf (f, "\t--defsym=__RODATA_PM_OFFSET__=0x%x", flash_pm_offset);
       fprintf (f, "\n\n");
     }
 
