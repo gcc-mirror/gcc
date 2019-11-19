@@ -1,3 +1,10 @@
+2019-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/92540
+	* config/riscv/riscv.c (riscv_address_insns): Initialize
+	addr in order to remove boostrap -Wmaybe-uninitialized
+	error.
+
 2019-11-18  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92493
