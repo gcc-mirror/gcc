@@ -19,5 +19,5 @@ void bill (basic_streambuf<char> *p)
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::basic_streambuf'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Lazily binding '::basic_ios'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Loading entity foo\[0\] section:1} module } }
 // { dg-final { scan-lang-dump {Lazily binding '#null##null#'@'foo' section:} module } }

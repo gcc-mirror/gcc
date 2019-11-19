@@ -1,3 +1,30 @@
+2019-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	Entities are numbered (part 1)
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_IMPORT_P): New.
+	* module.cc (depset::entity_kind): Add EK_ENTITIES.
+	(depset::entity_num): New (temporary) field.
+	(enum tree_tag): Add tt_entity.
+	(module_state): Add entity_lwm & entity_num fields.
+	(module_state::lazy_load): Add index, use it.
+	(module_state::{read,write}_entities): New.
+	(module_state::{read,write}_cluster): Number the entities.
+	(entity_map_t, entity_map, entity_ary) New.
+	(import_entity_index, import_entity_module): New.
+	(trees_out::decl_node): Write tt_entity for namespace decls.
+	(trees_in::tree_node): Add tt_entity handling.
+	(struct module_state_config): Add num_entities field.
+	(module_state::{read,write}_config): Stream it.
+	(module_state::{read,write}: Adjust.
+	({init,fini}_module_processing): Deal with entity map and ary.
+	* name-lookup.c (get_binding_or_decl): Mark NAMESPACE unreachable.
+	gcc/testsuite/
+	* g++.dg/modules/{builtin,indirect}-1_b.C: Adjust scans.
+	* g++.dg/modules/indirect-[1234]_c.C: Likewise.
+	* g++.dg/modules/tpl-friend-5_b.C: Likewise.
+	* g++.dg/modules/unnamed-1_b.C: Likewise.
+
 2019-11-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

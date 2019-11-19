@@ -1704,6 +1704,10 @@ check_constraint_info (tree t)
 #define DECL_MODULE_PURVIEW_P(N) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_ORIGIN_CHECK (N))->u.base.module_purview_p)
 
+/* Whether NODE is an import or not.  */
+#define DECL_MODULE_IMPORT_P(NODE) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_ORIGIN_CHECK (NODE))->u.base.module_origin)
+
 /* Whether this is an exported DECL.  Held on any decl that can
    appear at namespace scope (function, var, type, template, const or
    namespace).  templates copy from their template_result, consts

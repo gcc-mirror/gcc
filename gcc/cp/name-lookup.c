@@ -4255,6 +4255,8 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
   switch (TREE_CODE (ctx))
     {
     case NAMESPACE_DECL:
+      gcc_unreachable (); // FIXME:
+      
       /* Although there must be a binding, we're dealing with
 	 untrustworthy data, so check for NULL.  */
       if (tree *slot = find_namespace_slot (ctx, name))

@@ -2254,7 +2254,8 @@ public:
     EK_MAYBE_SPEC,	/* Potentially a specialization, else a DECL,
 			   never a returned kind.  */
 
-    EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
+    EK_BITS = 3,	/* Only need to encode below EK_EXPLICIT_HWM.  */
+    EK_ENTITIES = EK_USING
   };
 
 private:
@@ -2292,6 +2293,7 @@ public:
 public:
   unsigned cluster; /* Strongly connected cluster.  */
   unsigned section; /* Section written to.  */
+  unsigned entity_num; // FIXME move to cluster when unnamed goes away
   /* During SCC construction, section is lowlink, until the depset is
      removed from the stack.  See Tarjan algorithm for details.  */
 
@@ -2553,7 +2555,7 @@ public:
 
 inline
 depset::depset (tree entity)
-  :entity (entity), discriminator (0), cluster (0), section (0)
+  :entity (entity), discriminator (0), cluster (0), section (0), entity_num (0)
 {
   deps.create (0);
 }
@@ -2716,9 +2718,11 @@ enum tree_tag {
   tt_thunk,		/* A thunk.  */
   tt_clone_ref,
 
+  tt_entity,		/* A extra-cluster entity.  */
+
   tt_named, 	 	/* Named decl. */
   tt_anon,		/* Anonymous decl.  */
-  tt_implicit_template, /* An immplicit member template.  */
+  tt_implicit_template, /* An implicit member template.  */
   tt_template,		/* The TEMPLATE_RESULT of a template.  */
   tt_friend_template    /* A friend of a template class.  */
 };
@@ -3165,6 +3169,8 @@ typedef hash_map<unsigned/*UID*/, unsigned/*index*/,
 static unnamed_map_t *unnamed_map;
 
 /********************************************************************/
+
+/********************************************************************/
 /* Data needed by a module during the process of loading.  */
 struct GTY(()) slurping {
   vec<unsigned, va_heap, vl_embed> *
@@ -3331,6 +3337,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned unnamed_lwm;
   unsigned unnamed_num;
 
+  /* Indices into the entity_ary.  */
+  unsigned entity_lwm;
+  unsigned entity_num;
+
   /* Location ranges for this module.  adhoc-locs are decomposed, so
      don't have a range.  */
   loc_range_t GTY((skip)) ordinary_locs;
@@ -3437,8 +3447,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void maybe_defrost ();
 
   /* Lazily read a section.  */
-  bool lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost = false);
-  bool lazy_load (tree decl, bool outermost = false);
+  bool lazy_load (tree ns, tree id, int index,
+		  mc_slot *mslot, bool outermost = false);
 
  private:
   /* Check or complete a read.  */
@@ -3477,7 +3487,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   vec<tree> read_namespaces ();
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
-			  depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
+			  depset::hash &, unsigned &unnamed,
+			  unsigned &entities, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
  private:
@@ -3488,6 +3499,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_unnamed (elf_out *to, vec<depset *> depsets,
 		      depset::hash &, unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
+
+ private:
+  void write_entities (elf_out *to, vec<depset *> depsets,
+		       depset::hash &, unsigned count, unsigned *crc_ptr);
+  bool read_entities (unsigned count, const range_t &range);
 
  private:
   location_map_info prepare_maps ();
@@ -3563,6 +3579,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     parent (parent), name (name), slurp (NULL),
     flatname (NULL), filename (NULL),
     unnamed_lwm (0), unnamed_num (0),
+    entity_lwm (0), entity_num (0),
     ordinary_locs (0, 0), macro_locs (0, 0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
@@ -3704,6 +3721,17 @@ static GTY(()) vec<module_state *, va_gc> *modules;
 
 /* Hash of module state, findable by {name, parent}. */
 static GTY(()) hash_table<module_state_hash> *modules_hash;
+
+/* Map of imported entities.  We map DECL_UID to index of entity
+   vector.  */
+typedef hash_map<unsigned/*UID*/, unsigned/*index*/,
+		 simple_hashmap_traits<int_hash<unsigned,0>, unsigned>
+		 > entity_map_t;
+static entity_map_t *entity_map;
+/* Doesn't need GTYing, because any tree referenced here is also
+   findable by, symbol table, specialization table, return type of
+   reachable function.  */
+static vec<mc_slot, va_heap, vl_embed> *entity_ary;
 
 /* Members entities of imported classes that are defined in this TU.
    These are where the entity's context is not from the current TU.
@@ -3928,6 +3956,43 @@ node_template_info (tree decl, int &use)
 
   use = use_tpl;
   return ti;
+}
+
+/* Find the index in entity_ary for an imported DECL.  It must be
+   there.  */
+
+static unsigned
+import_entity_index (tree decl)
+{
+  gcc_checking_assert (DECL_MODULE_IMPORT_P (decl));
+  unsigned index = *entity_map->get (DECL_UID (decl));
+
+  return index;
+}
+
+/* Find the module for an imported entity at INDEX in the entity ary.
+   There must be one.  */
+
+static module_state *
+import_entity_module (unsigned index)
+{
+  unsigned pos = 1;
+  unsigned len = modules->length () - pos;
+  while (len)
+    {
+      unsigned half = len / 2;
+      module_state *probe = (*modules)[pos + half];
+      if (index < probe->entity_lwm)
+	len = half;
+      else if (index < probe->entity_lwm + probe->entity_num)
+	return probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+  gcc_unreachable ();
 }
 
 /********************************************************************/
@@ -8129,65 +8194,36 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    code = tt_implicit_template;
 	  }
 
-	if (name && IDENTIFIER_ANON_P (name))
+	if (name && IDENTIFIER_ANON_P (name)
+	    && TREE_CODE (ctx) != NAMESPACE_DECL)
+	  name = NULL_TREE;
+
+	if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	  {
-	    if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	    gcc_assert (code == tt_named);
+	    code = tt_entity;
+	    /* Locate the entity.  */
+	    if (is_import)
 	      {
-		gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl) && code == tt_named);
-		// FIXME: what about namespace-scope anon classes?
-		gcc_checking_assert (TREE_CODE (TREE_TYPE (decl))
-				     == ENUMERAL_TYPE);
-		proxy = TYPE_VALUES (TREE_TYPE (decl));
-		/* If the values list is empty, then the enum is
-		   empty.  As it's anonymous, how did we manage to
-		   refer to it?  */
-		gcc_checking_assert (proxy);
-		proxy = TREE_VALUE (proxy);
-		name = DECL_NAME (proxy);
-		code = tt_anon;
+		// FIXME: Not relying on origin, as we're gonna move
+		// away from that
+		/* An import.  */
+		unsigned entity_num = import_entity_index (decl);
+		module_state *from = import_entity_module (entity_num);
+		gcc_checking_assert (from->remap == origin);
+		ident = entity_num - from->entity_lwm;
+		kind = "import";
 	      }
 	    else
-	      name = NULL_TREE;
-	  }
-
-	if (TREE_CODE (ctx) == NAMESPACE_DECL && !origin)
-	  {
-	    /* Look directly into the binding depset, as that's
-	       what importers will observe.  */
-	    depset *bind = dep_hash->find_binding (ctx, name);
-	    /* Only reference earlier bindings.  */
-	    gcc_assert (bind && bind->section < section);
-
-	    for (ident = bind->deps.length (); ident--;)
 	      {
-		depset *bdep = bind->deps[ident];
-		tree bdecl = bdep->get_entity ();
-		if (bdep->get_entity_kind () == depset::EK_USING)
-		  bdecl = OVL_FUNCTION (bdecl);
-		if (bdecl == proxy)
-		  break;
+		// FIXME: We should just put earlier decls into the
+		// entity map!
+		dep = dep_hash->find_entity (decl);
+		ident = dep->entity_num - 1;
+		tree o = get_originating_module_decl (decl);
+		kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
+			? "purview" : "GMF");
 	      }
-
-	    gcc_assert (ident >= 0);
-
-	    if (bind->deps.length () > 1)
-	      {
-		depset *fdep = bind->deps[0];
-		tree fdecl = fdep->get_entity ();
-
-		if (fdep->get_entity_kind () == depset::EK_USING)
-		  /* Although we don't get this case right now, I
-		     expect it to appear in the not-too distant
-		     future.  Let's make future-me's life easier.  */
-		  fdecl = OVL_FUNCTION (fdecl);
-
-		if (DECL_IMPLICIT_TYPEDEF_P (fdecl))
-		  ident--;
-	      }
-
-	    tree o = get_originating_module_decl (decl);
-	    kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
-		    ? "purview" : "GMF");
 	  }
 	else
 	  {
@@ -8200,8 +8236,11 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  }
 
 	i (code);
-	tree_node (ctx);
-	tree_node (name);
+	if (code != tt_entity)
+	  {
+	    tree_node (ctx);
+	    tree_node (name);
+	  }
 	u (origin);
 	i (ident);
       }
@@ -9216,6 +9255,40 @@ trees_in::tree_node ()
        }
       break;
 
+    case tt_entity:
+      /* Index into the entity table.  Perhaps not loaded yet!  */
+      {
+	unsigned origin = state->slurp->remap_module (u ());
+	int ident = i (); // FIXME: unsigned when tt_named etc die
+	module_state *from = (*modules)[origin];
+
+	if (unsigned (ident) >= from->entity_num)
+	  set_overrun ();
+	if (!get_overrun ())
+	  {
+	    mc_slot *slot = &(*entity_ary)[from->entity_lwm + ident];
+	    if (slot->is_lazy ())
+	      from->lazy_load (NULL_TREE, NULL_TREE, ident, slot, false);
+	    res = *slot;
+	  }
+
+	if (res)
+	  {
+	    const char *kind = (origin != state->mod ? "Imported" : "Named");
+	    int tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
+		       res, (*modules)[origin]);
+
+	    if (!add_indirects (res))
+	      {
+		set_overrun ();
+		res = NULL_TREE;
+	      }
+	  }
+      }
+      break;
+
     case tt_named:
     case tt_anon:
     case tt_implicit_template:
@@ -9257,10 +9330,10 @@ trees_in::tree_node ()
 	else if (TREE_CODE (res) != TYPE_DECL && origin != state->mod)
 	  mark_used (res, tf_none);
 
-	const char *kind = (origin != state->mod ? "Imported" : "Named");
-	int tag = insert (res);
 	if (res)
 	  {
+	    const char *kind = (origin != state->mod ? "Imported" : "Named");
+	    int tag = insert (res);
 	    dump (dumper::TREE)
 	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
 		       res, (*modules)[origin]);
@@ -13613,7 +13686,7 @@ enum ct_bind_flags
 unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     depset::hash &table, unsigned &unnamed,
-			     unsigned *crc_ptr)
+			     unsigned &entities, unsigned *crc_ptr)
 {
   dump () && dump ("Writing section:%u %u depsets", scc[0]->section, size);
   dump.indent ();
@@ -13655,6 +13728,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       
       gcc_checking_assert (!b->is_unreached ());
       tree decl = b->get_entity ();
+
+      if (b->get_entity_kind () < depset::EK_ENTITIES)
+	b->entity_num = ++entities;
 
       if (b->refs_unnamed ())
 	refs_unnamed_p = true;
@@ -13746,7 +13822,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   depset *namer = NULL;
 
-  /* Every declaration.  */
+  /* Every regular declaration.  */
+  // FIXME: need two phases because of current horcrux handling
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -13758,9 +13835,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  sec.u (ct_decl);
 	  sec.tree_node (decl);
-	  dump () && dump ("Wrote declaration of %N", decl);
-
-	  sec.u (0);
+	  gcc_checking_assert (b->entity_num);
+	  sec.u (0); // flags
+	  sec.u (b->entity_num - 1);
+	  dump () && dump ("Wrote declaration %u of %N",
+			   b->entity_num - 1, decl);
 
 	  /* Is this a good enough human name?  */
 	  if (!namer)
@@ -13850,16 +13929,20 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* FALLTHROUGH.  */
 
 	case depset::EK_UNNAMED:
+	  //	case depset::EK_DECL:
 	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
 			   TREE_CODE (decl), decl);
 
 	  sec.u (ct_decl);
 	  sec.tree_node (decl);
-	  dump () && dump ("Wrote declaration of %N", decl);
-
 	  if (b->cluster)
 	    flags |= cdf_is_voldemort;
 	  sec.u (flags);
+
+	  gcc_checking_assert (b->entity_num);
+	  sec.u (b->entity_num - 1);
+	  dump () && dump ("Wrote declaration %u of %N",
+			   b->entity_num - 1, decl);
 
 	  if (flags & cdf_is_voldemort)
 	    {
@@ -14087,7 +14170,7 @@ module_state::read_cluster (unsigned snum)
 		  = &(*unnamed_ary)[import->unnamed_lwm + index];
 
 		if (uent->slot.is_lazy ())
-		  import->lazy_load (NULL, NULL, &uent->slot, false);
+		  import->lazy_load (NULL, NULL, -1, &uent->slot, false);
 
 		if (tree decl = uent->slot)
 		  {
@@ -14113,8 +14196,45 @@ module_state::read_cluster (unsigned snum)
 	    dump () && dump ("Read declaration of %N", decl);
 
 	    unsigned flags = sec.u ();
+	    unsigned entity_index = sec.u ();
+
+	    if (entity_index >= entity_num)
+	      sec.set_overrun ();
 	    if (sec.get_overrun ())
 	      break;
+
+	    {
+	      /* Insert into the entity array.  */
+	      mc_slot *slot = &(*entity_ary)[entity_lwm + entity_index];
+	      if (!slot->is_lazy () || slot->get_lazy () != snum)
+		{
+		  sec.set_overrun ();
+		  break;
+		}
+	      (*slot) = decl;
+	    }
+
+	    /* If we matched a decl from this TU, it might not be an
+	       import!  */
+	    if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
+	      {
+		/* Insert into the entity hash (it might already be
+		   there.  */
+		// FIXME: Until we get to write out the current
+		// module, we only need namespace-scope decls here, as
+		// those are the only things users need the
+		// originating module for.  When writing out, we need
+		// all imported entities so we can directly refer to
+		// their index number.
+		bool existed;
+		unsigned *slot = &entity_map->get_or_insert
+		  (DECL_UID (decl), &existed);
+		if (!existed)
+		  *slot = entity_lwm + entity_index;
+		else
+		  /* If it existed, it should match.  */
+		  gcc_checking_assert (decl == (*entity_ary)[*slot]);
+		}
 
 	    if (flags & cdf_is_voldemort)
 	      {
@@ -14409,6 +14529,74 @@ module_state::read_bindings (vec<tree> spaces, unsigned num,
 	    break;
 	}
     }
+
+  dump.outdent ();
+  if (!sec.end (from ()))
+    return false;
+  return true;
+}
+
+/* Write the entity table to MOD_SNAME_PFX.ent
+
+   Each entry is a section number.  */
+
+void
+module_state::write_entities (elf_out *to, vec<depset *> depsets,
+			      depset::hash &table,
+			      unsigned count, unsigned *crc_p)
+{
+  dump () && dump ("Writing entites");
+  dump.indent ();
+
+  trees_out sec (to, this, table);
+  sec.begin ();
+
+  unsigned current = 0;
+  for (unsigned ix = 0; ix < depsets.length (); ix++)
+    {
+      depset *d = depsets[ix];
+
+      if (d->entity_num)
+	{
+	  current++;
+
+	  gcc_checking_assert (!d->is_unreached ()
+			       && d->entity_num == current);
+	  sec.u (d->section);
+	}
+      }
+  gcc_assert (count == current);
+  sec.end (to, to->name (MOD_SNAME_PFX ".ent"), crc_p);
+  dump.outdent ();
+}
+
+bool
+module_state::read_entities (unsigned count, const range_t &range)
+{
+  trees_in sec (this);
+
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".ent"))
+    return false;
+
+  dump () && dump ("Reading entities");
+  dump.indent ();
+
+  vec_safe_reserve (entity_ary, count);
+  unsigned ix;
+  for (ix = 0; ix != count; ix++)
+    {
+      unsigned snum = sec.u ();
+      if (snum < range.first || snum >= range.second)
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
+
+      mc_slot slot;
+      slot.u.binding = NULL_TREE;
+      slot.set_lazy (snum);
+      entity_ary->quick_push (slot);
+    }
+  entity_num = ix;
 
   dump.outdent ();
   if (!sec.end (from ()))
@@ -16162,6 +16350,7 @@ struct module_state_config {
   const char *dialect_str;
   range_t sec_range;
   unsigned num_unnamed;
+  unsigned num_entities;
   unsigned num_imports;
   unsigned num_partitions;
   unsigned num_bindings;
@@ -16171,7 +16360,7 @@ struct module_state_config {
 public:
   module_state_config ()
     :dialect_str (get_dialect ()),
-     sec_range (0,0), num_unnamed (0),
+     sec_range (0,0), num_unnamed (0), num_entities (0),
      num_imports (0), num_partitions (0),
      num_bindings (0), num_macros (0), num_inits (0)
   {
@@ -16259,6 +16448,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
   dump () && dump ("Bindings %u", config.num_bindings);
   cfg.u (config.num_unnamed);
   dump () && dump ("Unnamed %u", config.num_unnamed);
+  cfg.u (config.num_entities);
+  dump () && dump ("Entities %u", config.num_entities);
   cfg.u (config.num_macros);
   dump () && dump ("Macros %u", config.num_macros);
   cfg.u (config.num_inits);
@@ -16446,8 +16637,12 @@ module_state::read_config (module_state_config &config)
 
   config.num_bindings = cfg.u ();
   dump () && dump ("Bindings %u", config.num_bindings);
+
   config.num_unnamed = cfg.u ();
   dump () && dump ("Unnamed %u", config.num_unnamed);
+
+  config.num_entities = cfg.u ();
+  dump () && dump ("Entities %u", config.num_entities);
 
   config.num_macros = cfg.u ();
   dump () && dump ("Macros %u", config.num_macros);
@@ -16671,7 +16866,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  base[0]->cluster = 0;
 
 	  bytes
-	    += write_cluster (to, base, size, table, config.num_unnamed, &crc);
+	    += write_cluster (to, base, size, table, config.num_unnamed,
+			      config.num_entities, &crc);
 	}
     }
 
@@ -16686,6 +16882,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Write the bindings themselves.  */
   config.num_bindings = write_bindings (to, sccs, table, &crc);
+
+  /* Write the entitites.  None happens if we contain namespaces or
+     nothing. */
+  if (config.num_entities)
+    write_entities (to, sccs, table, config.num_entities, &crc);
 
   /* Write the unnamed.  */
   if (config.num_unnamed)
@@ -16805,6 +17006,12 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
 	spaces.release ();
 	if (!ok)
+	  goto bail;
+
+	/* And entities.  */
+	entity_lwm = vec_safe_length (entity_ary);
+	if (config.num_entities
+	    && !read_entities (config.num_entities, config.sec_range))
 	  goto bail;
 
 	/* And unnamed.  */
@@ -17482,8 +17689,10 @@ module_state::freeze_an_elf ()
 /* *SLOT is a lazy binding in namespace NS named ID.  Load it, or die
    trying.  */
 // FIXME: Should we emit something when noisy ()?
+// FIXME: Reconsider API when no longer indexing by name
 bool
-module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
+module_state::lazy_load (tree ns, tree id, int index,
+			 mc_slot *mslot, bool outermost)
 {
   unsigned n = dump.push (this);
   
@@ -17492,7 +17701,11 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   function_depth++;
 
   unsigned snum = mslot->get_lazy ();
-  dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
+  if (index >= 0)
+    dump () && dump ("Loading entity %M[%u] section:%u",
+		     this, unsigned (index), snum);
+  else
+    dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
 
   unsigned diags = outermost ? errorcount + warningcount + 1 : 0;
   int e;
@@ -17531,13 +17744,14 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   gcc_checking_assert (mod);
   if (outer)
     timevar_start (TV_MODULE_IMPORT);
-  (*modules)[mod]->lazy_load (ns, id, mslot, outer);
+
+  (*modules)[mod]->lazy_load (ns, id, -1, mslot, outer);
   if (outer)
     timevar_stop (TV_MODULE_IMPORT);
   gcc_assert (!mslot->is_lazy ());
 }
 
-module_state *
+static module_state *
 module_for_unnamed (unsigned unnamed)
 {
   unsigned pos = 1;
@@ -17584,7 +17798,7 @@ lazy_load_specializations (tree tmpl)
 	  if (uent->slot.is_lazy ())
 	    {
 	      module_state *module = module_for_unnamed (unnamed);
-	      module->lazy_load (NULL, NULL, &uent->slot, true);
+	      module->lazy_load (NULL, NULL, -1, &uent->slot, true);
 	    }
 	  else
 	    dump () && dump ("Specialization %u already loaded", ix);
@@ -18095,7 +18309,6 @@ init_module_processing (cpp_reader *reader)
   DECL_MODULE_EXPORT_P (global_namespace) = true;
 
   modules_hash = hash_table<module_state_hash>::create_ggc (31);
-
   vec_safe_reserve (modules, 20);
 
   /* Create module for current TU.  */
@@ -18229,7 +18442,10 @@ init_module_processing (cpp_reader *reader)
   if (!flag_preprocess_only)
     {
       unnamed_map = new unnamed_map_t (31);
-      specset::table = new specset::hash (400);
+      specset::table = new specset::hash (EXPERIMENT (1, 400));
+
+      entity_map = new entity_map_t (EXPERIMENT (1, 400));
+      vec_safe_reserve (entity_ary, EXPERIMENT (1, 400));
     }
 
 #if CHECKING_P
@@ -18399,6 +18615,12 @@ finish_module_processing (cpp_reader *reader)
   /* No need to lookup modules anymore.  */
   modules_hash = NULL;
 
+  /* Or entities.  */
+  delete entity_map;
+  entity_map = NULL;
+  delete entity_ary;
+  entity_ary = NULL;
+  
   /* Or unnamed entitites.  */
   delete unnamed_map;
   unnamed_map = NULL;

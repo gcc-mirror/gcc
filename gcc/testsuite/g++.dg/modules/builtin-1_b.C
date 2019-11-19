@@ -8,7 +8,7 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Lazily binding '::operator delete \[\]'@'builtin' section:.} module } }
+// { dg-final { scan-lang-dump {>Loading entity builtin\[1\] section:.} module } }
 // { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(matched\) function_decl:'::operator delete \[\]@builtin:.'} module } }
-// { dg-final { scan-lang-dump {Lazily binding '::operator delete'@'builtin' section:.} module } }
+// { dg-final { scan-lang-dump {>Loading entity builtin\[0\] section:.} module } }
 // { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(matched\) function_decl:'::operator delete@builtin:.'} module } }
