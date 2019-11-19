@@ -4552,12 +4552,21 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
      zeroes.  */
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION)
     {
-      tree indx_before_incr, indx_after_incr;
-      poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
-
-      gimple *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info)->stmt;
+      stmt_vec_info cond_info = STMT_VINFO_REDUC_DEF (reduc_info);
+      cond_info = vect_stmt_to_vectorize (cond_info);
+      while (gimple_assign_rhs_code (cond_info->stmt) != COND_EXPR)
+	{
+	  cond_info
+	    = loop_vinfo->lookup_def (gimple_op (cond_info->stmt,
+						 1 + STMT_VINFO_REDUC_IDX
+							(cond_info)));
+	  cond_info = vect_stmt_to_vectorize (cond_info);
+	}
+      gimple *vec_stmt = STMT_VINFO_VEC_STMT (cond_info)->stmt;
       gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
 
+      tree indx_before_incr, indx_after_incr;
+      poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (TREE_TYPE (vectype)));
       tree cr_index_scalar_type = make_unsigned_type (scalar_precision);
@@ -4611,9 +4620,9 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 (CCOMPARE).  The then and else values mirror the main VEC_COND_EXPR:
 	 the reduction phi corresponds to NEW_PHI_TREE and the new values
 	 correspond to INDEX_BEFORE_INCR.  */
-      gcc_assert (STMT_VINFO_REDUC_IDX (stmt_info) >= 1);
+      gcc_assert (STMT_VINFO_REDUC_IDX (cond_info) >= 1);
       tree index_cond_expr;
-      if (STMT_VINFO_REDUC_IDX (stmt_info) == 2)
+      if (STMT_VINFO_REDUC_IDX (cond_info) == 2)
 	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
 				  ccompare, indx_before_incr, new_phi_tree);
       else
@@ -4809,10 +4818,11 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 be zero.  */
 
       /* Vector of {0, 0, 0,...}.  */
-      tree zero_vec = make_ssa_name (vectype);
-      tree zero_vec_rhs = build_zero_cst (vectype);
-      gimple *zero_vec_stmt = gimple_build_assign (zero_vec, zero_vec_rhs);
-      gsi_insert_before (&exit_gsi, zero_vec_stmt, GSI_SAME_STMT);
+      tree zero_vec = build_zero_cst (vectype);
+
+      gimple_seq stmts = NULL;
+      new_phi_result = gimple_convert (&stmts, vectype, new_phi_result);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       /* Find maximum value from the vector of found indexes.  */
       tree max_index = make_ssa_name (index_scalar_type);
@@ -4880,7 +4890,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 
       /* Convert the reduced value back to the result type and set as the
 	 result.  */
-      gimple_seq stmts = NULL;
+      stmts = NULL;
       new_temp = gimple_build (&stmts, VIEW_CONVERT_EXPR, scalar_type,
 			       data_reduc);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
