@@ -20139,7 +20139,12 @@ tsubst_copy_and_build (tree t,
       }
 
     case REQUIRES_EXPR:
-      RETURN (tsubst_requires_expr (t, args, complain, in_decl));
+      {
+	tree r = tsubst_requires_expr (t, args, tf_none, in_decl);
+	if (r == error_mark_node && (complain & tf_error))
+	  tsubst_requires_expr (t, args, complain, in_decl);
+	RETURN (r);
+      }
 
     case RANGE_EXPR:
       /* No need to substitute further, a RANGE_EXPR will always be built
