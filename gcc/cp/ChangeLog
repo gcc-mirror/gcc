@@ -1,3 +1,15 @@
+2019-11-15  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/89913
+	* pt.c (get_underlying_template): Exit loop if the original type
+	of the alias is null.
+
+2019-11-19  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92078
+	* pt.c (maybe_new_partial_specialization): Apply access to newly
+	created partial specializations. Update comment style.
+
 2019-11-19  Andrew Sutton  <asutton@lock3software.com>
 
 	PR c++/92078
