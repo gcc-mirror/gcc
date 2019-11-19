@@ -768,6 +768,33 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   return time;
 }
 
+/* Determine time saved by inlininig EDGE of frequency FREQ
+   where callee's runtime w/o inlineing is UNINLINED_TYPE
+   and with inlined is INLINED_TYPE.  */
+
+inline sreal
+inlining_speedup (struct cgraph_edge *edge,
+    		  sreal freq,
+		  sreal uninlined_time,
+		  sreal inlined_time)
+{
+  sreal speedup = uninlined_time - inlined_time;
+  /* Handling of call_time should match one in ipa-inline-fnsummary.c
+     (estimate_edge_size_and_time).  */
+  sreal call_time = ipa_call_summaries->get (edge)->call_stmt_time;
+
+  if (freq > 0)
+    {
+      speedup = (speedup + call_time);
+      if (freq != 1)
+       speedup = speedup * freq;
+    }
+  else if (freq == 0)
+    speedup = speedup >> 11;
+  gcc_checking_assert (speedup >= 0);
+  return speedup;
+}
+
 /* Return true if the speedup for inlining E is bigger than
    PARAM_MAX_INLINE_MIN_SPEEDUP.  */
 
@@ -1149,10 +1176,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       sreal numerator, denominator;
       int overall_growth;
       sreal freq = edge->sreal_frequency ();
-      sreal inlined_time = compute_inlined_call_time (edge, edge_time, freq);
 
-      numerator = (compute_uninlined_call_time (edge, unspec_edge_time, freq)
-		   - inlined_time);
+      numerator = inlining_speedup (edge, freq, unspec_edge_time, edge_time);
       if (numerator <= 0)
 	numerator = ((sreal) 1 >> 8);
       if (caller->count.ipa ().nonzero_p ())
@@ -1235,16 +1260,14 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  fprintf (dump_file,
 		   "      %f: guessed profile. frequency %f, count %" PRId64
 		   " caller count %" PRId64
-		   " time w/o inlining %f, time with inlining %f"
+		   " time saved %f"
 		   " overall growth %i (current) %i (original)"
 		   " %i (compensated)\n",
 		   badness.to_double (),
 		   freq.to_double (),
 		   edge->count.ipa ().initialized_p () ? edge->count.ipa ().to_gcov_type () : -1,
 		   caller->count.ipa ().initialized_p () ? caller->count.ipa ().to_gcov_type () : -1,
-		   compute_uninlined_call_time (edge,
-						unspec_edge_time, freq).to_double (),
-		   inlined_time.to_double (),
+		   inlining_speedup (edge, freq, unspec_edge_time, edge_time).to_double (),
 		   estimate_growth (callee),
 		   callee_info->growth, overall_growth);
 	}

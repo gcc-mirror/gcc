@@ -1,3 +1,8 @@
+2019-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (inlining_speedup): New function.
+	(edge_badness): Use it.
+
 2019-11-19  Zoran Jovanovic <zoran.jovanovic@mips.com>
 			Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
