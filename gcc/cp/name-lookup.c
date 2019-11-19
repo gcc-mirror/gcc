@@ -841,7 +841,7 @@ name_lookup::search_namespace_only (tree scope)
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);
 		    lazy_load_binding (cluster->indices[jx].base,
-				       scope, name, &cluster->slots[jx], true);
+				       scope, name, &cluster->slots[jx]);
 		  }
 		tree bind = cluster->slots[jx];
 		if (!bind)
@@ -1123,7 +1123,7 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap inst_path)
 		/* Is it loaded.  */
 		if (cluster->slots[jx].is_lazy ())
 		  lazy_load_binding (cluster->indices[jx].base,
-				     scope, name, &cluster->slots[jx], true);
+				     scope, name, &cluster->slots[jx]);
 
 		tree bind = cluster->slots[jx];
 		if (!bind)
@@ -1516,7 +1516,7 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 			    = search_imported_binding_slot (slot, mod))
 			  {
 			    if (mslot->is_lazy ())
-			      lazy_load_binding (mod, ns, name, mslot, true);
+			      lazy_load_binding (mod, ns, name, mslot);
 			    else if (!deduping)
 			      {
 				deduping = true;
@@ -3629,7 +3629,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	  {
 	    gcc_assert (cluster->indices[jx].span == 1);
 	    lazy_load_binding (cluster->indices[jx].base,
-			       scope, name, &cluster->slots[jx], true);
+			       scope, name, &cluster->slots[jx]);
 	  }
 	tree bind = cluster->slots[jx];
 	if (!bind)
@@ -4010,7 +4010,7 @@ extract_module_binding (tree &binding, tree ns, bitmap partitions)
 		    gcc_assert (cluster->indices[jx].span == 1);
 		    lazy_load_binding (cluster->indices[jx].base, ns,
 				       MODULE_VECTOR_NAME (binding),
-				       &cluster->slots[jx], true);
+				       &cluster->slots[jx]);
 		  }
 
 		/* Load errors could mean there's nothing here.  */
@@ -4254,25 +4254,6 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
 
   switch (TREE_CODE (ctx))
     {
-    case NAMESPACE_DECL:
-      gcc_unreachable (); // FIXME:
-      
-      /* Although there must be a binding, we're dealing with
-	 untrustworthy data, so check for NULL.  */
-      if (tree *slot = find_namespace_slot (ctx, name))
-	{
-	  /* We reference ourselves via the dependency table.  */
-	  gcc_assert (mod);
-	  if (mc_slot *mslot = search_imported_binding_slot (slot, mod))
-	    {
-	      /* During an import we reference a dependent import.  */
-	      if (mslot->is_lazy ())
-		lazy_load_binding (mod, ctx, name, mslot, false);
-	      binding = *mslot;
-	    }
-	}
-      break;
-
     case RECORD_TYPE:
     case UNION_TYPE:
       if (COMPLETE_TYPE_P (ctx))
@@ -6558,7 +6539,7 @@ finish_nonmember_using_decl (tree scope, tree name)
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);
 		    lazy_load_binding (cluster->indices[jx].base,
-				       scope, name, &cluster->slots[jx], true);
+				       scope, name, &cluster->slots[jx]);
 		  }
 
 		tree value = cluster->slots[jx];
@@ -8174,7 +8155,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);
 		    lazy_load_binding (cluster->indices[jx].base,
-				       ns, name, &cluster->slots[jx], true);
+				       ns, name, &cluster->slots[jx]);
 		  }
 		tree bind = cluster->slots[jx];
 		if (!bind)

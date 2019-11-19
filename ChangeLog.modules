@@ -1,5 +1,20 @@
 2019-11-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (lazy_load_binding): Drop final parm.
+	* module.cc (module_state::lazy_load): Drop ns, id & outermost
+	parms.
+	(trees_in::tree_node, module_state::read_cluster): Adjust
+	lazy_load calls.
+	(module_state::read): Inhibit GC here.
+	(lazy_load_binding): Deal with binding dumps here.
+	(lazy_load_specializations): Use lazy_load_binding.
+	* name-lookup.c: Adjust lazy_load_binding calls.
+	(get_binding_or_decl): No namespace handling here.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-5_b.C: Adjust scans
+	* g++.dg/modules/vmort-2_c.C: Likewise.
+
 	Entities are numbered (part 1)
 	gcc/cp/
 	* cp-tree.h (DECL_MODULE_IMPORT_P): New.

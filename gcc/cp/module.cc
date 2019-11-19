@@ -3447,10 +3447,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void maybe_defrost ();
 
   /* Lazily read a section.  */
-  bool lazy_load (tree ns, tree id, int index,
-		  mc_slot *mslot, bool outermost = false);
+  bool lazy_load (int index, mc_slot *mslot);
 
- private:
+ public:
   /* Check or complete a read.  */
   bool check_read (unsigned count, tree ns = NULL_TREE, tree id = NULL_TREE);
 
@@ -9268,7 +9267,7 @@ trees_in::tree_node ()
 	  {
 	    mc_slot *slot = &(*entity_ary)[from->entity_lwm + ident];
 	    if (slot->is_lazy ())
-	      from->lazy_load (NULL_TREE, NULL_TREE, ident, slot, false);
+	      from->lazy_load (ident, slot);
 	    res = *slot;
 	  }
 
@@ -14170,7 +14169,7 @@ module_state::read_cluster (unsigned snum)
 		  = &(*unnamed_ary)[import->unnamed_lwm + index];
 
 		if (uent->slot.is_lazy ())
-		  import->lazy_load (NULL, NULL, -1, &uent->slot, false);
+		  import->lazy_load (-1, &uent->slot);
 
 		if (tree decl = uent->slot)
 		  {
@@ -16938,6 +16937,9 @@ module_state::read (int fd, int e, cpp_reader *reader)
   gcc_checking_assert (!slurp);
   slurp = new slurping (new elf_in (fd, e));
 
+  /* Stop GC during reading.  */
+  function_depth++;
+
   {
     if (!from ()->begin (loc))
       goto bail;
@@ -17040,6 +17042,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	      }
 	  }
 
+	// FIXME: Belfast order-of-initialization means this may be inadequate.
 	if (!read_inits (config.num_inits))
 	  goto bail;
       }
@@ -17051,6 +17054,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
   }
   
  bail:
+  function_depth--;
   slurp->current++;
   gcc_assert (slurp->current == ~0u);
 }
@@ -17143,8 +17147,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	slurped ();
     }
 
-  if (id && diag_count && diag_count <= unsigned (errorcount + warningcount)
-      && flag_module_lazy)
+  if (id && diag_count <= unsigned (errorcount) && flag_module_lazy)
     inform (input_location,
 	    is_header () ? G_("during lazy loading of %<%E%s%E%>")
 	    : G_("during lazy loading of %<%E%s%E@%s%>"),
@@ -17534,7 +17537,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ()
 	      && !is_imported () && loc != UNKNOWN_LOCATION);
-  unsigned diags = is_direct () ? errorcount + warningcount + 1 : 0;
+  unsigned diags = is_direct () ? errorcount + 1 : 0;
 
   if (lazy_open >= lazy_limit)
     freeze_an_elf ();
@@ -17691,31 +17694,25 @@ module_state::freeze_an_elf ()
 // FIXME: Should we emit something when noisy ()?
 // FIXME: Reconsider API when no longer indexing by name
 bool
-module_state::lazy_load (tree ns, tree id, int index,
-			 mc_slot *mslot, bool outermost)
+module_state::lazy_load (int index, mc_slot *mslot)
 {
   unsigned n = dump.push (this);
-  
-  /* Stop GC happening, even in outermost loads (because our caller
-     could well be building up a lookup set).  */
-  function_depth++;
+
+  gcc_checking_assert (function_depth);
 
   unsigned snum = mslot->get_lazy ();
   if (index >= 0)
     dump () && dump ("Loading entity %M[%u] section:%u",
 		     this, unsigned (index), snum);
   else
-    dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
+    dump () && dump ("Loading unnamed %M[?] section:%u", this, snum);
 
-  unsigned diags = outermost ? errorcount + warningcount + 1 : 0;
-  int e;
+  int e = elf::E_BAD_LAZY;
   if (snum < slurp->current)
     {
       load_section (snum);
       e = elf::E_BAD_DATA;
     }
-  else
-    e = elf::E_BAD_LAZY;
 
   if (mslot->is_lazy ())
     {
@@ -17724,10 +17721,7 @@ module_state::lazy_load (tree ns, tree id, int index,
       *mslot = NULL_TREE;
     }
 
-  function_depth--;
-
-  bool ok = check_read (diags, ns, id);
-  gcc_assert (ok || !outermost);
+  bool ok = check_read (0);
  
   dump.pop (n);
 
@@ -17739,16 +17733,38 @@ module_state::lazy_load (tree ns, tree id, int index,
    for diagnostics).  */
 
 void
-lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
+lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
 {
-  gcc_checking_assert (mod);
-  if (outer)
-    timevar_start (TV_MODULE_IMPORT);
+  timevar_start (TV_MODULE_IMPORT);
 
-  (*modules)[mod]->lazy_load (ns, id, -1, mslot, outer);
-  if (outer)
-    timevar_stop (TV_MODULE_IMPORT);
-  gcc_assert (!mslot->is_lazy ());
+  gcc_checking_assert (mod);
+  module_state *module = (*modules)[mod];
+  unsigned n = dump.push (module);
+
+  /* Stop GC happening, even in outermost loads (because our caller
+     could well be building up a lookup set).  */
+  function_depth++;
+
+  unsigned snum = mslot->get_lazy ();
+  dump () && dump ("Lazily binding %P@%N section:%u", ns, id,
+		   module->name, snum);
+
+  unsigned diags = errorcount + 1;
+  module->load_section (snum);
+
+  if (mslot->is_lazy ())
+    {
+      /* Oops, the section didn't set this slot.  */
+      module->from ()->set_error (elf::E_BAD_DATA);
+      *mslot = NULL_TREE;
+    }
+
+  function_depth--;
+
+  module->check_read (diags, ns, id);
+ 
+  dump.pop (n);
+  timevar_stop (TV_MODULE_IMPORT);
 }
 
 static module_state *
@@ -17798,7 +17814,8 @@ lazy_load_specializations (tree tmpl)
 	  if (uent->slot.is_lazy ())
 	    {
 	      module_state *module = module_for_unnamed (unnamed);
-	      module->lazy_load (NULL, NULL, -1, &uent->slot, true);
+	      // FIXME: Poor API
+	      lazy_load_binding (module->mod, NULL, NULL, &uent->slot);
 	    }
 	  else
 	    dump () && dump ("Specialization %u already loaded", ix);

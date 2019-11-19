@@ -6966,8 +6966,7 @@ extern unsigned get_instantiating_module (tree) ATTRIBUTE_PURE;
 extern void mangle_module (int m);
 extern void mangle_module_fini ();
 extern bool module_normal_import_p (unsigned m);
-extern void lazy_load_binding (unsigned mod, tree ns, tree id,
-			       mc_slot *mslot, bool outermost);
+extern void lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot);
 extern void lazy_load_specializations (tree tmpl);
 extern bool import_module (module_state *, location_t, bool, tree,
 			   cpp_reader *, bool in_extern_c);
