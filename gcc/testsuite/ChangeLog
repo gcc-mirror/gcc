@@ -1,3 +1,8 @@
+2019-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92581
+	* gcc.dg/vect/vect-cond-reduc-5.c: New testcase.
+
 2019-11-19  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/aarch64/acle/memtag_1.c: New test.

@@ -1,3 +1,10 @@
+2019-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92581
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): For
+	condition reduction chains gather all conditions involved
+	for computing the index reduction vector.
+
 2019-11-19  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins): Add
