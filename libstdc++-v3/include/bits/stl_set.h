@@ -1054,7 +1054,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #if __cplusplus > 201703L
 namespace ranges::__detail
 {
-  template<typename _Tp> inline constexpr bool __enable_view_impl;
+  template<typename _Tp> extern inline const bool __enable_view_impl;
   template<typename _Key, typename _Compare, typename _Alloc>
     inline constexpr bool
       __enable_view_impl<_GLIBCXX_STD_C::set<_Key, _Compare, _Alloc>> = false;

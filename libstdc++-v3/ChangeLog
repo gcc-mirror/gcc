@@ -1,3 +1,19 @@
+2019-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (ranges::__detail::__enable_view_impl): Fix
+	declaration.
+	* include/bits/stl_multiset.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/bits/stl_set.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/bits/unordered_set.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/debug/multiset.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/debug/set.h (ranges::__detail::__enable_view_impl): Likewise.
+	* include/debug/unordered_set (ranges::__detail::__enable_view_impl):
+	Likewise.
+
 2019-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/thread: Reduce header dependencies.
