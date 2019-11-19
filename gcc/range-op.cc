@@ -2957,6 +2957,132 @@ namespace selftest
 #define UCHAR(N) build_int_cstu (unsigned_char_type_node, (N))
 #define SCHAR(N) build_int_cst (signed_char_type_node, (N))
 
+static irange<3>
+build_range3 (int a, int b, int c, int d, int e, int f)
+{
+  irange<3> i1 (INT (a), INT (b));
+  irange<3> i2 (INT (c), INT (d));
+  irange<3> i3 (INT (e), INT (f));
+  i1.union_ (i2);
+  i1.union_ (i3);
+  return i1;
+}
+
+static void
+range3_tests ()
+{
+  typedef irange<3> irange3;
+  irange3 r0, r1, r2;
+  irange3 i1, i2, i3;
+
+  // ([10,20] U [5,8]) U [1,3] ==> [1,3][5,8][10,20].
+  r0 = irange3 (INT (10), INT (20));
+  r1 = irange3 (INT (5), INT (8));
+  r0.union_ (r1);
+  r1 = irange3 (INT (1), INT (3));
+  r0.union_ (r1);
+  ASSERT_TRUE (r0 == build_range3 (1, 3, 5, 8, 10, 20));
+
+  // [1,3][5,8][10,20] U [-5,0] => [-5,3][5,8][10,20].
+  r1 = irange3 (INT (-5), INT (0));
+  r0.union_ (r1);
+  ASSERT_TRUE (r0 == build_range3 (-5, 3, 5, 8, 10, 20));
+
+  // [10,20][30,40] U [50,60] ==> [10,20][30,40][50,60].
+  r1 = irange3 (INT (50), INT (60));
+  r0 = irange3 (INT (10), INT (20));
+  r0.union_ (irange3 (INT (30), INT (40)));
+  r0.union_ (r1);
+  ASSERT_TRUE (r0 == build_range3 (10, 20, 30, 40, 50, 60));
+  // [10,20][30,40][50,60] U [70, 80] ==> [10,20][30,40][50,60][70,80].
+  r1 = irange3 (INT (70), INT (80));
+  r0.union_ (r1);
+
+  r2 = build_range3 (10, 20, 30, 40, 50, 60);
+  r2.union_ (irange3 (INT (70), INT (80)));
+  ASSERT_TRUE (r0 == r2);
+
+  // [10,20][30,40][50,60] U [6,35] => [6,40][50,60].
+  r0 = build_range3 (10, 20, 30, 40, 50, 60);
+  r1 = irange3 (INT (6), INT (35));
+  r0.union_ (r1);
+  r1 = irange3 (INT (6), INT (40));
+  r1.union_ (irange3 (INT (50), INT (60)));
+  ASSERT_TRUE (r0 == r1);
+
+  // [10,20][30,40][50,60] U [6,60] => [6,60].
+  r0 = build_range3 (10, 20, 30, 40, 50, 60);
+  r1 = irange3 (INT (6), INT (60));
+  r0.union_ (r1);
+  ASSERT_TRUE (r0 == irange3 (INT (6), INT (60)));
+
+  // [10,20][30,40][50,60] U [6,70] => [6,70].
+  r0 = build_range3 (10, 20, 30, 40, 50, 60);
+  r1 = irange3 (INT (6), INT (70));
+  r0.union_ (r1);
+  ASSERT_TRUE (r0 == irange3 (INT (6), INT (70)));
+
+  // [10,20][30,40][50,60] U [35,70] => [10,20][30,70].
+  r0 = build_range3 (10, 20, 30, 40, 50, 60);
+  r1 = irange3 (INT (35), INT (70));
+  r0.union_ (r1);
+  r1 = irange3 (INT (10), INT (20));
+  r1.union_ (irange3 (INT (30), INT (70)));
+  ASSERT_TRUE (r0 == r1);
+
+  // [10,20][30,40][50,60] U [15,35] => [10,40][50,60].
+  r0 = build_range3 (10, 20, 30, 40, 50, 60);
+  r1 = irange3 (INT (15), INT (35));
+  r0.union_ (r1);
+  r1 = irange3 (INT (10), INT (40));
+  r1.union_ (irange3 (INT (50), INT (60)));
+  ASSERT_TRUE (r0 == r1);
+
+  // [10,20][30,40][50,60] U [35,35] => [10,20][30,40][50,60].
+  r0 = build_range3 (10, 20, 30, 40, 50, 60);
+  r1 = irange3 (INT (35), INT (35));
+  r0.union_ (r1);
+  ASSERT_TRUE (r0 == build_range3 (10, 20, 30, 40, 50, 60));
+}
+
+static void
+widest_irange_tests ()
+{
+  widest_irange big;
+  unsigned int nrange;
+
+  // Build a huge multi-range range.
+  for (nrange = 0; nrange < 50; ++nrange)
+    {
+      irange<1> tmp (INT (nrange*10), INT (nrange*10 + 5));
+      big.union_ (tmp);
+    }
+  ASSERT_TRUE (big.num_pairs () == nrange);
+
+  // Verify that we can copy it without loosing precision.
+  widest_irange copy (big);
+  ASSERT_TRUE (copy.num_pairs () == nrange);
+
+  // Inverting it should produce one more sub-range.
+  big.invert ();
+  ASSERT_TRUE (big.num_pairs () == nrange + 1);
+
+  irange<1> tmp (INT (5), INT (37));
+  big.intersect (tmp);
+  ASSERT_TRUE (big.num_pairs () == 4);
+}
+
+static void
+multi_precision_range_tests ()
+{
+  // Test truncating copy.
+  irange<3> big = build_range3 (10, 20, 30, 40, 50, 60);
+  irange<1> small = big;
+  ASSERT_TRUE (small == irange<1> (INT (10), INT (60)));
+
+  range3_tests ();
+}
+
 // Run all of the selftests within this file.
 
 void
@@ -3227,6 +3353,9 @@ range_tests ()
   r0 = value_range (INT (0), INT (0));
   r0.invert ();
   ASSERT_TRUE (r0.nonzero_p ());
+
+  multi_precision_range_tests ();
+  widest_irange_tests ();
 }
 
 } // namespace selftest

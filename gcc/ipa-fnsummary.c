@@ -432,6 +432,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	      continue;
 	    }
 	}
+      if (0) // FIXME:
       if (c->operand_num < (int) known_value_ranges.length ()
 	  && !c->agg_contents
 	  && !known_value_ranges[c->operand_num].undefined_p ()
@@ -505,7 +506,9 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
   vec<tree> known_vals = vNULL;
-  auto_vec<value_range, 32> known_value_ranges;
+  //FIXME:
+  //auto_vec<value_range> known_value_ranges;
+  vec<value_range> known_value_ranges = vNULL;
   vec<ipa_agg_value_set> known_aggs = vNULL;
   class ipa_edge_args *args;
 
@@ -535,8 +538,10 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 
       if (count && (info->conds || known_vals_ptr))
 	known_vals.safe_grow_cleared (count);
+      /* FIXME:
       if (count && info->conds)
 	known_value_ranges.safe_grow_cleared (count);
+      */
       if (count && (info->conds || known_aggs_ptr))
 	known_aggs.safe_grow_cleared (count);
       if (count && known_contexts_ptr)
@@ -572,9 +577,15 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	    known_aggs[i] = ipa_agg_value_set_from_jfunc (caller_parms_info,
 							  caller, &jf->agg);
             if (info->conds)
+	      /* FIXME:
               known_value_ranges[i] 
+	      */
+	      {
+		value_range tmp
                 = ipa_value_range_from_jfunc (caller_parms_info, e, jf,
                                               ipa_get_type (callee_pi, i));
+		(void)tmp;
+	      }
 	  }
 	else
 	  gcc_assert (callee->thunk.thunk_p);

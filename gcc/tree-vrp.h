@@ -50,6 +50,8 @@ class GTY((user)) value_range_equiv : public value_range
   bool operator!= (const value_range_equiv &) const /* = delete */;
   void intersect (const value_range_equiv *);
   void union_ (const value_range_equiv *);
+  virtual void intersect (const vrange &);
+  virtual void union_ (const vrange &);
   bool equal_p (const value_range_equiv &, bool ignore_equivs) const;
 
   /* Types of value ranges.  */
@@ -81,6 +83,7 @@ inline
 value_range_equiv::value_range_equiv ()
   : value_range ()
 {
+  m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
   m_equiv = NULL;
 }
 
@@ -132,5 +135,21 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
+
+template <>
+template <>
+inline bool
+is_a_helper <const value_range_equiv *>::test (const vrange *p)
+{
+  return p && p->m_discriminator == VRANGE_KIND_INT_WITH_EQUIVS;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <value_range_equiv *>::test (vrange *p)
+{
+  return p && p->m_discriminator == VRANGE_KIND_INT_WITH_EQUIVS;
+}
 
 #endif /* GCC_TREE_VRP_H */

@@ -110,12 +110,14 @@ value_range_equiv::set (tree min, tree max, bitmap equiv,
 value_range_equiv::value_range_equiv (tree min, tree max, bitmap equiv,
 				      value_range_kind kind)
 {
+  m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
   m_equiv = NULL;
   set (min, max, equiv, kind);
 }
 
 value_range_equiv::value_range_equiv (const value_range &other)
 {
+  m_discriminator = VRANGE_KIND_INT_WITH_EQUIVS;
   m_equiv = NULL;
   set (other.min(), other.max (), NULL, other.kind ());
 }
@@ -268,12 +270,14 @@ DEBUG_FUNCTION void
 debug (const value_range_equiv *vr)
 {
   dump_value_range (stderr, vr);
+  fprintf (stderr, "\n");
 }
 
 DEBUG_FUNCTION void
 debug (const value_range_equiv &vr)
 {
   dump_value_range (stderr, &vr);
+  fprintf (stderr, "\n");
 }
 
 /* Return true if the SSA name NAME is live on the edge E.  */
@@ -4644,8 +4648,15 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 }
 
 void
-value_range_equiv::intersect (const value_range_equiv *other)
+value_range_equiv::intersect (const vrange &vother)
 {
+  if (!is_a <const value_range_equiv *> (&vother))
+    {
+      int_range::intersect (vother);
+      return;
+    }
+  const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);
+  gcc_checking_assert (other != NULL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Intersecting\n  ");
@@ -4693,8 +4704,21 @@ value_range_equiv::intersect (const value_range_equiv *other)
 }
 
 void
-value_range_equiv::union_ (const value_range_equiv *other)
+value_range_equiv::intersect (const value_range_equiv *other)
 {
+  intersect (*other);
+}
+
+void
+value_range_equiv::union_ (const vrange &vother)
+{
+  if (!is_a <const value_range_equiv *> (&vother))
+    {
+      int_range::union_ (vother);
+      return;
+    }
+  const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);
+  gcc_checking_assert (other != NULL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Meeting\n  ");
@@ -4710,7 +4734,8 @@ value_range_equiv::union_ (const value_range_equiv *other)
     this->deep_copy (other);
   else
     {
-      value_range tem = union_helper (this, other);
+      gcc_checking_assert (other->simple_ranges_p ());
+      value_range tem = union_helper (this, (const value_range *) other);
       this->update (tem.min (), tem.max (), tem.kind ());
 
       /* The resulting set of equivalences is always the intersection of
@@ -4727,6 +4752,12 @@ value_range_equiv::union_ (const value_range_equiv *other)
       dump_value_range (dump_file, this);
       fprintf (dump_file, "\n");
     }
+}
+
+void
+value_range_equiv::union_ (const value_range_equiv *other)
+{
+  union_ (*other);
 }
 
 /* Visit all arguments for PHI node PHI that flow through executable
