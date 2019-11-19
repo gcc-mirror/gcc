@@ -2721,7 +2721,6 @@ enum tree_tag {
   tt_entity,		/* A extra-cluster entity.  */
 
   tt_named, 	 	/* Named decl. */
-  tt_anon,		/* Anonymous decl.  */
   tt_implicit_template, /* An implicit member template.  */
   tt_template,		/* The TEMPLATE_RESULT of a template.  */
   tt_friend_template    /* A friend of a template class.  */
@@ -3963,7 +3962,6 @@ node_template_info (tree decl, int &use)
 static unsigned
 import_entity_index (tree decl)
 {
-  gcc_checking_assert (DECL_MODULE_IMPORT_P (decl));
   unsigned index = *entity_map->get (DECL_UID (decl));
 
   return index;
@@ -8202,12 +8200,12 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    gcc_assert (code == tt_named);
 	    code = tt_entity;
 	    /* Locate the entity.  */
+	    unsigned entity_num = import_entity_index (decl);
 	    if (is_import)
 	      {
 		// FIXME: Not relying on origin, as we're gonna move
 		// away from that
 		/* An import.  */
-		unsigned entity_num = import_entity_index (decl);
 		module_state *from = import_entity_module (entity_num);
 		gcc_checking_assert (from->remap == origin);
 		ident = entity_num - from->entity_lwm;
@@ -8215,10 +8213,11 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	      }
 	    else
 	      {
-		// FIXME: We should just put earlier decls into the
-		// entity map!
-		dep = dep_hash->find_entity (decl);
-		ident = dep->entity_num - 1;
+		/* It should be what we put there.  */
+		gcc_checking_assert (dep_hash->find_entity (decl)->entity_num
+				     == -entity_num);
+		ident = ~entity_num;
+
 		tree o = get_originating_module_decl (decl);
 		kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
 			? "purview" : "GMF");
@@ -9289,7 +9288,6 @@ trees_in::tree_node ()
       break;
 
     case tt_named:
-    case tt_anon:
     case tt_implicit_template:
       /* A named, anonymois or implicit decl.  */
       {
@@ -9307,8 +9305,6 @@ trees_in::tree_node ()
 	    res = lookup_by_ident (ctx, name, origin, ident);
 	    if (!res)
 	      ;
-	    else if (tag == tt_anon)
-	      res = TYPE_STUB_DECL (TREE_TYPE (res));
 	    else if (tag == tt_implicit_template)
 	      {
 		int use_tpl = -1;
@@ -13837,6 +13833,17 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  gcc_checking_assert (b->entity_num);
 	  sec.u (0); // flags
 	  sec.u (b->entity_num - 1);
+
+	  /* Add it to the entity map, such that we can tell it is
+	     part of us.  */
+	  bool existed;
+	  unsigned *slot = &entity_map->get_or_insert
+	    (DECL_UID (decl), &existed);
+	  if (existed)
+	    /* If it existed, it should match.  */
+	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
+	  *slot = -b->entity_num;
+
 	  dump () && dump ("Wrote declaration %u of %N",
 			   b->entity_num - 1, decl);
 

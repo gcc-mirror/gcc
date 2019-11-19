@@ -1,6 +1,14 @@
 2019-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum tree_tag): Kill tt_anon.  No longer emitted.
+	(import_entity_index): Do not assert imported.
+	(trees_out::decl_node): Always get the import_entity_index for
+	tt_entity.
+	(trees_in::tree_node): Drop tt_anon.
+	(module_state::write_cluster): Add the EK_DECLs to the entity_map.
+
+	gcc/cp/
 	* cp-tree.h (lazy_load_binding): Drop final parm.
 	* module.cc (module_state::lazy_load): Drop ns, id & outermost
 	parms.
