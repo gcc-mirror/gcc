@@ -1,16 +1,3 @@
-2019-11-19  Richard Sandiford  <richard.sandiford@arm.com>
-gcc/
-	Revert:
-	2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
-
-	* cse.c (cse_insn): Delete no-op register moves too.
-	* simplify-rtx.c (comparison_to_mask): Handle unsigned comparisons.
-	Take a second comparison to control the value for NE.
-	(mask_to_comparison): Handle unsigned comparisons.
-	(simplify_logical_relational_operation): Likewise.  Update call
-	to comparison_to_mask.  Handle AND if !HONOR_NANs.
-	(simplify_binary_operation_1): Call the above for AND too.
-
 2019-11-15  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* MAINTAINERS: Change my email address as maintainer.
