@@ -1,5 +1,10 @@
 2019-11-18  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-fnsummary.c (estimate_edge_size_and_time): Drop parameter PROB.
+	(estimate_calls_size_and_time): Update.
+
+2019-11-18  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline.c (inlining_speedup): New function.
 	(edge_badness): Use it.
 
