@@ -4552,18 +4552,26 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
      zeroes.  */
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION)
     {
+      auto_vec<std::pair<tree, bool>, 2> ccompares;
       stmt_vec_info cond_info = STMT_VINFO_REDUC_DEF (reduc_info);
       cond_info = vect_stmt_to_vectorize (cond_info);
-      while (gimple_assign_rhs_code (cond_info->stmt) != COND_EXPR)
+      while (cond_info != reduc_info)
 	{
+	  if (gimple_assign_rhs_code (cond_info->stmt) == COND_EXPR)
+	    {
+	      gimple *vec_stmt = STMT_VINFO_VEC_STMT (cond_info)->stmt;
+	      gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
+	      ccompares.safe_push
+		(std::make_pair (unshare_expr (gimple_assign_rhs1 (vec_stmt)),
+				 STMT_VINFO_REDUC_IDX (cond_info) == 2));
+	    }
 	  cond_info
 	    = loop_vinfo->lookup_def (gimple_op (cond_info->stmt,
 						 1 + STMT_VINFO_REDUC_IDX
 							(cond_info)));
 	  cond_info = vect_stmt_to_vectorize (cond_info);
 	}
-      gimple *vec_stmt = STMT_VINFO_VEC_STMT (cond_info)->stmt;
-      gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
+      gcc_assert (ccompares.length () != 0);
 
       tree indx_before_incr, indx_after_incr;
       poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
@@ -4605,37 +4613,35 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       add_phi_arg (as_a <gphi *> (new_phi), vec_zero,
 		   loop_preheader_edge (loop), UNKNOWN_LOCATION);
 
-      /* Now take the condition from the loops original cond_expr
-	 (VEC_STMT) and produce a new cond_expr (INDEX_COND_EXPR) which for
+      /* Now take the condition from the loops original cond_exprs
+	 and produce a new cond_exprs (INDEX_COND_EXPR) which for
 	 every match uses values from the induction variable
 	 (INDEX_BEFORE_INCR) otherwise uses values from the phi node
 	 (NEW_PHI_TREE).
 	 Finally, we update the phi (NEW_PHI_TREE) to take the value of
 	 the new cond_expr (INDEX_COND_EXPR).  */
-
-      /* Duplicate the condition from vec_stmt.  */
-      tree ccompare = unshare_expr (gimple_assign_rhs1 (vec_stmt));
-
-      /* Create a conditional, where the condition is taken from vec_stmt
-	 (CCOMPARE).  The then and else values mirror the main VEC_COND_EXPR:
-	 the reduction phi corresponds to NEW_PHI_TREE and the new values
-	 correspond to INDEX_BEFORE_INCR.  */
-      gcc_assert (STMT_VINFO_REDUC_IDX (cond_info) >= 1);
-      tree index_cond_expr;
-      if (STMT_VINFO_REDUC_IDX (cond_info) == 2)
-	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
-				  ccompare, indx_before_incr, new_phi_tree);
-      else
-	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
-				  ccompare, new_phi_tree, indx_before_incr);
-      induction_index = make_ssa_name (cr_index_vector_type);
-      gimple *index_condition = gimple_build_assign (induction_index,
-						     index_cond_expr);
-      gsi_insert_before (&incr_gsi, index_condition, GSI_SAME_STMT);
-      stmt_vec_info index_vec_info = loop_vinfo->add_stmt (index_condition);
+      gimple_seq stmts = NULL;
+      for (int i = ccompares.length () - 1; i != -1; --i)
+	{
+	  tree ccompare = ccompares[i].first;
+	  if (ccompares[i].second)
+	    new_phi_tree = gimple_build (&stmts, VEC_COND_EXPR,
+					 cr_index_vector_type,
+					 ccompare,
+					 indx_before_incr, new_phi_tree);
+	  else
+	    new_phi_tree = gimple_build (&stmts, VEC_COND_EXPR,
+					 cr_index_vector_type,
+					 ccompare,
+					 new_phi_tree, indx_before_incr);
+	}
+      gsi_insert_seq_before (&incr_gsi, stmts, GSI_SAME_STMT);
+      stmt_vec_info index_vec_info
+	= loop_vinfo->add_stmt (SSA_NAME_DEF_STMT (new_phi_tree));
       STMT_VINFO_VECTYPE (index_vec_info) = cr_index_vector_type;
 
       /* Update the phi with the vec cond.  */
+      induction_index = new_phi_tree;
       add_phi_arg (as_a <gphi *> (new_phi), induction_index,
 		   loop_latch_edge (loop), UNKNOWN_LOCATION);
     }
