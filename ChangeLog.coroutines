@@ -1,3 +1,9 @@
+2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro.h: Remove references to
+	__builtin_coro_is_suspended.
+
 2019-11-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

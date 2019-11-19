@@ -59,16 +59,8 @@ template <> struct coroutine_handle<void> {
     void destroy () const {
       __builtin_coro_destroy (__fr_ptr);
     }
-    bool suspended_p () const {
-      return __builtin_coro_is_suspended (__fr_ptr);
-    }
   protected:
     void *__fr_ptr;
-
-  private:
-    bool __is_suspended() const noexcept  {
-      return __builtin_coro_is_suspended (__fr_ptr);
-    }
 };
 
 template <class _Promise>
