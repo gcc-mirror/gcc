@@ -1,3 +1,8 @@
+2019-11-15  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/89913
+	* g++.dg/cpp2a/pr89913.C: New test.
+
 2019-11-19  Andrew Sutton  <asutton@lock3software.com>
 
 	PR c++/92078

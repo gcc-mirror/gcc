@@ -6395,6 +6395,9 @@ get_underlying_template (tree tmpl)
     {
       /* Determine if the alias is equivalent to an underlying template.  */
       tree orig_type = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+      /* The underlying type may have been ill-formed. Don't proceed.  */
+      if (!orig_type)
+	break;
       tree tinfo = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (orig_type);
       if (!tinfo)
 	break;
