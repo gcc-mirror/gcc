@@ -1,3 +1,7 @@
+2019-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (-gno-internal-reset-location-views): Fix typo.
+
 2019-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92557
