@@ -1,3 +1,13 @@
+2019-11-19  Richard Sandiford  <richard.sandiford@arm.com>
+gcc/
+	Revert:
+	2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/ptest_pmore.c: New test.
+
 2019-11-15  Andrew Sutton  <asutton@lock3software.com>
 
 	PR c++/89913
