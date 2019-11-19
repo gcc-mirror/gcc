@@ -1,3 +1,13 @@
+2019-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91450
+	* internal-fn.c (expand_mul_overflow): For s1 * s2 -> ur, if one
+	operand is negative and one non-negative, compare the non-negative
+	one against 0 rather than comparing s1 & s2 against 0.  Otherwise,
+	don't compare (s1 & s2) == 0, but compare separately both s1 == 0
+	and s2 == 0, unless one of them is known to be negative.  Remove
+	tem2 variable, use tem where tem2 has been used before.
+
 2019-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (-gno-internal-reset-location-views): Fix typo.
