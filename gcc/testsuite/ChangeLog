@@ -1,3 +1,8 @@
+2019-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92555
+	* gcc.dg/vect/pr92555.c: New testcase.
+
 2019-11-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-fallthrough-5.c, gcc.dg/c2x-attr-syntax-5.c: New

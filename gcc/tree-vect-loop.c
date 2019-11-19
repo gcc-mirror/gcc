@@ -1398,6 +1398,18 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
   for (i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
+	{
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (si.phi ());
+	  if (!stmt_info)
+	    continue;
+	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
+	       || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+	      && !PURE_SLP_STMT (stmt_info))
+	    /* STMT needs both SLP and loop-based vectorization.  */
+	    only_slp_in_loop = false;
+	}
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
