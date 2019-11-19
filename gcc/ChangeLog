@@ -1,3 +1,12 @@
+2019-11-19  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (move_to_end_of_ready): New, factored out
+	from common code.
+	(power6_sched_reorder2): Factored out from rs6000_sched_reorder2,
+	call new function.
+	(power9_sched_reorder2): Call new function.
+	(rs6000_sched_reorder2): Likewise.
+
 2019-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-fnsummary.c (estimate_edge_size_and_time): Drop parameter PROB.
