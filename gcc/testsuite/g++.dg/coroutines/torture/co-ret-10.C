@@ -1,6 +1,6 @@
-//  { dg-do run }
+// { dg-do run }
 //
-// Check that "co_return (void)expression;" evaluates expression once.
+// Check that "co_return expression;" only evaluates expression once.
 
 #if __clang__
 # include <experimental/coroutine>
@@ -18,8 +18,10 @@ extern "C" void abort (void) __attribute__((__noreturn__));
 
 #ifndef OUTPUT
 #  define PRINT(X)
+#  define PRINTF (void)
 #else
 #  define PRINT(X) puts(X)
+#  define PRINTF printf
 #endif
 
 struct coro1 {
@@ -78,23 +80,30 @@ struct coro1 {
     PRINT ("get final_suspend (always)");
     return suspend_always_prt{};
   }
-  void return_void () {
-    PRINT ("return_void ()");
+  void return_value (int v) {
+    PRINTF ("return_value (%d)", v);
   }
   // Placeholder to satisfy parser, not doing exceptions yet.
   void unhandled_exception() {  /*exit(1);*/ }
   };
+  //int x;
 };
 
+/* Give foo() a measureable side-effect.  */
 int gX = 1;
 __attribute__((__noinline__))
-int foo (void) { PRINT ("called the int fn foo"); gX +=1 ; return gX; }
+int foo (void)
+{ 
+  PRINT ("called the int fn foo");
+  gX += 1;
+  return gX;
+}
 
 struct coro1
 f () noexcept
 {
   PRINT ("coro1: about to return");
-  co_return (void)foo();
+  co_return foo();
 }
 
 int main ()

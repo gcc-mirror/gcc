@@ -963,14 +963,14 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
     return NULL_TREE;
 
   location_t loc = EXPR_LOCATION (co_ret_expr);
-  /* If expr is present it will be void, and is placed immediately before
-     the call for return_{value, void};  */
   tree expr = TREE_OPERAND (co_ret_expr, 0);
   tree call = TREE_OPERAND (co_ret_expr, 1);
   tree stmt_list = NULL;
-  if (expr)
+  if (expr && VOID_TYPE_P (TREE_TYPE (expr)))
     {
-      /* This expression must be void.  */
+       /* [stmt.return.coroutine], 2.2 
+	  If expr is present and void, it is placed immediately before
+	  the call for return_void;  */
       expr = maybe_cleanup_point_expr_void (expr);
       append_to_statement_list (expr, &stmt_list);
     }
@@ -980,8 +980,8 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
   p_data.from = data->promise_proxy;
   p_data.to = data->real_promise;
   cp_walk_tree (&call, replace_proxy, &p_data, NULL);
-  /* p.return_void and p.return_value are probably void, but it's not
-     clear if that's intended to be a guarantee.  CHECKME.  */
+  /* The types of p.return_void and p.return_value are not explicitly stated
+     at least in n4835, it is expected that they will return void.  */
   call = maybe_cleanup_point_expr_void (call);
   append_to_statement_list (call, &stmt_list);
   tree r = build1_loc (loc, GOTO_EXPR, void_type_node, data->fs_label);

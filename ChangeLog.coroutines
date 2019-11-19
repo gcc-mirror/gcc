@@ -1,5 +1,17 @@
 2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (coro_maybe_expand_co_return): Ensure that an
+	expression is void type before inserting it.  Update comments
+	to include the standard section refs.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-ret-10.C: New test.
+	* g++.dg/coroutines/torture/co-ret-7.C: Check that the void
+	expression is called exactly once.
+
+2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/coro.h: Remove references to
 	__builtin_coro_is_suspended.
