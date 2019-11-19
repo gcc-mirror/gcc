@@ -1,3 +1,7 @@
+2019-11-19  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* gcc.target/mips/msa-ds.c: New test.
+
 2019-11-19  Richard Sandiford  <richard.sandiford@arm.com>
 gcc/
 	Revert:
