@@ -1,3 +1,7 @@
+2019-11-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/tree-ssa/loop-1.c: Change amdgcn assembler scan.
+
 2019-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92581
