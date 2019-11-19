@@ -874,3 +874,17 @@
   (and (match_code "const_int,const_poly_int")
        (match_test "known_eq (wi::to_poly_wide (op, mode),
 			      BYTES_PER_SVE_VECTOR)")))
+
+(define_predicate "aarch64_memtag_tag_offset"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
+
+(define_predicate "aarch64_granule16_uimm6"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 1008)
+		    && !(INTVAL (op) & 0xf)")))
+
+(define_predicate "aarch64_granule16_simm9"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op),  -4096, 4080)
+		    && !(INTVAL (op) & 0xf)")))

@@ -773,4 +773,6 @@ extern const atomic_ool_names aarch64_ool_ldset_names;
 extern const atomic_ool_names aarch64_ool_ldclr_names;
 extern const atomic_ool_names aarch64_ool_ldeor_names;
 
+tree aarch64_resolve_overloaded_builtin_general (location_t, tree, void *);
+
 #endif /* GCC_AARCH64_PROTOS_H */

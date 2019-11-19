@@ -1,3 +1,9 @@
+2019-11-19  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/aarch64/acle/memtag_1.c: New test.
+	* gcc.target/aarch64/acle/memtag_2.c: New test.
+	* gcc.target/aarch64/acle/memtag_3.c: New test.
+
 2019-11-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* testsuite/gcc.target/arm/asm-flag-3.c: Skip for thumb1.

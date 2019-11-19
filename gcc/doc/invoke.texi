@@ -16280,9 +16280,8 @@ Enable the Armv8.5-a Random Number instructions.  This option is only to
 enable the extension at the assembler level and does not affect code
 generation.
 @item memtag
-Enable the Armv8.5-a Memory Tagging Extensions.  This option is only to
-enable the extension at the assembler level and does not affect code
-generation.
+Enable the Armv8.5-a Memory Tagging Extensions.
+Use of this option with architectures prior to Armv8.5-A is not supported.
 @item sb
 Enable the Armv8-a Speculation Barrier instruction.  This option is only to
 enable the extension at the assembler level and does not affect code

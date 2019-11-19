@@ -248,6 +248,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
 #define AARCH64_ISA_V8_5	   (aarch64_isa_flags & AARCH64_FL_V8_5)
 #define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
+#define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -303,6 +304,9 @@ extern unsigned aarch64_architecture_version;
 
 /* Random number instructions from Armv8.5-a.  */
 #define TARGET_RNG (AARCH64_ISA_RNG)
+
+/* Memory Tagging instructions optional to Armv8.5 enabled through +memtag.  */
+#define TARGET_MEMTAG (AARCH64_ISA_V8_5 && AARCH64_ISA_MEMTAG)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
