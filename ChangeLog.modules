@@ -1,6 +1,16 @@
 2019-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Process unnamed decls directly
+	here.
+	(depset::hash::add_dependency): EK_UNNAMED doesn't reference
+	unnamed (really).
+	(module_state::write_cluster): Do not preseed horcruxes for
+	EK_UNNAMED.  Add unnamed and specializations into the entity_map.
+	gcc/testsuite/
+	* g++.dg/modules/vmort-2_[abc].C: Adjust scans
+
+	gcc/cp/
 	* module.cc (enum tree_tag): Kill tt_anon.  No longer emitted.
 	(import_entity_index): Do not assert imported.
 	(trees_out::decl_node): Always get the import_entity_index for

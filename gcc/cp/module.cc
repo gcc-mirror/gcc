@@ -8108,6 +8108,10 @@ trees_out::decl_node (tree decl, walk_kind ref)
   bool is_import = origin != 0;
   const char *kind = NULL;
   depset *dep = NULL;
+  tree name = DECL_NAME (decl);
+  unsigned code = tt_named;
+  int ident = -2;
+  tree proxy = decl;
 
   if (use_tpl > 0)
     {
@@ -8154,7 +8158,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
       {
 	/* We cannot lookup by name inside a function.  */
 	if (!streaming_p ()
-	    && (dep_hash->sneakoscope || is_import))
+	    && (is_import
+		|| (dep_hash->sneakoscope
+		    && ctx == dep_hash->current->get_entity ())))
 	  {
 	    /* We've found a voldemort type.  Add it as a
 	       dependency.  */
@@ -8162,6 +8168,13 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    gcc_assert (dep->is_import () == is_import);
 	    kind = "unnamed";
 	    goto insert;
+	  }
+
+	if (streaming_p ())
+	  {
+	    dep = dep_hash->find_entity (decl);
+	    if (dep && dep->get_entity_kind () == depset::EK_UNNAMED)
+	      goto direct_entity;
 	  }
 
 	/* Some (non-mergeable?) internal entity of the function.  Do
@@ -8173,13 +8186,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
       }
 
     /* A named decl -> tt_named_decl.  */
-    tree name = DECL_NAME (decl);
     if (streaming_p ())
       {
-	unsigned code = tt_named;
-	int ident = -2;
-
-	tree proxy = decl;
 	if (TREE_CODE (decl) == TEMPLATE_DECL
 	    && (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
 		|| TREE_CODE (ctx) == ENUMERAL_TYPE)
@@ -8197,6 +8205,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
 	if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	  {
+	  direct_entity:
 	    gcc_assert (code == tt_named);
 	    code = tt_entity;
 	    /* Locate the entity.  */
@@ -11146,8 +11155,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	dep->deps.safe_push (current);
       else
 	{
-	  if (dep->get_entity_kind () == EK_UNNAMED
-	      || dep->get_entity_kind () == EK_SPECIALIZATION)
+	  if (dep->get_entity_kind () == EK_SPECIALIZATION)
 	    current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
 
 	  if (dep->is_internal ())
@@ -13730,9 +13738,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       if (b->refs_unnamed ())
 	refs_unnamed_p = true;
 
-      if (b->get_entity_kind () == depset::EK_UNNAMED
-	  // FIXME: Should friend specializations be voldemorty?
-	  || b->get_entity_kind () == depset::EK_SPECIALIZATION)
+      if (b->get_entity_kind () == depset::EK_SPECIALIZATION)
+	// FIXME: Should friend specializations be voldemorty?
 	{
 	  /* There is no binding for this decl.  It is therefore not
 	     findable by name.  Determine its horcrux number.  */
@@ -13756,8 +13763,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  for (unsigned jx = b->is_special (); jx != b->deps.length (); jx++)
 	    {
 	      depset *d = b->deps[jx];
-	      if ((d->get_entity_kind () == depset::EK_UNNAMED
-		   || d->get_entity_kind () == depset::EK_SPECIALIZATION)
+	      if (d->get_entity_kind () == depset::EK_SPECIALIZATION
 		  && d->cluster <= incoming_unnamed)
 		{
 		  tree u_decl = d->get_entity ();
@@ -13790,8 +13796,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		}
 	      else
 		/* All imported entities will have zero cluster.  */
-		gcc_checking_assert (d->is_binding () ||
-				     !d->is_import ());
+		gcc_checking_assert (d->is_binding () || !d->is_import ());
 	    }
 	}
 
@@ -13947,6 +13952,17 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  gcc_checking_assert (b->entity_num);
 	  sec.u (b->entity_num - 1);
+
+	  /* Add it to the entity map, such that we can tell it is
+	     part of us.  */
+	  bool existed;
+	  unsigned *slot = &entity_map->get_or_insert
+	    (DECL_UID (decl), &existed);
+	  if (existed)
+	    /* If it existed, it should match.  */
+	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
+	  *slot = -b->entity_num;
+
 	  dump () && dump ("Wrote declaration %u of %N",
 			   b->entity_num - 1, decl);
 
