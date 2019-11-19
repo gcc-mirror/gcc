@@ -1,3 +1,13 @@
+2019-11-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* testsuite/gcc.target/arm/asm-flag-3.c: Skip for thumb1.
+	* testsuite/gcc.target/arm/asm-flag-5.c: Likewise.
+	* testsuite/gcc.target/arm/asm-flag-6.c: Likewise.
+	* testsuite/gcc.target/arm/asm-flag-4.c: New test.
+
+	* testsuite/gcc.target/aarch64/asm-flag-6.c: Use %w for
+	asm inputs to cmp instruction for ILP32.
+
 2019-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92549

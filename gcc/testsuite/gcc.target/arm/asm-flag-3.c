@@ -1,6 +1,7 @@
 /* Test some of the valid @cc<cc> asm flag outputs.  */
 /* { dg-do compile } */
 /* { dg-options "-O" } */
+/* { dg-skip-if "" { arm_thumb1 } } */
 
 #define DO(C) \
 void f##C(void) { char x; asm("" : "=@cc"#C(x)); if (!x) asm(""); asm(""); }

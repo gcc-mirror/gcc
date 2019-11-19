@@ -1,5 +1,6 @@
 /* Executable testcase for 'output flags.'  */
 /* { dg-do run } */
+/* { dg-skip-if "" { arm_thumb1 } } */
 
 int test_bits (long nzcv)
 {

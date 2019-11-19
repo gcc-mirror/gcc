@@ -1,3 +1,12 @@
+2019-11-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): Use def_or_undef_macro
+	to define __GCC_ASM_FLAG_OUTPUTS__.
+	* config/arm/arm.c (thumb1_md_asm_adjust): New function.
+	(arm_option_params_internal): Swap out targetm.md_asm_adjust
+	depending on TARGET_THUMB1.
+	* doc/extend.texi (FlagOutputOperands): Document thumb1 restriction.
+
 2019-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92549

@@ -9810,6 +9810,8 @@ signed greater than
 signed less than equal
 @end table
 
+The flag output constraints are not supported in thumb1 mode.
+
 @item x86 family
 The flag output constraints for the x86 family are of the form
 @samp{=@@cc@var{cond}} where @var{cond} is one of the standard
