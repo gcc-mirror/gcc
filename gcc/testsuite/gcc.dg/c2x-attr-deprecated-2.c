@@ -5,7 +5,7 @@
 /* This attribute is not valid in most cases on types other than their
    definitions, or on statements, or as an attribute-declaration.  */
 
-[[deprecated]]; /* { dg-warning "ignored" } */
+[[deprecated]]; /* { dg-error "ignored" } */
 
 int [[deprecated]] var; /* { dg-warning "ignored" } */
 /* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
@@ -20,6 +20,6 @@ void
 f (void)
 {
   int a;
-  [[deprecated]]; /* { dg-warning "ignored" } */
-  [[deprecated]] a = 1; /* { dg-warning "ignored" } */
+  [[deprecated]]; /* { dg-error "ignored" } */
+  [[deprecated]] a = 1; /* { dg-error "ignored" } */
 }

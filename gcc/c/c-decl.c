@@ -4516,8 +4516,14 @@ void
 c_warn_unused_attributes (tree attrs)
 {
   for (tree t = attrs; t != NULL_TREE; t = TREE_CHAIN (t))
-    warning (OPT_Wattributes, "%qE attribute ignored",
-	     get_attribute_name (t));
+    if (get_attribute_namespace (t) == NULL_TREE)
+      /* The specifications of standard attributes mean this is a
+	 constraint violation.  */
+      pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
+	       get_attribute_name (t));
+    else
+      warning (OPT_Wattributes, "%qE attribute ignored",
+	       get_attribute_name (t));
 }
 
 /* Called when a declaration is seen that contains no names to declare.
