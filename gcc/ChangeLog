@@ -1,3 +1,9 @@
+2019-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92555
+	* tree-vect-loop.c (vect_update_vf_for_slp): Also scan PHIs
+	for non-SLP stmts.
+
 2019-11-19  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/92540
