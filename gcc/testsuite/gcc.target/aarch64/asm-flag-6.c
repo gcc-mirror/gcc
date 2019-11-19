@@ -1,6 +1,12 @@
 /* Executable testcase for 'output flags.'  */
 /* { dg-do run } */
 
+#ifdef __LP64__
+#define W ""
+#else
+#define W "w"
+#endif
+
 int test_bits (long nzcv)
 {
   long n, z, c, v;
@@ -16,7 +22,7 @@ int test_cmps (long x, long y)
 {
   long gt, lt, ge, le;
 
-  __asm__ ("cmp %[x], %[y]"
+  __asm__ ("cmp %"W"[x], %"W"[y]"
 	   : "=@ccgt"(gt), "=@cclt"(lt), "=@ccge"(ge), "=@ccle"(le)
 	   : [x] "r"(x), [y] "r"(y));
 
@@ -30,7 +36,7 @@ int test_cmpu (unsigned long x, unsigned long y)
 {
   long gt, lt, ge, le;
 
-  __asm__ ("cmp %[x], %[y]"
+  __asm__ ("cmp %"W"[x], %"W"[y]"
 	   : "=@cchi"(gt), "=@cclo"(lt), "=@cchs"(ge), "=@ccls"(le)
 	   : [x] "r"(x), [y] "r"(y));
 

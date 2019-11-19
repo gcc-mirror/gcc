@@ -1,6 +1,7 @@
 /* Test error conditions of asm flag outputs.  */
 /* { dg-do compile } */
 /* { dg-options "" } */
+/* { dg-skip-if "" { arm_thumb1 } } */
 
 void f_B(void) { _Bool x; asm("" : "=@cccc"(x)); }
 void f_c(void) { char x; asm("" : "=@cccc"(x)); }
