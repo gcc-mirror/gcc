@@ -1,5 +1,9 @@
 2019-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/91450
+	* gcc.c-torture/execute/pr91450-1.c: New test.
+	* gcc.c-torture/execute/pr91450-2.c: New test.
+
 	PR c++/92504
 	* g++.dg/gomp/pr92504.C: New test.
 
