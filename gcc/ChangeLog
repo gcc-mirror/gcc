@@ -1,4 +1,10 @@
-2019-09-19  Richard Biener  <rguenther@suse.de>
+2019-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92554
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Look
+	for the actual condition stmt and deal with sign-changes.
+
+2019-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92555
 	* tree-vect-loop.c (vect_update_vf_for_slp): Also scan PHIs
