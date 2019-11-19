@@ -1,5 +1,16 @@
 2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/ChangeLog:
+	* cp-tree.def (CO_RETRN_EXPR): Rename this to ...
+	(CO_RETURN_EXPR): ... this.
+	* coroutines.cc (finish_co_return_stmt): Rename CO_RETRN_EXPR.
+	(coro_maybe_expand_co_return): Likewise.
+	* cp-objcp-common.c (cp_common_init_ts): Likewise.
+	* pt.c (tsubst_expr): Likewise.
+	* tree.c (cp_walk_subtrees): Likewise.
+
+2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc: Revise includes.
 	(debug_tree): Remove debug code.

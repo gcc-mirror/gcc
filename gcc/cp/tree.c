@@ -5041,7 +5041,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	WALK_SUBTREE (TREE_OPERAND (*tp, 2));
       break;
 
-    case CO_RETRN_EXPR:
+    case CO_RETURN_EXPR:
       if (TREE_OPERAND (*tp, 0))
 	{
 	  if (VOID_TYPE_P (TREE_OPERAND (*tp, 0)))

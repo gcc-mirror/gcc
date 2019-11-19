@@ -734,7 +734,7 @@ finish_co_return_stmt (location_t kw, tree expr)
       if (dependent_type_p (functype) || type_dependent_expression_p (expr))
 	{
 	  expr
-	    = build2_loc (kw, CO_RETRN_EXPR, void_type_node, expr, NULL_TREE);
+	    = build2_loc (kw, CO_RETURN_EXPR, void_type_node, expr, NULL_TREE);
 	  expr = maybe_cleanup_point_expr_void (expr);
 	  expr = add_stmt (expr);
 	  return expr;
@@ -793,7 +793,7 @@ finish_co_return_stmt (location_t kw, tree expr)
   if (!co_ret_call || co_ret_call == error_mark_node)
     return error_mark_node;
 
-  expr = build2_loc (kw, CO_RETRN_EXPR, void_type_node, expr, co_ret_call);
+  expr = build2_loc (kw, CO_RETURN_EXPR, void_type_node, expr, co_ret_call);
   expr = maybe_cleanup_point_expr_void (expr);
   expr = add_stmt (expr);
   return expr;
@@ -929,7 +929,7 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
   if (TREE_CODE (co_ret_expr) == CLEANUP_POINT_EXPR)
     co_ret_expr = TREE_OPERAND (co_ret_expr, 0);
 
-  if (TREE_CODE (co_ret_expr) != CO_RETRN_EXPR)
+  if (TREE_CODE (co_ret_expr) != CO_RETURN_EXPR)
     return NULL_TREE;
 
   location_t loc = EXPR_LOCATION (co_ret_expr);
