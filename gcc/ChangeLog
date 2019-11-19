@@ -6,6 +6,12 @@
 
 2019-11-19  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	PR target/79262
+	* config/aarch64/aarch64.c (generic_vector_cost): Adjust
+	vec_to_scalar_cost.
+
+2019-11-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/arm/arm-cpus.in (armv7): Set tune to Cortex-A53.
 	(armv7-a): Likewise.
 	(armv7ve): Likewise.
