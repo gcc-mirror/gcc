@@ -3694,6 +3694,10 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%#qD (near match)", msg, fn);
   else if (DECL_DELETED_FN (fn))
     inform (cloc, "%s%#qD (deleted)", msg, fn);
+  else if (candidate->reversed ())
+    inform (cloc, "%s%#qD (reversed)", msg, fn);
+  else if (candidate->rewritten ())
+    inform (cloc, "%s%#qD (rewritten)", msg, fn);
   else
     inform (cloc, "%s%#qD", msg, fn);
   if (fn != candidate->fn)
@@ -6219,8 +6223,14 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	  else
 	    {
 	      if (cand->reversed ())
-		/* We swapped these in add_candidate, swap them back now.  */
-		std::swap (cand->convs[0], cand->convs[1]);
+		{
+		  /* We swapped these in add_candidate, swap them back now.  */
+		  std::swap (cand->convs[0], cand->convs[1]);
+		  if (cand->fn == current_function_decl)
+		    warning_at (loc, 0, "in C++20 this comparison calls the "
+				"current function recursively with reversed "
+				"arguments");
+		}
 	      result = build_over_call (cand, LOOKUP_NORMAL, complain);
 	    }
 
@@ -10995,18 +11005,32 @@ joust_maybe_elide_copy (z_candidate *&cand)
   return false;
 }
 
-/* True if cand1 and cand2 represent the same function or function
-   template.  */
+/* True if the defining declarations of the two candidates have equivalent
+   parameters.  */
 
-static bool
-same_fn_or_template (z_candidate *cand1, z_candidate *cand2)
+bool
+cand_parms_match (z_candidate *c1, z_candidate *c2)
 {
-  if (cand1->fn == cand2->fn)
+  tree fn1 = c1->template_decl;
+  tree fn2 = c2->template_decl;
+  if (fn1 && fn2)
+    {
+      fn1 = most_general_template (TI_TEMPLATE (fn1));
+      fn1 = DECL_TEMPLATE_RESULT (fn1);
+      fn2 = most_general_template (TI_TEMPLATE (fn2));
+      fn2 = DECL_TEMPLATE_RESULT (fn2);
+    }
+  else
+    {
+      fn1 = c1->fn;
+      fn2 = c2->fn;
+    }
+  if (fn1 == fn2)
     return true;
-  if (!cand1->template_decl || !cand2->template_decl)
+  if (identifier_p (fn1) || identifier_p (fn2))
     return false;
-  return (most_general_template (TI_TEMPLATE (cand1->template_decl))
-	  == most_general_template (TI_TEMPLATE (cand2->template_decl)));
+  return compparms (TYPE_ARG_TYPES (TREE_TYPE (fn1)),
+		    TYPE_ARG_TYPES (TREE_TYPE (fn2)));
 }
 
 /* Compare two candidates for overloading as described in
@@ -11155,20 +11179,11 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
 	  if (winner && comp != winner)
 	    {
-	      if (same_fn_or_template (cand1, cand2))
-		{
-		  /* Ambiguity between normal and reversed versions of the
-		     same comparison operator; prefer the normal one.
-		     https://lists.isocpp.org/core/2019/10/7438.php  */
-		  if (cand1->reversed ())
-		    winner = -1;
-		  else
-		    {
-		      gcc_checking_assert (cand2->reversed ());
-		      winner = 1;
-		    }
-		  break;
-		}
+	      /* Ambiguity between normal and reversed comparison operators
+		 with the same parameter types; prefer the normal one.  */
+	      if ((cand1->reversed () != cand2->reversed ())
+		  && cand_parms_match (cand1, cand2))
+		return cand1->reversed () ? -1 : 1;
 
 	      winner = 0;
 	      goto tweak;

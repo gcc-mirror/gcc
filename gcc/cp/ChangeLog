@@ -1,3 +1,10 @@
+2019-11-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (same_fn_or_template): Change to cand_parms_match.
+	(joust): Adjust.
+	(print_z_candidate): Mark rewritten/reversed candidates.
+	(build_new_op_1): Warn about recursive call with reversed arguments.
+
 2019-11-15  Andrew Sutton  <asutton@lock3software.com>
 
 	PR c++/89913
