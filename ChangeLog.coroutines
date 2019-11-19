@@ -1,6 +1,35 @@
 2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc: Revise includes.
+	(debug_tree): Remove debug code.
+	(lookup_promise_member): Fix whitespace.
+	(find_coro_traits_template_decl): Adjust comments, fix error
+	message punctuation.
+	(get_coroutine_promise_type): Adjust style.
+	(get_coroutine_handle_type): Likewise.
+	(get_coroutine_self_handle_proxy): Likewise.
+	(get_coroutine_promise_proxy): Likewise.
+	(coro_common_keyword_context_valid_p): Add references to the
+	standards sections.
+	to the comments.
+	(coro_function_valid_p): Fix error message punctuation.
+	(build_co_await): Fix comments, fix case of a variable name.
+	(finish_co_await_expr): Fix comments.
+	(finish_co_yield_expr): Assert correct parser output.
+	(check_co_return_expr): Delete.
+	(finish_co_return_stmt): Remove unused code, correct some comments.
+	(register_await_info): Remove debug code.
+	(get_await_suspend_return_type): Likewise.
+	(captures_temporary):  Likewise.
+	(register_local_var_uses): Likewise.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro-bad-return.C: Update the error message.
+
+2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (coro_maybe_expand_co_return): Ensure that an
 	expression is void type before inserting it.  Update comments
 	to include the standard section refs.

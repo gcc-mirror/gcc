@@ -20,41 +20,23 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* FIXME: minimise headers.. */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "bitmap.h"
 #include "cp-tree.h"
 #include "stringpool.h"
-#include "cgraph.h"
 #include "stmt.h"
-#include "varasm.h"
 #include "stor-layout.h"
-#include "c-family/c-objc.h"
-#include "tree-inline.h"
-#include "intl.h"
 #include "tree-iterator.h"
-#include "omp-general.h"
-#include "convert.h"
-#include "stringpool.h"
-#include "attribs.h"
-#include "gomp-constants.h"
-#include "predict.h"
 #include "tree.h"
-#include "cxx-pretty-print.h"
 #include "gcc-rich-location.h"
 #include "hash-map.h"
-
-/* DEBUG remove me.  */
-extern void debug_tree (tree);
 
 static tree find_coro_traits_template_decl (location_t);
 static tree find_coro_handle_type (location_t, tree);
 static tree find_promise_type (tree);
-static tree
-lookup_promise_member (tree, const char *, location_t, bool);
+static tree lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
 static tree build_co_await (location_t, tree, tree);
 
@@ -109,7 +91,8 @@ static tree build_co_await (location_t, tree, tree);
    keywords, but making use of proxy variables for the self-handle and the
    promise class instance.  */
 
-/* Lookup std::experimental.  */
+/* TODO: Remove this when the coroutine header is moved to std::
+   Lookup std::experimental.  */
 static tree
 find_std_experimental (location_t loc)
 {
@@ -125,7 +108,8 @@ find_std_experimental (location_t loc)
   return exp_ns;
 }
 
-/* Lookup the coroutine_traits template decl.
+/* [coroutine.traits]
+   Lookup the coroutine_traits template decl.
    Instantiate that for the function signature.  */
 
 static tree
@@ -135,7 +119,8 @@ find_coro_traits_template_decl (location_t kw)
   if (!exp_ns)
     return NULL_TREE;
 
-  /* So now build up a type list for the template <R, ...>.
+  /* [coroutine.traits.primary]
+     So now build up a type list for the template <R, ...>.
      The function arg list length includes a terminating 'void' which we
      don't want - but we use that slot for the fn return type (which we do
      list even if it's 'void').  */
@@ -159,13 +144,14 @@ find_coro_traits_template_decl (location_t kw)
 
   if (traits_decl == error_mark_node)
     {
-      error_at (kw, "couldn't instantiate coroutine_traits");
+      error_at (kw, "cannot instantiate coroutine_traits");
       return NULL_TREE;
     }
 
   return traits_decl;
 }
 
+/* [coroutine.handle] */
 static tree
 find_coro_handle_type (location_t kw, tree promise_type)
 {
@@ -284,17 +270,17 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
   return true;
 }
 
-/* These function assumes that the caller has verified that the state for
-   the decl has been initialised, we try to minimise work here.  */
+/* These functions assumes that the caller has verified that the state for
+   the decl has been initialized, we try to minimise work here.  */
 static tree
 get_coroutine_promise_type (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  coroutine_info_t *info = fn_to_coro_info->get (decl);
-  if (!info)
-    return NULL_TREE;
-  return info->promise_type;
+  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+    return info->promise_type;
+
+  return NULL_TREE;
 }
 
 static tree
@@ -302,10 +288,10 @@ get_coroutine_handle_type (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  coroutine_info_t *info = fn_to_coro_info->get (decl);
-  if (!info)
-    return NULL_TREE;
-  return info->handle_type;
+  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+    return info->handle_type;
+
+  return NULL_TREE;
 }
 
 static tree
@@ -313,10 +299,10 @@ get_coroutine_self_handle_proxy (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  coroutine_info_t *info = fn_to_coro_info->get (decl);
-  if (!info)
-    return NULL_TREE;
-  return info->self_h_proxy;
+  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+    return info->self_h_proxy;
+
+  return NULL_TREE;
 }
 
 static tree
@@ -324,10 +310,10 @@ get_coroutine_promise_proxy (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  coroutine_info_t *info = fn_to_coro_info->get (decl);
-  if (!info)
-    return NULL_TREE;
-  return info->promise_proxy;
+  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+    return info->promise_proxy;
+
+  return NULL_TREE;
 }
 
 /* Lookup a Promise member.  */
@@ -365,7 +351,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
   /* This is arranged in order of prohibitions in the std.  */
   if (DECL_MAIN_P (fndecl))
     {
-      // [main shall not be a coroutine].
+      // [basic.start.main] 3. The function main shall not be a coroutine.
       error_at (kw_loc,
 		"%qs cannot be used in"
 		" the %<main%> function",
@@ -375,7 +361,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (DECL_DECLARED_CONSTEXPR_P (fndecl))
     {
-      // [not constexpr specifier].
+      // [dcl.constexpr] 3.3 it shall not be a coroutine.
       error_at (kw_loc,
 		"%qs cannot be used in"
 		" a %<constexpr%> function",
@@ -386,7 +372,8 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (FNDECL_USED_AUTO (fndecl))
     {
-      // [not auto specifier].
+      // [dcl.spec.auto] 15. A function declared with a return type that uses
+      // a placeholder type shall not be a coroutine .
       error_at (kw_loc,
 		"%qs cannot be used in"
 		" a function with a deduced return type",
@@ -396,24 +383,24 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (varargs_function_p (fndecl))
     {
-      // [shall not be varargs].
+      // [dcl.fct.def.coroutine] The parameter-declaration-clause of the
+      // coroutine shall not terminate with an ellipsis that is not part
+      // of a parameter-declaration.
       error_at (kw_loc,
-		"%qs cannot be used in"
-		" a varargs function",
-		kw_name);
+		"%qs cannot be used in a varargs function", kw_name);
       return false;
     }
 
   if (DECL_CONSTRUCTOR_P (fndecl))
     {
-      // [a constructor shall not be a coroutine.]
+      // [class.ctor] 7. a constructor shall not be a coroutine.
       error_at (kw_loc, "%qs cannot be used in a constructor", kw_name);
       return false;
     }
 
   if (DECL_DESTRUCTOR_P (fndecl))
     {
-      // [a destructor shall not be a coroutine.]
+      // [class.dtor] 21. a destructor shall not be a coroutine.
       error_at (kw_loc, "%qs cannot be used in a destructor", kw_name);
       return false;
     }
@@ -421,7 +408,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
   return true;
 }
 
-/* Here we will check the constraints that are not per keyword.  */
+/* Here we check the constraints that are not per keyword.  */
 
 static bool
 coro_function_valid_p (tree fndecl)
@@ -439,7 +426,7 @@ coro_function_valid_p (tree fndecl)
     /* TODO: record or extract positions of returns (and the first coro
        keyword) so that we can add notes to the diagnostic about where
        the bad keyword is and what made the function into a coro.  */
-    error_at (f_loc, "return statement not allowed in coroutine;"
+    error_at (f_loc, "a %<return%> statement is not allowed in coroutine;"
 		     " did you mean %<co_return%>?");
 
   return true;
@@ -476,8 +463,7 @@ build_co_await (location_t loc, tree a, tree mode)
   if (TREE_CODE (o_type) != RECORD_TYPE)
     {
       error_at (loc,
-		"member reference base type %qT is not a"
-		" structure or union",
+		"awaitable type %qT is not a structure or union",
 		o_type);
       return error_mark_node;
     }
@@ -507,7 +493,7 @@ build_co_await (location_t loc, tree a, tree mode)
     return error_mark_node;
 
   /* To complete the lookups, we need an instance of 'e' which is built from
-     'o' according to [expr.await] 3.4.  However, we don't want to materialise
+     'o' according to [expr.await] 3.4.  However, we don't want to materialize
      'e' here (it might need to be placed in the coroutine frame) so we will
      make a temp placeholder instead. */
   tree e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
@@ -533,20 +519,19 @@ build_co_await (location_t loc, tree a, tree mode)
   if (!awsp_func || !awsp_call || awsp_call == error_mark_node)
     return error_mark_node;
 
-  bool OK = false;
+  bool ok = false;
   tree susp_return_type = TYPE_CANONICAL (TREE_TYPE (TREE_TYPE (awsp_func)));
   if (same_type_p (susp_return_type, void_type_node))
-    OK = true;
+    ok = true;
   else if (same_type_p (susp_return_type, boolean_type_node))
-    OK = true;
+    ok = true;
   else if (TREE_CODE (susp_return_type) == RECORD_TYPE)
-    /* TODO: this isn't enough of a test.  */
-    OK = true;
+    /* ???: perhaps we should have some way to check that this is actually
+	    a coroutine handle type.  */
+    ok = true;
 
-  if (!OK)
+  if (!ok)
     {
-      fprintf (stderr, "didn't grok the suspend return : ");
-      debug_tree (susp_return_type);
       error_at (loc, "%<await_suspend%> must return %<void%>, %<bool%> or"
 		     " a coroutine handle.");
       return error_mark_node;
@@ -609,7 +594,8 @@ finish_co_await_expr (location_t kw, tree expr)
   if (!coro_promise_type_found_p (current_function_decl, kw))
     return error_mark_node;
 
-  /* The incoming cast expression might be transformed by a promise
+  /* [expr.await] 3.2
+     The incoming cast expression might be transformed by a promise
      'await_transform()'.  */
   tree at_meth
     = lookup_promise_member (current_function_decl, "await_transform", kw,
@@ -628,8 +614,11 @@ finish_co_await_expr (location_t kw, tree expr)
 				 at_meth, &args, NULL_TREE, LOOKUP_NORMAL,
 				 &at_fn, tf_warning_or_error);
 
-      /* Probably it's not an error to fail here, although possibly a bit odd
-	 to find await_transform but not a valid one?  */
+      /* As I read the section.
+	 We saw an await_transform method, so it's mandatory that we replace
+	 expr with p.await_transform (expr), therefore if the method call fails
+	 (presumably, we don't have suitable arguments) then this part of the
+	 process fails.  */
       if (!at_fn || a == error_mark_node)
 	return error_mark_node;
     }
@@ -658,13 +647,8 @@ finish_co_yield_expr (location_t kw, tree expr)
 					    "co_yield"))
     return error_mark_node;
 
-  /* Belt and braces, we should never get here, the expression should be
-     required in the parser. */
-  if (expr == NULL_TREE)
-    {
-      error_at (kw, "%<co_yield%> requires an expression.");
-      return error_mark_node;
-    }
+  /* The expression should be required in the parser.  */
+  gcc_checking_assert (expr);
 
   if (error_operand_p (expr))
     return error_mark_node;
@@ -719,16 +703,6 @@ finish_co_yield_expr (location_t kw, tree expr)
   return op;
 }
 
-/* placeholder; in case we really need something more than the contextual
-   checks.  */
-static tree
-check_co_return_expr (tree retval, bool *no_warning)
-{
-  *no_warning = false;
-
-  return retval;
-}
-
 /* Check that it's valid to have a co_return keyword here.
    If it is, then check and build the p.return_{void(),value(expr)}.
    These are built against the promise proxy, but saved for expand time.  */
@@ -770,9 +744,6 @@ finish_co_return_stmt (location_t kw, tree expr)
   if (!coro_promise_type_found_p (current_function_decl, kw))
     return error_mark_node;
 
-  bool no_warning;
-  expr = check_co_return_expr (expr, &no_warning);
-
   if (error_operand_p (expr))
     return error_mark_node;
 
@@ -791,7 +762,7 @@ finish_co_return_stmt (location_t kw, tree expr)
     {
       tree crv_meth
 	= lookup_promise_member (current_function_decl, "return_void", kw,
-				 true /*musthave*/);
+				 /*musthave=*/ true);
       if (!crv_meth || crv_meth == error_mark_node)
 	return error_mark_node;
 
@@ -803,7 +774,7 @@ finish_co_return_stmt (location_t kw, tree expr)
     {
       tree crv_meth
 	= lookup_promise_member (current_function_decl, "return_value", kw,
-				 true /*musthave*/);
+				 /*musthave=*/ true);
       if (!crv_meth || crv_meth == error_mark_node)
 	return error_mark_node;
 
@@ -823,7 +794,6 @@ finish_co_return_stmt (location_t kw, tree expr)
     return error_mark_node;
 
   expr = build2_loc (kw, CO_RETRN_EXPR, void_type_node, expr, co_ret_call);
-  TREE_NO_WARNING (expr) |= no_warning;
   expr = maybe_cleanup_point_expr_void (expr);
   expr = add_stmt (expr);
   return expr;
@@ -2090,7 +2060,6 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree susp_type,
     {
       error_at (EXPR_LOCATION (await_expr), "duplicate info for %qE",
 		await_expr);
-      debug_tree (await_expr);
       return false;
     }
   s.awaitable_type = aw_type;
@@ -2141,7 +2110,6 @@ get_await_suspend_return_type (tree aw_expr)
     }
   else if (TREE_CODE (susp_fn) == TARGET_EXPR)
     return TREE_TYPE (susp_fn);
-  debug_tree (susp_fn);
   return TREE_TYPE (susp_fn);
 }
 
@@ -2223,10 +2191,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	    fprintf (stderr, "target expr init var real?\n");
 	}
       else
-	{
-	  debug_tree (parm);
-	  gcc_unreachable ();
-	}
+	gcc_unreachable ();
     }
   /* As far as it's necessary, we've walked the subtrees of the call
      expr.  */
@@ -2519,12 +2484,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  bool existed;
 	  __local_var_info_t &local_var
 	    = lvd->local_var_uses->get_or_insert (lvar, &existed);
-	  if (existed)
-	    {
-	      fprintf (stderr, "duplicate lvar: ");
-	      debug_tree (lvar);
-	      gcc_checking_assert (!existed);
-	    }
+	  gcc_checking_assert (!existed);
 	  tree lvtype = TREE_TYPE (lvar);
 	  tree lvname = DECL_NAME (lvar);
 	  /* Make names depth+index unique, so that we can support nested

@@ -39,7 +39,7 @@ extern int x;
 
 // Diagnose disallowed "return" in coroutine.
 Coro
-bar () // { dg-error "return statement not allowed" }
+bar () // { dg-error {a 'return' statement is not allowed} }
 {
   if (x)
     return Coro(); 
