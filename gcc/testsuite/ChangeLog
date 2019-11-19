@@ -1,9 +1,14 @@
+2019-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92414
+	* g++.dg/cpp2a/constexpr-dtor4.C: New test.
+
 2019-11-19  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	* gcc.target/mips/msa-ds.c: New test.
 
 2019-11-19  Richard Sandiford  <richard.sandiford@arm.com>
-gcc/
+
 	Revert:
 	2019-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 

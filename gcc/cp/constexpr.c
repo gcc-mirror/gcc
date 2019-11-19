@@ -5834,6 +5834,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	  gcc_assert (object && VAR_P (object));
 	  gcc_assert (DECL_DECLARED_CONSTEXPR_P (object));
 	  gcc_assert (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (object));
+	  if (error_operand_p (DECL_INITIAL (object)))
+	    return t;
 	  ctx.ctor = unshare_expr (DECL_INITIAL (object));
 	  TREE_READONLY (ctx.ctor) = false;
 	  /* Temporarily force decl_really_constant_value to return false

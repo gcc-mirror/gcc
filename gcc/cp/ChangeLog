@@ -1,3 +1,10 @@
+2019-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92414
+	* constexpr.c (cxx_eval_outermost_constant_expr): If DECL_INITIAL
+	on object is erroneous, return t without trying to evaluate
+	a constexpr dtor.
+
 2019-11-12  Jason Merrill  <jason@redhat.com>
 
 	* call.c (same_fn_or_template): Change to cand_parms_match.
