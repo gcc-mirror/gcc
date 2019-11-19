@@ -1,3 +1,39 @@
+2019-11-19  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins): Add
+	AARCH64_MEMTAG_BUILTIN_START, AARCH64_MEMTAG_BUILTIN_IRG,
+	AARCH64_MEMTAG_BUILTIN_GMI, AARCH64_MEMTAG_BUILTIN_SUBP,
+	AARCH64_MEMTAG_BUILTIN_INC_TAG, AARCH64_MEMTAG_BUILTIN_SET_TAG,
+	AARCH64_MEMTAG_BUILTIN_GET_TAG, and AARCH64_MEMTAG_BUILTIN_END.
+	(aarch64_init_memtag_builtins): New.
+	(AARCH64_INIT_MEMTAG_BUILTINS_DECL): New macro.
+	(aarch64_general_init_builtins): Call aarch64_init_memtag_builtins.
+	(aarch64_expand_builtin_memtag): New.
+	(aarch64_general_expand_builtin): Call aarch64_expand_builtin_memtag.
+	(AARCH64_BUILTIN_SUBCODE): New macro.
+	(aarch64_resolve_overloaded_memtag): New.
+	(aarch64_resolve_overloaded_builtin_general): New. Call
+	aarch64_resolve_overloaded_memtag to handle overloaded MTE builtins.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_MEMORY_TAGGING when enabled.
+	(aarch64_resolve_overloaded_builtin): Call
+	aarch64_resolve_overloaded_builtin_general.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_resolve_overloaded_builtin_general): New declaration.
+	* config/aarch64/aarch64.h (AARCH64_ISA_MEMTAG): New macro.
+	(TARGET_MEMTAG): Likewise.
+	* config/aarch64/aarch64.md (UNSPEC_GEN_TAG): New unspec.
+	(UNSPEC_GEN_TAG_RND, and UNSPEC_TAG_SPACE): Likewise.
+	(irg, gmi, subp, addg, ldg, stg): New instructions.
+	* config/aarch64/arm_acle.h (__arm_mte_create_random_tag): New macro.
+	(__arm_mte_exclude_tag, __arm_mte_ptrdiff): Likewise.
+	(__arm_mte_increment_tag, __arm_mte_set_tag): Likewise.
+	(__arm_mte_get_tag): Likewise.
+	* config/aarch64/predicates.md (aarch64_memtag_tag_offset): New.
+	(aarch64_granule16_uimm6, aarch64_granule16_simm9): New.
+	* config/arm/types.md (memtag): New.
+	* doc/invoke.texi (-memtag): Update description.
+
 2019-11-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/arm/arm-c.c (arm_cpu_builtins): Use def_or_undef_macro

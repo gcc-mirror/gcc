@@ -163,6 +163,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_FRINT, "__ARM_FEATURE_FRINT", pfile);
   aarch64_def_or_undef (TARGET_TME, "__ARM_FEATURE_TME", pfile);
   aarch64_def_or_undef (TARGET_RNG, "__ARM_FEATURE_RNG", pfile);
+  aarch64_def_or_undef (TARGET_MEMTAG, "__ARM_FEATURE_MEMORY_TAGGING", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
@@ -279,8 +280,8 @@ aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
   switch (code & AARCH64_BUILTIN_CLASS)
     {
     case AARCH64_BUILTIN_GENERAL:
-      return NULL_TREE;
-
+      return aarch64_resolve_overloaded_builtin_general (location, fndecl,
+							 uncast_arglist);
     case AARCH64_BUILTIN_SVE:
       new_fndecl = aarch64_sve::resolve_overloaded_builtin (location, subcode,
 							    arglist);
