@@ -1,3 +1,9 @@
+2019-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92557
+	* omp-low.c (omp_clause_aligned_alignment): Punt if TYPE_MODE is not
+	vmode rather than asserting it always is.
+
 2019-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92554
