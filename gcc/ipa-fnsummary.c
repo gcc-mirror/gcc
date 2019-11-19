@@ -2950,7 +2950,6 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 static inline void
 estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 			     sreal *time,
-			     int prob,
 			     vec<tree> known_vals,
 			     vec<ipa_polymorphic_call_context> known_contexts,
 			     vec<ipa_agg_value_set> known_aggs,
@@ -2960,6 +2959,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   int call_size = es->call_stmt_size;
   int call_time = es->call_stmt_time;
   int cur_size;
+
   if (!e->callee && hints && e->maybe_hot_p ()
       && estimate_edge_devirt_benefit (e, &call_size, &call_time,
 				       known_vals, known_contexts, known_aggs))
@@ -2968,12 +2968,8 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   *size += cur_size;
   if (min_size)
     *min_size += cur_size;
-  if (!time)
-    ;
-  else if (prob == REG_BR_PROB_BASE)
+  if (time)
     *time += ((sreal)call_time) * e->sreal_frequency ();
-  else
-    *time += ((sreal)call_time * prob) * e->sreal_frequency ();
 }
 
 
@@ -3019,7 +3015,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	     sowe do not need to compute probabilities.  */
 	  estimate_edge_size_and_time (e, size,
 				       es->predicate ? NULL : min_size,
-				       time, REG_BR_PROB_BASE,
+				       time,
 				       known_vals, known_contexts,
 				       known_aggs, hints);
 	}
@@ -3031,7 +3027,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	  || es->predicate->evaluate (possible_truths))
 	estimate_edge_size_and_time (e, size,
 				     es->predicate ? NULL : min_size,
-				     time, REG_BR_PROB_BASE,
+				     time,
 				     known_vals, known_contexts, known_aggs,
 				     hints);
     }
