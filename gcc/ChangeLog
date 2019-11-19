@@ -1,3 +1,7 @@
+2019-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (-gno-internal-reset-location-views): Fix typo.
+
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
