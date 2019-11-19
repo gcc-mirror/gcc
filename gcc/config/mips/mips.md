@@ -560,6 +560,12 @@
 	 (eq_attr "type" "idiv,idiv3")
 	 (symbol_ref "mips_idiv_insns (GET_MODE (PATTERN (insn)))")
 
+	 ;; simd div have 3 instruction if TARGET_CHECK_ZERO_DIV is true.
+	 (eq_attr "type" "simd_div")
+	 (if_then_else (match_test "TARGET_CHECK_ZERO_DIV")
+		       (const_int 3)
+		       (const_int 1))
+
 	 (not (eq_attr "sync_mem" "none"))
 	 (symbol_ref "mips_sync_loop_insns (insn, operands)")]
 	(const_int 1)))
@@ -759,7 +765,7 @@
 
 ;; Can the instruction be put into a delay slot?
 (define_attr "can_delay" "no,yes"
-  (if_then_else (and (eq_attr "type" "!branch,call,jump")
+  (if_then_else (and (eq_attr "type" "!branch,call,jump,simd_branch")
 		     (eq_attr "hazard" "none")
 		     (match_test "get_attr_insn_count (insn) == 1"))
 		(const_string "yes")
@@ -1098,7 +1104,7 @@
 
 ;; Branches that have delay slots and don't have likely variants do
 ;; not annul on false.
-(define_delay (and (eq_attr "type" "branch")
+(define_delay (and (eq_attr "type" "branch,simd_branch")
 		   (not (match_test "TARGET_MIPS16"))
 		   (ior (match_test "TARGET_CB_NEVER")
 			(and (eq_attr "compact_form" "maybe")

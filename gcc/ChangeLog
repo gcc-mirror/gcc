@@ -1,3 +1,14 @@
+2019-11-19  Zoran Jovanovic <zoran.jovanovic@mips.com>
+			Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/mips-msa.md (msa_<msabr>_<msafmt_f>, msa_<msabr>_v_<msafmt_f>):
+	Mark as not having "likely" version.
+	* config/mips/mips.md (insn_count): The simd_div instruction with
+	TARGET_CHECK_ZERO_DIV consists of 3 instructions.
+	(can_delay): Exclude simd_branch.
+	(defile_delay *): Add simd_branch instructions.
+	They have one regular delay slot.
+
 2019-11-19  Martin Liska  <mliska@suse.cz>
 
 	* toplev.c (general_init): Move the call...
