@@ -848,58 +848,59 @@ check_explicit_instantiation_namespace (tree spec)
 	       spec, current_namespace, ns);
 }
 
-// Returns the type of a template specialization only if that
-// specialization needs to be defined. Otherwise (e.g., if the type has
-// already been defined), the function returns NULL_TREE.
+/* Returns the type of a template specialization only if that
+   specialization needs to be defined. Otherwise (e.g., if the type has
+   already been defined), the function returns NULL_TREE.  */
+
 static tree
 maybe_new_partial_specialization (tree type)
 {
-  // An implicit instantiation of an incomplete type implies
-  // the definition of a new class template.
-  //
-  //    template<typename T>
-  //      struct S;
-  //
-  //    template<typename T>
-  //      struct S<T*>;
-  //
-  // Here, S<T*> is an implicit instantiation of S whose type
-  // is incomplete.
+  /* An implicit instantiation of an incomplete type implies
+     the definition of a new class template.
+
+	template<typename T>
+	  struct S;
+
+	template<typename T>
+	  struct S<T*>;
+
+     Here, S<T*> is an implicit instantiation of S whose type
+     is incomplete.  */
   if (CLASSTYPE_IMPLICIT_INSTANTIATION (type) && !COMPLETE_TYPE_P (type))
     return type;
 
-  // It can also be the case that TYPE is a completed specialization.
-  // Continuing the previous example, suppose we also declare:
-  //
-  //    template<typename T>
-  //      requires Integral<T>
-  //        struct S<T*>;
-  //
-  // Here, S<T*> refers to the specialization S<T*> defined
-  // above. However, we need to differentiate definitions because
-  // we intend to define a new partial specialization. In this case,
-  // we rely on the fact that the constraints are different for
-  // this declaration than that above.
-  //
-  // Note that we also get here for injected class names and
-  // late-parsed template definitions. We must ensure that we
-  // do not create new type declarations for those cases.
+  /* It can also be the case that TYPE is a completed specialization.
+     Continuing the previous example, suppose we also declare:
+
+	template<typename T>
+	  requires Integral<T>
+	    struct S<T*>;
+
+     Here, S<T*> refers to the specialization S<T*> defined
+     above. However, we need to differentiate definitions because
+     we intend to define a new partial specialization. In this case,
+     we rely on the fact that the constraints are different for
+     this declaration than that above.
+
+     Note that we also get here for injected class names and
+     late-parsed template definitions. We must ensure that we
+     do not create new type declarations for those cases.  */
   if (flag_concepts && CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
     {
       tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
       tree args = CLASSTYPE_TI_ARGS (type);
 
-      // If there are no template parameters, this cannot be a new
-      // partial template specializtion?
+      /* If there are no template parameters, this cannot be a new
+	 partial template specialization?  */
       if (!current_template_parms)
         return NULL_TREE;
 
-      // The injected-class-name is not a new partial specialization.
+      /* The injected-class-name is not a new partial specialization.  */
       if (DECL_SELF_REFERENCE_P (TYPE_NAME (type)))
 	return NULL_TREE;
 
-      // If the constraints are not the same as those of the primary
-      // then, we can probably create a new specialization.
+      /* If the constraints are not the same as those of the primary
+	 then, we can probably create a new specialization.  */
       tree type_constr = current_template_constraints ();
 
       if (type == TREE_TYPE (tmpl))
@@ -909,8 +910,8 @@ maybe_new_partial_specialization (tree type)
 	    return NULL_TREE;
 	}
 
-      // Also, if there's a pre-existing specialization with matching
-      // constraints, then this also isn't new.
+      /* Also, if there's a pre-existing specialization with matching
+	 constraints, then this also isn't new.  */
       tree specs = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
       while (specs)
         {
@@ -923,8 +924,8 @@ maybe_new_partial_specialization (tree type)
           specs = TREE_CHAIN (specs);
         }
 
-      // Create a new type node (and corresponding type decl)
-      // for the newly declared specialization.
+      /* Create a new type node (and corresponding type decl)
+	 for the newly declared specialization.  */
       tree t = make_class_type (TREE_CODE (type));
       CLASSTYPE_DECLARED_CLASS (t) = CLASSTYPE_DECLARED_CLASS (type);
       SET_TYPE_TEMPLATE_INFO (t, build_template_info (tmpl, args));
@@ -934,10 +935,12 @@ maybe_new_partial_specialization (tree type)
 	 equivalent.  So keep TYPE_CANONICAL the same.  */
       TYPE_CANONICAL (t) = TYPE_CANONICAL (type);
 
-      // Build the corresponding type decl.
+      /* Build the corresponding type decl.  */
       tree d = create_implicit_typedef (DECL_NAME (tmpl), t);
       DECL_CONTEXT (d) = TYPE_CONTEXT (t);
       DECL_SOURCE_LOCATION (d) = input_location;
+      TREE_PRIVATE (d) = (current_access_specifier == access_private_node);
+      TREE_PROTECTED (d) = (current_access_specifier == access_protected_node);
 
       return t;
     }

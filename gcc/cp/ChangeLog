@@ -1,5 +1,11 @@
 2019-11-19  Andrew Sutton  <asutton@lock3software.com>
 
+	PR c++/92078
+	* pt.c (maybe_new_partial_specialization): Apply access to newly
+	created partial specializations. Update comment style.
+
+2019-11-19  Andrew Sutton  <asutton@lock3software.com>
+
 	PR c++/92403
 	Suppress diagnostics substituting into a requires-expression.
 	* pt.c (tsubst_copy_and_build): Perform the first substitution without
