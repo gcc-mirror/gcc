@@ -1,0 +1,44 @@
+#   Copyright (C) 2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This harness is for tests that should be run at all optimisation levels.
+
+load_lib gcc-dg.exp
+
+# If the analyzer has not been enabled, bail.
+if { ![check_effective_target_analyzer] } {
+    return
+}
+
+dg-init
+
+global DEFAULT_CFLAGS
+if [info exists DEFAULT_CFLAGS] then {
+  set save_default_cflags $DEFAULT_CFLAGS
+}
+
+# If a testcase doesn't have special options, use these.
+set DEFAULT_CFLAGS "-fanalyzer -fdiagnostics-path-format=separate-events -Wanalyzer-too-complex -fanalyzer-call-summaries"
+
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] "" $DEFAULT_CFLAGS
+
+dg-finish
+
+if [info exists save_default_cflags] {
+  set DEFAULT_CFLAGS $save_default_cflags
+} else {
+  unset DEFAULT_CFLAGS
+}

@@ -1,3 +1,12 @@
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-3.c: Remove hardcoded "-O2" and move
+	to torture/conftest-1.c.
+	* gcc.dg/analyzer/torture/analyzer-torture.exp: New.
+	* gcc.dg/analyzer/torture/conftest-1.c: Move here from
+	analyzer/data-model-3.c.
+	* gcc.dg/analyzer/torture/poc.c: New test.
+
 2020-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93381
