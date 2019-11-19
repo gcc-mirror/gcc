@@ -1240,10 +1240,6 @@ general_init (const char *argv0, bool init_signals)
   /* Initialize register usage now so switches may override.  */
   init_reg_sets ();
 
-  /* This must be done after global_init_params but before argument
-     processing.  */
-  init_ggc_heuristics ();
-
   /* Create the singleton holder for global state.  This creates the
      dump manager.  */
   g = new gcc::context ();
@@ -2376,6 +2372,10 @@ toplev::main (int argc, char **argv)
      each structure used for parsing options.  */
   init_options_struct (&global_options, &global_options_set);
   lang_hooks.init_options_struct (&global_options);
+
+  /* Init GGC heuristics must be caller after we initialize
+     options.  */
+  init_ggc_heuristics ();
 
   /* Convert the options to an array.  */
   decode_cmdline_options_to_array_default_mask (argc,
