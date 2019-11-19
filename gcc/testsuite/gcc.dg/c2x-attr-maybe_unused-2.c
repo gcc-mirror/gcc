@@ -5,7 +5,7 @@
 /* This attribute is not valid in most cases on types other than their
    definitions, or on statements, or as an attribute-declaration.  */
 
-[[maybe_unused]]; /* { dg-warning "ignored" } */
+[[maybe_unused]]; /* { dg-error "ignored" } */
 
 int [[maybe_unused]] var; /* { dg-warning "ignored" } */
 /* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
@@ -20,6 +20,6 @@ void
 f (void)
 {
   int a;
-  [[maybe_unused]]; /* { dg-warning "ignored" } */
-  [[maybe_unused]] a = 1; /* { dg-warning "ignored" } */
+  [[maybe_unused]]; /* { dg-error "ignored" } */
+  [[maybe_unused]] a = 1; /* { dg-error "ignored" } */
 }

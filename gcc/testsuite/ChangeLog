@@ -1,3 +1,12 @@
+2019-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-fallthrough-5.c, gcc.dg/c2x-attr-syntax-5.c: New
+	tests.
+	* gcc.dg/c2x-attr-deprecated-2.c, gcc.dg/c2x-attr-deprecated-4.c,
+	gcc.dg/c2x-attr-fallthrough-2.c, gcc.dg/c2x-attr-maybe_unused-2.c,
+	gcc.dg/c2x-attr-maybe_unused-4.c: Expect errors in place of some
+	warnings.
+
 2019-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/addressof2.C: Test locations too.

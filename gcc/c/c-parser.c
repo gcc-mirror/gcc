@@ -4803,7 +4803,7 @@ c_parser_balanced_token_sequence (c_parser *parser)
 */
 
 static tree
-c_parser_std_attribute (c_parser *parser)
+c_parser_std_attribute (c_parser *parser, bool for_tm)
 {
   c_token *token = c_parser_peek_token (parser);
   tree ns, name, attribute;
@@ -4834,39 +4834,53 @@ c_parser_std_attribute (c_parser *parser)
   attribute = build_tree_list (build_tree_list (ns, name), NULL_TREE);
 
   /* Parse the arguments, if any.  */
-  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
-    return attribute;
-  location_t open_loc = c_parser_peek_token (parser)->location;
-  matching_parens parens;
-  parens.consume_open (parser);
   const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (attribute));
-  if ((as && as->max_length == 0)
-      /* Special-case the transactional-memory attribute "outer",
-	 which is specially handled but not registered as an
-	 attribute, to avoid allowing arbitrary balanced token
-	 sequences as arguments.  */
-      || is_attribute_p ("outer", name))
+  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
+    goto out;
+  {
+    location_t open_loc = c_parser_peek_token (parser)->location;
+    matching_parens parens;
+    parens.consume_open (parser);
+    if ((as && as->max_length == 0)
+	/* Special-case the transactional-memory attribute "outer",
+	   which is specially handled but not registered as an
+	   attribute, to avoid allowing arbitrary balanced token
+	   sequences as arguments.  */
+	|| is_attribute_p ("outer", name))
+      {
+	error_at (open_loc, "%qE attribute does not take any arguments", name);
+	parens.skip_until_found_close (parser);
+	return error_mark_node;
+      }
+    if (as)
+      {
+	bool takes_identifier
+	  = (ns != NULL_TREE
+	     && strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0
+	     && attribute_takes_identifier_p (name));
+	bool require_string
+	  = (ns == NULL_TREE
+	     && strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0);
+	TREE_VALUE (attribute)
+	  = c_parser_attribute_arguments (parser, takes_identifier,
+					  require_string, false);
+      }
+    else
+      c_parser_balanced_token_sequence (parser);
+    parens.require_close (parser);
+  }
+ out:
+  if (ns == NULL_TREE && !for_tm && !as && !is_attribute_p ("nodiscard", name))
     {
-      error_at (open_loc, "%qE attribute does not take any arguments", name);
-      parens.skip_until_found_close (parser);
+      /* An attribute with standard syntax and no namespace specified
+	 is a constraint violation if it is not one of the known
+	 standard attributes (of which nodiscard is the only one
+	 without a handler in GCC).  Diagnose it here with a pedwarn
+	 and then discard it to prevent a duplicate warning later.  */
+      pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
+	       name);
       return error_mark_node;
     }
-  if (as)
-    {
-      bool takes_identifier
-	= (ns != NULL_TREE
-	   && strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0
-	   && attribute_takes_identifier_p (name));
-      bool require_string
-	= (ns == NULL_TREE
-	   && strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0);
-      TREE_VALUE (attribute)
-	= c_parser_attribute_arguments (parser, takes_identifier,
-					require_string, false);
-    }
-  else
-    c_parser_balanced_token_sequence (parser);
-  parens.require_close (parser);
   return attribute;
 }
 
@@ -4898,7 +4912,7 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
 	  c_parser_consume_token (parser);
 	  continue;
 	}
-      tree attribute = c_parser_std_attribute (parser);
+      tree attribute = c_parser_std_attribute (parser, for_tm);
       if (attribute != error_mark_node)
 	{
 	  bool duplicate = false;

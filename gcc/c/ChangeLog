@@ -1,3 +1,11 @@
+2019-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (c_warn_unused_attributes): Use pedwarn not warning for
+	standard attributes.
+	* c-parser.c (c_parser_std_attribute): Take argument for_tm.  Use
+	pedwarn for unknown standard attributes and return error_mark_node
+	for them.
+
 2019-11-18  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* c-parser.c (c_parser_parse_rtl_body): Always call

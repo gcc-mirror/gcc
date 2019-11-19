@@ -31,5 +31,5 @@ f (int a)
       b += 5;
       break;
     }
-  [[fallthrough]] return b; /* { dg-warning "ignored" } */
+  [[fallthrough]] return b; /* { dg-error "ignored" } */
 }

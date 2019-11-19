@@ -5702,7 +5702,15 @@ attribute_fallthrough_p (tree attr)
     {
       tree name = get_attribute_name (t);
       if (!is_attribute_p ("fallthrough", name))
-	warning (OPT_Wattributes, "%qE attribute ignored", name);
+	{
+	  if (!c_dialect_cxx () && get_attribute_namespace (t) == NULL_TREE)
+	    /* The specifications of standard attributes in C mean
+	       this is a constraint violation.  */
+	    pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
+		     get_attribute_name (t));
+	  else
+	    warning (OPT_Wattributes, "%qE attribute ignored", name);
+	}
     }
   return true;
 }
