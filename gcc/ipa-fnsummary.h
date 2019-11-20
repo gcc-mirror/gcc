@@ -117,8 +117,8 @@ public:
       inlinable (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
       time (0), conds (NULL),
-      size_time_table (NULL), loop_iterations (NULL), loop_stride (NULL),
-      growth (0), scc_no (0)
+      size_time_table (NULL), call_size_time_table (NULL), loop_iterations (NULL),
+      loop_stride (NULL), growth (0), scc_no (0)
   {
   }
 
@@ -129,6 +129,7 @@ public:
     fp_expressions (s.fp_expressions),
     estimated_stack_size (s.estimated_stack_size),
     time (s.time), conds (s.conds), size_time_table (s.size_time_table),
+    call_size_time_table (NULL),
     loop_iterations (s.loop_iterations), loop_stride (s.loop_stride),
     growth (s.growth), scc_no (s.scc_no)
   {}
@@ -161,7 +162,12 @@ public:
   /* Conditional size/time information.  The summaries are being
      merged during inlining.  */
   conditions conds;
+  /* Normal code is acocunted in size_time_table, while calls are
+     accounted in call_size_time_table.  This is because calls
+     are often adjusted by IPA optimizations and thus this summary
+     is generated from call summary information when needed.  */
   vec<size_time_entry, va_gc> *size_time_table;
+  vec<size_time_entry, va_gc> *call_size_time_table;
 
   /* Predicate on when some loop in the function becomes to have known
      bounds.   */
@@ -179,10 +185,13 @@ public:
   int scc_no;
 
   /* Record time and size under given predicates.  */
-  void account_size_time (int, sreal, const predicate &, const predicate &);
+  void account_size_time (int, sreal, const predicate &, const predicate &,
+		  	  bool call = false);
 
   /* We keep values scaled up, so fractional sizes can be accounted.  */
   static const int size_scale = 2;
+  /* Maximal size of size_time_table before we start to be conservative.  */
+  static const int max_size_time_table_size = 256;
 };
 
 class GTY((user)) ipa_fn_summary_t:

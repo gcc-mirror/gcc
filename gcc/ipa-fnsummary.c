@@ -146,17 +146,22 @@ ipa_dump_hints (FILE *f, ipa_hints hints)
 /* Record SIZE and TIME to SUMMARY.
    The accounted code will be executed when EXEC_PRED is true.
    When NONCONST_PRED is false the code will evaulate to constant and
-   will get optimized out in specialized clones of the function.   */
+   will get optimized out in specialized clones of the function.
+   If CALL is true account to call_size_time_table rather than
+   size_time_table.   */
 
 void
 ipa_fn_summary::account_size_time (int size, sreal time,
 				   const predicate &exec_pred,
-				   const predicate &nonconst_pred_in)
+				   const predicate &nonconst_pred_in,
+				   bool call)
 {
   size_time_entry *e;
   bool found = false;
   int i;
   predicate nonconst_pred;
+  vec<size_time_entry, va_gc> *table = call
+	 			       ? call_size_time_table : size_time_table;
 
   if (exec_pred == false)
     return;
@@ -168,23 +173,23 @@ ipa_fn_summary::account_size_time (int size, sreal time,
 
   /* We need to create initial empty unconitional clause, but otherwie
      we don't need to account empty times and sizes.  */
-  if (!size && time == 0 && size_time_table)
+  if (!size && time == 0 && table)
     return;
 
   gcc_assert (time >= 0);
 
-  for (i = 0; vec_safe_iterate (size_time_table, i, &e); i++)
+  for (i = 0; vec_safe_iterate (table, i, &e); i++)
     if (e->exec_predicate == exec_pred
 	&& e->nonconst_predicate == nonconst_pred)
       {
 	found = true;
 	break;
       }
-  if (i == 256)
+  if (i == max_size_time_table_size)
     {
       i = 0;
       found = true;
-      e = &(*size_time_table)[0];
+      e = &(*table)[0];
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "\t\tReached limit on number of entries, "
@@ -212,7 +217,10 @@ ipa_fn_summary::account_size_time (int size, sreal time,
       new_entry.time = time;
       new_entry.exec_predicate = exec_pred;
       new_entry.nonconst_predicate = nonconst_pred;
-      vec_safe_push (size_time_table, new_entry);
+      if (call)
+        vec_safe_push (call_size_time_table, new_entry);
+      else
+        vec_safe_push (size_time_table, new_entry);
     }
   else
     {
@@ -642,6 +650,7 @@ ipa_fn_summary::~ipa_fn_summary ()
     edge_predicate_pool.remove (loop_stride);
   vec_free (conds);
   vec_free (size_time_table);
+  vec_free (call_size_time_table);
 }
 
 void
@@ -2973,19 +2982,21 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 }
 
 
-
 /* Increase SIZE, MIN_SIZE and TIME for size and time needed to handle all
    calls in NODE.  POSSIBLE_TRUTHS, KNOWN_VALS, KNOWN_AGGS and KNOWN_CONTEXTS
-   describe context of the call site.  */
+   describe context of the call site.
+ 
+   Helper for estimate_calls_size_and_time which does the same but
+   (in most cases) faster.  */
 
 static void
-estimate_calls_size_and_time (struct cgraph_node *node, int *size,
-			      int *min_size, sreal *time,
-			      ipa_hints *hints,
-			      clause_t possible_truths,
-			      vec<tree> known_vals,
-			      vec<ipa_polymorphic_call_context> known_contexts,
-			      vec<ipa_agg_value_set> known_aggs)
+estimate_calls_size_and_time_1 (struct cgraph_node *node, int *size,
+			        int *min_size, sreal *time,
+			        ipa_hints *hints,
+			        clause_t possible_truths,
+			        vec<tree> known_vals,
+			        vec<ipa_polymorphic_call_context> known_contexts,
+			        vec<ipa_agg_value_set> known_aggs)
 {
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
@@ -2993,11 +3004,11 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
       if (!e->inline_failed)
 	{
 	  gcc_checking_assert (!ipa_call_summaries->get (e));
-	  estimate_calls_size_and_time (e->callee, size, min_size, time,
-					hints,
-					possible_truths,
-					known_vals, known_contexts,
-					known_aggs);
+	  estimate_calls_size_and_time_1 (e->callee, size, min_size, time,
+					  hints,
+					  possible_truths,
+					  known_vals, known_contexts,
+					  known_aggs);
 	  continue;
 	}
       class ipa_call_summary *es = ipa_call_summaries->get (e);
@@ -3031,6 +3042,157 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 				     known_vals, known_contexts, known_aggs,
 				     hints);
     }
+}
+
+/* Populate sum->call_size_time_table for edges from NODE.  */
+
+static void
+summarize_calls_size_and_time (struct cgraph_node *node,
+    			       ipa_fn_summary *sum)
+{
+  struct cgraph_edge *e;
+  for (e = node->callees; e; e = e->next_callee)
+    {
+      if (!e->inline_failed)
+	{
+	  gcc_checking_assert (!ipa_call_summaries->get (e));
+	  summarize_calls_size_and_time (e->callee, sum);
+	  continue;
+	}
+      int size = 0;
+      sreal time = 0;
+
+      estimate_edge_size_and_time (e, &size, NULL, &time,
+				   vNULL, vNULL, vNULL, NULL);
+
+      struct predicate pred = true;
+      class ipa_call_summary *es = ipa_call_summaries->get (e);
+
+      if (es->predicate)
+	pred = *es->predicate;
+      sum->account_size_time (size, time, pred, pred, true);
+    }
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    {
+      int size = 0;
+      sreal time = 0;
+
+      estimate_edge_size_and_time (e, &size, NULL, &time,
+				   vNULL, vNULL, vNULL, NULL);
+      struct predicate pred = true;
+      class ipa_call_summary *es = ipa_call_summaries->get (e);
+
+      if (es->predicate)
+	pred = *es->predicate;
+      sum->account_size_time (size, time, pred, pred, true);
+    }
+}
+
+/* Increase SIZE, MIN_SIZE and TIME for size and time needed to handle all
+   calls in NODE.  POSSIBLE_TRUTHS, KNOWN_VALS, KNOWN_AGGS and KNOWN_CONTEXTS
+   describe context of the call site.  */
+
+static void
+estimate_calls_size_and_time (struct cgraph_node *node, int *size,
+			      int *min_size, sreal *time,
+			      ipa_hints *hints,
+			      clause_t possible_truths,
+			      vec<tree> known_vals,
+			      vec<ipa_polymorphic_call_context> known_contexts,
+			      vec<ipa_agg_value_set> known_aggs)
+{
+  class ipa_fn_summary *sum = ipa_fn_summaries->get (node);
+  bool use_table = true;
+
+  gcc_assert (node->callees || node->indirect_calls);
+
+  /* During early inlining we do not calculate info for very
+     large functions and thus there is no need for producing
+     summaries.  */
+  if (!ipa_node_params_sum)
+    use_table = false;
+  /* Do not calculate summaries for simple wrappers; it is waste
+     of memory.  */
+  else if (node->callees && node->indirect_calls
+           && node->callees->inline_failed && !node->callees->next_callee)
+    use_table = false;
+  /* If there is an indirect edge that may be optimized, we need
+     to go the slow way.  */
+  else if ((known_vals.length ()
+     	    || known_contexts.length ()
+	    || known_aggs.length ()) && hints)
+    {
+      class ipa_node_params *params_summary = IPA_NODE_REF (node);
+      unsigned int nargs = params_summary
+			   ? ipa_get_param_count (params_summary) : 0;
+
+      for (unsigned int i = 0; i < nargs && use_table; i++)
+	{
+	  if (ipa_is_param_used_by_indirect_call (params_summary, i)
+	      && ((known_vals.length () > i && known_vals[i])
+		  || (known_aggs.length () > i
+		      && known_aggs[i].items.length ())))
+	    use_table = false;
+	  else if (ipa_is_param_used_by_polymorphic_call (params_summary, i)
+		   && (known_contexts.length () > i
+		       && !known_contexts[i].useless_p ()))
+	    use_table = false;
+	}
+    }
+
+  /* Fast path is via the call size time table.  */
+  if (use_table)
+    {
+      /* Build summary if it is absent.  */
+      if (!sum->call_size_time_table)
+	{
+	  predicate true_pred = true;
+	  sum->account_size_time (0, 0, true_pred, true_pred, true);
+	  summarize_calls_size_and_time (node, sum);
+	}
+
+      int old_size = *size;
+      sreal old_time = time ? *time : 0;
+
+      if (min_size)
+	*min_size += (*sum->call_size_time_table)[0].size;
+
+      unsigned int i;
+      size_time_entry *e;
+
+      /* Walk the table and account sizes and times.  */
+      for (i = 0; vec_safe_iterate (sum->call_size_time_table, i, &e);
+	   i++)
+	if (e->exec_predicate.evaluate (possible_truths))
+	  {
+	    *size += e->size;
+	    if (time)
+	      *time += e->time;
+	  }
+
+      /* Be careful and see if both methods agree.  */
+      if ((flag_checking || dump_file)
+	  /* Do not try to sanity check when we know we lost some
+	     precision.  */
+	  && sum->call_size_time_table->length ()
+	     < ipa_fn_summary::max_size_time_table_size)
+	{
+	  estimate_calls_size_and_time_1 (node, &old_size, NULL, &old_time, NULL,
+					  possible_truths, known_vals,
+					  known_contexts, known_aggs);
+	  gcc_assert (*size == old_size);
+	  if (time && (*time - old_time > 1 || *time - old_time < -1)
+	      && dump_file)
+	    fprintf (dump_file, "Time mismatch in call summary %f!=%f",
+		     old_time.to_double (),
+		     time->to_double ());
+	}
+    }
+  /* Slow path by walking all edges.  */
+  else
+    estimate_calls_size_and_time_1 (node, size, min_size, time, hints,
+				    possible_truths, known_vals, known_contexts,
+				    known_aggs);
 }
 
 /* Default constructor for ipa call context.
@@ -3303,10 +3465,11 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 	  }
     }
 
-  estimate_calls_size_and_time (m_node, &size, &min_size,
-				ret_time ? &time : NULL,
-				ret_hints ? &hints : NULL, m_possible_truths,
-				m_known_vals, m_known_contexts, m_known_aggs);
+  if (m_node->callees || m_node->indirect_calls)
+    estimate_calls_size_and_time (m_node, &size, &min_size,
+				  ret_time ? &time : NULL,
+				  ret_hints ? &hints : NULL, m_possible_truths,
+				  m_known_vals, m_known_contexts, m_known_aggs);
 
   sreal nonspecialized_time = time;
 
@@ -3760,10 +3923,12 @@ ipa_update_overall_fn_summary (struct cgraph_node *node)
       info->time += e->time;
     }
   info->min_size = (*info->size_time_table)[0].size;
-  estimate_calls_size_and_time (node, &size_info->size, &info->min_size,
-				&info->time, NULL,
-				~(clause_t) (1 << predicate::false_condition),
-				vNULL, vNULL, vNULL);
+  vec_free (info->call_size_time_table);
+  if (node->callees || node->indirect_calls)
+    estimate_calls_size_and_time (node, &size_info->size, &info->min_size,
+				  &info->time, NULL,
+				  ~(clause_t) (1 << predicate::false_condition),
+				  vNULL, vNULL, vNULL);
   size_info->size = RDIV (size_info->size, ipa_fn_summary::size_scale);
   info->min_size = RDIV (info->min_size, ipa_fn_summary::size_scale);
 }
