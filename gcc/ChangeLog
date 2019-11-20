@@ -1,5 +1,10 @@
 2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-slp.c (vect_schedule_slp_instance): Restore stmt
+	def types for two-operation SLP.
+
+2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR testsuite/92366
 	* doc/sourcebuild.texi (vect_char_add): Document.
 

@@ -4153,6 +4153,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance)
 
   /* Handle two-operation SLP nodes by vectorizing the group with
      both operations and then performing a merge.  */
+  bool done_p = false;
   if (SLP_TREE_TWO_OPERATORS (node))
     {
       gassign *stmt = as_a <gassign *> (stmt_info->stmt);
@@ -4223,10 +4224,11 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance)
 	    }
 	  v0.release ();
 	  v1.release ();
-	  return;
+	  done_p = true;
 	}
     }
-  vect_transform_stmt (stmt_info, &si, node, instance);
+  if (!done_p)
+    vect_transform_stmt (stmt_info, &si, node, instance);
 
   /* Restore stmt def-types.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
