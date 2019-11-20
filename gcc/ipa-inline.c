@@ -1097,6 +1097,17 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
   return true;
 }
 
+/* Return true if WHERE of SIZE is a possible candidate for wrapper heuristics
+   in estimate_edge_badness.  */
+
+static bool
+wrapper_heuristics_may_apply (struct cgraph_node *where, int size)
+{
+  return size < (DECL_DECLARED_INLINE_P (where->decl)
+		 ? inline_insns_single (where, false)
+		 : inline_insns_auto (where, false));
+}
+
 /* A cost model driving the inlining heuristics in a way so the edges with
    smallest badness are inlined first.  After each inlining is performed
    the costs of all caller edges of nodes affected are recomputed so the
@@ -1227,10 +1238,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	     and it is not called once.  */
 	  if (!caller_info->single_caller && overall_growth < caller_growth
 	      && caller_info->inlinable
-	      && ipa_size_summaries->get (caller)->size
-		 < (DECL_DECLARED_INLINE_P (caller->decl)
-		    ? inline_insns_single (caller, false)
-		    : inline_insns_auto (caller, false)))
+	      && wrapper_heuristics_may_apply
+	     	 (caller, ipa_size_summaries->get (caller)->size))
 	    {
 	      if (dump)
 		fprintf (dump_file,
@@ -2158,11 +2167,24 @@ inline_small_functions (void)
 	    fprintf (dump_file, " Peeling recursion with depth %i\n", depth);
 
 	  gcc_checking_assert (!callee->inlined_to);
+
+	  int old_size = ipa_size_summaries->get (where)->size;
+	  sreal old_time = ipa_fn_summaries->get (where)->time;
+
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  reset_edge_caches (edge->callee);
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
-	  update_callee_keys (&edge_heap, where, updated_nodes);
+	  /* If caller's size and time increased we do not need to update
+	     all edges becuase badness is not going to decrease.  */
+	  if (old_size <= ipa_size_summaries->get (where)->size
+	      && old_time <= ipa_fn_summaries->get (where)->time
+	      /* Wrapper penalty may be non-monotonous in this respect.
+	         Fortunately it only affects small functions.  */
+	      && !wrapper_heuristics_may_apply (where, old_size))
+	    update_callee_keys (&edge_heap, edge->callee, updated_nodes);
+	  else
+	    update_callee_keys (&edge_heap, where, updated_nodes);
 	}
       where = edge->caller;
       if (where->inlined_to)
