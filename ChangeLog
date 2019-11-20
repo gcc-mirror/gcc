@@ -1,3 +1,8 @@
+2019-11-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* MAINTAINERS (aarch64 port): Remove my name, move to...
+	(Write After Approval): ...Here.
+
 2019-11-15  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* MAINTAINERS: Change my email address as maintainer.
