@@ -9871,8 +9871,11 @@ complain_about_no_candidates_for_method_call (tree instance,
 	  if (const conversion_info *conv
 		= maybe_get_bad_conversion_for_unmatched_call (candidate))
 	    {
+	      tree from_type = conv->from;
+	      if (!TYPE_P (conv->from))
+		from_type = lvalue_type (conv->from);
 	      complain_about_bad_argument (conv->loc,
-					   conv->from, conv->to_type,
+					   from_type, conv->to_type,
 					   candidate->fn, conv->n_arg);
 	      return;
 	    }
