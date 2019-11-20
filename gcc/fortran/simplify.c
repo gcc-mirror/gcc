@@ -6023,8 +6023,8 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
 
   gfc_set_model_kind (result->ts.kind);
   int index = gfc_validate_kind (BT_REAL, result->ts.kind, false);
-  mp_exp_t exp;
-  if (mpfr_number_p (result->value.real) && !mpfr_zero_p (result->value.real))
+  mpfr_exp_t exp;
+  if (mpfr_regular_p (result->value.real))
     {
       exp = mpfr_get_exp (result->value.real);
       /* If result is getting close to overflowing, scale down.  */
@@ -6038,7 +6038,7 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
     }
 
   mpfr_init (tmp);
-  if (mpfr_number_p (e->value.real) && !mpfr_zero_p (e->value.real))
+  if (mpfr_regular_p (e->value.real))
     {
       exp = mpfr_get_exp (e->value.real);
       /* If e**2 would overflow or close to overflowing, scale down.  */
@@ -6079,9 +6079,7 @@ norm2_do_sqrt (gfc_expr *result, gfc_expr *e)
   if (result != e)
     mpfr_set (result->value.real, e->value.real, GFC_RND_MODE);
   mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-  if (norm2_scale
-      && mpfr_number_p (result->value.real)
-      && !mpfr_zero_p (result->value.real))
+  if (norm2_scale && mpfr_regular_p (result->value.real))
     {
       mpfr_t tmp;
       mpfr_init (tmp);
@@ -6120,9 +6118,7 @@ gfc_simplify_norm2 (gfc_expr *e, gfc_expr *dim)
       result = simplify_transformation_to_scalar (result, e, NULL,
 						  norm2_add_squared);
       mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-      if (norm2_scale
-	  && mpfr_number_p (result->value.real)
-	  && !mpfr_zero_p (result->value.real))
+      if (norm2_scale && mpfr_regular_p (result->value.real))
 	{
 	  mpfr_t tmp;
 	  mpfr_init (tmp);

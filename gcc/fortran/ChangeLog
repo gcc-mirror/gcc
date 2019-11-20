@@ -1,6 +1,15 @@
 2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/92463
+	Revert r269139
+	* simplify.c (norm2_do_sqrt, gfc_simplify_norm2): Use
+	mpfr_regular_p instead of mpfr_number_p && !mpfr_zero_p.
+	(norm2_add_squared): Likewise.  Use mpfr_exp_t rather than
+	mp_exp_t.
+
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
 	* arith.c (gfc_mpfr_to_mpz): Change mp_exp_t to mpfr_exp_t.
 	(gfc_check_real_range): Likewise.
 	* gfortran.h (GFC_RND_MODE): Change GMP_RNDN to MPFR_RNDN.
