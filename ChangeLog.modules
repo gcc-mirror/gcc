@@ -1,6 +1,11 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::lazy_load): Add diags arg, make index
+	unsigned.
+	(lazy_load_specializations): Use lazy_load.
+
+	gcc/cp/
 	* module.cc (module_state:write_cluster): Minor cleanups
 	gcc/testsuite/
 	* g++.dg/modules/indirect-2_b.C: Adjust scans.

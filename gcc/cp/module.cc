@@ -3429,7 +3429,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void maybe_defrost ();
 
   /* Lazily read a section.  */
-  bool lazy_load (int index, mc_slot *mslot);
+  bool lazy_load (unsigned index, mc_slot *mslot, unsigned diags = 0);
 
  public:
   /* Check or complete a read.  */
@@ -17477,18 +17477,14 @@ module_state::freeze_an_elf ()
 // FIXME: Should we emit something when noisy ()?
 // FIXME: Reconsider API when no longer indexing by name
 bool
-module_state::lazy_load (int index, mc_slot *mslot)
+module_state::lazy_load (unsigned index, mc_slot *mslot, unsigned diags)
 {
   unsigned n = dump.push (this);
 
   gcc_checking_assert (function_depth);
 
   unsigned snum = mslot->get_lazy ();
-  if (index >= 0)
-    dump () && dump ("Loading entity %M[%u] section:%u",
-		     this, unsigned (index), snum);
-  else
-    dump () && dump ("Loading unnamed %M[?] section:%u", this, snum);
+  dump () && dump ("Loading entity %M[%u] section:%u", this, index, snum);
 
   int e = elf::E_BAD_LAZY;
   if (snum < slurp->current)
@@ -17504,7 +17500,7 @@ module_state::lazy_load (int index, mc_slot *mslot)
       *mslot = NULL_TREE;
     }
 
-  bool ok = check_read (0);
+  bool ok = check_read (diags);
  
   dump.pop (n);
 
@@ -17545,7 +17541,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
   function_depth--;
 
   module->check_read (diags, ns, id);
- 
+
   dump.pop (n);
   timevar_stop (TV_MODULE_IMPORT);
 }
@@ -17567,7 +17563,7 @@ lazy_load_specializations (tree tmpl)
       unsigned n = dump.push (NULL);
       dump () && dump ("Reading %u pending specializations keyed to %N",
 		       set->num, owner);
-      dump.indent ();
+      function_depth++; /* Prevent GC */
       for (unsigned ix = 0; ix != set->num; ix++)
 	{
 	  unsigned index = set->pending[ix];
@@ -17575,18 +17571,18 @@ lazy_load_specializations (tree tmpl)
 	  if (slot->is_lazy ())
 	    {
 	      module_state *module = import_entity_module (index);
-	      // FIXME: Poor API
-	      lazy_load_binding (module->mod, NULL, NULL, slot);
+	      module->lazy_load (index - module->entity_lwm, slot,
+				 errorcount + 1);
 	    }
 	  else
 	    dump () && dump ("Specialization %u already loaded", ix);
 	}
+      function_depth--;
 
       note_loaded_specializations (set->ns, set->name);
 
       /* We own set, so delete it now.  */
       delete set;
-      dump.outdent ();
       dump.pop (n);
     }
   timevar_stop (TV_MODULE_IMPORT);
