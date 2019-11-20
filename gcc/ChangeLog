@@ -1,3 +1,11 @@
+2019-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (DFS::sccstack): Turn into auto-vec.
+	Preallocate for 32 entries.
+	(DFS::worklist): Likewise.
+	(DFS::DFS): Do not initialize sccstack and worklist.
+	(DFS::~DFS): Do not release sccstack.
+
 2019-11-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/92573
