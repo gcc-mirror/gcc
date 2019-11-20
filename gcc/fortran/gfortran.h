@@ -2130,7 +2130,7 @@ gfc_intrinsic_sym;
 
 #include <mpfr.h>
 #include <mpc.h>
-#define GFC_RND_MODE GMP_RNDN
+#define GFC_RND_MODE MPFR_RNDN
 #define GFC_MPC_RND_MODE MPC_RNDNN
 
 typedef splay_tree gfc_constructor_base;
