@@ -2940,6 +2940,32 @@ maybe_init_omp_async (struct agent_info *agent)
       = GOMP_OFFLOAD_openacc_async_construct (agent->device_id);
 }
 
+/* A wrapper that works around an issue in the HSA runtime with host-to-device
+   copies from read-only pages.  */
+
+static void
+hsa_memory_copy_wrapper (void *dst, const void *src, size_t len)
+{
+  hsa_status_t status = hsa_fns.hsa_memory_copy_fn (dst, src, len);
+
+  if (status == HSA_STATUS_SUCCESS)
+    return;
+
+  /* It appears that the copy fails if the source data is in a read-only page.
+     We can't detect that easily, so try copying the data to a temporary buffer
+     and doing the copy again if we got an error above.  */
+
+  GCN_WARNING ("Read-only data transfer bug workaround triggered for "
+	       "[%p:+%d]\n", (void *) src, (int) len);
+
+  void *src_copy = malloc (len);
+  memcpy (src_copy, src, len);
+  status = hsa_fns.hsa_memory_copy_fn (dst, (const void *) src_copy, len);
+  free (src_copy);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("memory copy failed");
+}
+
 /* Copy data to or from a device.  This is intended for use as an async
    callback event.  */
 
@@ -2950,7 +2976,7 @@ copy_data (void *data_)
   GCN_DEBUG ("Async thread %d:%d: Copying %zu bytes from (%p) to (%p)\n",
 	     data->aq->agent->device_id, data->aq->id, data->len, data->src,
 	     data->dst);
-  hsa_fns.hsa_memory_copy_fn (data->dst, data->src, data->len);
+  hsa_memory_copy_wrapper (data->dst, data->src, data->len);
   if (data->free_src)
     free ((void *) data->src);
   free (data);
@@ -3643,7 +3669,9 @@ GOMP_OFFLOAD_dev2host (int device, void *dst, const void *src, size_t n)
 {
   GCN_DEBUG ("Copying %zu bytes from device %d (%p) to host (%p)\n", n, device,
 	     src, dst);
-  hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  hsa_status_t status = hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("memory copy failed");
   return true;
 }
 
@@ -3654,7 +3682,7 @@ GOMP_OFFLOAD_host2dev (int device, void *dst, const void *src, size_t n)
 {
   GCN_DEBUG ("Copying %zu bytes from host (%p) to device %d (%p)\n", n, src,
 	     device, dst);
-  hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  hsa_memory_copy_wrapper (dst, src, n);
   return true;
 }
 
@@ -3675,7 +3703,9 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
 
   GCN_DEBUG ("Copying %zu bytes from device %d (%p) to device %d (%p)\n", n,
 	     device, src, device, dst);
-  hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  hsa_status_t status = hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("memory copy failed");
   return true;
 }
 
