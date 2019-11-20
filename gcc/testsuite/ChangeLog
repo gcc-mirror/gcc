@@ -1,5 +1,9 @@
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/90767
+	* g++.dg/diagnostic/pr90767-1.C: New test.
+	* g++.dg/diagnostic/pr90767-2.C: New test.
+
 	PR middle-end/90840
 	* gcc.c-torture/compile/pr90840.c: New test.
 
