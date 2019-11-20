@@ -1,3 +1,7 @@
+2019-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cvt.c (ocp_convert): Use additional warning sentinel.
+
 2019-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92414

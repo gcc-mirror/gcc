@@ -1,3 +1,7 @@
+2019-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/warn/multiple-sign-compare-warn-1.C: New.
+
 2019-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-deprecated-2.c, gcc.dg/c2x-attr-fallthrough-2.c,

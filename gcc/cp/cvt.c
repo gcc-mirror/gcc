@@ -847,6 +847,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	      /* Prevent bogus -Wint-in-bool-context warnings coming
 		 from c_common_truthvalue_conversion down the line.  */
 	      warning_sentinel w (warn_int_in_bool_context);
+	      warning_sentinel c (warn_sign_compare);
 	      return cp_truthvalue_conversion (e, complain);
 	    }
 	}
