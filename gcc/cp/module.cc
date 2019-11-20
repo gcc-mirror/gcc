@@ -14586,6 +14586,7 @@ module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
 	      sec.tree_node (ctx);
 	      sec.tree_node (DECL_NAME (key));
 	      sec.u (import_kind);
+	      sec.u (d->entity_num - 1);
 	      dump () && dump ("Specialization %N section:%u keyed to %N (%u)",
 			       uent, d->section, key, import_kind);
 	    }
@@ -14629,6 +14630,7 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 	{
 	  uent->id = sec.tree_node ();
 	  unsigned import_kind = sec.u ();
+	  unsigned index = sec.u ();
 
 	  /* It's now a regular import kind, if it's not part of the
 	     same module.  */
@@ -14637,7 +14639,7 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 	    import_kind = 2;
 	  dump () && dump ("Specialization key %P (%u) section:%u",
 			   uent->ns, uent->id, import_kind, snum);
-	  if (specset::table->add (uent->ns, uent->id, ix + unnamed_lwm))
+	  if (specset::table->add (uent->ns, uent->id, index + entity_lwm))
 	    if (!note_pending_specializations (uent->ns, uent->id, import_kind))
 	      sec.set_overrun ();
 	}
@@ -17739,13 +17741,13 @@ lazy_load_specializations (tree tmpl)
       dump.indent ();
       for (unsigned ix = 0; ix != set->num; ix++)
 	{
-	  unsigned unnamed = set->pending[ix];
-	  unnamed_entity *uent = &(*unnamed_ary)[unnamed];
-	  if (uent->slot.is_lazy ())
+	  unsigned index = set->pending[ix];
+	  mc_slot *slot = &(*entity_ary)[index];
+	  if (slot->is_lazy ())
 	    {
-	      module_state *module = module_for_unnamed (unnamed);
+	      module_state *module = import_entity_module (index);
 	      // FIXME: Poor API
-	      lazy_load_binding (module->mod, NULL, NULL, &uent->slot);
+	      lazy_load_binding (module->mod, NULL, NULL, slot);
 	    }
 	  else
 	    dump () && dump ("Specialization %u already loaded", ix);

@@ -1,5 +1,10 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state::{read,write}_unnamed): Specializations
+	store entity index.
+	(lazy_load_specializations): Use the entity index.
+
 	No more horcruxes.
 	gcc/cp/
 	* module.cc (trees_out::decl_node): Specializations are tt_entity.
