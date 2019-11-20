@@ -1,3 +1,11 @@
+2019-11-20  Jiangning Liu  <jiangning.liu@amperecomputing.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91195
+	* tree-ssa-phiopt.c (cond_store_replacement): Move lhs unsharing
+	earlier.  Set TREE_NO_WARNING on the rhs1 of the artificially added
+	load.
+
 2019-11-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	Make 0-series device specs work with older versions of avr-gcc.
