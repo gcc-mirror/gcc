@@ -1,3 +1,9 @@
+2019-11-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/92573
+	* config/rs6000/dfp.md (dfptstsfi_<code>_<mode> for DFP_TEST and DDTD):
+	Handle UNORDERED if !HONOR_NANS.
+
 2019-11-20  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (wrapper_heuristics_may_apply): Break out from ...
