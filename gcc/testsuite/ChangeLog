@@ -1,5 +1,8 @@
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/90840
+	* gcc.c-torture/compile/pr90840.c: New test.
+
 	PR target/90867
 	* gcc.target/i386/pr90867.c: New test.
 

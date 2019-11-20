@@ -1,5 +1,9 @@
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/90840
+	* expmed.c (store_bit_field_1): Handle the case where op0 is not a MEM
+	and has a mode that doesn't have corresponding integral type.
+
 	PR target/90867
 	* config/i386/i386-options.c (ix86_valid_target_attribute_tree): Don't
 	clear opts->x_ix86_isa_flags{,2} here...
