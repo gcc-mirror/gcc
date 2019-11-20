@@ -2183,6 +2183,10 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  else
 	    return false;
 	}
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Analyzing vectorizable constructor: %G\n",
+			 stmt_info->stmt);
     }
   else
     {
@@ -3116,31 +3120,22 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
   gimple_stmt_iterator gsi;
 
   for (gsi = bb_vinfo->region_begin;
-      gsi_stmt (gsi) != gsi_stmt (bb_vinfo->region_end); gsi_next (&gsi))
+       gsi_stmt (gsi) != gsi_stmt (bb_vinfo->region_end); gsi_next (&gsi))
     {
-      gimple *stmt = gsi_stmt (gsi);
+      gassign *stmt = dyn_cast <gassign *> (gsi_stmt (gsi));
+      if (!stmt || gimple_assign_rhs_code (stmt) != CONSTRUCTOR)
+	continue;
 
-      if (is_gimple_assign (stmt)
-	  && gimple_assign_rhs_code (stmt) == CONSTRUCTOR
-	  && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-	  && TREE_CODE (TREE_TYPE (gimple_assign_lhs (stmt))) == VECTOR_TYPE)
-	{
-	  tree rhs = gimple_assign_rhs1 (stmt);
+      tree rhs = gimple_assign_rhs1 (stmt);
+      if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)),
+		       CONSTRUCTOR_NELTS (rhs))
+	  || VECTOR_TYPE_P (TREE_TYPE (CONSTRUCTOR_ELT (rhs, 0)->value))
+	  || uniform_vector_p (rhs))
+	continue;
 
-	  if (CONSTRUCTOR_NELTS (rhs) == 0)
-	    continue;
-
-	  poly_uint64 subparts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
-
-	  if (maybe_ne (subparts, CONSTRUCTOR_NELTS (rhs)))
-	    continue;
-
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Found vectorizable constructor: %G\n", stmt);
-	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (stmt);
-	  BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
-	}
+      stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (stmt);
+      BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
     }
 }
 
