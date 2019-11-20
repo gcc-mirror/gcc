@@ -1,3 +1,11 @@
+2019-11-20  Alexandre Oliva <oliva@adacore.com>
+
+	* function.h (CALLEE_FROM_CGRAPH_P): Remove.
+	* function.c (record_final_call): Record even calls that might
+	have been in the cgraph.
+	* toplev.c (dump_final_node_vcg): Skip iteration over cgraph
+	callees.
+
 2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Use https for gcc.gnu.org
