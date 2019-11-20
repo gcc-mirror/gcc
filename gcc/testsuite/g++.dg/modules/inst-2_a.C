@@ -22,8 +22,5 @@ export inline void user ()
 
 // { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo@foo:.<int>'} module } }
 // { dg-final { scan-lang-dump {Writing named key for mergeable decl function_decl:'::baz@foo:.'} module } }
-// { dg-final { scan-lang-dump {Unnamed 0 '::foo@foo:.<int>'} module } }
 // { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo@foo:.<int>'} module } }
-// { dg-final { scan-lang-dump {Voldemort:0 '::foo@foo:.<int>'} module } }
-
 // { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo@foo:.<int>'} module } }

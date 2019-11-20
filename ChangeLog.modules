@@ -1,5 +1,18 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	Expelliarmus!
+	gcc/cp/
+	* module.cc (module_state): Delete unnamed_{lwm,num}.
+	(enum ct_decl_flags): Delete cdf_is_voldemort.
+	(module_state::write_cluster): Don't set cluster number.  Drop
+	voldemort handling.
+	(module_state::read_cluster): Drop voldemort handling.
+	(module_state::write_specializations): Drop cluster consistency
+	check.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-2_b.C: Adjust scans.
+	* g++.dg/modules/inst-[23]_a.C: Likewise.
+
 	Remove more unnamed remnants.
 	gcc/cp/
 	* module.cc (module_state::write_cluster): Count specializations.

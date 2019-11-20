@@ -3325,11 +3325,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   const char *flatname;	/* Flatname of module.  */
   char *filename;	/* CMI Filename */
 
-  /* Unnnamed decls can be referred to transitively.  Base and number
-     of them for this module.  */
-  unsigned unnamed_lwm;
-  unsigned unnamed_num;
-
   /* Indices into the entity_ary.  */
   unsigned entity_lwm;
   unsigned entity_num;
@@ -3570,7 +3565,6 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     parent (parent), name (name), slurp (NULL),
     flatname (NULL), filename (NULL),
-    unnamed_lwm (0), unnamed_num (0),
     entity_lwm (0), entity_num (0),
     ordinary_locs (0, 0), macro_locs (0, 0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
@@ -13664,9 +13658,8 @@ enum cluster_tag {
 enum ct_decl_flags 
 {
   cdf_is_defn = 0x1,		/* Has a definition.  */
-  cdf_is_voldemort = 0x2,	/* Is a voldemort.  */
-  cdf_is_specialization = 0x4,  /* Some kind of specialization.  */
-  cdf_is_partial = 0x8		/* A partial specialization.  */
+  cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
+  cdf_is_partial = 0x4		/* A partial specialization.  */
 };
 
 /* Binding modifiers.  */
@@ -13690,53 +13683,42 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump () && dump ("Writing section:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
-  if (dump (dumper::CLUSTER))
-    {
-      dump ("Cluster members:");
-      dump.indent ();
-      for (unsigned ix = 0; ix != size; ix++)
-	{
-	  depset *dep = scc[ix];
-	  tree decl = dep->get_entity ();
-
-	  if (dep->is_binding ())
-	    dump ("[%u]=%s %P", ix, dep->entity_kind_name (),
-		  decl, dep->get_name ());
-	  else
-	    {
-	      gcc_checking_assert (dep->get_entity_kind ()
-				   != depset::EK_REDIRECT);
-	      dump ("[%u]=%s %s %N", ix, dep->entity_kind_name (),
-		    dep->has_defn () ? "definition" : "declaration",
-		    dep->get_entity ());
-	    }
-	}
-      dump.outdent ();
-    }
-
-  /* Determine horcrux numbers for unnamed decls.   */
+  /* Determine entity numbering.   */
+  dump (dumper::CLUSTER) && dump ("Cluster members:") && (dump.indent (), true);
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
 
-      if (b->is_binding ())
-	continue;
-      
-      gcc_checking_assert (!b->is_unreached ());
-      tree decl = b->get_entity ();
-
-      if (b->get_entity_kind () < depset::EK_ENTITIES)
-	b->entity_num = ++entities;
-
-      if (b->get_entity_kind () == depset::EK_SPECIALIZATION)
-	// FIXME: Should friend specializations be voldemorty?
+      switch (b->get_entity_kind ())
 	{
-	  /* There is no binding for this decl.  It is therefore not
-	     findable by name.  Determine its horcrux number.  */
-	  dump () && dump ("Unnamed %u %N", specializations, decl);
-	  b->cluster = ++specializations;
+	default:
+	  gcc_unreachable ();
+
+	case depset::EK_BINDING:
+	  dump (dumper::CLUSTER)
+	    && dump ("[%u]=%s %P", ix, b->entity_kind_name (),
+		     b->get_entity (), b->get_name ());
+	  break;
+
+	case depset::EK_SPECIALIZATION:
+	  ++specializations;
+	  /* FALLTHROUGH  */
+
+	case depset::EK_DECL:
+	case depset::EK_UNNAMED:
+	  b->entity_num = ++entities;
+	  /* FALLTHROUGH  */
+
+	case depset::EK_USING:
+	  gcc_checking_assert (!b->is_unreached ());
+	  dump (dumper::CLUSTER)
+	    && dump ("[%u]=%s %s %N", ix, b->entity_kind_name (),
+		     b->has_defn () ? "definition" : "declaration",
+		     b->get_entity ());
+	  break;
 	}
     }
+  dump (dumper::CLUSTER) && (dump.outdent (), true);
 
   trees_out sec (to, this, table, scc[0]->section);
   sec.begin ();
@@ -13887,8 +13869,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  sec.u (ct_decl);
 	  sec.tree_node (decl);
-	  if (b->cluster)
-	    flags |= cdf_is_voldemort;
 	  sec.u (flags);
 
 	  gcc_checking_assert (b->entity_num);
@@ -13906,12 +13886,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  dump () && dump ("Wrote declaration %u of %N",
 			   b->entity_num - 1, decl);
-
-	  if (flags & cdf_is_voldemort)
-	    {
-	      dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
-	      sec.u (b->cluster - 1);
-	    }
 
 	  if (!namer)
 	    namer = b;
@@ -14158,12 +14132,6 @@ module_state::read_cluster (unsigned snum)
 		  /* If it existed, it should match.  */
 		  gcc_checking_assert (decl == (*entity_ary)[*slot]);
 		}
-
-	    if (flags & cdf_is_voldemort)
-	      {
-		/* An unnamed node, register it.  */
-		unsigned unnamed = sec.u ();
-	      }
 
 	    if (flags & cdf_is_specialization)
 	      install_specialization (decl, flags & cdf_is_partial);
@@ -14531,9 +14499,6 @@ module_state::write_specializations (elf_out *to, vec<depset *> depsets,
   for (unsigned ix = 0; ix < depsets.length (); ix++)
     {
       depset *d = depsets[ix];
-      gcc_checking_assert ((d->get_entity_kind ()
-			    == depset::EK_SPECIALIZATION)
-			   == (d->cluster != 0));
       if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
 	{
 	  tree spec = d->get_entity ();
