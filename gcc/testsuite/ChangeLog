@@ -1,5 +1,12 @@
 2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR testsuite/92366
+	* lib/target-supports.exp (check_effective_target_vect_char_add):
+	New proc.
+	* gcc.dg/vect/bb-slp-40.c: Require vect_char_add instead of vect_int.
+
+2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR testsuite/92527
 	* gcc.dg/vect/bb-slp-21.c: Expect both SLP groups to be vectorized,
 	regardless of whether the target supports multiplication.
