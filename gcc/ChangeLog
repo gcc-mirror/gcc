@@ -1,3 +1,14 @@
+2019-11-20  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (make_pass_arc_ifcvt): Declare.
+	(make_pass_arc_predicate_delay_insns): Likewise.
+	* config/arc/arc.c (class pass_arc_ifcvt): Reformat text, add gate
+	method, remove clone.
+	(class pass_arc_predicate_delay_insns): Likewise.
+	(arc_init): Remove registering of ARC specific passes.
+	* config/arc/t-arc (PASSES_EXTRA): Add arc-passes.def.
+	* config/arc/arc-passes.def: New file.
+
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90840
