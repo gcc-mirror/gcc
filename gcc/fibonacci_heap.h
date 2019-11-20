@@ -648,17 +648,18 @@ template<class K, class V>
 void fibonacci_heap<K,V>::consolidate ()
 {
   const int D = 1 + 8 * sizeof (long);
-  auto_vec<fibonacci_node<K,V> *, D> a;
+  fibonacci_node<K,V> *a[D];
   fibonacci_node<K,V> *w, *x, *y;
   int i, d;
 
-  a.quick_grow_cleared (D);
+  memset (a, 0, sizeof (a));
 
   while ((w = m_root) != NULL)
     {
       x = w;
       remove_root (w);
       d = x->m_degree;
+      gcc_checking_assert (d < D);
       while (a[d] != NULL)
 	{
 	  y = a[d];

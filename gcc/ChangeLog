@@ -1,5 +1,10 @@
 2019-11-20  Jan Hubicka  <jh@suse.cz>
 
+	* fibonacci_heap.h (fibonacci_heap<K,V>::consolidate): Turn auto_vec
+	to ordinary array.
+
+2019-11-20  Jan Hubicka  <jh@suse.cz>
+
 	* fibonacci_heap.h (fibonacci_heap<K,V>::fibonacci_heap):
 	Add allocator parameter.
 	(fibonacci_heap<K,V>::~fibonacci_heap): Optimize destruction.
