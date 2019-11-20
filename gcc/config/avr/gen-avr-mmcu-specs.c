@@ -253,7 +253,11 @@ print_mcu (const avr_mcu_t *mcu)
 
   fprintf (f, "*link_relax:\n\t%s\n\n", LINK_RELAX_SPEC);
 
-  fprintf (f, "*link_arch:\n\t%s\n\n", LINK_ARCH_SPEC);
+  fprintf (f, "*link_arch:\n\t%s", LINK_ARCH_SPEC);
+  if (is_device
+      && flash_pm_offset)
+    fprintf (f, " --defsym=__RODATA_PM_OFFSET__=0x%x", flash_pm_offset);
+  fprintf (f, "\n\n");
 
   if (is_device)
     {
@@ -267,14 +271,6 @@ print_mcu (const avr_mcu_t *mcu)
       fprintf (f, "*link_text_start:\n");
       if (mcu->text_section_start != 0x0)
         fprintf (f, "\t%%{!Ttext:-Ttext 0x%lX}", 0UL + mcu->text_section_start);
-      fprintf (f, "\n\n");
-    }
-
-  if (is_device
-      && flash_pm_offset)
-    {
-      fprintf (f, "*link_pm_base_address:\n");
-      fprintf (f, "\t--defsym=__RODATA_PM_OFFSET__=0x%x", flash_pm_offset);
       fprintf (f, "\n\n");
     }
 

@@ -1,3 +1,13 @@
+2019-11-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Make 0-series device specs work with older versions of avr-gcc.
+
+	PR target/92545
+	* config/avr/specs.h (LINK_SPEC) <%(link_pm_base_address)>: Remove.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu)
+	<*link_pm_base_address>: Don't write spec.
+	<*link_arch>: Add --defsym=__RODATA_PM_OFFSET__= as needed.
+
 2019-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR c/92088
