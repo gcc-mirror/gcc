@@ -1,3 +1,17 @@
+2019-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Add CALL
+	parameter and update call_size_time_table.
+	(ipa_fn_summary::max_size_time_table_size): New constant.
+	(estimate_calls_size_and_time_1): Break out from ...
+	(estimate_calls_size_and_time): ... here; implement summary production.
+	(summarize_calls_size_and_time): New function.
+	(ipa_call_context::estimate_size_and_time): Bypass
+	estimate_calls_size_and_time for leaf functions.
+	(ipa_update_overall_fn_summary): Likewise.
+	* ipa-fnsummary.h (call_size_time_table): New.
+	(ipa_fn_summary::account_size_time): Update prototype.
+
 2019-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (-Wc11-c2x-compat): Document.
