@@ -1,5 +1,5 @@
 /* { dg-require-alias "" } */
-/* { dg-options "-O2 -fdump-ipa-icf-details"  } */
+/* { dg-options "-O2 -fcommon -fdump-ipa-icf-details"  } */
 
 int a, b, c, d, e, h, i, j, k, l;
 const int f;

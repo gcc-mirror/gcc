@@ -1,5 +1,5 @@
 /* { dg-lto-do run } */
-/* { dg-lto-options "-O3" } */
+/* { dg-lto-options { {-O3 -fcommon} {-fcommon} } } */
 
 /* By C standard Each enumerated type shall be compatible with char, a  signed
    integer, type, or an unsigned integer type. The choice of type is

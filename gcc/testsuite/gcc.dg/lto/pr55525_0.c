@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options { { -flto -w } } } */
+/* { dg-lto-options { { -fcommon -flto -w } } } */
 
 char s[sizeof (char *)];
 int main(void)
