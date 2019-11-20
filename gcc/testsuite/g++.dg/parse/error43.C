@@ -2,4 +2,4 @@
 // { dg-options "" }
 
 class C { public: C* f(); int get(); };
-int f(C* p) { return p->f->get(); }  // { dg-error "forget the '\\(\\)'|base operand" }
+int f(C* p) { return p->f->get(); }  // { dg-error "25:invalid use of member function" }

@@ -1,3 +1,7 @@
+2019-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/parse/error43.C: Adjust expected error.
+
 2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* README: Use https for gcc.gnu.org.
