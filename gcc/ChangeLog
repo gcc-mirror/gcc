@@ -1,3 +1,7 @@
+2019-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-Wc11-c2x-compat): Document.
+
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90840
