@@ -566,8 +566,8 @@ and the online manuals should be linked to from
 @file{onlinedocs/index.html}.
 @item
 Any old releases or CVS repositories of the front end, before its
-inclusion in GCC, should be made available on the GCC FTP site
-@uref{ftp://gcc.gnu.org/pub/gcc/old-releases/}.
+inclusion in GCC, should be made available on the GCC web site at
+@uref{https://gcc.gnu.org/pub/gcc/old-releases/}.
 @item
 The release and snapshot script @file{maintainer-scripts/gcc_release}
 should be updated to generate appropriate tarballs for this front end.
