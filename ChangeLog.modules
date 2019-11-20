@@ -1,5 +1,20 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	Remove unnamed ary etc.
+	gcc/cp/
+	* module.cc (unnamed_ary, unnamed_map_t, unnamed_map): Delete.
+	(module_state::read_cluster): Do not insert into unnamed_ary or
+	map.
+	(module_state::read_unnamed): Do not extend unnamed_ary.
+	(module_state::read): Do not set unnamed_lwm.
+	(module_for_unnamed): Delete.
+	({init,finish}_module_processing): Do not create/destroy unnamed
+	ary & map.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[23]_c.C: Adjust scans.
+	* g++.dg/modules/inst-[124]_b.C: Likewise.
+	* g++.dg/modules/late-ret-2_c.C: Likewise.
+
 	gcc/cp/
 	* module.cc (module_state::{read,write}_unnamed): Specializations
 	store entity index.

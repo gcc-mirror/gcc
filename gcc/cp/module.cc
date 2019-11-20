@@ -3161,12 +3161,6 @@ struct GTY(()) unnamed_entity
   }
 };
 
-static GTY(()) vec<unnamed_entity, va_gc> *unnamed_ary;
-typedef hash_map<unsigned/*UID*/, unsigned/*index*/,
-		 simple_hashmap_traits<int_hash<unsigned,0>,
-				       unsigned> > unnamed_map_t;
-static unnamed_map_t *unnamed_map;
-
 /********************************************************************/
 
 /********************************************************************/
@@ -14169,22 +14163,6 @@ module_state::read_cluster (unsigned snum)
 	      {
 		/* An unnamed node, register it.  */
 		unsigned unnamed = sec.u ();
-		if (decl && unnamed < unnamed_num)
-		  {
-		    unsigned index = unnamed_lwm + unnamed;
-		    unnamed_entity *uent = &(*unnamed_ary)[index];
-		    uent->slot = decl;
-		    /* This will already be in the table if we deduped
-	  	       a mergeable decl.  It doesn't matter if we
-	  	       repoint to a different slot -- they are the
-	  	       same value.  */
-		    bool present = unnamed_map->put (DECL_UID (decl), index);
-		    dump () && dump ("Voldemort decl:%u [%u] %N%s",
-				     unnamed, index, decl,
-				     present ? " (merged)" : "");
-		  }
-		else
-		  sec.set_overrun ();
 	      }
 
 	    if (flags & cdf_is_specialization)
@@ -14610,11 +14588,8 @@ module_state::read_unnamed (unsigned count, const range_t &range)
   dump () && dump ("Reading unnamed");
   dump.indent ();
 
-  vec_safe_reserve (unnamed_ary, count);
-  unsigned ix;
-  for (ix = 0; ix != count; ix++)
+  for (unsigned ix = 0; ix != count; ix++)
     {
-      unnamed_entity *uent = unnamed_ary->quick_push (unnamed_entity ());
       unsigned snum = sec.u ();
 
       if (snum < range.first || snum >= range.second)
@@ -14623,12 +14598,10 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 	break;
 
       dump () && dump ("Unnamed %u(%u) section:%u", ix, ix + unnamed_lwm, snum);
-      uent->slot.set_lazy (snum);
 
-      uent->ns = sec.tree_node ();
-      if (uent->ns)
+      if (tree ns = sec.tree_node ())
 	{
-	  uent->id = sec.tree_node ();
+	  tree id = sec.tree_node ();
 	  unsigned import_kind = sec.u ();
 	  unsigned index = sec.u ();
 
@@ -14638,13 +14611,12 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 	      && !(is_primary () || is_partition ()))
 	    import_kind = 2;
 	  dump () && dump ("Specialization key %P (%u) section:%u",
-			   uent->ns, uent->id, import_kind, snum);
-	  if (specset::table->add (uent->ns, uent->id, index + entity_lwm))
-	    if (!note_pending_specializations (uent->ns, uent->id, import_kind))
+			   ns, id, import_kind, snum);
+	  if (specset::table->add (ns, id, index + entity_lwm))
+	    if (!note_pending_specializations (ns, id, import_kind))
 	      sec.set_overrun ();
 	}
     }
-  unnamed_num = ix;
 
   dump.outdent ();
   if (!sec.end (from ()))
@@ -16949,7 +16921,6 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	  goto bail;
 
 	/* And unnamed.  */
-	unnamed_lwm = vec_safe_length (unnamed_ary);
 	if (config.num_unnamed
 	    && !read_unnamed (config.num_unnamed, config.sec_range))
 	  goto bail;
@@ -17699,28 +17670,6 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
   timevar_stop (TV_MODULE_IMPORT);
 }
 
-static module_state *
-module_for_unnamed (unsigned unnamed)
-{
-  unsigned pos = 1;
-  unsigned len = modules->length () - pos;
-  while (len)
-    {
-      unsigned half = len / 2;
-      module_state *probe = (*modules)[pos + half];
-      if (unnamed < probe->unnamed_lwm)
-	len = half;
-      else if (unnamed < probe->unnamed_lwm + probe->unnamed_num)
-	return probe;
-      else
-	{
-	  pos += half + 1;
-	  len = len - (half + 1);
-	}
-    }
-  gcc_unreachable ();
-}
-
 /* Load any pending specializations of TMPL.  Called just before
    instantiating TMPL.  */
 
@@ -18390,7 +18339,6 @@ init_module_processing (cpp_reader *reader)
 
   if (!flag_preprocess_only)
     {
-      unnamed_map = new unnamed_map_t (31);
       specset::table = new specset::hash (EXPERIMENT (1, 400));
 
       entity_map = new entity_map_t (EXPERIMENT (1, 400));
@@ -18570,11 +18518,6 @@ finish_module_processing (cpp_reader *reader)
   delete entity_ary;
   entity_ary = NULL;
   
-  /* Or unnamed entitites.  */
-  delete unnamed_map;
-  unnamed_map = NULL;
-  unnamed_ary = NULL;
-
   /* Or remember any pending specializations.  */
   delete specset::table;
   specset::table = NULL;

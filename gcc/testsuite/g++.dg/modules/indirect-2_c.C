@@ -23,4 +23,3 @@ int main ()
 // { dg-final { scan-lang-dump {>Loading entity foo\[0\] section:1} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::X@foo:.'@foo} module } }
 // { dg-final { scan-lang-dump {Read:-[0-9]* function_decl:'::foo::frob@bar:.<0x0>'} module } }
-// { dg-final { scan-lang-dump {Voldemort decl:0 \[0\]* '::foo::frob@bar:.<0x0>'} module } }
