@@ -5215,7 +5215,8 @@ void
 gcn_asm_output_symbol_ref (FILE *file, rtx x)
 {
   tree decl;
-  if ((decl = SYMBOL_REF_DECL (x)) != 0
+  if (cfun
+      && (decl = SYMBOL_REF_DECL (x)) != 0
       && TREE_CODE (decl) == VAR_DECL
       && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
     {
@@ -5230,7 +5231,8 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
     {
       assemble_name (file, XSTR (x, 0));
       /* FIXME: See above -- this condition is unreachable.  */
-      if ((decl = SYMBOL_REF_DECL (x)) != 0
+      if (cfun
+	  && (decl = SYMBOL_REF_DECL (x)) != 0
 	  && TREE_CODE (decl) == VAR_DECL
 	  && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
 	fputs ("@abs32", file);
