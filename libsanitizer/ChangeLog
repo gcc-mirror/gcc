@@ -1,3 +1,10 @@
+2019-11-20  Martin Liska  <mliska@suse.cz>
+
+	* libtool-version: Remove.
+	* lsan/libtool-version: Upate comment to not mention libmudflap.
+	* tsan/libtool-version: Likewise.
+	* ubsan/libtool-version: Likewise.
+
 2019-11-13  Andreas Schwab  <schwab@suse.de>
 
 	* configure.tgt (riscv64-*-linux*): Enable build.
