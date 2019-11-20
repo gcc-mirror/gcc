@@ -1,3 +1,9 @@
+2019-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/asm-flag-4.c: Replace dg-error with dg-message.
+	* gcc.target/arm/asm-flag-5.c: Add quotes around dg-error
+	messages.
+
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90767
