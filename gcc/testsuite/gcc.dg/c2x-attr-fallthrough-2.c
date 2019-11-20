@@ -4,11 +4,13 @@
 
 [[fallthrough]]; /* { dg-error "'fallthrough' attribute at top level" } */
 
-int [[fallthrough]] x; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int [[fallthrough]] x; /* { dg-error "ignored" } */
 
-int g () [[fallthrough]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int g () [[fallthrough]]; /* { dg-error "ignored" } */
+
+int array[2] [[fallthrough]]; /* { dg-error "ignored" } */
+
+int z = sizeof (int [[fallthrough]]); /* { dg-error "ignored" } */
 
 int
 f (int a)

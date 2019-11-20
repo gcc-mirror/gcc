@@ -1,3 +1,10 @@
+2019-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-2.c, gcc.dg/c2x-attr-fallthrough-2.c,
+	gcc.dg/c2x-attr-maybe_unused-2.c: Expect errors for invalid uses
+	of standard attributes on types.  Add more tests of invalid uses
+	on types.
+
 2019-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92414

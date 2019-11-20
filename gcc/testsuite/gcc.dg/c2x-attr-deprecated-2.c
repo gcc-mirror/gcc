@@ -7,14 +7,13 @@
 
 [[deprecated]]; /* { dg-error "ignored" } */
 
-int [[deprecated]] var; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int [[deprecated]] var; /* { dg-error "ignored" } */
 
-int array_with_dep_type[2] [[deprecated]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int array_with_dep_type[2] [[deprecated]]; /* { dg-error "ignored" } */
 
-void fn_with_dep_type () [[deprecated]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+void fn_with_dep_type () [[deprecated]]; /* { dg-error "ignored" } */
+
+int z = sizeof (int [[__deprecated__]]); /* { dg-error "ignored" } */
 
 void
 f (void)

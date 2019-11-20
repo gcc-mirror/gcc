@@ -7,14 +7,13 @@
 
 [[maybe_unused]]; /* { dg-error "ignored" } */
 
-int [[maybe_unused]] var; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int [[maybe_unused]] var; /* { dg-error "ignored" } */
 
-int array_with_dep_type[2] [[maybe_unused]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int array_with_dep_type[2] [[maybe_unused]]; /* { dg-error "ignored" } */
 
-void fn_with_dep_type () [[maybe_unused]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+void fn_with_dep_type () [[maybe_unused]]; /* { dg-error "ignored" } */
+
+int z = sizeof (int [[__maybe_unused__]]); /* { dg-error "ignored" } */
 
 void
 f (void)
