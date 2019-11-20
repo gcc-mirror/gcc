@@ -1,3 +1,8 @@
+2019-11-20  Maciej W. Rozycki  <macro@wdc.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Add flags to find
+	libatomic in build-tree testing.
+
 2019-11-18  Maciej W. Rozycki  <macro@wdc.com>
 
 	* testsuite/Makefile.in: Regenerate.
