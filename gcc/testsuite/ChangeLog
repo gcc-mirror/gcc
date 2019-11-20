@@ -1,5 +1,8 @@
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/90898
+	* gcc.dg/pr90898.c: New test.
+
 	PR middle-end/91195
 	* gcc.dg/pr91195.c: New test.
 

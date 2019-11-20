@@ -1,3 +1,10 @@
+2019-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90898
+	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Remove
+	assertion.
+	(insert_clobbers_for_var): Fix a typo in function comment.
+
 2019-11-20  Jiangning Liu  <jiangning.liu@amperecomputing.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
