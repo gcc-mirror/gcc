@@ -14,4 +14,4 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Voldemort decl:0 \[3\] '::TPL@[^\n]*/late-ret-2_a.H:.<int>' \(merged\)} module } }
-// { dg-final { scan-lang-dump {Read:-3's named merge key \(matched\) template_decl:'::Foo@[^\n]*/late-ret-2_b.H:.'\n  Deduping '::Foo@[^\n]*/late-ret-2_a.H:.'\n} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(matched\) template_decl:'::Foo@[^\n]*/late-ret-2_b.H:.'\n  Deduping '::Foo@[^\n]*/late-ret-2_a.H:.'\n} module } }

@@ -29,4 +29,4 @@ namespace bar
 // { dg-final { scan-lang-dump {Depset:0 specialization type_decl:'::foo::X@bar:.<0x0>'} module } }
 // { dg-final { scan-lang-dump {Writing type spec key for mergeable specialization type_decl:'::foo::X@bar:.<0x0>'} module } }
 // { dg-final { scan-lang-dump {Voldemort:1 '::foo::X@bar:.<0x0>'} module } }
-// { dg-final { scan-lang-dump {Inserted:-1 horcrux:1@0 for '::foo::X@bar:.<0x0>'} module } }
+// { dg-final { scan-lang-dump {Wrote purview:-[0-9]* type_decl:'::foo::X@bar:.<0x0>'} module } }

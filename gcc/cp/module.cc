@@ -8112,6 +8112,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   unsigned code = tt_named;
   int ident = -2;
   tree proxy = decl;
+  tree ctx = NULL_TREE;
 
   if (use_tpl > 0)
     {
@@ -8144,6 +8145,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
       else if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
 	{
+	  if (streaming_p ())
+	    goto direct_entity;
 	  kind = "specialization";
 	  goto insert;
 	}
@@ -8152,7 +8155,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
     }
 
   {
-    tree ctx = CP_DECL_CONTEXT (decl);
+    ctx = CP_DECL_CONTEXT (decl);
 
     if (TREE_CODE (ctx) == FUNCTION_DECL)
       {
@@ -13660,7 +13663,6 @@ enum cluster_tag {
   ct_decl,	/* A decl.  */
   ct_defn,	/* A definition.  */
   ct_bind,	/* A binding.  */
-  ct_horcrux,	/* Preseed reference to unnamed decl.  */
   ct_hwm
 };
 
@@ -13693,9 +13695,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 {
   dump () && dump ("Writing section:%u %u depsets", scc[0]->section, size);
   dump.indent ();
-
-  unsigned incoming_unnamed = unnamed;
-  bool refs_unnamed_p = false;
 
   if (dump (dumper::CLUSTER))
     {
@@ -13735,9 +13734,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       if (b->get_entity_kind () < depset::EK_ENTITIES)
 	b->entity_num = ++entities;
 
-      if (b->refs_unnamed ())
-	refs_unnamed_p = true;
-
       if (b->get_entity_kind () == depset::EK_SPECIALIZATION)
 	// FIXME: Should friend specializations be voldemorty?
 	{
@@ -13750,55 +13746,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   trees_out sec (to, this, table, scc[0]->section);
   sec.begin ();
-
-  if (refs_unnamed_p)
-    /* We contain references to unnamed decls.  Seed those that are
-       imported or in earlier clusters (others will be within this
-       cluster).  */
-    for (unsigned ix = 0; ix != size; ix++)
-      if (!scc[ix]->is_binding () && scc[ix]->refs_unnamed ())
-	{
-	  depset *b = scc[ix];
-
-	  for (unsigned jx = b->is_special (); jx != b->deps.length (); jx++)
-	    {
-	      depset *d = b->deps[jx];
-	      if (d->get_entity_kind () == depset::EK_SPECIALIZATION
-		  && d->cluster <= incoming_unnamed)
-		{
-		  tree u_decl = d->get_entity ();
-		  if (!TREE_VISITED (u_decl))
-		    {
-		      bool is_imported = d->is_import ();
-		      gcc_checking_assert (is_imported == !d->cluster);
-		      sec.u (ct_horcrux);
-		      unsigned origin = 0;
-		      unsigned index = d->cluster - 1;
-		      if (is_imported)
-			{
-			  origin = get_originating_module (u_decl);
-			  module_state *import = (*modules)[origin];
-			  /* It must be in the unnamed map.  */
-			  index = *unnamed_map->get (DECL_UID (u_decl));
-			  index -= import->unnamed_lwm;
-			  gcc_checking_assert (index < import->unnamed_num);
-			  origin = import->remap;
-			  gcc_checking_assert (origin);
-			}
-		      sec.u (origin);
-		      sec.u (index);
-		      unsigned tag = sec.insert (u_decl);
-		      dump () && dump ("Inserted:%d horcrux:%u@%u for %N",
-				       tag, index, origin, u_decl);
-
-		      sec.add_indirects (u_decl);
-		    }
-		}
-	      else
-		/* All imported entities will have zero cluster.  */
-		gcc_checking_assert (d->is_binding () || !d->is_import ());
-	    }
-	}
 
   /* Mark members for walking.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -14168,46 +14115,6 @@ module_state::read_cluster (unsigned snum)
 		      && sec.get_dupness (decl) < trees_in::DUP_dup)
 		    add_module_decl (ns, name, decl);
 		}
-	  }
-	  break;
-
-	case ct_horcrux:
-	  /* Resurrect a node from a horcrux.  */
-	  {
-	    unsigned owner = sec.u ();
-	    unsigned index = sec.u ();
-	    module_state *import = this;
-
-	    if (owner)
-	      {
-		owner = slurp->remap_module (owner);
-		if (!owner)
-		  goto bad_tom_riddle;
-		import = (*modules)[owner];
-	      }
-
-	    if (index < import->unnamed_num)
-	      {
-		unnamed_entity *uent
-		  = &(*unnamed_ary)[import->unnamed_lwm + index];
-
-		if (uent->slot.is_lazy ())
-		  import->lazy_load (-1, &uent->slot);
-
-		if (tree decl = uent->slot)
-		  {
-		    int tag = sec.insert (decl);
-		    dump () && dump ("Inserted:%d horcrux:%u@%u %C:%N", tag,
-				     index, owner, TREE_CODE (decl), decl);
-		    if (!sec.add_indirects (decl))
-		      goto bad_tom_riddle;
-		  }
-	      }
-	    else
-	      {
-	      bad_tom_riddle:
-		sec.set_overrun ();
-	      }
 	  }
 	  break;
 

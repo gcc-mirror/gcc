@@ -25,6 +25,5 @@ export inline void user ()
 // { dg-final { scan-lang-dump {Unnamed 0 '::foo@foo:.<int>'} module } }
 // { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo@foo:.<int>'} module } }
 // { dg-final { scan-lang-dump {Voldemort:0 '::foo@foo:.<int>'} module } }
-// { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@0 for '::foo@foo:.<int>'} module } }
 
 // { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo@foo:.<int>'} module } }

@@ -20,4 +20,3 @@ export inline int user (int i)
 // { dg-final { scan-lang-dump {Writing type spec key for mergeable specialization type_decl:'::TPL@foo:.<int>'} module } }
 // { dg-final { scan-lang-dump {Depset:0 specialization type_decl:'::TPL@foo:.<int>'} module } }
 // { dg-final { scan-lang-dump {Voldemort:0 '::TPL@foo:.<int>'} module } }
-// { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@0 for '::TPL@foo:.<int>'} module } }

@@ -1,3 +1,17 @@
+2019-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	No more horcruxes.
+	gcc/cp/
+	* module.cc (trees_out::decl_node): Specializations are tt_entity.
+	(enum cluster_tag): Delete ct_horcrux.
+	(module_state::write_cluster): No need to create horcruxes.
+	(module_state::read_cluster): No need to resurrect horcruxes.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[24]_b.C: Adjust scans.
+	* g++.dg/modules/inst-[123]_[ab].C: Likewise.
+	* g++.dg/modules/late-ret-2_c.C: Likewise.
+	* g++.dg/modules/tpl-friend-5_b.C: Likewise.
+
 2019-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
