@@ -2613,7 +2613,7 @@ public:
   unsigned num;    /* Number of pending.  */
 
   /* Trailing array of pending specializations.  These are indices
-     into the unnamed entity array.  */
+     into the entity array.  */
   unsigned pending[1];
 
 public:
@@ -3479,7 +3479,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   vec<tree> read_namespaces ();
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
-			  depset::hash &, unsigned &unnamed,
+			  depset::hash &, unsigned &specializations,
 			  unsigned &entities, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
@@ -3488,9 +3488,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_inits (unsigned count);
 
  private:
-  void write_unnamed (elf_out *to, vec<depset *> depsets,
-		      depset::hash &, unsigned count, unsigned *crc_ptr);
-  bool read_unnamed (unsigned count, const range_t &range);
+  void write_specializations (elf_out *to, vec<depset *> depsets,
+			      depset::hash &, unsigned count, unsigned *crc_ptr);
+  bool read_specializations (unsigned count);
 
  private:
   void write_entities (elf_out *to, vec<depset *> depsets,
@@ -13684,7 +13684,7 @@ enum ct_bind_flags
 
 unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
-			     depset::hash &table, unsigned &unnamed,
+			     depset::hash &table, unsigned &specializations,
 			     unsigned &entities, unsigned *crc_ptr)
 {
   dump () && dump ("Writing section:%u %u depsets", scc[0]->section, size);
@@ -13733,8 +13733,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  /* There is no binding for this decl.  It is therefore not
 	     findable by name.  Determine its horcrux number.  */
-	  dump () && dump ("Unnamed %u %N", unnamed, decl);
-	  b->cluster = ++unnamed;
+	  dump () && dump ("Unnamed %u %N", specializations, decl);
+	  b->cluster = ++specializations;
 	}
     }
 
@@ -14511,111 +14511,90 @@ module_state::read_entities (unsigned count, const range_t &range)
   return true;
 }
 
-/* Write the unnamed table to MOD_SNAME_PFX.vdm
+/* Write the unnamed table to MOD_SNAME_PFX.spc
 
    Each entry is a section number, key-locator tuple.
    Keys are so specialiazations can be loaded when instantiating the
    thing they're keyed to.  */
-
+// FIXME: Should we coalesce according to key?
 void
-module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
-			     depset::hash &table,
-			     unsigned count, unsigned *crc_p)
+module_state::write_specializations (elf_out *to, vec<depset *> depsets,
+				     depset::hash &table,
+				     unsigned count, unsigned *crc_p)
 {
-  dump () && dump ("Writing unnamed");
+  dump () && dump ("Writing specializations");
   dump.indent ();
 
   trees_out sec (to, this, table);
   sec.begin ();
 
-  unsigned current = 0;
   for (unsigned ix = 0; ix < depsets.length (); ix++)
     {
       depset *d = depsets[ix];
-
-      if (d->cluster)
+      gcc_checking_assert ((d->get_entity_kind ()
+			    == depset::EK_SPECIALIZATION)
+			   == (d->cluster != 0));
+      if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
 	{
-	  tree uent = d->get_entity ();
-	  dump () && dump ("Unnamed %d %N section:%u",
-			   current, uent, d->section);
-	  current++;
+	  tree spec = d->get_entity ();
+	  tree key = get_originating_module_decl (spec);
+	  unsigned origin = (DECL_LANG_SPECIFIC (key)
+			     ? DECL_MODULE_ORIGIN (key) : 0);
+	  module_state *import = (*modules)[origin];
 
-	  gcc_checking_assert (!d->is_unreached ()
-			       && d->cluster == current);
-	  sec.u (d->section);
+	  unsigned kind = 0;
+	  if (!import->is_header ())
+	    kind = import->is_partition () ? 1 : 2;
 
-	  if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
-	    {
-	      tree key = get_originating_module_decl (uent);
-	      unsigned origin = (DECL_LANG_SPECIFIC (key)
-				 ? DECL_MODULE_ORIGIN (key) : 0);
-	      module_state *import = (*modules)[origin];
-
-	      unsigned import_kind;
-	      if (import->is_header ())
-		import_kind = 0;
-	      else if (import->is_partition ())
-		import_kind = 1;
-	      else
-		import_kind = 2;
-
-	      tree ctx = CP_DECL_CONTEXT (key);
-	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-	      sec.tree_node (ctx);
-	      sec.tree_node (DECL_NAME (key));
-	      sec.u (import_kind);
-	      sec.u (d->entity_num - 1);
-	      dump () && dump ("Specialization %N section:%u keyed to %N (%u)",
-			       uent, d->section, key, import_kind);
-	    }
-	  else
-	    sec.tree_node (NULL);
+	  tree ctx = CP_DECL_CONTEXT (key);
+	  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+	  sec.tree_node (ctx);
+	  sec.tree_node (DECL_NAME (key));
+	  sec.u (kind);
+	  sec.u (d->entity_num - 1);
+	  dump () && dump ("Specialization %N entity:%u keyed to %N (%u)",
+			   spec, d->entity_num - 1, key, kind);
+	  count--;
 	}
       }
-  gcc_assert (count == current);
-  sec.end (to, to->name (MOD_SNAME_PFX ".vld"), crc_p);
+  gcc_assert (!count);
+  sec.end (to, to->name (MOD_SNAME_PFX ".spc"), crc_p);
   dump.outdent ();
 }
 
 bool
-module_state::read_unnamed (unsigned count, const range_t &range)
+module_state::read_specializations (unsigned count)
 {
   trees_in sec (this);
 
-  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".vld"))
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".spc"))
     return false;
 
-  dump () && dump ("Reading unnamed");
+  dump () && dump ("Reading specializastions");
   dump.indent ();
 
   for (unsigned ix = 0; ix != count; ix++)
     {
-      unsigned snum = sec.u ();
+      tree ns = sec.tree_node ();
+      tree id = sec.tree_node ();
+      unsigned kind = sec.u ();
+      unsigned index = sec.u ();
 
-      if (snum < range.first || snum >= range.second)
-	sec.set_overrun ();
-      if (sec.get_overrun ())
-	break;
+      if (kind > 2 || index >= entity_num)
+ 	sec.set_overrun ();
+       if (sec.get_overrun ())
+ 	break;
 
-      dump () && dump ("Unnamed %u(%u) section:%u", ix, ix + unnamed_lwm, snum);
-
-      if (tree ns = sec.tree_node ())
-	{
-	  tree id = sec.tree_node ();
-	  unsigned import_kind = sec.u ();
-	  unsigned index = sec.u ();
-
-	  /* It's now a regular import kind, if it's not part of the
-	     same module.  */
-	  if (import_kind == 1
-	      && !(is_primary () || is_partition ()))
-	    import_kind = 2;
-	  dump () && dump ("Specialization key %P (%u) section:%u",
-			   ns, id, import_kind, snum);
-	  if (specset::table->add (ns, id, index + entity_lwm))
-	    if (!note_pending_specializations (ns, id, import_kind))
-	      sec.set_overrun ();
-	}
+      /* It's now a regular import kind, if it's not part of the
+	 same module.  */
+      if (kind == 1
+	  && !(is_primary () || is_partition ()))
+	kind = 2;
+      dump () && dump ("Specialization key %P (%u) entity:%u",
+		       ns, id, kind, index);
+      if (specset::table->add (ns, id, index + entity_lwm))
+	if (!note_pending_specializations (ns, id, kind))
+	  sec.set_overrun ();
     }
 
   dump.outdent ();
@@ -16252,7 +16231,7 @@ space_cmp (const void *a_, const void *b_)
 struct module_state_config {
   const char *dialect_str;
   range_t sec_range;
-  unsigned num_unnamed;
+  unsigned num_specializations;
   unsigned num_entities;
   unsigned num_imports;
   unsigned num_partitions;
@@ -16263,7 +16242,7 @@ struct module_state_config {
 public:
   module_state_config ()
     :dialect_str (get_dialect ()),
-     sec_range (0,0), num_unnamed (0), num_entities (0),
+     sec_range (0,0), num_specializations (0), num_entities (0),
      num_imports (0), num_partitions (0),
      num_bindings (0), num_macros (0), num_inits (0)
   {
@@ -16349,8 +16328,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.num_bindings);
   dump () && dump ("Bindings %u", config.num_bindings);
-  cfg.u (config.num_unnamed);
-  dump () && dump ("Unnamed %u", config.num_unnamed);
+  cfg.u (config.num_specializations);
+  dump () && dump ("Specializations %u", config.num_specializations);
   cfg.u (config.num_entities);
   dump () && dump ("Entities %u", config.num_entities);
   cfg.u (config.num_macros);
@@ -16541,8 +16520,8 @@ module_state::read_config (module_state_config &config)
   config.num_bindings = cfg.u ();
   dump () && dump ("Bindings %u", config.num_bindings);
 
-  config.num_unnamed = cfg.u ();
-  dump () && dump ("Unnamed %u", config.num_unnamed);
+  config.num_specializations = cfg.u ();
+  dump () && dump ("Specializations %u", config.num_specializations);
 
   config.num_entities = cfg.u ();
   dump () && dump ("Entities %u", config.num_entities);
@@ -16769,7 +16748,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  base[0]->cluster = 0;
 
 	  bytes
-	    += write_cluster (to, base, size, table, config.num_unnamed,
+	    += write_cluster (to, base, size, table, config.num_specializations,
 			      config.num_entities, &crc);
 	}
     }
@@ -16792,8 +16771,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
     write_entities (to, sccs, table, config.num_entities, &crc);
 
   /* Write the unnamed.  */
-  if (config.num_unnamed)
-    write_unnamed (to, sccs, table, config.num_unnamed, &crc);
+  if (config.num_specializations)
+    write_specializations (to, sccs, table, config.num_specializations, &crc);
 
   /* Write the import table.  */
   if (config.num_imports > 1)
@@ -16921,8 +16900,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	  goto bail;
 
 	/* And unnamed.  */
-	if (config.num_unnamed
-	    && !read_unnamed (config.num_unnamed, config.sec_range))
+	if (config.num_specializations
+	    && !read_specializations (config.num_specializations))
 	  goto bail;
 
 	if (!flag_module_lazy)

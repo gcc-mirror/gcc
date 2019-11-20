@@ -1,5 +1,16 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	Remove more unnamed remnants.
+	gcc/cp/
+	* module.cc (module_state::write_cluster): Count specializations.
+	(module_state::{read,write}_unnamed): Rename to ...
+	(module_state::{read,write}_specializations): ... here. Drop
+	section numbers.  Adjust calls.
+	(struct module_state_config): Rename num_unnamed to
+	num_specializations, adjust all uses.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-spec-[12345]_[ab].C: Adjust scans.
+
 	Remove unnamed ary etc.
 	gcc/cp/
 	* module.cc (unnamed_ary, unnamed_map_t, unnamed_map): Delete.

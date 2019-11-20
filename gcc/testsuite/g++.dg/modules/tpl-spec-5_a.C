@@ -16,4 +16,4 @@ template<typename T> struct X<T,1>
 
 // { dg-final { scan-lang-dump {Dependency on specialization template_decl:'::X@TPL:.<T,0x1>' added} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::X@TPL:.<T,0x1>'} module } }
-// { dg-final { scan-lang-dump {Specialization '::X@TPL:.<T,0x1>' section:2 keyed to '::X@TPL:.<T,#unnamed#>' \(2\)} module } }
+// { dg-final { scan-lang-dump {Specialization '::X@TPL:.<T,0x1>' entity:[0-9]* keyed to '::X@TPL:.<T,#unnamed#>' \(2\)} module } }
