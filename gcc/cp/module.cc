@@ -13661,9 +13661,7 @@ enum ct_bind_flags
   cbf_wrapped = 0x8,  	/* ... that is wrapped.  */
 };
 
-/* Write the cluster of depsets in SCC[0-SIZE).  These are ordered
-   defns < decls < bindings.  Returns number of non-implicit template
-   specializations. */
+/* Write the cluster of depsets in SCC[0-SIZE).  */
 
 unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
@@ -13801,7 +13799,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	case depset::EK_UNNAMED:
 	case depset::EK_DECL:
-	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
+	  dump () && dump ("Depset:%u %s entity:%u %C:%N", ix,
+			   b->entity_kind_name (), b->cluster - 1,
 			   TREE_CODE (decl), decl);
 
 	  sec.u (ct_decl);
@@ -13821,8 +13820,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
 	  *slot = -b->cluster;
 
-	  dump () && dump ("Wrote declaration %u of %N",
-			   b->cluster - 1, decl);
+	  dump () && dump ("Wrote declaration entity:%u %C:%N",
+			   b->cluster - 1, TREE_CODE (decl), decl);
 
 	  if (!namer)
 	    namer = b;
@@ -13831,13 +13830,12 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    {
 	      sec.u (ct_defn);
 	      sec.tree_node (decl);
-	      dump () && dump ("Writing definition of %N", decl);
+	      dump () && dump ("Writing definition %N", decl);
 	      sec.write_definition (decl);
 
 	      /* Is this a good enough human name?  */
-	      if (b->get_entity_kind () != depset::EK_UNNAMED)
-		if (!namer || !namer->has_defn ())
-		  namer = b;
+	      if (!namer->has_defn ())
+		namer = b;
 	    }
 	  break;
 	}

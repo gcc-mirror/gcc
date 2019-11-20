@@ -1,6 +1,13 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state:write_cluster): Minor cleanups
+	gcc/testsuite/
+	* g++.dg/modules/indirect-2_b.C: Adjust scans.
+	* g++.dg/modules/inst-3_a.C: Likewise.
+	* g++.dg/modules/stdio-1_a.H: Likewise.
+
+	gcc/cp/
 	* module.cc (depset:entity_kind): Reorder.
 	(depset::DB_REFS_UNNAMED_BIT): Delete. Remove accessor & setter.
 	(cluster_cmp): Order by entity_kind.
