@@ -333,7 +333,7 @@ requirements.
 @itemx bzip2 version 1.0.2 (or later)
 
 Necessary to uncompress GCC @command{tar} files when source code is
-obtained via FTP mirror sites.
+obtained via HTTPS mirror sites.
 
 @item GNU make version 3.80 (or later)
 
@@ -411,7 +411,7 @@ download_prerequisites installs.
 @item isl Library version 0.15 or later.
 
 Necessary to build GCC with the Graphite loop optimizations.
-It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
+It can be downloaded from @uref{https://gcc.gnu.org/pub/gcc/infrastructure/}.
 If an isl source distribution is found
 in a subdirectory of your GCC sources named @file{isl}, it will be
 built together with GCC.  Alternatively, the @option{--with-isl} configure
@@ -513,7 +513,7 @@ files in the directories below @file{jit/docs}.
 @itemx SSH (any version)
 
 Necessary to access the SVN repository.  Public releases and weekly
-snapshots of the development sources are also available via FTP@.
+snapshots of the development sources are also available via HTTPS@.
 
 @item GNU diffutils version 2.7 (or later)
 
@@ -547,9 +547,8 @@ own sources.
 @cindex Downloading GCC
 @cindex Downloading the Source
 
-GCC is distributed via @uref{http://gcc.gnu.org/svn.html,,SVN} and FTP
-tarballs compressed with @command{gzip} or
-@command{bzip2}.
+GCC is distributed via @uref{http://gcc.gnu.org/svn.html,,SVN} and via
+HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 
 Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.

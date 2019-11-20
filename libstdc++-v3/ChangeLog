@@ -1,3 +1,8 @@
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* doc/html/api.html: Use https for gcc.gnu.org.
+	* doc/xml/api.xml: Likewise.
+
 2019-11-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h (ranges::__detail::__enable_view_impl): Fix

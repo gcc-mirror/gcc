@@ -1,3 +1,10 @@
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Use https for gcc.gnu.org
+	* configure: Regenerated.
+	* doc/install.texi: Use https for gcc.gnu.org.
+	* doc/sourcebuild.texi: Likewise.
+
 2019-11-20  Julian Brown  <julian@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_asm_output_symbol_ref): Handle null cfun.
