@@ -2703,7 +2703,8 @@ enum tree_tag {
   tt_ptrmem_type,	/* Pointer to member type.  */
 
   tt_parm,		/* Function paramter or result.  */
-  tt_enum_int,		/* An enum const.  */
+  tt_enum_value,	/* An enum value.  */
+  tt_enum_decl,		/* An enum decl.  */
   tt_data_member,	/* Data member or enum value.  */
 
   tt_namespace,		/* Namespace reference.  */
@@ -7898,6 +7899,24 @@ trees_out::decl_node (tree decl, walk_kind ref)
       break;
 
     case CONST_DECL:
+      {
+	/* If I end up cloning enum decls, implementing C++2a using
+	   E:v, this will need tweaking.   */
+	if (streaming_p ())
+	  i (tt_enum_decl);
+	tree ctx = DECL_CONTEXT (decl);
+	gcc_checking_assert (TREE_CODE (ctx) == ENUMERAL_TYPE);
+	tree_node (ctx);
+	tree_node (DECL_NAME (decl));
+
+	int tag = insert (decl);
+	if (streaming_p ())
+	  dump (dumper::TREE)
+	    && dump ("Wrote enum decl:%d %C:%N", tag, TREE_CODE (decl), decl);
+	return false;
+      }
+      break;
+
     case FIELD_DECL:
       {
 	if (streaming_p ())
@@ -7907,18 +7926,12 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	tree_node (ctx);
 	tree name = DECL_NAME (decl);
 
-	if (TREE_CODE (decl) == CONST_DECL)
-	  gcc_checking_assert (TREE_CODE (ctx) == ENUMERAL_TYPE);
-
 	if (name && IDENTIFIER_ANON_P (name))
 	  name = NULL_TREE;
 
 	tree_node (name);
 	if (!name && streaming_p ())
 	  {
-	    /* Anonymous enum members are not a thing!  */
-	    gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
-
 	    unsigned ix = get_field_ident (ctx, decl);
 	    u (ix);
 	  }
@@ -8652,7 +8665,7 @@ trees_out::tree_node (tree t)
 	  if (tree_int_cst_equal (DECL_INITIAL (decl), t))
 	    {
 	      if (streaming_p ())
-		u (tt_enum_int);
+		u (tt_enum_value);
 	      tree_node (decl);
 	      dump (dumper::TREE) && dump ("Written enum value %N", decl);
 	      goto done;
@@ -9086,7 +9099,7 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_enum_int:
+    case tt_enum_value:
       /* An enum const value.  */
       {
 	if (tree decl = tree_node ())
@@ -9100,25 +9113,41 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_data_member:
-      /* A data member or enumeration constant.  */
+    case tt_enum_decl:
+      /* An enum decl.  */
       {
 	tree ctx = tree_node ();
 	tree name = tree_node ();
 
-	if (get_overrun ())
-	  ;
-	else if (TREE_CODE (ctx) == ENUMERAL_TYPE)
+	if (!get_overrun ()
+	    && TREE_CODE (ctx) == ENUMERAL_TYPE)
+	  for (tree values = TYPE_VALUES (ctx);
+	       values; values = TREE_CHAIN (values))
+	    if (DECL_NAME (TREE_VALUE (values)) == name)
+	      {
+		res = TREE_VALUE (values);
+		break;
+	      }
+
+	if (!res)
+	  set_overrun ();
+	else
 	  {
-	    for (tree values = TYPE_VALUES (ctx);
-		 values; values = TREE_CHAIN (values))
-	      if (DECL_NAME (TREE_VALUE (values)) == name)
-		{
-		  res = TREE_VALUE (values);
-		  break;
-		}
+	    int tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("Read enum decl:%d %C:%N", tag, TREE_CODE (res), res);
 	  }
-	else if (RECORD_OR_UNION_TYPE_P (ctx))
+      }
+      break;
+
+    case tt_data_member:
+      /* A data member.  */
+      {
+	tree ctx = tree_node ();
+	tree name = tree_node ();
+
+	if (!get_overrun ()
+	    && RECORD_OR_UNION_TYPE_P (ctx))
 	  {
 	    unsigned ix = name ? 0 : u ();
 	    res = lookup_field_ident (ctx, name, ix);

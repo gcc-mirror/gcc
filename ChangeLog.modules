@@ -1,6 +1,13 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (tree_tag): Rename tt_enum_int, add tt_enum_decl.
+	(trees_out::tree_decl): Write enum consts as tt_enum_decl, not
+	tt_data_member.
+	(trees_in::tree_node): Add tt_enum_decl handling, adjust
+	tt_data_member handling.
+
+	gcc/cp/
 	* module.cc (module_state::lazy_load): Add diags arg, make index
 	unsigned.
 	(lazy_load_specializations): Use lazy_load.
