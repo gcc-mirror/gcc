@@ -1,5 +1,11 @@
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/90867
+	* config/i386/i386-options.c (ix86_valid_target_attribute_tree): Don't
+	clear opts->x_ix86_isa_flags{,2} here...
+	(ix86_valid_target_attribute_inner_p): ... but here when seeing
+	arch=.  Also clear opts->x_ix86_isa_flags{,2}_explicit.
+
 	PR c/90898
 	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Remove
 	assertion.
