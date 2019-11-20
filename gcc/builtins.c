@@ -3707,7 +3707,8 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
   if (DECL_P (ref))
     {
       *pdecl = ref;
-      return DECL_SIZE_UNIT (ref);
+      if (tree size = DECL_SIZE_UNIT (ref))
+	return TREE_CODE (size) == INTEGER_CST ? size : NULL_TREE;
     }
 
   tree type = TREE_TYPE (dest);

@@ -7405,6 +7405,23 @@ grokdeclarator (const struct c_declarator *declarator,
 	      	    "no linkage");
       }
 
+    /* For nested functions disqualify ones taking VLAs by value
+       from inlining since the middle-end cannot deal with this.
+       ???  We should arrange for those to be passed by reference
+       with emitting the copy on the caller side in the frontend.  */
+    if (storage_class == csc_none
+	&& TREE_CODE (type) == FUNCTION_TYPE)
+      for (tree al = TYPE_ARG_TYPES (type); al; al = TREE_CHAIN (al))
+	{
+	  tree arg = TREE_VALUE (al);
+	  if (arg != error_mark_node
+	      && C_TYPE_VARIABLE_SIZE (arg))
+	    {
+	      DECL_UNINLINABLE (decl) = 1;
+	      break;
+	    }
+	}
+
     /* Record `register' declaration for warnings on &
        and in case doing stupid register allocation.  */
 
