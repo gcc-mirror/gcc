@@ -1,3 +1,10 @@
+2019-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (wrapper_heuristics_may_apply): Break out from ...
+	(edge_badness): ... here.
+	(inline_small_functions): Use monotonicity of badness calculation
+	to avoid redundant updates.
+
 2019-11-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_analyze_slp_instance): Dump
