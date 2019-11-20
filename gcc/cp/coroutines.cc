@@ -38,7 +38,6 @@ static tree find_coro_handle_type (location_t, tree);
 static tree find_promise_type (tree);
 static tree lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
-static tree build_co_await (location_t, tree, tree);
 
 /* GCC C++ coroutines implementation.
 
@@ -78,9 +77,7 @@ static tree build_co_await (location_t, tree, tree);
   just syntactic sugar for a co_await).
 
   We defer the analysis and transformatin until template expansion is
-  complete so that we have complete types at that time.
-
-*/
+  complete so that we have complete types at that time.  */
 
 /* ================= Parse, Semantics and Type checking ================= */
 
@@ -198,18 +195,21 @@ find_promise_type (tree handle_type)
 
 /* The state that we collect during parsing (and template expansion) for
    a coroutine.  */
-typedef struct coroutine_info
+struct coroutine_info
 {
-  tree promise_type;
-  tree handle_type;
-  tree self_h_proxy;
-  tree promise_proxy;
-  location_t first_coro_keyword;
-} coroutine_info_t;
+  tree promise_type; /* The cached promise type for this function.  */
+  tree handle_type;  /* The cached coroutine handle for this function.  */
+  tree self_h_proxy; /* A handle instance that is used as the proxy for the
+			one that will eventually be allocated in the coroutine
+			frame.  */
+  tree promise_proxy; /* Likewise, a proxy promise instance.  */
+  location_t first_coro_keyword; /* The location of the keyword that made this
+				    function into a coroutine.  */
+};
 
 /* This is a small map, one entry per coroutine, but placed here to avoid
    adding this overhead to every function decl.  */
-static hash_map<tree, coroutine_info_t> *fn_to_coro_info;
+static hash_map<tree, coroutine_info> *fn_to_coro_info;
 
 static bool
 coro_promise_type_found_p (tree fndecl, location_t loc)
@@ -223,7 +223,7 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
     fn_to_coro_info = new hash_map<tree, struct coroutine_info>;
 
   bool seen;
-  coroutine_info_t &info = fn_to_coro_info->get_or_insert (fndecl, &seen);
+  coroutine_info &info = fn_to_coro_info->get_or_insert (fndecl, &seen);
 
   /* If we don't already have a current promise type, try to look it up.  */
   if (!seen || info.promise_type == NULL_TREE)
@@ -277,7 +277,7 @@ get_coroutine_promise_type (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = fn_to_coro_info->get (decl))
     return info->promise_type;
 
   return NULL_TREE;
@@ -288,7 +288,7 @@ get_coroutine_handle_type (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = fn_to_coro_info->get (decl))
     return info->handle_type;
 
   return NULL_TREE;
@@ -299,7 +299,7 @@ get_coroutine_self_handle_proxy (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = fn_to_coro_info->get (decl))
     return info->self_h_proxy;
 
   return NULL_TREE;
@@ -310,7 +310,7 @@ get_coroutine_promise_proxy (tree decl)
 {
   gcc_checking_assert (fn_to_coro_info);
 
-  if (coroutine_info_t *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = fn_to_coro_info->get (decl))
     return info->promise_proxy;
 
   return NULL_TREE;
@@ -352,9 +352,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
   if (DECL_MAIN_P (fndecl))
     {
       // [basic.start.main] 3. The function main shall not be a coroutine.
-      error_at (kw_loc,
-		"%qs cannot be used in"
-		" the %<main%> function",
+      error_at (kw_loc, "%qs cannot be used in the %<main%> function",
 		kw_name);
       return false;
     }
@@ -362,9 +360,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
   if (DECL_DECLARED_CONSTEXPR_P (fndecl))
     {
       // [dcl.constexpr] 3.3 it shall not be a coroutine.
-      error_at (kw_loc,
-		"%qs cannot be used in"
-		" a %<constexpr%> function",
+      error_at (kw_loc, "%qs cannot be used in a %<constexpr%> function",
 		kw_name);
       cp_function_chain->invalid_constexpr = true;
       return false;
@@ -375,8 +371,7 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
       // [dcl.spec.auto] 15. A function declared with a return type that uses
       // a placeholder type shall not be a coroutine .
       error_at (kw_loc,
-		"%qs cannot be used in"
-		" a function with a deduced return type",
+		"%qs cannot be used in a function with a deduced return type",
 		kw_name);
       return false;
     }
@@ -417,8 +412,7 @@ coro_function_valid_p (tree fndecl)
 
   /* Since we think the function is a coroutine, that implies we parsed
      a keyword that triggered this.  Keywords check promise validity for
-     their context and thus the promise type should be known at this point.
-  */
+     their context and thus the promise type should be known at this point.  */
   gcc_assert (get_coroutine_handle_type (fndecl) != NULL_TREE
 	      && get_coroutine_promise_type (fndecl) != NULL_TREE);
 
@@ -432,18 +426,25 @@ coro_function_valid_p (tree fndecl)
   return true;
 }
 
+enum suspend_point_kind {
+  CO_AWAIT_SUSPEND_POINT = 0,
+  CO_YIELD_SUSPEND_POINT,
+  INITIAL_SUSPEND_POINT,
+  FINAL_SUSPEND_POINT
+};
+
 /*  This performs [expr.await] bullet 3.3 and validates the interface obtained.
     It is also used to build the initial and final suspend points.
 
-    A is the original await expr.
-    MODE:
-      0 = regular function body co_await
-      1 = await from a co_yield
-      2 = initial await
-      3 = final await.
-*/
+    'a', 'o' and 'e' are used as per the description in the section noted.
+
+    A, the original yield/await expr, is found at source location LOC.
+
+    We will be constructing a CO_AWAIT_EXPR for a suspend point of one of
+    the four suspend_point_kind kinds.  This is indicated by SUSPEND_KIND.  */
+
 static tree
-build_co_await (location_t loc, tree a, tree mode)
+build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 {
   /* Try and overload of operator co_await, .... */
   tree o;
@@ -462,8 +463,7 @@ build_co_await (location_t loc, tree a, tree mode)
   tree o_type = complete_type_or_else (TREE_TYPE (o), o);
   if (TREE_CODE (o_type) != RECORD_TYPE)
     {
-      error_at (loc,
-		"awaitable type %qT is not a structure or union",
+      error_at (loc, "awaitable type %qT is not a structure or union",
 		o_type);
       return error_mark_node;
     }
@@ -507,7 +507,10 @@ build_co_await (location_t loc, tree a, tree mode)
   if (!awrd_func || !awrd_call || awrd_call == error_mark_node)
     return error_mark_node;
 
-  /* The suspend method has constraints on its return type.  */
+  /* The suspend method may return one of three types:
+      1. void (no special action needed).
+      2. bool (if true, we don't need to suspend).
+      3. a coroutine handle, we execute the handle.resume() call.  */
   tree awsp_func = NULL_TREE;
   tree h_proxy = get_coroutine_self_handle_proxy (current_function_decl);
   vec<tree, va_gc> *args = make_tree_vector_single (h_proxy);
@@ -520,7 +523,7 @@ build_co_await (location_t loc, tree a, tree mode)
     return error_mark_node;
 
   bool ok = false;
-  tree susp_return_type = TYPE_CANONICAL (TREE_TYPE (TREE_TYPE (awsp_func)));
+  tree susp_return_type = TREE_TYPE (TREE_TYPE (awsp_func));
   if (same_type_p (susp_return_type, void_type_node))
     ok = true;
   else if (same_type_p (susp_return_type, boolean_type_node))
@@ -555,27 +558,22 @@ build_co_await (location_t loc, tree a, tree mode)
   TREE_VEC_ELT (awaiter_calls, 2) = awrs_call; /* await_resume().  */
 
   return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awrs_func)), a,
-		     e_proxy, o, awaiter_calls, mode);
+		     e_proxy, o, awaiter_calls,
+		     build_int_cst (integer_type_node, (int) suspend_kind));
 }
 
 tree
 finish_co_await_expr (location_t kw, tree expr)
 {
+  if (!expr || error_operand_p (expr))
+    return error_mark_node;
+
   if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
 					    "co_await"))
     return error_mark_node;
 
   /* The current function has now become a coroutine, if it wasn't already.  */
   DECL_COROUTINE_P (current_function_decl) = 1;
-
-  if (expr == NULL_TREE)
-    {
-      error_at (kw, "%<co_await%> requires an expression.");
-      return error_mark_node;
-    }
-
-  if (error_operand_p (expr))
-    return error_mark_node;
 
   if (processing_template_decl)
     {
@@ -623,9 +621,8 @@ finish_co_await_expr (location_t kw, tree expr)
 	return error_mark_node;
     }
 
-  /* Now we want to build co_await a.
-     The trailing '0' is a flag that notes this is a regular co_await.  */
-  tree op = build_co_await (kw, a, integer_zero_node);
+  /* Now we want to build co_await a.  */
+  tree op = build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
   TREE_SIDE_EFFECTS (op) = 1;
   SET_EXPR_LOCATION (op, kw);
 
@@ -639,18 +636,12 @@ finish_co_await_expr (location_t kw, tree expr)
 tree
 finish_co_yield_expr (location_t kw, tree expr)
 {
-  if (expr == error_mark_node)
+  if (!expr || error_operand_p (expr))
     return error_mark_node;
 
   /* Check the general requirements and simple syntax errors.  */
   if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
 					    "co_yield"))
-    return error_mark_node;
-
-  /* The expression should be required in the parser.  */
-  gcc_checking_assert (expr);
-
-  if (error_operand_p (expr))
     return error_mark_node;
 
   /* The current function has now become a coroutine, if it wasn't already.  */
@@ -692,10 +683,9 @@ finish_co_yield_expr (location_t kw, tree expr)
   /* So now we have the type of p.yield_value (e).
      Now we want to build co_await p.yield_value (e).
      Noting that for co_yield, there is no evaluation of any potential
-     promise transform_await().  The trailing '1' is a flag that notes
-     this co_await resulted from a co_yield.   */
+     promise transform_await().  */
 
-  tree op = build_co_await (kw, yield_call, integer_one_node);
+  tree op = build_co_await (kw, yield_call, CO_YIELD_SUSPEND_POINT);
 
   op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
   TREE_SIDE_EFFECTS (op) = 1;
@@ -1120,7 +1110,8 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
 
   tree source = TREE_OPERAND (saved_co_await, 4);
-  bool is_final = (source && TREE_INT_CST_LOW (source) == 3);
+  bool is_final = (source
+		   && TREE_INT_CST_LOW (source) == (int) FINAL_SUSPEND_POINT);
   bool needs_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var));
   int resume_point = data->index;
   size_t bufsize = sizeof ("destroy.") + 10;
@@ -2043,10 +2034,9 @@ build_init_or_final_await (location_t loc, bool is_final)
     return error_mark_node;
 
   /* So build the co_await for this */
-  /* For initial/final suspends the call is is "a" per 8.3.8 3.1.  */
-
-  tree point = build_int_cst (integer_type_node, (is_final ? 3 : 2));
-  return build_co_await (loc, setup_call, point);
+  /* For initial/final suspends the call is is "a" per [expr.await] 3.2.  */
+  return build_co_await (loc, setup_call, (is_final ? FINAL_SUSPEND_POINT
+						    : INITIAL_SUSPEND_POINT));
 }
 
 static bool

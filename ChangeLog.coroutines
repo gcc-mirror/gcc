@@ -1,3 +1,29 @@
+2019-11-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc(struct coroutine_info): Make C++ style, comment
+	fields.
+	(coro_promise_type_found_p): Adjust info type name.
+	(get_coroutine_promise_type): Likewise.
+	(get_coroutine_handle_type): Likewise.
+	(get_coroutine_self_handle_proxy): Likewise.
+	(get_coroutine_promise_proxy): Likewise.
+	(coro_common_keyword_context_valid_p): Adjust error message line
+	wrapping.
+	(coro_function_valid_p): Fix comment line wrap.
+	(enum suspend_point_kind): New.
+	(build_co_await): Use suspend_point_kind enum. Amend comments,
+	remove TYPE_CANONICAL() lookup.
+	(finish_co_await_expr): Remove extra checks on expression, use
+	Use suspend_point_kind enum.
+	(finish_co_yield_expr): Likewise.
+	(co_await_expander): Likewise.
+	(build_init_or_final_await): Likewise.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/co-await-syntax-0.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-0.C: New test.
+
 2019-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/ChangeLog:
