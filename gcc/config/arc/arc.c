@@ -962,14 +962,24 @@ const pass_data pass_data_arc_ifcvt =
 
 class pass_arc_ifcvt : public rtl_opt_pass
 {
-public:
-  pass_arc_ifcvt(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_ifcvt, ctxt)
-  {}
+ public:
+ pass_arc_ifcvt (gcc::context *ctxt)
+   : rtl_opt_pass (pass_data_arc_ifcvt, ctxt)
+    {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_arc_ifcvt (m_ctxt); }
-  virtual unsigned int execute (function *) { return arc_ifcvt (); }
+  opt_pass * clone ()
+    {
+      return new pass_arc_ifcvt (m_ctxt);
+    }
+  virtual unsigned int execute (function *)
+  {
+    return arc_ifcvt ();
+  }
+  virtual bool gate (function *)
+  {
+    return (optimize > 1 && !TARGET_NO_COND_EXEC);
+  }
 };
 
 } // anon namespace
@@ -999,16 +1009,20 @@ const pass_data pass_data_arc_predicate_delay_insns =
 
 class pass_arc_predicate_delay_insns : public rtl_opt_pass
 {
-public:
-  pass_arc_predicate_delay_insns(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
-  {}
+ public:
+ pass_arc_predicate_delay_insns(gcc::context *ctxt)
+   : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
+    {}
 
   /* opt_pass methods: */
   virtual unsigned int execute (function *)
-    {
-      return arc_predicate_delay_insns ();
-    }
+  {
+    return arc_predicate_delay_insns ();
+  }
+  virtual bool gate (function *)
+  {
+    return flag_delayed_branch;
+  }
 };
 
 } // anon namespace
@@ -1101,30 +1115,6 @@ arc_init (void)
   arc_punct_chars['&'] = 1;
   arc_punct_chars['+'] = 1;
   arc_punct_chars['_'] = 1;
-
-  if (optimize > 1 && !TARGET_NO_COND_EXEC)
-    {
-      /* There are two target-independent ifcvt passes, and arc_reorg may do
-	 one or more arc_ifcvt calls.  */
-      opt_pass *pass_arc_ifcvt_4 = make_pass_arc_ifcvt (g);
-      struct register_pass_info arc_ifcvt4_info
-	= { pass_arc_ifcvt_4, "dbr", 1, PASS_POS_INSERT_AFTER };
-      struct register_pass_info arc_ifcvt5_info
-	= { pass_arc_ifcvt_4->clone (), "shorten", 1, PASS_POS_INSERT_BEFORE };
-
-      register_pass (&arc_ifcvt4_info);
-      register_pass (&arc_ifcvt5_info);
-    }
-
-  if (flag_delayed_branch)
-    {
-      opt_pass *pass_arc_predicate_delay_insns
-	= make_pass_arc_predicate_delay_insns (g);
-      struct register_pass_info arc_predicate_delay_info
-	= { pass_arc_predicate_delay_insns, "dbr", 1, PASS_POS_INSERT_AFTER };
-
-      register_pass (&arc_predicate_delay_info);
-    }
 }
 
 /* Parse -mirq-ctrl-saved=RegisterRange, blink, lp_copunt.  The

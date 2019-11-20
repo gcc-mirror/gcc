@@ -43,6 +43,8 @@ $(srcdir)/config/arc/arc-tables.opt: $(srcdir)/config/arc/genoptions.awk \
 				 $(srcdir)/config/arc/arc-cpus.def
 	$(AWK) -f $< -v FORMAT=Makefile $< $(srcdir)/config/arc/arc-cpus.def > $@
 
+PASSES_EXTRA += $(srcdir)/config/arc/arc-passes.def
+
 # Local Variables:
 # mode: Makefile
 # End:
