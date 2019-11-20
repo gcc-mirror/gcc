@@ -1,5 +1,9 @@
 2019-11-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* gcc.target/aarch64/simd/vrbit_1.c: Add -fno-ipa-icf.
+
+2019-11-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	PR85678
 	* g++.dg/lto/odr-6_1.c: Add -fcommon.
 	* gcc.dg/alias-15.c: Likewise.
