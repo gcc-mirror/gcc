@@ -2253,18 +2253,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  matches[group_size / const_max_nunits * const_max_nunits] = false;
 	  vect_free_slp_tree (node, false);
 	}
-      else if (constructor
-	       && SLP_TREE_DEF_TYPE (node) != vect_internal_def)
-	{
-	  /* CONSTRUCTOR vectorization relies on a vector stmt being
-	     generated, that doesn't work for fully external ones.  */
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Build SLP failed: CONSTRUCTOR of external "
-			     "or constant elements\n");
-	  vect_free_slp_tree (node, false);
-	  return false;
-	}
       else
 	{
 	  /* Create a new SLP instance.  */
@@ -2939,7 +2927,12 @@ vect_slp_analyze_operations (vec_info *vinfo)
       if (!vect_slp_analyze_node_operations (vinfo,
 					     SLP_INSTANCE_TREE (instance),
 					     instance, visited, lvisited,
-					     &cost_vec))
+					     &cost_vec)
+	  /* Instances with a root stmt require vectorized defs for the
+	     SLP tree root.  */
+	  || (SLP_INSTANCE_ROOT_STMT (instance)
+	      && (SLP_TREE_DEF_TYPE (SLP_INSTANCE_TREE (instance))
+		  != vect_internal_def)))
         {
 	  slp_tree node = SLP_INSTANCE_TREE (instance);
 	  stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];

@@ -1,3 +1,10 @@
+2019-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92537
+	* tree-vect-slp.c (vect_analyze_slp_instance): Move CTOR
+	vectorization validity check...
+	(vect_slp_analyze_operations): ... here.
+
 2019-11-20  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-protos.h (make_pass_arc_ifcvt): Declare.
