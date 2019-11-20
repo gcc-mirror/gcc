@@ -1,3 +1,17 @@
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
+	* arith.c (gfc_mpfr_to_mpz): Change mp_exp_t to mpfr_exp_t.
+	(gfc_check_real_range): Likewise.
+	* gfortran.h (GFC_RND_MODE): Change GMP_RNDN to MPFR_RNDN.
+	* module.c (mio_gmp_real): Change mp_exp_t to mpfr_exp_t.
+	* simplify.c (degrees_f): Change mp_rnd_t to mpfr_rnd_t.
+	(radians_f): Likewise.
+	(fullprec_erfc_scaled): Change mp_prec_t to mpfr_prec_t.
+	(asympt_erfc_scaled): Likewise.
+	(gfc_simplify_nearest): Change mp_exp_t to mpfr_exp_t, and
+	GMP_RND* to MPFR_RND*.
+
 2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69654
