@@ -23,7 +23,7 @@ namespace bar
 // { dg-final { scan-lang-dump {Lazily binding '::foo::TPL'@'foo' section} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:.'@foo} module } }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:.<0x0>'\n  \[1\]=specialization declaration '::foo::TPL@bar:.<0x0>::TPL@bar:.<0x0>'\n  \[2\]=decl definition '::foo::TPL@bar:.<0x0>::frob@bar:.<0x0>'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::foo::TPL@bar:.<0x0>::frob@bar:.<0x0>'\n  \[1\]=specialization definition '::foo::TPL@bar:.<0x0>'\n  \[2\]=specialization declaration '::foo::TPL@bar:.<0x0>::TPL@bar:.<0x0>'} module } }
 
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::X@foo:.::frob@bar:.<0x0>'} module } }
 // { dg-final { scan-lang-dump {Writing type spec key for mergeable specialization type_decl:'::foo::TPL@bar:.<0x0>'} module } }

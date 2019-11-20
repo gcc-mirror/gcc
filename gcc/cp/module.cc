@@ -2240,12 +2240,13 @@ private:
   uintptr_t discriminator;  /* Flags or identifier.  */
 
 public:
-  /* The kinds of entity the depset could describe.  */
+  /* The kinds of entity the depset could describe.  The ordering is
+     significant, see cluster_cmp.  Also see entity_kind_name.  */
   enum entity_kind
   {
     EK_DECL,		/* A decl.  */
-    EK_UNNAMED,		/* An unnameable entity.  */
     EK_SPECIALIZATION,  /* A specialization.  */
+    EK_UNNAMED,		/* An unnameable entity.  */
     EK_USING,		/* A using declaration.  */
     EK_NAMESPACE,	/* A namespace.  */
     EK_REDIRECT,	/* Redirect to a template_decl.  */
@@ -2254,8 +2255,7 @@ public:
     EK_MAYBE_SPEC,	/* Potentially a specialization, else a DECL,
 			   never a returned kind.  */
 
-    EK_BITS = 3,	/* Only need to encode below EK_EXPLICIT_HWM.  */
-    EK_ENTITIES = EK_USING
+    EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
   };
 
 private:
@@ -2268,7 +2268,6 @@ private:
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
     DB_IS_INTERNAL_BIT,		/* It is an internal-linkage entity.  */
-    DB_REFS_UNNAMED_BIT,	/* Refer to a voldemort entity.  */
     DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage
 				   entity. */
     DB_GLOBAL_BIT,		/* Global module entity.  */
@@ -2351,10 +2350,6 @@ public:
   bool is_internal () const
   {
     return get_flag_bit<DB_IS_INTERNAL_BIT> ();
-  }
-  bool refs_unnamed () const
-  {
-    return get_flag_bit<DB_REFS_UNNAMED_BIT> ();
   }
   bool refs_internal () const
   {
@@ -2570,7 +2565,7 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"decl", "unnamed", "specialization",
+    {"decl", "specialization", "unnamed",
      "using", "namespace", "redirect",
      "binding"};
   entity_kind kind = get_entity_kind ();
@@ -11145,9 +11140,6 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	dep->deps.safe_push (current);
       else
 	{
-	  if (dep->get_entity_kind () == EK_SPECIALIZATION)
-	    current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
-
 	  if (dep->is_internal ())
 	    current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
 
@@ -11913,7 +11905,7 @@ depset_cmp (const void *a_, const void *b_)
   return a < b ? -1 : +1;
 }
 
-/* Compare members of a cluster.  Order other < USING < BIND.  depsets
+/* Compare members of a cluster.  Order by entity kind.  depsets
    of the same kind can be arbitrary, but we want something
    stable.  */
 
@@ -11923,20 +11915,15 @@ cluster_cmp (const void *a_, const void *b_)
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
 
-  if (a == b)
-    return 0;
-
-  if (a->is_binding () != b->is_binding ())
-    return a->is_binding () ? +1 : -1;
-
-  tree a_decl = a->get_entity ();
-  tree b_decl = b->get_entity ();
-  bool a_using = a->get_entity_kind () == depset::EK_USING;
-  if (a_using != (b->get_entity_kind () == depset::EK_USING))
-    return a_using ? +1 : -1;
+  unsigned a_kind = a->get_entity_kind ();
+  unsigned b_kind = b->get_entity_kind ();
+  if (a_kind != b_kind)
+    return a_kind < b_kind ? -1 : +1;
 
   /* Now order for qsort stability.  */
-  if (a_using)
+  tree a_decl = a->get_entity ();
+  tree b_decl = b->get_entity ();
+  if (a_kind == depset::EK_USING)
     {
       a_decl = OVL_FUNCTION (a_decl);
       b_decl = OVL_FUNCTION (b_decl);
@@ -11946,7 +11933,11 @@ cluster_cmp (const void *a_, const void *b_)
     /* Different entities, order by their UID.  */
     return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
 
-  /* Same decl.  They must be bindings.  Order by stcmp for
+  if (a == b)
+    /* Can occur during testing.  */
+    return 0;
+
+  /* Same decl.  They must be bindings.  Order by strcmp for
      user-meaningful order.  */
   return strcmp (IDENTIFIER_POINTER (a->get_name ()),
 		 IDENTIFIER_POINTER (b->get_name ()));
@@ -13731,55 +13722,14 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   depset *namer = NULL;
 
-  /* Every regular declaration.  */
-  // FIXME: need two phases because of current horcrux handling
-  for (unsigned ix = 0; ix != size; ix++)
-    {
-      depset *b = scc[ix];
-      if (b->get_entity_kind () == depset::EK_DECL)
-	{
-	  tree decl = b->get_entity ();
-	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
-			   TREE_CODE (decl), decl);
-
-	  sec.u (ct_decl);
-	  sec.tree_node (decl);
-	  gcc_checking_assert (b->cluster);
-	  sec.u (0); // flags
-	  sec.u (b->cluster - 1);
-
-	  /* Add it to the entity map, such that we can tell it is
-	     part of us.  */
-	  bool existed;
-	  unsigned *slot = &entity_map->get_or_insert
-	    (DECL_UID (decl), &existed);
-	  if (existed)
-	    /* If it existed, it should match.  */
-	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
-	  *slot = -b->cluster;
-
-	  dump () && dump ("Wrote declaration %u of %N",
-			   b->cluster - 1, decl);
-
-	  /* Is this a good enough human name?  */
-	  if (!namer)
-	    namer = b;
-
-	  if (b->has_defn ())
-	    {
-	      sec.u (ct_defn);
-	      sec.tree_node (decl);
-	      dump () && dump ("Writing definition of %N", decl);
-	      sec.write_definition (decl);
-
-	      namer = b;
-	    }
-	}
-    }
-
-  /* Now every definition and the bindings.  Bindings have been
-     sorted last.  This is an assumption of the lazy specialization
-     machinery.  */
+  /* Write things out.  The sorted order is DECK<SPEC<UNNAMED<BINDINGS
+     -- see cluster_cmp.  I'm not totally sure this is robust, given
+     the necessary merging of global module entities in the face of
+     late return types of templates -- we must meet the containing
+     function before something that uses its parms, so that the
+     latter can be merged before the former.  It might be a more
+     sophisticated sorting is needed along the lines of the earlier
+     mergeable sort algorithm?  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -13788,6 +13738,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       switch (b->get_entity_kind ())
 	{
 	default:
+	  gcc_unreachable ();
 	  break;
 
 	case depset::EK_BINDING:
@@ -13849,7 +13800,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* FALLTHROUGH.  */
 
 	case depset::EK_UNNAMED:
-	  //	case depset::EK_DECL:
+	case depset::EK_DECL:
 	  dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
 			   TREE_CODE (decl), decl);
 
@@ -16501,11 +16452,12 @@ module_state::read_config (module_state_config &config)
      MOD_SNAME_PFX.ENV      : environment strings, strings
      MOD_SNAME_PFX.nms 	    : namespace hierarchy
      MOD_SNAME_PFX.bnd      : binding table
-     MOD_SNAME_PFX.tpl	    : template table
-     MOD_SNAME_PFX.vld      : unnamed table
+     MOD_SNAME_PFX.spc      : specialization table
      MOD_SNAME_PFX.imp      : import table
+     MOD_SNAME_PFX.ent      : entity table
      MOD_SNAME_PFX.prt      : partitions table
-     MOD_SNAME_PFX.loc      : locations
+     MOD_SNAME_PFX.om       : ordinary locations
+     MOD_SNAME_PFX.mm       : macro locations
      MOD_SNAME_PFX.def      : macro definitions
      MOD_SNAME_PFX.mac      : macro index
      MOD_SNAME_PFX.ini      : inits

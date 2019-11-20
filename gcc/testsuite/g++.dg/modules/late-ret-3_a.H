@@ -17,4 +17,4 @@ auto Bar (const A& arg)
   -> TPL_3<typename TPL_1<decltype(arg)>::type>
   {return 3;}
 
-// { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=specialization declaration '::TPL_1@[^\n]*late-ret-3_a.H:0<#null#>'\n  \[1\]=specialization declaration '::TPL_2@[^\n]*late-ret-3_a.H:0<::TPL_1@[^\n]*late-ret-3_a.H:0<#null#>::type@[^\n]*late-ret-3_a.H:0>'\n  \[2\]=specialization declaration '::TPL_3@[^\n]*late-ret-3_a.H:0<::TPL_1@[^\n]*late-ret-3_a.H:0<#null#>::type@[^\n]*late-ret-3_a.H:0>'\n  \[3\]=decl definition '::Foo@[^\n]*late-ret-3_a.H:0'\n  \[4\]=binding '::Foo'\n} module } }
+// { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=decl definition '::Foo@[^\n]*late-ret-3_a.H:0'\n  \[1\]=specialization declaration '::TPL_1@[^\n]*late-ret-3_a.H:0<#null#>'\n  \[2\]=specialization declaration '::TPL_2@[^\n]*late-ret-3_a.H:0<::TPL_1@[^\n]*late-ret-3_a.H:0<#null#>::type@[^\n]*late-ret-3_a.H:0>'\n  \[3\]=specialization declaration '::TPL_3@[^\n]*late-ret-3_a.H:0<::TPL_1@[^\n]*late-ret-3_a.H:0<#null#>::type@[^\n]*late-ret-3_a.H:0>'\n  \[4\]=binding '::Foo'\n} module } }

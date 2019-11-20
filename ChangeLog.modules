@@ -1,6 +1,15 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset:entity_kind): Reorder.
+	(depset::DB_REFS_UNNAMED_BIT): Delete. Remove accessor & setter.
+	(cluster_cmp): Order by entity_kind.
+	(module_state::write_cluster): A single write pass is sufficient.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-3_b.C: Adjust cluster order scan.
+	* g++.dg/modules/late-ret-[23]_a.H: Likewise.
+
+	gcc/cp/
 	* (class depset): Drop entity_num field.  Adjust all users to use
 	cluster.
 	(module_state::write_cluster): Merge counting and marking loops.
