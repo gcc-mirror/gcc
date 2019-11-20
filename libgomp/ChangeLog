@@ -1,5 +1,12 @@
 2019-11-20  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (hsa_memory_copy_wrapper): New.
+	(copy_data, GOMP_OFFLOAD_host2dev): Use above function.
+	(GOMP_OFFLOAD_dev2host, GOMP_OFFLOAD_dev2dev): Check hsa_memory_copy
+	return code.
+
+2019-11-20  Julian Brown  <julian@codesourcery.com>
+
 	PR libgomp/92511
 
 	* oacc-mem.c (present_create_copy): Fix device pointer return value in
