@@ -569,7 +569,7 @@ Objective-C and Objective-C++ Dialects}.
 -fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables @gol
 -fasynchronous-unwind-tables @gol
 -fno-gnu-unique @gol
--finhibit-size-directive  -fno-common  -fno-ident @gol
+-finhibit-size-directive  -fcommon  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt @gol
 -fno-jump-tables @gol
 -frecord-gcc-switches @gol
@@ -14112,35 +14112,27 @@ useful for building programs to run under WINE@.
 code that is not binary compatible with code generated without that switch.
 Use it to conform to a non-default application binary interface.
 
-@item -fno-common
-@opindex fno-common
+@item -fcommon
 @opindex fcommon
+@opindex fno-common
 @cindex tentative definitions
-In C code, this option controls the placement of global variables 
-defined without an initializer, known as @dfn{tentative definitions} 
-in the C standard.  Tentative definitions are distinct from declarations 
+In C code, this option controls the placement of global variables
+defined without an initializer, known as @dfn{tentative definitions}
+in the C standard.  Tentative definitions are distinct from declarations
 of a variable with the @code{extern} keyword, which do not allocate storage.
 
-Unix C compilers have traditionally allocated storage for
-uninitialized global variables in a common block.  This allows the
-linker to resolve all tentative definitions of the same variable
-in different compilation units to the same object, or to a non-tentative
-definition.  
-This is the behavior specified by @option{-fcommon}, and is the default for 
-GCC on most targets.  
-On the other hand, this behavior is not required by ISO
-C, and on some targets may carry a speed or code size penalty on
-variable references.
+The default is @option{-fno-common}, which specifies that the compiler places
+uninitialized global variables in the BSS section of the object file.
+This inhibits the merging of tentative definitions by the linker so you get a
+multiple-definition error if the same variable is accidentally defined in more
+than one compilation unit.
 
-The @option{-fno-common} option specifies that the compiler should instead
-place uninitialized global variables in the BSS section of the object file.
-This inhibits the merging of tentative definitions by the linker so
-you get a multiple-definition error if the same 
-variable is defined in more than one compilation unit.
-Compiling with @option{-fno-common} is useful on targets for which
-it provides better performance, or if you wish to verify that the
-program will work on other systems that always treat uninitialized
-variable definitions this way.
+The @option{-fcommon} places uninitialized global variables in a common block.
+This allows the linker to resolve all tentative definitions of the same variable
+in different compilation units to the same object, or to a non-tentative
+definition.  This behavior does not conform to ISO C, is inconsistent with C++,
+and on many targets implies a speed and code size penalty on global variable
+references.  It is mainly useful to enable legacy code to link without errors.
 
 @item -fno-ident
 @opindex fno-ident

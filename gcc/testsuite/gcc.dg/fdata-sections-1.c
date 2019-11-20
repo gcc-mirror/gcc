@@ -2,7 +2,7 @@
 /* Origin: Jonathan Larmour <jifl-bugzilla@jifvik.org> */
 
 /* { dg-do compile { target *-*-linux* *-*-gnu* *-*-uclinux* } } */
-/* { dg-options "-fdata-sections" } */
+/* { dg-options "-fcommon -fdata-sections" } */
 
 int x;
 

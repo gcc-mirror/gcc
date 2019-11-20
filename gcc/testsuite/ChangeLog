@@ -1,3 +1,21 @@
+2019-11-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR85678
+	* g++.dg/lto/odr-6_1.c: Add -fcommon.
+	* gcc.dg/alias-15.c: Likewise.
+	* gcc.dg/fdata-sections-1.c: Likewise.	
+	* gcc.dg/ipa/pr77653.c: Likewise.
+	* gcc.dg/lto/20090729_0.c: Likewise.
+	* gcc.dg/lto/20111207-1_0.c: Likewise.
+	* gcc.dg/lto/c-compatible-types-1_0.c: Likewise.
+	* gcc.dg/lto/pr55525_0.c: Likewise.
+	* gcc.dg/lto/pr88077_0.c: Use long to avoid alignment warning.
+	* gcc.dg/lto/pr88077_1.c: Add -fcommon.
+	* gcc.target/aarch64/sve/peel_ind_1.c: Allow ANCHOR0.
+	* gcc.target/aarch64/sve/peel_ind_2.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_3.c: Likewise.
+	* gcc.target/i386/volatile-bitfields-2.c: Allow movl or movq.
+
 2019-11-20  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/bb-slp-42.c: Adjust.
