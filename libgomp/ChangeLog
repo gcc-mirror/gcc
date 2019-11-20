@@ -1,3 +1,20 @@
+2019-11-20  Julian Brown  <julian@codesourcery.com>
+
+	PR libgomp/92511
+
+	* oacc-mem.c (present_create_copy): Fix device pointer return value in
+	case of "present" subarray.  Use tgt->tgt_start instead of tgt->to_free
+	in non-present/create case.
+	(delete_copyout): Change error condition to fail only on copies outside
+	of mapped block.  Adjust error message accordingly.
+	* testsuite/libgomp.oacc-c-c++-common/copyin-devptr-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/copyin-devptr-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Adjust expected error
+	message.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: Allow test to pass now.
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: Likewise.
+
 2019-11-20  Maciej W. Rozycki  <macro@wdc.com>
 
 	* testsuite/lib/libgomp.exp (libgomp_init): Add flags to find

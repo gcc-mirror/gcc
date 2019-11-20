@@ -535,7 +535,7 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
   if (n)
     {
       /* Present. */
-      d = (void *) (n->tgt->tgt_start + n->tgt_offset);
+      d = (void *) (n->tgt->tgt_start + n->tgt_offset + h - n->host_start);
 
       if (!(f & FLAG_PRESENT))
         {
@@ -669,7 +669,6 @@ acc_pcopyin (void *h, size_t s)
 static void
 delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 {
-  size_t host_size;
   splay_tree_key n;
   void *d;
   struct goacc_thread *thr = goacc_thread ();
@@ -703,13 +702,12 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
   d = (void *) (n->tgt->tgt_start + n->tgt_offset
 		+ (uintptr_t) h - n->host_start);
 
-  host_size = n->host_end - n->host_start;
-
-  if (n->host_start != (uintptr_t) h || host_size != s)
+  if ((uintptr_t) h < n->host_start || (uintptr_t) h + s > n->host_end)
     {
+      size_t host_size = n->host_end - n->host_start;
       gomp_mutex_unlock (&acc_dev->lock);
-      gomp_fatal ("[%p,%d] surrounds2 [%p,+%d]",
-		  (void *) n->host_start, (int) host_size, (void *) h, (int) s);
+      gomp_fatal ("[%p,+%d] outside mapped block [%p,+%d]",
+		  (void *) h, (int) s, (void *) n->host_start, (int) host_size);
     }
 
   if (n->refcount == REFCOUNT_INFINITY)
