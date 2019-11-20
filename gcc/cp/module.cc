@@ -2291,9 +2291,8 @@ public:
   vec<depset *> deps;  /* Depsets we reference.  */
 
 public:
-  unsigned cluster; /* Strongly connected cluster.  */
+  unsigned cluster; /* Strongly connected cluster, later entity number  */
   unsigned section; /* Section written to.  */
-  unsigned entity_num; // FIXME move to cluster when unnamed goes away
   /* During SCC construction, section is lowlink, until the depset is
      removed from the stack.  See Tarjan algorithm for details.  */
 
@@ -2555,7 +2554,7 @@ public:
 
 inline
 depset::depset (tree entity)
-  :entity (entity), discriminator (0), cluster (0), section (0), entity_num (0)
+  :entity (entity), discriminator (0), cluster (0), section (0)
 {
   deps.create (0);
 }
@@ -8214,7 +8213,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    else
 	      {
 		/* It should be what we put there.  */
-		gcc_checking_assert (dep_hash->find_entity (decl)->entity_num
+		gcc_checking_assert (dep_hash->find_entity (decl)->cluster
 				     == -entity_num);
 		ident = ~entity_num;
 
@@ -13683,7 +13682,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump () && dump ("Writing section:%u %u depsets", scc[0]->section, size);
   dump.indent ();
 
-  /* Determine entity numbering.   */
+  trees_out sec (to, this, table, scc[0]->section);
+  sec.begin ();
+
+  /* Prepare, determine entity numbers   */
   dump (dumper::CLUSTER) && dump ("Cluster members:") && (dump.indent (), true);
   for (unsigned ix = 0; ix != size; ix++)
     {
@@ -13698,6 +13700,12 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  dump (dumper::CLUSTER)
 	    && dump ("[%u]=%s %P", ix, b->entity_kind_name (),
 		     b->get_entity (), b->get_name ());
+	  for (unsigned jx = b->deps.length (); jx--;)
+	    {
+	      depset *dep = b->deps[jx];
+	      gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING
+				   || TREE_VISITED (dep->get_entity ()));
+	    }
 	  break;
 
 	case depset::EK_SPECIALIZATION:
@@ -13706,7 +13714,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	case depset::EK_DECL:
 	case depset::EK_UNNAMED:
-	  b->entity_num = ++entities;
+	  b->cluster = ++entities;
+	  sec.mark_declaration (b->get_entity (), b->has_defn ());
 	  /* FALLTHROUGH  */
 
 	case depset::EK_USING:
@@ -13719,29 +13728,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	}
     }
   dump (dumper::CLUSTER) && (dump.outdent (), true);
-
-  trees_out sec (to, this, table, scc[0]->section);
-  sec.begin ();
-
-  /* Mark members for walking.  */
-  for (unsigned ix = 0; ix != size; ix++)
-    {
-      depset *b = scc[ix];
-
-      if (b->is_binding ())
-	for (unsigned jx = b->deps.length (); jx--;)
-	  {
-	    depset *dep = b->deps[jx];
-	    gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING
-				 || TREE_VISITED (dep->get_entity ()));
-	  }
-      else if (b->get_entity_kind () != depset::EK_USING)
-	{
-	  tree decl = b->get_entity ();
-
-	  sec.mark_declaration (decl, b->has_defn ());
-	}
-    }
 
   depset *namer = NULL;
 
@@ -13758,9 +13744,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  sec.u (ct_decl);
 	  sec.tree_node (decl);
-	  gcc_checking_assert (b->entity_num);
+	  gcc_checking_assert (b->cluster);
 	  sec.u (0); // flags
-	  sec.u (b->entity_num - 1);
+	  sec.u (b->cluster - 1);
 
 	  /* Add it to the entity map, such that we can tell it is
 	     part of us.  */
@@ -13770,10 +13756,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  if (existed)
 	    /* If it existed, it should match.  */
 	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
-	  *slot = -b->entity_num;
+	  *slot = -b->cluster;
 
 	  dump () && dump ("Wrote declaration %u of %N",
-			   b->entity_num - 1, decl);
+			   b->cluster - 1, decl);
 
 	  /* Is this a good enough human name?  */
 	  if (!namer)
@@ -13871,8 +13857,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  sec.tree_node (decl);
 	  sec.u (flags);
 
-	  gcc_checking_assert (b->entity_num);
-	  sec.u (b->entity_num - 1);
+	  gcc_checking_assert (b->cluster);
+	  sec.u (b->cluster - 1);
 
 	  /* Add it to the entity map, such that we can tell it is
 	     part of us.  */
@@ -13882,10 +13868,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  if (existed)
 	    /* If it existed, it should match.  */
 	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
-	  *slot = -b->entity_num;
+	  *slot = -b->cluster;
 
 	  dump () && dump ("Wrote declaration %u of %N",
-			   b->entity_num - 1, decl);
+			   b->cluster - 1, decl);
 
 	  if (!namer)
 	    namer = b;
@@ -14431,12 +14417,12 @@ module_state::write_entities (elf_out *to, vec<depset *> depsets,
     {
       depset *d = depsets[ix];
 
-      if (d->entity_num)
+      if (d->cluster)
 	{
 	  current++;
 
 	  gcc_checking_assert (!d->is_unreached ()
-			       && d->entity_num == current);
+			       && d->cluster == current);
 	  sec.u (d->section);
 	}
       }
@@ -14516,9 +14502,9 @@ module_state::write_specializations (elf_out *to, vec<depset *> depsets,
 	  sec.tree_node (ctx);
 	  sec.tree_node (DECL_NAME (key));
 	  sec.u (kind);
-	  sec.u (d->entity_num - 1);
+	  sec.u (d->cluster - 1);
 	  dump () && dump ("Specialization %N entity:%u keyed to %N (%u)",
-			   spec, d->entity_num - 1, key, kind);
+			   spec, d->cluster - 1, key, kind);
 	  count--;
 	}
       }

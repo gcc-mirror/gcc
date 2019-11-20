@@ -1,5 +1,10 @@
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* (class depset): Drop entity_num field.  Adjust all users to use
+	cluster.
+	(module_state::write_cluster): Merge counting and marking loops.
+
 	Expelliarmus!
 	gcc/cp/
 	* module.cc (module_state): Delete unnamed_{lwm,num}.
