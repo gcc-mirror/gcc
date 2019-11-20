@@ -13,13 +13,13 @@ void f_ll(void) { long long x; asm("" : "=@cccc"(x)); }
 void f_f(void)
 {
   float x;
-  asm("" : "=@cccc"(x)); /* { dg-error invalid type } */
+  asm("" : "=@cccc"(x)); /* { dg-error "invalid type" } */
 }
 
 void f_d(void)
 {
   double x;
-  asm("" : "=@cccc"(x)); /* { dg-error invalid type } */
+  asm("" : "=@cccc"(x)); /* { dg-error "invalid type" } */
 }
 
 struct S { int x[3]; };
@@ -27,5 +27,5 @@ struct S { int x[3]; };
 void f_S(void)
 {
   struct S x;
-  asm("" : "=@cccc"(x)); /* { dg-error invalid type } */
+  asm("" : "=@cccc"(x)); /* { dg-error "invalid type" } */
 }
