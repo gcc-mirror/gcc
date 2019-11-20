@@ -1,5 +1,15 @@
 2019-11-20  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (wait_for_queue_nonfull): Don't lock/unlock
+	aq->mutex here.
+	(queue_push_launch): Lock aq->mutex before calling
+	wait_for_queue_nonfull.
+	(queue_push_callback): Likewise.
+	(queue_push_asyncwait): Likewise.
+	(queue_push_placeholder): Likewise.
+
+2019-11-20  Julian Brown  <julian@codesourcery.com>
+
 	* plugin/plugin-gcn.c (hsa_memory_copy_wrapper): New.
 	(copy_data, GOMP_OFFLOAD_host2dev): Use above function.
 	(GOMP_OFFLOAD_dev2host, GOMP_OFFLOAD_dev2dev): Check hsa_memory_copy

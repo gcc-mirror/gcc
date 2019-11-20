@@ -2725,20 +2725,17 @@ drain_queue_synchronous (struct goacc_asyncqueue *aq)
   pthread_mutex_unlock (&aq->mutex);
 }
 
-/* Block the current thread until an async queue is writable.  */
+/* Block the current thread until an async queue is writable.  The aq->mutex
+   lock should be held on entry, and remains locked on exit.  */
 
 static void
 wait_for_queue_nonfull (struct goacc_asyncqueue *aq)
 {
   if (aq->queue_n == ASYNC_QUEUE_SIZE)
     {
-      pthread_mutex_lock (&aq->mutex);
-
       /* Queue is full.  Wait for it to not be full.  */
       while (aq->queue_n == ASYNC_QUEUE_SIZE)
 	pthread_cond_wait (&aq->queue_cond_out, &aq->mutex);
-
-      pthread_mutex_unlock (&aq->mutex);
     }
 }
 
@@ -2752,9 +2749,9 @@ queue_push_launch (struct goacc_asyncqueue *aq, struct kernel_info *kernel,
 {
   assert (aq->agent == kernel->agent);
 
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n)
 		    % ASYNC_QUEUE_SIZE);
@@ -2785,9 +2782,9 @@ static void
 queue_push_callback (struct goacc_asyncqueue *aq, void (*fn)(void *),
 		     void *data)
 {
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n)
 		    % ASYNC_QUEUE_SIZE);
@@ -2818,9 +2815,9 @@ static void
 queue_push_asyncwait (struct goacc_asyncqueue *aq,
 		      struct placeholder *placeholderp)
 {
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n) % ASYNC_QUEUE_SIZE);
   if (DEBUG_QUEUES)
@@ -2849,9 +2846,9 @@ queue_push_placeholder (struct goacc_asyncqueue *aq)
 {
   struct placeholder *placeholderp;
 
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n) % ASYNC_QUEUE_SIZE);
   if (DEBUG_QUEUES)
