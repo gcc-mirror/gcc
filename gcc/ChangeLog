@@ -1,3 +1,7 @@
+2019-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-Wc11-c2x-compat): Document.
+
 2019-11-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR85678

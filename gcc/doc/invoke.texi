@@ -295,6 +295,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
+-Wc11-c2x-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
 -Wc++20-compat  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
@@ -6829,6 +6830,16 @@ For instance, warn about use of anonymous structures and unions,
 @code{_Alignas} specifier, @code{Alignof} operator, @code{_Generic} keyword,
 and so on.  This option is independent of the standards mode.  Warnings are
 disabled in the expression that follows @code{__extension__}.
+
+@item -Wc11-c2x-compat @r{(C and Objective-C only)}
+@opindex Wc11-c2x-compat
+@opindex Wno-c11-c2x-compat
+Warn about features not present in ISO C11, but present in ISO C2X.
+For instance, warn about omitting the string in @code{_Static_assert},
+use of @samp{[[]]} syntax for attributes, use of decimal
+floating-point types, and so on.  This option is independent of the
+standards mode.  Warnings are disabled in the expression that follows
+@code{__extension__}.
 
 @item -Wc++-compat @r{(C and Objective-C only)}
 @opindex Wc++-compat
