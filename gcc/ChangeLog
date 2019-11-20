@@ -1,3 +1,7 @@
+2019-11-20  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_asm_output_symbol_ref): Handle null cfun.
+
 2019-11-20  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Add CALL
