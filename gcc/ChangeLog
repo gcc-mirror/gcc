@@ -1,5 +1,24 @@
 2019-11-20  Jan Hubicka  <jh@suse.cz>
 
+	* fibonacci_heap.h (fibonacci_heap<K,V>::fibonacci_heap):
+	Add allocator parameter.
+	(fibonacci_heap<K,V>::~fibonacci_heap): Optimize destruction.
+	(fibonacci_heap<K,V>::m_allocator): New.
+	(fibonacci_heap<K,V>::m_own_allocator): New.
+	(fibonacci_heap<K,V>::insert): Use allocator.
+	(fibonacci_heap<K,V>::extract_min): Likewise.
+	(fibonacci_heap<K,V>::union_with): Assert that both heaps share
+	allocator.
+	(fibonacci_heap<K,V>::consolidate): Allocate constant sized vector
+	on stack.
+	* fibonacci_heap.c: Include alloc-pool
+	(test_empty_heap): Initialize allocator.
+	(test_union): Likewise.
+	* bb-reorder.c: Include alloc-pool.h.
+	* tracer.c: Inlclude alloc-pool.h.
+
+2019-11-20  Jan Hubicka  <jh@suse.cz>
+
 	* lto-streamer-out.c (DFS::sccstack): Turn into auto-vec.
 	Preallocate for 32 entries.
 	(DFS::worklist): Likewise.
