@@ -1,3 +1,8 @@
+2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/92366
+	* doc/sourcebuild.texi (vect_char_add): Document.
+
 2019-11-20  Alexandre Oliva <oliva@adacore.com>
 
 	* function.h (CALLEE_FROM_CGRAPH_P): Remove.
