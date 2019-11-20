@@ -1,5 +1,12 @@
 2019-11-20  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_analyze_slp_instance): Dump
+	constructors we are actually analyzing.
+	(vect_slp_check_for_constructors): Do not vectorize uniform
+	constuctors, do not dump here.
+
+2019-11-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92537
 	* tree-vect-slp.c (vect_analyze_slp_instance): Move CTOR
 	vectorization validity check...

@@ -30,5 +30,5 @@ void foo(void)
 }
 
 /* See that we vectorize an SLP instance.  */
-/* { dg-final { scan-tree-dump "Found vectorizable constructor" "slp1" } } */
+/* { dg-final { scan-tree-dump "Analyzing vectorizable constructor" "slp1" } } */
 /* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "slp1" } } */
