@@ -1,3 +1,9 @@
+2020-01-22  Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (lookup_awaitable_member): Lookup an awaitable member.
+	(lookup_promise_method): Emit diagnostic when get NULL_TREE back only.
+	(build_co_await): Use lookup_awaitable_member instead of lookup_member.
+
 2020-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60855 - ICE with sizeof VLA capture.
