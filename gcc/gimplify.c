@@ -2405,8 +2405,8 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	      gsi_next (&gsi2);
 	    }
 	  if (!found)
-	    warning_at (loc, 0, "attribute %<fallthrough%> not preceding "
-			"a case label or default label");
+	    pedwarn (loc, 0, "attribute %<fallthrough%> not preceding "
+		     "a case label or default label");
 	}
       break;
     default:
@@ -2428,8 +2428,8 @@ expand_FALLTHROUGH (gimple_seq *seq_p)
   if (wi.callback_result == integer_zero_node)
     /* We've found [[fallthrough]]; at the end of a switch, which the C++
        standard says is ill-formed; see [dcl.attr.fallthrough].  */
-    warning_at (loc, 0, "attribute %<fallthrough%> not preceding "
-		"a case label or default label");
+    pedwarn (loc, 0, "attribute %<fallthrough%> not preceding "
+	     "a case label or default label");
 }
 
 

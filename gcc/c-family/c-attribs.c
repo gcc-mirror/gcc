@@ -4117,7 +4117,7 @@ tree
 handle_fallthrough_attribute (tree *, tree name, tree, int,
 			      bool *no_add_attrs)
 {
-  warning (OPT_Wattributes, "%qE attribute ignored", name);
+  pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored", name);
   *no_add_attrs = true;
   return NULL_TREE;
 }
