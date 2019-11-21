@@ -50,18 +50,19 @@ vrange::operator= (const vrange &src)
 bool
 vrange::compatible_copy_p (const vrange &src) const
 {
-  if (m_max_ranges == src.m_max_ranges
-      || src.undefined_p ()
-      || src.varying_p ()
-      || (!simple_ranges_p ()
-	  && !src.simple_ranges_p ()
-	  && m_max_ranges > src.m_num_ranges))
+  if (src.undefined_p () || src.varying_p ())
     return true;
 
   // Symbolics may be copied straight because there's only one
   // representation for them.
   const irange *int_range = as_a <const irange *> (&src);
-  return int_range && !range_has_numeric_bounds_p ((const irange *) &src);
+  if (int_range && !range_has_numeric_bounds_p (int_range))
+    return true;
+
+  if (simple_ranges_p () != src.simple_ranges_p ())
+    return false;
+
+  return m_max_ranges >= src.m_num_ranges;
 }
 
 void
