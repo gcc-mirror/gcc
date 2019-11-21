@@ -1654,50 +1654,20 @@ irange::union_ (const irange *other)
       dump_value_range (dump_file, other);
       fprintf (dump_file, "\n");
     }
-
-  /* If a simple range was requested, do the entire operation in
-     simple mode, because we may have received a symbolic, and we only
-     know how to deal with those in simple mode.  */
   if (simple_ranges_p ())
     {
-      if (other->simple_ranges_p ())
-	*this = union_helper ((value_range *) this,
-			      (const value_range *) other);
-      else
+      int_range<1> small;
+      if (!other->simple_ranges_p ())
 	{
-	  int_range<1> small = *other;
-	  *this = union_helper ((value_range *) this,
-				(const value_range *) &small);
+	  /* If a simple range was requested on the LHS, do the entire
+	     operation in simple mode, because the RHS may be a
+	     symbolic, and we only know how to deal with those in
+	     simple mode.  */
+	  small = *other;
+	  other = &small;
 	}
-    }
-  else
-    union_ (*other);
-
-  *this = union_helper ((value_range *) this, (const value_range *) other);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "to\n  ");
-      dump_value_range (dump_file, this);
-      fprintf (dump_file, "\n");
-    }
-}
-
-/* Range union, but for references.  */
-
-void
-irange::union_ (const vrange &vr)
-{
-  const irange *other = as_a <const irange *> (&vr);
-  if (simple_ranges_p ())
-    {
-      if (other->simple_ranges_p ())
-	union_ (other);
-      else
-	{
-	  int_range<1> small = *other;
-	  union_ (&small);
-	}
+      *this = union_helper ((value_range *) this,
+			    (const value_range *) other);
     }
   else
     {
@@ -1706,6 +1676,38 @@ irange::union_ (const vrange &vr)
       else
 	multi_range_union (*other);
     }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "to\n  ");
+      dump_value_range (dump_file, this);
+      fprintf (dump_file, "\n");
+    }
+}
+
+class disable_dump_details
+{
+public:
+  disable_dump_details ()
+  {
+    m_flags = dump_flags;
+    dump_flags &= ~TDF_DETAILS;
+  }
+  ~disable_dump_details ()
+  {
+    dump_flags = m_flags;
+  }
+private:
+  dump_flags_t m_flags;
+};
+
+/* Range union, but for references.  */
+
+void
+irange::union_ (const vrange &vr)
+{
+  disable_dump_details details;
+  const irange *other = as_a <const irange *> (&vr);
+  union_ (other);
 }
 
 void
@@ -1719,25 +1721,28 @@ irange::intersect (const irange *other)
       dump_value_range (dump_file, other);
       fprintf (dump_file, "\n");
     }
-
-  /* If a simple range was requested, do the entire operation in
-     simple mode, because we may have received a symbolic, and we only
-     know how to deal with those in simple mode.  */
   if (simple_ranges_p ())
     {
-      if (other->simple_ranges_p ())
-	*this = intersect_helper ((value_range *) this,
-				  (const value_range *) other);
-      else
+      int_range<1> small;
+      if (!other->simple_ranges_p ())
 	{
-	  int_range<1> small = *other;
-	  *this = intersect_helper ((value_range *) this,
-				    (const value_range *) &small);
+	  /* If a simple range was requested on the LHS, do the entire
+	     operation in simple mode, because the RHS may be a
+	     symbolic, and we only know how to deal with those in
+	     simple mode.  */
+	  small = *other;
+	  other = &small;
 	}
+      *this = intersect_helper ((value_range *) this,
+				(const value_range *) other);
     }
   else
-    intersect (*other);
-
+    {
+      if (other->simple_ranges_p ())
+	multi_range_intersect (widest_irange (*other));
+      else
+	multi_range_intersect (*other);
+    }
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "to\n  ");
@@ -1751,24 +1756,9 @@ irange::intersect (const irange *other)
 void
 irange::intersect (const vrange &vr)
 {
+  disable_dump_details details;
   const irange *other = as_a <const irange *> (&vr);
-  if (simple_ranges_p ())
-    {
-      if (other->simple_ranges_p ())
-	intersect (other);
-      else
-	{
-	  int_range<1> small = *other;
-	  intersect (&small);
-	}
-    }
-  else
-    {
-      if (other->simple_ranges_p ())
-	multi_range_intersect (widest_irange (*other));
-      else
-	multi_range_intersect (*other);
-    }
+  intersect (other);
 }
 
 void

@@ -243,9 +243,6 @@ evrp_range_analyzer::try_find_new_range_with_gori
 static void
 dump_gori_improvements (tree name, const irange *r_evrp, const irange *r_gori)
 {
-  bool details = dump_flags & TDF_DETAILS;
-  if (details)
-    dump_flags &= ~TDF_DETAILS;
   if (gori_range_is_better (r_evrp, r_gori))
     {
       fprintf (dump_file, "GORI improved: ");
@@ -266,14 +263,12 @@ dump_gori_improvements (tree name, const irange *r_evrp, const irange *r_gori)
 	    {
 	      widest_irange r;
 	      r = *r_evrp;
-	      r.intersect (r_gori);
+	      r.intersect (*r_gori);
 	      r.dump (dump_file);
 	    }
 	}
       fprintf (dump_file, "\n");
     }
-  if (details)
-    dump_flags |= TDF_DETAILS;
 }
 
 void
