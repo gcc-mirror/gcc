@@ -2957,12 +2957,12 @@ namespace selftest
 #define UCHAR(N) build_int_cstu (unsigned_char_type_node, (N))
 #define SCHAR(N) build_int_cst (signed_char_type_node, (N))
 
-static irange<3>
+static int_range<3>
 build_range3 (int a, int b, int c, int d, int e, int f)
 {
-  irange<3> i1 (INT (a), INT (b));
-  irange<3> i2 (INT (c), INT (d));
-  irange<3> i3 (INT (e), INT (f));
+  int_range<3> i1 (INT (a), INT (b));
+  int_range<3> i2 (INT (c), INT (d));
+  int_range<3> i3 (INT (e), INT (f));
   i1.union_ (i2);
   i1.union_ (i3);
   return i1;
@@ -2971,7 +2971,7 @@ build_range3 (int a, int b, int c, int d, int e, int f)
 static void
 range3_tests ()
 {
-  typedef irange<3> irange3;
+  typedef int_range<3> irange3;
   irange3 r0, r1, r2;
   irange3 i1, i2, i3;
 
@@ -3054,7 +3054,7 @@ widest_irange_tests ()
   // Build a huge multi-range range.
   for (nrange = 0; nrange < 50; ++nrange)
     {
-      irange<1> tmp (INT (nrange*10), INT (nrange*10 + 5));
+      int_range<1> tmp (INT (nrange*10), INT (nrange*10 + 5));
       big.union_ (tmp);
     }
   ASSERT_TRUE (big.num_pairs () == nrange);
@@ -3067,7 +3067,7 @@ widest_irange_tests ()
   big.invert ();
   ASSERT_TRUE (big.num_pairs () == nrange + 1);
 
-  irange<1> tmp (INT (5), INT (37));
+  int_range<1> tmp (INT (5), INT (37));
   big.intersect (tmp);
   ASSERT_TRUE (big.num_pairs () == 4);
 }
@@ -3076,9 +3076,9 @@ static void
 multi_precision_range_tests ()
 {
   // Test truncating copy.
-  irange<3> big = build_range3 (10, 20, 30, 40, 50, 60);
-  irange<1> small = big;
-  ASSERT_TRUE (small == irange<1> (INT (10), INT (60)));
+  int_range<3> big = build_range3 (10, 20, 30, 40, 50, 60);
+  int_range<1> small = big;
+  ASSERT_TRUE (small == int_range<1> (INT (10), INT (60)));
 
   range3_tests ();
 }

@@ -4652,7 +4652,7 @@ value_range_equiv::intersect (const vrange &vother)
 {
   if (!is_a <const value_range_equiv *> (&vother))
     {
-      int_range::intersect (vother);
+      irange::intersect (vother);
       return;
     }
   const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);
@@ -4714,7 +4714,7 @@ value_range_equiv::union_ (const vrange &vother)
 {
   if (!is_a <const value_range_equiv *> (&vother))
     {
-      int_range::union_ (vother);
+      irange::union_ (vother);
       return;
     }
   const value_range_equiv *other = as_a <const value_range_equiv *> (&vother);

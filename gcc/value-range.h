@@ -76,7 +76,7 @@ protected:
 
 // Range of values that can be associated with an SSA_NAME.
 
-class int_range : public vrange
+class irange : public vrange
 {
 public:
   void set (tree, tree, value_range_kind = VR_RANGE);
@@ -92,14 +92,14 @@ public:
   bool symbolic_p () const;
   bool constant_p () const;
 
-  void union_ (const int_range *);
-  void intersect (const int_range *);
+  void union_ (const irange *);
+  void intersect (const irange *);
   virtual void union_ (const vrange &);
   virtual void intersect (const vrange &);
 
-  bool operator== (const int_range &) const;
-  bool operator!= (const int_range &r) const { return !(*this == r); }
-  bool equal_p (const int_range &) const;
+  bool operator== (const irange &) const;
+  bool operator!= (const irange &r) const { return !(*this == r); }
+  bool equal_p (const irange &) const;
 
   /* Misc methods.  */
   bool may_contain_p (tree) const;
@@ -121,51 +121,51 @@ public:
 
 protected:
   void check ();
-  int_range (tree *, unsigned);
-  int_range (tree *, unsigned, const int_range &);
+  irange (tree *, unsigned);
+  irange (tree *, unsigned, const irange &);
 
 private:
   int value_inside_range (tree) const;
 
   virtual void copy_simple_range (const vrange &);
   void intersect_from_wide_ints (const wide_int &, const wide_int &);
-  bool maybe_anti_range (const int_range &) const;
+  bool maybe_anti_range (const irange &) const;
   void multi_range_set_anti_range (tree, tree);
-  void multi_range_union (const int_range &);
-  void multi_range_intersect (const int_range &);
+  void multi_range_union (const irange &);
+  void multi_range_intersect (const irange &);
   tree tree_lower_bound (unsigned = 0) const;
   tree tree_upper_bound (unsigned) const;
 };
 
 template<unsigned N>
-class GTY((user)) irange : public int_range
+class GTY((user)) int_range : public irange
 {
 public:
-  irange ();
-  irange (tree, tree, value_range_kind = VR_RANGE);
-  irange (tree type, const wide_int &, const wide_int &,
-	  value_range_kind = VR_RANGE);
-  irange (tree type);
-  irange (const irange &);
-  irange (const int_range &);
-  irange& operator= (const irange &);
+  int_range ();
+  int_range (tree, tree, value_range_kind = VR_RANGE);
+  int_range (tree type, const wide_int &, const wide_int &,
+	     value_range_kind = VR_RANGE);
+  int_range (tree type);
+  int_range (const int_range &);
+  int_range (const irange &);
+  int_range& operator= (const int_range &);
 private:
-  template <unsigned X> friend void gt_ggc_mx (irange<X> *);
-  template <unsigned X> friend void gt_pch_nx (irange<X> *);
-  template <unsigned X> friend void gt_pch_nx (irange<X> *,
+  template <unsigned X> friend void gt_ggc_mx (int_range<X> *);
+  template <unsigned X> friend void gt_pch_nx (int_range<X> *);
+  template <unsigned X> friend void gt_pch_nx (int_range<X> *,
 					       gt_pointer_operator, void *);
   /* ?? hash-traits.h has its own extern for these, which is causing
      them to never be picked up by the templates.  For now, define
      elsewhere.  */
-  //template<unsigned X> friend void gt_ggc_mx (irange<X> *&);
-  //template<unsigned X> friend void gt_pch_nx (irange<X> *&);
-  friend void gt_ggc_mx (irange<1> *&);
-  friend void gt_pch_nx (irange<1> *&);
+  //template<unsigned X> friend void gt_ggc_mx (int_range<X> *&);
+  //template<unsigned X> friend void gt_pch_nx (int_range<X> *&);
+  friend void gt_ggc_mx (int_range<1> *&);
+  friend void gt_pch_nx (int_range<1> *&);
 
   tree m_ranges[N*2];
 };
 
-class widest_irange : public int_range
+class widest_irange : public irange
 {
 public:
   widest_irange ();
@@ -174,7 +174,7 @@ public:
 		 value_range_kind = VR_RANGE);
   widest_irange (tree type);
   widest_irange (const widest_irange &);
-  widest_irange (const int_range &);
+  widest_irange (const irange &);
   ~widest_irange ();
 
   virtual void union_ (const vrange &);
@@ -188,11 +188,11 @@ private:
   tree m_ranges[m_sub_ranges_in_local_storage*2];
 };
 
-typedef irange<1> value_range;
+typedef int_range<1> value_range;
 
 value_range union_helper (const value_range *, const value_range *);
 value_range intersect_helper (const value_range *, const value_range *);
-extern bool range_has_numeric_bounds_p (const int_range *);
+extern bool range_has_numeric_bounds_p (const irange *);
 extern bool ranges_from_anti_range (const value_range *,
 				    value_range *, value_range *);
 extern void dump_value_range (FILE *, const vrange *);
@@ -204,15 +204,15 @@ extern bool vrp_operand_equal_p (const_tree, const_tree);
 
 template<unsigned N>
 inline
-irange<N>::irange ()
-  : int_range (m_ranges, N)
+int_range<N>::int_range ()
+  : irange (m_ranges, N)
 {
   m_kind = VR_UNDEFINED;
   m_num_ranges = 0;
 }
 
 inline value_range_kind
-int_range::kind () const
+irange::kind () const
 {
   if (simple_ranges_p ())
     return m_kind;
@@ -242,25 +242,25 @@ vrange::type () const
 }
 
 inline tree
-int_range::tree_lower_bound (unsigned i) const
+irange::tree_lower_bound (unsigned i) const
 {
   return m_base[i * 2];
 }
 
 inline tree
-int_range::tree_upper_bound (unsigned i) const
+irange::tree_upper_bound (unsigned i) const
 {
   return m_base[i * 2 + 1];
 }
 
 inline tree
-int_range::min () const
+irange::min () const
 {
   return tree_lower_bound (0);
 }
 
 inline tree
-int_range::max () const
+irange::max () const
 {
   if (m_num_ranges)
     return tree_upper_bound (m_num_ranges - 1);
@@ -290,7 +290,7 @@ vrange::undefined_p () const
 }
 
 inline bool
-int_range::zero_p () const
+irange::zero_p () const
 {
   if (m_num_ranges == 1
       && integer_zerop (tree_lower_bound (0))
@@ -303,17 +303,17 @@ int_range::zero_p () const
 }
 
 inline bool
-int_range::nonzero_p () const
+irange::nonzero_p () const
 {
   if (undefined_p ())
     return false;
 
   tree zero = build_zero_cst (type ());
-  return *this == irange<1> (zero, zero, VR_ANTI_RANGE);
+  return *this == int_range<1> (zero, zero, VR_ANTI_RANGE);
 }
 
 inline bool
-int_range::supports_type_p (tree type)
+irange::supports_type_p (tree type)
 {
   if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
     return type;
@@ -321,7 +321,7 @@ int_range::supports_type_p (tree type)
 }
 
 inline bool
-range_includes_zero_p (const int_range *vr)
+range_includes_zero_p (const irange *vr)
 {
   if (vr->undefined_p ())
     return false;
@@ -335,7 +335,7 @@ range_includes_zero_p (const int_range *vr)
 template <>
 template <>
 inline bool
-is_a_helper <const int_range *>::test (const vrange *p)
+is_a_helper <const irange *>::test (const vrange *p)
 {
   return p
     && (p->m_discriminator == VRANGE_KIND_INT
@@ -345,7 +345,7 @@ is_a_helper <const int_range *>::test (const vrange *p)
 template <>
 template <>
 inline bool
-is_a_helper <int_range *>::test (vrange *p)
+is_a_helper <irange *>::test (vrange *p)
 {
   return p
     && (p->m_discriminator == VRANGE_KIND_INT
@@ -354,7 +354,7 @@ is_a_helper <int_range *>::test (vrange *p)
 
 template<unsigned N>
 static inline void
-gt_ggc_mx (irange<N> *x)
+gt_ggc_mx (int_range<N> *x)
 {
   for (unsigned i = 0; i < N; ++i)
     {
@@ -365,7 +365,7 @@ gt_ggc_mx (irange<N> *x)
 
 template<unsigned N>
 static inline void
-gt_pch_nx (irange<N> *x)
+gt_pch_nx (int_range<N> *x)
 {
   for (unsigned i = 0; i < N; ++i)
     {
@@ -376,7 +376,7 @@ gt_pch_nx (irange<N> *x)
 
 template<unsigned N>
 static inline void
-gt_pch_nx (irange<N> *x, gt_pointer_operator op, void *cookie)
+gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
 {
   for (unsigned i = 0; i < N; ++i)
     {

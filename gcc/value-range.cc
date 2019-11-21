@@ -60,8 +60,8 @@ vrange::compatible_copy_p (const vrange &src) const
 
   // Symbolics may be copied straight because there's only one
   // representation for them.
-  const int_range *irange = as_a <const int_range *> (&src);
-  return irange && !range_has_numeric_bounds_p ((const int_range *) &src);
+  const irange *int_range = as_a <const irange *> (&src);
+  return int_range && !range_has_numeric_bounds_p ((const irange *) &src);
 }
 
 void
@@ -91,7 +91,7 @@ vrange::copy_incompatible_range (const vrange &src)
 }
 
 bool
-int_range::maybe_anti_range (const int_range &src) const
+irange::maybe_anti_range (const irange &src) const
 {
   if (src.simple_ranges_p ())
     return false;
@@ -110,9 +110,9 @@ int_range::maybe_anti_range (const int_range &src) const
 }
 
 void
-int_range::copy_simple_range (const vrange &vsrc)
+irange::copy_simple_range (const vrange &vsrc)
 {
-  const int_range *src = reinterpret_cast <const int_range *> (&vsrc);
+  const irange *src = reinterpret_cast <const irange *> (&vsrc);
   gcc_checking_assert (src->simple_ranges_p () != simple_ranges_p ());
 
   if (src->undefined_p ())
@@ -121,7 +121,7 @@ int_range::copy_simple_range (const vrange &vsrc)
     set_varying (src->type ());
   else if (maybe_anti_range (*src))
     {
-      irange<10> tmp = *src;
+      int_range<10> tmp = *src;
       tmp.invert ();
       set (wide_int_to_tree (src->type (), tmp.lower_bound ()),
 	   wide_int_to_tree (src->type (), tmp.upper_bound ()),
@@ -136,9 +136,9 @@ int_range::copy_simple_range (const vrange &vsrc)
     }
 }
 
-// int_range constructors
+// irange constructors
 
-int_range::int_range (tree *base, unsigned nranges)
+irange::irange (tree *base, unsigned nranges)
 {
   m_kind = VR_UNDEFINED;
   m_discriminator = VRANGE_KIND_INT;
@@ -147,7 +147,7 @@ int_range::int_range (tree *base, unsigned nranges)
   m_max_ranges = nranges;
 }
 
-int_range::int_range (tree *base, unsigned nranges, const int_range &other)
+irange::irange (tree *base, unsigned nranges, const irange &other)
 {
   m_discriminator = VRANGE_KIND_INT;
   m_base = base;
@@ -156,32 +156,32 @@ int_range::int_range (tree *base, unsigned nranges, const int_range &other)
   *this = other;
 }
 
-// irange constructors.
+// int_range constructors.
 
 template<unsigned N>
-irange<N>::irange (const irange &other)
-  : int_range (m_ranges, N, other)
+int_range<N>::int_range (const int_range &other)
+  : irange (m_ranges, N, other)
 {
 }
 
 template<unsigned N>
-irange<N>::irange (tree min, tree max, value_range_kind kind)
-  : int_range (m_ranges, N)
+int_range<N>::int_range (tree min, tree max, value_range_kind kind)
+  : irange (m_ranges, N)
 {
   set (min, max, kind);
 }
 
 template<unsigned N>
-irange<N>::irange (tree type)
-  : int_range (m_ranges, N)
+int_range<N>::int_range (tree type)
+  : irange (m_ranges, N)
 {
   set_varying (type);
 }
 
 template<unsigned N>
-irange<N>::irange (tree type, const wide_int &wmin, const wide_int &wmax,
-		   value_range_kind kind)
-  : int_range (m_ranges, N)
+int_range<N>::int_range (tree type, const wide_int &wmin, const wide_int &wmax,
+			 value_range_kind kind)
+  : irange (m_ranges, N)
 {
   tree min = wide_int_to_tree (type, wmin);
   tree max = wide_int_to_tree (type, wmax);
@@ -189,14 +189,14 @@ irange<N>::irange (tree type, const wide_int &wmin, const wide_int &wmax,
 }
 
 template<unsigned N>
-irange<N>::irange (const int_range &other)
-  : int_range (m_ranges, N, other)
+int_range<N>::int_range (const irange &other)
+  : irange (m_ranges, N, other)
 {
 }
 
 template<unsigned N>
-irange<N>&
-irange<N>::operator= (const irange &src)
+int_range<N>&
+int_range<N>::operator= (const int_range &src)
 {
   vrange::operator= (src);
   return *this;
@@ -205,13 +205,13 @@ irange<N>::operator= (const irange &src)
 // widest_irange implementation
 
 widest_irange::widest_irange ()
-  : int_range (m_ranges, m_sub_ranges_in_local_storage)
+  : irange (m_ranges, m_sub_ranges_in_local_storage)
 {
   init_widest_irange ();
 }
 
 widest_irange::widest_irange (const widest_irange &other)
-  : int_range (m_ranges, m_sub_ranges_in_local_storage)
+  : irange (m_ranges, m_sub_ranges_in_local_storage)
 {
   init_widest_irange ();
   resize_if_needed (other.num_pairs ());
@@ -219,14 +219,14 @@ widest_irange::widest_irange (const widest_irange &other)
 }
 
 widest_irange::widest_irange (tree min, tree max, value_range_kind kind)
-  : int_range (m_ranges, m_sub_ranges_in_local_storage)
+  : irange (m_ranges, m_sub_ranges_in_local_storage)
 {
   init_widest_irange ();
   set (min, max, kind);
 }
 
 widest_irange::widest_irange (tree type)
-  : int_range (m_ranges, m_sub_ranges_in_local_storage)
+  : irange (m_ranges, m_sub_ranges_in_local_storage)
 {
   init_widest_irange ();
   set_varying (type);
@@ -235,7 +235,7 @@ widest_irange::widest_irange (tree type)
 widest_irange::widest_irange (tree type,
 			      const wide_int &wmin, const wide_int &wmax,
 			      value_range_kind kind)
-  : int_range (m_ranges, m_sub_ranges_in_local_storage)
+  : irange (m_ranges, m_sub_ranges_in_local_storage)
 {
   init_widest_irange ();
   tree min = wide_int_to_tree (type, wmin);
@@ -243,8 +243,8 @@ widest_irange::widest_irange (tree type,
   set (min, max, kind);
 }
 
-widest_irange::widest_irange (const int_range &other)
-  : int_range (m_ranges, m_sub_ranges_in_local_storage)
+widest_irange::widest_irange (const irange &other)
+  : irange (m_ranges, m_sub_ranges_in_local_storage)
 {
   init_widest_irange ();
   resize_if_needed (other.num_pairs ());
@@ -289,7 +289,7 @@ widest_irange::union_ (const vrange &other)
 {
   unsigned size = num_pairs () + other.num_pairs ();
   resize_if_needed (size);
-  int_range::union_ (other);
+  irange::union_ (other);
 }
 
 void
@@ -297,7 +297,7 @@ widest_irange::invert ()
 {
   unsigned size = num_pairs () + 1;
   resize_if_needed (size);
-  int_range::invert ();
+  irange::invert ();
 }
 
 void
@@ -334,7 +334,7 @@ vrange::set_varying (tree type)
    extract ranges from var + CST op limit.  */
 
 void
-int_range::set (tree min, tree max, value_range_kind kind)
+irange::set (tree min, tree max, value_range_kind kind)
 {
   /* Use the canonical setters for VR_UNDEFINED and VR_VARYING.  */
   if (kind == VR_UNDEFINED)
@@ -500,7 +500,7 @@ int_range::set (tree min, tree max, value_range_kind kind)
 }
 
 void
-int_range::multi_range_set_anti_range (tree min, tree max)
+irange::multi_range_set_anti_range (tree min, tree max)
 {
   // Calculate INVERSE([I,J]) as [-MIN, I-1][J+1, +MAX].
   tree type = TREE_TYPE (min);
@@ -542,7 +542,7 @@ int_range::multi_range_set_anti_range (tree min, tree max)
 }
 
 void
-int_range::set (tree val)
+irange::set (tree val)
 {
   gcc_assert (TREE_CODE (val) == SSA_NAME || is_gimple_min_invariant (val));
   if (TREE_OVERFLOW_P (val))
@@ -553,7 +553,7 @@ int_range::set (tree val)
 /* Set value range VR to a nonzero range of type TYPE.  */
 
 void
-int_range::set_nonzero (tree type)
+irange::set_nonzero (tree type)
 {
   tree zero = build_int_cst (type, 0);
   set (zero, zero, VR_ANTI_RANGE);
@@ -562,7 +562,7 @@ int_range::set_nonzero (tree type)
 /* Set value range VR to a ZERO range of type TYPE.  */
 
 void
-int_range::set_zero (tree type)
+irange::set_zero (tree type)
 {
   set (build_int_cst (type, 0));
 }
@@ -570,7 +570,7 @@ int_range::set_zero (tree type)
 /* Check the validity of the range.  */
 
 void
-int_range::check ()
+irange::check ()
 {
   switch (m_kind)
     {
@@ -613,7 +613,7 @@ int_range::check ()
 /* Return the number of sub-ranges in a range.  */
 
 unsigned
-int_range::num_pairs () const
+irange::num_pairs () const
 {
   if (undefined_p ())
     return 0;
@@ -640,7 +640,7 @@ int_range::num_pairs () const
    question.  */
 
 wide_int
-int_range::lower_bound (unsigned pair) const
+irange::lower_bound (unsigned pair) const
 {
   if (symbolic_p ())
     {
@@ -669,7 +669,7 @@ int_range::lower_bound (unsigned pair) const
    question.  */
 
 wide_int
-int_range::upper_bound (unsigned pair) const
+irange::upper_bound (unsigned pair) const
 {
   if (symbolic_p ())
     {
@@ -697,7 +697,7 @@ int_range::upper_bound (unsigned pair) const
 /* Return the highest bound in a range.  */
 
 wide_int
-int_range::upper_bound () const
+irange::upper_bound () const
 {
   unsigned pairs = num_pairs ();
   gcc_checking_assert (pairs > 0);
@@ -705,7 +705,7 @@ int_range::upper_bound () const
 }
 
 bool
-int_range::equal_p (const int_range &other) const
+irange::equal_p (const irange &other) const
 {
   if (simple_ranges_p () != other.simple_ranges_p ())
     {
@@ -731,7 +731,7 @@ int_range::equal_p (const int_range &other) const
 }
 
 bool
-int_range::operator== (const int_range &r) const
+irange::operator== (const irange &r) const
 {
   return equal_p (r);
 }
@@ -742,7 +742,7 @@ int_range::operator== (const int_range &r) const
 /* Return TRUE if this is a symbolic range.  */
 
 bool
-int_range::symbolic_p () const
+irange::symbolic_p () const
 {
   return (!varying_p ()
 	  && !undefined_p ()
@@ -756,7 +756,7 @@ int_range::symbolic_p () const
    constants would be represented as [-MIN, +MAX].  */
 
 bool
-int_range::constant_p () const
+irange::constant_p () const
 {
   return (!varying_p ()
 	  && !undefined_p ()
@@ -765,7 +765,7 @@ int_range::constant_p () const
 }
 
 bool
-int_range::singleton_p (tree *result) const
+irange::singleton_p (tree *result) const
 {
   if (!simple_ranges_p ())
     {
@@ -816,7 +816,7 @@ int_range::singleton_p (tree *result) const
    function.  */
 
 int
-int_range::value_inside_range (tree val) const
+irange::value_inside_range (tree val) const
 {
   int cmp1, cmp2;
 
@@ -845,7 +845,7 @@ int_range::value_inside_range (tree val) const
 /* Return TRUE if it is possible that range contains VAL.  */
 
 bool
-int_range::may_contain_p (tree val) const
+irange::may_contain_p (tree val) const
 {
   return value_inside_range (val) != 0;
 }
@@ -853,7 +853,7 @@ int_range::may_contain_p (tree val) const
 /* Return TRUE if range contains INTEGER_CST.  */
 
 bool
-int_range::contains_p (tree cst) const
+irange::contains_p (tree cst) const
 {
   gcc_checking_assert (TREE_CODE (cst) == INTEGER_CST);
   if (symbolic_p ())
@@ -868,7 +868,7 @@ int_range::contains_p (tree cst) const
 /* Normalize addresses into constants.  */
 
 void
-int_range::normalize_addresses ()
+irange::normalize_addresses ()
 {
   if (undefined_p ())
     return;
@@ -889,7 +889,7 @@ int_range::normalize_addresses ()
 /* Normalize symbolics and addresses into constants.  */
 
 void
-int_range::normalize_symbolics ()
+irange::normalize_symbolics ()
 {
   if (varying_p () || undefined_p ())
     return;
@@ -1635,7 +1635,7 @@ union_helper (const value_range *vr0, const value_range *vr1)
    may not be the smallest possible such range.  */
 
 void
-int_range::union_ (const int_range *other)
+irange::union_ (const irange *other)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1660,14 +1660,14 @@ int_range::union_ (const int_range *other)
 /* Range union, but for references.  */
 
 void
-int_range::union_ (const vrange &vr)
+irange::union_ (const vrange &vr)
 {
   /* Disable details for now, because it makes the ranger dump
      unnecessarily verbose.  */
   bool details = dump_flags & TDF_DETAILS;
   if (details)
     dump_flags &= ~TDF_DETAILS;
-  const int_range *r = as_a <const int_range *> (&vr);
+  const irange *r = as_a <const irange *> (&vr);
   if (simple_ranges_p ())
     union_ (r);
   else
@@ -1677,7 +1677,7 @@ int_range::union_ (const vrange &vr)
 }
 
 void
-int_range::intersect (const int_range *other)
+irange::intersect (const irange *other)
 {
   gcc_checking_assert (simple_ranges_p () && other->simple_ranges_p ());
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1703,14 +1703,14 @@ int_range::intersect (const int_range *other)
 /* Range intersect, but for references.  */
 
 void
-int_range::intersect (const vrange &vr)
+irange::intersect (const vrange &vr)
 {
   /* Disable details for now, because it makes the ranger dump
      unnecessarily verbose.  */
   bool details = dump_flags & TDF_DETAILS;
   if (details)
     dump_flags &= ~TDF_DETAILS;
-  const int_range *r = as_a <const int_range *> (&vr);
+  const irange *r = as_a <const irange *> (&vr);
   if (simple_ranges_p ())
     intersect (r);
   else
@@ -1720,7 +1720,7 @@ int_range::intersect (const vrange &vr)
 }
 
 void
-int_range::multi_range_union (const int_range &r)
+irange::multi_range_union (const irange &r)
 {
   if (undefined_p ())
     {
@@ -1837,7 +1837,7 @@ int_range::multi_range_union (const int_range &r)
 }
 
 void
-int_range::intersect_from_wide_ints (const wide_int &x, const wide_int &y)
+irange::intersect_from_wide_ints (const wide_int &x, const wide_int &y)
 {
   if (undefined_p ())
     return;
@@ -1865,7 +1865,7 @@ int_range::intersect_from_wide_ints (const wide_int &x, const wide_int &y)
 }
 
 void
-int_range::multi_range_intersect (const int_range &r)
+irange::multi_range_intersect (const irange &r)
 {
   if (undefined_p ())
     return;
@@ -1914,7 +1914,7 @@ subtract_one (const wide_int &x, tree type, wi::overflow_type &overflow)
 /* Return the inverse of a range.  */
 
 void
-int_range::invert ()
+irange::invert ()
 {
   if (simple_ranges_p ())
     {
@@ -2025,7 +2025,7 @@ int_range::invert ()
 }
 
 void
-int_range::simple_dump (FILE *file) const
+irange::simple_dump (FILE *file) const
 {
   if (undefined_p ())
     fprintf (file, "UNDEFINED");
@@ -2069,10 +2069,10 @@ int_range::simple_dump (FILE *file) const
 void
 vrange::dump (FILE *file) const
 {
-  const int_range *irange = as_a <const int_range *> (this);
-  if (irange && simple_ranges_p ())
+  const irange *ir = as_a <const irange *> (this);
+  if (ir && simple_ranges_p ())
     {
-      irange->simple_dump (file);
+      ir->simple_dump (file);
       return;
     }
   if (undefined_p ())
@@ -2166,7 +2166,7 @@ ranges_from_anti_range (const value_range *ar,
 }
 
 bool
-range_has_numeric_bounds_p (const int_range *vr)
+range_has_numeric_bounds_p (const irange *vr)
 {
   return (!vr->undefined_p ()
 	  && TREE_CODE (vr->min ()) == INTEGER_CST
@@ -2237,9 +2237,9 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   return true;
 }
 
-#define DEFINE_IRANGE_GC_STUBS(N)		\
+#define DEFINE_INT_RANGX_GC_STUBS(N)		\
   void						\
-  gt_pch_nx (irange<N> *&x)			\
+  gt_pch_nx (int_range<N> *&x)			\
   {						\
     for (unsigned i = 0; i < N; ++i)		\
       {						\
@@ -2249,7 +2249,7 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   }						\
 						\
   void						\
-  gt_ggc_mx (irange<N> *&x)			\
+  gt_ggc_mx (int_range<N> *&x)			\
   {	    	       				\
     for (unsigned i = 0; i < N; ++i)		\
       {						\
@@ -2258,17 +2258,17 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
       }						\
   }
 
-#define DEFINE_IRANGE_INSTANCE(N) \
-  template irange<N>::irange(tree, tree, value_range_kind);	\
-  template irange<N>::irange(tree_node *,			\
-			     const wide_int &,			\
-			     const wide_int &,			\
-			     value_range_kind);			\
-  template irange<N>::irange(tree);				\
-  template irange<N>::irange(const int_range &);		\
-  template irange<N>::irange(const irange &);			\
-  template irange<N>& irange<N>::operator= (const irange &);
+#define DEFINE_INT_RANGX_INSTANCE(N)					\
+  template int_range<N>::int_range(tree, tree, value_range_kind);	\
+  template int_range<N>::int_range(tree_node *,				\
+				   const wide_int &,			\
+				   const wide_int &,			\
+				   value_range_kind);			\
+  template int_range<N>::int_range(tree);				\
+  template int_range<N>::int_range(const irange &);			\
+  template int_range<N>::int_range(const int_range &);			\
+  template int_range<N>& int_range<N>::operator= (const int_range &);
 
-DEFINE_IRANGE_INSTANCE(1)
-DEFINE_IRANGE_GC_STUBS(1)
-DEFINE_IRANGE_INSTANCE(3)
+DEFINE_INT_RANGX_INSTANCE(1)
+DEFINE_INT_RANGX_GC_STUBS(1)
+DEFINE_INT_RANGX_INSTANCE(3)
