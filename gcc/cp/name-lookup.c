@@ -3922,23 +3922,6 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
-/* Lookup NAME in ENUMERAL_TYPE ETYPE.  */
-
-static tree
-lookup_enum_member (tree etype, tree name)
-{
-  if (COMPLETE_TYPE_P (etype))
-    for (tree values = TYPE_VALUES (etype);
-	 values; values = TREE_CHAIN (values))
-      {
-	tree decl = TREE_VALUE (values);
-	if (name == DECL_NAME (decl))
-	  return decl;
-      }
-
-  return NULL_TREE;
-}
-
 /* DECL is a yet-to-be-loaded mergeable entity in namespace CTX slot
    NAME.  PARTITION is true if it is from a module partition
    (otherwise it is a global module entity), RET and ARGS are its
@@ -4274,6 +4257,8 @@ get_binding_or_decl (tree ctx, tree name, int)
     for (tree decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
       if (name == DECL_NAME (decl))
 	return decl;
+
+  return NULL_TREE;
 }
 
 /* Find a decl by name & type.  */
