@@ -1,3 +1,14 @@
+2019-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91623
+	* optabs.c (expand_vec_cond_expr): If op0 is a VECTOR_CST and only
+	EQ_EXPR/NE_EXPR is supported, verify that op0 only contains
+	zeros or negative elements and use NE_EXPR instead of LT_EXPR against
+	zero vector.
+
 2019-11-20  Peter Bergner <bergner@linux.ibm.com>
 
 	Backport from mainline
