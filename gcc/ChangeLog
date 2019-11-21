@@ -1,3 +1,9 @@
+2019-11-21  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (update_callee_keys): Add parameter UPDATE_SINCE.
+	(resolve_noninline_speculation, inline_small_functions): Avoid
+	redundant updates.
+
 2019-11-21  Richard Biener  <rguenther@suse.de>
 
 	* lra.c (lra_insn_recog_data_pool): New.
