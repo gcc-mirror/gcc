@@ -1265,7 +1265,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	}
       if (overall_growth > 0)
         {
-	  /* Strongly preffer functions with few callers that can be inlined
+	  /* Strongly prefer functions with few callers that can be inlined
 	     fully.  The square root here leads to smaller binaries at average.
 	     Watch however for extreme cases and return to linear function
 	     when growth is large.  */
