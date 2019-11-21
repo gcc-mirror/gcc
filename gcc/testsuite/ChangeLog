@@ -1,3 +1,8 @@
+2019-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/92619
+	* gcc.dg/gnu2x-attrs-1.c: Fix dg-error syntax.
+
 2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/92526
