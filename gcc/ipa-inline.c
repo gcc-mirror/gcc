@@ -672,14 +672,29 @@ want_early_inline_function_p (struct cgraph_edge *e)
     }
   else
     {
-      int growth = estimate_edge_growth (e);
+      /* First take care of very large functions.  */
+      int min_growth = estimate_min_edge_growth (e), growth = 0;
       int n;
       int early_inlining_insns = opt_for_fn (e->caller->decl, optimize) >= 3
 				 ? param_early_inlining_insns
 				 : param_early_inlining_insns_o2;
 
+      if (min_growth > early_inlining_insns)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
+			     "  will not early inline: %C->%C, "
+			     "call is cold and code would grow "
+			     "at least by %i\n",
+			     e->caller, callee,
+			     min_growth);
+	  want_inline = false;
+	}
+      else
+        growth = estimate_edge_growth (e);
 
-      if (growth <= param_max_inline_insns_size)
+
+      if (!want_inline || growth <= param_max_inline_insns_size)
 	;
       else if (!e->maybe_hot_p ())
 	{
