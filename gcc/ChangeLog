@@ -1,5 +1,14 @@
 2019-11-21  Richard Biener  <rguenther@suse.de>
 
+	Revert
+	2019-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91790
+	* tree-vect-stmts.c (vectorizable_load): For BB vectorization
+	use the correct DR for setting up realignment.
+
+2019-11-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c (equiv_class_hasher): Change to nofree.
 	(equiv_class_obstack): New.
 	(equiv_class_lookup_or_add): Allocate from equiv_class_obstack.
