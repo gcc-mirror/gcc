@@ -243,6 +243,8 @@ evrp_range_analyzer::try_find_new_range_with_gori
 static void
 dump_gori_improvements (tree name, const irange *r_evrp, const irange *r_gori)
 {
+  if (r_evrp && !range_has_numeric_bounds_p (r_evrp))
+    return;
   if (gori_range_is_better (r_evrp, r_gori))
     {
       fprintf (dump_file, "GORI improved: ");
