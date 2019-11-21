@@ -1,5 +1,9 @@
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/91355
+	* tree-ssa-sink.c (select_best_block): Use >= rather than >
+	for early_bb scaled count with best_bb count comparison.
+
 	* ipa-fnsummary.h (enum ipa_hints_vals): Fix comment typo,
 	preffer -> prefer.
 	* ipa-inline.c (edge_badness): Likewise.
