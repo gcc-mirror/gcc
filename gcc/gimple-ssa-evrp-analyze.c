@@ -185,9 +185,9 @@ gori_range_is_better (const irange *range_evrp,
   if (!range_evrp)
     return true;
 
-  if (range_evrp->symbolic_p ())
+  if (!range_has_numeric_bounds_p (range_evrp))
     {
-      gcc_checking_assert (!range_gori->symbolic_p ());
+      gcc_checking_assert (range_has_numeric_bounds_p (range_gori));
       return true;
     }
 
