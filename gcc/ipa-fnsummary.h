@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-predicate.h"
 
 
-/* Hints are reasons why IPA heuristics should preffer specializing given
+/* Hints are reasons why IPA heuristics should prefer specializing given
    function.  They are represtented as bitmap of the following values.  */
 enum ipa_hints_vals {
   /* When specialization turns indirect call into a direct call,

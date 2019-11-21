@@ -176,7 +176,7 @@ nearest_common_dominator_of_uses (def_operand_p def_p, bool *debug_stmts)
 
    If the resulting block is in a shallower loop nest, then use it.  Else
    only use the resulting block if it has significantly lower execution
-   frequency than EARLY_BB to avoid gratutious statement movement.  We
+   frequency than EARLY_BB to avoid gratuitous statement movement.  We
    consider statements with VOPS more desirable to move.
 
    This pass would obviously benefit from PDO as it utilizes block
@@ -223,9 +223,9 @@ select_best_block (basic_block early_bb,
     }
 
   /* If BEST_BB is at the same nesting level, then require it to have
-     significantly lower execution frequency to avoid gratutious movement.  */
+     significantly lower execution frequency to avoid gratuitous movement.  */
   if (bb_loop_depth (best_bb) == bb_loop_depth (early_bb)
-      /* If result of comparsion is unknown, preffer EARLY_BB.
+      /* If result of comparsion is unknown, prefer EARLY_BB.
 	 Thus use !(...>=..) rather than (...<...)  */
       && !(best_bb->count.apply_scale (100, 1)
 	   > (early_bb->count.apply_scale (threshold, 1))))
