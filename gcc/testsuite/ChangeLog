@@ -1,3 +1,10 @@
+2020-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93212
+	* g++.dg/analyzer/analyzer.exp: New subdirectory and .exp suite.
+	* g++.dg/analyzer/malloc.C: New test.
+	* g++.dg/analyzer/pr93212.C: New test.
+
 2020-02-11  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/93683
