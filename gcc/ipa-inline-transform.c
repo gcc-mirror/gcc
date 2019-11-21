@@ -489,9 +489,9 @@ inline_call (struct cgraph_edge *e, bool update_original,
     mark_all_inlined_calls_cdtor (e->callee);
   if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
-  check_speculations (e->callee, new_edges);
+  bool removed_p = check_speculations (e->callee, new_edges);
   if (update_overall_summary)
-    ipa_update_overall_fn_summary (to);
+    ipa_update_overall_fn_summary (to, new_edges_found || removed_p);
   else
     /* Update self size by the estimate so overall function growth limits
        work for further inlining into this function.  Before inlining

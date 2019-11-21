@@ -358,7 +358,7 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					int *, sreal *, sreal *,
 				        ipa_hints *);
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
-void ipa_update_overall_fn_summary (struct cgraph_node *node);
+void ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset = true);
 void compute_fn_summary (struct cgraph_node *, bool);
 
 
