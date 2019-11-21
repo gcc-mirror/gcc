@@ -1,3 +1,10 @@
+2019-11-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (dumper::impl:nested_name): Obnly show module on imports.
+	gcc/testsuite/
+	* g++dg.modules: Anjust many scans.
+
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

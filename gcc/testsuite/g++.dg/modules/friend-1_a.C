@@ -32,6 +32,6 @@ public:
 
 // hidey, peeker & secret are all in different clusters
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::peeker@bob:.'\n  \[1\]=binding '::peeker'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::hidey@bob:.'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* @bob:.'\n)*  \[.\]=binding '::hidey'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::secret@bob:.'\n(  \[.\]=clone (declaration|definition) '::secret[^\n]* @bob:.'\n)*  \[.\]=binding '::secret'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::peeker'\n  \[1\]=binding '::peeker'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::hidey'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* '\n)*  \[.\]=binding '::hidey'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::secret'\n(  \[.\]=clone (declaration|definition) '::secret[^\n]* '\n)*  \[.\]=binding '::secret'} module } }

@@ -20,7 +20,7 @@ export inline void user ()
   foo (1);
 }
 
-// { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo@foo:.<int>'} module } }
-// { dg-final { scan-lang-dump {Writing named key for mergeable decl function_decl:'::baz@foo:.'} module } }
-// { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo@foo:.<int>'} module } }
-// { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo@foo:.<int>'} module } }
+// { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo<int>'} module } }
+// { dg-final { scan-lang-dump {Writing named key for mergeable decl function_decl:'::baz'} module } }
+// { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo<int>'} module } }
+// { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo<int>'} module } }

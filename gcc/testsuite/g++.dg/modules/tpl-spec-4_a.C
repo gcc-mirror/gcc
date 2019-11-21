@@ -14,6 +14,6 @@ template<> struct X<int>
   int m;
 };
 
-// { dg-final { scan-lang-dump {Dependencies of specialization type_decl:'::X@TPL:.<int>'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::X@TPL:.<int>'} module } }
-// { dg-final { scan-lang-dump {Specialization '::X@TPL:.<int>' entity:[0-9]* keyed to '::X@TPL:.<T>' \(2\)} module } }
+// { dg-final { scan-lang-dump {Dependencies of specialization type_decl:'::X<int>'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::X<int>'} module } }
+// { dg-final { scan-lang-dump {Specialization '::X<int>' entity:[0-9]* keyed to '::X<T>' \(2\)} module } }

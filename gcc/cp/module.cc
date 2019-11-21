@@ -4139,19 +4139,14 @@ dumper::impl::nested_name (tree t)
 	    || nested_name (ctx))
 	  fputs ("::", stream);
 
-      if (!DECL_TEMPLATE_PARM_P (t)
-	  && (TREE_CODE (t) == FUNCTION_DECL
-	      || TREE_CODE (t) == VAR_DECL
-	      || TREE_CODE (t) == TYPE_DECL
-	      || (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t))))
-	{
-	  tree o = get_instantiating_module_decl (t);
-	  if (DECL_LANG_SPECIFIC (o))
-	    origin = DECL_MODULE_ORIGIN (o);
-	}
-
       int use_tpl;
       ti = node_template_info (t, use_tpl);
+      if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
+	  && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == t)
+	t = TI_TEMPLATE (ti);
+
+      if (DECL_LANG_SPECIFIC (t) && DECL_MODULE_IMPORT_P (t))
+	origin = DECL_MODULE_ORIGIN (t);
 
       t = DECL_NAME (t) ? DECL_NAME (t)
 	: HAS_DECL_ASSEMBLER_NAME_P (t) ? DECL_ASSEMBLER_NAME_RAW (t)
