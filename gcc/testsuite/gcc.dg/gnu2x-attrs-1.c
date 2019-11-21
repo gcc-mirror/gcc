@@ -5,7 +5,7 @@
 
 void f (void) {};
 
-[[gnu::alias("f")]] void g (void);
+[[gnu::alias("f")]] void g (void); /* { dg-error "only weak" *-*-darwin* } */
 
 void [[gnu::alias("f")]] h (void); /* { dg-warning "ignored" } */
 /* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
