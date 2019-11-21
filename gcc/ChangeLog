@@ -1,5 +1,12 @@
 2019-11-21  Richard Biener  <rguenther@suse.de>
 
+	* lra.c (lra_insn_recog_data_pool): New.
+	(free_insn_recog_data): Adjust.
+	(finish_insn_recog_data): Release lra_insn_recog_data_pool.
+	(lra_set_insn_recog_data): Allocate from lra_insn_recog_data_pool.
+
+2019-11-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92596
 	* tree-vect-slp.c (vect_build_slp_tree): Fix pasto.
 
