@@ -46,8 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "range-op.h"
 
-#define value_range irange	// FIXME: Temporary
-
 // Return the upper limit for a type.
 
 static inline wide_int
@@ -68,8 +66,8 @@ min_limit (const_tree type)
 // undefined and return TRUE.
 
 inline bool
-empty_range_check (value_range &r,
-		   const value_range &op1, const value_range & op2)
+empty_range_check (irange &r,
+		   const irange &op1, const irange & op2)
 {
   if (op1.undefined_p () || op2.undefined_p ())
     {
@@ -84,7 +82,7 @@ empty_range_check (value_range &r,
 // the appropriate range.
 
 static inline bool
-undefined_shift_range_check (value_range &r, tree type, const value_range &op)
+undefined_shift_range_check (irange &r, tree type, const irange &op)
 {
   if (op.undefined_p ())
     {
@@ -127,13 +125,13 @@ wi_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
 // Default wide_int fold operation returns [MIN, MAX].
 
 void
-range_operator::wi_fold (value_range &r, tree type,
+range_operator::wi_fold (irange &r, tree type,
 			 const wide_int &lh_lb ATTRIBUTE_UNUSED,
 			 const wide_int &lh_ub ATTRIBUTE_UNUSED,
 			 const wide_int &rh_lb ATTRIBUTE_UNUSED,
 			 const wide_int &rh_ub ATTRIBUTE_UNUSED) const
 {
-  gcc_checking_assert (value_range::supports_type_p (type));
+  gcc_checking_assert (irange::supports_type_p (type));
   r.set_varying (type);
 }
 
@@ -141,11 +139,11 @@ range_operator::wi_fold (value_range &r, tree type,
 // invoke the wi_fold method on each sub-range pair.
 
 bool
-range_operator::fold_range (value_range &r, tree type,
-			    const value_range &lh,
-			    const value_range &rh) const
+range_operator::fold_range (irange &r, tree type,
+			    const irange &lh,
+			    const irange &rh) const
 {
-  gcc_checking_assert (value_range::supports_type_p (type));
+  gcc_checking_assert (irange::supports_type_p (type));
   if (empty_range_check (r, lh, rh))
     return true;
 
@@ -169,10 +167,10 @@ range_operator::fold_range (value_range &r, tree type,
 // The default for op1_range is to return false.
 
 bool
-range_operator::op1_range (value_range &r ATTRIBUTE_UNUSED,
+range_operator::op1_range (irange &r ATTRIBUTE_UNUSED,
 			   tree type ATTRIBUTE_UNUSED,
-			   const value_range &lhs ATTRIBUTE_UNUSED,
-			   const value_range &op2 ATTRIBUTE_UNUSED) const
+			   const irange &lhs ATTRIBUTE_UNUSED,
+			   const irange &op2 ATTRIBUTE_UNUSED) const
 {
   return false;
 }
@@ -180,10 +178,10 @@ range_operator::op1_range (value_range &r ATTRIBUTE_UNUSED,
 // The default for op2_range is to return false.
 
 bool
-range_operator::op2_range (value_range &r ATTRIBUTE_UNUSED,
+range_operator::op2_range (irange &r ATTRIBUTE_UNUSED,
 			   tree type ATTRIBUTE_UNUSED,
-			   const value_range &lhs ATTRIBUTE_UNUSED,
-			   const value_range &op1 ATTRIBUTE_UNUSED) const
+			   const irange &lhs ATTRIBUTE_UNUSED,
+			   const irange &op1 ATTRIBUTE_UNUSED) const
 {
   return false;
 }
@@ -193,7 +191,7 @@ range_operator::op2_range (value_range &r ATTRIBUTE_UNUSED,
 // to have overflowed (or underflowed).
 
 static void
-value_range_from_overflowed_bounds (value_range &r, tree type,
+value_range_from_overflowed_bounds (irange &r, tree type,
 				    const wide_int &wmin,
 				    const wide_int &wmax)
 {
@@ -226,7 +224,7 @@ value_range_from_overflowed_bounds (value_range &r, tree type,
 // calculating WMIN and WMAX respectively.
 
 static void
-value_range_with_overflow (value_range &r, tree type,
+value_range_with_overflow (irange &r, tree type,
 			   const wide_int &wmin, const wide_int &wmax,
 			   wi::overflow_type min_ovf = wi::OVF_NONE,
 			   wi::overflow_type max_ovf = wi::OVF_NONE)
@@ -296,7 +294,7 @@ value_range_with_overflow (value_range &r, tree type,
 // [10,5] into [MIN,5][10,MAX].
 
 static inline void
-create_possibly_reversed_range (value_range &r, tree type,
+create_possibly_reversed_range (irange &r, tree type,
 				const wide_int &new_lb, const wide_int &new_ub)
 {
   signop s = TYPE_SIGN (type);
@@ -343,7 +341,7 @@ enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 // the bool range.
 
 static bool_range_state
-get_bool_state (value_range &r, const value_range &lhs, tree val_type)
+get_bool_state (irange &r, const irange &lhs, tree val_type)
 {
   // If there is no result, then this is unexecutable.
   if (lhs.undefined_p ())
@@ -369,21 +367,21 @@ get_bool_state (value_range &r, const value_range &lhs, tree val_type)
 class operator_equal : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &val) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &val) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &val) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &val) const;
 } op_equal;
 
 bool
-operator_equal::fold_range (value_range &r, tree type,
-			    const value_range &op1,
-			    const value_range &op2) const
+operator_equal::fold_range (irange &r, tree type,
+			    const irange &op1,
+			    const irange &op2) const
 {
   if (empty_range_check (r, op1, op2))
     return true;
@@ -413,9 +411,9 @@ operator_equal::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_equal::op1_range (value_range &r, tree type,
-			   const value_range &lhs,
-			   const value_range &op2) const
+operator_equal::op1_range (irange &r, tree type,
+			   const irange &lhs,
+			   const irange &op2) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -443,9 +441,9 @@ operator_equal::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_equal::op2_range (value_range &r, tree type,
-			   const value_range &lhs,
-			   const value_range &op1) const
+operator_equal::op2_range (irange &r, tree type,
+			   const irange &lhs,
+			   const irange &op1) const
 {
   return operator_equal::op1_range (r, type, lhs, op1);
 }
@@ -454,21 +452,21 @@ operator_equal::op2_range (value_range &r, tree type,
 class operator_not_equal : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_not_equal;
 
 bool
-operator_not_equal::fold_range (value_range &r, tree type,
-				const value_range &op1,
-				const value_range &op2) const
+operator_not_equal::fold_range (irange &r, tree type,
+				const irange &op1,
+				const irange &op2) const
 {
   if (empty_range_check (r, op1, op2))
     return true;
@@ -498,9 +496,9 @@ operator_not_equal::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_not_equal::op1_range (value_range &r, tree type,
-			       const value_range &lhs,
-			       const value_range &op2) const
+operator_not_equal::op1_range (irange &r, tree type,
+			       const irange &lhs,
+			       const irange &op2) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -529,9 +527,9 @@ operator_not_equal::op1_range (value_range &r, tree type,
 
 
 bool
-operator_not_equal::op2_range (value_range &r, tree type,
-			       const value_range &lhs,
-			       const value_range &op1) const
+operator_not_equal::op2_range (irange &r, tree type,
+			       const irange &lhs,
+			       const irange &op1) const
 {
   return operator_not_equal::op1_range (r, type, lhs, op1);
 }
@@ -539,7 +537,7 @@ operator_not_equal::op2_range (value_range &r, tree type,
 // (X < VAL) produces the range of [MIN, VAL - 1].
 
 static void
-build_lt (value_range &r, tree type, const wide_int &val)
+build_lt (irange &r, tree type, const wide_int &val)
 {
   wi::overflow_type ov;
   wide_int lim = wi::sub (val, 1, TYPE_SIGN (type), &ov);
@@ -554,7 +552,7 @@ build_lt (value_range &r, tree type, const wide_int &val)
 // (X <= VAL) produces the range of [MIN, VAL].
 
 static void
-build_le (value_range &r, tree type, const wide_int &val)
+build_le (irange &r, tree type, const wide_int &val)
 {
   r = int_range<1> (type, min_limit (type), val);
 }
@@ -562,7 +560,7 @@ build_le (value_range &r, tree type, const wide_int &val)
 // (X > VAL) produces the range of [VAL + 1, MAX].
 
 static void
-build_gt (value_range &r, tree type, const wide_int &val)
+build_gt (irange &r, tree type, const wide_int &val)
 {
   wi::overflow_type ov;
   wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
@@ -576,7 +574,7 @@ build_gt (value_range &r, tree type, const wide_int &val)
 // (X >= val) produces the range of [VAL, MAX].
 
 static void
-build_ge (value_range &r, tree type, const wide_int &val)
+build_ge (irange &r, tree type, const wide_int &val)
 {
   r = int_range<1> (type, val, max_limit (type));
 }
@@ -585,21 +583,21 @@ build_ge (value_range &r, tree type, const wide_int &val)
 class operator_lt :  public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_lt;
 
 bool
-operator_lt::fold_range (value_range &r, tree type,
-			 const value_range &op1,
-			 const value_range &op2) const
+operator_lt::fold_range (irange &r, tree type,
+			 const irange &op1,
+			 const irange &op2) const
 {
   if (empty_range_check (r, op1, op2))
     return true;
@@ -617,9 +615,9 @@ operator_lt::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_lt::op1_range (value_range &r, tree type,
-			const value_range &lhs,
-			const value_range &op2) const
+operator_lt::op1_range (irange &r, tree type,
+			const irange &lhs,
+			const irange &op2) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -638,9 +636,9 @@ operator_lt::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_lt::op2_range (value_range &r, tree type,
-			const value_range &lhs,
-			const value_range &op1) const
+operator_lt::op2_range (irange &r, tree type,
+			const irange &lhs,
+			const irange &op1) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -662,21 +660,21 @@ operator_lt::op2_range (value_range &r, tree type,
 class operator_le :  public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_le;
 
 bool
-operator_le::fold_range (value_range &r, tree type,
-			 const value_range &op1,
-			 const value_range &op2) const
+operator_le::fold_range (irange &r, tree type,
+			 const irange &op1,
+			 const irange &op2) const
 {
   if (empty_range_check (r, op1, op2))
     return true;
@@ -694,9 +692,9 @@ operator_le::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_le::op1_range (value_range &r, tree type,
-			const value_range &lhs,
-			const value_range &op2) const
+operator_le::op1_range (irange &r, tree type,
+			const irange &lhs,
+			const irange &op2) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -715,9 +713,9 @@ operator_le::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_le::op2_range (value_range &r, tree type,
-			const value_range &lhs,
-			const value_range &op1) const
+operator_le::op2_range (irange &r, tree type,
+			const irange &lhs,
+			const irange &op1) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -739,20 +737,20 @@ operator_le::op2_range (value_range &r, tree type,
 class operator_gt :  public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_gt;
 
 bool
-operator_gt::fold_range (value_range &r, tree type,
-			 const value_range &op1, const value_range &op2) const
+operator_gt::fold_range (irange &r, tree type,
+			 const irange &op1, const irange &op2) const
 {
   if (empty_range_check (r, op1, op2))
     return true;
@@ -770,8 +768,8 @@ operator_gt::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_gt::op1_range (value_range &r, tree type,
-			const value_range &lhs, const value_range &op2) const
+operator_gt::op1_range (irange &r, tree type,
+			const irange &lhs, const irange &op2) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -790,9 +788,9 @@ operator_gt::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_gt::op2_range (value_range &r, tree type,
-			const value_range &lhs,
-			const value_range &op1) const
+operator_gt::op2_range (irange &r, tree type,
+			const irange &lhs,
+			const irange &op1) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -814,21 +812,21 @@ operator_gt::op2_range (value_range &r, tree type,
 class operator_ge :  public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_ge;
 
 bool
-operator_ge::fold_range (value_range &r, tree type,
-			 const value_range &op1,
-			 const value_range &op2) const
+operator_ge::fold_range (irange &r, tree type,
+			 const irange &op1,
+			 const irange &op2) const
 {
   if (empty_range_check (r, op1, op2))
     return true;
@@ -846,9 +844,9 @@ operator_ge::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_ge::op1_range (value_range &r, tree type,
-			const value_range &lhs,
-			const value_range &op2) const
+operator_ge::op1_range (irange &r, tree type,
+			const irange &lhs,
+			const irange &op2) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -867,9 +865,9 @@ operator_ge::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_ge::op2_range (value_range &r, tree type,
-			const value_range &lhs,
-			const value_range &op1) const
+operator_ge::op2_range (irange &r, tree type,
+			const irange &lhs,
+			const irange &op1) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -891,13 +889,13 @@ operator_ge::op2_range (value_range &r, tree type,
 class operator_plus : public range_operator
 {
 public:
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
-  virtual void wi_fold (value_range &r, tree type,
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -905,7 +903,7 @@ public:
 } op_plus;
 
 void
-operator_plus::wi_fold (value_range &r, tree type,
+operator_plus::wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -917,17 +915,17 @@ operator_plus::wi_fold (value_range &r, tree type,
 }
 
 bool
-operator_plus::op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const
+operator_plus::op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const
 {
   return range_op_handler (MINUS_EXPR, type)->fold_range (r, type, lhs, op2);
 }
 
 bool
-operator_plus::op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const
+operator_plus::op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const
 {
   return range_op_handler (MINUS_EXPR, type)->fold_range (r, type, lhs, op1);
 }
@@ -936,13 +934,13 @@ operator_plus::op2_range (value_range &r, tree type,
 class operator_minus : public range_operator
 {
 public:
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
-  virtual void wi_fold (value_range &r, tree type,
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -950,7 +948,7 @@ public:
 } op_minus;
 
 void 
-operator_minus::wi_fold (value_range &r, tree type,
+operator_minus::wi_fold (irange &r, tree type,
 			 const wide_int &lh_lb, const wide_int &lh_ub,
 			 const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -962,17 +960,17 @@ operator_minus::wi_fold (value_range &r, tree type,
 }
 
 bool
-operator_minus::op1_range (value_range &r, tree type,
-			   const value_range &lhs,
-			   const value_range &op2) const
+operator_minus::op1_range (irange &r, tree type,
+			   const irange &lhs,
+			   const irange &op2) const
 {
   return range_op_handler (PLUS_EXPR, type)->fold_range (r, type, lhs, op2);
 }
 
 bool
-operator_minus::op2_range (value_range &r, tree type,
-			   const value_range &lhs,
-			   const value_range &op1) const
+operator_minus::op2_range (irange &r, tree type,
+			   const irange &lhs,
+			   const irange &op1) const
 {
   return fold_range (r, type, op1, lhs);
 }
@@ -981,7 +979,7 @@ operator_minus::op2_range (value_range &r, tree type,
 class operator_min : public range_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -989,7 +987,7 @@ public:
 } op_min;
 
 void
-operator_min::wi_fold (value_range &r, tree type,
+operator_min::wi_fold (irange &r, tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -1003,7 +1001,7 @@ operator_min::wi_fold (value_range &r, tree type,
 class operator_max : public range_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -1011,7 +1009,7 @@ public:
 } op_max;
 
 void
-operator_max::wi_fold (value_range &r, tree type,
+operator_max::wi_fold (irange &r, tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -1033,7 +1031,7 @@ public:
 				const wide_int &) const = 0;
 
   // Calculate the cross product of two sets of sub-ranges and return it.
-  void wi_cross_product (value_range &r, tree type,
+  void wi_cross_product (irange &r, tree type,
 			 const wide_int &lh_lb,
 			 const wide_int &lh_ub,
 			 const wide_int &rh_lb,
@@ -1054,7 +1052,7 @@ public:
 // figure the smallest and largest values to form the new range.
 
 void
-cross_product_operator::wi_cross_product (value_range &r, tree type,
+cross_product_operator::wi_cross_product (irange &r, tree type,
 					  const wide_int &lh_lb,
 					  const wide_int &lh_ub,
 					  const wide_int &rh_lb,
@@ -1098,7 +1096,7 @@ cross_product_operator::wi_cross_product (value_range &r, tree type,
 class operator_mult : public cross_product_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -1128,7 +1126,7 @@ operator_mult::wi_op_overflows (wide_int &res, tree type,
 }
 
 void 
-operator_mult::wi_fold (value_range &r, tree type,
+operator_mult::wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -1211,7 +1209,7 @@ class operator_div : public cross_product_operator
 {
 public:
   operator_div (enum tree_code c)  { code = c; }
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -1265,7 +1263,7 @@ operator_div::wi_op_overflows (wide_int &res, tree type,
 }
 
 void
-operator_div::wi_fold (value_range &r, tree type,
+operator_div::wi_fold (irange &r, tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -1338,16 +1336,16 @@ class operator_exact_divide : public operator_div
 {
 public:
   operator_exact_divide () : operator_div (TRUNC_DIV_EXPR) { }
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 
 } op_exact_div;
 
 bool
-operator_exact_divide::op1_range (value_range &r, tree type,
-				  const value_range &lhs,
-				  const value_range &op2) const
+operator_exact_divide::op1_range (irange &r, tree type,
+				  const irange &lhs,
+				  const irange &op2) const
 {
   tree offset;
   // [2, 4] = op1 / [3,3]   since its exact divide, no need to worry about
@@ -1366,14 +1364,14 @@ operator_exact_divide::op1_range (value_range &r, tree type,
 class operator_lshift : public cross_product_operator
 {
 public:
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
 
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
   virtual bool wi_op_overflows (wide_int &res,
@@ -1383,9 +1381,9 @@ public:
 } op_lshift;
 
 bool
-operator_lshift::fold_range (value_range &r, tree type,
-			     const value_range &op1,
-			     const value_range &op2) const
+operator_lshift::fold_range (irange &r, tree type,
+			     const irange &op1,
+			     const irange &op2) const
 {
   if (undefined_shift_range_check (r, type, op2))
     return true;
@@ -1414,7 +1412,7 @@ operator_lshift::fold_range (value_range &r, tree type,
 }
 
 void
-operator_lshift::wi_fold (value_range &r, tree type,
+operator_lshift::wi_fold (irange &r, tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -1491,10 +1489,10 @@ operator_lshift::wi_op_overflows (wide_int &res, tree type,
 }
 
 bool
-operator_lshift::op1_range (value_range &r,
+operator_lshift::op1_range (irange &r,
 			    tree type,
-			    const value_range &lhs,
-			    const value_range &op2) const
+			    const irange &lhs,
+			    const irange &op2) const
 {
   tree shift_amount;
   if (op2.singleton_p (&shift_amount))
@@ -1536,10 +1534,10 @@ operator_lshift::op1_range (value_range &r,
 class operator_rshift : public cross_product_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual void wi_fold (value_range &r, tree type,
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -1548,16 +1546,16 @@ public:
 				tree type,
 				const wide_int &w0,
 				const wide_int &w1) const;
-  virtual bool op1_range (value_range &, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool op1_range (irange &, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_rshift;
 
 bool
-operator_rshift::op1_range (value_range &r,
+operator_rshift::op1_range (irange &r,
 			    tree type,
-			    const value_range &lhs,
-			    const value_range &op2) const
+			    const irange &lhs,
+			    const irange &op2) const
 {
   tree shift_amount;
   if (op2.singleton_p (&shift_amount))
@@ -1611,9 +1609,9 @@ operator_rshift::wi_op_overflows (wide_int &res,
 }
 
 bool
-operator_rshift::fold_range (value_range &r, tree type,
-			     const value_range &op1,
-			     const value_range &op2) const
+operator_rshift::fold_range (irange &r, tree type,
+			     const irange &op1,
+			     const irange &op2) const
 {
   // Invoke the generic fold routine if not undefined..
   if (undefined_shift_range_check (r, type, op2))
@@ -1623,7 +1621,7 @@ operator_rshift::fold_range (value_range &r, tree type,
 }
 
 void
-operator_rshift::wi_fold (value_range &r, tree type,
+operator_rshift::wi_fold (irange &r, tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const
 {
@@ -1634,19 +1632,19 @@ operator_rshift::wi_fold (value_range &r, tree type,
 class operator_cast: public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 
 } op_convert;
 
 bool
-operator_cast::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
-			   const value_range &lh,
-			   const value_range &rh) const
+operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
+			   const irange &lh,
+			   const irange &rh) const
 {
   if (empty_range_check (r, lh, rh))
     return true;
@@ -1695,9 +1693,9 @@ operator_cast::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 }
 
 bool
-operator_cast::op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const
+operator_cast::op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const
 {
   tree lhs_type = lhs.type ();
   widest_irange tmp;
@@ -1772,22 +1770,22 @@ operator_cast::op1_range (value_range &r, tree type,
 class operator_logical_and : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &lh,
-			   const value_range &rh) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh,
+			   const irange &rh) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_logical_and;
 
 
 bool
-operator_logical_and::fold_range (value_range &r, tree type,
-				  const value_range &lh,
-				  const value_range &rh) const
+operator_logical_and::fold_range (irange &r, tree type,
+				  const irange &lh,
+				  const irange &rh) const
 {
   if (empty_range_check (r, lh, rh))
     return true;
@@ -1807,9 +1805,9 @@ operator_logical_and::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_logical_and::op1_range (value_range &r, tree type,
-				 const value_range &lhs,
-				 const value_range &op2 ATTRIBUTE_UNUSED) const
+operator_logical_and::op1_range (irange &r, tree type,
+				 const irange &lhs,
+				 const irange &op2 ATTRIBUTE_UNUSED) const
 {
    switch (get_bool_state (r, lhs, type))
      {
@@ -1828,9 +1826,9 @@ operator_logical_and::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_logical_and::op2_range (value_range &r, tree type,
-				 const value_range &lhs,
-				 const value_range &op1) const
+operator_logical_and::op2_range (irange &r, tree type,
+				 const irange &lhs,
+				 const irange &op1) const
 {
   return operator_logical_and::op1_range (r, type, lhs, op1);
 }
@@ -1839,13 +1837,13 @@ operator_logical_and::op2_range (value_range &r, tree type,
 class operator_bitwise_and : public range_operator
 {
 public:
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
-  virtual void wi_fold (value_range &r, tree type,
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -1863,7 +1861,7 @@ public:
 // return TRUE.
 
 static bool
-wi_optimize_and_or (value_range &r,
+wi_optimize_and_or (irange &r,
 		    enum tree_code code,
 		    tree type,
 		    const wide_int &lh_lb, const wide_int &lh_ub,
@@ -1972,7 +1970,7 @@ wi_set_zero_nonzero_bits (tree type,
 }
 
 void
-operator_bitwise_and::wi_fold (value_range &r, tree type,
+operator_bitwise_and::wi_fold (irange &r, tree type,
 			       const wide_int &lh_lb,
 			       const wide_int &lh_ub,
 			       const wide_int &rh_lb,
@@ -2030,15 +2028,15 @@ operator_bitwise_and::wi_fold (value_range &r, tree type,
 }
 
 static bool
-unsigned_mask_p (tree type, const value_range &op)
+unsigned_mask_p (tree type, const irange &op)
 {
   return (TYPE_UNSIGNED (type) && op.singleton_p ());
 }
 
 bool
-operator_bitwise_and::op1_range (value_range &r, tree type,
-				 const value_range &lhs,
-				 const value_range &op2) const
+operator_bitwise_and::op1_range (irange &r, tree type,
+				 const irange &lhs,
+				 const irange &op2) const
 {
   // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
@@ -2081,9 +2079,9 @@ operator_bitwise_and::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_bitwise_and::op2_range (value_range &r, tree type,
-				 const value_range &lhs,
-				 const value_range &op1) const
+operator_bitwise_and::op2_range (irange &r, tree type,
+				 const irange &lhs,
+				 const irange &op1) const
 {
   return operator_bitwise_and::op1_range (r, type, lhs, op1);
 }
@@ -2092,21 +2090,21 @@ operator_bitwise_and::op2_range (value_range &r, tree type,
 class operator_logical_or : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &lh,
-			   const value_range &rh) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh,
+			   const irange &rh) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_logical_or;
 
 bool
-operator_logical_or::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
-				 const value_range &lh,
-				 const value_range &rh) const
+operator_logical_or::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
+				 const irange &lh,
+				 const irange &rh) const
 {
   if (empty_range_check (r, lh, rh))
     return true;
@@ -2117,9 +2115,9 @@ operator_logical_or::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 }
 
 bool
-operator_logical_or::op1_range (value_range &r, tree type,
-				const value_range &lhs,
-				const value_range &op2 ATTRIBUTE_UNUSED) const
+operator_logical_or::op1_range (irange &r, tree type,
+				const irange &lhs,
+				const irange &op2 ATTRIBUTE_UNUSED) const
 {
    switch (get_bool_state (r, lhs, type))
      {
@@ -2138,9 +2136,9 @@ operator_logical_or::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_logical_or::op2_range (value_range &r, tree type,
-				const value_range &lhs,
-				const value_range &op1) const
+operator_logical_or::op2_range (irange &r, tree type,
+				const irange &lhs,
+				const irange &op1) const
 {
   return operator_logical_or::op1_range (r, type, lhs, op1);
 }
@@ -2149,13 +2147,13 @@ operator_logical_or::op2_range (value_range &r, tree type,
 class operator_bitwise_or : public range_operator
 {
 public:
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
-  virtual void wi_fold (value_range &r, tree type,
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -2163,7 +2161,7 @@ public:
 } op_bitwise_or;
 
 void
-operator_bitwise_or::wi_fold (value_range &r, tree type,
+operator_bitwise_or::wi_fold (irange &r, tree type,
 			      const wide_int &lh_lb,
 			      const wide_int &lh_ub,
 			      const wide_int &rh_lb,
@@ -2205,9 +2203,9 @@ operator_bitwise_or::wi_fold (value_range &r, tree type,
 }
 
 bool
-operator_bitwise_or::op1_range (value_range &r, tree type,
-				const value_range &lhs,
-				const value_range &op2) const
+operator_bitwise_or::op1_range (irange &r, tree type,
+				const irange &lhs,
+				const irange &op2) const
 {
   // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
@@ -2219,9 +2217,9 @@ operator_bitwise_or::op1_range (value_range &r, tree type,
 }
 
 bool
-operator_bitwise_or::op2_range (value_range &r, tree type,
-				const value_range &lhs,
-				const value_range &op1) const
+operator_bitwise_or::op2_range (irange &r, tree type,
+				const irange &lhs,
+				const irange &op1) const
 {
   return operator_bitwise_or::op1_range (r, type, lhs, op1);
 }
@@ -2230,7 +2228,7 @@ operator_bitwise_or::op2_range (value_range &r, tree type,
 class operator_bitwise_xor : public range_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -2238,7 +2236,7 @@ public:
 } op_bitwise_xor;
 
 void
-operator_bitwise_xor::wi_fold (value_range &r, tree type,
+operator_bitwise_xor::wi_fold (irange &r, tree type,
 			       const wide_int &lh_lb,
 			       const wide_int &lh_ub,
 			       const wide_int &rh_lb,
@@ -2272,7 +2270,7 @@ operator_bitwise_xor::wi_fold (value_range &r, tree type,
 class operator_trunc_mod : public range_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -2280,7 +2278,7 @@ public:
 } op_trunc_mod;
 
 void
-operator_trunc_mod::wi_fold (value_range &r, tree type,
+operator_trunc_mod::wi_fold (irange &r, tree type,
 			     const wide_int &lh_lb,
 			     const wide_int &lh_ub,
 			     const wide_int &rh_lb,
@@ -2327,12 +2325,12 @@ operator_trunc_mod::wi_fold (value_range &r, tree type,
 class operator_logical_not : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &lh,
-			   const value_range &rh) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh,
+			   const irange &rh) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_logical_not;
 
 // Folding a logical NOT, oddly enough, involves doing nothing on the
@@ -2350,9 +2348,9 @@ public:
 //   which is the result we are looking for.. so.. pass it through.
 
 bool
-operator_logical_not::fold_range (value_range &r, tree type,
-				  const value_range &lh,
-				  const value_range &rh ATTRIBUTE_UNUSED) const
+operator_logical_not::fold_range (irange &r, tree type,
+				  const irange &lh,
+				  const irange &rh ATTRIBUTE_UNUSED) const
 {
   if (empty_range_check (r, lh, rh))
     return true;
@@ -2369,10 +2367,10 @@ operator_logical_not::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_logical_not::op1_range (value_range &r,
+operator_logical_not::op1_range (irange &r,
 				 tree type ATTRIBUTE_UNUSED,
-				 const value_range &lhs,
-				 const value_range &op2 ATTRIBUTE_UNUSED) const
+				 const irange &lhs,
+				 const irange &op2 ATTRIBUTE_UNUSED) const
 {
   r = lhs;
   if (!lhs.varying_p () && !lhs.undefined_p ())
@@ -2384,18 +2382,18 @@ operator_logical_not::op1_range (value_range &r,
 class operator_bitwise_not : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &lh,
-			   const value_range &rh) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh,
+			   const irange &rh) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_bitwise_not;
 
 bool
-operator_bitwise_not::fold_range (value_range &r, tree type,
-				  const value_range &lh,
-				  const value_range &rh) const
+operator_bitwise_not::fold_range (irange &r, tree type,
+				  const irange &lh,
+				  const irange &rh) const
 {
   if (empty_range_check (r, lh, rh))
     return true;
@@ -2408,9 +2406,9 @@ operator_bitwise_not::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_bitwise_not::op1_range (value_range &r, tree type,
-				 const value_range &lhs,
-				 const value_range &op2) const
+operator_bitwise_not::op1_range (irange &r, tree type,
+				 const irange &lhs,
+				 const irange &op2) const
 {
   // ~X is -1 - X and since bitwise NOT is involutary...do it again.
   return fold_range (r, type, lhs, op2);
@@ -2420,15 +2418,15 @@ operator_bitwise_not::op1_range (value_range &r, tree type,
 class operator_cst : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
 } op_integer_cst;
 
 bool
-operator_cst::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
-			  const value_range &lh,
-			  const value_range &rh ATTRIBUTE_UNUSED) const
+operator_cst::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
+			  const irange &lh,
+			  const irange &rh ATTRIBUTE_UNUSED) const
 {
   r = lh;
   return true;
@@ -2438,27 +2436,27 @@ operator_cst::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 class operator_identity : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_identity;
 
 bool
-operator_identity::fold_range (value_range &r, tree type ATTRIBUTE_UNUSED,
-			       const value_range &lh,
-			       const value_range &rh ATTRIBUTE_UNUSED) const
+operator_identity::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
+			       const irange &lh,
+			       const irange &rh ATTRIBUTE_UNUSED) const
 {
   r = lh;
   return true;
 }
 
 bool
-operator_identity::op1_range (value_range &r, tree type ATTRIBUTE_UNUSED,
-			      const value_range &lhs,
-			      const value_range &op2 ATTRIBUTE_UNUSED) const
+operator_identity::op1_range (irange &r, tree type ATTRIBUTE_UNUSED,
+			      const irange &lhs,
+			      const irange &op2 ATTRIBUTE_UNUSED) const
 {
   r = lhs;
   return true;
@@ -2468,18 +2466,18 @@ operator_identity::op1_range (value_range &r, tree type ATTRIBUTE_UNUSED,
 class operator_abs : public range_operator
 {
  public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_abs;
 
 void
-operator_abs::wi_fold (value_range &r, tree type,
+operator_abs::wi_fold (irange &r, tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb ATTRIBUTE_UNUSED,
 		       const wide_int &rh_ub ATTRIBUTE_UNUSED) const
@@ -2543,9 +2541,9 @@ operator_abs::wi_fold (value_range &r, tree type,
 }
 
 bool
-operator_abs::op1_range (value_range &r, tree type,
-			 const value_range &lhs,
-			 const value_range &op2) const
+operator_abs::op1_range (irange &r, tree type,
+			 const irange &lhs,
+			 const irange &op2) const
 {
   if (empty_range_check (r, lhs, op2))
     return true;
@@ -2571,13 +2569,13 @@ operator_abs::op1_range (value_range &r, tree type,
 class operator_absu : public range_operator
 {
  public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_absu;
 
 void
-operator_absu::wi_fold (value_range &r, tree type,
+operator_absu::wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb ATTRIBUTE_UNUSED,
 			const wide_int &rh_ub ATTRIBUTE_UNUSED) const
@@ -2615,18 +2613,18 @@ operator_absu::wi_fold (value_range &r, tree type,
 class operator_negate : public range_operator
 {
  public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_negate;
 
 bool
-operator_negate::fold_range (value_range &r, tree type,
-			     const value_range &lh,
-			     const value_range &rh) const
+operator_negate::fold_range (irange &r, tree type,
+			     const irange &lh,
+			     const irange &rh) const
 {
   if (empty_range_check (r, lh, rh))
     return true;
@@ -2637,9 +2635,9 @@ operator_negate::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_negate::op1_range (value_range &r, tree type,
-			    const value_range &lhs,
-			    const value_range &op2) const
+operator_negate::op1_range (irange &r, tree type,
+			    const irange &lhs,
+			    const irange &op2) const
 {
   // NEGATE is involutory.
   return fold_range (r, type, lhs, op2);
@@ -2649,18 +2647,18 @@ operator_negate::op1_range (value_range &r, tree type,
 class operator_addr_expr : public range_operator
 {
 public:
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &op1,
-			   const value_range &op2) const;
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_addr;
 
 bool
-operator_addr_expr::fold_range (value_range &r, tree type,
-				const value_range &lh,
-				const value_range &rh) const
+operator_addr_expr::fold_range (irange &r, tree type,
+				const irange &lh,
+				const irange &rh) const
 {
   if (empty_range_check (r, lh, rh))
     return true;
@@ -2676,9 +2674,9 @@ operator_addr_expr::fold_range (value_range &r, tree type,
 }
 
 bool
-operator_addr_expr::op1_range (value_range &r, tree type,
-			       const value_range &lhs,
-			       const value_range &op2) const
+operator_addr_expr::op1_range (irange &r, tree type,
+			       const irange &lhs,
+			       const irange &op2) const
 {
   return operator_addr_expr::fold_range (r, type, lhs, op2);
 }
@@ -2687,7 +2685,7 @@ operator_addr_expr::op1_range (value_range &r, tree type,
 class pointer_plus_operator : public range_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -2695,7 +2693,7 @@ public:
 } op_pointer_plus;
 
 void
-pointer_plus_operator::wi_fold (value_range &r, tree type,
+pointer_plus_operator::wi_fold (irange &r, tree type,
 				const wide_int &lh_lb,
 				const wide_int &lh_ub,
 				const wide_int &rh_lb,
@@ -2734,13 +2732,13 @@ pointer_plus_operator::wi_fold (value_range &r, tree type,
 class pointer_min_max_operator : public range_operator
 {
 public:
-  virtual void wi_fold (value_range & r, tree type,
+  virtual void wi_fold (irange & r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_ptr_min_max;
 
 void
-pointer_min_max_operator::wi_fold (value_range &r, tree type,
+pointer_min_max_operator::wi_fold (irange &r, tree type,
 				   const wide_int &lh_lb,
 				   const wide_int &lh_ub,
 				   const wide_int &rh_lb,
@@ -2763,13 +2761,13 @@ pointer_min_max_operator::wi_fold (value_range &r, tree type,
 class pointer_and_operator : public range_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_pointer_and;
 
 void
-pointer_and_operator::wi_fold (value_range &r, tree type,
+pointer_and_operator::wi_fold (irange &r, tree type,
 			       const wide_int &lh_lb,
 			       const wide_int &lh_ub,
 			       const wide_int &rh_lb ATTRIBUTE_UNUSED,
@@ -2787,13 +2785,13 @@ pointer_and_operator::wi_fold (value_range &r, tree type,
 class pointer_or_operator : public range_operator
 {
 public:
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_pointer_or;
 
 void
-pointer_or_operator::wi_fold (value_range &r, tree type,
+pointer_or_operator::wi_fold (irange &r, tree type,
 			      const wide_int &lh_lb,
 			      const wide_int &lh_ub,
 			      const wide_int &rh_lb,
@@ -2934,7 +2932,7 @@ range_op_handler (enum tree_code code, tree type)
 // Cast the range in R to TYPE.
 
 void
-range_cast (value_range &r, tree type)
+range_cast (irange &r, tree type)
 {
   widest_irange tmp = r;
   range_operator *op = range_op_handler (CONVERT_EXPR, type);
@@ -3361,7 +3359,5 @@ range_tests ()
 }
 
 } // namespace selftest
-
-#undef value_range
 
 #endif // CHECKING_P
