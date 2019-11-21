@@ -1481,46 +1481,76 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
       }
 }
 
-/* Recompute HEAP nodes for each uninlined call in NODE.
+/* Recompute HEAP nodes for each uninlined call in NODE
+   If UPDATE_SINCE is non-NULL check if edges called within that function
+   are inlinable (typically UPDATE_SINCE is the inline clone we introduced
+   where all edges have new context).
+  
    This is used when we know that edge badnesses are going only to increase
    (we introduced new call site) and thus all we need is to insert newly
    created edges into heap.  */
 
 static void
 update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
+		    struct cgraph_node *update_since,
 		    bitmap updated_nodes)
 {
   struct cgraph_edge *e = node->callees;
+  bool check_inlinability = update_since == node;
 
   if (!e)
     return;
   while (true)
     if (!e->inline_failed && e->callee->callees)
-      e = e->callee->callees;
+      {
+	if (e->callee == update_since)
+	  check_inlinability = true;
+        e = e->callee->callees;
+      }
     else
       {
 	enum availability avail;
 	struct cgraph_node *callee;
+	if (!check_inlinability)
+	  {
+	    if (e->aux
+		&& !bitmap_bit_p (updated_nodes,
+		 		  e->callee->ultimate_alias_target
+				    (&avail, e->caller)->get_uid ()))
+	      update_edge_key (heap, e);
+	  }
 	/* We do not reset callee growth cache here.  Since we added a new call,
 	   growth chould have just increased and consequentely badness metric
            don't need updating.  */
-	if (e->inline_failed
-	    && (callee = e->callee->ultimate_alias_target (&avail, e->caller))
-	    && ipa_fn_summaries->get (callee) != NULL
-	    && ipa_fn_summaries->get (callee)->inlinable
-	    && avail >= AVAIL_AVAILABLE
-	    && !bitmap_bit_p (updated_nodes, callee->get_uid ()))
+	else if (e->inline_failed
+		 && (callee = e->callee->ultimate_alias_target (&avail,
+		  						e->caller))
+		 && avail >= AVAIL_AVAILABLE
+		 && ipa_fn_summaries->get (callee) != NULL
+		 && ipa_fn_summaries->get (callee)->inlinable
+		 && !bitmap_bit_p (updated_nodes, callee->get_uid ()))
 	  {
 	    if (can_inline_edge_p (e, false)
 		&& want_inline_small_function_p (e, false)
 		&& can_inline_edge_by_limits_p (e, false))
-	      update_edge_key (heap, e);
+	      {
+		gcc_checking_assert (check_inlinability || can_inline_edge_p (e, false));
+		gcc_checking_assert (check_inlinability || e->aux);
+	        update_edge_key (heap, e);
+	      }
 	    else if (e->aux)
 	      {
 		report_inline_failed_reason (e);
 		heap->delete_node ((edge_heap_node_t *) e->aux);
 		e->aux = NULL;
 	      }
+	  }
+	/* In case we redirected to unreachable node we only need to remove the
+	   fibheap entry.  */
+	else if (e->aux)
+	  {
+	    heap->delete_node ((edge_heap_node_t *) e->aux);
+	    e->aux = NULL;
 	  }
 	if (e->next_callee)
 	  e = e->next_callee;
@@ -1530,6 +1560,8 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	      {
 		if (e->caller == node)
 		  return;
+		if (e->caller == update_since)
+		  check_inlinability = false;
 		e = e->caller->callers;
 	      }
 	    while (!e->next_callee);
@@ -1820,7 +1852,7 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
       ipa_update_overall_fn_summary (where);
       update_caller_keys (edge_heap, where,
 			  updated_nodes, NULL);
-      update_callee_keys (edge_heap, where,
+      update_callee_keys (edge_heap, where, NULL,
 			  updated_nodes);
     }
 }
@@ -1993,7 +2025,7 @@ inline_small_functions (void)
 	  reset_edge_caches (where);
           update_caller_keys (&edge_heap, where,
 			      updated_nodes, NULL);
-          update_callee_keys (&edge_heap, where,
+          update_callee_keys (&edge_heap, where, NULL,
 			      updated_nodes);
           bitmap_clear (updated_nodes);
 	}
@@ -2124,6 +2156,8 @@ inline_small_functions (void)
 	  continue;
 	}
 
+      profile_count old_count = callee->count;
+
       /* Heuristics for inlining small functions work poorly for
 	 recursive calls where we do effects similar to loop unrolling.
 	 When inlining such edge seems profitable, leave decision on
@@ -2147,7 +2181,7 @@ inline_small_functions (void)
 	     at once. Consequently we need to update all callee keys.  */
 	  if (opt_for_fn (edge->caller->decl, flag_indirect_inlining))
 	    add_new_edges_to_heap (&edge_heap, new_indirect_edges);
-          update_callee_keys (&edge_heap, where, updated_nodes);
+          update_callee_keys (&edge_heap, where, where, updated_nodes);
 	  bitmap_clear (updated_nodes);
 	}
       else
@@ -2197,9 +2231,12 @@ inline_small_functions (void)
 	      /* Wrapper penalty may be non-monotonous in this respect.
 	         Fortunately it only affects small functions.  */
 	      && !wrapper_heuristics_may_apply (where, old_size))
-	    update_callee_keys (&edge_heap, edge->callee, updated_nodes);
+	    update_callee_keys (&edge_heap, edge->callee, edge->callee,
+			   	updated_nodes);
 	  else
-	    update_callee_keys (&edge_heap, where, updated_nodes);
+	    update_callee_keys (&edge_heap, where,
+				edge->callee,
+			   	updated_nodes);
 	}
       where = edge->caller;
       if (where->inlined_to)
@@ -2214,9 +2251,11 @@ inline_small_functions (void)
       update_caller_keys (&edge_heap, where, updated_nodes, NULL);
       /* Offline copy count has possibly changed, recompute if profile is
 	 available.  */
-      struct cgraph_node *n = cgraph_node::get (edge->callee->decl);
-      if (n != edge->callee && n->analyzed && n->count.ipa ().initialized_p ())
-	update_callee_keys (&edge_heap, n, updated_nodes);
+      struct cgraph_node *n
+	      = cgraph_node::get (edge->callee->decl)->ultimate_alias_target ();
+      if (n != edge->callee && n->analyzed && !(n->count == old_count)
+	  && n->count.ipa_p ())
+	update_callee_keys (&edge_heap, n, NULL, updated_nodes);
       bitmap_clear (updated_nodes);
 
       if (dump_enabled_p ())
