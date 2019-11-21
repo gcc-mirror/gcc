@@ -482,7 +482,7 @@ debug (gori_map &g)
 // Return the legacy global known value for NAME in R.
 
 void
-gori_compute::range_of_ssa_name (value_range &r, tree name,
+gori_compute::range_of_ssa_name (irange &r, tree name,
 				 gimple *s ATTRIBUTE_UNUSED)
 {
   r = gimple_range_global (name);
@@ -495,7 +495,7 @@ gori_compute::range_of_ssa_name (value_range &r, tree name,
 // the type of EXPR.
 
 bool
-gori_compute::range_of_expr (value_range &r, tree expr, gimple *s)
+gori_compute::range_of_expr (irange &r, tree expr, gimple *s)
 {
   tree type;
   if (TYPE_P (expr))
@@ -504,7 +504,7 @@ gori_compute::range_of_expr (value_range &r, tree expr, gimple *s)
     type = TREE_TYPE (expr);
 
   // Return false if the type isn't suported.
-  if (!value_range::supports_type_p (type))
+  if (!irange::supports_type_p (type))
     return false;
 
   switch (TREE_CODE (expr))
@@ -514,7 +514,7 @@ gori_compute::range_of_expr (value_range &r, tree expr, gimple *s)
 	// since we have no idea how it will be used.
         if (!TREE_OVERFLOW_P (expr))
 	  {
-	    r = value_range (expr, expr);
+	    r.set (expr, expr);
 	    return true;
 	  }
 	break;
@@ -549,8 +549,8 @@ gori_compute::range_of_expr (value_range &r, tree expr, gimple *s)
 // bases.
 
 void
-gori_compute::get_tree_range (value_range &r, tree expr, tree name,
-			      const value_range *range_of_name)
+gori_compute::get_tree_range (irange &r, tree expr, tree name,
+			      const irange *range_of_name)
 {
   if (expr == name && range_of_name)
     {
@@ -567,12 +567,12 @@ gori_compute::get_tree_range (value_range &r, tree expr, tree name,
 // range can be calculated.
 
 bool
-gori_compute::compute_name_range_op (value_range &r, gimple *s,
-				     const value_range &lhs,
+gori_compute::compute_name_range_op (irange &r, gimple *s,
+				     const irange &lhs,
 				     tree name,
-				     const value_range *name_range)
+				     const irange *name_range)
 {
-  value_range op1_range, op2_range;
+  widest_irange op1_range, op2_range;
 
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
@@ -622,8 +622,8 @@ gori_compute::compute_name_range_op (value_range &r, gimple *s,
 gori_compute::gori_compute ()
 {
   // Create a boolean_type true and false range.
-  m_bool_zero = value_range (boolean_false_node, boolean_false_node);
-  m_bool_one = value_range (boolean_true_node, boolean_true_node);
+  m_bool_zero = int_range<1> (boolean_false_node, boolean_false_node);
+  m_bool_one = int_range<1> (boolean_true_node, boolean_true_node);
 }
 
 // Destruct a gori_compute_object
@@ -638,10 +638,10 @@ gori_compute::~gori_compute ()
 // for NAME coming into S.
 
 bool
-gori_compute::compute_operand_range (value_range &r, gimple *s,
-				     const value_range &lhs,
+gori_compute::compute_operand_range (irange &r, gimple *s,
+				     const irange &lhs,
 				     tree name,
-				     const value_range *name_range)
+				     const irange *name_range)
 {
   if (gimple_range_handler (s))
     return compute_operand_range_op (r, s, lhs, name, name_range);
@@ -657,10 +657,10 @@ gori_compute::compute_operand_range (value_range &r, gimple *s,
 // NAME coming into S.
 
 bool
-gori_compute::compute_operand_range_switch (value_range &r, gswitch *s,
-					    const value_range &lhs,
+gori_compute::compute_operand_range_switch (irange &r, gswitch *s,
+					    const irange &lhs,
 					    tree name,
-					    const value_range *name_range)
+					    const irange *name_range)
 {
   tree op1 = gimple_switch_index (s);
 
@@ -717,10 +717,10 @@ is_gimple_logical_p (const gimple *gs)
 // for NAME coming into S.
 
 bool
-gori_compute::compute_operand_range_op (value_range &r, gimple *stmt,
-					const value_range &lhs,
+gori_compute::compute_operand_range_op (irange &r, gimple *stmt,
+					const irange &lhs,
 					tree name,
-					const value_range *name_range)
+					const irange *name_range)
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
@@ -770,12 +770,12 @@ gori_compute::compute_operand_range_op (value_range &r, gimple *stmt,
 // the LHS.
 
 bool
-gori_compute::logical_combine (value_range &r, enum tree_code code,
-			       const value_range &lhs,
-			       const value_range &op1_true,
-			       const value_range &op1_false,
-			       const value_range &op2_true,
-			       const value_range &op2_false)
+gori_compute::logical_combine (irange &r, enum tree_code code,
+			       const irange &lhs,
+			       const irange &op1_true,
+			       const irange &op1_false,
+			       const irange &op2_true,
+			       const irange &op2_false)
 {
   // This is not a simple fold of a logical expression, rather it
   // determines ranges which flow through the logical expression.
@@ -814,7 +814,7 @@ gori_compute::logical_combine (value_range &r, enum tree_code code,
   // would be lost.  */
   if (!lhs.singleton_p ())
     {
-      value_range r1;
+      int_range<1> r1;
       if (logical_combine (r1, code, m_bool_zero, op1_true, op1_false,
 			   op2_true, op2_false)
 	  && logical_combine (r, code, m_bool_one, op1_true, op1_false,
@@ -842,11 +842,11 @@ gori_compute::logical_combine (value_range &r, enum tree_code code,
 	else
 	  {
 	    // The FALSE side is the union of the other 3 cases.
-	    value_range ff (op1_false);
+	    int_range<1> ff (op1_false);
 	    ff.intersect (op2_false);
-	    value_range tf (op1_true);
+	    int_range<1> tf (op1_true);
 	    tf.intersect (op2_false);
-	    value_range ft (op1_false);
+	    int_range<1> ft (op1_false);
 	    ft.intersect (op2_true);
 	    r = ff;
 	    r.union_ (tf);
@@ -870,11 +870,11 @@ gori_compute::logical_combine (value_range &r, enum tree_code code,
 	  {
 	    // The TRUE side of an OR operation will be the union of
 	    // the other three combinations.
-	    value_range tt (op1_true);
+	    int_range<1> tt (op1_true);
 	    tt.intersect (op2_true);
-	    value_range tf (op1_true);
+	    int_range<1> tf (op1_true);
 	    tf.intersect (op2_false);
-	    value_range ft (op1_false);
+	    int_range<1> ft (op1_false);
 	    ft.intersect (op2_true);
 	    r = tt;
 	    r.union_ (tf);
@@ -895,19 +895,18 @@ gori_compute::logical_combine (value_range &r, enum tree_code code,
 // coming into S.
 
 bool
-gori_compute::compute_logical_operands (value_range &r, gimple *s,
-					const value_range &lhs,
+gori_compute::compute_logical_operands (irange &r, gimple *s,
+					const irange &lhs,
 					tree name,
-					const value_range *name_range)
+					const irange *name_range)
 {
-  value_range op1_range, op2_range;
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
   bool ret = true;
   const unsigned depth_limit = 6;	// Max depth of logical recursion.
   static unsigned depth = 0;		// Current depth of recursion.
 
-  value_range op1_true, op1_false, op2_true, op2_false;
+  int_range<1> op1_true, op1_false, op2_true, op2_false;
 
   // Reaching this point means NAME is not in this stmt, but one of
   // the names in it ought to be derived from it.  */
@@ -985,11 +984,11 @@ gori_compute::compute_logical_operands (value_range &r, gimple *s,
 // NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand1_range (value_range &r, gimple *s,
-				      const value_range &lhs, tree name,
-				      const value_range *name_range)
+gori_compute::compute_operand1_range (irange &r, gimple *s,
+				      const irange &lhs, tree name,
+				      const irange *name_range)
 {
-  value_range op1_range, op2_range;
+  widest_irange op1_range, op2_range;
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
 
@@ -1027,11 +1026,11 @@ gori_compute::compute_operand1_range (value_range &r, gimple *s,
 // NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand2_range (value_range &r, gimple *s,
-				      const value_range &lhs, tree name,
-				      const value_range *name_range)
+gori_compute::compute_operand2_range (irange &r, gimple *s,
+				      const irange &lhs, tree name,
+				      const irange *name_range)
 {
-  value_range op1_range, op2_range;
+  widest_irange op1_range, op2_range;
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
 
@@ -1060,13 +1059,13 @@ gori_compute::compute_operand2_range (value_range &r, gimple *s,
 
 bool
 gori_compute::compute_operand1_and_operand2_range
-					(value_range &r,
+					(irange &r,
 					 gimple *s,
-					 const value_range &lhs,
+					 const irange &lhs,
 					 tree name,
-					 const value_range *name_range)
+					 const irange *name_range)
 {
-  value_range op_range;
+  widest_irange op_range;
 
   // Calculate a good a range for op2. Since op1 == op2, this will
   // have already included whatever the actual range of name is.
@@ -1096,10 +1095,10 @@ gori_compute::has_edge_range_p (edge e, tree name)
 // control edge or NAME is not defined by this edge.
 
 bool
-gori_compute::outgoing_edge_range_p (value_range &r, edge e, tree name,
-				     const value_range *name_range)
+gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
+				     const irange *name_range)
 {
-  value_range lhs;
+  widest_irange lhs;
 
   gcc_checking_assert (gimple_range_ssa_p (name));
   // Determine if there is an outgoing edge.

@@ -70,16 +70,16 @@ class evrp_range_analyzer
   void set_ssa_range_info (tree, value_range_equiv *);
 
   /* GORI support.  */
-  void try_find_new_range_with_gori (value_range &, tree, edge,
+  void try_find_new_range_with_gori (irange &, tree, edge,
 				     const vec<assert_info> &);
   void assert_gori_is_as_good (tree, edge,
-			       const value_range *,
-			       const value_range *,
+			       const irange *,
+			       const irange *,
 			       const vec<assert_info> &) const;
   value_range_equiv *merge_gori_and_evrp_results (value_range_equiv *,
-						  const value_range *);
+						  const irange *);
   void debug_gori_ranges (tree, edge,
-			  const value_range *, const value_range *,
+			  const irange *, const irange *,
 			  const vec<assert_info> &) const;
 
   /* STACK holds the old VR.  */

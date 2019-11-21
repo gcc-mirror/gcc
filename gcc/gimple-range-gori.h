@@ -145,59 +145,59 @@ public:
       which has non-virtual destructor might cause undefined
       behavior.  */
   virtual ~gori_compute ();
-  bool range_of_expr (value_range &r, tree expr, gimple *s = NULL);
+  bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
   virtual bool outgoing_edge_range_p
-				(value_range &r, edge e, tree name,
-				 const value_range *name_range = NULL);
+				(irange &r, edge e, tree name,
+				 const irange *name_range = NULL);
 protected:
-  virtual void range_of_ssa_name (value_range &, tree name,
+  virtual void range_of_ssa_name (irange &, tree name,
 				  gimple *s = NULL);
-  bool compute_operand_range (value_range &r, gimple *s,
-			      const value_range &lhs,
+  bool compute_operand_range (irange &r, gimple *s,
+			      const irange &lhs,
 			      tree name,
-			      const value_range *name_range = NULL);
+			      const irange *name_range = NULL);
   bool has_edge_range_p (edge e, tree name);
   gori_map m_gori_map;
 private:
-  void get_tree_range (value_range &, tree expr, tree name,
-		       const value_range *range_of_name);
-  bool compute_operand_range_switch (value_range &r, gswitch *s,
-				     const value_range &lhs,
+  void get_tree_range (irange &, tree expr, tree name,
+		       const irange *range_of_name);
+  bool compute_operand_range_switch (irange &r, gswitch *s,
+				     const irange &lhs,
 				     tree name,
-				     const value_range *name_range);
-  bool compute_name_range_op (value_range &r, gimple *s,
-			      const value_range &lhs,
+				     const irange *name_range);
+  bool compute_name_range_op (irange &r, gimple *s,
+			      const irange &lhs,
 			      tree name,
-			      const value_range *name_range);
-  bool compute_operand_range_op (value_range &r, gimple *stmt,
-				 const value_range &lhs,
+			      const irange *name_range);
+  bool compute_operand_range_op (irange &r, gimple *stmt,
+				 const irange &lhs,
 				 tree name,
-				 const value_range *name_range);
-  bool compute_operand1_range (value_range &r, gimple *s,
-			       const value_range &lhs,
+				 const irange *name_range);
+  bool compute_operand1_range (irange &r, gimple *s,
+			       const irange &lhs,
 			       tree name,
-			       const value_range *name_range);
-  bool compute_operand2_range (value_range &r, gimple *s,
-			       const value_range &lhs,
+			       const irange *name_range);
+  bool compute_operand2_range (irange &r, gimple *s,
+			       const irange &lhs,
 			       tree name,
-			       const value_range *name_range);
+			       const irange *name_range);
   bool compute_operand1_and_operand2_range
-				(value_range &r, gimple *s,
-				 const value_range &lhs,
+				(irange &r, gimple *s,
+				 const irange &lhs,
 				 tree name,
-				 const value_range *name_range);
-  bool compute_logical_operands (value_range &r, gimple *s,
-				 const value_range &lhs,
+				 const irange *name_range);
+  bool compute_logical_operands (irange &r, gimple *s,
+				 const irange &lhs,
 				 tree name,
-				 const value_range *name_range);
-  bool logical_combine (value_range &r, enum tree_code code,
-			const value_range &lhs,
-			const value_range &op1_true,
-			const value_range &op1_false,
-			const value_range &op2_true,
-			const value_range &op2_false);
-  value_range m_bool_zero;           /* Boolean zero cached.  */
-  value_range m_bool_one;            /* Boolean true cached.  */
+				 const irange *name_range);
+  bool logical_combine (irange &r, enum tree_code code,
+			const irange &lhs,
+			const irange &op1_true,
+			const irange &op1_false,
+			const irange &op2_true,
+			const irange &op2_false);
+  int_range<1> m_bool_zero;           /* Boolean zero cached.  */
+  int_range<1> m_bool_one;            /* Boolean true cached.  */
 };
 
 #endif // GCC_GIMPLE_RANGE_GORI_H

@@ -588,7 +588,7 @@ irange::check ()
       gcc_fallthrough ();
     case VR_RANGE:
       {
-	gcc_assert (m_num_ranges > 0);
+	gcc_assert (m_num_ranges > 0 || !simple_ranges_p ());
 
 	for (unsigned i = 0; i < m_num_ranges; ++i)
 	  {
@@ -1655,7 +1655,24 @@ irange::union_ (const irange *other)
       fprintf (dump_file, "\n");
     }
 
-  gcc_checking_assert (other->simple_ranges_p ());
+  /* If a simple range was requested, do the entire operation in
+     simple mode, because we may have received a symbolic, and we only
+     know how to deal with those in simple mode.  */
+  if (simple_ranges_p ())
+    {
+      if (other->simple_ranges_p ())
+	*this = union_helper ((value_range *) this,
+			      (const value_range *) other);
+      else
+	{
+	  int_range<1> small = *other;
+	  *this = union_helper ((value_range *) this,
+				(const value_range *) &small);
+	}
+    }
+  else
+    union_ (*other);
+
   *this = union_helper ((value_range *) this, (const value_range *) other);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1671,11 +1688,6 @@ irange::union_ (const irange *other)
 void
 irange::union_ (const vrange &vr)
 {
-  /* Disable details for now, because it makes the ranger dump
-     unnecessarily verbose.  */
-  bool details = dump_flags & TDF_DETAILS;
-  if (details)
-    dump_flags &= ~TDF_DETAILS;
   const irange *other = as_a <const irange *> (&vr);
   if (simple_ranges_p ())
     {
@@ -1694,14 +1706,11 @@ irange::union_ (const vrange &vr)
       else
 	multi_range_union (*other);
     }
-  if (details)
-    dump_flags |= TDF_DETAILS;
 }
 
 void
 irange::intersect (const irange *other)
 {
-  gcc_checking_assert (simple_ranges_p () && other->simple_ranges_p ());
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Intersecting\n  ");
@@ -1711,8 +1720,23 @@ irange::intersect (const irange *other)
       fprintf (dump_file, "\n");
     }
 
-  *this = intersect_helper ((value_range *) this,
-			    (const value_range *) other);
+  /* If a simple range was requested, do the entire operation in
+     simple mode, because we may have received a symbolic, and we only
+     know how to deal with those in simple mode.  */
+  if (simple_ranges_p ())
+    {
+      if (other->simple_ranges_p ())
+	*this = intersect_helper ((value_range *) this,
+				  (const value_range *) other);
+      else
+	{
+	  int_range<1> small = *other;
+	  *this = intersect_helper ((value_range *) this,
+				    (const value_range *) &small);
+	}
+    }
+  else
+    intersect (*other);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1727,11 +1751,6 @@ irange::intersect (const irange *other)
 void
 irange::intersect (const vrange &vr)
 {
-  /* Disable details for now, because it makes the ranger dump
-     unnecessarily verbose.  */
-  bool details = dump_flags & TDF_DETAILS;
-  if (details)
-    dump_flags &= ~TDF_DETAILS;
   const irange *other = as_a <const irange *> (&vr);
   if (simple_ranges_p ())
     {
@@ -1750,8 +1769,6 @@ irange::intersect (const vrange &vr)
       else
 	multi_range_intersect (*other);
     }
-  if (details)
-    dump_flags |= TDF_DETAILS;
 }
 
 void
@@ -2101,6 +2118,22 @@ irange::simple_dump (FILE *file) const
     gcc_unreachable ();
 }
 
+static void
+dump_bound_with_infinite_markers (FILE *file, tree bound)
+{
+  tree type = TREE_TYPE (bound);
+  if (INTEGRAL_TYPE_P (type)
+      && !TYPE_UNSIGNED (type)
+      && vrp_val_is_min (bound)
+      && TYPE_PRECISION (type) != 1)
+    fprintf (file, "-INF");
+  else if (vrp_val_is_max (bound)
+	   && TYPE_PRECISION (type) != 1)
+    fprintf (file, "+INF");
+  else
+    print_generic_expr (file, bound);
+}
+
 void
 vrange::dump (FILE *file) const
 {
@@ -2119,19 +2152,33 @@ vrange::dump (FILE *file) const
   fprintf (file, " ");
   if (varying_p ())
     fprintf (file, "VARYING");
-  else
+  else if (m_kind == VR_RANGE)
     {
-      if (m_kind == VR_ANTI_RANGE)
-	fprintf (file, "~");
       for (unsigned i = 0; i < m_num_ranges; ++i)
 	{
+	  tree lb = m_base[i * 2];
+	  tree ub = m_base[i * 2 + 1];
 	  fprintf (file, "[");
-	  print_generic_expr (file, m_base[i * 2]);
+	  dump_bound_with_infinite_markers (file, lb);
 	  fprintf (file, ", ");
-	  print_generic_expr (file, m_base[i * 2 + 1]);
+	  dump_bound_with_infinite_markers (file, ub);
 	  fprintf (file, "]");
 	}
     }
+  else if (m_kind == VR_ANTI_RANGE)
+    {
+      gcc_checking_assert (m_num_ranges == 1);
+      gcc_checking_assert (!range_has_numeric_bounds_p (ir));
+      tree lb = m_base[0];
+      tree ub = m_base[1];
+      fprintf (file, "~[");
+      dump_bound_with_infinite_markers (file, lb);
+      fprintf (file, ", ");
+      dump_bound_with_infinite_markers (file, ub);
+      fprintf (file, "]");
+    }
+  else
+    gcc_unreachable ();
 }
 
 void

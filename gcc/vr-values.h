@@ -91,21 +91,18 @@ class vr_values : public gori_compute
   /* */
   void cleanup_edges_and_switches (void);
 
-  bool outgoing_edge_range_p (value_range &, edge, tree name,
-			      const value_range *name_range = NULL);
+  bool outgoing_edge_range_p (irange &, edge, tree name,
+			      const irange *name_range = NULL);
   void save_equivalences (equivalence_iterator *);
  private:
-  void range_of_ssa_name (value_range &r, tree op, gimple * = NULL);
+  void range_of_ssa_name (irange &r, tree op, gimple * = NULL);
   equivalence_iterator *m_equivalences;
-  bool outgoing_edge_range_with_equivalences_p (value_range &,
-						edge, tree name);
-  bool solve_equiv_at_statement (value_range &,
-				 tree, gimple *stmt,
-				 const value_range &);
-  bool solve_name_given_equivalence (value_range &r,
-				     tree name, tree equiv,
-				     const value_range &equiv_range);
-  void range_for_op2 (value_range &, gimple *, tree type);
+  bool outgoing_edge_range_with_equivalences_p (irange &, edge, tree name);
+  bool solve_equiv_at_statement (irange &,
+				 tree, gimple *stmt, const irange &);
+  bool solve_name_given_equivalence (irange &r, tree name, tree equiv,
+				     const irange &equiv_range);
+  void range_for_op2 (irange &, gimple *, tree type);
 
   value_range_equiv *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);

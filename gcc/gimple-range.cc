@@ -52,13 +52,12 @@ along with GCC; see the file COPYING3.  If not see
 // builtin function is a boolean result.
 
 static void
-gimple_range_adjustment (const gimple *s, value_range &res)
+gimple_range_adjustment (const gimple *s, irange &res)
 {
   switch (gimple_expr_code (s))
     {
     case IMAGPART_EXPR:
       {
-	value_range r;
 	tree name;
 	tree type = TREE_TYPE (gimple_assign_lhs (s));
 
@@ -75,9 +74,12 @@ gimple_range_adjustment (const gimple *s, value_range &res)
 		  case IFN_SUB_OVERFLOW:
 		  case IFN_MUL_OVERFLOW:
 		  case IFN_ATOMIC_COMPARE_EXCHANGE:
-		    r.set_varying (boolean_type_node);
-		    range_cast (r, type);
-		    res.intersect (r);
+		    {
+		      int_range<1> r;
+		      r.set_varying (boolean_type_node);
+		      range_cast (r, type);
+		      res.intersect (r);
+		    }
 		  default:
 		    break;
 		  }
@@ -99,7 +101,7 @@ gimple_range_adjustment (const gimple *s, value_range &res)
 // represent switches in GIMPLE does not map well to this calculation.
 
 static gimple *
-calc_single_range (value_range &r, gswitch *sw, edge e)
+calc_single_range (irange &r, gswitch *sw, edge e)
 {
   unsigned x, lim;
   lim = gimple_switch_num_labels (sw);
@@ -129,7 +131,7 @@ calc_single_range (value_range &r, gswitch *sw, edge e)
 	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
 	  if (!high)
 	    high = low;
-	  value_range case_range (low, high);
+	  int_range<1> case_range (low, high);
 	  r.union_ (case_range);
 	}
     }
@@ -144,7 +146,7 @@ calc_single_range (value_range &r, gswitch *sw, edge e)
 	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
 	  if (!high)
 	    high = low;
-	  value_range case_range (low, high, VR_ANTI_RANGE);
+	  int_range<1> case_range (low, high, VR_ANTI_RANGE);
 	  r.intersect (case_range);
 	}
     }
@@ -183,7 +185,7 @@ gimple_outgoing_range_stmt_p (basic_block bb)
 // return NULL
 
 gimple *
-gimple_outgoing_edge_range_p (value_range &r, edge e)
+gimple_outgoing_edge_range_p (irange &r, edge e)
 {
   // Determine if there is an outgoing edge.
   gimple *s = gimple_outgoing_range_stmt_p (e->src);
@@ -193,9 +195,9 @@ gimple_outgoing_edge_range_p (value_range &r, edge e)
   if (is_a<gcond *> (s))
     {
       if (e->flags & EDGE_TRUE_VALUE)
-	r = value_range (boolean_true_node, boolean_true_node);
+	r = int_range<1> (boolean_true_node, boolean_true_node);
       else if (e->flags & EDGE_FALSE_VALUE)
-	r = value_range (boolean_false_node, boolean_false_node);
+	r = int_range<1> (boolean_false_node, boolean_false_node);
       else
 	gcc_unreachable ();
       return s;
@@ -205,7 +207,7 @@ gimple_outgoing_edge_range_p (value_range &r, edge e)
   gswitch *sw = as_a<gswitch *> (s);
   tree type = TREE_TYPE (gimple_switch_index (sw));
 
-  if (!value_range::supports_type_p (type))
+  if (!irange::supports_type_p (type))
     return NULL;
 
   return calc_single_range (r, sw, e);
@@ -217,13 +219,12 @@ gimple_outgoing_edge_range_p (value_range &r, edge e)
 // the result in RES.  Return false if the operation fails.
 
 bool
-gimple_range_fold (const gimple *s, value_range &res,
-		   const value_range &r1)
+gimple_range_fold (const gimple *s, irange &res, const irange &r1)
 {
   gcc_checking_assert (gimple_range_handler (s));
 
   tree type = gimple_expr_type (s);;
-  value_range r2 (type);
+  int_range<1> r2 (type);
   // Single ssa operations require the LHS type as the second range.
 
   return gimple_range_fold (s, res, r1, r2);
@@ -234,13 +235,11 @@ gimple_range_fold (const gimple *s, value_range &res,
 // returning the result in RES.  Return false if the operation fails.
 
 bool
-gimple_range_fold (const gimple *s, value_range &res,
-		   const value_range &r1,
-		   const value_range &r2)
+gimple_range_fold (const gimple *s, irange &res,
+		   const irange &r1, const irange &r2)
 {
   gcc_checking_assert (gimple_range_handler (s));
 
-  value_range adj_range;
   gimple_range_handler (s)->fold_range (res, gimple_expr_type (s), r1, r2);
 
   // If there are any gimple lookups, do those now.
@@ -317,10 +316,8 @@ gimple_range_operand2 (const gimple *s)
 // LHS_RANGE.  Return false if nothing can be determined.
 
 bool
-gimple_range_calc_op1 (const gimple *s, value_range &r,
-		       const value_range &lhs_range)
+gimple_range_calc_op1 (const gimple *s, irange &r, const irange &lhs_range)
 {
-  value_range type_range;
   gcc_checking_assert (gimple_num_ops (s) < 3);
   // An empty range is viral, so return an empty range.
 
@@ -332,7 +329,7 @@ gimple_range_calc_op1 (const gimple *s, value_range &r,
     }
   // Unary operations require the type of the first operand in the
   // second range position.
-  type_range.set_varying (type);
+  int_range<1> type_range (type);
   return gimple_range_handler (s)->op1_range (r, type, lhs_range, type_range);
 }
 
@@ -343,9 +340,8 @@ gimple_range_calc_op1 (const gimple *s, value_range &r,
 // nothing can be determined.
 
 bool
-gimple_range_calc_op1 (const gimple *s, value_range &r,
-		       const value_range &lhs_range,
-		       const value_range &op2_range)
+gimple_range_calc_op1 (const gimple *s, irange &r,
+		       const irange &lhs_range, const irange &op2_range)
 {
   // Unary operation are allowed to pass a range in for second operand
   // as there are often additional restrictions beyond the type which
@@ -367,9 +363,8 @@ gimple_range_calc_op1 (const gimple *s, value_range &r,
 // nothing can be determined.
 
 bool
-gimple_range_calc_op2 (const gimple *s, value_range &r,
-		       const value_range &lhs_range,
-		       const value_range &op1_range)
+gimple_range_calc_op2 (const gimple *s, irange &r,
+		       const irange &lhs_range, const irange &op1_range)
 {
   tree type = TREE_TYPE (gimple_range_operand2 (s));
   // An empty range is viral, so return an empty range.

@@ -153,8 +153,8 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
 }
 
 static bool
-gori_range_is_same (const value_range *range_evrp,
-		    const value_range *range_gori)
+gori_range_is_same (const irange *range_evrp,
+		    const irange *range_gori)
 {
   // FIXME: We may be able to normalize a symbolic to a [MIN,MAX] plus
   // or minus the end-points.  Don't count that as a win just yet.
@@ -164,11 +164,9 @@ gori_range_is_same (const value_range *range_evrp,
     return true;
 
   // Treat UNDEFINED and VARYING as interchangeable.
-  value_range evrp;
+  widest_irange evrp;
   if (range_evrp)
     evrp = *range_evrp;
-  else
-    evrp = value_range ();
   if (evrp.undefined_p () && range_gori->varying_p ())
     return true;
   if (evrp.varying_p () && range_gori->undefined_p ())
@@ -178,8 +176,8 @@ gori_range_is_same (const value_range *range_evrp,
 }
 
 static bool
-gori_range_is_better (const value_range *range_evrp,
-		      const value_range *range_gori)
+gori_range_is_better (const irange *range_evrp,
+		      const irange *range_gori)
 {
   if (gori_range_is_same (range_evrp, range_gori))
     return false;
@@ -193,16 +191,16 @@ gori_range_is_better (const value_range *range_evrp,
       return true;
     }
 
-  value_range inter (*range_gori);
+  widest_irange inter (*range_gori);
   inter.intersect (*range_evrp);
   return inter == *range_gori;
 }
 
 static bool
-gori_range_is_unrepresentable (const value_range *r_evrp,
-			       const value_range *r_gori)
+gori_range_is_unrepresentable (const irange *r_evrp,
+			       const irange *r_gori)
 {
-  value_range inter (*r_evrp);
+  widest_irange inter (*r_evrp);
   inter.intersect (*r_gori);
   bool evrp_is_better = inter == *r_evrp;
   return gori_range_is_better (r_evrp, r_gori) && evrp_is_better;
@@ -211,10 +209,10 @@ gori_range_is_unrepresentable (const value_range *r_evrp,
 value_range_equiv *
 evrp_range_analyzer::merge_gori_and_evrp_results
 					(value_range_equiv *vr,
-					 const value_range *vr_gori)
+					 const irange *vr_gori)
 {
   if (vr)
-    static_cast <value_range *> (vr)->intersect (vr_gori);
+    static_cast <irange *> (vr)->intersect (vr_gori);
   else
     {
       if (vr_gori->varying_p () || vr_gori->undefined_p ())
@@ -227,7 +225,7 @@ evrp_range_analyzer::merge_gori_and_evrp_results
 
 void
 evrp_range_analyzer::try_find_new_range_with_gori
-				(value_range &res, tree name, edge e,
+				(irange &res, tree name, edge e,
 				 const vec<assert_info> &asserts)
 {
   const value_range_equiv *known_range = get_value_range (name);
@@ -243,9 +241,11 @@ evrp_range_analyzer::try_find_new_range_with_gori
 }
 
 static void
-dump_gori_improvements (tree name,
-			const value_range *r_evrp, const value_range *r_gori)
+dump_gori_improvements (tree name, const irange *r_evrp, const irange *r_gori)
 {
+  bool details = dump_flags & TDF_DETAILS;
+  if (details)
+    dump_flags &= ~TDF_DETAILS;
   if (gori_range_is_better (r_evrp, r_gori))
     {
       fprintf (dump_file, "GORI improved: ");
@@ -264,7 +264,7 @@ dump_gori_improvements (tree name,
 	    fprintf (dump_file, "UNREPRESENTABLE");
 	  else
 	    {
-	      value_range r;
+	      widest_irange r;
 	      r = *r_evrp;
 	      r.intersect (r_gori);
 	      r.dump (dump_file);
@@ -272,12 +272,14 @@ dump_gori_improvements (tree name,
 	}
       fprintf (dump_file, "\n");
     }
+  if (details)
+    dump_flags |= TDF_DETAILS;
 }
 
 void
 evrp_range_analyzer::debug_gori_ranges (tree name, edge e,
-					const value_range *range_evrp,
-					const value_range *range_gori,
+					const irange *range_evrp,
+					const irange *range_gori,
 					const vec<assert_info> &asserts) const
 {
   fprintf (stderr, "Different ranges on edge (%d -> %d) for SSA: ",
@@ -307,8 +309,8 @@ evrp_range_analyzer::debug_gori_ranges (tree name, edge e,
 void
 evrp_range_analyzer::assert_gori_is_as_good
 					(tree name, edge e,
-					 const value_range *range_evrp,
-					 const value_range *range_gori,
+					 const irange *range_evrp,
+					 const irange *range_gori,
 					 const vec<assert_info> &asserts) const
 {
   if (gori_range_is_same (range_evrp, range_gori)
@@ -355,7 +357,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	  auto_vec<std::pair<tree, value_range_equiv *>, 8> vrs;
 	  for (unsigned i = 0; i < asserts.length (); ++i)
 	    {
-	      value_range vr_gori;
+	      widest_irange vr_gori;
 	      try_find_new_range_with_gori (vr_gori, asserts[i].name, pred_e,
 					    asserts);
 	      value_range_equiv *vr

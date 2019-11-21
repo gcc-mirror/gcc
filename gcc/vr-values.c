@@ -174,7 +174,7 @@ vr_values::get_value_range (const_tree var)
 }
 
 void
-vr_values::range_of_ssa_name (value_range &r, tree op,
+vr_values::range_of_ssa_name (irange &r, tree op,
 			      gimple *stmt ATTRIBUTE_UNUSED)
 {
   r = *(get_value_range (op));
@@ -2001,8 +2001,8 @@ vr_values::save_equivalences (equivalence_iterator *iter)
 // control edge or NAME is not defined by this edge.
 
 bool
-vr_values::outgoing_edge_range_p (value_range &r, edge e, tree name,
-				  const value_range *name_range)
+vr_values::outgoing_edge_range_p (irange &r, edge e, tree name,
+				  const irange *name_range)
 {
   if (gori_compute::outgoing_edge_range_p (r, e, name, name_range)
       && !r.varying_p ())
@@ -2013,10 +2013,9 @@ vr_values::outgoing_edge_range_p (value_range &r, edge e, tree name,
 
 bool
 vr_values::outgoing_edge_range_with_equivalences_p
-				(value_range &r,
-				 edge e, tree name)
+				(irange &r, edge e, tree name)
 {
-  value_range branch_range;
+  widest_irange branch_range;
   gimple *stmt = gimple_outgoing_edge_range_p (branch_range, e);
   if (!stmt)
     return false;
@@ -2031,7 +2030,7 @@ vr_values::outgoing_edge_range_with_equivalences_p
       if (!m_gori_map.is_export_p (equiv, e->src))
 	continue;
 
-      value_range equiv_range, tmp;
+      widest_irange equiv_range, tmp;
       if (solve_equiv_at_statement (equiv_range, equiv, stmt, branch_range)
 	  // Try to solve conditional again with our new knowledge.
 	  && (solve_equiv_at_statement (tmp, name, stmt, branch_range)
@@ -2057,27 +2056,27 @@ vr_values::outgoing_edge_range_with_equivalences_p
 }
 
 bool
-vr_values::solve_equiv_at_statement (value_range &r,
+vr_values::solve_equiv_at_statement (irange &r,
 				     tree name, gimple *stmt,
-				     const value_range &lhs)
+				     const irange &lhs)
 {
-  value_range known_range_of_name;
+  widest_irange known_range_of_name;
   range_of_ssa_name (known_range_of_name, name);
   return compute_operand_range (r, stmt, lhs, name, &known_range_of_name);
 }
 
 bool
-vr_values::solve_name_given_equivalence (value_range &r,
+vr_values::solve_name_given_equivalence (irange &r,
 					 tree name,
 					 tree equiv,
-					 const value_range &equiv_range)
+					 const irange &equiv_range)
 {
   // Solve NAME in EQUIV = USE(NAME).
   gimple *def = SSA_NAME_DEF_STMT (equiv);
   if (gimple_range_handler (def) && gimple_range_operand1 (def) == name)
     {
       tree op2_type = TREE_TYPE (gimple_range_operand1 (def));
-      value_range op2_range;
+      widest_irange op2_range;
       range_for_op2 (op2_range, def, op2_type);
       return gimple_range_calc_op1 (def, r, equiv_range, op2_range);
     }
@@ -2086,7 +2085,7 @@ vr_values::solve_name_given_equivalence (value_range &r,
   if (gimple_range_handler (def) && gimple_range_operand1 (def) == equiv)
     {
       tree op2_type = gimple_expr_type (def);
-      value_range op2_range;
+      widest_irange op2_range;
       range_for_op2 (op2_range, def, op2_type);
       return gimple_range_fold (def, r, equiv_range, op2_range);
     }
@@ -2094,7 +2093,7 @@ vr_values::solve_name_given_equivalence (value_range &r,
 }
 
 void
-vr_values::range_for_op2 (value_range &res, gimple *stmt, tree type)
+vr_values::range_for_op2 (irange &res, gimple *stmt, tree type)
 {
   tree op2 = gimple_assign_rhs2 (stmt);
   if (op2)
@@ -2103,7 +2102,7 @@ vr_values::range_for_op2 (value_range &res, gimple *stmt, tree type)
 	range_of_ssa_name (res, op2);
       else
 	{
-	  res = value_range (op2, op2);
+	  res.set (op2, op2);
 	  res.normalize_addresses ();
 	}
       return;

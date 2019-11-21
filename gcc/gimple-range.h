@@ -32,24 +32,24 @@ extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 // If edge E has a constant range, return it and the range generating
 // statement.  for conditonals its TRUE/FALSE, for switches its the
 // possible cases.
-extern gimple *gimple_outgoing_edge_range_p (value_range &r, edge e);
+extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 
 // These routines provide a GIMPLE interface to the range-ops code.
 extern tree gimple_range_operand1 (const gimple *s);
 extern tree gimple_range_operand2 (const gimple *s);
-extern bool gimple_range_fold (const gimple *s, value_range &res,
-			       const value_range &r1);
-extern bool gimple_range_fold (const gimple *s, value_range &res,
-			       const value_range &r1,
-			       const value_range &r2);
-extern bool gimple_range_calc_op1 (const gimple *s, value_range &r,
-				   const value_range &lhs_range);
-extern bool gimple_range_calc_op1 (const gimple *s, value_range &r,
-				   const value_range &lhs_range,
-				   const value_range &op2_range);
-extern bool gimple_range_calc_op2 (const gimple *s, value_range &r,
-				   const value_range &lhs_range,
-				   const value_range &op1_range);
+extern bool gimple_range_fold (const gimple *s, irange &res,
+			       const irange &r1);
+extern bool gimple_range_fold (const gimple *s, irange &res,
+			       const irange &r1,
+			       const irange &r2);
+extern bool gimple_range_calc_op1 (const gimple *s, irange &r,
+				   const irange &lhs_range);
+extern bool gimple_range_calc_op1 (const gimple *s, irange &r,
+				   const irange &lhs_range,
+				   const irange &op2_range);
+extern bool gimple_range_calc_op2 (const gimple *s, irange &r,
+				   const irange &lhs_range,
+				   const irange &op1_range);
 
 
 // Return the range_operator pointer for this statement.  This routine
@@ -70,7 +70,7 @@ gimple_range_ssa_p (tree exp)
 {
   if (exp && TREE_CODE (exp) == SSA_NAME &&
       !SSA_NAME_IS_VIRTUAL_OPERAND (exp) &&
-      value_range::supports_type_p (TREE_TYPE (exp)))
+      irange::supports_type_p (TREE_TYPE (exp)))
     return exp;
   return NULL_TREE;
 }
