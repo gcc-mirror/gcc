@@ -1,3 +1,10 @@
+2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/92595
+	* tree-vect-stmts.c (get_group_load_store_type): Add a VECTOR_MODE_P
+	check.
+	(vectorizable_store, vectorizable_load): Likewise.
+
 2019-11-21  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (update_callee_keys): Add parameter UPDATE_SINCE.
