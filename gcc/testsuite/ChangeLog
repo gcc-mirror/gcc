@@ -1,3 +1,8 @@
+2019-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92450 - ICE with invalid nested name specifier.
+	* g++.dg/parse/crash71.C: New test.
+
 2019-11-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gfortran.dg/global_vars_f90_init_driver.c: Add missing extern.

@@ -25062,9 +25062,10 @@ cp_parser_member_declaration (cp_parser* parser)
 		  tree d = grokdeclarator (declarator, &decl_specifiers,
 					   BITFIELD, /*initialized=*/false,
 					   &attributes);
-		  error_at (DECL_SOURCE_LOCATION (d),
-			    "bit-field %qD has non-integral type %qT",
-			    d, TREE_TYPE (d));
+		  if (!error_operand_p (d))
+		    error_at (DECL_SOURCE_LOCATION (d),
+			      "bit-field %qD has non-integral type %qT",
+			      d, TREE_TYPE (d));
 		  cp_parser_skip_to_end_of_statement (parser);
 		  /* Avoid "extra ;" pedwarns.  */
 		  if (cp_lexer_next_token_is (parser->lexer,

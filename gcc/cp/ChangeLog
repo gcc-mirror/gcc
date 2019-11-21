@@ -1,3 +1,10 @@
+2019-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92450 - ICE with invalid nested name specifier.
+	* parser.c (cp_parser_member_declaration): Don't attempt to print
+	erroneous bit-field diagnostic if grokdeclarator returns
+	error_mark_node.
+
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
