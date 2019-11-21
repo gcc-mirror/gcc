@@ -1,3 +1,10 @@
+2019-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c-torture/execute/20030913-1.c: Rename glob to g.
+	* gcc.c-torture/execute/960218-1.c: Rename glob to gl.
+	* gcc.c-torture/execute/complex-6.c: Rename err to e.
+	* gcc.dg/torture/ssa-pta-fn-1.c: Rename glob to g.
+
 2019-11-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92450 - ICE with invalid nested name specifier.
