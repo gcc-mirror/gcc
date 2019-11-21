@@ -1,5 +1,12 @@
 2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/92526
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Reject
+	versioning for alignment if the accesses do not have a consistent
+	mask, rather than asserting that the masks are consistent.
+
+2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/92595
 	* tree-vect-stmts.c (get_group_load_store_type): Add a VECTOR_MODE_P
 	check.
