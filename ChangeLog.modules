@@ -1,12 +1,23 @@
 2019-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Don't strip_template checking
+	instantiation consistency.
+	(depset::hash::add_{dependency,specializations}): Likewise.
+	(get_originating_module_decl): Cope with template friends.  Get to
+	the template_decl.
+	(get_instantiating_module_decl): Cope with template friends.  Keep
+	the template_decl.
+	gcc/testsuite/
+	* g++.dg/modules/pl-spec-[1245]_[abcd].C: Adjust scans.
+
+	gcc/cp/
 	* name-lookup.c (check_local_shadow): Bail out for clones.
 
 	gcc/cp/
 	* module.cc (dumper::impl:nested_name): Obnly show module on imports.
 	gcc/testsuite/
-	* g++dg.modules: Anjust many scans.
+	* g++dg/modules: Anjust many scans.
 
 2019-11-20  Nathan Sidwell  <nathan@acm.org>
 

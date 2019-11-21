@@ -8113,8 +8113,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
          them out if we did it.  */
       if (!streaming_p ())
 	{
-	  gcc_checking_assert (STRIP_TEMPLATE (decl)
-			       == get_instantiating_module_decl (decl));
+	  gcc_checking_assert (decl == get_instantiating_module_decl (decl));
 	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC);
 	  /* We should always insert or find something.  */
 	  gcc_assert (dep && dep->is_import () == (origin != 0));
@@ -11016,8 +11015,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
   if (ek != EK_USING)
     /* We should only be given instantiating decls, except for
        voldemorts, where we should only get non-instantiating decls.  */
-    gcc_checking_assert ((STRIP_TEMPLATE (decl)
-			  == get_instantiating_module_decl (decl))
+    gcc_checking_assert ((decl == get_instantiating_module_decl (decl))
 			 == (ek != EK_UNNAMED));
 
   depset **slot = entity_slot (decl, true);
@@ -11556,8 +11554,7 @@ depset::hash::add_specializations (bool decl_p)
 	    }
 	}
 
-      gcc_checking_assert (STRIP_TEMPLATE (spec)
-			   == get_instantiating_module_decl (spec));
+      gcc_checking_assert (spec == get_instantiating_module_decl (spec));
 
       bool needs_reaching = false;
       if (use_tpl == 1)
@@ -17082,39 +17079,36 @@ get_originating_module_decl (tree decl)
 		       || TREE_CODE (decl) == CONCEPT_DECL
 		       || TREE_CODE (decl) == NAMESPACE_DECL);
 
-  for (tree ctx;; decl = ctx)
+  for (;;)
     {
-      ctx = CP_DECL_CONTEXT (decl);
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	break;
+      /* Uninstantiated template friends are owned by the befriending
+	 class -- not their context.  */
+      if (TREE_CODE (decl) == TEMPLATE_DECL
+	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+	decl = TYPE_NAME (DECL_CHAIN (decl));
 
-      if (TYPE_P (ctx))
+      int use;
+      if (tree ti = node_template_info (decl, use))
+	decl = TI_TEMPLATE (ti);
+      else
 	{
-	  ctx = TYPE_NAME (ctx);
-	  if (!ctx)
+	  tree ctx = CP_DECL_CONTEXT (decl);
+	  if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	    break;
+
+	  if (TYPE_P (ctx))
 	    {
-	      /* Some kind of internal type.  */
-	      gcc_checking_assert (DECL_ARTIFICIAL (decl));
-	      return global_namespace;
+	      ctx = TYPE_NAME (ctx);
+	      if (!ctx)
+		{
+		  /* Some kind of internal type.  */
+		  gcc_checking_assert (DECL_ARTIFICIAL (decl));
+		  return global_namespace;
+		}
 	    }
+	  decl = ctx;
 	}
     }
-
-  int use;
-  if (tree ti = node_template_info (decl, use))
-    {
-      decl = TI_TEMPLATE (ti);
-      /* It could be a partial specialization, so look again.  */
-      ti = node_template_info (decl, use);
-      if (use > 0)
-	{
-	  decl = TI_TEMPLATE (ti);
-	  gcc_checking_assert ((node_template_info (decl, use), use <= 0));
-	}
-    }
-
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    decl = DECL_TEMPLATE_RESULT (decl);
 
   return decl;
 }
@@ -17148,9 +17142,15 @@ get_instantiating_module_decl (tree decl)
 		       || TREE_CODE (decl) == VAR_DECL
 		       || TREE_CODE (decl) == NAMESPACE_DECL);
 
-  for (tree ctx;; decl = ctx)
+  for (;;)
     {
-      ctx = CP_DECL_CONTEXT (decl);
+      /* Uninstantiated template friends are owned by the befriending
+	 class -- not their context.  */
+      if (TREE_CODE (decl) == TEMPLATE_DECL
+	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+	decl = TYPE_NAME (DECL_CHAIN (decl));
+
+      tree ctx = CP_DECL_CONTEXT (decl);
 
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	break;
@@ -17168,9 +17168,9 @@ get_instantiating_module_decl (tree decl)
 	       non-owning decl.  */
 	    return global_namespace;
 	}
-    }
 
-  decl = STRIP_TEMPLATE (decl);
+      decl = ctx;
+    }
 
   return decl;
 }
