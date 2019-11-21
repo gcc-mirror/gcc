@@ -1,3 +1,8 @@
+2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve2/whilerw_1.c: Add -fno-vect-cost-model.
+	Require x0 in the .d test too.
+
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91355

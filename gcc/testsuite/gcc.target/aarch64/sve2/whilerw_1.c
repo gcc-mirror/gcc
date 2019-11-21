@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-vect-cost-model" } */
 /* { dg-require-effective-target lp64 } */
 
 #include <stdint.h>
@@ -26,5 +26,5 @@ TEST_LOOP (int64_t);
 /* { dg-final { scan-assembler-times {\twhilerw\tp[0-9]+\.b, x0, x1\n} 1 } } */
 /* { dg-final { scan-assembler-times {\twhilerw\tp[0-9]+\.h, x0, x1\n} 1 } } */
 /* { dg-final { scan-assembler-times {\twhilerw\tp[0-9]+\.s, x0, x1\n} 1 } } */
-/* { dg-final { scan-assembler-times {\twhilerw\tp[0-9]+\.d, x[0-9]+, x1\n} 1 } } */
+/* { dg-final { scan-assembler-times {\twhilerw\tp[0-9]+\.d, x0, x1\n} 1 } } */
 /* { dg-final { scan-assembler-not {\twhilewr\t} } } */
