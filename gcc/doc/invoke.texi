@@ -14141,9 +14141,9 @@ than one compilation unit.
 The @option{-fcommon} places uninitialized global variables in a common block.
 This allows the linker to resolve all tentative definitions of the same variable
 in different compilation units to the same object, or to a non-tentative
-definition.  This behavior does not conform to ISO C, is inconsistent with C++,
-and on many targets implies a speed and code size penalty on global variable
-references.  It is mainly useful to enable legacy code to link without errors.
+definition.  This behavior is inconsistent with C++, and on many targets implies
+a speed and code size penalty on global variable references.  It is mainly
+useful to enable legacy code to link without errors.
 
 @item -fno-ident
 @opindex fno-ident

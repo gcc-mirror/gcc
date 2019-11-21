@@ -1,3 +1,7 @@
+2019-11-21  Harald van Dijk  <harald@gigawatt.nl>
+
+	* doc/invoke.texi (-fcommon): Remove claim about ISO C.
+
 2019-11-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* gimplify.c (expand_FALLTHROUGH_r, expand_FALLTHROUGH): Use
