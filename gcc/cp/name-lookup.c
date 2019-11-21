@@ -3103,6 +3103,11 @@ check_local_shadow (tree decl)
   if (DECL_EXTERNAL (decl))
     return;
 
+  /* No need to do it when cloning, and with modules this can cause
+     out-of-order reading when we try and instantiate stuff.  */
+  if (current_function_decl && DECL_CLONED_FUNCTION_P (current_function_decl))
+    return;
+
   tree old = NULL_TREE;
   cp_binding_level *old_scope = NULL;
   if (cxx_binding *binding = outer_binding (DECL_NAME (decl), NULL, true))

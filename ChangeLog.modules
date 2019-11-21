@@ -1,6 +1,9 @@
 2019-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (check_local_shadow): Bail out for clones.
+
+	gcc/cp/
 	* module.cc (dumper::impl:nested_name): Obnly show module on imports.
 	gcc/testsuite/
 	* g++dg.modules: Anjust many scans.
