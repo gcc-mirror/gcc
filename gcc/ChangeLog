@@ -1,3 +1,19 @@
+2019-11-21  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Be
+	ready for some vectors to not be allocated.
+	(evaluate_properties_for_edge): Document better; make
+	known_vals and known_aggs caller allocated; avoid determining
+	values of parameters which are not used.
+	(ipa_merge_fn_summary_after_inlining): Pre allocate known_vals and
+	known_aggs.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Likewise.
+	(do_estimate_edge_size): Likewise.
+	(do_estimate_edge_hints): Likewise.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Do not early exit when
+	values are not known.
+	(ipa_release_agg_values): Add option to not release vector itself.
+
 2019-11-21  Richard Biener  <rguenther@suse.de>
 
 	* cfgloop.h (loop_iterator::~loop_iterator): Remove.
