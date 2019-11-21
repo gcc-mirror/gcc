@@ -3080,6 +3080,14 @@ multi_precision_range_tests ()
   int_range<1> small = big;
   ASSERT_TRUE (small == int_range<1> (INT (10), INT (60)));
 
+  // Test that a truncating copy of [MIN,20][22,40][80,MAX]
+  // ends up as a conservative anti-range of ~[21,21].
+  big = int_range<3> (vrp_val_min (integer_type_node), INT (20));
+  big.union_ (int_range<1> (INT (22), INT (40)));
+  big.union_ (int_range<1> (INT (80), vrp_val_max (integer_type_node)));
+  small = big;
+  ASSERT_TRUE (small == int_range<1> (INT (21), INT (21), VR_ANTI_RANGE));
+
   range3_tests ();
 }
 
