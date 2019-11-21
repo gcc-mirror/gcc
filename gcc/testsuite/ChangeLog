@@ -1,5 +1,10 @@
 2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/92526
+	* gcc.target/aarch64/pr92526.c: New test.
+
+2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR testsuite/92543
 	* gcc.dg/vect/vect-alias-check-1.c: XFAIL the alias check message
 	if there is no realignment support and no support for unaligned
