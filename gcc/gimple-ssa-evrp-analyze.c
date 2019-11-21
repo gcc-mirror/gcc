@@ -196,16 +196,6 @@ gori_range_is_better (const irange *range_evrp,
   return inter == *range_gori;
 }
 
-static bool
-gori_range_is_unrepresentable (const irange *r_evrp,
-			       const irange *r_gori)
-{
-  widest_irange inter (*r_evrp);
-  inter.intersect (*r_gori);
-  bool evrp_is_better = inter == *r_evrp;
-  return gori_range_is_better (r_evrp, r_gori) && evrp_is_better;
-}
-
 value_range_equiv *
 evrp_range_analyzer::merge_gori_and_evrp_results
 					(value_range_equiv *vr,
@@ -256,19 +246,6 @@ dump_gori_improvements (tree name, const irange *r_evrp, const irange *r_gori)
 	fprintf (dump_file, "UNDEFINED");
       fprintf (dump_file, " to: ");
       r_gori->dump (dump_file);
-      if (r_evrp)
-	{
-	  fprintf (dump_file, " intersect: ");
-	  if (gori_range_is_unrepresentable (r_evrp, r_gori))
-	    fprintf (dump_file, "UNREPRESENTABLE");
-	  else
-	    {
-	      widest_irange r;
-	      r = *r_evrp;
-	      r.intersect (*r_gori);
-	      r.dump (dump_file);
-	    }
-	}
       fprintf (dump_file, "\n");
     }
 }
