@@ -1,6 +1,11 @@
 2019-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash): Add sections member.
+	(module_state::write_cluster): Use it.
+	(module_state::write): Set it.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Don't strip_template checking
 	instantiation consistency.
 	(depset::hash::add_{dependency,specializations}): Likewise.

@@ -2481,13 +2481,14 @@ public:
   public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
     depset *current;         /* Current depset being depended.  */
+    unsigned section;	     /* When writing out, the section.  */
     bool sneakoscope;        /* Detecting dark magic (of a voldemort
 				type).  */
     bool reached_unreached;  /* We reached an unreached entity.  */
 
   public:
     hash (size_t size)
-      : parent (size), current (NULL),
+      : parent (size), current (NULL), section (0),
 	sneakoscope (false), reached_unreached (false)
     {
       worklist.create (size);
@@ -13689,10 +13690,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     depset::hash &table, unsigned &specializations,
 			     unsigned &entities, unsigned *crc_ptr)
 {
-  dump () && dump ("Writing section:%u %u depsets", scc[0]->section, size);
+  dump () && dump ("Writing section:%u %u depsets", table.section, size);
   dump.indent ();
 
-  trees_out sec (to, this, table, scc[0]->section);
+  trees_out sec (to, this, table, table.section);
   sec.begin ();
 
   /* Prepare, determine entity numbers   */
@@ -13886,7 +13887,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     gcc_checking_assert (scc[ix]->section == snum);
 
   dump.outdent ();
-  dump () && dump ("Wrote section:%u named-by:%N", scc[0]->section, naming_decl);
+  dump () && dump ("Wrote section:%u named-by:%N", table.section, naming_decl);
 
   return bytes;
 }
@@ -16666,12 +16667,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	}
       else
 	{
-	  /* Cluster is now used to number unnamed decls.  */
+	  /* Cluster is now used to number entities.  */
 	  base[0]->cluster = 0;
-
+	  table.section = base[0]->section;
 	  bytes
 	    += write_cluster (to, base, size, table, config.num_specializations,
 			      config.num_entities, &crc);
+	  table.section = 0;
 	}
     }
 
