@@ -13,6 +13,7 @@
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Do not early exit when
 	values are not known.
 	(ipa_release_agg_values): Add option to not release vector itself.
+	* ipa-prop.h (ipa_release_agg_values): Add parameter RELEASE_VECTOR.
 
 2019-11-21  Richard Biener  <rguenther@suse.de>
 
