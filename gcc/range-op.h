@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_H
 #define GCC_RANGE_OP_H
 
+#define value_range irange	// FIXME: Temporary
+
 // This class is implemented for each kind of operator supported by
 // the range generator.  It serves various purposes.
 //
@@ -87,5 +89,7 @@ extern void wi_set_zero_nonzero_bits (tree type,
 				      const wide_int &, const wide_int &,
 				      wide_int &maybe_nonzero,
 				      wide_int &mustbe_nonzero);
+
+#undef value_range
 
 #endif // GCC_RANGE_OP_H

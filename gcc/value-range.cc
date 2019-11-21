@@ -93,9 +93,6 @@ vrange::copy_incompatible_range (const vrange &src)
 bool
 irange::maybe_anti_range (const irange &src) const
 {
-  if (src.simple_ranges_p ())
-    return false;
-
   tree ttype = src.type ();
   unsigned int precision = TYPE_PRECISION (ttype);
   signop sign = TYPE_SIGN (ttype);
@@ -119,9 +116,14 @@ irange::copy_simple_range (const vrange &vsrc)
     set_undefined ();
   else if (src->varying_p ())
     set_varying (src->type ());
+  else if (src->kind () == VR_ANTI_RANGE)
+    {
+      tree lb = src->min (), ub = src->max ();
+      set (lb, ub, VR_ANTI_RANGE);
+    }
   else if (maybe_anti_range (*src))
     {
-      int_range<10> tmp = *src;
+      widest_irange tmp = *src;
       tmp.invert ();
       set (wide_int_to_tree (src->type (), tmp.lower_bound ()),
 	   wide_int_to_tree (src->type (), tmp.upper_bound ()),
@@ -255,6 +257,13 @@ widest_irange::~widest_irange ()
 {
   if (m_blob)
     free (m_blob);
+}
+
+widest_irange &
+widest_irange::operator= (const widest_irange &src)
+{
+  vrange::operator= (src);
+  return *this;
 }
 
 void
@@ -1667,11 +1676,24 @@ irange::union_ (const vrange &vr)
   bool details = dump_flags & TDF_DETAILS;
   if (details)
     dump_flags &= ~TDF_DETAILS;
-  const irange *r = as_a <const irange *> (&vr);
+  const irange *other = as_a <const irange *> (&vr);
   if (simple_ranges_p ())
-    union_ (r);
+    {
+      if (other->simple_ranges_p ())
+	union_ (other);
+      else
+	{
+	  int_range<1> small = *other;
+	  union_ (&small);
+	}
+    }
   else
-    multi_range_union (*r);
+    {
+      if (other->simple_ranges_p ())
+	multi_range_union (widest_irange (*other));
+      else
+	multi_range_union (*other);
+    }
   if (details)
     dump_flags |= TDF_DETAILS;
 }
@@ -1710,11 +1732,24 @@ irange::intersect (const vrange &vr)
   bool details = dump_flags & TDF_DETAILS;
   if (details)
     dump_flags &= ~TDF_DETAILS;
-  const irange *r = as_a <const irange *> (&vr);
+  const irange *other = as_a <const irange *> (&vr);
   if (simple_ranges_p ())
-    intersect (r);
+    {
+      if (other->simple_ranges_p ())
+	intersect (other);
+      else
+	{
+	  int_range<1> small = *other;
+	  intersect (&small);
+	}
+    }
   else
-    multi_range_intersect (*r);
+    {
+      if (other->simple_ranges_p ())
+	multi_range_intersect (widest_irange (*other));
+      else
+	multi_range_intersect (*other);
+    }
   if (details)
     dump_flags |= TDF_DETAILS;
 }
@@ -2113,6 +2148,12 @@ debug (const vrange *vr)
 }
 
 DEBUG_FUNCTION void
+debug (const vrange &vr)
+{
+  debug (&vr);
+}
+
+DEBUG_FUNCTION void
 debug (const value_range *vr)
 {
   dump_value_range (stderr, vr);
@@ -2270,5 +2311,6 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   template int_range<N>& int_range<N>::operator= (const int_range &);
 
 DEFINE_INT_RANGX_INSTANCE(1)
-DEFINE_INT_RANGX_GC_STUBS(1)
+DEFINE_INT_RANGX_INSTANCE(2)
 DEFINE_INT_RANGX_INSTANCE(3)
+DEFINE_INT_RANGX_GC_STUBS(1)

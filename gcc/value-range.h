@@ -176,6 +176,7 @@ public:
   widest_irange (const widest_irange &);
   widest_irange (const irange &);
   ~widest_irange ();
+  widest_irange& operator= (const widest_irange &);
 
   virtual void union_ (const vrange &);
   virtual void invert ();
