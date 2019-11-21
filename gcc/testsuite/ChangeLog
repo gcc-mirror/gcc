@@ -1,3 +1,8 @@
+2019-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/gnu2x-attrs-1.c: Expect an error for the alias case
+	on Darwin.
+
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90842
