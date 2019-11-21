@@ -1,6 +1,12 @@
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/92296
+	* c-c++-common/cpp/pr92296-1.c: New test.
+	* c-c++-common/cpp/pr92296-2.c: New test.
+
 	2019-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92201

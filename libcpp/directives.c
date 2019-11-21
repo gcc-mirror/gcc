@@ -1574,6 +1574,8 @@ do_pragma_push_macro (cpp_reader *pfile)
   node = _cpp_lex_identifier (pfile, c->name);
   if (node->type == NT_VOID)
     c->is_undef = 1;
+  else if (node->type == NT_MACRO && (node->flags & NODE_BUILTIN))
+    c->is_builtin = 1;
   else
     {
       defn = cpp_macro_definition (pfile, node);
@@ -2504,6 +2506,11 @@ cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
   cpp_hashnode *node = _cpp_lex_identifier (pfile, c->name);
   if (node == NULL)
     return;
+  if (c->is_builtin)
+    {
+      _cpp_restore_special_builtin (pfile, c);
+      return;
+    }
 
   if (pfile->cb.before_define)
     pfile->cb.before_define (pfile);
