@@ -1,3 +1,7 @@
+2019-11-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gfortran.dg/global_vars_f90_init_driver.c: Add missing extern.
+
 2019-11-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92596
