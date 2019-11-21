@@ -1,3 +1,8 @@
+2019-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92596
+	* tree-vect-slp.c (vect_build_slp_tree): Fix pasto.
+
 2019-11-21  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Be

@@ -1247,7 +1247,8 @@ vect_build_slp_tree (vec_info *vinfo,
       return *leader;
     }
   poly_uint64 this_max_nunits = 1;
-  slp_tree res = vect_build_slp_tree_2 (vinfo, stmts, group_size, max_nunits,
+  slp_tree res = vect_build_slp_tree_2 (vinfo, stmts, group_size,
+					&this_max_nunits,
 					matches, npermutes, tree_size, bst_map);
   if (res)
     {
