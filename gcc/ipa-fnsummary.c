@@ -176,7 +176,8 @@ ipa_fn_summary::account_size_time (int size, sreal time,
   if (!size && time == 0 && table)
     return;
 
-  gcc_assert (time >= 0);
+  /* Only for calls we are unaccounting what we previously recoreded.  */
+  gcc_checking_assert (time >= 0 || call);
 
   for (i = 0; vec_safe_iterate (table, i, &e); i++)
     if (e->exec_predicate == exec_pred
@@ -226,6 +227,10 @@ ipa_fn_summary::account_size_time (int size, sreal time,
     {
       e->size += size;
       e->time += time;
+      gcc_checking_assert (e->time >= -1);
+      /* Tolerate small roundoff issues.  */
+      if (e->time < 0)
+	e->time = 0;
     }
 }
 
@@ -3897,6 +3902,21 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
     info->estimated_stack_size = peak;
 
   inline_update_callee_summaries (edge->callee, es->loop_depth);
+  if (info->call_size_time_table)
+    {
+      int edge_size = 0;
+      sreal edge_time = 0;
+
+      estimate_edge_size_and_time (edge, &edge_size, NULL, &edge_time, vNULL,
+		      		   vNULL, vNULL, 0);
+      /* Unaccount size and time of the optimized out call.  */
+      info->account_size_time (-edge_size, -edge_time,
+	 		       es->predicate ? *es->predicate : true,
+	 		       es->predicate ? *es->predicate : true,
+			       true);
+      /* Account new calls.  */
+      summarize_calls_size_and_time (edge->callee, info);
+    }
 
   /* Free summaries that are not maintained for inline clones/edges.  */
   ipa_call_summaries->remove (edge);
@@ -3905,10 +3925,11 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 }
 
 /* For performance reasons ipa_merge_fn_summary_after_inlining is not updating
-   overall size and time.  Recompute it.  */
+   overall size and time.  Recompute it.
+   If RESET is true also recompute call_time_size_table.  */
 
 void
-ipa_update_overall_fn_summary (struct cgraph_node *node)
+ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset)
 {
   class ipa_fn_summary *info = ipa_fn_summaries->get (node);
   class ipa_size_summary *size_info = ipa_size_summaries->get (node);
@@ -3923,7 +3944,8 @@ ipa_update_overall_fn_summary (struct cgraph_node *node)
       info->time += e->time;
     }
   info->min_size = (*info->size_time_table)[0].size;
-  vec_free (info->call_size_time_table);
+  if (reset)
+    vec_free (info->call_size_time_table);
   if (node->callees || node->indirect_calls)
     estimate_calls_size_and_time (node, &size_info->size, &info->min_size,
 				  &info->time, NULL,

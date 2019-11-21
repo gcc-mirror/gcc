@@ -1,3 +1,14 @@
+2019-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Allow
+	negative time in calls summary; correct roundoff errors
+	leading to negative times.
+	(ipa_merge_fn_summary_after_inlining): Update calls size time table
+	if present.
+	(ipa_update_overall_fn_summary): Add RESET parameter.
+	* ipa-fnsummary.h (ipa_update_overall_fn_summary): Update prototype.
+	* ipa-inline-transform.c (inline_call): Enable incremental updates.
+	
 2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-slp.c (vect_schedule_slp_instance): Restore stmt
