@@ -1,3 +1,12 @@
+2019-11-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-fallthrough-6.c: New test.  Split out from
+	c2x-attr-fallthrough-3.c.
+	* gcc.dg/c2x-attr-fallthrough-1.c: Add more tests.
+	* gcc.dg/c2x-attr-fallthrough-2.c: Update expected diagnostics.
+	* gcc.dg/c2x-attr-fallthrough-3.c: Split inside-switch part of
+	test out to c2x-attr-fallthrough-6.c.
+
 2019-11-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/92608

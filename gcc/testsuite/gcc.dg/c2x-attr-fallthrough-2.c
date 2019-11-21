@@ -15,7 +15,8 @@ int z = sizeof (int [[fallthrough]]); /* { dg-error "ignored" } */
 int
 f (int a)
 {
-  [[fallthrough]] int b = 2; /* { dg-warning "not followed by|ignored" } */
+  [[fallthrough]] int b = 2; /* { dg-warning "not followed by" } */
+  /* { dg-error "ignored" "ignored" { target *-*-* } .-1 } */
   switch (a)
     {
     case 1:

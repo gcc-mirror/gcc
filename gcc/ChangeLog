@@ -1,3 +1,9 @@
+2019-11-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* gimplify.c (expand_FALLTHROUGH_r, expand_FALLTHROUGH): Use
+	pedwarn instead of warning_at for fallthrough not preceding a case
+	or default label.
+
 2019-11-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/92608
