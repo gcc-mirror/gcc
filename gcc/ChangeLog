@@ -1,5 +1,11 @@
 2019-11-20  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (want_early_inline_function_p): Do not estimate
+	edge growth when callee function is very large.
+	* ipa-inline.h (estimate_min_edge_growth): New.
+
+2019-11-20  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Allow
 	negative time in calls summary; correct roundoff errors
 	leading to negative times.
