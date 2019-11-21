@@ -1,6 +1,10 @@
 2019-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (get_binding_or_decl): Only class contexts.
+	* module.cc (trees_out::decl_node): Possible fixme.
+
+	gcc/cp/
 	* module.cc (depset::hash): Add sections member.
 	(module_state::write_cluster): Use it.
 	(module_state::write): Set it.

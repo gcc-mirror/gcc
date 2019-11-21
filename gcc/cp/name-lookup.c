@@ -4253,42 +4253,27 @@ add_module_decl (tree ns, tree name, tree decl)
 }
 
 static tree
-get_binding_or_decl (tree ctx, tree name, unsigned mod)
+get_binding_or_decl (tree ctx, tree name, int)
 {
-  tree binding = NULL_TREE;
+  if (!RECORD_OR_UNION_TYPE_P (ctx)
+      || !COMPLETE_TYPE_P (ctx))
+    return NULL;
 
-  switch (TREE_CODE (ctx))
-    {
-    case RECORD_TYPE:
-    case UNION_TYPE:
-      if (COMPLETE_TYPE_P (ctx))
-	{
-	  if (IDENTIFIER_CONV_OP_P (name))
-	    name = conv_op_identifier;
+  if (IDENTIFIER_CONV_OP_P (name))
+    name = conv_op_identifier;
 
-	  /* The originating module might not have lazily declared
-	     members, but the referencing module will have done so.
-	     We need to repeat that declaration at this point.  */
-	  // FIXME: This is wrong, it causes instantiations to load
-	  maybe_lazily_declare (ctx, name);
-	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
-	    binding = member_vec_binary_search (member_vec, name);
-	  else
-	    // FIXME: Force such classes to have a member vec
-	    for (tree decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
-	      if (name == DECL_NAME (decl))
-		return decl;
-	}
-      break;
-
-    case ENUMERAL_TYPE:
-      return lookup_enum_member (ctx, name);
-
-    default:
-      break;
-    }
-
-  return binding;
+  /* The originating module might not have lazily declared
+     members, but the referencing module will have done so.
+     We need to repeat that declaration at this point.  */
+  // FIXME: This is wrong, it causes instantiations to load
+  maybe_lazily_declare (ctx, name);
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
+    return member_vec_binary_search (member_vec, name);
+  else
+    // FIXME: Force such classes to have a member vec
+    for (tree decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
+      if (name == DECL_NAME (decl))
+	return decl;
 }
 
 /* Find a decl by name & type.  */

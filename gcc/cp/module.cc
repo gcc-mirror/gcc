@@ -8153,6 +8153,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	if (!streaming_p ()
 	    && (is_import
 		|| (dep_hash->sneakoscope
+		    // FIXME: do I need to consider scopes from ctx
+		    // outwards to the containing namespace?
 		    && ctx == dep_hash->current->get_entity ())))
 	  {
 	    /* We've found a voldemort type.  Add it as a
