@@ -1,5 +1,14 @@
 2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR testsuite/92543
+	* gcc.dg/vect/vect-alias-check-1.c: XFAIL the alias check message
+	if there is no realignment support and no support for unaligned
+	accesses.
+	* gcc.dg/vect/vect-alias-check-18.c: Restrict the test for the
+	alias message to targets that have permute support.
+
+2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/92595
 	* g++.dg/vect/pr92595.cc: New test.
 
