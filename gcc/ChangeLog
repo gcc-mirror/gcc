@@ -1,6 +1,22 @@
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (assign_parm_find_data_types): Use RECORD_OR_UNION_TYPE_P
+	before testing TYPE_TRANSPARENT_AGGR.
+	* calls.c (initialize_argument_information, load_register_parameters):
+	Likewise.
+
+	2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91001
+	PR middle-end/91105
+	PR middle-end/91106
+	* calls.c (load_register_parameters): For TYPE_TRANSPARENT_AGGR
+	types, use type of their first field instead of type of
+	args[i].tree_value.
+
 	2019-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91623

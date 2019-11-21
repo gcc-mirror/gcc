@@ -2477,8 +2477,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   /* If the parm is to be passed as a transparent union or record, use the
      type of the first field for the tests below.  We have already verified
      that the modes are the same.  */
-  if ((TREE_CODE (passed_type) == UNION_TYPE
-       || TREE_CODE (passed_type) == RECORD_TYPE)
+  if (RECORD_OR_UNION_TYPE_P (passed_type)
       && TYPE_TRANSPARENT_AGGR (passed_type))
     passed_type = TREE_TYPE (first_field (passed_type));
 
