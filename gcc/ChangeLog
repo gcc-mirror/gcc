@@ -1,3 +1,11 @@
+2019-11-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (equiv_class_hasher): Change to nofree.
+	(equiv_class_obstack): New.
+	(equiv_class_lookup_or_add): Allocate from equiv_class_obstack.
+	(perform_var_substitution): Initialize equiv_class_obstack.
+	(free_var_substitution_info): Free equiv_class_obstack.
+
 2019-11-20  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (want_early_inline_function_p): Do not estimate
