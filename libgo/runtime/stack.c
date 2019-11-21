@@ -16,6 +16,8 @@ extern void * __splitstack_find_context (void *context[10], size_t *, void **,
 
 #endif
 
+bool runtime_usestackmaps;
+
 // Calling unwind_init in doscanstack only works if it does not do a
 // tail call to doscanstack1.
 #pragma GCC optimize ("-fno-optimize-sibling-calls")
