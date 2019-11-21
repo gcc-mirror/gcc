@@ -1,3 +1,19 @@
+2019-11-21  Richard Biener  <rguenther@suse.de>
+
+	* cfgloop.h (loop_iterator::~loop_iterator): Remove.
+	(loop_iterator::to_visit): Use an auto_vec with internal storage.
+	(loop_iterator::loop_iterator): Adjust.
+	* cfganal.c (compute_dominance_frontiers_1): Fold into...
+	(compute_dominance_frontiers): ... this.  Hoist invariant
+	get_immediate_dominator call.
+	(compute_idf): Use a work-set instead of a work-list for more
+	optimal iteration order and duplicate avoidance.
+	* tree-into-ssa.c (mark_phi_for_rewrite): Avoid re-allocating
+	the vector all the time, instead pre-allocate the vector only
+	once.
+	(delete_update_ssa): Simplify.
+	* vec.h (va_heap::release): Disable -Wfree-nonheap-object around it.
+
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91355
