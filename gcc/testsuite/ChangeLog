@@ -1,3 +1,8 @@
+2019-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92596
+	* gcc.dg/torture/pr92596-1.c: New testcase.
+
 2019-11-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/torture/fp-int-convert-timode-1.c: Add check for FE_TONEAREST.
