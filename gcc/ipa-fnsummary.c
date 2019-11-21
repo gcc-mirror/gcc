@@ -342,7 +342,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 
   for (i = 0; vec_safe_iterate (info->conds, i, &c); i++)
     {
-      tree val;
+      tree val = NULL;
       tree res;
       int j;
       struct expr_eval_op *op;
@@ -351,14 +351,8 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
          (especially for K&R style programs).  So bound check here (we assume
          known_aggs vector, if non-NULL, has the same length as
          known_vals).  */
-      gcc_checking_assert (!known_aggs.exists ()
+      gcc_checking_assert (!known_aggs.length () || !known_vals.length ()
 			   || (known_vals.length () == known_aggs.length ()));
-      if (c->operand_num >= (int) known_vals.length ())
-	{
-	  clause |= 1 << (i + predicate::first_dynamic_condition);
-	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
-	  continue;
-	}
 
       if (c->agg_contents)
 	{
@@ -366,19 +360,24 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 
 	  if (c->code == predicate::changed
 	      && !c->by_ref
+	      && c->operand_num < (int)known_vals.length ()
 	      && (known_vals[c->operand_num] == error_mark_node))
 	    continue;
 
-	  if (known_aggs.exists ())
+	  if (c->operand_num < (int)known_aggs.length ())
 	    {
 	      agg = &known_aggs[c->operand_num];
-	      val = ipa_find_agg_cst_for_param (agg, known_vals[c->operand_num],
+	      val = ipa_find_agg_cst_for_param (agg,
+						c->operand_num
+						   < (int) known_vals.length ()
+						? known_vals[c->operand_num]
+						: NULL,
 						c->offset, c->by_ref);
 	    }
 	  else
 	    val = NULL_TREE;
 	}
-      else
+      else if (c->operand_num < (int) known_vals.length ())
 	{
 	  val = known_vals[c->operand_num];
 	  if (val == error_mark_node && c->code != predicate::changed)
@@ -504,7 +503,18 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 }
 
 
-/* Work out what conditions might be true at invocation of E.  */
+/* Work out what conditions might be true at invocation of E.
+   Compute costs for inlined edge if INLINE_P is true.
+
+   Return in CLAUSE_PTR the evaluated condistions and in NONSPEC_CLAUSE_PTR
+   (if non-NULL) conditions evaluated for nonspecialized clone called
+   in a given context.
+
+   KNOWN_VALS_PTR and KNOWN_AGGS_PTR must be non-NULL and will be filled by
+   known canstant and aggregate values of parameters.
+
+   KNOWN_CONTEXT_PTR, if non-NULL, will be filled by polymorphic call contexts
+   of parameter used by a polymorphic call.  */
 
 void
 evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
@@ -517,113 +527,141 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 {
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
-  vec<tree> known_vals = vNULL;
   auto_vec<value_range, 32> known_value_ranges;
-  vec<ipa_agg_value_set> known_aggs = vNULL;
   class ipa_edge_args *args;
 
   if (clause_ptr)
     *clause_ptr = inline_p ? 0 : 1 << predicate::not_inlined_condition;
-  if (known_vals_ptr)
-    known_vals_ptr->create (0);
-  if (known_contexts_ptr)
-    known_contexts_ptr->create (0);
 
   if (ipa_node_params_sum
       && !e->call_stmt_cannot_inline_p
-      && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr)
+      && (info->conds || known_contexts_ptr)
       && (args = IPA_EDGE_REF (e)) != NULL)
     {
       struct cgraph_node *caller;
-      class ipa_node_params *caller_parms_info, *callee_pi;
+      class ipa_node_params *caller_parms_info, *callee_pi = NULL;
       class ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
 
-      if (e->caller->inlined_to)
-	caller = e->caller->inlined_to;
-      else
-	caller = e->caller;
-      caller_parms_info = IPA_NODE_REF (caller);
-      callee_pi = IPA_NODE_REF (callee);
+      if (count)
+	{
+	  if (e->caller->inlined_to)
+	    caller = e->caller->inlined_to;
+	  else
+	    caller = e->caller;
+	  caller_parms_info = IPA_NODE_REF (caller);
+          callee_pi = IPA_NODE_REF (callee);
 
-      if (count && (info->conds || known_vals_ptr))
-	known_vals.safe_grow_cleared (count);
-      if (count && info->conds)
-	known_value_ranges.safe_grow_cleared (count);
-      if (count && (info->conds || known_aggs_ptr))
-	known_aggs.safe_grow_cleared (count);
-      if (count && known_contexts_ptr)
-	known_contexts_ptr->safe_grow_cleared (count);
+	  /* Watch for thunks.  */
+	  if (callee_pi)
+	    /* Watch for variadic functions.  */
+	    count = MIN (count, ipa_get_param_count (callee_pi));
+	}
 
       if (callee_pi)
 	for (i = 0; i < count; i++)
 	  {
 	    struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
-	    tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
-					     ipa_get_type (callee_pi, i));
 
-	    if (!cst && e->call_stmt
-		&& i < (int)gimple_call_num_args (e->call_stmt))
+	    if (ipa_is_param_used_by_indirect_call (callee_pi, i)
+		|| ipa_is_param_used_by_ipa_predicates (callee_pi, i))
 	      {
-		cst = gimple_call_arg (e->call_stmt, i);
-		if (!is_gimple_min_invariant (cst))
-		  cst = NULL;
-	      }
-	    if (cst)
-	      {
-		gcc_checking_assert (TREE_CODE (cst) != TREE_BINFO);
-		if (known_vals.exists ())
-		  known_vals[i] = cst;
-	      }
-	    else if (inline_p && !es->param[i].change_prob)
-	      known_vals[i] = error_mark_node;
+		/* Determine if we know constant value of the parameter.  */
+		tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
+						 ipa_get_type (callee_pi, i));
 
-	    if (known_contexts_ptr)
-	      (*known_contexts_ptr)[i]
-		= ipa_context_from_jfunc (caller_parms_info, e, i, jf);
-	
-	    known_aggs[i] = ipa_agg_value_set_from_jfunc (caller_parms_info,
-							  caller, &jf->agg);
-            if (info->conds)
-              known_value_ranges[i] 
-                = ipa_value_range_from_jfunc (caller_parms_info, e, jf,
-                                              ipa_get_type (callee_pi, i));
+		if (!cst && e->call_stmt
+		    && i < (int)gimple_call_num_args (e->call_stmt))
+		  {
+		    cst = gimple_call_arg (e->call_stmt, i);
+		    if (!is_gimple_min_invariant (cst))
+		      cst = NULL;
+		  }
+		if (cst)
+		  {
+		    gcc_checking_assert (TREE_CODE (cst) != TREE_BINFO);
+		    if (!known_vals_ptr->length ())
+		      vec_safe_grow_cleared (known_vals_ptr, count);
+		    (*known_vals_ptr)[i] = cst;
+		  }
+		else if (inline_p && !es->param[i].change_prob)
+		  {
+		    if (!known_vals_ptr->length ())
+		      vec_safe_grow_cleared (known_vals_ptr, count);
+		    (*known_vals_ptr)[i] = error_mark_node;
+		  }
+
+		/* If we failed to get simple constant, try value range.  */
+		if ((!cst || TREE_CODE (cst) != INTEGER_CST)
+		    && ipa_is_param_used_by_ipa_predicates (callee_pi, i))
+		  {
+		    value_range vr 
+		       = ipa_value_range_from_jfunc (caller_parms_info, e, jf,
+						     ipa_get_type (callee_pi,
+								   i));
+		    if (!vr.undefined_p () && !vr.varying_p ())
+		      {
+			if (!known_value_ranges.length ())
+			  known_value_ranges.safe_grow_cleared (count);
+			known_value_ranges[i] = vr;
+		      }
+		  }
+
+		/* Determine known aggregate values.  */
+		ipa_agg_value_set agg
+		    = ipa_agg_value_set_from_jfunc (caller_parms_info,
+						    caller, &jf->agg);
+		if (agg.items.length ())
+		  {
+		    if (!known_aggs_ptr->length ())
+		      vec_safe_grow_cleared (known_aggs_ptr, count);
+		    (*known_aggs_ptr)[i] = agg;
+		  }
+	      }
+
+	    /* For calls used in polymorphic calls we further determine
+	       polymorphic call context.  */
+	    if (known_contexts_ptr
+		&& ipa_is_param_used_by_polymorphic_call (callee_pi, i))
+	      {
+		ipa_polymorphic_call_context
+		   ctx = ipa_context_from_jfunc (caller_parms_info, e, i, jf);
+		if (!ctx.useless_p ())
+		  {
+		    if (!known_contexts_ptr->length ())
+		      known_contexts_ptr->safe_grow_cleared (count);
+		    (*known_contexts_ptr)[i]
+		      = ipa_context_from_jfunc (caller_parms_info, e, i, jf);
+		  }
+	       }
 	  }
 	else
-	  gcc_assert (callee->thunk.thunk_p);
+	  gcc_assert (!count || callee->thunk.thunk_p);
     }
-  else if (e->call_stmt && !e->call_stmt_cannot_inline_p
-	   && ((clause_ptr && info->conds) || known_vals_ptr))
+  else if (e->call_stmt && !e->call_stmt_cannot_inline_p && info->conds)
     {
       int i, count = (int)gimple_call_num_args (e->call_stmt);
 
-      if (count && (info->conds || known_vals_ptr))
-	known_vals.safe_grow_cleared (count);
       for (i = 0; i < count; i++)
 	{
 	  tree cst = gimple_call_arg (e->call_stmt, i);
 	  if (!is_gimple_min_invariant (cst))
 	    cst = NULL;
 	  if (cst)
-	    known_vals[i] = cst;
+	    {
+	      if (!known_vals_ptr->length ())
+	        vec_safe_grow_cleared (known_vals_ptr, count);
+	      (*known_vals_ptr)[i] = cst;
+	    }
 	}
     }
 
   evaluate_conditions_for_known_args (callee, inline_p,
-				      known_vals,
+				      *known_vals_ptr,
 				      known_value_ranges,
-				      known_aggs, clause_ptr,
+				      *known_aggs_ptr,
+				      clause_ptr,
 				      nonspec_clause_ptr);
-
-  if (known_vals_ptr)
-    *known_vals_ptr = known_vals;
-  else
-    known_vals.release ();
-
-  if (known_aggs_ptr)
-    *known_aggs_ptr = known_aggs;
-  else
-    ipa_release_agg_values (known_aggs);
 }
 
 
@@ -2926,7 +2964,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   enum availability avail;
   bool speculative;
 
-  if (!known_vals.exists () && !known_contexts.exists ())
+  if (!known_vals.length () && !known_contexts.length ())
     return false;
   if (!opt_for_fn (ie->caller->decl, flag_indirect_inlining))
     return false;
@@ -3305,11 +3343,13 @@ ipa_call_context::release (bool all)
   /* See if context is initialized at first place.  */
   if (!m_node)
     return;
-  m_known_vals.release ();
-  m_known_contexts.release ();
-  ipa_release_agg_values (m_known_aggs);
+  ipa_release_agg_values (m_known_aggs, all);
   if (all)
-    m_inline_param_summary.release ();
+    {
+      m_known_vals.release ();
+      m_known_contexts.release ();
+      m_inline_param_summary.release ();
+    }
 }
 
 /* Return true if CTX describes the same call context as THIS.  */
@@ -3813,8 +3853,12 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   info->fp_expressions |= callee_info->fp_expressions;
 
   if (callee_info->conds)
-    evaluate_properties_for_edge (edge, true, &clause,
-				  NULL, NULL, NULL, NULL);
+    {
+      auto_vec<tree, 32> known_vals;
+      auto_vec<ipa_agg_value_set, 32> known_aggs;
+      evaluate_properties_for_edge (edge, true, &clause, NULL,
+				    &known_vals, NULL, &known_aggs);
+    }
   if (ipa_node_params_sum && callee_info->conds)
     {
       class ipa_edge_args *args = IPA_EDGE_REF (edge);

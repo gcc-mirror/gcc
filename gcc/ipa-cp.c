@@ -2744,18 +2744,17 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 {
   int param_index = ie->indirect_info->param_index;
   HOST_WIDE_INT anc_offset;
-  tree t;
+  tree t = NULL;
   tree target = NULL;
 
   *speculative = false;
 
-  if (param_index == -1
-      || known_csts.length () <= (unsigned int) param_index)
+  if (param_index == -1)
     return NULL_TREE;
 
   if (!ie->indirect_info->polymorphic)
     {
-      tree t;
+      tree t = NULL;
 
       if (ie->indirect_info->agg_contents)
 	{
@@ -2782,7 +2781,11 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	      else
 		agg = NULL;
 	      bool from_global_constant;
-	      t = ipa_find_agg_cst_for_param (agg, known_csts[param_index],
+	      t = ipa_find_agg_cst_for_param (agg,
+					      (unsigned) param_index
+						 < known_csts.length ()
+					      ? known_csts[param_index]
+					      : NULL,
 					      ie->indirect_info->offset,
 					      ie->indirect_info->by_ref,
 					      &from_global_constant);
@@ -2792,7 +2795,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 		t = NULL_TREE;
 	    }
 	}
-      else
+      else if ((unsigned) param_index < known_csts.length ())
 	t = known_csts[param_index];
 
       if (t
@@ -2833,7 +2836,10 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       && !ie->indirect_info->by_ref)
     {
       struct ipa_agg_value_set *agg = &known_aggs[param_index];
-      t = ipa_find_agg_cst_for_param (agg, known_csts[param_index],
+      t = ipa_find_agg_cst_for_param (agg,
+				      (unsigned) param_index
+					 < known_csts.length ()
+				      ? known_csts[param_index] : NULL,
 				      ie->indirect_info->offset, true);
     }
 
@@ -2867,7 +2873,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
     }
 
   /* Do we know the constant value of pointer?  */
-  if (!t)
+  if (!t && (unsigned) param_index < known_csts.length ())
     t = known_csts[param_index];
 
   gcc_checking_assert (!t || TREE_CODE (t) != TREE_BINFO);
