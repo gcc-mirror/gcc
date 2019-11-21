@@ -3,7 +3,7 @@
 
 extern void abort (void);
 
-int err;
+int e;
 
 int
 main (void)
@@ -23,10 +23,10 @@ main (void)
 	for (j = 0; j < sizeof array / sizeof array[0]; j++)
 	  if (array[j] != 0x55555555)
 #pragma omp atomic
-	    err++;
+	    e++;
       }
   }
-  if (err)
+  if (e)
     abort ();
   return 0;
 }

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int err;
+int e;
 
 #define TEST(TYPE, FUNC)					\
 __complex__ TYPE						\
@@ -31,7 +31,7 @@ test_ ## FUNC (void)						\
   if (res != 1.0 - 2.0i)					\
     {								\
       printf ("test_" #FUNC " failed\n");			\
-      ++err;							\
+      ++e;							\
     }								\
 }
 
@@ -46,7 +46,7 @@ int
 main (void)
 {
 
-  err = 0;
+  e = 0;
 
   test_float ();
   test_double ();
@@ -54,7 +54,7 @@ main (void)
   test_int ();
   test_long_int ();
 
-  if (err != 0)
+  if (e != 0)
     abort ();
 
   return 0;
