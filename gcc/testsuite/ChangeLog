@@ -1,6 +1,11 @@
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91665
+	* gcc.dg/vect/pr91665.c: New test.
+
 	2019-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91001
