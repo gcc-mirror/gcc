@@ -940,14 +940,18 @@ mark_phi_for_rewrite (basic_block bb, gphi *phi)
   if (!blocks_with_phis_to_rewrite)
     return;
 
-  bitmap_set_bit (blocks_with_phis_to_rewrite, idx);
+  if (bitmap_set_bit (blocks_with_phis_to_rewrite, idx))
+    {
+      n = (unsigned) last_basic_block_for_fn (cfun) + 1;
+      if (phis_to_rewrite.length () < n)
+	phis_to_rewrite.safe_grow_cleared (n);
 
-  n = (unsigned) last_basic_block_for_fn (cfun) + 1;
-  if (phis_to_rewrite.length () < n)
-    phis_to_rewrite.safe_grow_cleared (n);
-
-  phis = phis_to_rewrite[idx];
-  phis.reserve (10);
+      phis = phis_to_rewrite[idx];
+      gcc_assert (!phis.exists ());
+      phis.create (10);
+    }
+  else
+    phis = phis_to_rewrite[idx];
 
   phis.safe_push (phi);
   phis_to_rewrite[idx] = phis;
@@ -2937,11 +2941,7 @@ delete_update_ssa (void)
 
   if (blocks_with_phis_to_rewrite)
     EXECUTE_IF_SET_IN_BITMAP (blocks_with_phis_to_rewrite, 0, i, bi)
-      {
-	vec<gphi *> phis = phis_to_rewrite[i];
-	phis.release ();
-	phis_to_rewrite[i].create (0);
-      }
+      phis_to_rewrite[i].release ();
 
   BITMAP_FREE (blocks_with_phis_to_rewrite);
   BITMAP_FREE (blocks_to_update);

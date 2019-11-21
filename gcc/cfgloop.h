@@ -661,7 +661,6 @@ class loop_iterator
 {
 public:
   loop_iterator (function *fn, loop_p *loop, unsigned flags);
-  ~loop_iterator ();
 
   inline loop_p next ();
 
@@ -669,7 +668,7 @@ public:
   function *fn;
 
   /* The list of loops to visit.  */
-  vec<int> to_visit;
+  auto_vec<int, 16> to_visit;
 
   /* The index of the actual loop.  */
   unsigned idx;
@@ -702,12 +701,11 @@ loop_iterator::loop_iterator (function *fn, loop_p *loop, unsigned flags)
   this->fn = fn;
   if (!loops_for_fn (fn))
     {
-      this->to_visit.create (0);
       *loop = NULL;
       return;
     }
 
-  this->to_visit.create (number_of_loops (fn));
+  this->to_visit.reserve_exact (number_of_loops (fn));
   mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
 
   if (flags & LI_ONLY_INNERMOST)
@@ -767,12 +765,6 @@ loop_iterator::loop_iterator (function *fn, loop_p *loop, unsigned flags)
     }
 
   *loop = this->next ();
-}
-
-inline
-loop_iterator::~loop_iterator ()
-{
-  this->to_visit.release ();
 }
 
 #define FOR_EACH_LOOP(LOOP, FLAGS) \
