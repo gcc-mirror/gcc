@@ -1,3 +1,8 @@
+2019-11-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92608
+	* gcc.dg/torture/pr92608.c: New test.
+
 2019-11-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/92619
