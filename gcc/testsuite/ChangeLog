@@ -1,3 +1,7 @@
+2019-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/torture/fp-int-convert-timode-1.c: Add check for FE_TONEAREST.
+
 2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve2/whilerw_1.c: Add -fno-vect-cost-model.
