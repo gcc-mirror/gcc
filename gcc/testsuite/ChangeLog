@@ -1,3 +1,8 @@
+2019-11-21  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/acle/crc_hf_1.c: Modify the compiler options directive
+	from dg-options to dg-additional-options.
+
 2019-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/20030913-1.c: Rename glob to g.
