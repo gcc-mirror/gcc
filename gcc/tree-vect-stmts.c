@@ -2308,6 +2308,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 		  || alignment_support_scheme == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
 	      && known_eq (nunits, group_size)
+	      && VECTOR_MODE_P (TYPE_MODE (vectype))
 	      && related_vector_mode (TYPE_MODE (vectype), elmode,
 				      group_size - gap).exists (&vmode)
 	      && (convert_optab_handler (vec_init_optab,
@@ -7822,8 +7823,9 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		 of vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (elem_type);
 	      machine_mode vmode;
-	      if (!related_vector_mode (TYPE_MODE (vectype), elmode,
-					group_size).exists (&vmode)
+	      if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+		  || !related_vector_mode (TYPE_MODE (vectype), elmode,
+					   group_size).exists (&vmode)
 		  || (convert_optab_handler (vec_extract_optab,
 					     TYPE_MODE (vectype), vmode)
 		      == CODE_FOR_nothing))
@@ -7840,6 +7842,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		     element extracts from the original vector type and
 		     element size stores.  */
 		  if (int_mode_for_size (lsize, 0).exists (&elmode)
+		      && VECTOR_MODE_P (TYPE_MODE (vectype))
 		      && related_vector_mode (TYPE_MODE (vectype), elmode,
 					      lnunits).exists (&vmode)
 		      && (convert_optab_handler (vec_extract_optab,
@@ -8922,8 +8925,9 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		 vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
 	      machine_mode vmode;
-	      if (related_vector_mode (TYPE_MODE (vectype), elmode,
-				       group_size).exists (&vmode)
+	      if (VECTOR_MODE_P (TYPE_MODE (vectype))
+		  && related_vector_mode (TYPE_MODE (vectype), elmode,
+					  group_size).exists (&vmode)
 		  && (convert_optab_handler (vec_init_optab,
 					     TYPE_MODE (vectype), vmode)
 		      != CODE_FOR_nothing))
@@ -8947,6 +8951,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */
 		  if (int_mode_for_size (lsize, 0).exists (&elmode)
+		      && VECTOR_MODE_P (TYPE_MODE (vectype))
 		      && related_vector_mode (TYPE_MODE (vectype), elmode,
 					      lnunits).exists (&vmode)
 		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
