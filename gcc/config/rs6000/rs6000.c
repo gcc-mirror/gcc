@@ -13954,42 +13954,6 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 				gen_rtx_COMPARE (comp_mode, op0, op1)));
     }
 
-  /* Some kinds of FP comparisons need an OR operation;
-     under flag_finite_math_only we don't bother.  */
-  if (FLOAT_MODE_P (mode)
-      && (!FLOAT128_IEEE_P (mode) || TARGET_FLOAT128_HW)
-      && !flag_finite_math_only
-      && (code == LE || code == GE
-	  || code == UNEQ || code == LTGT
-	  || code == UNGT || code == UNLT))
-    {
-      enum rtx_code or1, or2;
-      rtx or1_rtx, or2_rtx, compare2_rtx;
-      rtx or_result = gen_reg_rtx (CCEQmode);
-
-      switch (code)
-	{
-	case LE: or1 = LT;  or2 = EQ;  break;
-	case GE: or1 = GT;  or2 = EQ;  break;
-	case UNEQ: or1 = UNORDERED;  or2 = EQ;  break;
-	case LTGT: or1 = LT;  or2 = GT;  break;
-	case UNGT: or1 = UNORDERED;  or2 = GT;  break;
-	case UNLT: or1 = UNORDERED;  or2 = LT;  break;
-	default:  gcc_unreachable ();
-	}
-      validate_condition_mode (or1, comp_mode);
-      validate_condition_mode (or2, comp_mode);
-      or1_rtx = gen_rtx_fmt_ee (or1, SImode, compare_result, const0_rtx);
-      or2_rtx = gen_rtx_fmt_ee (or2, SImode, compare_result, const0_rtx);
-      compare2_rtx = gen_rtx_COMPARE (CCEQmode,
-				      gen_rtx_IOR (SImode, or1_rtx, or2_rtx),
-				      const_true_rtx);
-      emit_insn (gen_rtx_SET (or_result, compare2_rtx));
-
-      compare_result = or_result;
-      code = EQ;
-    }
-
   validate_condition_mode (code, GET_MODE (compare_result));
 
   return gen_rtx_fmt_ee (code, VOIDmode, compare_result, const0_rtx);
@@ -14301,21 +14265,44 @@ rs6000_emit_eqne (machine_mode mode, rtx op1, rtx op2, rtx scratch)
   return scratch;
 }
 
+/* Emit code doing a cror of two CR bits, for FP comparisons with a CODE that
+   requires this.  The result is mode MODE.  */
+rtx
+rs6000_emit_fp_cror (rtx_code code, machine_mode mode, rtx x)
+{
+  rtx cond[2];
+  int n = 0;
+  if (code == LTGT || code == LE || code == UNLT)
+    cond[n++] = gen_rtx_fmt_ee (LT, mode, x, const0_rtx);
+  if (code == LTGT || code == GE || code == UNGT)
+    cond[n++] = gen_rtx_fmt_ee (GT, mode, x, const0_rtx);
+  if (code == LE || code == GE || code == UNEQ)
+    cond[n++] = gen_rtx_fmt_ee (EQ, mode, x, const0_rtx);
+  if (code == UNLT || code == UNGT || code == UNEQ)
+    cond[n++] = gen_rtx_fmt_ee (UNORDERED, mode, x, const0_rtx);
+
+  gcc_assert (n == 2);
+
+  rtx cc = gen_reg_rtx (CCEQmode);
+  rtx logical = gen_rtx_IOR (mode, cond[0], cond[1]);
+  emit_insn (gen_cceq_ior_compare (mode, cc, logical, cond[0], x, cond[1], x));
+
+  return cc;
+}
+
 void
 rs6000_emit_sCOND (machine_mode mode, rtx operands[])
 {
-  rtx condition_rtx;
-  machine_mode op_mode;
-  enum rtx_code cond_code;
-  rtx result = operands[0];
+  rtx condition_rtx = rs6000_generate_compare (operands[1], mode);
+  rtx_code cond_code = GET_CODE (condition_rtx);
 
-  condition_rtx = rs6000_generate_compare (operands[1], mode);
-  cond_code = GET_CODE (condition_rtx);
-
-  if (cond_code == NE
-      || cond_code == GE || cond_code == LE
-      || cond_code == GEU || cond_code == LEU
-      || cond_code == ORDERED || cond_code == UNGE || cond_code == UNLE)
+  if (FLOAT_MODE_P (mode) && HONOR_NANS (mode)
+      && !(FLOAT128_VECTOR_P (mode) && !TARGET_FLOAT128_HW))
+    ;
+  else if (cond_code == NE
+	   || cond_code == GE || cond_code == LE
+	   || cond_code == GEU || cond_code == LEU
+	   || cond_code == ORDERED || cond_code == UNGE || cond_code == UNLE)
     {
       rtx not_result = gen_reg_rtx (CCEQmode);
       rtx not_op, rev_cond_rtx;
@@ -14330,19 +14317,19 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
       condition_rtx = gen_rtx_EQ (VOIDmode, not_result, const0_rtx);
     }
 
-  op_mode = GET_MODE (XEXP (operands[1], 0));
+  machine_mode op_mode = GET_MODE (XEXP (operands[1], 0));
   if (op_mode == VOIDmode)
     op_mode = GET_MODE (XEXP (operands[1], 1));
 
   if (TARGET_POWERPC64 && (op_mode == DImode || FLOAT_MODE_P (mode)))
     {
       PUT_MODE (condition_rtx, DImode);
-      convert_move (result, condition_rtx, 0);
+      convert_move (operands[0], condition_rtx, 0);
     }
   else
     {
       PUT_MODE (condition_rtx, SImode);
-      emit_insn (gen_rtx_SET (result, condition_rtx));
+      emit_insn (gen_rtx_SET (operands[0], condition_rtx));
     }
 }
 
@@ -14351,13 +14338,10 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
 void
 rs6000_emit_cbranch (machine_mode mode, rtx operands[])
 {
-  rtx condition_rtx, loc_ref;
-
-  condition_rtx = rs6000_generate_compare (operands[0], mode);
-  loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-  emit_jump_insn (gen_rtx_SET (pc_rtx,
-			       gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
-						     loc_ref, pc_rtx)));
+  rtx condition_rtx = rs6000_generate_compare (operands[0], mode);
+  rtx loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
+  rtx ite = gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx, loc_ref, pc_rtx);
+  emit_jump_insn (gen_rtx_SET (pc_rtx, ite));
 }
 
 /* Return the string to output a conditional branch to LABEL, which is

@@ -1143,6 +1143,16 @@
 					      GET_MODE (XEXP (op, 0))),
 		     1")))
 
+;; Return 1 if OP is a comparison that needs an extra instruction to do (a
+;; crlogical or an extra branch).
+(define_predicate "extra_insn_branch_comparison_operator"
+   (and (match_operand 0 "comparison_operator")
+	(match_test "GET_MODE (XEXP (op, 0)) == CCFPmode")
+	(match_code "ltgt,le,ge,unlt,ungt,uneq")
+	(match_test "validate_condition_mode (GET_CODE (op),
+					      GET_MODE (XEXP (op, 0))),
+		     1")))
+
 ;; Return 1 if OP is an unsigned comparison operator.
 (define_predicate "unsigned_comparison_operator"
   (match_code "ltu,gtu,leu,geu"))

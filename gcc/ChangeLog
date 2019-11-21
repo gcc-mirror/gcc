@@ -1,3 +1,20 @@
+2019-11-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (extra_insn_branch_comparison_operator):
+	New predicate.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_fp_cror): New declaration.
+	* config/rs6000/rs6000.c (rs6000_generate_compare): Don't do anything
+	special for FP comparisons that need a cror instruction eventually.
+	(rs6000_emit_fp_cror): New function.
+	(rs6000_emit_sCOND): Expand all floating point comparisons to one
+	instruction, for normal FP modes, with HONOR_NANS.
+	(rs6000_emit_cbranch): Reformat.
+	* config/rs6000/rs6000.md (fp_rev): New iterator.
+	(fp_two): New iterator.
+	*<code><mode>_cc for fp_rev and GPR: New define_insn_and_split.
+	*<code><mode>_cc for fp_two and GPR: New define_insn_and_split.
+	*cbranch_2insn: New define_insn_and_split.
+
 2019-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/92526
