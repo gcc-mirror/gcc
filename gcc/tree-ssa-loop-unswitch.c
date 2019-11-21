@@ -587,7 +587,7 @@ find_loop_guard (struct loop *loop)
 	next = single_succ (header);
       else
 	{
-	  cond = dyn_cast <gcond *> (last_stmt (header));
+	  cond = safe_dyn_cast <gcond *> (last_stmt (header));
 	  if (! cond)
 	    return NULL;
 	  extract_true_false_edges_from_block (header, &te, &fe);
