@@ -109,7 +109,7 @@ irange::maybe_anti_range (const irange &src) const
 void
 irange::copy_simple_range (const vrange &vsrc)
 {
-  const irange *src = reinterpret_cast <const irange *> (&vsrc);
+  const irange *src = as_a <const irange *> (&vsrc);
   gcc_checking_assert (src->simple_ranges_p () != simple_ranges_p ());
 
   if (src->undefined_p ())
@@ -125,8 +125,8 @@ irange::copy_simple_range (const vrange &vsrc)
     {
       widest_irange tmp = *src;
       tmp.invert ();
-      set (wide_int_to_tree (src->type (), tmp.lower_bound ()),
-	   wide_int_to_tree (src->type (), tmp.upper_bound ()),
+      set (wide_int_to_tree (src->type (), tmp.lower_bound (0)),
+	   wide_int_to_tree (src->type (), tmp.upper_bound (0)),
 	   VR_ANTI_RANGE);
     }
   else
