@@ -28,40 +28,57 @@ along with GCC; see the file COPYING3.  If not see
 
    The merged modules proposal, p1103r1, allows me to drop support for
    two different schemes.
-   
-   Each namespace-scope fn/var/type/namespace decl has an originating
-   module.  If it comes from the current TU, it is zero.  For any
-   imported declaration it is non-zero.
 
-   Each instantiation and class member fn/var/type has an
-   instantiating module.  This may be different to the containing
-   class's instantiating or originating module.  This is the same
-   field as the originating module, DECL_MODULE_ORIGIN.
+   A hash table contains all module names.  Imported modules are
+   present in a modules array, which by construction places an
+   import's dependencies before the import itself.  The single
+   exception is the current TU, which always occupies slot zero (even
+   when it is not a module).
+
+   Imported decls occupy an entity_ary, an array of mc_slots, indexed
+   by importing module and index within that module.  A flat index is
+   used, as each module reserves a contiguous range of indices.
+   Initially each slot indicates the CMI section containing the
+   streamed decl.  When the decl is imported it will point to the decl
+   itself.
+
+   Additionally each imported decl is mapped in the entity_map via its
+   DECL_UID to the flat index in the entity_ary.  Thus we can locate
+   the index for any imported decl by using this map and then
+   de-flattening the index via a binary seach of the module vector.
+   Cross-module references are by (remapped) module number and
+   module-local index.
+
+   WARNING: the above is in transition.  Namespace-scope and
+   instantiations behave as above, but class members do not (yet).
+
+   Each importable DECL contains 3 flags -- DECL_EXPORT_P,
+   DECL_MODULE_PURVIEW_P and DECL_MODULE_IMPORT_P.  The first
+   indicates whether it is exported, the second whether it is in the
+   module purview (as opposed to the global module fragment), and the
+   third indicates whether it was an import or not.
 
    The originating module determines ownership of everything within
    that context, and the permisibility of redefinitions from other
    TUs.
 
-   For simplicitly template_decls propagate their result's module.
+   Header units are module-like.
 
-   These decls also have a DECL_MODULE_PURVIEW_P flag, indicating
-   whether the declaration was in the global module fragment or in the
-   module's purview.
-
-   The decls for a particular module are held located in a sparse
-   array hanging off the ns-level binding of the name.  This is
-   partitioned into two: a set of Fixed slots at the start followed by
-   the sparse slots afterwards.  By construction we only need to
-   append new slots to the end -- there is never a need to insert in
-   the middle.  The fixed slots are MODULE_SLOT_CURRENT for the
-   current TU (regardless of whether it is a module or not),
+   For namespace-scope lookup, the decls for a particular module are
+   held located in a sparse array hanging off the binding of the name.
+   This is partitioned into two: a set of Fixed slots at the start
+   followed by the sparse slots afterwards.  By construction we only
+   need to append new slots to the end -- there is never a need to
+   insert in the middle.  The fixed slots are MODULE_SLOT_CURRENT for
+   the current TU (regardless of whether it is a module or not),
    MODULE_SLOT_GLOBAL and MODULE_SLOT_PARTITION.  These latter two
    slots are used for merging entities across the global module and
    module partitions respectively.  MODULE_SLOT_PARTITION is only
-   present in a module.  Neither slot is searched during name lookup
-   -- they are internal use only.  This vector is created lazily once
-   we require it, if there is only a declaration from the current TU, a
-   regular binding is present.  It is converted on demand.
+   present in a module.  Neither of those two slots is searched during
+   name lookup -- they are internal use only.  This vector is created
+   lazily once we require it, if there is only a declaration from the
+   current TU, a regular binding is present.  It is converted on
+   demand.
 
    OPTIMIZATION: Outside of the current TU, we only need ADL to work.
    We could optimize regular lookup for the current TU by glomming all
@@ -76,15 +93,27 @@ along with GCC; see the file COPYING3.  If not see
    the same such namespace.
 
    A module interface compilation produces a Compiled Module Interface
-   (CMI).  I use ELROND format, which allows a bunch of named sections
-   containing arbitrary data.  Although I don't defend against
-   actively hostile CMIs, there is some checksumming involved to
-   verify data integrity.  When dumping out an interface, we generate
-   a list of all the namespace-scope DECLS that are needed.  From that
-   we determine the strongly connected components (SCC) within this
-   TU.  Each SCC is dumped to a separate section of the CMI.  We
-   generate a binding table section, mapping each namespace&name to a
-   defining section.  This allows lazy loading.
+   (CMI).  The format used is Encapsulated Lazy Records Of Named
+   Declarations, which is essentially ELF's section encapsulation. (As
+   all good nerds are aware, Elrond is half Elf.)  Some sections are
+   named, and contain information about the module as a whole (indices
+   etc), and other sections are referenced by number.  Although I
+   don't defend against actively hostile CMIs, there is some
+   checksumming involved to verify data integrity.  When dumping out
+   an interface, we generate a list of all the namespace-scope DECLS
+   that are needed.  From that we determine the strongly connected
+   components (SCC) within this TU.  Each SCC is dumped to a separate
+   numbered section of the CMI.  We generate a binding table section,
+   mapping each namespace&name to a defining section.  This allows
+   lazy loading.
+
+   Lazy loading employs mmap to map a read-only image of the CMI.
+   It thus only occupies address space and is paged in on demand,
+   backed by the CMI file itself.  If mmap is unavailable, regular
+   FILEIO is used.  Also, there's a bespoke ELF reader/writer here,
+   which implements just the section table and sections (including
+   string sections) of a 32-bit ELF in host byte-order.  You can of
+   course inspect it with readelf.
 
    We do not separate declarations and definitions.  My guess is that
    if you refer to the declaration, you'll also need the definition
@@ -98,22 +127,8 @@ along with GCC; see the file COPYING3.  If not see
    introduce indirection via section symbols, but that would require
    defining a relocation type.
 
-   References to decls not in the same SCC are by two different
-   mechanisms.
-
-   The simplest is for extern or module linkage entities, which are by
-   context, name, module & overload index.  We look in exactly that
-   scope, get the specified module binding and element from the
-   overload set (or type).  Getting the module binding might cause
-   lazy loading of that module's binding.
-
-   There are some entities are unnameable -- a local type returned
-   by a function (eg, a lambda).  These types must be referencable by
-   importing modules.  We construct a per-module vector of such types
-   and refer to them by index.
-
-   Notice that lazy loading of one module's binding can cause lazy
-   loading of other bindings of the same or other modules.  Clearly we
+   Notice that lazy loading of one module's decls can cause lazy
+   loading of other decls in the same or another module.  Clearly we
    want to avoid loops.  In a correct program there can be no loops in
    the module dependency graph, and the above-mentioned SCC algorithm
    places all intra-module circular dependencies in the same SCC.  It
@@ -121,7 +136,9 @@ along with GCC; see the file COPYING3.  If not see
    As we load dependent modules first, we know there can be no
    reference to a higher-numbered module, and because we write out
    dependent SCCs first likewise for SCCs within the module.  This
-   allows us to immediately detect broken references.
+   allows us to immediately detect broken references.  When loading,
+   we must ensure the rest of the compiler doesn't cause some
+   unconnected load to occur (for instance, instantiate a template).
 
 Classes used:
 
@@ -2247,13 +2264,13 @@ public:
     EK_DECL,		/* A decl.  */
     EK_SPECIALIZATION,  /* A specialization.  */
     EK_UNNAMED,		/* An unnameable entity.  */
-    EK_USING,		/* A using declaration.  */
+    EK_USING,		/* A using declaration (at namespace scope).  */
     EK_NAMESPACE,	/* A namespace.  */
     EK_REDIRECT,	/* Redirect to a template_decl.  */
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
-    EK_MAYBE_SPEC,	/* Potentially a specialization, else a DECL,
-			   never a returned kind.  */
+    EK_MAYBE_SPEC,	/* Potentially a specialization,
+			   else a DECL or MEMBER, never a returned kind.  */
 
     EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
   };
@@ -2277,8 +2294,6 @@ private:
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
-    DB_PSEUDO_SPEC_BIT,		/* A non-specialization
-				   specialization.  */
     DB_TYPE_SPEC_BIT,		/* Specialization from the type table.  */
     DB_BOTH_SPEC_BIT,		/* Specialization in both spec tables.  */
   };
@@ -2378,10 +2393,6 @@ public:
   bool is_mergeable () const
   {
     return get_flag_bit<DB_MERGEABLE_BIT> ();
-  }
-  bool is_pseudo_spec () const
-  {
-    return get_flag_bit<DB_PSEUDO_SPEC_BIT> ();
   }
   bool is_type_spec () const
   {
@@ -11115,7 +11126,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	  if ((*modules)[origin]->remap)
 	    {
 	      dep->set_flag_bit<DB_IMPORTED_BIT> ();
-	      gcc_checking_assert (ek ==EK_UNNAMED || ek == EK_SPECIALIZATION
+	      gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
 				   || maybe_spec);
 	    }
 
@@ -11123,15 +11134,13 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	/* Dependency of a namespace binding.  */;
       else if (ek == EK_NAMESPACE)
 	/* Dependency is a namespace.  */;
-      else if (maybe_spec)
-	/* Remember this has some specialization properties.  */
-	dep->set_flag_bit<DB_PSEUDO_SPEC_BIT> ();
-      else if (ek == EK_UNNAMED
+      else if (maybe_spec
+	       || ek == EK_UNNAMED
 	       || ek == EK_SPECIALIZATION)
-	/* Dependency is unnameable.  We do not have to apply the
-	   below checks to this entity, because we can only refer to
-	   it by depending on its containing entity, and that entity
-	   will have the below checks applied to it.  */;
+	/* We do not have to apply the below checks to this entity,
+	   because we can only refer to it by depending on its
+	   containing entity, and that entity will have the below
+	   checks applied to it.  */;
       else
 	{
 	  tree ctx = CP_DECL_CONTEXT (decl);

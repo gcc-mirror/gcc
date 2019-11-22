@@ -1,6 +1,11 @@
 2019-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::DB_PSEUDO_SPEC_BIT): Delete.
+	(depset::is_pseudo_spec): Delete.
+	(depset::add_dependency): Don't set it.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): We should not meet imported
 	internal namespaces.
 	(module_state::{read,write}): Stream entities before namespaces.
