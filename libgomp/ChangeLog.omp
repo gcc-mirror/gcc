@@ -1,3 +1,7 @@
+2019-11-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/lib-16.f90: Fix async-safety issue.
+
 2019-10-16  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/gangprivate-attrib-1.f90: Use
