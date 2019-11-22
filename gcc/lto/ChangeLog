@@ -1,3 +1,7 @@
+2019-11-22  Jan Hubicka  <jh@suse.cz>
+	
+	* lto.c (lto_wpa_write_files): Call memory_block_pool::trim.
+
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Remove wrong dependency
