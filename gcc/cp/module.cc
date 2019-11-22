@@ -2271,6 +2271,7 @@ public:
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
     EK_MAYBE_SPEC,	/* Potentially a specialization,
 			   else a DECL or MEMBER, never a returned kind.  */
+    EK_FOR_BINDING,	/* A decl being inserted for a binding.  */
 
     EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
   };
@@ -11060,7 +11061,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 			   && !DECL_NAMESPACE_ALIAS (decl)));
   gcc_checking_assert (ek != EK_BINDING && ek != EK_REDIRECT);
   if (ek == EK_USING)
-    gcc_checking_assert (current->is_binding () && TREE_CODE (decl) == OVERLOAD);
+    gcc_checking_assert (TREE_CODE (decl) == OVERLOAD);
 
   if (ek == EK_UNNAMED)
     /* Unnameable things are not namespace scope  */
@@ -11095,21 +11096,22 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 
   depset **slot = entity_slot (decl, true);
   depset *dep = *slot;
-  bool binding_p = current && current->is_binding ();
+  bool for_binding = ek == EK_FOR_BINDING;
+  bool maybe_spec = ek == EK_MAYBE_SPEC;
 
   if (!dep)
     {
       bool has_def = ek != EK_USING && has_definition (decl);
-      bool maybe_spec = ek == EK_MAYBE_SPEC;
       if (maybe_spec)
 	{
 	  /* We were probing, and didn't find anything.  Therefore
-	     this is a regular-ish decl, but mark it as a pseudo
-	     spec so we know to write a definition.  */
+	     this is a regular decl.  */
 	  ek = EK_DECL;
 	  dump (dumper::DEPEND)
 	    && dump ("Pseudo specialization %N discovered", decl);
 	}
+      if (for_binding)
+	ek = EK_DECL;
 
       /* The only OVERLOADS we should see are USING decls from
 	 bindings.  */
@@ -11131,21 +11133,10 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 				   || maybe_spec);
 	    }
 
-      if (binding_p)
-	/* Dependency of a namespace binding.  */;
-      else if (ek == EK_NAMESPACE)
-	/* Dependency is a namespace.  */;
-      else if (maybe_spec
-	       || ek == EK_UNNAMED
-	       || ek == EK_SPECIALIZATION)
-	/* We do not have to apply the below checks to this entity,
-	   because we can only refer to it by depending on its
-	   containing entity, and that entity will have the below
-	   checks applied to it.  */;
-      else
+      if (ek == EK_DECL
+	  && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	{
 	  tree ctx = CP_DECL_CONTEXT (decl);
-	  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
 	  tree not_tmpl = STRIP_TEMPLATE (decl);
 
 	  if (!TREE_PUBLIC (ctx))
@@ -11153,6 +11144,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 	  else if (TREE_CODE (not_tmpl) != TYPE_DECL
 		   && TREE_CODE (not_tmpl) != CONST_DECL
+		   // FIXME:Should CONCEPT_DECL allow DECL_THIS_STATIC?
+		   && TREE_CODE (not_tmpl) != CONCEPT_DECL
 		   && DECL_THIS_STATIC (not_tmpl))
 	    {
 	      /* An internal decl.  In global module permit
@@ -11175,7 +11168,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	    /* No linkage or linkage from typedef name (which
 	       cannot be internal, because that's from the linkage
 	       of the context.  */;
-	  else
+	  else if (!for_binding)
 	    {
 	      // FIXME: We have to walk the non-emitted entities
 	      // in the module's purview too.  Discussing this in
@@ -11196,6 +11189,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 
       if (ek == EK_SPECIALIZATION
 	  || (ek == EK_DECL
+	      && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
 	      && TREE_PUBLIC (CP_DECL_CONTEXT (decl))))
 	/* Decl that could be declared in multiple CMIs (even
 	   module-owned declarations could be defined in a
@@ -11205,7 +11199,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       if (!dep->is_import ())
 	worklist.safe_push (dep);
     }
-  else if (ek == EK_MAYBE_SPEC)
+  else if (maybe_spec || for_binding)
     /* It's whatever we already found.  */
     ek = dep->get_entity_kind ();
   else if (ek == EK_DECL && dep->get_entity_kind () == EK_SPECIALIZATION)
@@ -11224,7 +11218,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
     }
 
   dump (dumper::DEPEND)
-    && dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
+    && dump ("%s on %s %C:%N added", for_binding ? "Binding" : "Dependency",
 	     dep->entity_kind_name (), TREE_CODE (decl), decl);
 
   return dep;
@@ -11236,43 +11230,38 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 void
 depset::hash::add_dependency (depset *dep)
 {
-  if (current && dep->get_entity_kind () != EK_NAMESPACE)
+  if (dep->get_entity_kind () != EK_NAMESPACE)
     {
       current->deps.safe_push (dep);
-      if (current->is_binding ())
-	/* Binding and contents are mutually dependent.  */
-	dep->deps.safe_push (current);
-      else
+
+      if (dep->is_internal ())
+	current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
+
+      if (current->get_entity_kind () == EK_USING
+	  && !OVL_USING_P (current->get_entity ())
+	  && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
+	  && TREE_CODE (TREE_TYPE (dep->get_entity ())) == ENUMERAL_TYPE)
 	{
-	  if (dep->is_internal ())
-	    current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
+	  /* CURRENT is an unwrapped using-decl and DECL is an enum's
+	     implicit typedef.  Is CURRENT a member of the enum?  */
+	  // FIXME: Can't we just handle this when depending the enum?
+	  tree c_decl = OVL_FUNCTION (current->get_entity ());
 
-	  if (current->get_entity_kind () == EK_USING
-	      && !OVL_USING_P (current->get_entity ())
-	      && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
-	      && TREE_CODE (TREE_TYPE (dep->get_entity ())) == ENUMERAL_TYPE)
-	    {
-	      /* CURRENT is an unwrapped using-decl and DECL is an
-		 enum's implicit typedef.  Is CURRENT a member of the
-		 enum?  */
-	      tree c_decl = OVL_FUNCTION (current->get_entity ());
-
-	      if (TREE_CODE (c_decl) == CONST_DECL
-		  && DECL_CONTEXT (c_decl) == TREE_TYPE (dep->get_entity ()))
-		/* Make DECL depend on CURRENT.  */
-		dep->deps.safe_push (current);
-	    }
+	  if (TREE_CODE (c_decl) == CONST_DECL
+	      && DECL_CONTEXT (c_decl) == TREE_TYPE (dep->get_entity ()))
+	    /* Make DECL depend on CURRENT.  */
+	    dep->deps.safe_push (current);
 	}
+    }
 
-      if (dep->is_unreached ())
-	{
-	  /* The dependency is reachable now.  */
-	  reached_unreached = true;
-	  dep->clear_flag_bit<DB_UNREACHED_BIT> ();
-	  dump (dumper::DEPEND)
-	    && dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
-		     TREE_CODE (dep->get_entity ()), dep->get_entity ());
-	}
+  if (dep->is_unreached ())
+    {
+      /* The dependency is reachable now.  */
+      reached_unreached = true;
+      dep->clear_flag_bit<DB_UNREACHED_BIT> ();
+      dump (dumper::DEPEND)
+	&& dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
+		 TREE_CODE (dep->get_entity ()), dep->get_entity ());
     }
 }
 
@@ -11292,7 +11281,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 bool
 depset::hash::add_binding (tree ns, tree value)
 {
-  current = make_binding (ns, NULL_TREE);
+  depset *binding = make_binding (ns, NULL_TREE);
 
   tree name = NULL_TREE;
   gcc_checking_assert (TREE_PUBLIC (ns));
@@ -11335,7 +11324,7 @@ depset::hash::add_binding (tree ns, tree value)
 	continue;
 
       bool using_p = iter.using_p ();
-      depset::entity_kind ek = depset::EK_DECL;
+      depset::entity_kind ek = depset::EK_FOR_BINDING;
       tree maybe_using = decl;
       if (using_p)
 	{
@@ -11356,7 +11345,7 @@ depset::hash::add_binding (tree ns, tree value)
 	  ek = depset::EK_USING;
 	}
 
-      depset *dep = add_dependency (maybe_using, ek);
+      depset *dep = make_dependency (maybe_using, ek);
       if (iter.hidden_p ())
 	{
 	  /* It is safe to mark the target decl with the hidden bit,
@@ -11366,19 +11355,21 @@ depset::hash::add_binding (tree ns, tree value)
 	  // unhidden, perhaps the right things already happen?
 	  dep->set_hidden_binding ();
 	}
+      binding->deps.safe_push (dep);
+      /* Binding and contents are mutually dependent.  */
+      dep->deps.safe_push (binding);
     }
 
-  bool added = current->deps.length () != 0;
+  bool added = binding->deps.length () != 0;
   if (added)
     {
-      current->set_binding_name (name);
+      binding->set_binding_name (name);
       depset **slot = binding_slot (ns, name, true);
       gcc_checking_assert (!*slot);
-      *slot = current;
+      *slot = binding;
     }
   else
-    delete current;
-  current = NULL;
+    delete binding;
 
   return added;
 }
@@ -11442,7 +11433,7 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
 	  bool not_empty = add_namespace_entities (value, partitions);
 	  if (not_empty || DECL_MODULE_EXPORT_P (value))
 	    {
-	      add_dependency (value, depset::EK_NAMESPACE);
+	      make_dependency (value, depset::EK_NAMESPACE);
 	      count++;
 	    }
 	}
@@ -11671,7 +11662,7 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION);
+      depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       gcc_assert (dep->is_import ()
 		  == ((*modules)[DECL_LANG_SPECIFIC (spec)
 				 ? DECL_MODULE_ORIGIN (spec) : 0]->remap != 0));

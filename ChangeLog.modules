@@ -1,6 +1,15 @@
 2019-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::EK_FOR_BINDING): New.
+	(depset::hash::make_dependency): Don't look at current.  Adjust.
+	(depset::hash::add_dependency): Current is always live.
+	(depset::hash::add_binding): Don't set current.  Directly depend
+	the binding.
+	(depset::hash::add_namespace_entities): Use make_dependency.
+	(depset::hash::add_specializations): Likewise.
+
+	gcc/cp/
 	* module.cc (depset::hash::find_entity): Rename to ...
 	(depset::hash::find_dependency): ... here.  Update callers.
 	(depset::hash::add_dependency): Break apart to ...
