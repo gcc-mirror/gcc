@@ -13272,7 +13272,7 @@ tsubst_aggr_type (tree t,
     }
 }
 
-static GTY((cache)) tree_cache_map *defarg_inst;
+static GTY((cache)) decl_tree_cache_map *defarg_inst;
 
 /* Substitute into the default argument ARG (a default argument for
    FN), which has the indicated TYPE.  */
@@ -13346,7 +13346,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   if (arg != error_mark_node && !cp_unevaluated_operand)
     {
       if (!defarg_inst)
-	defarg_inst = tree_cache_map::create_ggc (37);
+	defarg_inst = decl_tree_cache_map::create_ggc (37);
       defarg_inst->put (parm, arg);
     }
 
@@ -13383,7 +13383,7 @@ tsubst_default_arguments (tree fn, tsubst_flags_t complain)
 }
 
 /* Hash table mapping a FUNCTION_DECL to its dependent explicit-specifier.  */
-static GTY((cache)) tree_cache_map *explicit_specifier_map;
+static GTY((cache)) decl_tree_cache_map *explicit_specifier_map;
 
 /* Store a pair to EXPLICIT_SPECIFIER_MAP.  */
 
@@ -13391,7 +13391,7 @@ void
 store_explicit_specifier (tree v, tree t)
 {
   if (!explicit_specifier_map)
-    explicit_specifier_map = tree_cache_map::create_ggc (37);
+    explicit_specifier_map = decl_tree_cache_map::create_ggc (37);
   DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (v) = true;
   explicit_specifier_map->put (v, t);
 }

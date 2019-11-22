@@ -1,3 +1,17 @@
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92458
+	* init.c (nsdmi_inst): Change type to
+	decl_tree_cache_map * from tree_cache_map *.
+	* constraint.cc (decl_constraints): Likewise.
+	* decl.c (get_tuple_decomp_init): Likewise.
+	* pt.c (defarg_inst, explicit_specifier_map): Likewise.
+	(tsubst_default_argument, store_explicit_specifier): Use
+	decl_tree_cache_map::create_ggc rather than
+	tree_cache_map::create_ggc.
+	* cp-objcp-common.c (debug_type_map): Change type to
+	type_tree_cache_map * from tree_cache_map *.
+
 2019-11-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92450 - ICE with invalid nested name specifier.

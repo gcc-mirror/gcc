@@ -1,5 +1,13 @@
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92458
+	* tree-hash-traits.h (tree_decl_hash, tree_ssa_name_hash,
+	tree_hash): Move to ...
+	* tree.h (tree_decl_hash, tree_ssa_name_hash, tree_hash): ... here.
+	(struct decl_tree_cache_traits, struct type_tree_cache_traits): New
+	types.
+	(decl_tree_cache_map, tree_tree_cache_map): New typedefs.
+
 	PR tree-optimization/92618
 	* tree-ssa-reassoc.c (v_info): Change from auto_vec to a struct
 	containing the auto_vec and a tree.

@@ -5351,12 +5351,76 @@ struct tree_decl_map_cache_hasher : ggc_cache_ptr_hash<tree_decl_map>
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p
 
+/* Hasher for tree decls.  Pointer equality is enough here, but the DECL_UID
+   is a better hash than the pointer value and gives a predictable traversal
+   order.  Additionally it can be used across PCH save/restore.  */
+struct tree_decl_hash : ggc_ptr_hash <tree_node>
+{
+  static inline hashval_t hash (tree);
+};
+
+inline hashval_t
+tree_decl_hash::hash (tree t)
+{
+  return DECL_UID (t);
+}
+
+/* Similarly for types.  Uses TYPE_UID as hash function.  */
+struct tree_type_hash : ggc_ptr_hash <tree_node>
+{
+  static inline hashval_t hash (tree);
+};
+
+inline hashval_t
+tree_type_hash::hash (tree t)
+{
+  return TYPE_UID (t);
+}
+
+/* Hash for SSA_NAMEs in the same function.  Pointer equality is enough
+   here, but the SSA_NAME_VERSION is a better hash than the pointer
+   value and gives a predictable traversal order.  */
+struct tree_ssa_name_hash : ggc_ptr_hash <tree_node>
+{
+  static inline hashval_t hash (tree);
+};
+
+inline hashval_t
+tree_ssa_name_hash::hash (tree t)
+{
+  return SSA_NAME_VERSION (t);
+}
+
+/* Hasher for general trees, based on their TREE_HASH.  */
+struct tree_hash : ggc_ptr_hash <tree_node>
+{
+  static hashval_t hash (tree);
+};
+
+inline hashval_t
+tree_hash::hash (tree t)
+{
+  return TREE_HASH (t);
+}
+
 /* A hash_map of two trees for use with GTY((cache)).  Garbage collection for
    such a map will not mark keys, and will mark values if the key is already
    marked.  */
 struct tree_cache_traits
   : simple_cache_map_traits<default_hash_traits<tree>, tree> { };
 typedef hash_map<tree,tree,tree_cache_traits> tree_cache_map;
+
+/* Similarly, but use DECL_UID as hash function rather than pointer hashing.
+   This is for hash_maps from decls to trees that need to work across PCH.  */
+struct decl_tree_cache_traits
+  : simple_cache_map_traits<tree_decl_hash, tree> { };
+typedef hash_map<tree,tree,decl_tree_cache_traits> decl_tree_cache_map;
+
+/* Similarly, but use TYPE_UID as hash function rather than pointer hashing.
+   This is for hash_maps from types to trees that need to work across PCH.  */
+struct type_tree_cache_traits
+  : simple_cache_map_traits<tree_type_hash, tree> { };
+typedef hash_map<tree,tree,type_tree_cache_traits> type_tree_cache_map;
 
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from CALL_EXPR node EXP.  */

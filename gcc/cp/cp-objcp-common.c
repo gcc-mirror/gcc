@@ -123,7 +123,7 @@ cxx_types_compatible_p (tree x, tree y)
   return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
-static GTY((cache)) tree_cache_map *debug_type_map;
+static GTY((cache)) type_tree_cache_map *debug_type_map;
 
 /* Return a type to use in the debug info instead of TYPE, or NULL_TREE to
    keep TYPE.  */
