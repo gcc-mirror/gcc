@@ -349,6 +349,15 @@ identifier_global_value (tree name)
   return get_global_binding (name);
 }
 
+/* Similarly, but return struct/class/union NAME instead.  */
+
+tree
+identifier_global_tag (tree name)
+{
+  return lookup_qualified_name (global_namespace, name, /*prefer_type*/2,
+				/*complain*/false);
+}
+
 /* Returns true if NAME refers to a built-in function or function-like
    operator.  */
 

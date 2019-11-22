@@ -1,5 +1,8 @@
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/90677
+	* cp-objcp-common.c (identifier_global_tag): Define.
+
 	PR c++/92458
 	* init.c (nsdmi_inst): Change type to
 	decl_tree_cache_map * from tree_cache_map *.

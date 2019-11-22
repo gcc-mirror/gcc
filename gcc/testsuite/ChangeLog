@@ -1,5 +1,8 @@
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/90677
+	* c-c++-common/pr90677.c: New test.
+
 	PR c++/92458
 	* g++.dg/pch/pr92458.C: New test.
 	* g++.dg/pch/pr92458.Hs: New test.
