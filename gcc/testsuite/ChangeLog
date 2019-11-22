@@ -1,3 +1,10 @@
+2019-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr27971.c: Use mdynamic-no-pic for m32 on
+	Darwin.
+	* gcc.target/i386/sse2-load-multi.c: Likewise.
+	* gcc.target/i386/sse2-store-multi.c: Likewise.
+
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement P1920R1, Missing feature-test macros 2017-2019.
