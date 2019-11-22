@@ -1,3 +1,15 @@
+2019-11-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/83859
+	* c-attribs.c (handle_access_attribute): New function.
+	(c_common_attribute_table): Add new attribute.
+	(get_argument_type): New function.
+	(append_access_attrs): New function.
+	(get_nonnull_operand): Rename...
+	(get_attribute_operand): ...to this.
+	* c-common.c (get_nonnull_operand): Rename...
+	(get_attribute_operand): ...to this.
+
 2019-11-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-attribs.c (handle_fallthrough_attribute): Use pedwarn instead

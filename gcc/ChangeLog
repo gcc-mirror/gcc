@@ -1,3 +1,21 @@
+2019-11-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/83859
+	* attribs.h (struct attr_access): New.
+	* attribs.c (decl_attributes): Add an informational note.
+	* builtins.c (check_access): Make extern.  Consistently set no-warning
+	after issuing a warning.  Handle calls through function pointers.  Set
+	no-warning.
+	* builtins.h (check_access): Declare.
+	* calls.c (rdwr_access_hash): New type.
+	(rdwr_map): Same.
+	(init_attr_rdwr_indices): New function.
+	(maybe_warn_rdwr_sizes): Same.
+	(initialize_argument_information): Call init_attr_rdwr_indices.
+	Call maybe_warn_rdwr_sizes.
+	(get_size_range): Avoid null argument.
+	* doc/extend.texi (attribute access): Document new attribute.
+
 2019-11-22  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.c (OMP_LDS_SIZE): Define.

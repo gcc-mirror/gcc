@@ -2484,6 +2484,77 @@ The following attributes are supported on most targets.
 @table @code
 @c Keep this table alphabetized by attribute name.  Treat _ as space.
 
+@item access
+@itemx access (@var{access-mode}, @var{ref-index})
+@itemx access (@var{access-mode}, @var{ref-index}, @var{size-index})
+
+The @code{access} attribute enables the detection of invalid or unsafe
+accesses by functions to which they apply to or their callers, as well
+as wite-only accesses to objects that are never read from.  Such accesses
+may be diagnosed by warnings such as @option{-Wstringop-overflow},
+@option{-Wunnitialized}, @option{-Wunused}, and others.
+
+The @code{access} attribute specifies that a function to whose by-reference
+arguments the attribute applies accesses the referenced object according to
+@var{access-mode}.  The @var{access-mode} argument is required and must be
+one of three names: @code{read_only}, @code{read_write}, or @code{write_only}.
+The remaining two are positional arguments.
+
+The required @var{ref-index} positional argument  denotes a function
+argument of pointer (or in C++, refeference) type that is subject to
+the access.  The same pointer argument can be referenced by at most one
+distinct @code{access} attribute.
+
+The optional @var{size-index} positional argument denotes a function
+argument of integer type that specifies the maximum size of the access.
+The size is the number of elements of the type refefenced by @var{ref-index},
+or the number of bytes when the pointer type is @code{void*}.  When no
+@var{size-index} argument is specified, the pointer argument must be either
+null or point to a space that is suitably aligned and large for at least one
+object of the referenced type (this implies that a past-the-end pointer is
+not a valid argument).  The actual size of the access may be less but it
+must not be more.
+
+The @code{read_only} access mode specifies that the pointer to which it
+applies is used to read the referenced object but not write to it.  Unless
+the argument specifying the size of the access denoted by @var{size-index}
+is zero, the referenced object must be initialized.  The mode implies
+a stronger guarantee than the @code{const} qualifier which, when cast away
+from a pointer, does not prevent a function from modifying the pointed-to
+object.  Examples of the use of the @code{read_only} access mode is
+the argument to the @code{puts} function, or the second and third arguments
+to the @code{memcpy} function.
+
+@smallexample
+__attribute__ ((access (read_only))) int puts (const char*);
+__attribute__ ((access (read_only, 1, 2))) void* memcpy (void*, const void*, size_t);
+@end smallexample
+
+The @code{read_write} access mode applies to arguments of pointer types
+without the @code{const} qualifier.  It specifies that the pointer to which
+it applies is used to both read and write the referenced object.  Unless
+the argument specifying the size of the access denoted by @var{size-index}
+is zero, the object refrenced by the pointer must be initialized.  An example
+of the use of the @code{read_write} access mode is the first argument to
+the @code{strcat} function.
+
+@smallexample
+__attribute__ ((access (read_write, 1), access (read_only, 2))) char* strcat (char*, const char*);
+@end smallexample
+
+The @code{write_only} access mode applies to arguments of pointer types
+without the @code{const} qualifier.  It specifies that the pointer to which
+it applies is used to write to the referenced object but not read from it.
+The object refrenced by the pointer need not be initialized.  An example
+of the use of the @code{write_only} access mode is the first argument to
+the @code{strcpy} function, or the first two arguments to the @code{fgets}
+function.
+
+@smallexample
+__attribute__ ((access (write_only, 1), access (read_only, 2))) char* strcpy (char*, const char*);
+__attribute__ ((access (write_only, 1, 2), access (read_write, 3))) int fgets (char*, int, FILE*);
+@end smallexample
+
 @item alias ("@var{target}")
 @cindex @code{alias} function attribute
 The @code{alias} attribute causes the declaration to be emitted as an
@@ -3848,7 +3919,6 @@ performing a link with relocatable output (ie: @code{ld -r}) on them.
 
 At present, a declaration to which @code{weakref} is attached can
 only be @code{static}.
-
 
 @end table
 
