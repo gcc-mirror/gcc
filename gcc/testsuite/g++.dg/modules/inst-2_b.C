@@ -11,4 +11,4 @@ int main ()
 
 // { dg-final { scan-lang-dump {Reading 1 pending specializations} module } }
 
-// { dg-final { scan-lang-dump {Read:-[0-9]*'s decl spec merge key \(new\) function_decl:'::foo@foo:.'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s decl spec merge key \(new\) function_decl:'::foo'} module } }

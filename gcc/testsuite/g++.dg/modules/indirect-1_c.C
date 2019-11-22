@@ -36,7 +36,7 @@ int main ()
 // { dg-final { scan-lang-dump {>Loading entity foo\[1\] section:2} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::Y@foo:.'@foo} module } }
 // { dg-final { scan-lang-dump {Read member:-[0-9]* field_decl:'::foo::Y@foo:.::_vptr.Y'} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::Y@foo:.::frob@foo:.'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::Y@foo:.::frob'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Plain_One'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Loading entity foo\[2\] section:3} module } }

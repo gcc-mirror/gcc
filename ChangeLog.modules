@@ -1,6 +1,23 @@
 2019-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::lang_decl_bools): Don't set module_origin
+	here.
+	(trees_out::decl_value): Stream out entity index.  Install into
+	entity_map.
+	(trees_in::decl_value): Stream in entity index.  Install into
+	entity ary, and map (if new)
+	(module_state::write_cluster): Do not install into map here.
+	(module_state::read_cluster): ... or here. And not ary either.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-[13]_b.C: Adjust scans.
+	* g++.dg/modules/indirect-[123]_[bc].C: Likewise.
+	* g++.dg/modules/inst-[1234]_b.C: Likewise.
+	* g++.dg/modules/late-ret-[23]_c.C: Likewise.
+	* g++.dg/modules/part-3_[cd].C: Likewise.
+	* g++.dg/modules/tdef-6_b.C: Likewise.
+
+	gcc/cp/
 	* cp-tree.h (DECL_MODULE_IMPORT_P): #ifdef out, not yet ready
 	* module.cc (dumper::impl::nested_name): Don't use it.
 	(module_state::read_cluster): Likewise.

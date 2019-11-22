@@ -15,4 +15,4 @@ import "tdef-6_a.H";
 X y;
 __mbstate_t x;
 
-// { dg-final { scan-lang-dump {Read:-[0-9]'s named merge key \(matched\) type_decl:'::__mbstate_t@[^\n]*/tdef-6_a.H:.'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]'s named merge key \(matched\) type_decl:'::__mbstate_t'} module } }

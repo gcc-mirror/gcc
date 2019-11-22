@@ -5383,7 +5383,6 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
-  lang->u.base.module_origin = state->mod;
   RB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
@@ -7218,6 +7217,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	       TREE_CODE (decl), decl, decl);
 
   // FIXME: If mergeable, mark function parms etc as mergeable too
+  // Don't I already do this now?
 
   tree inner = decl;
   int inner_tag = 0;
@@ -7335,12 +7335,30 @@ trees_out::decl_value (tree decl, depset *dep)
 
   if (streaming_p ())
     {
+      /* Write the entity index, so we can insert it as soon as we
+	 know this is new.  */
       // FIXME: The number of dep_hash lookups is too damn high!
       // We'll eventually end up with everything written here having a depset.
       dep = dep_hash->find_entity (decl);
       if (dep)
 	/* Do not stray outside this section.  */
 	gcc_checking_assert (dep->section == dep_hash->section);
+
+      unsigned entity_index = dep && dep->cluster ? dep->cluster : 0;
+      u (entity_index);
+
+      if (entity_index)
+	{
+	  /* Add it to the entity map, such that we can tell it is
+	     part of us.  */
+	  bool existed;
+	  unsigned *slot = &entity_map->get_or_insert
+	    (DECL_UID (decl), &existed);
+	  if (existed)
+	    /* If it existed, it should match.  */
+	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
+	  *slot = -entity_index;
+	}
     }
 
   if (!type && TREE_CODE (inner) == TYPE_DECL)
@@ -7672,6 +7690,18 @@ trees_in::decl_value ()
     }
 
   tree existing = back_refs[~tag];
+  unsigned entity_index = u ();
+  if (!entity_index)
+    ;
+  else if (entity_index > state->entity_num)
+    {
+      entity_index = 0;
+      set_overrun ();
+    }
+  else
+    /* Insert the real decl into the entity ary.  */
+    (*entity_ary)[state->entity_lwm + entity_index - 1] = existing;
+
   bool is_new = existing == decl;
   if (is_new)
     {
@@ -7680,6 +7710,23 @@ trees_in::decl_value ()
 	/* Mark this identifier as naming a virtual function --
 	   lookup_overrides relies on this optimization.  */
 	IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = true;
+
+      if (entity_index)
+	{
+	  /* Mark the entity as imported and add it to the entity
+	     array and map.  */
+	  retrofit_lang_decl (decl);
+	  DECL_MODULE_ORIGIN (decl) = state->mod;
+	  if (inner_tag)
+	    /* We know there will be a lang_decl in this case.  */
+	    DECL_MODULE_ORIGIN (inner) = state->mod;
+
+	  /* Insert into the entity hash (it cannot already be there).  */
+	  bool existed;
+	  unsigned &slot = entity_map->get_or_insert (DECL_UID (decl), &existed);
+	  gcc_checking_assert (!existed);
+	  slot = state->entity_lwm + entity_index - 1;
+	}
 
       if (constraints)
 	set_constraints (decl, constraints);
@@ -13846,17 +13893,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  sec.u (flags);
 
 	  gcc_checking_assert (b->cluster);
-	  sec.u (b->cluster - 1);
-
-	  /* Add it to the entity map, such that we can tell it is
-	     part of us.  */
-	  bool existed;
-	  unsigned *slot = &entity_map->get_or_insert
-	    (DECL_UID (decl), &existed);
-	  if (existed)
-	    /* If it existed, it should match.  */
-	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
-	  *slot = -b->cluster;
 
 	  dump () && dump ("Wrote declaration entity:%u %C:%N",
 			   b->cluster - 1, TREE_CODE (decl), decl);
@@ -14066,46 +14102,11 @@ module_state::read_cluster (unsigned snum)
 	    dump () && dump ("Read declaration of %N", decl);
 
 	    unsigned flags = sec.u ();
-	    unsigned entity_index = sec.u ();
 
-	    if (entity_index >= entity_num)
-	      sec.set_overrun ();
 	    if (sec.get_overrun ())
 	      break;
-
-	    {
-	      /* Insert into the entity array.  */
-	      mc_slot *slot = &(*entity_ary)[entity_lwm + entity_index];
-	      if (!slot->is_lazy () || slot->get_lazy () != snum)
-		{
-		  sec.set_overrun ();
-		  break;
-		}
-	      (*slot) = decl;
-	    }
-
-	    /* If we matched a decl from this TU, it might not be an
-	       import!  */
-	    if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_ORIGIN (decl))
-	      {
-		/* Insert into the entity hash (it might already be
-		   there.  */
-		// FIXME: Until we get to write out the current
-		// module, we only need namespace-scope decls here, as
-		// those are the only things users need the
-		// originating module for.  When writing out, we need
-		// all imported entities so we can directly refer to
-		// their index number.
-		bool existed;
-		unsigned *slot = &entity_map->get_or_insert
-		  (DECL_UID (decl), &existed);
-		if (!existed)
-		  *slot = entity_lwm + entity_index;
-		else
-		  /* If it existed, it should match.  */
-		  gcc_checking_assert (decl == (*entity_ary)[*slot]);
-		}
-
+	    // FIXME:Perhaps this also needs doint earlier -- see
+	    // entity_index handling in trees_in::decl_value
 	    if (flags & cdf_is_specialization)
 	      install_specialization (decl, flags & cdf_is_partial);
 	  }

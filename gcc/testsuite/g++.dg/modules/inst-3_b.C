@@ -10,5 +10,5 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Read:-[0-9]*'s type spec merge key \(new\) type_decl:'::TPL@foo:.'} module } }
-// { dg-final { scan-lang-dump {Read:-[0-9]*'s decl spec merge key \(new\) type_decl:'::TPL@foo:.<T>::TPL@foo:.'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s type spec merge key \(new\) type_decl:'::TPL'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s decl spec merge key \(new\) type_decl:'::TPL@foo:.<T>::TPL'} module } }
