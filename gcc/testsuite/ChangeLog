@@ -1,5 +1,11 @@
 2019-11-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-widen-mult-u8.c: Disable epilogue loop
+	vectorization.
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: Likewise.
+
+2019-11-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-cond-reduc-3.c: Require vect_cond_mixed
 	rather than vect_condition.
 
