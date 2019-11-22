@@ -1,3 +1,14 @@
+2019-11-22  Jan Hubicka  <jh@suse.cz>
+
+	* ggc-page.c (ggc_collect): Call memory_block_pool::trim.
+	* memory-block.cc (memory_block_pool::clear_free_list): Rename to ...
+	(memory_block_pool::reduce_free_list): ... this one.
+	(memory_block_pool::trim): New static function.
+	* memory-block.h (memory_block_pool::freelist_size): New constant
+	(memory_block_pool::clear_free_list): Rename to ...
+	(memory_block_pool::reduce_free_list): ... this one.
+	(memory_block_pool::trim): Declare.
+
 2019-11-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-stmts.c (vect_model_simple_cost): Take an optional

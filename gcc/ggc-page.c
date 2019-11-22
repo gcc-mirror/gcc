@@ -2186,6 +2186,9 @@ ggc_collect (void)
   float allocated_last_gc =
     MAX (G.allocated_last_gc, (size_t)param_ggc_min_heapsize * 1024);
 
+  /* It is also good time to get memory block pool into limits.  */
+  memory_block_pool::trim ();
+
   float min_expand = allocated_last_gc * param_ggc_min_expand / 100;
   if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
     return;
