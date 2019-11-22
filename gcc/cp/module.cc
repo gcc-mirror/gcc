@@ -2515,8 +2515,10 @@ public:
     depset *maybe_add_declaration (tree decl);
 
   public:
-    depset *find_entity (tree entity);
+    depset *find_dependency (tree entity);
     depset *find_binding (tree ctx, tree name);
+    depset *make_dependency (tree decl, entity_kind);
+    void add_dependency (depset *);
 
   public:
     depset *add_dependency (tree decl, entity_kind);
@@ -7350,7 +7352,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	 know this is new.  */
       // FIXME: The number of dep_hash lookups is too damn high!
       // We'll eventually end up with everything written here having a depset.
-      dep = dep_hash->find_entity (decl);
+      dep = dep_hash->find_dependency (decl);
       if (dep)
 	/* Do not stray outside this section.  */
 	gcc_checking_assert (dep->section == dep_hash->section);
@@ -7867,7 +7869,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  && TREE_CODE (decl) != TYPE_DECL)
 	return true;
 
-      depset *dep = dep_hash->find_entity (decl);
+      depset *dep = dep_hash->find_dependency (decl);
       if (dep && !dep->is_mergeable ())
 	dep = NULL;
       
@@ -8187,7 +8189,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  gcc_assert (dep && dep->is_import () == (origin != 0));
 	}
       else
-	dep = dep_hash->find_entity (decl);
+	dep = dep_hash->find_dependency (decl);
 
       if (dep->get_entity_kind () == depset::EK_REDIRECT)
 	{
@@ -8234,7 +8236,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
 	if (streaming_p ())
 	  {
-	    dep = dep_hash->find_entity (decl);
+	    dep = dep_hash->find_dependency (decl);
 	    if (dep && dep->get_entity_kind () == depset::EK_UNNAMED)
 	      goto direct_entity;
 	  }
@@ -8285,7 +8287,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    else
 	      {
 		/* It should be what we put there.  */
-		gcc_checking_assert (dep_hash->find_entity (decl)->cluster
+		gcc_checking_assert (dep_hash->find_dependency (decl)->cluster
 				     == -entity_num);
 		ident = ~entity_num;
 
@@ -9873,7 +9875,7 @@ trees_out::get_container (tree decl)
       if (use_tpl == 2)
 	{
 	  /* A partial or explicit specialization.  */
-	  if (depset *dep = dep_hash->find_entity (decl))
+	  if (depset *dep = dep_hash->find_dependency (decl))
 	    if (dep->get_entity_kind () == depset::EK_REDIRECT)
 	      container = dep->deps[0]->get_entity ();
 	}
@@ -11024,9 +11026,9 @@ depset::hash::binding_slot (tree ctx, tree name, bool insert)
 }
 
 depset *
-depset::hash::find_entity (tree entity)
+depset::hash::find_dependency (tree decl)
 {
-  depset **slot = entity_slot (entity, false);
+  depset **slot = entity_slot (decl, false);
 
   return slot ? *slot : NULL;
 }
@@ -11039,9 +11041,8 @@ depset::hash::find_binding (tree ctx, tree name)
   return slot ? *slot : NULL;
 }
 
-/* DECL is a newly discovered dependency of current.  Create the
-   depset, if it doesn't already exist.  Add it to the worklist if so.
-   Append it to current's depset.
+/* DECL is a newly discovered dependency.  Create the depset, if it
+   doesn't already exist.  Add it to the worklist if so.
 
    DECL will be an OVL_USING_P OVERLOAD, if it's from a binding that's
    a using decl.
@@ -11051,7 +11052,7 @@ depset::hash::find_binding (tree ctx, tree name)
    prevents us wanting to do it anyway.  */
 
 depset *
-depset::hash::add_dependency (tree decl, entity_kind ek)
+depset::hash::make_dependency (tree decl, entity_kind ek)
 {
   /* Make sure we're being told consistent information.  */
   gcc_checking_assert ((ek == EK_NAMESPACE)
@@ -11226,7 +11227,16 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
     && dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
 	     dep->entity_kind_name (), TREE_CODE (decl), decl);
 
-  if (current && ek != EK_NAMESPACE)
+  return dep;
+}
+
+/* DEP is a newly discovered dependency.  Append it to current's
+   depset.  */
+
+void
+depset::hash::add_dependency (depset *dep)
+{
+  if (current && dep->get_entity_kind () != EK_NAMESPACE)
     {
       current->deps.safe_push (dep);
       if (current->is_binding ())
@@ -11239,16 +11249,16 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 
 	  if (current->get_entity_kind () == EK_USING
 	      && !OVL_USING_P (current->get_entity ())
-	      && DECL_IMPLICIT_TYPEDEF_P (decl)
-	      && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	      && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
+	      && TREE_CODE (TREE_TYPE (dep->get_entity ())) == ENUMERAL_TYPE)
 	    {
 	      /* CURRENT is an unwrapped using-decl and DECL is an
-		 enum's implicit typedef.  Is CURRENT a member of
-		 the enum?  */
+		 enum's implicit typedef.  Is CURRENT a member of the
+		 enum?  */
 	      tree c_decl = OVL_FUNCTION (current->get_entity ());
 
 	      if (TREE_CODE (c_decl) == CONST_DECL
-		  && DECL_CONTEXT (c_decl) == TREE_TYPE (decl))
+		  && DECL_CONTEXT (c_decl) == TREE_TYPE (dep->get_entity ()))
 		/* Make DECL depend on CURRENT.  */
 		dep->deps.safe_push (current);
 	    }
@@ -11264,7 +11274,14 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 		     TREE_CODE (dep->get_entity ()), dep->get_entity ());
 	}
     }
+}
 
+depset *
+depset::hash::add_dependency (tree decl, entity_kind ek)
+{
+  depset *dep = make_dependency (decl, ek);
+  if (dep->get_entity_kind () != EK_REDIRECT)
+    add_dependency (dep);
   return dep;
 }
 
@@ -11746,7 +11763,7 @@ depset::hash::find_dependencies ()
 		    node_template_info (spec, use_tpl);
 		    if (use_tpl & 2)
 		      {
-			depset *spec_dep = find_entity (spec);
+			depset *spec_dep = find_dependency (spec);
 			if (spec_dep->get_entity_kind () == EK_REDIRECT)
 			  spec_dep = spec_dep->deps[0];
 			gcc_checking_assert (spec_dep->get_entity_kind ()
@@ -14214,7 +14231,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       unsigned ctx_num = 0;
       tree ctx = CP_DECL_CONTEXT (ns);
       if (ctx != global_namespace)
-	ctx_num = table.find_entity (ctx)->section;
+	ctx_num = table.find_dependency (ctx)->section;
       bool export_p = DECL_MODULE_EXPORT_P (ns);
       bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
       bool public_p = TREE_PUBLIC (ns);
@@ -14339,7 +14356,7 @@ module_state::write_bindings (elf_out *to, vec<depset *> sccs,
 	  unsigned ns_num = 0;
 	  tree ns = b->get_entity ();
 	  if (ns != global_namespace)
-	    ns_num = table.find_entity (ns)->section;
+	    ns_num = table.find_dependency (ns)->section;
 	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
 			   b->section);
 	  sec.u (to->name (b->get_name ()));

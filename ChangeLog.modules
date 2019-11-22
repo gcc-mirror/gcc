@@ -1,6 +1,14 @@
 2019-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::find_entity): Rename to ...
+	(depset::hash::find_dependency): ... here.  Update callers.
+	(depset::hash::add_dependency): Break apart to ...
+	(depset::hash::make_dependency): ... this, and ...
+	(depset::hash::add_dependency): ... this, adder.
+	(depset::hash::add_dependency): Do both.
+
+	gcc/cp/
 	* module.cc (depset::DB_PSEUDO_SPEC_BIT): Delete.
 	(depset::is_pseudo_spec): Delete.
 	(depset::add_dependency): Don't set it.
