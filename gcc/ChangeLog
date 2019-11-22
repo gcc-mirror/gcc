@@ -1,3 +1,8 @@
+2019-11-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_hsa_declare_function_name): Calculate
+	granulated_sgprs according to architecture.
+
 2019-11-22  Jan Hubicka  <jh@suse.cz>
 
 	* ggc-page.c (ggc_collect): Call memory_block_pool::trim.
