@@ -1,3 +1,9 @@
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92458
+	* g++.dg/pch/pr92458.C: New test.
+	* g++.dg/pch/pr92458.Hs: New test.
+
 2019-11-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr27971.c: Use mdynamic-no-pic for m32 on

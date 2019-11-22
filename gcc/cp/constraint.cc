@@ -1113,7 +1113,7 @@ build_constraints (tree tr, tree dr)
 
 /* A mapping from declarations to constraint information.  */
 
-static GTY ((cache)) tree_cache_map *decl_constraints;
+static GTY ((cache)) decl_tree_cache_map *decl_constraints;
 
 /* Returns the template constraints of declaration T. If T is not
    constrained, return NULL_TREE. Note that T must be non-null. */
