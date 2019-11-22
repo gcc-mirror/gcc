@@ -1,3 +1,11 @@
+2019-11-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (OMP_LDS_SIZE): Define.
+	(ACC_LDS_SIZE): Define.
+	(OTHER_LDS_SIZE): Define.
+	(LDS_SIZE): Redefine using above.
+	(gcn_expand_prologue): Initialize m0 with LDS_SIZE-1.
+
 2019-11-22  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92501
