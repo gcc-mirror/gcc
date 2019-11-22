@@ -7021,11 +7021,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return false;
 
     case TYPEID_EXPR:
-      /* -- a typeid expression whose operand is of polymorphic
-            class type;  */
+      /* In C++20, a typeid expression whose operand is of polymorphic
+	 class type can be constexpr.  */
       {
         tree e = TREE_OPERAND (t, 0);
-        if (!TYPE_P (e) && !type_dependent_expression_p (e)
+	if (cxx_dialect < cxx2a
+	    && strict
+	    && !TYPE_P (e)
+	    && !type_dependent_expression_p (e)
 	    && TYPE_POLYMORPHIC_P (TREE_TYPE (e)))
           {
             if (flags & tf_error)

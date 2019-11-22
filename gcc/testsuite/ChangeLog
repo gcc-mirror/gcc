@@ -1,3 +1,11 @@
+2019-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88337 - P1327R1: Allow polymorphic typeid in constexpr.
+	* g++.dg/cpp2a/constexpr-typeid1.C: New test.
+	* g++.dg/cpp2a/constexpr-typeid2.C: New test.
+	* g++.dg/cpp2a/constexpr-typeid3.C: New test.
+	* g++.dg/cpp2a/constexpr-typeid4.C: New test.
+
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90677
