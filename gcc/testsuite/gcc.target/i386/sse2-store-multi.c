@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=corei7 -O2" } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 #include <emmintrin.h>
 
