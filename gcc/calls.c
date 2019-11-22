@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-strlen.h"
 #include "intl.h"
 #include "stringpool.h"
+#include "hash-map.h"
+#include "hash-traits.h"
 #include "attribs.h"
 #include "builtins.h"
 #include "gimple-fold.h"
@@ -1258,6 +1260,9 @@ alloc_max_size (void)
 bool
 get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
 {
+  if (!exp)
+    return false;
+
   if (tree_fits_uhwi_p (exp))
     {
       /* EXP is a constant.  */
@@ -1870,6 +1875,309 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
   error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
 }
 
+/* Used to define rdwr_map below.  */
+struct rdwr_access_hash: int_hash<int, -1> { };
+
+/* A mapping between argument number corresponding to attribute access
+   mode (read_only, write_only, or read_write) and operands.  */
+typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
+
+/* Initialize a mapping for a call to function FNDECL declared with
+   attribute access.  Each attribute poisitional operand inserts one
+   entry into the mapping with the operand number as the key.  */
+
+static void
+init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
+{
+  if (!fntype)
+    return;
+
+  tree access = TYPE_ATTRIBUTES (fntype);
+  /* If the function's type has no attributes there's nothing to do.  */
+  if (!access)
+    return;
+
+  access = lookup_attribute ("access", access);
+  if (!access)
+    return;
+
+  tree mode = TREE_VALUE (access);
+  gcc_assert (TREE_CODE (mode) == STRING_CST);
+  const char *modestr = TREE_STRING_POINTER (mode);
+  for (const char *m = modestr; *m; )
+    {
+      attr_access acc = { };
+
+      switch (*m)
+	{
+	case 'r': acc.mode = acc.read_only; break;
+	case 'w': acc.mode = acc.write_only; break;
+	default: acc.mode = acc.read_write; break;
+	}
+
+      char *end;
+      acc.ptrarg = strtoul (++m, &end, 10);
+      m = end;
+      if (*m == ',')
+	{
+	  acc.sizarg = strtoul (++m, &end, 10);
+	  m = end;
+	}
+      else
+	acc.sizarg = UINT_MAX;
+
+      acc.ptr = NULL_TREE;
+      acc.size = NULL_TREE;
+
+      /* Unconditionally add an entry for the required pointer
+	 operand of the attribute, and one for the optional size
+	 operand when it's specified.  */
+      rwm->put (acc.ptrarg, acc);
+      if (acc.sizarg != UINT_MAX)
+	rwm->put (acc.sizarg, acc);
+    }
+}
+
+/* Returns the type of the argument ARGNO to function with type FNTYPE
+   or null when the typoe cannot be determined or no such argument exists.  */
+
+static tree
+fntype_argno_type (tree fntype, unsigned argno)
+{
+  if (!prototype_p (fntype))
+    return NULL_TREE;
+
+  tree argtype;
+  function_args_iterator it;
+  FOREACH_FUNCTION_ARGS (fntype, argtype, it)
+    if (argno-- == 0)
+      return argtype;
+
+  return NULL_TREE;
+}
+
+/* Helper to append the "rdwr" attribute specification described
+   by ACCESS to the array ATTRSTR with size STRSIZE.  Used in
+   diagnostics.  */
+
+static inline void
+append_attrname (const std::pair<int, attr_access> &access,
+		 char *attrstr, size_t strsize)
+{
+  /* Append the relevant attribute to the string.  This (deliberately)
+     appends the attribute pointer operand even when none was specified.  */
+  size_t len = strlen (attrstr);
+
+  const char *atname
+    = (access.second.mode == attr_access::read_only
+       ? "read_only"
+       : (access.second.mode == attr_access::write_only
+	  ? "write_only" : "read_write"));
+
+  const char *sep = len ? ", " : "";
+
+  if (access.second.sizarg == UINT_MAX)
+    snprintf (attrstr + len, strsize - len,
+	      "%s%s (%i)", sep, atname,
+	      access.second.ptrarg + 1);
+  else
+    snprintf (attrstr + len, strsize - len,
+	      "%s%s (%i, %i)", sep, atname,
+	      access.second.ptrarg + 1, access.second.sizarg + 1);
+}
+
+/* Iterate over attribute access read-only, read-write, and write-only
+   arguments and diagnose past-the-end accesses and related problems
+   in the function call EXP.  */
+
+static void
+maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
+{
+  tree fndecl = NULL_TREE;
+  tree fntype = NULL_TREE;
+  if (tree fnaddr = CALL_EXPR_FN (exp))
+    {
+      if (TREE_CODE (fnaddr) == ADDR_EXPR)
+	{
+	  fndecl = TREE_OPERAND (fnaddr, 0);
+	  fntype = TREE_TYPE (fndecl);
+	}
+      else
+	fntype = TREE_TYPE (TREE_TYPE (fnaddr));
+    }
+
+  if (!fntype)
+    return;
+
+  /* A string describing the attributes that the warnings issued by this
+     function apply to.  Used to print one informational note per function
+     call, rather than one per warning.  That reduces clutter.  */
+  char attrstr[80];
+  attrstr[0] = 0;
+
+  for (rdwr_map::iterator it = rwm->begin (); it != rwm->end (); ++it)
+    {
+      std::pair<int, attr_access> access = *it;
+
+      /* Get the function call arguments corresponding to the attribute's
+	 positional arguments.  When both arguments have been specified
+	 there will be two entries in *RWM, one for each.  They are
+	 cross-referenced by their respective argument numbers in
+	 ACCESS.PTRARG and ACCESS.SIZARG.  */
+      const int ptridx = access.second.ptrarg;
+      const int sizidx = access.second.sizarg;
+
+      gcc_assert (ptridx != -1);
+      gcc_assert (access.first == ptridx || access.first == sizidx);
+
+      /* The pointer is set to null for the entry corresponding to
+	 the size argument.  Skip it.  It's handled when the entry
+	 corresponding to the pointer argument comes up.  */
+      if (!access.second.ptr)
+	continue;
+
+      tree argtype = fntype_argno_type (fntype, ptridx);
+      argtype = TREE_TYPE (argtype);
+
+      tree size;
+      if (sizidx == -1)
+	{
+	  /* If only the pointer attribute operand was specified
+	     and not size, set SIZE to the size of one element of
+	     the pointed to type to detect smaller objects (null
+	     pointers are diagnosed in this case only if
+	     the pointer is also declared with attribute nonnull.  */
+	  size = size_one_node;
+	}
+      else
+	size = rwm->get (sizidx)->size;
+
+      tree ptr = access.second.ptr;
+      tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
+      if (get_size_range (size, sizrng, true)
+	  && tree_int_cst_sgn (sizrng[0]) < 0
+	  && tree_int_cst_sgn (sizrng[1]) < 0)
+	{
+	  /* Warn about negative sizes.  */
+	  bool warned = false;
+	  location_t loc = EXPR_LOCATION (exp);
+	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
+	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+				 "%Kargument %i value %E is negative",
+				 exp, sizidx + 1, size);
+	  else
+	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+				 "%Kargument %i range [%E, %E] is negative",
+				 exp, sizidx + 1, sizrng[0], sizrng[1]);
+	  if (warned)
+	    {
+	      append_attrname (access, attrstr, sizeof attrstr);
+	      /* Avoid warning again for the same attribute.  */
+	      continue;
+	    }
+	}
+
+      if (tree_int_cst_sgn (sizrng[0]) >= 0)
+	{
+	  if (COMPLETE_TYPE_P (argtype))
+	    {
+	      /* Multiple SIZE by the size of the type the pointer
+		 argument points to.  If it's incomplete the size
+		 is used as is.  */
+	      size = NULL_TREE;
+	      if (tree argsize = TYPE_SIZE_UNIT (argtype))
+		if (TREE_CODE (argsize) == INTEGER_CST)
+		  {
+		    const int prec = TYPE_PRECISION (sizetype);
+		    wide_int minsize = wi::to_wide (sizrng[0], prec);
+		    minsize *= wi::to_wide (argsize, prec);
+		    size = wide_int_to_tree (sizetype, minsize);
+		  }
+	    }
+	}
+      else
+	size = NULL_TREE;
+
+      if (sizidx >= 0
+	  && integer_zerop (ptr)
+	  && tree_int_cst_sgn (sizrng[0]) > 0)
+	{
+	  /* Warn about null pointers with positive sizes.  This is
+	     different from also declaring the pointer argument with
+	     attribute nonnull when the function accepts null pointers
+	     only when the corresponding size is zero.  */
+	  bool warned = false;
+	  location_t loc = EXPR_LOCATION (exp);
+	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
+	    warned = warning_at (loc, OPT_Wnonnull,
+				 "%Kargument %i is null but the corresponding "
+				 "size argument %i value is %E",
+				 exp, ptridx + 1, sizidx + 1, size);
+	  else
+	    warned = warning_at (loc, OPT_Wnonnull,
+				 "%Kargument %i is null but the corresponding "
+				 "size argument %i range is [%E, %E]",
+				 exp, ptridx + 1, sizidx + 1,
+				 sizrng[0], sizrng[1]);
+	  if (warned)
+	    {
+	      append_attrname (access, attrstr, sizeof attrstr);
+	      /* Avoid warning again for the same attribute.  */
+	      continue;
+	    }
+	}
+
+      tree objsize = compute_objsize (ptr, 0);
+
+      tree srcsize;
+      if (access.second.mode == attr_access::write_only)
+	{
+	  /* For a write-only argument there is no source.  */
+	  srcsize = NULL_TREE;
+	}
+      else
+	{
+	  /* For read-only and read-write attributes also set the source
+	     size.  */
+	  srcsize = objsize;
+	  if (access.second.mode == attr_access::read_only)
+	    {
+	      /* For a read-only attribute there is no destination so
+		 clear OBJSIZE.  This emits "reading N bytes" kind of
+		 diagnostics instead of the "writing N bytes" kind.  */
+	      objsize = NULL_TREE;
+	    }
+	}
+
+      /* Clear the no-warning bit in case it was set in a prior
+	 iteration so that accesses via different arguments are
+	 diagnosed.  */
+      TREE_NO_WARNING (exp) = false;
+      check_access (exp, NULL_TREE, NULL_TREE, size, /*maxread=*/ NULL_TREE,
+		    srcsize, objsize);
+
+      if (TREE_NO_WARNING (exp))
+	/* If check_access issued a warning above, append the relevant
+	   attribute to the string.  */
+	append_attrname (access, attrstr, sizeof attrstr);
+    }
+
+  if (!*attrstr)
+    return;
+
+  if (fndecl)
+    inform (DECL_SOURCE_LOCATION (fndecl),
+	    "in a call to function %qD declared with attribute %qs",
+	    fndecl, attrstr);
+  else
+    inform (EXPR_LOCATION (fndecl),
+	    "in a call with type %qT and attribute %qs",
+	    fntype, attrstr);
+
+  /* Set the bit in case if was cleared and not set above.  */
+  TREE_NO_WARNING (exp) = true;
+}
+
 /* Fill in ARGS_SIZE and ARGS array based on the parameters found in
    CALL_EXPR EXP.
 
@@ -1985,6 +2293,11 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
   /* Array for up to the two attribute alloc_size arguments.  */
   tree alloc_args[] = { NULL_TREE, NULL_TREE };
+
+  /* Map of attribute read_only, write_only, or read_write specifications
+     for function arguments.  */
+  rdwr_map rdwr_idx;
+  init_attr_rdwr_indices (&rdwr_idx, fntype);
 
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (argpos = 0; argpos < num_actuals; i--, argpos++)
@@ -2226,6 +2539,22 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	alloc_args[0] = args[i].tree_value;
       else if (argpos == alloc_idx[1])
 	alloc_args[1] = args[i].tree_value;
+
+      /* Save the actual argument that corresponds to the access attribute
+	 operand for later processing.  */
+      if (attr_access *access = rdwr_idx.get (argpos))
+	{
+	  if (POINTER_TYPE_P (type))
+	    {
+	      access->ptr = args[i].tree_value;
+	      gcc_assert (access->size == NULL_TREE);
+	    }
+	  else
+	    {
+	      access->size = args[i].tree_value;
+	      gcc_assert (access->ptr == NULL_TREE);
+	    }
+	}
     }
 
   if (alloc_args[0])
@@ -2238,6 +2567,9 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   /* Detect passing non-string arguments to functions expecting
      nul-terminated strings.  */
   maybe_warn_nonstring_arg (fndecl, exp);
+
+  /* Check read_only, write_only, and read_write arguments.  */
+  maybe_warn_rdwr_sizes (&rdwr_idx, exp);
 }
 
 /* Update ARGS_SIZE to contain the total size for the argument block.

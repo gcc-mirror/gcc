@@ -3340,7 +3340,7 @@ determine_block_size (tree len, rtx len_rtx,
    If the call is successfully verified as safe return true, otherwise
    return false.  */
 
-static bool
+bool
 check_access (tree exp, tree, tree, tree dstwrite,
 	      tree maxread, tree srcstr, tree dstsize)
 {
@@ -3436,16 +3436,26 @@ check_access (tree exp, tree, tree, tree dstwrite,
 
       bool warned;
       if (range[0] == range[1])
-	warned = warning_at (loc, opt,
-			     "%K%qD specified size %E "
-			     "exceeds maximum object size %E",
-			     exp, func, range[0], maxobjsize);
+	warned = (func
+		  ? warning_at (loc, opt,
+				"%K%qD specified size %E "
+				"exceeds maximum object size %E",
+				exp, func, range[0], maxobjsize)
+		  : warning_at (loc, opt,
+				"%Kspecified size %E "
+				"exceeds maximum object size %E",
+				exp, range[0], maxobjsize));
       else
-	warned = warning_at (loc, opt,
-			     "%K%qD specified size between %E and %E "
-			     "exceeds maximum object size %E",
-			     exp, func,
-			     range[0], range[1], maxobjsize);
+	warned = (func
+		  ? warning_at (loc, opt,
+				"%K%qD specified size between %E and %E "
+				"exceeds maximum object size %E",
+				exp, func,
+				range[0], range[1], maxobjsize)
+		  : warning_at (loc, opt,
+				"%Kspecified size between %E and %E "
+				"exceeds maximum object size %E",
+				exp, range[0], range[1], maxobjsize));
       if (warned)
 	TREE_NO_WARNING (exp) = true;
 
@@ -3474,37 +3484,69 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	  location_t loc = tree_nonartificial_location (exp);
 	  loc = expansion_point_location_if_in_system_header (loc);
 
+	  bool warned = false;
 	  if (dstwrite == slen && at_least_one)
 	    {
 	      /* This is a call to strcpy with a destination of 0 size
 		 and a source of unknown length.  The call will write
 		 at least one byte past the end of the destination.  */
-	      warning_at (loc, opt,
-			  "%K%qD writing %E or more bytes into a region "
-			  "of size %E overflows the destination",
-			  exp, func, range[0], dstsize);
+	      warned = (func
+			? warning_at (loc, opt,
+				      "%K%qD writing %E or more bytes into "
+				      "a region of size %E overflows "
+				      "the destination",
+				      exp, func, range[0], dstsize)
+			: warning_at (loc, opt,
+				      "%Kwriting %E or more bytes into "
+				      "a region of size %E overflows "
+				      "the destination",
+				      exp, range[0], dstsize));
 	    }
 	  else if (tree_int_cst_equal (range[0], range[1]))
-	    warning_n (loc, opt, tree_to_uhwi (range[0]),
-		       "%K%qD writing %E byte into a region "
-		       "of size %E overflows the destination",
-		       "%K%qD writing %E bytes into a region "
-		       "of size %E overflows the destination",
-		       exp, func, range[0], dstsize);
+	    warned = (func
+		      ? warning_n (loc, opt, tree_to_uhwi (range[0]),
+				   "%K%qD writing %E byte into a region "
+				   "of size %E overflows the destination",
+				   "%K%qD writing %E bytes into a region "
+				   "of size %E overflows the destination",
+				   exp, func, range[0], dstsize)
+		      : warning_n (loc, opt, tree_to_uhwi (range[0]),
+				   "%Kwriting %E byte into a region "
+				   "of size %E overflows the destination",
+				   "%Kwriting %E bytes into a region "
+				   "of size %E overflows the destination",
+				   exp, range[0], dstsize));
 	  else if (tree_int_cst_sign_bit (range[1]))
 	    {
 	      /* Avoid printing the upper bound if it's invalid.  */
-	      warning_at (loc, opt,
-			  "%K%qD writing %E or more bytes into a region "
-			  "of size %E overflows the destination",
-			  exp, func, range[0], dstsize);
+	      warned = (func
+			? warning_at (loc, opt,
+				      "%K%qD writing %E or more bytes into "
+				      "a region of size %E overflows "
+				      "the destination",
+				      exp, func, range[0], dstsize)
+			: warning_at (loc, opt,
+				      "%Kwriting %E or more bytes into "
+				      "a region of size %E overflows "
+				      "the destination",
+				      exp, range[0], dstsize));
 	    }
 	  else
-	    warning_at (loc, opt,
-			"%K%qD writing between %E and %E bytes into "
-			"a region of size %E overflows the destination",
-			exp, func, range[0], range[1],
-			dstsize);
+	    warned = (func
+		      ? warning_at (loc, opt,
+				    "%K%qD writing between %E and %E bytes "
+				    "into a region of size %E overflows "
+				    "the destination",
+				    exp, func, range[0], range[1],
+				    dstsize)
+		      : warning_at (loc, opt,
+				    "%Kwriting between %E and %E bytes "
+				    "into a region of size %E overflows "
+				    "the destination",
+				    exp, range[0], range[1],
+				    dstsize));
+	  if (warned)
+	    TREE_NO_WARNING (exp) = true;
 
 	  /* Return error when an overflow has been detected.  */
 	  return false;
@@ -3527,21 +3569,36 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	      if (TREE_NO_WARNING (exp))
 		return false;
 
+	      bool warned = false;
+
 	      /* Warn about crazy big sizes first since that's more
 		 likely to be meaningful than saying that the bound
 		 is greater than the object size if both are big.  */
 	      if (range[0] == range[1])
-		warning_at (loc, opt,
-			    "%K%qD specified bound %E "
-			    "exceeds maximum object size %E",
-			    exp, func,
-			    range[0], maxobjsize);
+		warned = (func
+			  ? warning_at (loc, opt,
+					"%K%qD specified bound %E "
+					"exceeds maximum object size %E",
+					exp, func, range[0], maxobjsize)
+			  : warning_at (loc, opt,
+					"%Kspecified bound %E "
+					"exceeds maximum object size %E",
+					exp, range[0], maxobjsize));
 	      else
-		warning_at (loc, opt,
-			    "%K%qD specified bound between %E and %E "
-			    "exceeds maximum object size %E",
-			    exp, func,
-			    range[0], range[1], maxobjsize);
+		warned = (func
+			  ? warning_at (loc, opt,
+					"%K%qD specified bound between "
+					"%E and %E exceeds maximum object "
+					"size %E",
+					exp, func,
+					range[0], range[1], maxobjsize)
+			  : warning_at (loc, opt,
+					"%Kspecified bound between "
+					"%E and %E exceeds maximum object "
+					"size %E",
+					exp, range[0], range[1], maxobjsize));
+	      if (warned)
+		TREE_NO_WARNING (exp) = true;
 
 	      return false;
 	    }
@@ -3551,18 +3608,34 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	      if (TREE_NO_WARNING (exp))
 		return false;
 
+	      bool warned = false;
+
 	      if (tree_int_cst_equal (range[0], range[1]))
-		warning_at (loc, opt,
-			    "%K%qD specified bound %E "
-			    "exceeds destination size %E",
-			    exp, func,
-			    range[0], dstsize);
+		warned = (func
+			  ? warning_at (loc, opt,
+					"%K%qD specified bound %E "
+					"exceeds destination size %E",
+					exp, func,
+					range[0], dstsize)
+			  : warning_at (loc, opt,
+					"%Kspecified bound %E "
+					"exceeds destination size %E",
+					exp, range[0], dstsize));
 	      else
-		warning_at (loc, opt,
-			    "%K%qD specified bound between %E and %E "
-			    "exceeds destination size %E",
-			    exp, func,
-			    range[0], range[1], dstsize);
+		warned = (func
+			  ? warning_at (loc, opt,
+					"%K%qD specified bound between %E "
+					"and %E exceeds destination size %E",
+					exp, func,
+					range[0], range[1], dstsize)
+			  : warning_at (loc, opt,
+					"%Kspecified bound between %E "
+					"and %E exceeds destination size %E",
+					exp,
+					range[0], range[1], dstsize));
+	      if (warned)
+		TREE_NO_WARNING (exp) = true;
+
 	      return false;
 	    }
 	}
@@ -3577,26 +3650,46 @@ check_access (tree exp, tree, tree, tree dstwrite,
       if (TREE_NO_WARNING (exp))
 	return false;
 
+      bool warned = false;
       location_t loc = tree_nonartificial_location (exp);
+      loc = expansion_point_location_if_in_system_header (loc);
 
       if (tree_int_cst_equal (range[0], range[1]))
-	warning_n (loc, opt, tree_to_uhwi (range[0]),
-		   "%K%qD reading %E byte from a region of size %E",
-		   "%K%qD reading %E bytes from a region of size %E",
-		    exp, func, range[0], slen);
+	warned = (func
+		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%K%qD reading %E byte from a region of size %E",
+			       "%K%qD reading %E bytes from a region of size %E",
+			       exp, func, range[0], slen)
+		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%Kreading %E byte from a region of size %E",
+			       "%Kreading %E bytes from a region of size %E",
+			       exp, range[0], slen));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
-	  warning_at (loc, opt,
-		      "%K%qD reading %E or more bytes from a region "
-		      "of size %E",
-		      exp, func, range[0], slen);
+	  warned = (func
+		    ? warning_at (loc, opt,
+				  "%K%qD reading %E or more bytes from a region "
+				  "of size %E",
+				  exp, func, range[0], slen)
+		    : warning_at (loc, opt,
+				  "%Kreading %E or more bytes from a region "
+				  "of size %E",
+				  exp, range[0], slen));
 	}
       else
-	warning_at (loc, opt,
-		    "%K%qD reading between %E and %E bytes from a region "
-		    "of size %E",
-		    exp, func, range[0], range[1], slen);
+	warned = (func
+		  ? warning_at (loc, opt,
+				"%K%qD reading between %E and %E bytes from "
+				"a region of size %E",
+				exp, func, range[0], range[1], slen)
+		  : warning_at (loc, opt,
+				"%Kreading between %E and %E bytes from "
+				"a region of size %E",
+				exp, range[0], range[1], slen));
+      if (warned)
+	TREE_NO_WARNING (exp) = true;
+
       return false;
     }
 

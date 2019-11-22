@@ -5483,7 +5483,7 @@ nonnull_check_p (tree args, unsigned HOST_WIDE_INT param_num)
 
   for (; args; args = TREE_CHAIN (args))
     {
-      bool found = get_nonnull_operand (TREE_VALUE (args), &arg_num);
+      bool found = get_attribute_operand (TREE_VALUE (args), &arg_num);
 
       gcc_assert (found);
 
@@ -5518,11 +5518,11 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     }
 }
 
-/* Helper for nonnull attribute handling; fetch the operand number
-   from the attribute argument list.  */
+/* Helper for attribute handling; fetch the operand number from
+   the attribute argument list.  */
 
 bool
-get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
+get_attribute_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 {
   /* Verify the arg number is a small constant.  */
   if (tree_fits_uhwi_p (arg_num_expr))

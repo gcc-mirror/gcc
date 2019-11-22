@@ -880,7 +880,7 @@ extern bool pointer_to_zero_sized_aggr_p (tree);
 extern bool bool_promoted_to_int_p (tree);
 extern tree fold_for_warn (tree);
 extern tree c_common_get_narrower (tree, int *);
-extern bool get_nonnull_operand (tree, unsigned HOST_WIDE_INT *);
+extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)
