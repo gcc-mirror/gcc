@@ -1899,6 +1899,11 @@ gimple_fold_builtin_strchr (gimple_stmt_iterator *gsi, bool is_strrchr)
   if (!gimple_call_lhs (stmt))
     return false;
 
+  /* Avoid folding if the first argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, str))
+    return false;
+
   if ((p = c_getstr (str)) && target_char_cst_p (c, &ch))
     {
       const char *p1 = is_strrchr ? strrchr (p, ch) : strchr (p, ch);
@@ -1973,18 +1978,23 @@ static bool
 gimple_fold_builtin_strstr (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  tree haystack = gimple_call_arg (stmt, 0);
-  tree needle = gimple_call_arg (stmt, 1);
-  const char *p, *q;
-
   if (!gimple_call_lhs (stmt))
     return false;
 
-  q = c_getstr (needle);
+  tree haystack = gimple_call_arg (stmt, 0);
+  tree needle = gimple_call_arg (stmt, 1);
+
+  /* Avoid folding if either argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, haystack)
+      || !check_nul_terminated_array (NULL_TREE, needle))
+    return false;
+
+  const char *q = c_getstr (needle);
   if (q == NULL)
     return false;
 
-  if ((p = c_getstr (haystack)))
+  if (const char *p = c_getstr (haystack))
     {
       const char *r = strstr (p, q);
 

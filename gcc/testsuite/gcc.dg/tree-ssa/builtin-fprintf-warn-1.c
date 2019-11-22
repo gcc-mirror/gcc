@@ -84,8 +84,8 @@ void test_fprintf_s_const (int width)
   if (nulptr)
     T ("%s", nulptr);
 
-  T ("%s", &chr_no_nul);          /* { dg-warning ".%s. directive argument is not a nul-terminated string" "pr88226" { xfail *-*-* } } */
-  T ("%s", arr_no_nul);           /* { dg-warning ".%s. directive argument is not a nul-terminated string" "pr88226" { xfail *-*-* } } */
+  T ("%s", &chr_no_nul);          /* { dg-warning ".%s. directive argument is not a nul-terminated string|argument missing terminating nul" } */
+  T ("%s", arr_no_nul);           /* { dg-warning ".%s. directive argument is not a nul-terminated string|argument missing terminating nul" } */
 
   /* Verify that output in excess of INT_MAX bytes is diagnosed even
      when the size of the destination object is unknown.  */
@@ -117,7 +117,7 @@ void test_fprintf_ls_const (int width)
     T ("%ls", nulptr);
 
   T ("%ls", &wchr_no_nul);        /* { dg-warning ".%ls. directive argument is not a nul-terminated string" } */
-  T ("%ls", warr_no_nul);         /* { dg-warning ".%ls. directive argument is not a nul-terminated string" "pr88211" { xfail *-*-* } } */
+  T ("%ls", warr_no_nul);         /* { dg-warning ".%ls. directive argument is not a nul-terminated string" "pr88226" { xfail *-*-* } } */
 
   /* Verify that output in excess of INT_MAX bytes is diagnosed even
      when the size of the destination object is unknown.  */

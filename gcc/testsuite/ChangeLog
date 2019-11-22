@@ -1,5 +1,11 @@
 2019-11-22  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/88226
+	* gcc.dg/Wstringop-overflow-22.c: New test.
+	* gcc.dg/tree-ssa/builtin-fprintf-warn-1.c: Remove xfails.
+
+2019-11-22  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/92501
 	* gcc.dg/strcmpopt_7.c: New test.
 

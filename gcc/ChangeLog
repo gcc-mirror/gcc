@@ -8,6 +8,39 @@
 
 2019-11-22  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/88226
+	* builtins.c (check_nul_terminated_array): New function.
+	(fold_builtin_0): Remove declaration.
+	(fold_builtin_1): Same.
+	(fold_builtin_2): Same.
+	(fold_builtin_3): Same.
+	(fold_builtin_strpbrk): Add argument.
+	(fold_builtin_strspn): Same.
+	(fold_builtin_strcspn): Same.
+	(expand_builtin_strcat): Call it.  Remove unused argument.
+	(expand_builtin_stpncpy): Same.
+	(expand_builtin_strncat): Same.
+	(expand_builtin_strncpy): Same.  Adjust indentation.
+	(expand_builtin_strcmp): Same.
+	(expand_builtin_strncmp): Same.
+	(expand_builtin_fork_or_exec): Same.
+	(expand_builtin): Handle more built-ins.
+	(fold_builtin_2): Add argument.
+	(fold_builtin_n): Make static.  Add argument.
+	(fold_call_expr): Pass new argument to fold_builtin_n and fold_builtin_2.
+	(fold_builtin_call_array): Pass new argument to fold_builtin_n.
+	(fold_builtin_strpbrk): Add argument.  Call check_nul_terminated_array.
+	(fold_call_stmt): Pass new argument to fold_builtin_n.
+	* builtins.h: Correct a comment.
+	* gimple-fold.c (gimple_fold_builtin_strchr): Call
+	check_nul_terminated_array.
+	* tree-ssa-strlen.c (handle_builtin_strlen): Call
+	check_nul_terminated_array.
+	(handle_builtin_strchr): Same.
+	(handle_builtin_string_cmp): Same.
+
+2019-11-22  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/92501
 	* gimple-fold.c ((gimple_fold_builtin_string_compare): Let strncmp
 	handle unterminated arrays.  Rename local variables for clarity.

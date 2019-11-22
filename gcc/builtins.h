@@ -91,7 +91,7 @@ struct c_strlen_data
   tree minlen;
   tree maxlen;
   tree maxbound;
-  /* When non-null, NONSTR refers to the declaration known to store
+  /* When non-null, DECL refers to the declaration known to store
      an unterminated constant character array, as in:
      const char s[] = { 'a', 'b', 'c' };
      It is used to diagnose uses of such arrays in functions such as
@@ -125,7 +125,6 @@ extern tree fold_builtin_expect (location_t, tree, tree, tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
-extern tree fold_builtin_n (location_t, tree, tree *, int, bool);
 extern bool validate_gimple_arglist (const gcall *, ...);
 extern rtx default_expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern bool fold_builtin_next_arg (tree, bool);
@@ -148,6 +147,7 @@ extern bool target_char_cst_p (tree t, char *p);
 extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
+bool check_nul_terminated_array (tree, tree, tree = NULL_TREE);
 extern void warn_string_no_nul (location_t, const char *, tree, tree);
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern bool builtin_with_linkage_p (tree);
