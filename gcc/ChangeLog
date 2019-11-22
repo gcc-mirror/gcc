@@ -1,3 +1,12 @@
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92618
+	* tree-ssa-reassoc.c (v_info): Change from auto_vec to a struct
+	containing the auto_vec and a tree.
+	(undistribute_bitref_for_vector): Handle the case when element type
+	of vec is not the same as type of the BIT_FIELD_REF.  Formatting
+	fixes.
+
 2019-11-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/83859

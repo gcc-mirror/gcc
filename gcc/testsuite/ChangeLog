@@ -1,3 +1,9 @@
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92618
+	* gcc.c-torture/compile/pr92618.c: New test.
+	* gcc.c-torture/execute/pr92618.c: New test.
+
 2019-11-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/83859
