@@ -3924,8 +3924,11 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 
   code = gimple_assign_rhs_code (orig_stmt_info->stmt);
 
-  if (reduction_type == EXTRACT_LAST_REDUCTION
-      || reduction_type == FOLD_LEFT_REDUCTION)
+  if (reduction_type == EXTRACT_LAST_REDUCTION)
+    /* No extra instructions are needed in the prologue.  The loop body
+       operations are costed in vectorizable_condition.  */
+    inside_cost = 0;
+  else if (reduction_type == FOLD_LEFT_REDUCTION)
     {
       /* No extra instructions needed in the prologue.  */
       prologue_cost = 0;
