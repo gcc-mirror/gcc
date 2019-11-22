@@ -860,7 +860,8 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 			enum vect_def_type *dt,
 			int ndts,
 			slp_tree node,
-			stmt_vector_for_cost *cost_vec)
+			stmt_vector_for_cost *cost_vec,
+			vect_cost_for_stmt kind = vector_stmt)
 {
   int inside_cost = 0, prologue_cost = 0;
 
@@ -907,7 +908,7 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
-  inside_cost += record_stmt_cost (cost_vec, ncopies, vector_stmt,
+  inside_cost += record_stmt_cost (cost_vec, ncopies, kind,
 				   stmt_info, 0, vect_body);
 
   if (dump_enabled_p ())
@@ -10084,15 +10085,18 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		return false;
 	    }
 	}
-      if (expand_vec_cond_expr_p (vectype, comp_vectype,
-				     cond_code))
-	{
-	  STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-	  vect_model_simple_cost (stmt_info, ncopies, dts, ndts, slp_node,
-				  cost_vec);
-	  return true;
-	}
-      return false;
+
+      vect_cost_for_stmt kind = vector_stmt;
+      if (reduction_type == EXTRACT_LAST_REDUCTION)
+	/* Count one reduction-like operation per vector.  */
+	kind = vec_to_scalar;
+      else if (!expand_vec_cond_expr_p (vectype, comp_vectype, cond_code))
+	return false;
+
+      STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
+      vect_model_simple_cost (stmt_info, ncopies, dts, ndts, slp_node,
+			      cost_vec, kind);
+      return true;
     }
 
   /* Transform.  */

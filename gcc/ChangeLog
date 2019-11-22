@@ -1,3 +1,11 @@
+2019-11-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vect_model_simple_cost): Take an optional
+	vect_cost_for_stmt.
+	(vectorizable_condition): Calculate the cost of EXTRACT_LAST_REDUCTION
+	here rather than...
+	* tree-vect-loop.c (vect_model_reduction_cost): ...here.
+
 2019-11-22  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (bic_f): Use cc_set_register predicate.
