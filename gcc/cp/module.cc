@@ -4146,7 +4146,7 @@ dumper::impl::nested_name (tree t)
 	  && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == t)
 	t = TI_TEMPLATE (ti);
 
-      if (DECL_LANG_SPECIFIC (t) && DECL_MODULE_IMPORT_P (t))
+      if (DECL_LANG_SPECIFIC (t) && DECL_MODULE_ORIGIN (t))
 	origin = DECL_MODULE_ORIGIN (t);
 
       t = DECL_NAME (t) ? DECL_NAME (t)
@@ -14086,7 +14086,7 @@ module_state::read_cluster (unsigned snum)
 
 	    /* If we matched a decl from this TU, it might not be an
 	       import!  */
-	    if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
+	    if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_ORIGIN (decl))
 	      {
 		/* Insert into the entity hash (it might already be
 		   there.  */

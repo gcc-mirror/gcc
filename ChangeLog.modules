@@ -1,6 +1,11 @@
 2019-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (DECL_MODULE_IMPORT_P): #ifdef out, not yet ready
+	* module.cc (dumper::impl::nested_name): Don't use it.
+	(module_state::read_cluster): Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_value): Ensure we stay in the
 	section.
 	(trees_out::mark_class_def): Do not mark non-friends on
