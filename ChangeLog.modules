@@ -1,6 +1,13 @@
 2019-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): We should not meet imported
+	internal namespaces.
+	(module_state::{read,write}): Stream entities before namespaces.
+	* name-lookup.c (add_imported_namespace): Module number must not
+	be negative.
+
+	gcc/cp/
 	* module.cc (trees_in::lang_decl_bools): Don't set module_origin
 	here.
 	(trees_out::decl_value): Stream out entity index.  Install into

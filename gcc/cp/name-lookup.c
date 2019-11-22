@@ -9070,6 +9070,7 @@ tree
 add_imported_namespace (tree ctx, tree name, int mod, location_t loc,
 			bool visible_p, bool inline_p, tree anon_name)
 {
+  gcc_checking_assert (mod >= 0);
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
   if (!decl)

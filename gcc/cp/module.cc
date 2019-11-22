@@ -7819,9 +7819,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
       int origin = -1;
       if (!TREE_PUBLIC (decl))
 	{
-	  origin = DECL_MODULE_ORIGIN (decl);
-	  if (origin)
-	    origin = (*modules)[origin]->remap;
+	  gcc_checking_assert (!DECL_MODULE_ORIGIN (decl));
+	  origin = 0;
 	}
 
       if (streaming_p ())
@@ -16699,17 +16698,17 @@ module_state::write (elf_out *to, cpp_reader *reader)
   gcc_assert (config.sec_range.second == to->get_section_limit ()
 	      && spaces.length () == n_spaces);
 
+  /* Write the entitites.  None happens if we contain namespaces or
+     nothing. */
+  if (config.num_entities)
+    write_entities (to, sccs, table, config.num_entities, &crc);
+
   /* Write the namespaces.  */
   spaces.qsort (space_cmp);
   write_namespaces (to, table, spaces, &crc);
 
   /* Write the bindings themselves.  */
   config.num_bindings = write_bindings (to, sccs, table, &crc);
-
-  /* Write the entitites.  None happens if we contain namespaces or
-     nothing. */
-  if (config.num_entities)
-    write_entities (to, sccs, table, config.num_entities, &crc);
 
   /* Write the unnamed.  */
   if (config.num_specializations)
@@ -16824,6 +16823,12 @@ module_state::read (int fd, int e, cpp_reader *reader)
       {
 	available_clusters += config.sec_range.second - config.sec_range.first;
 
+	/* Read the entity table.  */
+	entity_lwm = vec_safe_length (entity_ary);
+	if (config.num_entities
+	    && !read_entities (config.num_entities, config.sec_range))
+	  goto bail;
+
 	/* Read the namespace hierarchy. */
 	vec<tree> spaces = read_namespaces ();
 
@@ -16832,12 +16837,6 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
 	spaces.release ();
 	if (!ok)
-	  goto bail;
-
-	/* And entities.  */
-	entity_lwm = vec_safe_length (entity_ary);
-	if (config.num_entities
-	    && !read_entities (config.num_entities, config.sec_range))
 	  goto bail;
 
 	/* And unnamed.  */
@@ -16860,9 +16859,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
 		ggc_collect ();
 	      }
 	    if (CHECKING_P)
-	      {
-		// FIXME: check we loaded everything
-	      }
+	      for (unsigned ix = 0; ix != entity_num; ix++)
+		gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
 	  }
 
 	// FIXME: Belfast order-of-initialization means this may be inadequate.
