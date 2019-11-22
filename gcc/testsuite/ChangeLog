@@ -80,6 +80,11 @@
 
 2019-11-21  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.dg/darwin-comm.c: Add -fcommon to compile flags.
+	* gcc.dg/darwin-sections.c: Likewise.
+
+2019-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR testsuite/92619
 	* gcc.dg/gnu2x-attrs-1.c: Fix dg-error syntax.
 
