@@ -1,5 +1,13 @@
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/90677
+	* c-common.h (identifier_global_tag): Declare.
+	* c-format.c (get_pointer_to_named_type): Renamed to ...
+	(get_named_type): ... this.  Use identifier_global_tag instead of
+	identifier_global_value, handle the return value being a TYPE_P.
+	(init_dynamic_diag_info): Adjust get_pointer_to_named_type callers
+	to call get_named_type instead.  Formatting fixes.
+
 	Implement P1920R1, Missing feature-test macros 2017-2019.
 	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_init_captures
 	and __cpp_generic_lambdas for -std=c++2a.  Define

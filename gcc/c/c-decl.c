@@ -10168,6 +10168,20 @@ identifier_global_value	(tree t)
   return NULL_TREE;
 }
 
+/* Return the global value of tag T as a symbol.  */
+
+tree
+identifier_global_tag (tree t)
+{
+  struct c_binding *b;
+
+  for (b = I_TAG_BINDING (t); b; b = b->shadowed)
+    if (B_IN_FILE_SCOPE (b) || B_IN_EXTERNAL_SCOPE (b))
+      return b->decl;
+
+  return NULL_TREE;
+}
+
 /* Returns true if NAME refers to a built-in function or function-like
    operator.  */
 
