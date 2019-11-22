@@ -1,5 +1,13 @@
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	Implement P1920R1, Missing feature-test macros 2017-2019.
+	* g++.dg/cpp1z/feat-cxx1z.C: Only compile with -std=c++17.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust for P1920R1 changes.
+	* g++.dg/cpp2a/desig15.C: New test.
+	* g++.dg/cpp2a/lambda-pack-init3.C: New test.
+	* g++.dg/cpp2a/lambda-generic6.C: New test.
+	* g++.dg/cpp2a/consteval15.C: New test.
+
 	PR tree-optimization/92618
 	* gcc.c-torture/compile/pr92618.c: New test.
 	* gcc.c-torture/execute/pr92618.c: New test.

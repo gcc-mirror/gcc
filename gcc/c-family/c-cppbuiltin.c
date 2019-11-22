@@ -952,8 +952,11 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  /* Set feature test macros for C++14.  */
 	  cpp_define (pfile, "__cpp_return_type_deduction=201304L");
-	  cpp_define (pfile, "__cpp_init_captures=201304L");
-	  cpp_define (pfile, "__cpp_generic_lambdas=201304L");
+	  if (cxx_dialect <= cxx17)
+	    {
+	      cpp_define (pfile, "__cpp_init_captures=201304L");
+	      cpp_define (pfile, "__cpp_generic_lambdas=201304L");
+	    }
 	  if (cxx_dialect <= cxx14)
 	    cpp_define (pfile, "__cpp_constexpr=201304L");
 	  cpp_define (pfile, "__cpp_decltype_auto=201304L");
@@ -990,7 +993,12 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect > cxx17)
 	{
 	  /* Set feature test macros for C++2a.  */
+	  cpp_define (pfile, "__cpp_init_captures=201803L");
+	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
+	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
+	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
+	  cpp_define (pfile, "__cpp_consteval=201811L");
 	  cpp_define (pfile, "__cpp_constinit=201907L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806L");
 	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806L");
@@ -1000,7 +1008,6 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_concepts)
         {
           if (cxx_dialect >= cxx2a)
-            /* FIXME: Update this to the value required by the IS.  */
             cpp_define (pfile, "__cpp_concepts=201907L");
           else
             cpp_define (pfile, "__cpp_concepts=201507L");

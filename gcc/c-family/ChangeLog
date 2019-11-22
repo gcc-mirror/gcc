@@ -1,3 +1,12 @@
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P1920R1, Missing feature-test macros 2017-2019.
+	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_init_captures
+	and __cpp_generic_lambdas for -std=c++2a.  Define
+	__cpp_designated_initializers, __cpp_constexpr_in_decltype and
+	__cpp_consteval for -std=c++2a.  Remove a FIXME comment about
+	__cpp_concepts for -std=c++2a.
+
 2019-11-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/83859
