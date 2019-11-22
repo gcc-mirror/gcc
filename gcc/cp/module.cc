@@ -7333,6 +7333,16 @@ trees_out::decl_value (tree decl, depset *dep)
       tree_node (constraints);
     }
 
+  if (streaming_p ())
+    {
+      // FIXME: The number of dep_hash lookups is too damn high!
+      // We'll eventually end up with everything written here having a depset.
+      dep = dep_hash->find_entity (decl);
+      if (dep)
+	/* Do not stray outside this section.  */
+	gcc_checking_assert (dep->section == dep_hash->section);
+    }
+
   if (!type && TREE_CODE (inner) == TYPE_DECL)
     {
       /* A typedef type.  */
@@ -10435,6 +10445,7 @@ trees_out::mark_class_member (tree member, bool do_defn)
     mark_declaration (member, do_defn && has_definition (member));
 }
 
+// FIXME: When members are indexed, much of this goes away.
 void
 trees_out::mark_class_def (tree defn)
 {
@@ -10450,7 +10461,7 @@ trees_out::mark_class_def (tree defn)
 	    mark_declaration (repr, false);
       }
 
-  /* Mark the binfo heirarchy.  */
+  /* Mark the binfo hierarchy.  */
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     mark_by_value (child);
 
@@ -10481,6 +10492,7 @@ trees_out::mark_class_def (tree defn)
 
 	  if (TREE_PURPOSE (decls))
 	    {
+#if 0
 	      /* There may be decls here, that are not on the member vector.
 		 for instance forward declarations of member tagged types.  */
 	      if (TYPE_P (decl))
@@ -10491,8 +10503,10 @@ trees_out::mark_class_def (tree defn)
 	      if (DECL_P (decl))
 		{
 		  gcc_assert (DECL_CONTEXT (decl) == type);
+		  // This is wrong, we do not want to mark non-owned members
 		  mark_class_member (decl, false);
 		}
+#endif
 	    }
 	  else if (tree frnd = friend_from_decl_list (decl))
 	    {

@@ -1,3 +1,11 @@
+2019-11-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_out::decl_value): Ensure we stay in the
+	section.
+	(trees_out::mark_class_def): Do not mark non-friends on
+	CLASSTYPE_DECL_LIST.
+
 2019-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
