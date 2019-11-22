@@ -1,3 +1,11 @@
+2019-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88337 - P1327R1: Allow polymorphic typeid in constexpr.
+	* constexpr.c (potential_constant_expression_1): Allow a typeid
+	expression whose operand is of polymorphic type in constexpr in
+	C++20.
+	* rtti.c (build_typeid): Remove obsolete FIXME comment.
+
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90677
