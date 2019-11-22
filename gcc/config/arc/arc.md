@@ -1263,7 +1263,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "")
 
 (define_insn "*bic_f"
-  [(set (match_operand 3 "cc_register" "=Rcc,Rcc,Rcc")
+  [(set (match_operand 3 "cc_set_register" "")
 	(match_operator 4 "zn_compare_operator"
 	  [(and:SI (match_operand:SI 1 "register_operand" "c,0,c")
 		   (not:SI
@@ -1276,6 +1276,34 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set_attr "type" "compare,compare,compare")
    (set_attr "cond" "set_zn,set_zn,set_zn")
    (set_attr "length" "4,4,8")])
+
+(define_insn "*bic_cmp0_noout"
+  [(set (match_operand 0 "cc_set_register" "")
+	(compare:CC_ZN
+	 (and:SI (not:SI (match_operand:SI 1 "nonmemory_operand" "Lr,Cal,r"))
+		 (match_operand:SI 2 "nonmemory_operand" "r,r,Cal"))
+	 (const_int 0)))]
+  "register_operand (operands[1], SImode)
+   || register_operand (operands[2], SImode)"
+  "bic.f\\t0,%2,%1"
+  [(set_attr "type" "unary")
+   (set_attr "cond" "set_zn")
+   (set_attr "length" "4,8,8")])
+
+(define_insn "*bic_cmp0"
+  [(set (match_operand 0 "cc_set_register" "")
+	(compare:CC_ZN
+	 (and:SI (not:SI (match_operand:SI 1 "nonmemory_operand" "Lr,Cal,r"))
+		 (match_operand:SI 2 "nonmemory_operand" "r,r,Cal"))
+	 (const_int 0)))
+   (set (match_operand:SI 3 "register_operand" "=r,r,r")
+	(and:SI (not:SI (match_dup 1)) (match_dup 2)))]
+  "register_operand (operands[1], SImode)
+   || register_operand (operands[2], SImode)"
+  "bic.f\\t%3,%2,%1"
+  [(set_attr "type" "unary")
+   (set_attr "cond" "set_zn")
+   (set_attr "length" "4,8,8")])
 
 (define_expand "movdi"
   [(set (match_operand:DI 0 "move_dest_operand" "")
@@ -3761,28 +3789,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		      XEXP (operands[1], 0), XEXP (operands[1], 1));
 }
   [(set_attr "type" "unary")])
-
-;; ??? At least for ARC600, we should use sbc b,b,s12 if we want a value
-;; that is one lower if the carry flag is set.
-
-;; ??? Look up negscc insn.  See pa.md for example.
-(define_insn "*neg_scc_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=w")
-	(neg:SI (match_operator:SI 1 "proper_comparison_operator"
-		 [(reg CC_REG) (const_int 0)])))]
-  ""
-  "mov %0,-1\;sub.%D1 %0,%0,%0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "8")])
-
-(define_insn "*not_scc_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=w")
-	(not:SI (match_operator:SI 1 "proper_comparison_operator"
-		 [(reg CC_REG) (const_int 0)])))]
-  ""
-  "mov %0,1\;sub.%d1 %0,%0,%0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "8")])
 
 ; cond_exec patterns
 (define_insn "*movsi_ne"

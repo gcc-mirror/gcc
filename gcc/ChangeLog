@@ -1,3 +1,11 @@
+2019-11-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (bic_f): Use cc_set_register predicate.
+	(bic_cmp0_noout): New pattern.
+	(bic_cmp0): Likewise.
+	(neg_scc_insn): Remove pattern.
+	(not_scc_insn): Likewise.
+
 2019-11-21  Harald van Dijk  <harald@gigawatt.nl>
 
 	* doc/invoke.texi (-fcommon): Remove claim about ISO C.
