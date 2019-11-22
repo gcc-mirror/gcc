@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include <vector>
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -316,7 +317,7 @@ static void
 evaluate_conditions_for_known_args (struct cgraph_node *node,
 				    bool inline_p,
 				    vec<tree> known_vals,
-				    vec<value_range> known_value_ranges,
+				    const std::vector<value_range> &known_value_ranges,
 				    vec<ipa_agg_value_set> known_aggs,
 				    clause_t *ret_clause,
 				    clause_t *ret_nonspec_clause)
@@ -432,8 +433,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	      continue;
 	    }
 	}
-      if (0) // FIXME:
-      if (c->operand_num < (int) known_value_ranges.length ()
+      if (c->operand_num < (int) known_value_ranges.size ()
 	  && !c->agg_contents
 	  && !known_value_ranges[c->operand_num].undefined_p ()
 	  && !known_value_ranges[c->operand_num].varying_p ()
@@ -506,9 +506,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
   vec<tree> known_vals = vNULL;
-  //FIXME:
-  //auto_vec<value_range> known_value_ranges;
-  vec<value_range> known_value_ranges = vNULL;
+  std::vector<value_range> known_value_ranges (32);
   vec<ipa_agg_value_set> known_aggs = vNULL;
   class ipa_edge_args *args;
 
@@ -538,10 +536,12 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 
       if (count && (info->conds || known_vals_ptr))
 	known_vals.safe_grow_cleared (count);
-      /* FIXME:
       if (count && info->conds)
-	known_value_ranges.safe_grow_cleared (count);
-      */
+	{
+	  known_value_ranges.resize (count);
+	  for (int i = 0; i < count; ++i)
+	    known_value_ranges[i].set_undefined ();
+	}
       if (count && (info->conds || known_aggs_ptr))
 	known_aggs.safe_grow_cleared (count);
       if (count && known_contexts_ptr)
@@ -577,15 +577,9 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	    known_aggs[i] = ipa_agg_value_set_from_jfunc (caller_parms_info,
 							  caller, &jf->agg);
             if (info->conds)
-	      /* FIXME:
-              known_value_ranges[i] 
-	      */
-	      {
-		value_range tmp
+	      known_value_ranges[i]
                 = ipa_value_range_from_jfunc (caller_parms_info, e, jf,
                                               ipa_get_type (callee_pi, i));
-		(void)tmp;
-	      }
 	  }
 	else
 	  gcc_assert (callee->thunk.thunk_p);
@@ -732,7 +726,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	}
       evaluate_conditions_for_known_args (dst, false,
 					  known_vals,
-					  vNULL,
+					  std::vector<value_range> (),
 					  vNULL,
 					  &possible_truths,
 					  /* We are going to specialize,
@@ -3439,7 +3433,8 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
   clause_t clause, nonspec_clause;
 
   /* TODO: Also pass known value ranges.  */
-  evaluate_conditions_for_known_args (node, false, known_vals, vNULL,
+  evaluate_conditions_for_known_args (node, false, known_vals,
+				      std::vector<value_range> (),
 				      known_aggs, &clause, &nonspec_clause);
   ipa_call_context ctx (node, clause, nonspec_clause,
 		        known_vals, known_contexts,
