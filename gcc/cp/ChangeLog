@@ -1,3 +1,9 @@
+2019-11-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/92365
+	* name-lookup.c (check_local_shadow): Use can_convert_arg
+	instead of can_convert.
+
 2019-11-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88337 - P1327R1: Allow polymorphic typeid in constexpr.
