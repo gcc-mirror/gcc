@@ -1,3 +1,40 @@
+2019-11-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cif-code.def (MAX_INLINE_INSNS_SINGLE_O2_LIMIT): Remove.
+	* doc/invoke.texi (max-inline-insns-single-O2,
+	inline-heuristics-hint-percent-O2, inline-min-speedup-O2,
+	early-inlining-insns-O2): Remove documentation.
+	* ipa-fnsummary.c (analyze_function_body,
+	compute_fn_summary): Use opt_for_fn when accessing parameters.
+	* ipa-inline.c (caller_growth_limits, can_inline_edge_p,
+	inline_insns_auto, can_inline_edge_by_limits_p,
+	want_early_inline_function_p, big_speedup_p,
+	want_inline_small_function_p, want_inline_self_recursive_call_p,
+	recursive_inlining, compute_max_insns, inline_small_functions):
+	Likewise.
+	* opts.c (default_options): Add -O3 defaults for
+	OPT__param_early_inlining_insns_,
+	OPT__param_inline_heuristics_hint_percent_,
+	OPT__param_inline_min_speedup_, OPT__param_max_inline_insns_single_.
+	* params.opt (-param=early-inlining-insns-O2=,
+	-param=inline-heuristics-hint-percent-O2=,
+	-param=inline-min-speedup-O2=, -param=max-inline-insns-single-O2=
+	-param=early-inlining-insns=, -param=inline-heuristics-hint-percent=,
+	-param=inline-min-speedup=, -param=inline-unit-growth=,
+	-param=large-function-growth=, -param=large-stack-frame=,
+	-param=large-stack-frame-growth=, -param=large-unit-insns=,
+	-param=max-inline-insns-recursive=,
+	-param=max-inline-insns-recursive-auto=,
+	-param=max-inline-insns-single=,
+	-param=max-inline-insns-size=, -param=max-inline-insns-small=,
+	-param=max-inline-recursive-depth=,
+	-param=max-inline-recursive-depth-auto=,
+	-param=min-inline-recursive-probability=,
+	-param=partial-inlining-entry-probability=,
+	-param=uninlined-function-insns=, -param=uninlined-function-time=,
+	-param=uninlined-thunk-insns=, -param=uninlined-thunk-time=): Add
+	Optimization.
+
 2019-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-fnsummary.c: Fix comment typos.
