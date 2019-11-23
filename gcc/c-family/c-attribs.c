@@ -3840,7 +3840,7 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
   if (idxs[1])
     n2 = sprintf (attrspec + n1 + 1, "%u", (unsigned) idxs[1] - 1);
 
-  size_t newlen = n1 + n2;
+  size_t newlen = n1 + n2 + !!n2;
   char *newspec = attrspec;
 
   if (tree acs = lookup_attribute ("access", attrs))
@@ -3869,6 +3869,7 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 	  if (*attrspec != pos[-1])
 	    {
 	      /* Mismatch in access mode.  */
+	      auto_diagnostic_group d;
 	      if (warning (OPT_Wattributes,
 			   "attribute %qs mismatch with mode %qs",
 			   attrstr,
@@ -3884,6 +3885,7 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 	  if ((n2 && pos[n1 - 1] != ','))
 	    {
 	      /* Mismatch in the presence of the size argument.  */
+	      auto_diagnostic_group d;
 	      if (warning (OPT_Wattributes,
 			   "attribute %qs positional argument 2 conflicts "
 			   "with previous designation",
@@ -3897,6 +3899,7 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 	  if (!n2 && pos[n1 - 1] == ',')
 	    {
 	      /* Mismatch in the presence of the size argument.  */
+	      auto_diagnostic_group d;
 	      if (warning (OPT_Wattributes,
 			   "attribute %qs missing positional argument 2 "
 			   "provided in previous designation",
@@ -3910,6 +3913,7 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 	  if (n2 && strncmp (attrstr + n1 + 1, pos + n1, n2))
 	    {
 	      /* Mismatch in the value of the size argument.  */
+	      auto_diagnostic_group d;
 	      if (warning (OPT_Wattributes,
 			   "attribute %qs mismatch positional argument "
 			   "values %i and %i",
@@ -3929,7 +3933,7 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 	attrspec[n1] = ',';
 
       size_t len = strlen (str);
-      newspec = (char *) xmalloc (newlen + len + 1);
+      newspec = XNEWVEC (char, newlen + len + 1);
       strcpy (newspec, str);
       strcpy (newspec + len, attrspec);
       newlen += len;
@@ -3938,7 +3942,10 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
     /* Connect the two substrings formatted above into a single one.  */
     attrspec[n1] = ',';
 
-  return build_string (newlen + 1, newspec);
+  tree ret = build_string (newlen + 1, newspec);
+  if (newspec != attrspec)
+    XDELETEVEC (newspec);
+  return ret;
 }
 
 /* Handle the access attribute (read_only, write_only, and read_write).  */
@@ -4168,7 +4175,8 @@ handle_access_attribute (tree *node, tree name, tree args,
     {
       /* Repeat for the previously declared type.  */
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (node[1]));
-      tree new_attrs = append_access_attrs (node[1], attrs, attrstr, code, idxs);
+      tree new_attrs
+	= append_access_attrs (node[1], attrs, attrstr, code, idxs);
       if (!new_attrs)
 	return NULL_TREE;
 

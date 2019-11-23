@@ -1,5 +1,8 @@
 2019-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83859
+	* doc/extend.texi (attribute access): Fix a typo.
+
 	PR rtl-optimization/92610
 	* cse.c (rest_of_handle_cse2): Call cleanup_cfg (0) also if
 	cse_cfg_altered is set, even when tem is 0.
