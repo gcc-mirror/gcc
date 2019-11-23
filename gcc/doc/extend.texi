@@ -2490,7 +2490,7 @@ The following attributes are supported on most targets.
 
 The @code{access} attribute enables the detection of invalid or unsafe
 accesses by functions to which they apply to or their callers, as well
-as wite-only accesses to objects that are never read from.  Such accesses
+as write-only accesses to objects that are never read from.  Such accesses
 may be diagnosed by warnings such as @option{-Wstringop-overflow},
 @option{-Wunnitialized}, @option{-Wunused}, and others.
 
