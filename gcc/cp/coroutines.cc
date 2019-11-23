@@ -79,6 +79,104 @@ static bool coro_promise_type_found_p (tree, location_t);
   We defer the analysis and transformatin until template expansion is
   complete so that we have complete types at that time.  */
 
+
+/* The state that we collect during parsing (and template expansion) for
+   a coroutine.  */
+struct GTY((for_user)) coroutine_info
+{
+  tree function_decl; /* The original function decl.  */
+  tree promise_type; /* The cached promise type for this function.  */
+  tree handle_type;  /* The cached coroutine handle for this function.  */
+  tree self_h_proxy; /* A handle instance that is used as the proxy for the
+			one that will eventually be allocated in the coroutine
+			frame.  */
+  tree promise_proxy; /* Likewise, a proxy promise instance.  */
+  location_t first_coro_keyword; /* The location of the keyword that made this
+				    function into a coroutine.  */
+};
+
+struct coroutine_info_hasher : ggc_ptr_hash<coroutine_info>
+{
+  typedef tree compare_type; /* We only compare the function decl.  */
+  static inline hashval_t hash (coroutine_info *);
+  static inline hashval_t hash (const compare_type &);
+  static inline bool equal (coroutine_info *, coroutine_info *);
+  static inline bool equal (coroutine_info *, const compare_type &);
+};
+
+/* This table holds all the collected coroutine state for coroutines in
+   the current translation unit.  */
+
+static GTY (()) hash_table<coroutine_info_hasher> *coroutine_info_table;
+
+/* Return a hash value for the entry pointed to by INFO.
+   The compare type is a tree, but the only trees we are going use are
+   function decls.  We use the DECL_UID as the hash value since that is
+   stable across PCH.  */
+
+hashval_t
+coroutine_info_hasher::hash (coroutine_info *info)
+{
+  return DECL_UID (info->function_decl);
+}
+
+/* Return a hash value for the compare value COMP.  */
+
+hashval_t
+coroutine_info_hasher::hash (const compare_type& comp)
+{
+  return DECL_UID (comp);
+}
+
+/* Return true if the entries pointed to by LHS and RHS are for the
+   same coroutine.  */
+
+bool
+coroutine_info_hasher::equal (coroutine_info *lhs, coroutine_info *rhs)
+{
+  return lhs->function_decl == rhs->function_decl;
+}
+
+bool
+coroutine_info_hasher::equal (coroutine_info *lhs, const compare_type& rhs)
+{
+  return lhs->function_decl == rhs;
+}
+
+/* Get the existing coroutine_info for FN_DECL, or insert a new one if the
+   entry does not yet exist.  */
+
+coroutine_info *
+get_or_insert_coroutine_info (tree fn_decl)
+{
+  gcc_checking_assert (coroutine_info_table != NULL);
+
+  coroutine_info **slot = coroutine_info_table->find_slot_with_hash
+    (fn_decl, coroutine_info_hasher::hash (fn_decl), INSERT);
+
+  if (*slot == NULL)
+    {
+      *slot = new (ggc_alloc<coroutine_info> ()) coroutine_info ();
+      (*slot)->function_decl = fn_decl;
+    }
+
+  return *slot;
+}
+
+/* Get the existing coroutine_info for FN_DECL, fail if it doesn't exist.  */
+
+coroutine_info *
+get_coroutine_info (tree fn_decl)
+{
+  gcc_checking_assert (coroutine_info_table != NULL);
+
+  coroutine_info **slot = coroutine_info_table->find_slot_with_hash
+    (fn_decl, coroutine_info_hasher::hash (fn_decl), NO_INSERT);
+  if (slot)
+    return *slot;
+  return NULL;
+}
+
 /* ================= Parse, Semantics and Type checking ================= */
 
 /* This initial set of routines are helper for the parsing and template
@@ -193,24 +291,6 @@ find_promise_type (tree handle_type)
   return promise_type;
 }
 
-/* The state that we collect during parsing (and template expansion) for
-   a coroutine.  */
-struct coroutine_info
-{
-  tree promise_type; /* The cached promise type for this function.  */
-  tree handle_type;  /* The cached coroutine handle for this function.  */
-  tree self_h_proxy; /* A handle instance that is used as the proxy for the
-			one that will eventually be allocated in the coroutine
-			frame.  */
-  tree promise_proxy; /* Likewise, a proxy promise instance.  */
-  location_t first_coro_keyword; /* The location of the keyword that made this
-				    function into a coroutine.  */
-};
-
-/* This is a small map, one entry per coroutine, but placed here to avoid
-   adding this overhead to every function decl.  */
-static hash_map<tree, coroutine_info> *fn_to_coro_info;
-
 static bool
 coro_promise_type_found_p (tree fndecl, location_t loc)
 {
@@ -219,52 +299,55 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
   /* Save the coroutine data on the side to avoid the overhead on every
      function decl.  */
 
-  if (!fn_to_coro_info)
-    fn_to_coro_info = new hash_map<tree, struct coroutine_info>;
+  /* We only need one entry per coroutine in a TU, the assumption here is that
+     there are typically not 1000s.  */
+  if (coroutine_info_table == NULL)
+    coroutine_info_table = hash_table<coroutine_info_hasher>::create_ggc (11);
 
-  bool seen;
-  coroutine_info &info = fn_to_coro_info->get_or_insert (fndecl, &seen);
+  coroutine_info *coro_info = get_or_insert_coroutine_info (fndecl);
+  /* Without this, we cannot really proceed.  */
+  gcc_checking_assert (coro_info);
 
   /* If we don't already have a current promise type, try to look it up.  */
-  if (!seen || info.promise_type == NULL_TREE)
+  if (coro_info->promise_type == NULL_TREE)
     {
       /* Get the coroutine traits temple decl for the specified return and
 	 argument type list.  coroutine_traits <R, ...> */
       tree templ_decl = find_coro_traits_template_decl (loc);
       /* Find the promise type for that.  */
-      info.promise_type = find_promise_type (templ_decl);
+      coro_info->promise_type = find_promise_type (templ_decl);
 
       /* If we don't find it, punt on the rest.  */
-      if (info.promise_type == NULL_TREE)
+      if (coro_info->promise_type == NULL_TREE)
 	{
 	  error_at (loc, "unable to find the promise type for this coroutine");
 	  return false;
 	}
 
       /* Try to find the handle type for the promise.  */
-      info.handle_type = find_coro_handle_type (loc, info.promise_type);
-      if (info.handle_type == NULL_TREE)
+      tree handle_type = find_coro_handle_type (loc, coro_info->promise_type);
+      if (handle_type == NULL_TREE)
 	return false;
 
       /* Instantiate this, we're going to use it.  */
-      info.handle_type = complete_type_or_else (info.handle_type, fndecl);
+      coro_info->handle_type = complete_type_or_else (handle_type, fndecl);
       /* Diagnostic would be emitted by complete_type_or_else.  */
-      if (info.handle_type == error_mark_node)
+      if (coro_info->handle_type == error_mark_node)
 	return false;
 
       /* Build a proxy for a handle to "self" as the param to
 	 await_suspend() calls.  */
-      info.self_h_proxy
+      coro_info->self_h_proxy
 	= build_lang_decl (VAR_DECL, get_identifier ("self_h.proxy"),
-			   info.handle_type);
+			   coro_info->handle_type);
 
       /* Build a proxy for the promise so that we can perform lookups.  */
-      info.promise_proxy
+      coro_info->promise_proxy
 	= build_lang_decl (VAR_DECL, get_identifier ("promise.proxy"),
-			   info.promise_type);
+			   coro_info->promise_type);
 
       /* Note where we first saw a coroutine keyword.  */
-      info.first_coro_keyword = loc;
+      coro_info->first_coro_keyword = loc;
     }
 
   return true;
@@ -275,9 +358,7 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 static tree
 get_coroutine_promise_type (tree decl)
 {
-  gcc_checking_assert (fn_to_coro_info);
-
-  if (coroutine_info *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = get_coroutine_info (decl))
     return info->promise_type;
 
   return NULL_TREE;
@@ -286,9 +367,7 @@ get_coroutine_promise_type (tree decl)
 static tree
 get_coroutine_handle_type (tree decl)
 {
-  gcc_checking_assert (fn_to_coro_info);
-
-  if (coroutine_info *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = get_coroutine_info (decl))
     return info->handle_type;
 
   return NULL_TREE;
@@ -297,9 +376,7 @@ get_coroutine_handle_type (tree decl)
 static tree
 get_coroutine_self_handle_proxy (tree decl)
 {
-  gcc_checking_assert (fn_to_coro_info);
-
-  if (coroutine_info *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = get_coroutine_info (decl))
     return info->self_h_proxy;
 
   return NULL_TREE;
@@ -308,9 +385,7 @@ get_coroutine_self_handle_proxy (tree decl)
 static tree
 get_coroutine_promise_proxy (tree decl)
 {
-  gcc_checking_assert (fn_to_coro_info);
-
-  if (coroutine_info *info = fn_to_coro_info->get (decl))
+  if (coroutine_info *info = get_coroutine_info (decl))
     return info->promise_proxy;
 
   return NULL_TREE;
@@ -3207,3 +3282,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   return true;
 }
+
+#include "gt-cp-coroutines.h"
+

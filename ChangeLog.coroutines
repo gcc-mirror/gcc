@@ -1,3 +1,19 @@
+2019-11-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* config-lang.in (gtfiles): Add coroutines.cc.
+	* coroutines.cc (struct coroutine_info_hasher): New.
+	(coroutine_info_hasher::hash): New.
+	(coroutine_info_hasher::equal): New.
+	(get_or_insert_coroutine_info): New.
+	(get_coroutine_info): New.
+	(struct coroutine_info): Revise to use in a hash_table.
+	(coro_promise_type_found_p): Amend to use GTY coroutine_info.
+	(get_coroutine_promise_type): Likewise.
+	(get_coroutine_handle_type): Likewise.
+	(get_coroutine_self_handle_proxy): Likewise.
+	(get_coroutine_promise_proxy): Likewise.
+
 2019-11-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
