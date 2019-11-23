@@ -1,3 +1,10 @@
+2019-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/92610
+	* cse.c (rest_of_handle_cse2): Call cleanup_cfg (0) also if
+	cse_cfg_altered is set, even when tem is 0.
+	(rest_of_handle_cse_after_global_opts): Likewise.
+
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92458
