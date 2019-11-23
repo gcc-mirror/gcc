@@ -1,3 +1,8 @@
+2019-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/92610
+	* g++.dg/opt/pr92610.C: New test.
+
 2019-11-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/92365
