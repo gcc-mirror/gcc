@@ -1,5 +1,11 @@
 2019-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/92615
+	* config/i386/i386.c (ix86_md_asm_adjust): If dest_mode is
+	GET_MODE (dest), is not QImode, using ZERO_EXTEND and dest is not
+	register_operand, force x into register before storing it into dest.
+	Formatting fix.
+
 	PR middle-end/83859
 	* doc/extend.texi (attribute access): Fix a typo.
 
