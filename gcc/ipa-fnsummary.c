@@ -145,7 +145,7 @@ ipa_dump_hints (FILE *f, ipa_hints hints)
 
 /* Record SIZE and TIME to SUMMARY.
    The accounted code will be executed when EXEC_PRED is true.
-   When NONCONST_PRED is false the code will evaulate to constant and
+   When NONCONST_PRED is false the code will evaluate to constant and
    will get optimized out in specialized clones of the function.
    If CALL is true account to call_size_time_table rather than
    size_time_table.   */
@@ -171,12 +171,12 @@ ipa_fn_summary::account_size_time (int size, sreal time,
   if (nonconst_pred == false)
     return;
 
-  /* We need to create initial empty unconitional clause, but otherwie
+  /* We need to create initial empty unconditional clause, but otherwise
      we don't need to account empty times and sizes.  */
   if (!size && time == 0 && table)
     return;
 
-  /* Only for calls we are unaccounting what we previously recoreded.  */
+  /* Only for calls we are unaccounting what we previously recorded.  */
   gcc_checking_assert (time >= 0 || call);
 
   for (i = 0; vec_safe_iterate (table, i, &e); i++)
@@ -234,7 +234,7 @@ ipa_fn_summary::account_size_time (int size, sreal time,
     }
 }
 
-/* We proved E to be unreachable, redirect it to __bultin_unreachable.  */
+/* We proved E to be unreachable, redirect it to __builtin_unreachable.  */
 
 static struct cgraph_edge *
 redirect_to_unreachable (struct cgraph_edge *e)
@@ -309,9 +309,9 @@ set_hint_predicate (predicate **p, predicate new_predicate)
 }
 
 
-/* Compute what conditions may or may not hold given invormation about
+/* Compute what conditions may or may not hold given information about
    parameters.  RET_CLAUSE returns truths that may hold in a specialized copy,
-   whie RET_NONSPEC_CLAUSE returns truths that may hold in an nonspecialized
+   while RET_NONSPEC_CLAUSE returns truths that may hold in an nonspecialized
    copy when called in a given context.  It is a bitmask of conditions. Bit
    0 means that condition is known to be false, while bit 1 means that condition
    may or may not be true.  These differs - for example NOT_INLINED condition
@@ -319,7 +319,7 @@ set_hint_predicate (predicate **p, predicate new_predicate)
    the fact that parameter is indeed a constant.
 
    KNOWN_VALS is partial mapping of parameters of NODE to constant values.
-   KNOWN_AGGS is a vector of aggreggate known offset/value set for each
+   KNOWN_AGGS is a vector of aggregate known offset/value set for each
    parameter.  Return clause of possible truths.  When INLINE_P is true, assume
    that we are inlining.
 
@@ -506,12 +506,12 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 /* Work out what conditions might be true at invocation of E.
    Compute costs for inlined edge if INLINE_P is true.
 
-   Return in CLAUSE_PTR the evaluated condistions and in NONSPEC_CLAUSE_PTR
+   Return in CLAUSE_PTR the evaluated conditions and in NONSPEC_CLAUSE_PTR
    (if non-NULL) conditions evaluated for nonspecialized clone called
    in a given context.
 
    KNOWN_VALS_PTR and KNOWN_AGGS_PTR must be non-NULL and will be filled by
-   known canstant and aggregate values of parameters.
+   known constant and aggregate values of parameters.
 
    KNOWN_CONTEXT_PTR, if non-NULL, will be filled by polymorphic call contexts
    of parameter used by a polymorphic call.  */
@@ -784,7 +784,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
       info->account_size_time (0, 0, true_pred, true_pred);
 
       /* Remap size_time vectors.
-         Simplify the predicate by prunning out alternatives that are known
+         Simplify the predicate by pruning out alternatives that are known
          to be false.
          TODO: as on optimization, we can also eliminate conditions known
          to be true.  */
@@ -822,7 +822,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	  edge_set_predicate (edge, &new_predicate);
 	}
 
-      /* Remap indirect edge predicates with the same simplificaiton as above. 
+      /* Remap indirect edge predicates with the same simplification as above.
          Also copy constantness arrays.   */
       for (edge = dst->indirect_calls; edge; edge = next)
 	{
@@ -847,7 +847,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
       /* If inliner or someone after inliner will ever start producing
          non-trivial clones, we will get trouble with lack of information
          about updating self sizes, because size vectors already contains
-         sizes of the calees.  */
+         sizes of the callees.  */
       gcc_assert (!inlined_to_p || !optimized_out_size);
     }
   else
@@ -1202,7 +1202,7 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 
       /* Casts of parameters, loads from parameters passed by reference
          and stores to return value or parameters are often free after
-         inlining dua to SRA and further combining.
+         inlining due to SRA and further combining.
          Assume that half of statements goes away.  */
       if (CONVERT_EXPR_CODE_P (rhs_code)
 	  || rhs_code == VIEW_CONVERT_EXPR
@@ -1256,12 +1256,12 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 	    lhs_free = true;
 
 	  /* Writes to parameters, parameters passed by value and return value
-	     (either dirrectly or passed via invisible reference) are free.  
+	     (either directly or passed via invisible reference) are free.  
 
 	     TODO: We ought to handle testcase like
 	     struct a {int a,b;};
 	     struct a
-	     retrurnsturct (void)
+	     returnstruct (void)
 	     {
 	     struct a a ={1,2};
 	     return a;
@@ -1269,7 +1269,7 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 
 	     This translate into:
 
-	     retrurnsturct ()
+	     returnstruct ()
 	     {
 	     int a$b;
 	     int a$a;
@@ -1467,7 +1467,7 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	  enum tree_code this_code = (e->flags & EDGE_TRUE_VALUE
 				      ? code : inverted_code);
 	  /* invert_tree_comparison will return ERROR_MARK on FP
-	     comparsions that are not EQ/NE instead of returning proper
+	     comparisons that are not EQ/NE instead of returning proper
 	     unordered one.  Be sure it is not confused with NON_CONSTANT.
 
 	     And if the edge's target is the final block of diamond CFG graph
@@ -1498,7 +1498,7 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
      Here we can predicate nonconstant_code.  We can't
      really handle constant_code since we have no predicate
      for this and also the constant code is not known to be
-     optimized away when inliner doen't see operand is constant.
+     optimized away when inliner doesn't see operand is constant.
      Other optimizers might think otherwise.  */
   if (gimple_cond_code (last) != NE_EXPR
       || !integer_zerop (gimple_cond_rhs (last)))
@@ -1921,7 +1921,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
   int base_index;
   struct agg_position_info aggpos;
 
-  /* What statments might be optimized away
+  /* What statements might be optimized away
      when their arguments are constant.  */
   if (gimple_code (stmt) != GIMPLE_ASSIGN
       && gimple_code (stmt) != GIMPLE_COND
@@ -2004,7 +2004,7 @@ struct record_modified_bb_info
   gimple *stmt;
 };
 
-/* Value is initialized in INIT_BB and used in USE_BB.  We want to copute
+/* Value is initialized in INIT_BB and used in USE_BB.  We want to compute
    probability how often it changes between USE_BB.
    INIT_BB->count/USE_BB->count is an estimate, but if INIT_BB
    is in different loop nest, we can do better.
@@ -2333,7 +2333,7 @@ find_foldable_builtin_expect (basic_block bb)
    presence of EH and will be optimized out by optimize_clobbers later in the
    game. 
 
-   NEED_EH is used to recurse in case the clobber has non-EH predecestors
+   NEED_EH is used to recurse in case the clobber has non-EH predecessors
    that can be clobber only, too.. When it is false, the RESX is not necessary
    on the end of basic block.  */
 
@@ -2367,7 +2367,7 @@ clobber_only_eh_bb_p (basic_block bb, bool need_eh = true)
       return false;
     }
 
-  /* See if all predecestors are either throws or clobber only BBs.  */
+  /* See if all predecessors are either throws or clobber only BBs.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
     if (!(e->flags & EDGE_EH)
 	&& !clobber_only_eh_bb_p (e->src, false))
@@ -2543,7 +2543,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  predicate will_be_nonconstant;
 
           /* This relation stmt should be folded after we remove
-             buildin_expect call. Adjust the cost here.  */
+             __builtin_expect call. Adjust the cost here.  */
 	  if (stmt == fix_builtin_expect_stmt)
             {
               this_size--;
@@ -2609,7 +2609,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		}
 	    }
 
-	  /* TODO: When conditional jump or swithc is known to be constant, but
+	  /* TODO: When conditional jump or switch is known to be constant, but
 	     we did not translate it into the predicates, we really can account
 	     just maximum of the possible paths.  */
 	  if (fbi.info)
@@ -3066,7 +3066,7 @@ estimate_calls_size_and_time_1 (struct cgraph_node *node, int *size,
 	  || es->predicate->evaluate (possible_truths))
 	{
 	  /* Predicates of calls shall not use NOT_CHANGED codes,
-	     sowe do not need to compute probabilities.  */
+	     so we do not need to compute probabilities.  */
 	  estimate_edge_size_and_time (e, size,
 				       es->predicate ? NULL : min_size,
 				       time,
@@ -3239,7 +3239,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 }
 
 /* Default constructor for ipa call context.
-   Memory alloction of known_vals, known_contexts
+   Memory allocation of known_vals, known_contexts
    and known_aggs vectors is owned by the caller, but can
    be release by ipa_call_context::release.  
    
@@ -3334,7 +3334,7 @@ ipa_call_context::duplicate_from (const ipa_call_context &ctx)
 
 /* Release memory used by known_vals/contexts/aggs vectors.
    If ALL is true release also inline_param_summary.
-   This happens when context was previously duplciated to be stored
+   This happens when context was previously duplicated to be stored
    into cache.  */
 
 void
@@ -3471,7 +3471,7 @@ ipa_call_context::equal_to (const ipa_call_context &ctx)
 }
 
 /* Estimate size and time needed to execute call in the given context.
-   Additionally detemine hints determined by the context.  Finally compute
+   Additionally determine hints determined by the context.  Finally compute
    minimal size needed for the call that is independent on the call context and
    can be used for fast estimates.  Return the values in RET_SIZE,
    RET_MIN_SIZE, RET_TIME and RET_HINTS.  */
@@ -3575,7 +3575,7 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
   gcc_checking_assert ((nonspecialized_time - time * 99 / 100) >= -1);
 
   /* Roundoff issues may make specialized time bigger than nonspecialized
-     time.  We do not really want that to happen because some heurstics
+     time.  We do not really want that to happen because some heuristics
      may get confused by seeing negative speedups.  */
   if (time > nonspecialized_time)
     time = nonspecialized_time;
@@ -3684,7 +3684,7 @@ inline_update_callee_summaries (struct cgraph_node *node, int depth)
 
 /* Update change_prob of EDGE after INLINED_EDGE has been inlined.
    When function A is inlined in B and A calls C with parameter that
-   changes with probability PROB1 and C is known to be passthroug
+   changes with probability PROB1 and C is known to be passthrough
    of argument if B that change with probability PROB2, the probability
    of change is now PROB1*PROB2.  */
 

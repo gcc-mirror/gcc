@@ -444,8 +444,8 @@ dump_clause (FILE *f, conditions conds, clause_t clause)
 }
 
 
-/* Dump THIS to F. CONDS a vector of conditions used when evauating
-   predicats. When NL is true new line is output at the end of dump.  */
+/* Dump THIS to F.  CONDS a vector of conditions used when evaluating
+   predicates.  When NL is true new line is output at the end of dump.  */
 
 void
 predicate::dump (FILE *f, conditions conds, bool nl) const
@@ -495,7 +495,7 @@ predicate::remap_after_duplication (clause_t possible_truths)
 
    INFO is ipa_fn_summary of function we are adding predicate into, CALLEE_INFO
    is summary of function predicate P is from. OPERAND_MAP is array giving
-   callee formal IDs the caller formal IDs. POSSSIBLE_TRUTHS is clausule of all
+   callee formal IDs the caller formal IDs. POSSSIBLE_TRUTHS is clause of all
    callee conditions that may be true in caller context.  TOPLEV_PREDICATE is
    predicate under which callee is executed.  OFFSET_MAP is an array of of
    offsets that need to be added to conditions, negative offset means that

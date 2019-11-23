@@ -1,5 +1,24 @@
 2019-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* ipa-fnsummary.c: Fix comment typos.
+	* ipa-ref.h: Likewise.
+	* ipa-predicate.h: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-predicate.c: Likewise.
+	* ipa-devirt.c: Likewise.
+	* ipa-icf.h: Likewise.
+	* profile-count.c: Likewise.
+	* ipa-icf.c: Likewise.
+	(sem_function::equals_wpa): Fix typos in dump messages.
+	* ipa-icf-gimple.h: Fix comment typos.
+	* ipa-inline-transform.c: Likewise.
+	* ipa-polymorphic-call.c: Likewise.
+	* ipa-fnsummary.h: Likewise.
+	* ipa-inline.c: Likewise.
+	(dump_inline_stats): Fix typo in debug dump message.
+	* profile-count.h: Fix comment typos.
+
 	PR target/92615
 	* config/i386/i386.c (ix86_md_asm_adjust): If dest_mode is
 	GET_MODE (dest), is not QImode, using ZERO_EXTEND and dest is not

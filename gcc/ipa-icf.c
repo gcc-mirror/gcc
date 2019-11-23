@@ -300,7 +300,7 @@ sem_function::get_hash (void)
 
 /* Compare properties of symbols N1 and N2 that does not affect semantics of
    symbol itself but affects semantics of its references from USED_BY (which
-   may be NULL if it is unknown).  If comparsion is false, symbols
+   may be NULL if it is unknown).  If comparison is false, symbols
    can still be merged but any symbols referring them can't.
 
    If ADDRESS is true, do extra checking needed for IPA_REF_ADDR.
@@ -550,7 +550,7 @@ sem_function::equals_wpa (sem_item *item,
 
   if (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl)
        != DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (item->decl))
-    return return_false_with_msg ("intrument function entry exit "
+    return return_false_with_msg ("instrument function entry exit "
 				  "attributes are different");
 
   if (DECL_NO_LIMIT_STACK (decl) != DECL_NO_LIMIT_STACK (item->decl))
@@ -576,7 +576,7 @@ sem_function::equals_wpa (sem_item *item,
       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
     {
       if (TREE_CODE (TREE_TYPE (item->decl)) != METHOD_TYPE)
-        return return_false_with_msg ("DECL_CXX_CONSTURCTOR type mismatch");
+        return return_false_with_msg ("DECL_CXX_CONSTRUCTOR type mismatch");
       else if (!func_checker::compatible_polymorphic_types_p
 		 (TYPE_METHOD_BASETYPE (TREE_TYPE (decl)),
 		  TYPE_METHOD_BASETYPE (TREE_TYPE (item->decl)), false))
@@ -726,7 +726,7 @@ sem_function::equals_wpa (sem_item *item,
 }
 
 /* Update hash by address sensitive references. We iterate over all
-   sensitive references (address_matters_p) and we hash ultime alias
+   sensitive references (address_matters_p) and we hash ultimate alias
    target of these nodes, which can improve a semantic item hash.
 
    Also hash in referenced symbols properties.  This can be done at any time
@@ -1114,7 +1114,7 @@ sem_function::merge (sem_item *alias_item)
         }
       /* Do not turn function in one comdat group into wrapper to another
 	 comdat group. Other compiler producing the body of the
-	 another comdat group may make opossite decision and with unfortunate
+	 another comdat group may make opposite decision and with unfortunate
 	 linker choices this may close a loop.  */
       else if (DECL_COMDAT_GROUP (original->decl)
 	       && DECL_COMDAT_GROUP (alias->decl)
@@ -1160,7 +1160,7 @@ sem_function::merge (sem_item *alias_item)
       else
         create_wrapper = true;
 
-      /* We can redirect local calls in the case both alias and orignal
+      /* We can redirect local calls in the case both alias and original
 	 are not interposable.  */
       redirect_callers
 	= alias->get_availability () > AVAIL_INTERPOSABLE
@@ -1989,7 +1989,7 @@ sem_variable::merge (sem_item *alias_item)
       return false;
     }
 
-  /* We cannot merge if address comparsion metters.  */
+  /* We cannot merge if address comparison matters.  */
   if (alias_address_matters && flag_merge_constants < 2)
     {
       if (dump_enabled_p ())
@@ -3420,7 +3420,7 @@ sem_item_optimizer::fixup_points_to_sets (void)
 	  fixup_pt_set (&SSA_NAME_PTR_INFO (name)->pt);
       fixup_pt_set (&fn->gimple_df->escaped);
 
-       /* The above get's us to 99% I guess, at least catching the
+       /* The above gets us to 99% I guess, at least catching the
 	  address compares.  Below also gets us aliasing correct
 	  but as said we're giving leeway to the situation with
 	  readonly vars anyway, so ... */
@@ -3505,7 +3505,7 @@ ipa_icf_read_summary (void)
   optimizer->register_hooks ();
 }
 
-/* Semantic equality exection function.  */
+/* Semantic equality execution function.  */
 
 static unsigned int
 ipa_icf_driver (void)
