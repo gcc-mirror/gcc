@@ -2397,9 +2397,9 @@ fp_expression_p (gimple *stmt)
 static void
 analyze_function_body (struct cgraph_node *node, bool early)
 {
-  sreal time = param_uninlined_function_time;
+  sreal time = opt_for_fn (node->decl, param_uninlined_function_time);
   /* Estimate static overhead for function prologue/epilogue and alignment. */
-  int size = param_uninlined_function_insns;
+  int size = opt_for_fn (node->decl, param_uninlined_function_insns);
   /* Benefits are scaled by probability of elimination that is in range
      <0,2>.  */
   basic_block bb;
@@ -2465,9 +2465,11 @@ analyze_function_body (struct cgraph_node *node, bool early)
   info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  info->account_size_time (param_uninlined_function_insns
+  info->account_size_time (opt_for_fn (node->decl,
+				param_uninlined_function_insns)
 			   * ipa_fn_summary::size_scale,
-			   param_uninlined_function_time,
+			   opt_for_fn (node->decl,
+				param_uninlined_function_time),
 			   bb_predicate,
 		           bb_predicate);
 
@@ -2865,8 +2867,10 @@ compute_fn_summary (struct cgraph_node *node, bool early)
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
       info->account_size_time (ipa_fn_summary::size_scale
-			       * param_uninlined_function_thunk_insns,
-			       param_uninlined_function_thunk_time, t, t);
+			       * opt_for_fn (node->decl,
+				 param_uninlined_function_thunk_insns),
+			       opt_for_fn (node->decl,
+				 param_uninlined_function_thunk_time), t, t);
       t = predicate::not_inlined ();
       info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
       ipa_update_overall_fn_summary (node);

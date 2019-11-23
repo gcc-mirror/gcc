@@ -544,6 +544,10 @@ static const struct default_options default_options_table[] =
 
     /* -O3 parameters.  */
     { OPT_LEVELS_3_PLUS, OPT__param_max_inline_insns_auto_, NULL, 30 },
+    { OPT_LEVELS_3_PLUS, OPT__param_early_inlining_insns_, NULL, 14 },
+    { OPT_LEVELS_3_PLUS, OPT__param_inline_heuristics_hint_percent_, NULL, 600 },
+    { OPT_LEVELS_3_PLUS, OPT__param_inline_min_speedup_, NULL, 15 },
+    { OPT_LEVELS_3_PLUS, OPT__param_max_inline_insns_single_, NULL, 200 },
 
     /* -Ofast adds optimizations to -O3.  */
     { OPT_LEVELS_FAST, OPT_ffast_math, NULL, 1 },

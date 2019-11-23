@@ -1,3 +1,15 @@
+2019-11-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr53844.C: Drop -O2 from param name.
+	* g++.dg/tree-ssa/pr61034.C: Likewise.
+	* g++.dg/tree-ssa/pr8781.C: Likewise.
+	* g++.dg/warn/Wstringop-truncation-1.C: Likewise.
+	* gcc.dg/ipa/pr63416.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Likewise.
+	* gcc.dg/vect/pr66142.c: Likewise.
+	* gcc.dg/winline-3.c: Likewise.
+	* gcc.target/powerpc/pr72804.c: Likewise.
+
 2019-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92615

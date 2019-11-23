@@ -11281,16 +11281,11 @@ when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
 @item max-inline-insns-single
-@item max-inline-insns-single-O2
 Several parameters control the tree inliner used in GCC@.  This number sets the
 maximum number of instructions (counted in GCC's internal representation) in a
 single function that the tree inliner considers for inlining.  This only
 affects functions declared inline and methods implemented in a class
 declaration (C++). 
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-single} is
-applied. In other cases @option{max-inline-insns-single-O2} is applied.
 
 
 @item max-inline-insns-auto
@@ -11317,16 +11312,10 @@ Extra time accounted by inliner for function overhead such as time needed to
 execute function prologue and epilogue
 
 @item inline-heuristics-hint-percent
-@item inline-heuristics-hint-percent-O2
 The scale (in percents) applied to @option{inline-insns-single},
 @option{inline-insns-single-O2}, @option{inline-insns-auto}
 when inline heuristics hints that inlining is
 very profitable (will enable later optimizations).
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter
-@option{inline-heuristics-hint-percent} is applied. In other cases
-@option{inline-heuristics-hint-percent-O2} is applied.
 
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
@@ -11334,15 +11323,10 @@ Same as @option{--param uninlined-function-insns} and
 @option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
-@item inline-min-speedup-O2
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{inline-min-speedup} is
-applied. In other cases @option{inline-min-speedup-O2} is applied.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -11421,13 +11405,8 @@ via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
 
 @item early-inlining-insns
-@item early-inlining-insns-O2
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{early-inlining-insns} is
-applied. In other cases @option{early-inlining-insns-O2} is applied.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
