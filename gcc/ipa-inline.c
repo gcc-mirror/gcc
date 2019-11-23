@@ -178,13 +178,13 @@ caller_growth_limits (struct cgraph_edge *e)
   if (limit < what_size_info->self_size)
     limit = what_size_info->self_size;
 
-  limit += limit * param_large_function_growth / 100;
+  limit += limit * opt_for_fn (to->decl, param_large_function_growth) / 100;
 
   /* Check the size after inlining against the function limits.  But allow
      the function to shrink if it went over the limits by forced inlining.  */
   newsize = estimate_size_after_inlining (to, e);
   if (newsize >= ipa_size_summaries->get (what)->size
-      && newsize > param_large_function_insns
+      && newsize > opt_for_fn (to->decl, param_large_function_insns)
       && newsize > limit)
     {
       e->inline_failed = CIF_LARGE_FUNCTION_GROWTH_LIMIT;
@@ -200,7 +200,8 @@ caller_growth_limits (struct cgraph_edge *e)
      on every invocation of the caller (i.e. its call statement dominates
      exit block).  We do not track this information, yet.  */
   stack_size_limit += ((gcov_type)stack_size_limit
-		       * param_stack_frame_growth / 100);
+		       * opt_for_fn (to->decl, param_stack_frame_growth)
+		       / 100);
 
   inlined_stack = (ipa_get_stack_frame_offset (to)
 		   + outer_info->estimated_self_stack_size
@@ -213,7 +214,7 @@ caller_growth_limits (struct cgraph_edge *e)
 	 This bit overoptimistically assume that we are good at stack
 	 packing.  */
       && inlined_stack > ipa_fn_summaries->get (to)->estimated_stack_size
-      && inlined_stack > param_large_stack_frame)
+      && inlined_stack > opt_for_fn (to->decl, param_large_stack_frame))
     {
       e->inline_failed = CIF_LARGE_STACK_FRAME_GROWTH_LIMIT;
       return false;
@@ -395,20 +396,10 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 static int
 inline_insns_single (cgraph_node *n, bool hint)
 {
-  if (opt_for_fn (n->decl, optimize) >= 3)
-    {
-      if (hint)
-	return param_max_inline_insns_single
-	       * param_inline_heuristics_hint_percent / 100;
-      return param_max_inline_insns_single;
-    }
-  else
-    {
-      if (hint)
-	return param_max_inline_insns_single_o2
-	       * param_inline_heuristics_hint_percent_o2 / 100;
-      return param_max_inline_insns_single_o2;
-    }
+  if (hint)
+    return opt_for_fn (n->decl, param_max_inline_insns_single)
+	   * opt_for_fn (n->decl, param_inline_heuristics_hint_percent) / 100;
+  return opt_for_fn (n->decl, param_max_inline_insns_single);
 }
 
 /* Return inlining_insns_auto limit for function N. If HINT is true
@@ -419,7 +410,8 @@ inline_insns_auto (cgraph_node *n, bool hint)
 {
   int max_inline_insns_auto = opt_for_fn (n->decl, param_max_inline_insns_auto);
   if (hint)
-    return max_inline_insns_auto * param_inline_heuristics_hint_percent / 100;
+    return max_inline_insns_auto
+	   * opt_for_fn (n->decl, param_inline_heuristics_hint_percent) / 100;
   return max_inline_insns_auto;
 }
 
@@ -563,7 +555,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
 	       > opt_for_fn (caller->decl, optimize_size))
 	{
 	  int growth = estimate_edge_growth (e);
-	  if (growth > param_max_inline_insns_size
+	  if (growth > opt_for_fn (caller->decl, param_max_inline_insns_size)
 	      && (!DECL_DECLARED_INLINE_P (callee->decl)
 		  && growth >= MAX (inline_insns_single (caller, false),
 				    inline_insns_auto (caller, false))))
@@ -675,9 +667,7 @@ want_early_inline_function_p (struct cgraph_edge *e)
       /* First take care of very large functions.  */
       int min_growth = estimate_min_edge_growth (e), growth = 0;
       int n;
-      int early_inlining_insns = opt_for_fn (e->caller->decl, optimize) >= 3
-				 ? param_early_inlining_insns
-				 : param_early_inlining_insns_o2;
+      int early_inlining_insns = param_early_inlining_insns;
 
       if (min_growth > early_inlining_insns)
 	{
@@ -824,9 +814,7 @@ big_speedup_p (struct cgraph_edge *e)
   cgraph_node *caller = (e->caller->inlined_to
 			 ? e->caller->inlined_to
 			 : e->caller);
-  int limit = opt_for_fn (caller->decl, optimize) >= 3
-	      ? param_inline_min_speedup
-	      : param_inline_min_speedup_o2;
+  int limit = opt_for_fn (caller->decl, param_inline_min_speedup);
 
   if ((time - inlined_time) * 100 > time * limit)
     return true;
@@ -841,6 +829,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 {
   bool want_inline = true;
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
+  cgraph_node *to  = (e->caller->inlined_to
+		      ? e->caller->inlined_to : e->caller);
 
   /* Allow this function to be called before can_inline_edge_p,
      since it's usually cheaper.  */
@@ -876,9 +866,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 			    ? CIF_MAX_INLINE_INSNS_SINGLE_LIMIT
 			    : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
       else
-	e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
-			      ? CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT
-			      : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
+	e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
   else
@@ -890,7 +878,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 				   | INLINE_HINT_loop_iterations
 				   | INLINE_HINT_loop_stride));
 
-      if (growth <= param_max_inline_insns_size)
+      if (growth <= opt_for_fn (to->decl,
+				param_max_inline_insns_size))
 	;
       /* Apply param_max_inline_insns_single limit.  Do not do so when
 	 hints suggests that inlining given function is very profitable.
@@ -902,15 +891,13 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 		   || growth >= inline_insns_single (e->caller, true)
 		   || !big_speedup_p (e)))
 	{
-	  if (opt_for_fn (e->caller->decl, optimize) >= 3)
-            e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
-	  else
-            e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_O2_LIMIT;
+          e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
 	}
       else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	       && !opt_for_fn (e->caller->decl, flag_inline_functions)
-	       && growth >= param_max_inline_insns_small)
+	       && growth >= opt_for_fn (to->decl,
+					param_max_inline_insns_small))
 	{
 	  /* growth_positive_p is expensive, always test it last.  */
           if (growth >= inline_insns_single (e->caller, false)
@@ -951,7 +938,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 }
 
 /* EDGE is self recursive edge.
-   We hand two cases - when function A is inlining into itself
+   We handle two cases - when function A is inlining into itself
    or when function A is being inlined into another inliner copy of function
    A within function B.  
 
@@ -970,10 +957,12 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
   char const *reason = NULL;
   bool want_inline = true;
   sreal caller_freq = 1;
-  int max_depth = param_max_inline_recursive_depth_auto;
+  int max_depth = opt_for_fn (outer_node->decl,
+			      param_max_inline_recursive_depth_auto);
 
   if (DECL_DECLARED_INLINE_P (edge->caller->decl))
-    max_depth = param_max_inline_recursive_depth;
+    max_depth = opt_for_fn (outer_node->decl,
+			    param_max_inline_recursive_depth);
 
   if (!edge->maybe_hot_p ())
     {
@@ -1035,7 +1024,8 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
     {
       if (edge->sreal_frequency () * 100
           <= caller_freq
-	     * param_min_inline_recursive_probability)
+	     * opt_for_fn (outer_node->decl,
+			   param_min_inline_recursive_probability))
 	{
 	  reason = "frequency of recursive call is too small";
 	  want_inline = false;
@@ -1241,7 +1231,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	      /* ... or when early optimizers decided to split and edge
 		 frequency still indicates splitting is a win ... */
 	      || (callee->split_part && !caller->split_part
-		  && freq * 100 < param_partial_inlining_entry_probability
+		  && freq * 100
+			 < opt_for_fn (caller->decl,
+				       param_partial_inlining_entry_probability)
 		  /* ... and do not overwrite user specified hints.   */
 		  && (!DECL_DECLARED_INLINE_P (edge->callee->decl)
 		      || DECL_DECLARED_INLINE_P (caller->decl)))))
@@ -1599,7 +1591,10 @@ static bool
 recursive_inlining (struct cgraph_edge *edge,
 		    vec<cgraph_edge *> *new_edges)
 {
-  int limit = param_max_inline_insns_recursive_auto;
+  cgraph_node *to  = (edge->caller->inlined_to
+		      ? edge->caller->inlined_to : edge->caller);
+  int limit = opt_for_fn (to->decl,
+			  param_max_inline_insns_recursive_auto);
   edge_heap_t heap (sreal::min ());
   struct cgraph_node *node;
   struct cgraph_edge *e;
@@ -1612,7 +1607,7 @@ recursive_inlining (struct cgraph_edge *edge,
     node = node->inlined_to;
 
   if (DECL_DECLARED_INLINE_P (node->decl))
-    limit = param_max_inline_insns_recursive;
+    limit = opt_for_fn (to->decl, param_max_inline_insns_recursive);
 
   /* Make sure that function is small enough to be considered for inlining.  */
   if (estimate_size_after_inlining (node, edge)  >= limit)
@@ -1735,14 +1730,14 @@ recursive_inlining (struct cgraph_edge *edge,
    allow the unit to grow.  */
 
 static int
-compute_max_insns (int insns)
+compute_max_insns (cgraph_node *node, int insns)
 {
   int max_insns = insns;
-  if (max_insns < param_large_unit_insns)
-    max_insns = param_large_unit_insns;
+  if (max_insns < opt_for_fn (node->decl, param_large_unit_insns))
+    max_insns = opt_for_fn (node->decl, param_large_unit_insns);
 
   return ((int64_t) max_insns
-	  * (100 + param_inline_unit_growth) / 100);
+	  * (100 + opt_for_fn (node->decl, param_inline_unit_growth)) / 100);
 }
 
 
@@ -1906,7 +1901,7 @@ inline_small_functions (void)
   struct cgraph_edge *edge;
   edge_heap_t edge_heap (sreal::min ());
   auto_bitmap updated_nodes;
-  int min_size, max_size;
+  int min_size;
   auto_vec<cgraph_edge *> new_indirect_edges;
   int initial_size = 0;
   struct cgraph_node **order = XCNEWVEC (cgraph_node *, symtab->cgraph_count);
@@ -1973,7 +1968,6 @@ inline_small_functions (void)
 	     initial_size);
 
   overall_size = initial_size;
-  max_size = compute_max_insns (overall_size);
   min_size = overall_size;
 
   /* Populate the heap with all edges we might inline.  */
@@ -2141,7 +2135,9 @@ inline_small_functions (void)
 	    edge_badness (edge, true);
 	}
 
-      if (overall_size + growth > max_size
+      where = edge->caller;
+
+      if (overall_size + growth > compute_max_insns (where, min_size)
 	  && !DECL_DISREGARD_INLINE_LIMITS (callee->decl))
 	{
 	  edge->inline_failed = CIF_INLINE_UNIT_GROWTH_LIMIT;
@@ -2164,7 +2160,6 @@ inline_small_functions (void)
 	 specific inliner.  */
       if (edge->recursive_p ())
 	{
-	  where = edge->caller;
 	  if (where->inlined_to)
 	    where = where->inlined_to;
 	  if (!recursive_inlining (edge,
@@ -2278,7 +2273,6 @@ inline_small_functions (void)
       if (min_size > overall_size)
 	{
 	  min_size = overall_size;
-	  max_size = compute_max_insns (min_size);
 
 	  if (dump_file)
 	    fprintf (dump_file, "New minimal size reached: %i\n", min_size);
