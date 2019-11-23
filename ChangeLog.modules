@@ -1,3 +1,11 @@
+2019-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cxx-mapper.cc (DOT_REPLACE, COLON_REPLACE): New.
+	(module2bmi): Use them.
+	gcc/testsuite/
+	* g++.dg/modues/modules.exp (dg-module-cmi): Update default mapping.
+
 2019-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

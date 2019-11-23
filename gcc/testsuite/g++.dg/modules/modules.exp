@@ -83,10 +83,10 @@ proc dg-module-cmi { args } {
 	    }
 	    set path [file split $cmi]
 	    # subst /../ -> /!!/
-	    set rplac [lmap elt $path {expr {$elt == ".." ? "!!" : $elt}}]
+	    set rplac [lmap elt $path {expr {$elt == ".." ? ",," : $elt}}]
 	    set cmi [file join {*}$rplac]
 	} else {
-	    set cmi "$name.gcm"
+	    set cmi "[regsub : $name -].gcm"
 	}
 	global DEFAULT_REPO
 	set cmi "$DEFAULT_REPO/$cmi"

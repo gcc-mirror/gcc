@@ -91,6 +91,9 @@ typedef void (*sighandler_t) (int);
 #define IS_HEADER_NAME(STR) \
   (IS_ABSOLUTE_PATH (STR) || ((STR)[0] == '.' && IS_DIR_SEPARATOR ((STR)[1])))
 
+#define DOT_REPLACE ','
+#define COLON_REPLACE '-'
+
 /* Mapper Protocol version.  Very new.  */
 #define MAPPER_VERSION 0
 
@@ -305,7 +308,7 @@ module2bmi (const char *module)
       workspace[l] = 0;
       if (is_header)
 	{
-	  workspace[0] = is_abs ? '.' : '!';
+	  workspace[0] = is_abs ? '.' : DOT_REPLACE;
 
 	  /* Map .. to !!.  */
 	  for (unsigned ix = 0; ix != l; ix++)
@@ -313,10 +316,13 @@ module2bmi (const char *module)
 		&& workspace[ix + 1] == '.'
 		&& workspace[ix + 2] == '.')
 	      {
-		workspace[ix + 1] = '!';
-		workspace[ix + 2] = '!';
+		workspace[ix + 1] = DOT_REPLACE;
+		workspace[ix + 2] = DOT_REPLACE;
 	      }
 	}
+      else if (COLON_REPLACE != ':')
+	if (char *colon = (char *)memchr (workspace, ':', l))
+	  *colon = COLON_REPLACE;
 
       strcpy (workspace + l, ".gcm");
       res = workspace;
