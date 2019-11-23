@@ -148,7 +148,7 @@ free_growth_caches (void)
   node_context_cache_clear = 0;
 }
 
-/* Return hints derrived from EDGE.   */
+/* Return hints derived from EDGE.   */
 
 int
 simple_edge_hints (struct cgraph_edge *edge)

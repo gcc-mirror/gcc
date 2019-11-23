@@ -26,13 +26,13 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Hints are reasons why IPA heuristics should prefer specializing given
-   function.  They are represtented as bitmap of the following values.  */
+   function.  They are represented as bitmap of the following values.  */
 enum ipa_hints_vals {
   /* When specialization turns indirect call into a direct call,
      it is good idea to do so.  */
   INLINE_HINT_indirect_call = 1,
   /* Inlining may make loop iterations or loop stride known.  It is good idea
-     to do so because it enables loop optimizatoins.  */
+     to do so because it enables loop optimizations.  */
   INLINE_HINT_loop_iterations = 2,
   INLINE_HINT_loop_stride = 4,
   /* Inlining within same strongly connected component of callgraph is often
@@ -162,7 +162,7 @@ public:
   /* Conditional size/time information.  The summaries are being
      merged during inlining.  */
   conditions conds;
-  /* Normal code is acocunted in size_time_table, while calls are
+  /* Normal code is accounted in size_time_table, while calls are
      accounted in call_size_time_table.  This is because calls
      are often adjusted by IPA optimizations and thus this summary
      is generated from call summary information when needed.  */
@@ -292,7 +292,7 @@ public:
 
 /* This object describe a context of call.  That is a summary of known
    information about its parameters.  Main purpose of this context is
-   to give more realistic esitmations of function runtime, size and
+   to give more realistic estimations of function runtime, size and
    inline hints.  */
 class ipa_call_context
 {
@@ -323,7 +323,7 @@ private:
   /* Called function.  */
   cgraph_node *m_node;
   /* Clause describing what predicate conditionals can be satisfied
-     in this context if function is inlined/specialised.  */
+     in this context if function is inlined/specialized.  */
   clause_t m_possible_truths;
   /* Clause describing what predicate conditionals can be satisfied
      in this context if function is kept offline.  */

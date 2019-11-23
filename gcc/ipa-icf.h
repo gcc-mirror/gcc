@@ -24,7 +24,7 @@ class sem_item;
 
 /* Congruence class encompasses a collection of either functions or
    read-only variables. These items are considered to be equivalent
-   if not proved the oposite.  */
+   if not proved the opposite.  */
 class congruence_class
 {
 public:
@@ -200,7 +200,7 @@ public:
   virtual bool equals_wpa (sem_item *item,
 			   hash_map <symtab_node *, sem_item *> &ignored_nodes) = 0;
 
-  /* Returns true if the item equals to ITEM given as arguemnt.  */
+  /* Returns true if the item equals to ITEM given as argument.  */
   virtual bool equals (sem_item *item,
 		       hash_map <symtab_node *, sem_item *> &ignored_nodes) = 0;
 
@@ -350,7 +350,7 @@ public:
 			      ipa_icf_gimple::func_checker *checker);
 
   /* Perform additional checks needed to match types of used function
-     paramters.  */
+     parameters.  */
   bool compatible_parm_types_p (tree, tree);
 
   /* Exception handling region tree.  */
@@ -606,7 +606,7 @@ private:
   static bool release_split_map (congruence_class * const &cls, bitmap const &b,
 				 traverse_split_pair *pair);
 
-  /* Process split operation for a cognruence class CLS,
+  /* Process split operation for a congruence class CLS,
      where bitmap B splits congruence class members. DATA is used
      as argument of split pair.  */
   static bool traverse_congruence_split (congruence_class * const &cls,

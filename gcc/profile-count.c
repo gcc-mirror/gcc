@@ -105,7 +105,7 @@ profile_count::debug () const
   fprintf (stderr, "\n");
 }
 
-/* Return true if THIS differs from OTHER; tolerate small diferences.  */
+/* Return true if THIS differs from OTHER; tolerate small differences.  */
 
 bool
 profile_count::differs_from_p (profile_count other) const
@@ -186,7 +186,7 @@ profile_probability::debug () const
   fprintf (stderr, "\n");
 }
 
-/* Return true if THIS differs from OTHER; tolerate small diferences.  */
+/* Return true if THIS differs from OTHER; tolerate small differences.  */
 
 bool
 profile_probability::differs_from_p (profile_probability other) const
@@ -388,7 +388,7 @@ profile_count::from_gcov_type (gcov_type v, profile_quality quality)
   }
 
 /* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
-   happens with COUNT2 probablity. Return probablity that either *THIS or
+   happens with COUNT2 probability.  Return probability that either *THIS or
    OTHER happens.  */
 
 profile_probability
@@ -398,7 +398,7 @@ profile_probability::combine_with_count (profile_count count1,
 {
   /* If probabilities are same, we are done.
      If counts are nonzero we can distribute accordingly. In remaining
-     cases just avreage the values and hope for the best.  */
+     cases just average the values and hope for the best.  */
   if (*this == other || count1 == count2
       || (count2 == profile_count::zero ()
 	  && !(count1 == profile_count::zero ())))

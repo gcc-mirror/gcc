@@ -517,7 +517,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
 	      || (check_maybe_up (flag_exceptions)
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
-	      /* When devirtualization is diabled for callee, it is not safe
+	      /* When devirtualization is disabled for callee, it is not safe
 		 to inline it as we possibly mangled the type info.
 		 Allow early inlining of always inlines.  */
 	      || (!early && check_maybe_down (flag_devirtualize)))
@@ -547,7 +547,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
 	       || DECL_DISREGARD_INLINE_LIMITS (callee->decl))
 	;
       /* If mismatch is caused by merging two LTO units with different
-	 optimizationflags we want to be bit nicer.  However never inline
+	 optimization flags we want to be bit nicer.  However never inline
 	 if one of functions is not optimized at all.  */
       else if (!opt_for_fn (callee->decl, optimize)
       	       || !opt_for_fn (caller->decl, optimize))
@@ -783,8 +783,8 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   return time;
 }
 
-/* Determine time saved by inlininig EDGE of frequency FREQ
-   where callee's runtime w/o inlineing is UNINLINED_TYPE
+/* Determine time saved by inlining EDGE of frequency FREQ
+   where callee's runtime w/o inlining is UNINLINED_TYPE
    and with inlined is INLINED_TYPE.  */
 
 inline sreal
@@ -1222,7 +1222,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	     if (need_more_work)
 	       noninline_callee ();
 	   }
-	 Withhout penalizing this case, we usually inline noninline_callee
+	 Without penalizing this case, we usually inline noninline_callee
 	 into the inline_caller because overall_growth is small preventing
 	 further inlining of inline_caller.
 
@@ -1297,7 +1297,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	}
     }
   /* When function local profile is not available or it does not give
-     useful information (ie frequency is zero), base the cost on
+     useful information (i.e. frequency is zero), base the cost on
      loop nest and overall size growth, so we optimize for overall number
      of functions fully inlined in program.  */
   else
@@ -1349,7 +1349,7 @@ update_edge_key (edge_heap_t *heap, struct cgraph_edge *edge)
       gcc_checking_assert (n->get_data () == edge);
 
       /* fibonacci_heap::replace_key does busy updating of the
-	 heap that is unnecesarily expensive.
+	 heap that is unnecessarily expensive.
 	 We do lazy increases: after extracting minimum if the key
 	 turns out to be out of date, it is re-inserted into heap
 	 with correct value.  */
@@ -1383,7 +1383,7 @@ update_edge_key (edge_heap_t *heap, struct cgraph_edge *edge)
 
 
 /* NODE was inlined.
-   All caller edges needs to be resetted because
+   All caller edges needs to be reset because
    size estimates change. Similarly callees needs reset
    because better context may be known.  */
 
@@ -1520,7 +1520,7 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	      update_edge_key (heap, e);
 	  }
 	/* We do not reset callee growth cache here.  Since we added a new call,
-	   growth chould have just increased and consequentely badness metric
+	   growth should have just increased and consequently badness metric
            don't need updating.  */
 	else if (e->inline_failed
 		 && (callee = e->callee->ultimate_alias_target (&avail,
@@ -2082,7 +2082,7 @@ inline_small_functions (void)
 	  edge_growth_cache->get (edge)->hints = old_hints_est + 1;
 
 	  /* When updating the edge costs, we only decrease badness in the keys.
-	     Increases of badness are handled lazilly; when we see key with out
+	     Increases of badness are handled lazily; when we see key with out
 	     of date value on it, we re-insert it now.  */
 	  current_badness = edge_badness (edge, false);
 	  gcc_assert (cached_badness == current_badness);
@@ -2225,7 +2225,7 @@ inline_small_functions (void)
 	  add_new_edges_to_heap (&edge_heap, new_indirect_edges);
 
 	  /* If caller's size and time increased we do not need to update
-	     all edges becuase badness is not going to decrease.  */
+	     all edges because badness is not going to decrease.  */
 	  if (old_size <= ipa_size_summaries->get (where)->size
 	      && old_time <= ipa_fn_summaries->get (where)->time
 	      /* Wrapper penalty may be non-monotonous in this respect.
@@ -2569,7 +2569,7 @@ dump_inline_stats (void)
 	       "%" PRId64 " + previously indirect "
 	       "%" PRId64 " + virtual "
 	       "%" PRId64 " + virtual and previously indirect "
-	       "%" PRId64 " + stil indirect "
+	       "%" PRId64 " + still indirect "
 	       "%" PRId64 " + still indirect polymorphic "
 	       "%" PRId64 "\n", inlined_cnt,
 	       inlined_speculative, inlined_speculative_ply,
@@ -2725,7 +2725,7 @@ ipa_inline (void)
      into callee often leads to better optimization of callee due to
      increased context for optimization.
      For example if main() function calls a function that outputs help
-     and then function that does the main optmization, we should inline
+     and then function that does the main optimization, we should inline
      the second with priority even if both calls are cold by themselves.
 
      We probably want to implement new predicate replacing our use of
@@ -2850,7 +2850,7 @@ early_inline_small_functions (struct cgraph_node *node)
     {
       struct cgraph_node *callee = e->callee->ultimate_alias_target ();
 
-      /* We can enounter not-yet-analyzed function during
+      /* We can encounter not-yet-analyzed function during
 	 early inlining on callgraphs with strongly
 	 connected components.  */
       ipa_fn_summary *s = ipa_fn_summaries->get (callee);
