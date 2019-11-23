@@ -1,6 +1,12 @@
 2019-11-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc: Updated to en_US spellings.  Corrected more
+	punctuation in error messages.
+
+2019-11-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* config-lang.in (gtfiles): Add coroutines.cc.
 	* coroutines.cc (struct coroutine_info_hasher): New.
 	(coroutine_info_hasher::hash): New.

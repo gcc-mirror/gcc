@@ -76,7 +76,7 @@ static bool coro_promise_type_found_p (tree, location_t);
   Each of the keywords will expand to a code sequence (although co_yield is
   just syntactic sugar for a co_await).
 
-  We defer the analysis and transformatin until template expansion is
+  We defer the analysis and transformation until template expansion is
   complete so that we have complete types at that time.  */
 
 
@@ -239,7 +239,7 @@ find_coro_traits_template_decl (location_t kw)
 
   if (traits_decl == error_mark_node)
     {
-      error_at (kw, "cannot instantiate coroutine_traits");
+      error_at (kw, "cannot instantiate %<coroutine traits%>");
       return NULL_TREE;
     }
 
@@ -266,7 +266,8 @@ find_coro_handle_type (location_t kw, tree promise_type)
 
   if (handle_type == error_mark_node)
     {
-      error_at (kw, "couldn't instantiate coroutine_handle for promise");
+      error_at (kw, "cannot instantiate a %<coroutine handle%> for"
+		" promise type %qT", promise_type);
       return NULL_TREE;
     }
 
@@ -354,7 +355,7 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 }
 
 /* These functions assumes that the caller has verified that the state for
-   the decl has been initialized, we try to minimise work here.  */
+   the decl has been initialized, we try to minimize work here.  */
 static tree
 get_coroutine_promise_type (tree decl)
 {
@@ -611,7 +612,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   if (!ok)
     {
       error_at (loc, "%<await_suspend%> must return %<void%>, %<bool%> or"
-		     " a coroutine handle.");
+		     " a coroutine handle");
       return error_mark_node;
     }
 
@@ -672,7 +673,7 @@ finish_co_await_expr (location_t kw, tree expr)
      'await_transform()'.  */
   tree at_meth
     = lookup_promise_member (current_function_decl, "await_transform", kw,
-			     false /*musthave*/);
+			     /*musthave*/ false);
   if (at_meth == error_mark_node)
     return error_mark_node;
 
@@ -883,7 +884,7 @@ finish_co_return_stmt (location_t kw, tree expr)
      class 'unhandled_exception' method.
 
    B Analysis.
-     The user's function body is analysed to determine the suspend points,
+     The user's function body is analyzed to determine the suspend points,
      if any, and to capture local variables that might persist across such
      suspensions.  In most cases, it is not necessary to capture compiler
      temporaries, since the tree-lowering nests the suspensions correctly.
@@ -897,7 +898,7 @@ finish_co_return_stmt (location_t kw, tree expr)
    C Build the ramp function.
      Carry out the allocation for the coroutine frame (NOTE; the actual size
      computation is deferred until late in the middle end to allow for future
-     optimisations that will be allowed to elide unused frame entries).
+     optimizations that will be allowed to elide unused frame entries).
      We build the return object.
 
    D Build and expand the actor and destroyer function bodies.
@@ -910,7 +911,7 @@ finish_co_return_stmt (location_t kw, tree expr)
      the relevant dispatcher, and one representing the suspend point.
 
      During this process, the user's local variables and the proxies for the
-     self-handle and the promise class instanceare re-written to their
+     self-handle and the promise class instance are re-written to their
      coroutine frame equivalents.
 
      The complete bodies for the ramp, actor and destroy function are passed
@@ -1113,8 +1114,8 @@ co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 
 /* When we come here:
     the first operand is the [currently unused] handle for suspend.
-    the second operand is the var to be copy-initialised
-    the third operand is 'o' (the initialiser for the second)
+    the second operand is the var to be copy-initialized
+    the third operand is 'o' (the initializer for the second)
 			      as defined in [await.expr] (3.3)
     the fourth operand is the mode as per the comment on build_co_await ().
 
@@ -1181,7 +1182,7 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   location_t loc = EXPR_LOCATION (*stmt);
   tree sv_handle = TREE_OPERAND (saved_co_await, 0);
   tree var = TREE_OPERAND (saved_co_await, 1);  /* frame slot. */
-  tree expr = TREE_OPERAND (saved_co_await, 2); /* initialiser.  */
+  tree expr = TREE_OPERAND (saved_co_await, 2); /* initializer.  */
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
 
   tree source = TREE_OPERAND (saved_co_await, 4);
@@ -1205,7 +1206,7 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 				      tf_warning_or_error);
 
   tree stmt_list = NULL;
-  /* Initialise the var from the provided 'o' expression.  */
+  /* Initialize the var from the provided 'o' expression.  */
   tree r = build2 (INIT_EXPR, await_type, var, expr);
   r = coro_build_cvt_void_expr_stmt (r, loc);
   append_to_statement_list (r, &stmt_list);
@@ -1509,7 +1510,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 
   /* For each var in this bind expr (that has a frame id, which means it was
      accessed), build a frame reference for each and then walk the bind expr
-     statements, substituting the frame ref for the orginal var.
+     statements, substituting the frame ref for the original var.
   */
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
@@ -1752,7 +1753,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
       lab_num += 2;
     }
 
-  /* Insert the prototype dspatcher.  */
+  /* Insert the prototype dispatcher.  */
   finish_switch_stmt (destroy_dispatcher);
 
   finish_then_clause (lsb_if);
@@ -1789,7 +1790,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
       lab_num += 2;
     }
 
-  /* Insert the prototype dspatcher.  */
+  /* Insert the prototype dispatcher.  */
   finish_switch_stmt (dispatcher);
 
   finish_if_stmt (lsb_if);
@@ -2243,7 +2244,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 		 occurrence note the target expr to be replaced.  */
 	      if (!data->captured_temps.add (tvar))
 		vec_safe_push (data->to_replace, parm);
-	      /* Now see if the initialiser contains any more cases.  */
+	      /* Now see if the initializer contains any more cases.  */
 	      hash_set<tree> visited;
 	      tree res = cp_walk_tree (&TREE_OPERAND (parm, 1),
 				       captures_temporary, d, &visited);
@@ -2328,8 +2329,8 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 
   /* We now need to know if to take special action on lifetime extension
      of temporaries captured by reference.  This can only happen if such
-     a case appears in the initialiser for the awaitable.  The callback
-     records captured temporaries including subtrees of initialisers.  */
+     a case appears in the initializer for the awaitable.  The callback
+     records captured temporaries including subtrees of initializers.  */
   hash_set<tree> visited;
   tree res = cp_walk_tree (&TREE_OPERAND (aw_expr, 2), captures_temporary, d,
 			   &visited);
@@ -2350,11 +2351,11 @@ maybe_promote_captured_temps (tree *stmt, void *d)
   struct __susp_frame_data *awpts = (struct __susp_frame_data *) d;
   hash_set<tree> visited;
   awpts->saw_awaits = 0;
-  /* When register_awaits sees an await, it walks the initialiser for
+  /* When register_awaits sees an await, it walks the initializer for
      that await looking for temporaries captured by reference and notes
      them in awpts->captured_temps.  We only need to take any action
      here if the statement contained any awaits, and any of those had
-     temporaries captured by reference in the initialisers for their class.
+     temporaries captured by reference in the initializers for their class.
   */
 
   tree res = cp_walk_tree (stmt, register_awaits, d, &visited);
@@ -2777,7 +2778,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* 3. Now add in fields for function params (if there are any) that are used
      within the function body.  This is conservative; we can't tell at this
-     stage if such uses might be optimised away, or if they might turn out not
+     stage if such uses might be optimized away, or if they might turn out not
      to persist across any suspend points.  Of course, even if they don't
      persist across suspend points, when the actor is out of line the saved
      frame version is still needed.  */
@@ -2859,20 +2860,20 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
   add_stmt (ramp_label);
 
-  /* The decl_expr for the coro frame pointer, initialise to zero so that we
+  /* The decl_expr for the coro frame pointer, initialize to zero so that we
      can pass it to the IFN_CO_FRAME (since there's no way to pass a type,
-     directly apparently).  This avoids a "used unitialised" warning.  */
+     directly apparently).  This avoids a "used uninitialized" warning.  */
   tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
   tree zeroinit = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, zeroinit);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* We are going to copy the behaviour of clang w.r.t to failed allocation
+  /* We are going to copy the behavior of clang w.r.t to failed allocation
      of the coroutine frame.
      1. If the promise has a 'get_return_object_on_allocation_failure()'
 	method, then we use a nothrow new and check the return value, calling
-	the method on failure to initialise an early return.
+	the method on failure to initialize an early return.
      2. Otherwise, we call new and the ramp is expected to terminate with an
 	unhandled exception in the case of failure to allocate.
 
@@ -3129,7 +3130,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* Initialise the resume_idx_name to 0, meaning "not started".  */
+  /* Initialize the resume_idx_name to 0, meaning "not started".  */
   tree resume_idx_m
     = lookup_member (coro_frame_type, resume_idx_name,
 		     /*protect*/ 1, /*want_type*/ 0, tf_warning_or_error);
@@ -3209,7 +3210,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   if (flag_exceptions)
     {
       tree ueh_meth
-	= lookup_promise_member (orig, ueh_name, fn_start, true /*musthave*/);
+	= lookup_promise_member (orig, ueh_name, fn_start, /*musthave*/ true);
       /* Build promise.unhandled_exception();  */
       tree ueh
 	= build_new_method_call (p, ueh_meth, NULL, NULL_TREE, LOOKUP_NORMAL,
@@ -3249,7 +3250,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       /* We still try to look for the promise method and warn if it's not
 	 present.  */
       tree ueh_meth
-	= lookup_promise_member (orig, ueh_name, fn_start, false /*musthave*/);
+	= lookup_promise_member (orig, ueh_name, fn_start, /*musthave*/ false);
       if (!ueh_meth || ueh_meth == error_mark_node)
 	warning_at (fn_start, 0, "no member named %qs in %qT", ueh_name,
 		    get_coroutine_promise_type (orig));
