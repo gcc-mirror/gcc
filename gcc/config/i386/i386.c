@@ -19501,6 +19501,15 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  return true;
 	}
 
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+	  && rtx_equal_p (XEXP (XEXP (x, 0), 0), XEXP (x, 1)))
+	{
+	  /* This is an overflow detection, count it as a normal compare.  */
+	  *total = rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+			     COMPARE, 0, speed);
+	  return true;
+	}
+
       /* The embedded comparison operand is completely free.  */
       if (!general_operand (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
 	  && XEXP (x, 1) == const0_rtx)
