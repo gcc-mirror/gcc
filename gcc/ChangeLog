@@ -5,6 +5,8 @@
 
 	* combine.c (combine_instructions): Record costs for jumps.
 
+	* combine.c (can_combine_p): Allow autoinc in jumps.
+
 2019-11-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cif-code.def (MAX_INLINE_INSNS_SINGLE_O2_LIMIT): Remove.

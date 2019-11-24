@@ -2110,22 +2110,19 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
   is_volatile_p = volatile_refs_p (PATTERN (insn))
     ? volatile_refs_p
     : volatile_insn_p;
-    
+
   for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
     if (INSN_P (p) && p != succ && p != succ2 && is_volatile_p (PATTERN (p)))
       return 0;
 
   /* If INSN contains an autoincrement or autodecrement, make sure that
      register is not used between there and I3, and not already used in
-     I3 either.  Neither must it be used in PRED or SUCC, if they exist.
-     Also insist that I3 not be a jump; if it were one
-     and the incremented register were spilled, we would lose.  */
+     I3 either.  Neither must it be used in PRED or SUCC, if they exist.  */
 
   if (AUTO_INC_DEC)
     for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
       if (REG_NOTE_KIND (link) == REG_INC
-	  && (JUMP_P (i3)
-	      || reg_used_between_p (XEXP (link, 0), insn, i3)
+	  && (reg_used_between_p (XEXP (link, 0), insn, i3)
 	      || (pred != NULL_RTX
 		  && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (pred)))
 	      || (pred2 != NULL_RTX
