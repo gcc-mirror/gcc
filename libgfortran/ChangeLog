@@ -1,3 +1,10 @@
+2019-11-24  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/92100
+	io/transfer.c (data_transfer_init_worker): Use fbuf_reset
+	instead of fbuf_flush before the seek. Note that fbuf_reset
+	calls fbuf_flush and adjusts fbuf pointers.
+
 2019-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Harald Anlauf <anlauf@gmx.de>
 
