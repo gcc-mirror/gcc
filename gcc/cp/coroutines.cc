@@ -230,9 +230,8 @@ find_coro_traits_template_decl (location_t kw)
       arg_node = TREE_CHAIN (arg_node);
     }
 
-  tree traits_name = get_identifier ("coroutine_traits");
   tree traits_decl
-    = lookup_template_class (traits_name, targ,
+    = lookup_template_class (coro_traits_identifier, targ,
 			     /* in_decl */ NULL_TREE,
 			     /* context */ exp_ns,
 			     /* entering scope */ false, tf_none);
@@ -257,9 +256,8 @@ find_coro_handle_type (location_t kw, tree promise_type)
   /* So now build up a type list for the template, one entry, the promise.  */
   tree targ = make_tree_vec (1);
   TREE_VEC_ELT (targ, 0) = promise_type;
-  tree handle_name = get_identifier ("coroutine_handle");
   tree handle_type
-    = lookup_template_class (handle_name, targ,
+    = lookup_template_class (coro_handle_identifier, targ,
 			     /* in_decl */ NULL_TREE,
 			     /* context */ exp_ns,
 			     /* entering scope */ false, tf_none);
@@ -279,10 +277,8 @@ find_coro_handle_type (location_t kw, tree promise_type)
 static tree
 find_promise_type (tree handle_type)
 {
-  tree promise_name = get_identifier ("promise_type");
-
   tree promise_type
-    = lookup_member (handle_type, promise_name,
+    = lookup_member (handle_type, coro_promise_type_identifier,
 		     /* protect */ 1, /*want_type=*/true, tf_warning_or_error);
   if (promise_type)
     promise_type

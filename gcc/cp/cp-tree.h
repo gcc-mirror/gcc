@@ -178,6 +178,10 @@ enum cp_tree_index
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
 
+    CPTI_CORO_TRAITS_IDENTIFIER,
+    CPTI_CORO_HANDLE_IDENTIFIER,
+    CPTI_CORO_PROMISE_TYPE_IDENTIFIER,
+
     CPTI_EMPTY_EXCEPT_SPEC,
     CPTI_NOEXCEPT_TRUE_SPEC,
     CPTI_NOEXCEPT_FALSE_SPEC,
@@ -313,6 +317,10 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define heap_deleted_identifier		cp_global_trees[CPTI_HEAP_DELETED_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
+/* Identifiers that are used by all coroutines.  */
+#define coro_traits_identifier		cp_global_trees[CPTI_CORO_TRAITS_IDENTIFIER]
+#define coro_handle_identifier		cp_global_trees[CPTI_CORO_HANDLE_IDENTIFIER]
+#define coro_promise_type_identifier	cp_global_trees[CPTI_CORO_PROMISE_TYPE_IDENTIFIER]
 
 /* Exception specifiers used for throw(), noexcept(true),
    noexcept(false) and deferred noexcept.  We rely on these being

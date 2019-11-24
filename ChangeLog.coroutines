@@ -1,3 +1,18 @@
+2019-11-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (find_coro_traits_template_decl): Use global
+	identifier.
+	(find_coro_handle_type): Likewise.
+	(find_promise_type): Likewise.
+	* cp-tree.h (enum cp_tree_index): Add indices for the coroutine
+	global identifiers.
+	(coro_traits_identifier): New.
+	(coro_handle_identifier): New.
+	(coro_promise_type_identifier): New.
+	* decl.c (initialize_predefined_identifiers): Initialize global
+	identifiers for coroutines.
+
 2019-11-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
