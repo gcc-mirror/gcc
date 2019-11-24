@@ -29,6 +29,7 @@
 #ifndef _GLIBCXX_DEBUG_HELPER_FUNCTIONS_H
 #define _GLIBCXX_DEBUG_HELPER_FUNCTIONS_H 1
 
+#include <bits/move.h>				// for __addressof
 #include <bits/stl_iterator_base_types.h>	// for iterator_traits,
 						// categories and _Iter_base
 #include <bits/cpp_type_traits.h>		// for __is_integer
@@ -112,6 +113,23 @@ namespace __gnu_debug
     __get_distance(_Iterator __lhs, _Iterator __rhs)
     { return __get_distance(__lhs, __rhs, std::__iterator_category(__lhs)); }
 
+  // An arbitrary iterator pointer is not singular.
+  inline bool
+  __check_singular_aux(const void*) { return false; }
+
+  // We may have an iterator that derives from _Safe_iterator_base but isn't
+  // a _Safe_iterator.
+  template<typename _Iterator>
+    inline bool
+    __check_singular(_Iterator const& __x)
+    { return __check_singular_aux(std::__addressof(__x)); }
+
+  /** Non-NULL pointers are nonsingular. */
+  template<typename _Tp>
+    inline bool
+    __check_singular(_Tp* const& __ptr)
+    { return __ptr == 0; }
+
   /** We say that integral types for a valid range, and defer to other
    *  routines to realize what to do with integral types instead of
    *  iterators.
@@ -138,14 +156,21 @@ namespace __gnu_debug
     inline bool
     __valid_range_aux(_InputIterator __first, _InputIterator __last,
 		      std::input_iterator_tag)
-    { return true; }
+    {
+      return __first == __last
+	|| (!__check_singular(__first) && !__check_singular(__last));
+    }
 
   template<typename _InputIterator>
     _GLIBCXX_CONSTEXPR
     inline bool
     __valid_range_aux(_InputIterator __first, _InputIterator __last,
 		      std::random_access_iterator_tag)
-    { return __first <= __last; }
+    {
+      return
+	__valid_range_aux(__first, __last, std::input_iterator_tag{})
+	&& __first <= __last;
+    }
 
   /** We have iterators, so figure out what kind of iterators they are
    *  to see if we can check the range ahead of time.
@@ -167,6 +192,9 @@ namespace __gnu_debug
 		      typename _Distance_traits<_InputIterator>::__type& __dist,
 		      std::__false_type)
     {
+      if (!__valid_range_aux(__first, __last, std::input_iterator_tag{}))
+	return false;
+
       __dist = __get_distance(__first, __last);
       switch (__dist.second)
 	{
