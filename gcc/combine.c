@@ -1233,8 +1233,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 						    insn);
 
 	    /* Record the current insn_cost of this instruction.  */
-	    if (NONJUMP_INSN_P (insn))
-	      INSN_COST (insn) = insn_cost (insn, optimize_this_for_speed_p);
+	    INSN_COST (insn) = insn_cost (insn, optimize_this_for_speed_p);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "insn_cost %d for ", INSN_COST (insn));
