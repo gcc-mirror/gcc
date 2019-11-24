@@ -1,3 +1,10 @@
+2019-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf <anlauf@gmx.de>
+
+	PR fortran/92569
+	* io/transfer.c (transfer_array_inner):  If position is
+	at AFTER_ENDFILE in current unit, return from data loop.
+
 2019-11-18  Maciej W. Rozycki  <macro@wdc.com>
 
 	* Makefile.in: Regenerate.

@@ -2542,26 +2542,62 @@ transfer_array_inner (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
 
   data = GFC_DESCRIPTOR_DATA (desc);
 
-  while (data)
+  /* When reading, we need to check endfile conditions so we do not miss
+     an END=label.  Make this separate so we do not have an extra test
+     in a tight loop when it is not needed.  */
+
+  if (dtp->u.p.current_unit && dtp->u.p.mode == READING)
     {
-      dtp->u.p.transfer (dtp, iotype, data, kind, size, tsize);
-      data += stride0 * tsize;
-      count[0] += tsize;
-      n = 0;
-      while (count[n] == extent[n])
+      while (data)
 	{
-	  count[n] = 0;
-	  data -= stride[n] * extent[n];
-	  n++;
-	  if (n == rank)
+	  if (unlikely (dtp->u.p.current_unit->endfile == AFTER_ENDFILE))
+	    return;
+
+	  dtp->u.p.transfer (dtp, iotype, data, kind, size, tsize);
+	  data += stride0 * tsize;
+	  count[0] += tsize;
+	  n = 0;
+	  while (count[n] == extent[n])
 	    {
-	      data = NULL;
-	      break;
+	      count[n] = 0;
+	      data -= stride[n] * extent[n];
+	      n++;
+	      if (n == rank)
+		{
+		  data = NULL;
+		  break;
+		}
+	      else
+		{
+		  count[n]++;
+		  data += stride[n];
+		}
 	    }
-	  else
+	}
+    }
+  else
+    {
+      while (data)
+	{
+	  dtp->u.p.transfer (dtp, iotype, data, kind, size, tsize);
+	  data += stride0 * tsize;
+	  count[0] += tsize;
+	  n = 0;
+	  while (count[n] == extent[n])
 	    {
-	      count[n]++;
-	      data += stride[n];
+	      count[n] = 0;
+	      data -= stride[n] * extent[n];
+	      n++;
+	      if (n == rank)
+		{
+		  data = NULL;
+		  break;
+		}
+	      else
+		{
+		  count[n]++;
+		  data += stride[n];
+		}
 	    }
 	}
     }
