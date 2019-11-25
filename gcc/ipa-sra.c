@@ -3759,6 +3759,9 @@ process_isra_node_results (cgraph_node *node,
     = node->create_virtual_clone (callers, NULL, new_adjustments, "isra",
 				  suffix_counter);
   suffix_counter++;
+  if (node->same_comdat_group)
+    new_node->add_to_same_comdat_group (node);
+  new_node->calls_comdat_local = node->calls_comdat_local;
 
   if (dump_file)
     fprintf (dump_file, "  Created new node %s\n", new_node->dump_name ());
