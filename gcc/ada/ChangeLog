@@ -1,5 +1,11 @@
 2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/92362
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Attribute_Definition_Clause>:
+	Use a temporary instead of clobbering the result with a freeze node.
+
+2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/92575
 	* expect.c (__gnat_expect_poll [VMS, HPUX]): Fix typo.
 

@@ -1,3 +1,7 @@
+2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/addr14.adb: New test.
+
 2019-11-25  Mark Eggleston <mark.eggleston@codethink.com>
 	    Jim MacArthur <jim.macarthur@codethink.co.uk>
 
