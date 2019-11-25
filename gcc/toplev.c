@@ -2112,6 +2112,7 @@ dump_memory_report (const char *header)
   dump_ggc_loc_statistics ();
   dump_alias_stats (stderr);
   dump_pta_stats (stderr);
+  dump_value_range_stats (stderr);
 }
 
 /* Clean up: close opened files, etc.  */

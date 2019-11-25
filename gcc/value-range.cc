@@ -256,6 +256,8 @@ widest_irange::widest_irange (const irange &other)
 
 widest_irange::~widest_irange ()
 {
+  if (CHECKING_P)
+    stats_register_use ();
   if (m_blob)
     free (m_blob);
 }
@@ -308,6 +310,39 @@ widest_irange::invert ()
   unsigned size = num_pairs () + 1;
   resize_if_needed (size);
   irange::invert ();
+}
+
+int widest_irange::stats_used_buckets[11];
+
+void
+widest_irange::stats_register_use (void)
+{
+  int n = num_pairs ();
+  if (n < 10)
+    stats_used_buckets[n]++;
+  else
+    stats_used_buckets[10]++;
+}
+
+void
+widest_irange::stats_dump (FILE *file)
+{
+  fprintf (file, "\nwidest_irange stats:\n");
+  for (int i = 0; i < 11; ++i)
+    {
+      if (stats_used_buckets[i] == 0)
+	continue;
+      if (i < 10)
+	fprintf (file, "%2d sub-ranges: %d\n", i, stats_used_buckets[i]);
+      else
+	fprintf (file, "10+ sub-ranges: %d\n", stats_used_buckets[i]);
+    }
+}
+
+void
+dump_value_range_stats (FILE *file)
+{
+  widest_irange::stats_dump (file);
 }
 
 void

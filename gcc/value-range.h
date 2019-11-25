@@ -180,10 +180,17 @@ public:
 
   virtual void union_ (const vrange &);
   virtual void invert ();
+#if CHECKING_P
+  static void stats_dump (FILE *);
+#endif
 private:
   static const unsigned m_sub_ranges_in_local_storage = 5;
   void init_widest_irange ();
   void resize_if_needed (unsigned);
+
+  // Memory usage stats.
+  void stats_register_use (void);
+  static int stats_used_buckets[11];
 
   tree *m_blob;
   tree m_ranges[m_sub_ranges_in_local_storage*2];
@@ -197,6 +204,7 @@ extern bool range_has_numeric_bounds_p (const irange *);
 extern bool ranges_from_anti_range (const value_range *,
 				    value_range *, value_range *);
 extern void dump_value_range (FILE *, const vrange *);
+extern void dump_value_range_stats (FILE *);
 extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);
 extern tree vrp_val_min (const_tree);
