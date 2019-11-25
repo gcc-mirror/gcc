@@ -1,5 +1,28 @@
 2019-11-25  Richard Biener  <rguenther@suse.de>
 
+	* cfgloop.h (get_loop_exit_edges): Add extra parameter denoting
+	loop body, defaulted to NULL.
+	(single_likely_exit): Add exit vector argument
+	* tree-ssa-loop-niter.h (loop_only_exit_p): Add loop body argument.
+	(number_of_iterations_exit): Likewise.
+	(number_of_iterations_exit_assumptions): Likewise.
+	* cfgloop.c (get_loop_exit_edges): Use passed in loop body
+	if not NULL.
+	* cfgloopanal.c (single_likely_exit): Use passed in exit vector.
+	* tree-ssa-loop-ivcanon.c (canonicalize_loop_induction_variables):
+	Compute exit vector around call to single_likely_exit.
+	* tree-ssa-loop-ivopts.c (tree_ssa_iv_optimize_loop): Pass down
+	loop body to loop_only_exit_p.
+	* tree-ssa-loop-niter.c (loop_only_exit_p): Get loop body from
+	caller.
+	(number_of_iterations_exit_assumptions): Get loop body from caller
+	if not NULL.
+	(number_of_iterations_exit): Pass through new loop body arg.
+	(infer_loop_bounds_from_undefined): Get loop body from caller.
+	(estimate_numbers_of_iterations): Compute loop body once.
+
+2019-11-25  Richard Biener  <rguenther@suse.de>
+
 	* cfganal.c (pre_and_rev_post_order_compute_fn): Use an
 	auto_bb_flag instead of an sbitmap for visited handling.
 

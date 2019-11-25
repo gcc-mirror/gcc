@@ -1203,12 +1203,11 @@ release_recorded_exits (function *fn)
 /* Returns the list of the exit edges of a LOOP.  */
 
 vec<edge> 
-get_loop_exit_edges (const class loop *loop)
+get_loop_exit_edges (const class loop *loop, basic_block *body)
 {
   vec<edge> edges = vNULL;
   edge e;
   unsigned i;
-  basic_block *body;
   edge_iterator ei;
   struct loop_exit *exit;
 
@@ -1223,14 +1222,20 @@ get_loop_exit_edges (const class loop *loop)
     }
   else
     {
-      body = get_loop_body (loop);
+      bool body_from_caller = true;
+      if (!body)
+	{
+	  body = get_loop_body (loop);
+	  body_from_caller = false;
+	}
       for (i = 0; i < loop->num_nodes; i++)
 	FOR_EACH_EDGE (e, ei, body[i]->succs)
 	  {
 	    if (!flow_bb_inside_loop_p (loop, e->dest))
 	      edges.safe_push (e);
 	  }
-      free (body);
+      if (!body_from_caller)
+	free (body);
     }
 
   return edges;

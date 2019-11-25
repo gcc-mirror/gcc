@@ -1222,8 +1222,10 @@ canonicalize_loop_induction_variables (class loop *loop,
      by find_loop_niter_by_eval.  Be sure to keep it for future.  */
   if (niter && TREE_CODE (niter) == INTEGER_CST)
     {
+      vec<edge> exits = get_loop_exit_edges  (loop);
       record_niter_bound (loop, wi::to_widest (niter),
-			  exit == single_likely_exit (loop), true);
+			  exit == single_likely_exit (loop, exits), true);
+      exits.release ();
     }
 
   /* Force re-computation of loop bounds so we can remove redundant exits.  */
