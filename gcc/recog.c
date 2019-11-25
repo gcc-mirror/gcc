@@ -923,23 +923,6 @@ validate_simplify_insn (rtx_insn *insn)
   return ((num_changes_pending () > 0) && (apply_change_group () > 0));
 }
 
-/* Return 1 if the insn using CC0 set by INSN does not contain
-   any ordered tests applied to the condition codes.
-   EQ and NE tests do not count.  */
-
-int
-next_insn_tests_no_inequality (rtx_insn *insn)
-{
-  rtx_insn *next = next_cc0_user (insn);
-
-  /* If there is no next insn, we have to take the conservative choice.  */
-  if (next == 0)
-    return 0;
-
-  return (INSN_P (next)
-	  && ! inequality_comparisons_p (PATTERN (next)));
-}
-
 /* Return 1 if OP is a valid general operand for machine mode MODE.
    This is either a register reference, a memory reference,
    or a constant.  In the case of a memory reference, the address
