@@ -105,7 +105,7 @@ can_remove_node_now_p_1 (struct cgraph_node *node, struct cgraph_edge *e)
 	  && (!DECL_VIRTUAL_P (node->decl)
 	      || !opt_for_fn (node->decl, flag_devirtualize))
 	  /* During early inlining some unanalyzed cgraph nodes might be in the
-	     callgraph and they might reffer the function in question.  */
+	     callgraph and they might refer the function in question.  */
 	  && !cgraph_new_nodes.exists ());
 }
 
@@ -176,7 +176,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     {
       /* We may eliminate the need for out-of-line copy to be output.
 	 In that case just go ahead and re-use it.  This is not just an
-	 memory optimization.  Making offline copy of fuction disappear
+	 memory optimization.  Making offline copy of function disappear
 	 from the program will improve future decisions on inlining.  */
       if (!e->callee->callers->next_caller
 	  /* Recursive inlining never wants the master clone to
@@ -192,7 +192,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	     need small function inlining to register edge removal hook to
 	     maintain the priority queue.
 
-	     For now we keep the ohter functions in the group in program until
+	     For now we keep the other functions in the group in program until
 	     cgraph_remove_unreachable_functions gets rid of them.  */
 	  gcc_assert (!e->callee->inlined_to);
 	  e->callee->remove_from_same_comdat_group ();
@@ -489,9 +489,9 @@ inline_call (struct cgraph_edge *e, bool update_original,
     mark_all_inlined_calls_cdtor (e->callee);
   if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
-  check_speculations (e->callee, new_edges);
+  bool removed_p = check_speculations (e->callee, new_edges);
   if (update_overall_summary)
-    ipa_update_overall_fn_summary (to);
+    ipa_update_overall_fn_summary (to, new_edges_found || removed_p);
   else
     /* Update self size by the estimate so overall function growth limits
        work for further inlining into this function.  Before inlining

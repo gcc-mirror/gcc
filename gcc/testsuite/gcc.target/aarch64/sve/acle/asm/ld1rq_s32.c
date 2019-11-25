@@ -12,7 +12,7 @@ TEST_LOAD (ld1rq_s32_base, svint32_t, int32_t,
 	   z0 = svld1rq (p0, x0))
 
 /*
-** ld1rq_s32_index: { xfail *-*-* }
+** ld1rq_s32_index:
 **	ld1rqw	z0\.s, p0/z, \[x0, x1, lsl 2\]
 **	ret
 */

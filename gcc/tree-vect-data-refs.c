@@ -2266,13 +2266,15 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  mask must be 15 = 0xf. */
 	      mask = size - 1;
 
-              /* FORNOW: use the same mask to test all potentially unaligned
-                 references in the loop.  The vectorizer currently supports
-                 a single vector size, see the reference to
-                 GET_MODE_NUNITS (TYPE_MODE (vectype)) where the
-                 vectorization factor is computed.  */
-              gcc_assert (!LOOP_VINFO_PTR_MASK (loop_vinfo)
-                          || LOOP_VINFO_PTR_MASK (loop_vinfo) == mask);
+	      /* FORNOW: use the same mask to test all potentially unaligned
+		 references in the loop.  */
+	      if (LOOP_VINFO_PTR_MASK (loop_vinfo)
+		  && LOOP_VINFO_PTR_MASK (loop_vinfo) != mask)
+		{
+		  do_versioning = false;
+		  break;
+		}
+
               LOOP_VINFO_PTR_MASK (loop_vinfo) = mask;
 	      LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).safe_push (stmt_info);
             }

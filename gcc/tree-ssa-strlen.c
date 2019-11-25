@@ -1946,8 +1946,6 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 static void
 handle_builtin_strchr (gimple_stmt_iterator *gsi)
 {
-  int idx;
-  tree src;
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
 
@@ -1957,8 +1955,14 @@ handle_builtin_strchr (gimple_stmt_iterator *gsi)
   if (!integer_zerop (gimple_call_arg (stmt, 1)))
     return;
 
-  src = gimple_call_arg (stmt, 0);
-  idx = get_stridx (src);
+  tree src = gimple_call_arg (stmt, 0);
+
+  /* Avoid folding if the first argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, src))
+    return;
+
+  int idx = get_stridx (src);
   if (idx)
     {
       strinfo *si = NULL;
@@ -3794,11 +3798,11 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
 
   /* For strncmp set to the the value of the third argument if known.  */
   HOST_WIDE_INT bound = -1;
-
+  tree len = NULL_TREE;
   /* Extract the strncmp bound.  */
   if (gimple_call_num_args (stmt) == 3)
     {
-      tree len = gimple_call_arg (stmt, 2);
+      len = gimple_call_arg (stmt, 2);
       if (tree_fits_shwi_p (len))
         bound = tree_to_shwi (len);
 
@@ -3806,6 +3810,12 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
       if (bound < 0)
 	return false;
     }
+
+  /* Avoid folding if either argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, arg1, len)
+      || !check_nul_terminated_array (NULL_TREE, arg2, len))
+    return false;
 
   {
     /* Set to the length of one argument (or its complement if it's

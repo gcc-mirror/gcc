@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread2-details -fdump-tree-thread3-details -fdump-tree-thread4-details -fno-finite-loops --param early-inlining-insns-O2=14 -fno-inline-functions" } */
+/* { dg-options "-O2 -fdump-tree-thread2-details -fdump-tree-thread3-details -fdump-tree-thread4-details -fno-finite-loops --param early-inlining-insns=14 -fno-inline-functions" } */
 /* { dg-final { scan-tree-dump "FSM" "thread2" } } */
 /* { dg-final { scan-tree-dump "FSM" "thread3" } } */
 /* { dg-final { scan-tree-dump "FSM" "thread4" { xfail *-*-* } } } */

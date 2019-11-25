@@ -714,6 +714,10 @@ int lra_insn_recog_data_len;
 /* Map INSN_UID -> the insn recog data (NULL if unknown).  */
 lra_insn_recog_data_t *lra_insn_recog_data;
 
+/* Alloc pool we allocate entries for lra_insn_recog_data from.  */
+static object_allocator<class lra_insn_recog_data>
+  lra_insn_recog_data_pool ("insn recog data pool");
+
 /* Initialize LRA data about insns.  */
 static void
 init_insn_recog_data (void)
@@ -759,7 +763,7 @@ free_insn_recog_data (lra_insn_recog_data_t data)
     }
   free_insn_regs (data->regs);
   data->regs = NULL;
-  free (data);
+  lra_insn_recog_data_pool.remove (data);
 }
 
 /* Pools for copies.  */
@@ -778,6 +782,7 @@ finish_insn_recog_data (void)
   finish_insn_regs ();
   lra_copy_pool.release ();
   lra_insn_reg_pool.release ();
+  lra_insn_recog_data_pool.release ();
   free (lra_insn_recog_data);
 }
 
@@ -952,7 +957,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
 	/* It might be a new simple insn which is not recognized yet.  */
 	INSN_CODE (insn) = icode = recog_memoized (insn);
     }
-  data = XNEW (class lra_insn_recog_data);
+  data = lra_insn_recog_data_pool.allocate ();
   lra_insn_recog_data[uid] = data;
   data->insn = insn;
   data->used_insn_alternative = LRA_UNKNOWN_ALT;

@@ -117,17 +117,17 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fallow-argument-mismatch -fallow-invalid-boz @gol
--fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments -fdec @gol
--fdec-char-conversions -fdec-structure -fdec-intrinsic-ints -fdec-static @gol
--fdec-math -fdec-include -fdec-format-defaults -fdec-blank-format-item @gol
--fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 @gol
--fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
--ffixed-line-length-none -fpad-source -ffree-form @gol
--ffree-line-length-@var{n} -ffree-line-length-none -fimplicit-none @gol
--finteger-4-integer-8 -fmax-identifier-length -fmodule-private @gol
--ffixed-form -fno-range-check -fopenacc -fopenmp -freal-4-real-10 @gol
--freal-4-real-16 -freal-4-real-8 -freal-8-real-10 -freal-8-real-16 @gol
--freal-8-real-4 -std=@var{std} -ftest-forall-temp
+-fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments @gol
+-fdec -fdec-char-conversions -fdec-structure -fdec-intrinsic-ints @gol
+-fdec-static -fdec-math -fdec-include -fdec-format-defaults @gol
+-fdec-blank-format-item -fdefault-double-8 -fdefault-integer-8 @gol
+-fdefault-real-8 -fdefault-real-10 -fdefault-real-16 -fdollar-ok @gol
+-ffixed-line-length-@var{n} -ffixed-line-length-none -fpad-source @gol
+-ffree-form -ffree-line-length-@var{n} -ffree-line-length-none @gol
+-fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
+-fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
+-freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
+-freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -283,7 +283,7 @@ If @option{-fd-lines-as-code}/@option{-fd-lines-as-comments} are unset, then
 
 @item -fdec-char-conversions
 @opindex @code{fdec-char-conversions}
-Enable the use of character literals in assignments and data statements
+Enable the use of character literals in assignments and @code{DATA} statements
 for non-character variables.
 
 @item -fdec-structure

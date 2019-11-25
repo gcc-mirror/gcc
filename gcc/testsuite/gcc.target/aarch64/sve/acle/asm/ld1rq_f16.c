@@ -12,7 +12,7 @@ TEST_LOAD (ld1rq_f16_base, svfloat16_t, float16_t,
 	   z0 = svld1rq (p0, x0))
 
 /*
-** ld1rq_f16_index: { xfail *-*-* }
+** ld1rq_f16_index:
 **	ld1rqh	z0\.h, p0/z, \[x0, x1, lsl 1\]
 **	ret
 */

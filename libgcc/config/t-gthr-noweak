@@ -1,0 +1,2 @@
+# Don't use weak references for single-thread detection
+HOST_LIBGCC2_CFLAGS += -DGTHREAD_USE_WEAK=0

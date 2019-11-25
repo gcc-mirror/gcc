@@ -1765,7 +1765,8 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
   if (bitfield_p (e))
     {
       if (complain & tf_error)
-        error ("invalid application of %<sizeof%> to a bit-field");
+	error_at (cp_expr_loc_or_input_loc (e),
+		  "invalid application of %<sizeof%> to a bit-field");
       else
         return error_mark_node;
       e = char_type_node;
@@ -1825,7 +1826,8 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
   else if (bitfield_p (e))
     {
       if (complain & tf_error)
-        error ("invalid application of %<__alignof%> to a bit-field");
+	error_at (cp_expr_loc_or_input_loc (e),
+		  "invalid application of %<__alignof%> to a bit-field");
       else
         return error_mark_node;
       t = size_one_node;
@@ -6127,7 +6129,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       if (kind == clk_none)
 	{
 	  if (complain & tf_error)
-	    lvalue_error (input_location, lv_addressof);
+	    lvalue_error (cp_expr_loc_or_input_loc (arg), lv_addressof);
 	  return error_mark_node;
 	}
       if (strict_lvalue && (kind & (clk_rvalueref|clk_class)))
@@ -6135,7 +6137,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	  if (!(complain & tf_error))
 	    return error_mark_node;
 	  /* Make this a permerror because we used to accept it.  */
-	  permerror (input_location, "taking address of rvalue");
+	  permerror (cp_expr_loc_or_input_loc (arg),
+		     "taking address of rvalue");
 	}
     }
 
@@ -6229,7 +6232,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   if (bitfield_p (arg))
     {
       if (complain & tf_error)
-	error ("attempt to take address of bit-field");
+	error_at (cp_expr_loc_or_input_loc (arg),
+		  "attempt to take address of bit-field");
       return error_mark_node;
     }
 
@@ -10432,7 +10436,7 @@ lvalue_or_else (tree ref, enum lvalue_use use, tsubst_flags_t complain)
   if (kind == clk_none)
     {
       if (complain & tf_error)
-	lvalue_error (input_location, use);
+	lvalue_error (cp_expr_loc_or_input_loc (ref), use);
       return 0;
     }
   else if (kind & (clk_rvalueref|clk_class))

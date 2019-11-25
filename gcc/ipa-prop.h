@@ -264,14 +264,16 @@ ipa_copy_agg_values (const vec<ipa_agg_value_set> &aggs)
    whole vector.  */
 
 static inline void
-ipa_release_agg_values (vec<ipa_agg_value_set> &aggs)
+ipa_release_agg_values (vec<ipa_agg_value_set> &aggs,
+			bool release_vector = true)
 {
   ipa_agg_value_set *agg;
   int i;
 
   FOR_EACH_VEC_ELT (aggs, i, agg)
     agg->release ();
-  aggs.release ();
+  if (release_vector)
+    aggs.release ();
 }
 
 /* Information about zero/non-zero bits.  */

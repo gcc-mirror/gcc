@@ -70,10 +70,15 @@ int gcn_isa = 3;		/* Default to GCN3.  */
    worker-single mode to worker-partitioned mode), per workgroup.  Global
    analysis could calculate an exact bound, but we don't do that yet.
  
-   We reserve the whole LDS, which also prevents any other workgroup
-   sharing the Compute Unit.  */
+   We want to permit full occupancy, so size accordingly.  */
 
-#define LDS_SIZE 65536
+#define OMP_LDS_SIZE 0x600    /* 0x600 is 1/40 total, rounded down.  */
+#define ACC_LDS_SIZE 32768    /* Half of the total should be fine.  */
+#define OTHER_LDS_SIZE 65536  /* If in doubt, reserve all of it.  */
+
+#define LDS_SIZE (flag_openacc ? ACC_LDS_SIZE \
+		  : flag_openmp ? OMP_LDS_SIZE \
+		  : OTHER_LDS_SIZE)
 
 /* The number of registers usable by normal non-kernel functions.
    The SGPR count includes any special extra registers such as VCC.  */
@@ -2876,8 +2881,11 @@ gcn_expand_prologue ()
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
+  /* m0 is initialized for the usual LDS DS and FLAT memory case.
+     The low-part is the address of the topmost addressable byte, which is
+     size-1.  The high-part is an offset and should be zero.  */
   emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-		  gen_int_mode (LDS_SIZE, SImode));
+		  gen_int_mode (LDS_SIZE-1, SImode));
 
   emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
 
@@ -4922,6 +4930,14 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	sgpr = MAX_NORMAL_SGPR_COUNT - extra_regs;
     }
 
+  /* GFX8 allocates SGPRs in blocks of 8.
+     GFX9 uses blocks of 16.  */
+  int granulated_sgprs;
+  if (TARGET_GCN3)
+    granulated_sgprs = (sgpr + extra_regs + 7) / 8 - 1;
+  else if (TARGET_GCN5)
+    granulated_sgprs = 2 * ((sgpr + extra_regs + 15) / 16 - 1);
+
   fputs ("\t.align\t256\n", file);
   fputs ("\t.type\t", file);
   assemble_name (file, name);
@@ -4960,7 +4976,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   "\t\tcompute_pgm_rsrc2_excp_en = 0\n",
 	   (vgpr - 1) / 4,
 	   /* Must match wavefront_sgpr_count */
-	   (sgpr + extra_regs + 7) / 8 - 1,
+	   granulated_sgprs,
 	   /* The total number of SGPR user data registers requested.  This
 	      number must match the number of user data registers enabled.  */
 	   cfun->machine->args.nsgprs);
@@ -5215,7 +5231,8 @@ void
 gcn_asm_output_symbol_ref (FILE *file, rtx x)
 {
   tree decl;
-  if ((decl = SYMBOL_REF_DECL (x)) != 0
+  if (cfun
+      && (decl = SYMBOL_REF_DECL (x)) != 0
       && TREE_CODE (decl) == VAR_DECL
       && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
     {
@@ -5230,7 +5247,8 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
     {
       assemble_name (file, XSTR (x, 0));
       /* FIXME: See above -- this condition is unreachable.  */
-      if ((decl = SYMBOL_REF_DECL (x)) != 0
+      if (cfun
+	  && (decl = SYMBOL_REF_DECL (x)) != 0
 	  && TREE_CODE (decl) == VAR_DECL
 	  && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
 	fputs ("@abs32", file);

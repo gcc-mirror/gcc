@@ -1,5 +1,5 @@
 /* { dg-do compile {target *-*-darwin* } } */
-/* { dg-options "-std=c99 -w" } */
+/* { dg-options "-std=c99 -w -fcommon" } */
 
 /* This has been designed to give the same section usage for
    -m32 and -m64 - so don't put any ints or longs in it ... */

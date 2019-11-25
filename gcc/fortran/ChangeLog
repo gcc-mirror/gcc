@@ -1,3 +1,39 @@
+2019-11-25  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* gfortran.texi: Update Hollerith constants support for character types
+	and use in comparisons.
+	* invoke.texi: Tidy up list of options. Update description of
+	-fdec-char-conversions.
+	* resolve.c (is_character_based): New.
+	(Convert_hollerith_to_character): New.  (convert_to_numeric): New.
+	(resolve_operator): If both sides are character based and -fdec is
+	enabled convert Hollerith to character. If an operand is Hollerith, the
+	other is numeric and -fdec is enabled convert to numeric.
+	(resolve_ordinary_assign): Add check for -fdec-char-conversions for
+	assignment of character literals.2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
+	Revert r269139
+	* simplify.c (norm2_do_sqrt, gfc_simplify_norm2): Use
+	mpfr_regular_p instead of mpfr_number_p && !mpfr_zero_p.
+	(norm2_add_squared): Likewise.  Use mpfr_exp_t rather than
+	mp_exp_t.
+
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
+	* arith.c (gfc_mpfr_to_mpz): Change mp_exp_t to mpfr_exp_t.
+	(gfc_check_real_range): Likewise.
+	* gfortran.h (GFC_RND_MODE): Change GMP_RNDN to MPFR_RNDN.
+	* module.c (mio_gmp_real): Change mp_exp_t to mpfr_exp_t.
+	* simplify.c (degrees_f): Change mp_rnd_t to mpfr_rnd_t.
+	(radians_f): Likewise.
+	(fullprec_erfc_scaled): Change mp_prec_t to mpfr_prec_t.
+	(asympt_erfc_scaled): Likewise.
+	(gfc_simplify_nearest): Change mp_exp_t to mpfr_exp_t, and
+	GMP_RND* to MPFR_RND*.
+
 2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69654

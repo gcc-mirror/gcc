@@ -62,7 +62,7 @@ struct GTY(()) condition
      passed by reference and by value.  */
   unsigned by_ref : 1;
   /* A set of sequential operations on the parameter, which can be seen as
-     a mathmatical function on the parameter.  */
+     a mathematical function on the parameter.  */
   expr_eval_ops param_ops;
 };
 
@@ -89,7 +89,7 @@ struct inline_param_summary
 
 typedef vec<condition, va_gc> *conditions;
 
-/* Predicates are used to repesent function parameters (such as runtime)
+/* Predicates are used to represent function parameters (such as runtime)
    which depend on a context function is called in.
 
    Predicates are logical formulas in conjunctive-disjunctive form consisting
@@ -117,7 +117,7 @@ public:
       first_dynamic_condition = 2
     };
 
-  /* Maximal number of conditions predicate can reffer to.  This is limited
+  /* Maximal number of conditions predicate can refer to.  This is limited
      by using clause_t to be 32bit.  */
   static const int num_conditions = 32;
 

@@ -2077,6 +2077,8 @@
 (define_int_iterator SVE_WHILE [UNSPEC_WHILE_LE UNSPEC_WHILE_LO
 				UNSPEC_WHILE_LS UNSPEC_WHILE_LT])
 
+(define_int_iterator SVE2_WHILE_PTR [UNSPEC_WHILERW UNSPEC_WHILEWR])
+
 (define_int_iterator SVE_SHIFT_WIDE [UNSPEC_ASHIFT_WIDE
 				     UNSPEC_ASHIFTRT_WIDE
 				     UNSPEC_LSHIFTRT_WIDE])
@@ -2157,6 +2159,8 @@
 			(UNSPEC_FEXPA "fexpa")
 			(UNSPEC_FTSMUL "ftsmul")
 			(UNSPEC_FTSSEL "ftssel")
+			(UNSPEC_WHILERW "vec_check_raw_alias")
+			(UNSPEC_WHILEWR "vec_check_war_alias")
 			(UNSPEC_COND_FABS "abs")
 			(UNSPEC_COND_FADD "add")
 			(UNSPEC_COND_FCADD90 "cadd90")
@@ -2480,12 +2484,17 @@
 			 (UNSPEC_WHILE_LE "le")
 			 (UNSPEC_WHILE_LO "lo")
 			 (UNSPEC_WHILE_LS "ls")
-			 (UNSPEC_WHILE_LT "lt")])
+			 (UNSPEC_WHILE_LT "lt")
+			 (UNSPEC_WHILERW "rw")
+			 (UNSPEC_WHILEWR "wr")])
 
 (define_int_attr while_optab_cmp [(UNSPEC_WHILE_LE "le")
 				  (UNSPEC_WHILE_LO "ult")
 				  (UNSPEC_WHILE_LS "ule")
 				  (UNSPEC_WHILE_LT "lt")])
+
+(define_int_attr raw_war [(UNSPEC_WHILERW "raw")
+			  (UNSPEC_WHILEWR "war")])
 
 (define_int_attr brk_op [(UNSPEC_BRKA "a") (UNSPEC_BRKB "b")
 			 (UNSPEC_BRKN "n")
@@ -2630,3 +2639,6 @@
 				(UNSPEC_REVB "16")
 				(UNSPEC_REVH "32")
 				(UNSPEC_REVW "64")])
+
+(define_int_attr unspec [(UNSPEC_WHILERW "UNSPEC_WHILERW")
+			 (UNSPEC_WHILEWR "UNSPEC_WHILEWR")])

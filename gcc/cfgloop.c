@@ -980,6 +980,19 @@ get_loop_body_in_custom_order (const class loop *loop,
   return bbs;
 }
 
+/* Same as above, but use gcc_sort_r instead of qsort.  */
+
+basic_block *
+get_loop_body_in_custom_order (const class loop *loop, void *data,
+			       int (*bb_comparator) (const void *, const void *, void *))
+{
+  basic_block *bbs = get_loop_body (loop);
+
+  gcc_sort_r (bbs, loop->num_nodes, sizeof (basic_block), bb_comparator, data);
+
+  return bbs;
+}
+
 /* Get body of a LOOP in breadth first sort order.  */
 
 basic_block *
@@ -1190,12 +1203,11 @@ release_recorded_exits (function *fn)
 /* Returns the list of the exit edges of a LOOP.  */
 
 vec<edge> 
-get_loop_exit_edges (const class loop *loop)
+get_loop_exit_edges (const class loop *loop, basic_block *body)
 {
   vec<edge> edges = vNULL;
   edge e;
   unsigned i;
-  basic_block *body;
   edge_iterator ei;
   struct loop_exit *exit;
 
@@ -1210,14 +1222,20 @@ get_loop_exit_edges (const class loop *loop)
     }
   else
     {
-      body = get_loop_body (loop);
+      bool body_from_caller = true;
+      if (!body)
+	{
+	  body = get_loop_body (loop);
+	  body_from_caller = false;
+	}
       for (i = 0; i < loop->num_nodes; i++)
 	FOR_EACH_EDGE (e, ei, body[i]->succs)
 	  {
 	    if (!flow_bb_inside_loop_p (loop, e->dest))
 	      edges.safe_push (e);
 	  }
-      free (body);
+      if (!body_from_caller)
+	free (body);
     }
 
   return edges;

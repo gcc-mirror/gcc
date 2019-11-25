@@ -25,14 +25,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-predicate.h"
 
 
-/* Hints are reasons why IPA heuristics should preffer specializing given
-   function.  They are represtented as bitmap of the following values.  */
+/* Hints are reasons why IPA heuristics should prefer specializing given
+   function.  They are represented as bitmap of the following values.  */
 enum ipa_hints_vals {
   /* When specialization turns indirect call into a direct call,
      it is good idea to do so.  */
   INLINE_HINT_indirect_call = 1,
   /* Inlining may make loop iterations or loop stride known.  It is good idea
-     to do so because it enables loop optimizatoins.  */
+     to do so because it enables loop optimizations.  */
   INLINE_HINT_loop_iterations = 2,
   INLINE_HINT_loop_stride = 4,
   /* Inlining within same strongly connected component of callgraph is often
@@ -117,8 +117,8 @@ public:
       inlinable (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
       time (0), conds (NULL),
-      size_time_table (NULL), loop_iterations (NULL), loop_stride (NULL),
-      growth (0), scc_no (0)
+      size_time_table (NULL), call_size_time_table (NULL), loop_iterations (NULL),
+      loop_stride (NULL), growth (0), scc_no (0)
   {
   }
 
@@ -129,6 +129,7 @@ public:
     fp_expressions (s.fp_expressions),
     estimated_stack_size (s.estimated_stack_size),
     time (s.time), conds (s.conds), size_time_table (s.size_time_table),
+    call_size_time_table (NULL),
     loop_iterations (s.loop_iterations), loop_stride (s.loop_stride),
     growth (s.growth), scc_no (s.scc_no)
   {}
@@ -161,7 +162,12 @@ public:
   /* Conditional size/time information.  The summaries are being
      merged during inlining.  */
   conditions conds;
+  /* Normal code is accounted in size_time_table, while calls are
+     accounted in call_size_time_table.  This is because calls
+     are often adjusted by IPA optimizations and thus this summary
+     is generated from call summary information when needed.  */
   vec<size_time_entry, va_gc> *size_time_table;
+  vec<size_time_entry, va_gc> *call_size_time_table;
 
   /* Predicate on when some loop in the function becomes to have known
      bounds.   */
@@ -179,10 +185,13 @@ public:
   int scc_no;
 
   /* Record time and size under given predicates.  */
-  void account_size_time (int, sreal, const predicate &, const predicate &);
+  void account_size_time (int, sreal, const predicate &, const predicate &,
+		  	  bool call = false);
 
   /* We keep values scaled up, so fractional sizes can be accounted.  */
   static const int size_scale = 2;
+  /* Maximal size of size_time_table before we start to be conservative.  */
+  static const int max_size_time_table_size = 256;
 };
 
 class GTY((user)) ipa_fn_summary_t:
@@ -283,7 +292,7 @@ public:
 
 /* This object describe a context of call.  That is a summary of known
    information about its parameters.  Main purpose of this context is
-   to give more realistic esitmations of function runtime, size and
+   to give more realistic estimations of function runtime, size and
    inline hints.  */
 class ipa_call_context
 {
@@ -314,7 +323,7 @@ private:
   /* Called function.  */
   cgraph_node *m_node;
   /* Clause describing what predicate conditionals can be satisfied
-     in this context if function is inlined/specialised.  */
+     in this context if function is inlined/specialized.  */
   clause_t m_possible_truths;
   /* Clause describing what predicate conditionals can be satisfied
      in this context if function is kept offline.  */
@@ -349,7 +358,7 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					int *, sreal *, sreal *,
 				        ipa_hints *);
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
-void ipa_update_overall_fn_summary (struct cgraph_node *node);
+void ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset = true);
 void compute_fn_summary (struct cgraph_node *, bool);
 
 

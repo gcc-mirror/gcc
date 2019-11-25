@@ -1,3 +1,9 @@
+2019-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/92483
+	* jit-playback.c (gcc::jit::playback::context::make_fake_args):
+	Update GCC_JIT_BOOL_OPTION_SELFCHECK_GC for new --param syntax.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421

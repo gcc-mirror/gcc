@@ -295,6 +295,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
+-Wc11-c2x-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
 -Wc++20-compat  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
@@ -569,7 +570,7 @@ Objective-C and Objective-C++ Dialects}.
 -fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables @gol
 -fasynchronous-unwind-tables @gol
 -fno-gnu-unique @gol
--finhibit-size-directive  -fno-common  -fno-ident @gol
+-finhibit-size-directive  -fcommon  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt @gol
 -fno-jump-tables @gol
 -frecord-gcc-switches @gol
@@ -6834,6 +6835,16 @@ For instance, warn about use of anonymous structures and unions,
 and so on.  This option is independent of the standards mode.  Warnings are
 disabled in the expression that follows @code{__extension__}.
 
+@item -Wc11-c2x-compat @r{(C and Objective-C only)}
+@opindex Wc11-c2x-compat
+@opindex Wno-c11-c2x-compat
+Warn about features not present in ISO C11, but present in ISO C2X.
+For instance, warn about omitting the string in @code{_Static_assert},
+use of @samp{[[]]} syntax for attributes, use of decimal
+floating-point types, and so on.  This option is independent of the
+standards mode.  Warnings are disabled in the expression that follows
+@code{__extension__}.
+
 @item -Wc++-compat @r{(C and Objective-C only)}
 @opindex Wc++-compat
 @opindex Wno-c++-compat
@@ -8179,7 +8190,7 @@ consumers are not expected to support this extended format, and they
 would be rendered unable to decode location lists using it.
 
 @item -ginternal-reset-location-views
-@itemx -gnointernal-reset-location-views
+@itemx -gno-internal-reset-location-views
 @opindex ginternal-reset-location-views
 @opindex gno-internal-reset-location-views
 Attempt to determine location views that can be omitted from location
@@ -11274,16 +11285,11 @@ when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
 @item max-inline-insns-single
-@item max-inline-insns-single-O2
 Several parameters control the tree inliner used in GCC@.  This number sets the
 maximum number of instructions (counted in GCC's internal representation) in a
 single function that the tree inliner considers for inlining.  This only
 affects functions declared inline and methods implemented in a class
 declaration (C++). 
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-single} is
-applied. In other cases @option{max-inline-insns-single-O2} is applied.
 
 
 @item max-inline-insns-auto
@@ -11310,16 +11316,10 @@ Extra time accounted by inliner for function overhead such as time needed to
 execute function prologue and epilogue
 
 @item inline-heuristics-hint-percent
-@item inline-heuristics-hint-percent-O2
 The scale (in percents) applied to @option{inline-insns-single},
 @option{inline-insns-single-O2}, @option{inline-insns-auto}
 when inline heuristics hints that inlining is
 very profitable (will enable later optimizations).
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter
-@option{inline-heuristics-hint-percent} is applied. In other cases
-@option{inline-heuristics-hint-percent-O2} is applied.
 
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
@@ -11327,15 +11327,10 @@ Same as @option{--param uninlined-function-insns} and
 @option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
-@item inline-min-speedup-O2
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{inline-min-speedup} is
-applied. In other cases @option{inline-min-speedup-O2} is applied.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -11414,13 +11409,8 @@ via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
 
 @item early-inlining-insns
-@item early-inlining-insns-O2
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{early-inlining-insns} is
-applied. In other cases @option{early-inlining-insns-O2} is applied.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
@@ -14116,35 +14106,27 @@ useful for building programs to run under WINE@.
 code that is not binary compatible with code generated without that switch.
 Use it to conform to a non-default application binary interface.
 
-@item -fno-common
-@opindex fno-common
+@item -fcommon
 @opindex fcommon
+@opindex fno-common
 @cindex tentative definitions
-In C code, this option controls the placement of global variables 
-defined without an initializer, known as @dfn{tentative definitions} 
-in the C standard.  Tentative definitions are distinct from declarations 
+In C code, this option controls the placement of global variables
+defined without an initializer, known as @dfn{tentative definitions}
+in the C standard.  Tentative definitions are distinct from declarations
 of a variable with the @code{extern} keyword, which do not allocate storage.
 
-Unix C compilers have traditionally allocated storage for
-uninitialized global variables in a common block.  This allows the
-linker to resolve all tentative definitions of the same variable
-in different compilation units to the same object, or to a non-tentative
-definition.  
-This is the behavior specified by @option{-fcommon}, and is the default for 
-GCC on most targets.  
-On the other hand, this behavior is not required by ISO
-C, and on some targets may carry a speed or code size penalty on
-variable references.
+The default is @option{-fno-common}, which specifies that the compiler places
+uninitialized global variables in the BSS section of the object file.
+This inhibits the merging of tentative definitions by the linker so you get a
+multiple-definition error if the same variable is accidentally defined in more
+than one compilation unit.
 
-The @option{-fno-common} option specifies that the compiler should instead
-place uninitialized global variables in the BSS section of the object file.
-This inhibits the merging of tentative definitions by the linker so
-you get a multiple-definition error if the same 
-variable is defined in more than one compilation unit.
-Compiling with @option{-fno-common} is useful on targets for which
-it provides better performance, or if you wish to verify that the
-program will work on other systems that always treat uninitialized
-variable definitions this way.
+The @option{-fcommon} places uninitialized global variables in a common block.
+This allows the linker to resolve all tentative definitions of the same variable
+in different compilation units to the same object, or to a non-tentative
+definition.  This behavior is inconsistent with C++, and on many targets implies
+a speed and code size penalty on global variable references.  It is mainly
+useful to enable legacy code to link without errors.
 
 @item -fno-ident
 @opindex fno-ident
@@ -16284,9 +16266,8 @@ Enable the Armv8.5-a Random Number instructions.  This option is only to
 enable the extension at the assembler level and does not affect code
 generation.
 @item memtag
-Enable the Armv8.5-a Memory Tagging Extensions.  This option is only to
-enable the extension at the assembler level and does not affect code
-generation.
+Enable the Armv8.5-a Memory Tagging Extensions.
+Use of this option with architectures prior to Armv8.5-A is not supported.
 @item sb
 Enable the Armv8-a Speculation Barrier instruction.  This option is only to
 enable the extension at the assembler level and does not affect code

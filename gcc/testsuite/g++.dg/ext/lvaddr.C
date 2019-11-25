@@ -6,5 +6,5 @@
 void f()
 {
   int n;
-  char* p = &(char) n;		// { dg-error "lvalue" }
+  char* p = &(char) n;		// { dg-error "14:lvalue" }
 }

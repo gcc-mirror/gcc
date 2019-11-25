@@ -447,7 +447,7 @@ static const struct cpu_vector_cost generic_vector_cost =
   1, /* vec_int_stmt_cost  */
   1, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
-  1, /* vec_to_scalar_cost  */
+  2, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
   1, /* vec_align_load_cost  */
   1, /* vec_unalign_load_cost  */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1 --param early-inlining-insns-O2=14" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1 --param early-inlining-insns=14" } */
 
 int f();
 

@@ -2346,7 +2346,6 @@ get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
 	    {
 	      *fldoff += index;
 	      *off -= index;
-	      fldoff = NULL;
 	    }
 	}
 

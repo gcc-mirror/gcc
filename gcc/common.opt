@@ -1131,7 +1131,7 @@ Common Report Var(flag_combine_stack_adjustments) Optimization
 Looks for opportunities to reduce stack adjustments and stack references.
 
 fcommon
-Common Report Var(flag_no_common,0)
+Common Report Var(flag_no_common,0) Init(1)
 Put uninitialized globals in the common section.
 
 fcompare-debug

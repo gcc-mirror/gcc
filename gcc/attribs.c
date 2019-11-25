@@ -573,13 +573,23 @@ decl_attributes (tree *node, tree attributes, int flags,
 	    }
 	  continue;
 	}
-      else if (list_length (args) < spec->min_length
-	       || (spec->max_length >= 0
-		   && list_length (args) > spec->max_length))
+      else
 	{
-	  error ("wrong number of arguments specified for %qE attribute",
-		 name);
-	  continue;
+	  int nargs = list_length (args);
+	  if (nargs < spec->min_length
+	      || (spec->max_length >= 0
+		  && nargs > spec->max_length))
+	    {
+	      error ("wrong number of arguments specified for %qE attribute",
+		     name);
+	      if (spec->max_length < 0)
+		inform (input_location, "expected %i or more, found %i",
+			spec->min_length, nargs);
+	      else
+		inform (input_location, "expected between %i and %i, found %i",
+			spec->min_length, spec->max_length, nargs);
+	      continue;
+	    }
 	}
       gcc_assert (is_attribute_p (spec->name, name));
 

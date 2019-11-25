@@ -415,7 +415,7 @@ begin arch armv6s-m
 end arch armv6s-m
 
 begin arch armv7
- tune for cortex-a8
+ tune for cortex-a53
  tune flags CO_PROC
  base 7
  isa ARMv7
@@ -426,7 +426,7 @@ begin arch armv7
 end arch armv7
 
 begin arch armv7-a
- tune for cortex-a8
+ tune for cortex-a53
  tune flags CO_PROC
  base 7A
  profile A
@@ -451,7 +451,7 @@ begin arch armv7-a
 end arch armv7-a
 
 begin arch armv7ve
- tune for cortex-a8
+ tune for cortex-a53
  tune flags CO_PROC
  base 7A
  profile A

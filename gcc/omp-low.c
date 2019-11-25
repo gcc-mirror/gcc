@@ -4086,8 +4086,8 @@ omp_clause_aligned_alignment (tree clause)
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)
 	  continue;
 	type = build_vector_type_for_mode (type, vmode);
-	/* The functions above are not allowed to return invalid modes.  */
-	gcc_assert (TYPE_MODE (type) == vmode);
+	if (TYPE_MODE (type) != vmode)
+	  continue;
 	if (TYPE_ALIGN_UNIT (type) > al)
 	  al = TYPE_ALIGN_UNIT (type);
       }

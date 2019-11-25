@@ -388,11 +388,24 @@ address_eliminator::~address_eliminator ()
     *m_index_loc = m_index_reg;
 }
 
-/* Return true if the eliminated form of AD is a legitimate target address.  */
+/* Return true if the eliminated form of AD is a legitimate target address.
+   If OP is a MEM, AD is the address within OP, otherwise OP should be
+   ignored.  CONSTRAINT is one constraint that the operand may need
+   to meet.  */
 static bool
-valid_address_p (struct address_info *ad)
+valid_address_p (rtx op, struct address_info *ad,
+		 enum constraint_num constraint)
 {
   address_eliminator eliminator (ad);
+
+  /* Allow a memory OP if it matches CONSTRAINT, even if CONSTRAINT is more
+     forgiving than "m".  */
+  if (MEM_P (op)
+      && (insn_extra_memory_constraint (constraint)
+	  || insn_extra_special_memory_constraint (constraint))
+      && constraint_satisfied_p (op, constraint))
+    return true;
+
   return valid_address_p (ad->mode, *ad->outer, ad->as);
 }
 
@@ -3397,7 +3410,7 @@ process_address_1 (int nop, bool check_only_p,
 
      All these cases involve a non-autoinc address, so there is no
      point revalidating other types.  */
-  if (ad.autoinc_p || valid_address_p (&ad))
+  if (ad.autoinc_p || valid_address_p (op, &ad, cn))
     return change_p;
 
   /* Any index existed before LRA started, so we can assume that the
@@ -3426,7 +3439,7 @@ process_address_1 (int nop, bool check_only_p,
 	      if (code >= 0)
 		{
 		  *ad.inner = gen_rtx_LO_SUM (Pmode, new_reg, addr);
-		  if (! valid_address_p (ad.mode, *ad.outer, ad.as))
+		  if (!valid_address_p (op, &ad, cn))
 		    {
 		      /* Try to put lo_sum into register.  */
 		      insn = emit_insn (gen_rtx_SET
@@ -3436,7 +3449,7 @@ process_address_1 (int nop, bool check_only_p,
 		      if (code >= 0)
 			{
 			  *ad.inner = new_reg;
-			  if (! valid_address_p (ad.mode, *ad.outer, ad.as))
+			  if (!valid_address_p (op, &ad, cn))
 			    {
 			      *ad.inner = addr;
 			      code = -1;
@@ -3531,7 +3544,7 @@ process_address_1 (int nop, bool check_only_p,
 	  && CONSTANT_P (XEXP (SET_SRC (set), 1)))
 	{
 	  *ad.inner = SET_SRC (set);
-	  if (valid_address_p (ad.mode, *ad.outer, ad.as))
+	  if (valid_address_p (op, &ad, cn))
 	    {
 	      *ad.base_term = XEXP (SET_SRC (set), 0);
 	      *ad.disp_term = XEXP (SET_SRC (set), 1);

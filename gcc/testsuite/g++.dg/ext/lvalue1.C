@@ -4,7 +4,7 @@ int main ()
 {
   char c;
 
-  static_cast<int>(c) = 2; // { dg-error "lvalue" "not an lvalue" }
+  static_cast<int>(c) = 2; // { dg-error "3:lvalue" "not an lvalue" }
 
   return c != 2;
 }

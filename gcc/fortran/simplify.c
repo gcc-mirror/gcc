@@ -1768,7 +1768,7 @@ simplify_trig_call (gfc_expr *icall)
 /* Convert a floating-point number from radians to degrees.  */
 
 static void
-degrees_f (mpfr_t x, mp_rnd_t rnd_mode)
+degrees_f (mpfr_t x, mpfr_rnd_t rnd_mode)
 {
   mpfr_t tmp;
   mpfr_init (tmp);
@@ -1791,7 +1791,7 @@ degrees_f (mpfr_t x, mp_rnd_t rnd_mode)
 /* Convert a floating-point number from degrees to radians.  */
 
 static void
-radians_f (mpfr_t x, mp_rnd_t rnd_mode)
+radians_f (mpfr_t x, mpfr_rnd_t rnd_mode)
 {
   mpfr_t tmp;
   mpfr_init (tmp);
@@ -2681,7 +2681,7 @@ gfc_simplify_erfc (gfc_expr *x)
 static void
 fullprec_erfc_scaled (mpfr_t res, mpfr_t arg)
 {
-  mp_prec_t prec;
+  mpfr_prec_t prec;
   mpfr_t a, b;
 
   prec = mpfr_get_default_prec ();
@@ -2718,7 +2718,7 @@ asympt_erfc_scaled (mpfr_t res, mpfr_t arg)
 {
   mpfr_t sum, x, u, v, w, oldsum, sumtrunc;
   mpz_t num;
-  mp_prec_t prec;
+  mpfr_prec_t prec;
   unsigned i;
 
   prec = mpfr_get_default_prec ();
@@ -5914,7 +5914,7 @@ gfc_expr *
 gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
 {
   gfc_expr *result;
-  mp_exp_t emin, emax;
+  mpfr_exp_t emin, emax;
   int kind;
 
   if (x->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
@@ -5928,20 +5928,20 @@ gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
 
   /* Set emin and emax for the current model number.  */
   kind = gfc_validate_kind (BT_REAL, x->ts.kind, 0);
-  mpfr_set_emin ((mp_exp_t) gfc_real_kinds[kind].min_exponent -
+  mpfr_set_emin ((mpfr_exp_t) gfc_real_kinds[kind].min_exponent -
 		mpfr_get_prec(result->value.real) + 1);
-  mpfr_set_emax ((mp_exp_t) gfc_real_kinds[kind].max_exponent - 1);
-  mpfr_check_range (result->value.real, 0, GMP_RNDU);
+  mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[kind].max_exponent - 1);
+  mpfr_check_range (result->value.real, 0, MPFR_RNDU);
 
   if (mpfr_sgn (s->value.real) > 0)
     {
       mpfr_nextabove (result->value.real);
-      mpfr_subnormalize (result->value.real, 0, GMP_RNDU);
+      mpfr_subnormalize (result->value.real, 0, MPFR_RNDU);
     }
   else
     {
       mpfr_nextbelow (result->value.real);
-      mpfr_subnormalize (result->value.real, 0, GMP_RNDD);
+      mpfr_subnormalize (result->value.real, 0, MPFR_RNDD);
     }
 
   mpfr_set_emin (emin);
@@ -6023,8 +6023,8 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
 
   gfc_set_model_kind (result->ts.kind);
   int index = gfc_validate_kind (BT_REAL, result->ts.kind, false);
-  mp_exp_t exp;
-  if (mpfr_number_p (result->value.real) && !mpfr_zero_p (result->value.real))
+  mpfr_exp_t exp;
+  if (mpfr_regular_p (result->value.real))
     {
       exp = mpfr_get_exp (result->value.real);
       /* If result is getting close to overflowing, scale down.  */
@@ -6038,7 +6038,7 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
     }
 
   mpfr_init (tmp);
-  if (mpfr_number_p (e->value.real) && !mpfr_zero_p (e->value.real))
+  if (mpfr_regular_p (e->value.real))
     {
       exp = mpfr_get_exp (e->value.real);
       /* If e**2 would overflow or close to overflowing, scale down.  */
@@ -6079,9 +6079,7 @@ norm2_do_sqrt (gfc_expr *result, gfc_expr *e)
   if (result != e)
     mpfr_set (result->value.real, e->value.real, GFC_RND_MODE);
   mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-  if (norm2_scale
-      && mpfr_number_p (result->value.real)
-      && !mpfr_zero_p (result->value.real))
+  if (norm2_scale && mpfr_regular_p (result->value.real))
     {
       mpfr_t tmp;
       mpfr_init (tmp);
@@ -6120,9 +6118,7 @@ gfc_simplify_norm2 (gfc_expr *e, gfc_expr *dim)
       result = simplify_transformation_to_scalar (result, e, NULL,
 						  norm2_add_squared);
       mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-      if (norm2_scale
-	  && mpfr_number_p (result->value.real)
-	  && !mpfr_zero_p (result->value.real))
+      if (norm2_scale && mpfr_regular_p (result->value.real))
 	{
 	  mpfr_t tmp;
 	  mpfr_init (tmp);

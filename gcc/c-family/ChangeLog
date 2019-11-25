@@ -1,3 +1,50 @@
+2019-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83859
+	* c-attribs.c (append_access_attrs): Avoid buffer overflow.  Avoid
+	memory leak.  Use XNEWVEC macro.  Use auto_diagnostic_group to
+	group warning with inform together.
+	(handle_access_attribute): Formatting fix.
+
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* c-common.h (identifier_global_tag): Declare.
+	* c-format.c (get_pointer_to_named_type): Renamed to ...
+	(get_named_type): ... this.  Use identifier_global_tag instead of
+	identifier_global_value, handle the return value being a TYPE_P.
+	(init_dynamic_diag_info): Adjust get_pointer_to_named_type callers
+	to call get_named_type instead.  Formatting fixes.
+
+	Implement P1920R1, Missing feature-test macros 2017-2019.
+	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_init_captures
+	and __cpp_generic_lambdas for -std=c++2a.  Define
+	__cpp_designated_initializers, __cpp_constexpr_in_decltype and
+	__cpp_consteval for -std=c++2a.  Remove a FIXME comment about
+	__cpp_concepts for -std=c++2a.
+
+2019-11-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/83859
+	* c-attribs.c (handle_access_attribute): New function.
+	(c_common_attribute_table): Add new attribute.
+	(get_argument_type): New function.
+	(append_access_attrs): New function.
+	(get_nonnull_operand): Rename...
+	(get_attribute_operand): ...to this.
+	* c-common.c (get_nonnull_operand): Rename...
+	(get_attribute_operand): ...to this.
+
+2019-11-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-attribs.c (handle_fallthrough_attribute): Use pedwarn instead
+	of warning.
+
+2019-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (attribute_fallthrough_p): In C, use pedwarn not
+	warning for standard attributes mixed with fallthrough attributes.
+
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-attribs.c (handle_fallthrough_attribute): Remove static.

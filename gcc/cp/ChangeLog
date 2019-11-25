@@ -1,3 +1,124 @@
+2019-11-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/92365
+	* name-lookup.c (check_local_shadow): Use can_convert_arg
+	instead of can_convert.
+
+2019-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88337 - P1327R1: Allow polymorphic typeid in constexpr.
+	* constexpr.c (potential_constant_expression_1): Allow a typeid
+	expression whose operand is of polymorphic type in constexpr in
+	C++20.
+	* rtti.c (build_typeid): Remove obsolete FIXME comment.
+
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* cp-objcp-common.c (identifier_global_tag): Define.
+
+	PR c++/92458
+	* init.c (nsdmi_inst): Change type to
+	decl_tree_cache_map * from tree_cache_map *.
+	* constraint.cc (decl_constraints): Likewise.
+	* decl.c (get_tuple_decomp_init): Likewise.
+	* pt.c (defarg_inst, explicit_specifier_map): Likewise.
+	(tsubst_default_argument, store_explicit_specifier): Use
+	decl_tree_cache_map::create_ggc rather than
+	tree_cache_map::create_ggc.
+	* cp-objcp-common.c (debug_type_map): Change type to
+	type_tree_cache_map * from tree_cache_map *.
+
+2019-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92450 - ICE with invalid nested name specifier.
+	* parser.c (cp_parser_member_declaration): Don't attempt to print
+	erroneous bit-field diagnostic if grokdeclarator returns
+	error_mark_node.
+
+2019-11-21  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/90842
+	* parser.c (cp_parser_decl_specifier_seq): For concept or typedef
+	break early if CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR.
+	For type specifiers, set CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS
+	if CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR is set.
+
+2019-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck2.c (build_x_arrow): Early return if decay_conversion
+	returns error_mark_node.
+
+2019-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90767
+	* call.c (complain_about_no_candidates_for_method_call): If
+	conv->from is not a type, pass to complain_about_bad_argument
+	lvalue_type of conv->from.
+
+2019-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cvt.c (ocp_convert): Use additional warning sentinel.
+
+2019-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92414
+	* constexpr.c (cxx_eval_outermost_constant_expr): If DECL_INITIAL
+	on object is erroneous, return t without trying to evaluate
+	a constexpr dtor.
+
+2019-11-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (same_fn_or_template): Change to cand_parms_match.
+	(joust): Adjust.
+	(print_z_candidate): Mark rewritten/reversed candidates.
+	(build_new_op_1): Warn about recursive call with reversed arguments.
+
+2019-11-15  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/89913
+	* pt.c (get_underlying_template): Exit loop if the original type
+	of the alias is null.
+
+2019-11-19  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92078
+	* pt.c (maybe_new_partial_specialization): Apply access to newly
+	created partial specializations. Update comment style.
+
+2019-11-19  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92078
+	* pt.c (maybe_new_partial_specialization): Apply access to newly
+	created partial specializations. Update comment style.
+
+2019-11-19  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92403
+	Suppress diagnostics substituting into a requires-expression.
+	* pt.c (tsubst_copy_and_build): Perform the first substitution without
+	diagnostics and a second only if tsubst_requries_expr returns an error.
+
+2019-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92504
+	* semantics.c (handle_omp_for_class_iterator): Don't call
+	cp_fully_fold on cond.
+
+2019-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_addr_expr_1): Use cp_expr_loc_or_input_loc
+	in three places.
+	(cxx_sizeof_expr): Use it in one additional place.
+	(cxx_alignof_expr): Likewise.
+	(lvalue_or_else): Likewise.
+
+2019-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91962 - ICE with reference binding and qualification conversion.
+	* call.c (convert_like_real) <case ck_ref_bind>: Check need_temporary_p.
+
 2019-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* method.c (lookup_comparison_result): Use %qD instead of %<%T::%D%>

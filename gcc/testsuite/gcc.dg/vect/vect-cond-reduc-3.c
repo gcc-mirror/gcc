@@ -1,6 +1,6 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
-/* { dg-require-effective-target vect_condition } */
+/* { dg-require-effective-target vect_cond_mixed } */
 /* { dg-require-effective-target vect_float } */
 
 #include "tree-vect.h"

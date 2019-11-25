@@ -2044,7 +2044,11 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	last_rval = convert_from_reference (last_rval);
     }
   else
-    last_rval = decay_conversion (expr, complain);
+    {
+      last_rval = decay_conversion (expr, complain);
+      if (last_rval == error_mark_node)
+	return error_mark_node;
+    }
 
   if (TYPE_PTR_P (TREE_TYPE (last_rval)))
     {

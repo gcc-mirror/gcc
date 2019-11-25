@@ -860,7 +860,8 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 			enum vect_def_type *dt,
 			int ndts,
 			slp_tree node,
-			stmt_vector_for_cost *cost_vec)
+			stmt_vector_for_cost *cost_vec,
+			vect_cost_for_stmt kind = vector_stmt)
 {
   int inside_cost = 0, prologue_cost = 0;
 
@@ -907,7 +908,7 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
-  inside_cost += record_stmt_cost (cost_vec, ncopies, vector_stmt,
+  inside_cost += record_stmt_cost (cost_vec, ncopies, kind,
 				   stmt_info, 0, vect_body);
 
   if (dump_enabled_p ())
@@ -2308,6 +2309,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 		  || alignment_support_scheme == dr_unaligned_supported)
 	      && known_eq (nunits, (group_size - gap) * 2)
 	      && known_eq (nunits, group_size)
+	      && VECTOR_MODE_P (TYPE_MODE (vectype))
 	      && related_vector_mode (TYPE_MODE (vectype), elmode,
 				      group_size - gap).exists (&vmode)
 	      && (convert_optab_handler (vec_init_optab,
@@ -7822,8 +7824,9 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		 of vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (elem_type);
 	      machine_mode vmode;
-	      if (!related_vector_mode (TYPE_MODE (vectype), elmode,
-					group_size).exists (&vmode)
+	      if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+		  || !related_vector_mode (TYPE_MODE (vectype), elmode,
+					   group_size).exists (&vmode)
 		  || (convert_optab_handler (vec_extract_optab,
 					     TYPE_MODE (vectype), vmode)
 		      == CODE_FOR_nothing))
@@ -7840,6 +7843,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		     element extracts from the original vector type and
 		     element size stores.  */
 		  if (int_mode_for_size (lsize, 0).exists (&elmode)
+		      && VECTOR_MODE_P (TYPE_MODE (vectype))
 		      && related_vector_mode (TYPE_MODE (vectype), elmode,
 					      lnunits).exists (&vmode)
 		      && (convert_optab_handler (vec_extract_optab,
@@ -8922,8 +8926,9 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		 vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
 	      machine_mode vmode;
-	      if (related_vector_mode (TYPE_MODE (vectype), elmode,
-				       group_size).exists (&vmode)
+	      if (VECTOR_MODE_P (TYPE_MODE (vectype))
+		  && related_vector_mode (TYPE_MODE (vectype), elmode,
+					  group_size).exists (&vmode)
 		  && (convert_optab_handler (vec_init_optab,
 					     TYPE_MODE (vectype), vmode)
 		      != CODE_FOR_nothing))
@@ -8947,6 +8952,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */
 		  if (int_mode_for_size (lsize, 0).exists (&elmode)
+		      && VECTOR_MODE_P (TYPE_MODE (vectype))
 		      && related_vector_mode (TYPE_MODE (vectype), elmode,
 					      lnunits).exists (&vmode)
 		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
@@ -9272,9 +9278,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
        || alignment_support_scheme == dr_explicit_realign)
       && !compute_in_loop)
     {
-      msq = vect_setup_realignment (first_stmt_info_for_drptr
-				    ? first_stmt_info_for_drptr
-				    : first_stmt_info, gsi, &realignment_token,
+      msq = vect_setup_realignment (first_stmt_info, gsi, &realignment_token,
 				    alignment_support_scheme, NULL_TREE,
 				    &at_loop);
       if (alignment_support_scheme == dr_explicit_realign_optimized)
@@ -10081,15 +10085,18 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		return false;
 	    }
 	}
-      if (expand_vec_cond_expr_p (vectype, comp_vectype,
-				     cond_code))
-	{
-	  STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-	  vect_model_simple_cost (stmt_info, ncopies, dts, ndts, slp_node,
-				  cost_vec);
-	  return true;
-	}
-      return false;
+
+      vect_cost_for_stmt kind = vector_stmt;
+      if (reduction_type == EXTRACT_LAST_REDUCTION)
+	/* Count one reduction-like operation per vector.  */
+	kind = vec_to_scalar;
+      else if (!expand_vec_cond_expr_p (vectype, comp_vectype, cond_code))
+	return false;
+
+      STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
+      vect_model_simple_cost (stmt_info, ncopies, dts, ndts, slp_node,
+			      cost_vec, kind);
+      return true;
     }
 
   /* Transform.  */

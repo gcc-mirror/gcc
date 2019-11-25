@@ -475,7 +475,7 @@ bool scanstackwithmap(void*)
 bool doscanstack(G*, void*)
   __asm__("runtime.doscanstack");
 
-bool runtime_usestackmaps;
+extern bool runtime_usestackmaps;
 
 bool probestackmaps(void)
   __asm__("runtime.probestackmaps");

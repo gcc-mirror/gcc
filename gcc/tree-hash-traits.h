@@ -41,44 +41,4 @@ tree_operand_hash::equal (const value_type &t1,
   return operand_equal_p (t1, t2, 0);
 }
 
-/* Hasher for tree decls.  Pointer equality is enough here, but the DECL_UID
-   is a better hash than the pointer value and gives a predictable traversal
-   order.  */
-struct tree_decl_hash : ggc_ptr_hash <tree_node>
-{
-  static inline hashval_t hash (tree);
-};
-
-inline hashval_t
-tree_decl_hash::hash (tree t)
-{
-  return DECL_UID (t);
-}
-
-/* Hash for SSA_NAMEs in the same function.  Pointer equality is enough
-   here, but the SSA_NAME_VERSION is a better hash than the pointer
-   value and gives a predictable traversal order.  */
-struct tree_ssa_name_hash : ggc_ptr_hash <tree_node>
-{
-  static inline hashval_t hash (tree);
-};
-
-inline hashval_t
-tree_ssa_name_hash::hash (tree t)
-{
-  return SSA_NAME_VERSION (t);
-}
-
-/* Hasher for general trees, based on their TREE_HASH.  */
-struct tree_hash : ggc_ptr_hash <tree_node>
-{
-  static hashval_t hash (tree);
-};
-
-inline hashval_t
-tree_hash::hash (tree t)
-{
-  return TREE_HASH (t);
-}
-
 #endif

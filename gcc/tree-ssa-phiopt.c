@@ -2269,6 +2269,10 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   name = make_temp_ssa_name (TREE_TYPE (lhs), NULL, "cstore");
   new_stmt = gimple_build_assign (name, lhs);
   gimple_set_location (new_stmt, locus);
+  lhs = unshare_expr (lhs);
+  /* Set TREE_NO_WARNING on the rhs of the load to avoid uninit
+     warnings.  */
+  TREE_NO_WARNING (gimple_assign_rhs1 (new_stmt)) = 1;
   gsi_insert_on_edge (e1, new_stmt);
 
   /* 3) Create a PHI node at the join block, with one argument
@@ -2279,7 +2283,6 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   add_phi_arg (newphi, rhs, e0, locus);
   add_phi_arg (newphi, name, e1, locus);
 
-  lhs = unshare_expr (lhs);
   new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));
 
   /* 4) Insert that PHI node.  */

@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 gfc_mpfr_to_mpz (mpz_t z, mpfr_t x, locus *where)
 {
-  mp_exp_t e;
+  mpfr_exp_t e;
 
   if (mpfr_inf_p (x) || mpfr_nan_p (x))
     {
@@ -376,7 +376,7 @@ gfc_check_real_range (mpfr_t p, int kind)
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
     {
-      mp_exp_t emin, emax;
+      mpfr_exp_t emin, emax;
       int en;
 
       /* Save current values of emin and emax.  */
@@ -396,9 +396,9 @@ gfc_check_real_range (mpfr_t p, int kind)
 
       /* Copy sign if needed.  */
       if (mpfr_sgn (p) < 0)
-	mpfr_neg (p, q, GMP_RNDN);
+	mpfr_neg (p, q, MPFR_RNDN);
       else
-	mpfr_set (p, q, GMP_RNDN);
+	mpfr_set (p, q, MPFR_RNDN);
     }
 
   mpfr_clear (q);

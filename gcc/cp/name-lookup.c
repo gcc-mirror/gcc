@@ -2769,8 +2769,8 @@ check_local_shadow (tree decl)
 		      (now) doing the shadow checking too
 		      early.  */
 		   && !type_uses_auto (TREE_TYPE (decl))
-		   && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
-				   tf_none)))
+		   && can_convert_arg (TREE_TYPE (old), TREE_TYPE (decl),
+				       decl, LOOKUP_IMPLICIT, tf_none)))
 	warning_code = OPT_Wshadow_compatible_local;
       else
 	warning_code = OPT_Wshadow_local;

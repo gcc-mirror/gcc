@@ -1775,7 +1775,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #if __cplusplus > 201703L
 namespace ranges::__detail
 {
-  template<typename _Tp> inline constexpr bool __enable_view_impl;
+  template<typename _Tp> extern inline const bool __enable_view_impl;
   template<typename _Val, typename _Hash, typename _Eq, typename _Alloc>
     inline constexpr bool
       __enable_view_impl<_GLIBCXX_STD_C::unordered_set<_Val, _Hash, _Eq,

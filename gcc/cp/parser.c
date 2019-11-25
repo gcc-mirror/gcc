@@ -14133,6 +14133,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
           ds = ds_concept;
           cp_lexer_consume_token (parser->lexer);
 
+	  if (flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR)
+	    break;
+
           /* Warn for concept as a decl-specifier. We'll rewrite these as
              concept declarations later.  */
           if (!flag_concepts_ts)
@@ -14175,6 +14178,10 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  ds = ds_typedef;
 	  /* Consume the token.  */
 	  cp_lexer_consume_token (parser->lexer);
+
+	  if (flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR)
+	    break;
+
 	  /* A constructor declarator cannot appear in a typedef.  */
 	  constructor_possible_p = false;
 	  /* The "typedef" keyword can only occur in a declaration; we
@@ -14270,6 +14277,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  int decl_spec_declares_class_or_enum;
 	  bool is_cv_qualifier;
 	  tree type_spec;
+
+	  if (flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR)
+	    flags |= CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS;
 
 	  type_spec
 	    = cp_parser_type_specifier (parser, flags,
@@ -25091,9 +25101,10 @@ cp_parser_member_declaration (cp_parser* parser)
 		  tree d = grokdeclarator (declarator, &decl_specifiers,
 					   BITFIELD, /*initialized=*/false,
 					   &attributes);
-		  error_at (DECL_SOURCE_LOCATION (d),
-			    "bit-field %qD has non-integral type %qT",
-			    d, TREE_TYPE (d));
+		  if (!error_operand_p (d))
+		    error_at (DECL_SOURCE_LOCATION (d),
+			      "bit-field %qD has non-integral type %qT",
+			      d, TREE_TYPE (d));
 		  cp_parser_skip_to_end_of_statement (parser);
 		  /* Avoid "extra ;" pedwarns.  */
 		  if (cp_lexer_next_token_is (parser->lexer,
