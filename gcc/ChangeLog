@@ -1,3 +1,8 @@
+2019-11-25  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.c (pre_and_rev_post_order_compute_fn): Use an
+	auto_bb_flag instead of an sbitmap for visited handling.
+
 2019-11-25 Kewen Lin  <linkw@gcc.gnu.org>
 
 	* config/rs6000/vector.md (vector_fp_comparison_simple): New code
