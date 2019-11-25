@@ -1,3 +1,9 @@
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/91985
+	* lto-lang.c (lto_type_for_mode): Handle decimal floating-point
+	types being NULL_TREE.
+
 2019-11-22  Jan Hubicka  <jh@suse.cz>
 	
 	* lto.c (lto_wpa_write_files): Call memory_block_pool::trim.

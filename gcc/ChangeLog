@@ -1,5 +1,15 @@
 2019-11-25  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/91985
+	* builtin-types.def (BT_DFLOAT32, BT_DFLOAT64, BT_DFLOAT128)
+	(BT_DFLOAT32_PTR, BT_DFLOAT64_PTR, BT_DFLOAT128_PTR): Define to
+	error_mark_node if corresponding global tree node is NULL.
+	* tree.c (build_common_tree_nodes): Do not initialize
+	dfloat32_type_node, dfloat64_type_node or dfloat128_type_node if
+	decimal floating-point not supported.
+
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
 	* attribs.c (decl_attributes): Do not ignore C++11 attributes on
 	types.
 

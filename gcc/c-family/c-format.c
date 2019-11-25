@@ -4390,7 +4390,7 @@ get_format_for_type_1 (const format_kind_info *fki, tree arg_type,
       for (int i = 0; i < FMT_LEN_MAX; i++)
 	{
 	  const format_type_detail *ftd = &spec->types[i];
-	  if (!ftd->type)
+	  if (!ftd->type || *ftd->type == NULL_TREE)
 	    continue;
 	  if (matching_type_p (*ftd->type, effective_arg_type))
 	    {
