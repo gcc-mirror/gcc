@@ -3479,12 +3479,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   static unsigned write_bindings (elf_out *to, vec<depset *> depsets,
-				  depset::hash &table, unsigned *crc_ptr);
+				  unsigned *crc_ptr);
   bool read_bindings (vec<tree> spaces, unsigned, const range_t &range);
 
-  void write_namespaces (elf_out *to, depset::hash &table,
-			 vec<depset *> spaces, unsigned *crc_ptr);
-  vec<tree> read_namespaces ();
+  void write_namespaces (elf_out *to, vec<depset *> spaces,
+			 unsigned *crc_ptr);
+  vec<tree> read_namespaces (unsigned);
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
 			  depset::hash &, unsigned &specializations,
@@ -14226,16 +14226,10 @@ module_state::read_cluster (unsigned snum)
 }
 
 /* SPACES is a sorted vector of namespaces.  Write out the namespaces
-   to MOD_SNAME_PFX.nms section.
-
-   Each namespace is:
-     u:name,
-     u:context, number of containing namespace (0 == ::)
-     u:inline_p/export_p/public_p  */
+   to MOD_SNAME_PFX.nms section.   */
 
 void
-module_state::write_namespaces (elf_out *to, depset::hash &table,
-				vec<depset *> spaces,
+module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 				unsigned *crc_p)
 {
   dump () && dump ("Writing namespaces");
@@ -14252,10 +14246,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
 
       b->section = ix + 1;
-      unsigned ctx_num = 0;
-      tree ctx = CP_DECL_CONTEXT (ns);
-      if (ctx != global_namespace)
-	ctx_num = table.find_dependency (ctx)->section;
+      unsigned ctx_num = b->deps[0]->section;
       bool export_p = DECL_MODULE_EXPORT_P (ns);
       bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
       bool public_p = TREE_PUBLIC (ns);
@@ -14297,21 +14288,24 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
    SPACES from that data.  */
 
 vec<tree>
-module_state::read_namespaces ()
+module_state::read_namespaces (unsigned num)
 {
   bytes_in sec;
   vec<tree> spaces;
 
-  spaces.create (100);
+  spaces.create (num + 1);
+  spaces.quick_push (global_namespace);
   
+  if (!num)
+    return spaces;
+
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".nms"))
     return spaces;
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
 
-  spaces.safe_push (global_namespace);
-  while (sec.more_p ())
+  while (num--)
     {
       unsigned name = sec.u ();
       unsigned anon_name = name ? 0 : sec.u ();
@@ -14344,7 +14338,7 @@ module_state::read_namespaces ()
       if (export_p && is_partition ())
 	DECL_MODULE_EXPORT_P (inner) = true;
 
-      spaces.safe_push (inner);
+      spaces.quick_push (inner);
     }
   dump.outdent ();
 
@@ -14362,8 +14356,7 @@ module_state::read_namespaces ()
      u:section - section number of binding. */
 
 unsigned
-module_state::write_bindings (elf_out *to, vec<depset *> sccs,
-			      depset::hash &table, unsigned *crc_p)
+module_state::write_bindings (elf_out *to, vec<depset *> sccs, unsigned *crc_p)
 {
   dump () && dump ("Writing binding table");
   dump.indent ();
@@ -14377,10 +14370,8 @@ module_state::write_bindings (elf_out *to, vec<depset *> sccs,
       depset *b = sccs[ix];
       if (b->is_binding ())
 	{
-	  unsigned ns_num = 0;
 	  tree ns = b->get_entity ();
-	  if (ns != global_namespace)
-	    ns_num = table.find_dependency (ns)->section;
+	  unsigned ns_num = b->deps[0]->section;
 	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
 			   b->section);
 	  sec.u (to->name (b->get_name ()));
@@ -16200,6 +16191,7 @@ struct module_state_config {
   range_t sec_range;
   unsigned num_specializations;
   unsigned num_entities;
+  unsigned num_namespaces;
   unsigned num_imports;
   unsigned num_partitions;
   unsigned num_bindings;
@@ -16210,7 +16202,7 @@ public:
   module_state_config ()
     :dialect_str (get_dialect ()),
      sec_range (0,0), num_specializations (0), num_entities (0),
-     num_imports (0), num_partitions (0),
+     num_namespaces (0), num_imports (0), num_partitions (0),
      num_bindings (0), num_macros (0), num_inits (0)
   {
   }
@@ -16299,6 +16291,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
   dump () && dump ("Specializations %u", config.num_specializations);
   cfg.u (config.num_entities);
   dump () && dump ("Entities %u", config.num_entities);
+  cfg.u (config.num_namespaces);
+  dump () && dump ("Namespaces %u", config.num_namespaces);
   cfg.u (config.num_macros);
   dump () && dump ("Macros %u", config.num_macros);
   cfg.u (config.num_inits);
@@ -16493,6 +16487,9 @@ module_state::read_config (module_state_config &config)
   config.num_entities = cfg.u ();
   dump () && dump ("Entities %u", config.num_entities);
 
+  config.num_namespaces = cfg.u ();
+  dump () && dump ("Namespaces %u", config.num_namespaces);
+
   config.num_macros = cfg.u ();
   dump () && dump ("Macros %u", config.num_macros);
 
@@ -16656,7 +16653,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	{
 	  /* A namespace decl, these are handled specially.  */
 	  gcc_checking_assert (size == 1);
-	  n_spaces++;
+	  if (base[0]->get_entity () != global_namespace)
+	    n_spaces++;
 	}
       else if (base[0]->get_entity_kind () == depset::EK_REDIRECT)
 	gcc_checking_assert (size == 1);
@@ -16696,7 +16694,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  const char *kind = "";
 	  if (ek == depset::EK_NAMESPACE)
 	    {
-	      spaces.quick_push (base[0]);
+	      if (decl != global_namespace)
+		{
+		  spaces.quick_push (base[0]);
+		  config.num_namespaces++;
+		}
 	      kind = "namespace";
 	    }
 	  else if (ek == depset::EK_REDIRECT)
@@ -16733,10 +16735,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
     write_entities (to, sccs, table, config.num_entities, &crc);
 
   /* Write the namespaces.  */
-  write_namespaces (to, table, spaces, &crc);
+  if (config.num_namespaces)
+    write_namespaces (to, spaces, &crc);
 
   /* Write the bindings themselves.  */
-  config.num_bindings = write_bindings (to, sccs, table, &crc);
+  config.num_bindings = write_bindings (to, sccs, &crc);
 
   /* Write the unnamed.  */
   if (config.num_specializations)
@@ -16858,7 +16861,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	  goto bail;
 
 	/* Read the namespace hierarchy. */
-	vec<tree> spaces = read_namespaces ();
+	vec<tree> spaces = read_namespaces (config.num_namespaces);
 
 	bool ok = spaces.length ()
 	  && read_bindings (spaces, config.num_bindings, config.sec_range);

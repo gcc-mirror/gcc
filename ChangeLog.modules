@@ -1,6 +1,16 @@
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write_namespaces): Delete TABLE arg,
+	look at the dep[0]
+	(module_state::read_namespaces): Add num_spaces parm.  Use it to
+	count iterations.
+	(module_State::write_bindings): Drop TABLE arg, look at dep[0].
+	(struct module_state_config): Add num_namespaces field, stream it.
+	(module_state::{read,write}): Don't count global namespace. adjust
+	namespace streaming calls.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Add namespace dependency here.
 	(depset::hash::add_dependency): And here.
 	(space_cmp): Delete.
