@@ -967,11 +967,8 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
   else
     rev_post_order_num -= NUM_FIXED_BLOCKS;
 
-  /* Allocate bitmap to track nodes that have been visited.  */
-  auto_sbitmap visited (last_basic_block_for_fn (fn));
-
-  /* None of the nodes in the CFG have been visited yet.  */
-  bitmap_clear (visited);
+  /* BB flag to track nodes that have been visited.  */
+  auto_bb_flag visited (fn);
 
   /* Push the first edge on to the stack.  */
   stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (fn)->succs));
@@ -988,10 +985,10 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 
       /* Check if the edge destination has been visited yet.  */
       if (dest != EXIT_BLOCK_PTR_FOR_FN (fn)
-	  && ! bitmap_bit_p (visited, dest->index))
+	  && ! (dest->flags & visited))
 	{
 	  /* Mark that we have visited the destination.  */
-	  bitmap_set_bit (visited, dest->index);
+	  dest->flags |= visited;
 
 	  if (pre_order)
 	    pre_order[pre_order_num] = dest->index;
@@ -1031,6 +1028,10 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
       if (rev_post_order)
 	rev_post_order[rev_post_order_num--] = ENTRY_BLOCK;
     }
+
+  /* Clear the temporarily allocated flag.  */
+  for (int i = 0; i < pre_order_num; ++i)
+    BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags &= ~visited;
 
   return pre_order_num;
 }
