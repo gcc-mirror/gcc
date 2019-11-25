@@ -3481,6 +3481,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 				  unsigned *crc_ptr);
   bool read_bindings (unsigned, const range_t &range);
 
+  static void write_namespace (bytes_out &sec, depset *ns_dep);
+  tree read_namespace (bytes_in &sec);
+
   void write_namespaces (elf_out *to, vec<depset *> spaces,
 			 unsigned, unsigned *crc_ptr);
   bool read_namespaces (unsigned);
@@ -7833,21 +7836,21 @@ trees_out::decl_node (tree decl, walk_kind ref)
   if (TREE_CODE (decl) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (decl))
     {
-      int origin = -1;
-      if (!TREE_PUBLIC (decl))
-	{
-	  gcc_checking_assert (!DECL_MODULE_ORIGIN (decl));
-	  origin = 0;
-	}
-
       if (streaming_p ())
 	{
-	  gcc_checking_assert (!DECL_MODULE_ORIGIN (decl));
 	  depset *dep = dep_hash->find_dependency (decl);
-	  gcc_checking_assert (dep->cluster);
+	  gcc_checking_assert (!dep->cluster == dep->is_import ());
+	  unsigned entity_index = dep->cluster - 1;
+	  module_state *from = state;
+	  if (dep->is_import ())
+	    {
+	      entity_index = import_entity_index (decl);
+	      from = import_entity_module (entity_index);
+	      entity_index -= from->entity_lwm;
+	    }
 	  i (tt_entity);
-	  u (0);
-	  i (dep->cluster - 1);
+	  u (from->remap);
+	  i (entity_index);
 	  add_indirects (decl);
 	}
       else
@@ -7872,9 +7875,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       int tag = insert (decl, ref);
       if (streaming_p ())
 	dump (dumper::TREE)
-	  && dump ("Wrote%s namespace:%d %C:%N@%M",
-		   origin < 0 ? " public" : "", tag, TREE_CODE (decl), decl,
-		   origin < 0 ? NULL : (*modules)[origin]);
+	  && dump ("Wrote namespace:%d %C:%N", tag, TREE_CODE (decl), decl);
 
       return false;
     }
@@ -11116,8 +11117,12 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  if ((*modules)[origin]->remap)
 	    {
 	      dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	      // FIXME: Eventually anything can be here, and we can
+	      // then store the absolute import, index tuple on
+	      // cluster, section, which will elide multiple hash look
+	      // ups and binary searches.  Woo!
 	      gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
-				   || maybe_spec);
+				   || ek == EK_NAMESPACE || maybe_spec);
 	    }
 
       if (ek == EK_DECL
@@ -14202,6 +14207,61 @@ module_state::read_cluster (unsigned snum)
   return true;
 }
 
+void
+module_state::write_namespace (bytes_out &sec, depset *dep)
+{
+  unsigned ns_num = 0;
+  unsigned ns_import = 0;
+
+  if (!dep)
+    /* Global namespace.  */;
+  else if (dep->is_import ())
+    {
+      ns_num = import_entity_index (dep->get_entity ());
+      module_state *from = import_entity_module (ns_num);
+      ns_import = from->remap;
+      gcc_checking_assert (ns_import);
+      ns_num -= from->entity_lwm;
+    }
+  else
+    {
+      ns_num = dep->cluster;
+      gcc_checking_assert (ns_num || dep->get_entity () == global_namespace);
+    }
+  sec.u (ns_import);
+  sec.u (ns_num);
+}
+
+tree
+module_state::read_namespace (bytes_in &sec)
+{
+  unsigned ns_import = sec.u ();
+  unsigned ns_num = sec.u ();
+  tree ns = NULL_TREE;
+
+  if (ns_import || ns_num)
+    {
+      if (!ns_import)
+	ns_num--;
+      int origin = slurp->remap_module (ns_import);
+      if (origin > 0)
+	{
+	  module_state *from = (*modules)[origin];
+	  if (ns_num < from->entity_num)
+	    {
+	      mc_slot &slot = (*entity_ary)[from->entity_lwm + ns_num];
+
+	      if (!slot.is_lazy ())
+		ns = slot;
+	    }
+	}
+    }
+  else
+    ns = global_namespace;
+
+  return ns;
+}
+
 /* SPACES is a sorted vector of namespaces.  Write out the namespaces
    to MOD_SNAME_PFX.nms section.   */
 
@@ -14221,12 +14281,6 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       tree ns = b->get_entity ();
 
       gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
-      unsigned ctx_num = 0;
-      if (b->deps.length ())
-	{
-	  ctx_num = b->deps[0]->cluster;
-	  gcc_checking_assert (ctx_num < b->cluster);
-	}
 
       bool export_p = DECL_MODULE_EXPORT_P (ns);
       bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
@@ -14242,18 +14296,19 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 	flags |= 2;
       if (public_p)
 	flags |= 4;
-      dump () && dump ("Writing namespace %u %N%s%s%s, parent:%u",
-		       b->cluster, ns, export_p ? ", export" : "",
+      dump () && dump ("Writing namespace:%u %N%s%s%s",
+		       b->cluster - 1, ns, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
-		       inline_p ? ", inline" : "", ctx_num);
-      sec.u (b->cluster);
+		       inline_p ? ", inline" : "");
+      sec.u (b->cluster - 1);
       sec.u (to->name (DECL_NAME (ns)));
       if (!DECL_NAME (ns))
 	{
 	  gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (ns));
 	  sec.u (to->name (DECL_ASSEMBLER_NAME_RAW (ns)));
 	}
-      sec.u (ctx_num);
+      write_namespace (sec, b->deps.length () ? b->deps[0] : NULL);
+
       /* Don't use bools, because this can be near the end of the
 	 section, and it won't save anything anyway.  */
       sec.u (flags);
@@ -14283,20 +14338,17 @@ module_state::read_namespaces (unsigned num)
       unsigned entity_index = sec.u ();
       unsigned name = sec.u ();
       unsigned anon_name = name ? 0 : sec.u ();
-      unsigned ctx_index = sec.u ();
+
+      tree parent = read_namespace (sec);
+
       /* See comment in write_namespace about why not bits.  */
       unsigned flags = sec.u ();
       location_t src_loc = read_location (sec);
 
-      if ((ctx_index && ctx_index >= entity_index)
-	  || !entity_index || entity_index > entity_num)
+      if (entity_index >= entity_num || !parent)
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
-
-      tree parent = global_namespace;
-      if (ctx_index)
-	parent = (*entity_ary)[entity_lwm + ctx_index - 1];
 
       tree id = name ? get_identifier (from ()->name (name)) : NULL_TREE;
       tree anon_id = anon_name
@@ -14305,10 +14357,10 @@ module_state::read_namespaces (unsigned num)
       bool inline_p = flags & 2;
       bool export_p = flags & 1;
 
-      dump () && dump ("Read namespace %P%s%s%s, %u",
-		       parent, id, export_p ? ", export" : "",
+      dump () && dump ("Read namespace:%u %P%s%s%s, %u",
+		       entity_index, parent, id, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
-		       inline_p ? ", inline" : "", entity_index);
+		       inline_p ? ", inline" : "");
       bool visible_p = (export_p
 			|| (public_p && (is_partition () || is_primary ())));
       tree inner = add_imported_namespace (parent, id, mod,
@@ -14318,7 +14370,21 @@ module_state::read_namespaces (unsigned num)
 	DECL_MODULE_EXPORT_P (inner) = true;
 
       /* Install the namespace.  */
-      (*entity_ary)[entity_lwm + entity_index - 1] = inner;
+      // FIXME: Probably a helper function trying to escape?
+      // Have add_imported_namespace return an indicator that WE
+      // created the namespace?
+      (*entity_ary)[entity_lwm + entity_index] = inner;
+      if (DECL_MODULE_ORIGIN (inner))
+	{
+	  bool existed;
+	  unsigned *slot = &entity_map->get_or_insert
+	    (DECL_UID (inner), &existed);
+	  if (existed)
+	    /* If it existed, it should match.  */
+	    gcc_checking_assert (inner == (*entity_ary)[*slot]);
+	  else
+	    *slot = entity_lwm + entity_index;
+	}
     }
   dump.outdent ();
   if (!sec.end (from ()))
@@ -14326,12 +14392,7 @@ module_state::read_namespaces (unsigned num)
   return true;
 }
 
-/* Write the binding TABLE to MOD_SNAME_PFX.bind
-
-   Each binding is:
-     u:name
-     u:context - number of containing namespace
-     u:section - section number of binding. */
+/* Write the binding TABLE to MOD_SNAME_PFX.bnd   */
 
 unsigned
 module_state::write_bindings (elf_out *to, vec<depset *> sccs, unsigned *crc_p)
@@ -14349,11 +14410,10 @@ module_state::write_bindings (elf_out *to, vec<depset *> sccs, unsigned *crc_p)
       if (b->is_binding ())
 	{
 	  tree ns = b->get_entity ();
-	  depset *ns_dep = b->deps[0];
 	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
 			   b->section);
 	  sec.u (to->name (b->get_name ()));
-	  sec.u (ns_dep->cluster);
+	  write_namespace (sec, b->deps[0]);
 	  sec.u (b->section);
 	  num++;
 	}
@@ -14380,20 +14440,16 @@ module_state::read_bindings (unsigned num, const range_t &range)
   for (; !sec.get_overrun () && num--;)
     {
       const char *name = from ()->name (sec.u ());
-      unsigned ns_entity = sec.u ();
+      tree ns = read_namespace (sec);
       unsigned snum = sec.u ();
 
-      if ((ns_entity && ns_entity >= entity_num)
-	  || !name || snum < range.first || snum >= range.second)
+      if (!ns || !name || snum < range.first || snum >= range.second)
 	sec.set_overrun ();
       if (!sec.get_overrun ())
 	{
-	  tree ctx = global_namespace;
-	  if (ns_entity)
-	    ctx = (*entity_ary)[entity_lwm + ns_entity - 1];
 	  tree id = get_identifier (name);
-	  dump () && dump ("Bindings %P section:%u", ctx, id, snum);
-	  if (mod && !import_module_binding (ctx, id, mod, snum))
+	  dump () && dump ("Bindings %P section:%u", ns, id, snum);
+	  if (mod && !import_module_binding (ns, id, mod, snum))
 	    break;
 	}
     }
@@ -16678,7 +16734,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  const char *kind = "";
 	  if (ek == depset::EK_NAMESPACE)
 	    {
-	      if (decl != global_namespace)
+	      if (decl != global_namespace && !base[0]->is_import ())
 		{
 		  spaces.quick_push (base[0]);
 		  base[0]->cluster = ++config.num_entities;
@@ -16712,7 +16768,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* We'd better have written as many sections and found as many
      namespaces as we predicted.  */
   gcc_assert (config.sec_range.second == to->get_section_limit ()
-	      && spaces.length () + (n_spaces != 0) == n_spaces);
+	      && spaces.length () == config.num_namespaces);
 
   /* Write the entitites.  None happens if we contain namespaces or
      nothing. */

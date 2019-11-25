@@ -9066,6 +9066,13 @@ pop_namespace (void)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
+// FIXME: Something is not correct about the VISIBLE_P handling.  We
+// need to insert this namespace into
+// (a) the GLOBAL or PARTITION slot, if it is TREE_PUBLIC
+// (b) The importing module's slot (always)
+// (c) Do we need to put it in the CURRENT slot?  This is the
+// confused piece.
+
 tree
 add_imported_namespace (tree ctx, tree name, int mod, location_t loc,
 			bool visible_p, bool inline_p, tree anon_name)
@@ -9076,6 +9083,7 @@ add_imported_namespace (tree ctx, tree name, int mod, location_t loc,
   if (!decl)
     {
       decl = make_namespace (ctx, name, loc, inline_p, anon_name);
+      DECL_MODULE_ORIGIN (decl) = mod;
       make_namespace_finish (decl, slot, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)

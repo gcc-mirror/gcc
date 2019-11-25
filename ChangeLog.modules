@@ -1,5 +1,19 @@
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
+	Namespaces are in the entity_ary
+	gcc/cp/
+	* module.cc (trees_out::decl_node): Namespace may be imported.
+	(depset::hash::make_dependency): Permit imported namespaces.
+	(module_state::{read,write}_namespace): New.
+	(module_state::{read,write}_namespaces): Adjust.
+	(module_state::{read,write]_bindings): Adjust.
+	(module_state::write): Don't count imported namespaces.
+	* name-lookup.c (add_imported_namespace): Mark namespace as
+	imported, if we made it.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[1234]_[bc].C: Adjust scans.
+	* g++.dg/modules/namespace-2_a.C: Likewise.
+
 	gcc/cp/
 	* module.cc (tree_tag): Delete tt_namespace.
 	(trees_in::tree_node): Delete tt_namespace handling.
