@@ -2725,7 +2725,6 @@ enum tree_tag {
   tt_enum_decl,		/* An enum decl.  */
   tt_data_member,	/* Data member or enum value.  */
 
-  tt_namespace,		/* Namespace reference.  */
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
   tt_thunk,		/* A thunk.  */
@@ -3502,7 +3501,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   void write_entities (elf_out *to, vec<depset *> depsets,
-		       depset::hash &, unsigned count, unsigned *crc_ptr);
+		       unsigned count, unsigned *crc_ptr);
   bool read_entities (unsigned count, const range_t &range);
 
  private:
@@ -9249,36 +9248,6 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_namespace:
-      /* Namespace reference.  */
-      {
-	int origin = i ();
-	tree ctx = tree_node ();
-	tree name = tree_node ();
-
-	if (origin >= 0)
-	  origin = state->slurp->remap_module (origin);
-
-	res = get_imported_namespace (ctx, name, origin);
-	if (!res || TREE_CODE (res) != NAMESPACE_DECL)
-	  {
-	    error_at (state->loc, "failed to find namespace %<%E%s%E%>",
-		      ctx, &"::"[2 * (ctx == global_namespace)],
-		      name);
-	    set_overrun ();
-	    res = NULL;
-	  }
-
-	if (res)
-	  {
-	    int tag = insert (res);
-	    dump (dumper::TREE)
-	      && dump ("Namespace:%d %C:%N@%M", tag, TREE_CODE (res),
-		       res, origin < 0 ? NULL : (*modules)[origin]);
-	  }
-      }
-      break;
-
     case tt_binfo:
       /* A BINFO.  Walk the tree of the dominating type.  */
       {
@@ -14246,7 +14215,7 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
   bytes_out sec (to);
   sec.begin ();
 
-  for (unsigned ix = 0; ix != spaces.length (); ix++)
+  for (unsigned ix = 0; ix != num; ix++)
     {
       depset *b = spaces[ix];
       tree ns = b->get_entity ();
@@ -14309,7 +14278,7 @@ module_state::read_namespaces (unsigned num)
   dump () && dump ("Reading namespaces");
   dump.indent ();
 
-  while (num--)
+  for (unsigned ix = 0; ix != num; ix++)
     {
       unsigned entity_index = sec.u ();
       unsigned name = sec.u ();
@@ -14441,13 +14410,12 @@ module_state::read_bindings (unsigned num, const range_t &range)
 
 void
 module_state::write_entities (elf_out *to, vec<depset *> depsets,
-			      depset::hash &table,
 			      unsigned count, unsigned *crc_p)
 {
   dump () && dump ("Writing entites");
   dump.indent ();
-  // FIXME:bytes_out
-  trees_out sec (to, this, table);
+
+  bytes_out sec (to);
   sec.begin ();
 
   unsigned current = 0;
@@ -16749,7 +16717,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the entitites.  None happens if we contain namespaces or
      nothing. */
   if (config.num_entities)
-    write_entities (to, sccs, table, config.num_entities, &crc);
+    write_entities (to, sccs, config.num_entities, &crc);
 
   /* Write the namespaces.  */
   if (config.num_namespaces)

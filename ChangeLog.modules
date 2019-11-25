@@ -1,6 +1,12 @@
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (tree_tag): Delete tt_namespace.
+	(trees_in::tree_node): Delete tt_namespace handling.
+	(module_state::{read,write}_namespaces): Adjust.
+	(module_state::write_entities): Delete TABLE parm.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_decl): Write namespaces as tt_entity.
 	(module_state::write_namespaces): Adjust.
 	(module_state::read_namespaces): Likewise, don't return a
