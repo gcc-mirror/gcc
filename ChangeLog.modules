@@ -1,6 +1,17 @@
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_decl): Write namespaces as tt_entity.
+	(module_state::write_namespaces): Adjust.
+	(module_state::read_namespaces): Likewise, don't return a
+	namespace vector.
+	(module_state::{read,write}_bindings): Adjust.
+	(module_state::{read,write}_entities): Allow namespaces.
+	(module_state::{read,write}): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[1234]_c.C: Adjust scans.
+
+	gcc/cp/
 	* module.cc (module_state::write_namespaces): Delete TABLE arg,
 	look at the dep[0]
 	(module_state::read_namespaces): Add num_spaces parm.  Use it to

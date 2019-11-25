@@ -3480,11 +3480,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   static unsigned write_bindings (elf_out *to, vec<depset *> depsets,
 				  unsigned *crc_ptr);
-  bool read_bindings (vec<tree> spaces, unsigned, const range_t &range);
+  bool read_bindings (unsigned, const range_t &range);
 
   void write_namespaces (elf_out *to, vec<depset *> spaces,
-			 unsigned *crc_ptr);
-  vec<tree> read_namespaces (unsigned);
+			 unsigned, unsigned *crc_ptr);
+  bool read_namespaces (unsigned);
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
 			  depset::hash &, unsigned &specializations,
@@ -7843,16 +7843,24 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
       if (streaming_p ())
 	{
-	  i (tt_namespace);
-	  i (origin);
-	  tree_node (CP_DECL_CONTEXT (decl));
-	  tree_node (DECL_NAME (decl));
+	  gcc_checking_assert (!DECL_MODULE_ORIGIN (decl));
+	  depset *dep = dep_hash->find_dependency (decl);
+	  gcc_checking_assert (dep->cluster);
+	  i (tt_entity);
+	  u (0);
+	  i (dep->cluster - 1);
+	  add_indirects (decl);
 	}
       else
 	{
 	  tree to_add = decl;
 	  if (ref == WK_value)
 	    {
+	      /* We need to add the global_namespace when it is the
+	         context of a namespace, /except/ when it's its own
+	         config.  Normally global namespace will not be added
+	         as it's a global tree.  But we need to know to get
+	         the namespace heirarchy.  */
 	      gcc_checking_assert (dep_hash->current->get_entity () == decl);
 	      to_add = CP_DECL_CONTEXT (decl);
 	      if (to_add == decl)
@@ -14230,7 +14238,7 @@ module_state::read_cluster (unsigned snum)
 
 void
 module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
-				unsigned *crc_p)
+				unsigned num, unsigned *crc_p)
 {
   dump () && dump ("Writing namespaces");
   dump.indent ();
@@ -14244,9 +14252,13 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       tree ns = b->get_entity ();
 
       gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
+      unsigned ctx_num = 0;
+      if (b->deps.length ())
+	{
+	  ctx_num = b->deps[0]->cluster;
+	  gcc_checking_assert (ctx_num < b->cluster);
+	}
 
-      b->section = ix + 1;
-      unsigned ctx_num = b->deps[0]->section;
       bool export_p = DECL_MODULE_EXPORT_P (ns);
       bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
       bool public_p = TREE_PUBLIC (ns);
@@ -14262,10 +14274,10 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       if (public_p)
 	flags |= 4;
       dump () && dump ("Writing namespace %u %N%s%s%s, parent:%u",
-		       b->section, ns, export_p ? ", export" : "",
+		       b->cluster, ns, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
 		       inline_p ? ", inline" : "", ctx_num);
-
+      sec.u (b->cluster);
       sec.u (to->name (DECL_NAME (ns)));
       if (!DECL_NAME (ns))
 	{
@@ -14276,8 +14288,7 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       /* Don't use bools, because this can be near the end of the
 	 section, and it won't save anything anyway.  */
       sec.u (flags);
-      write_location (sec, (TREE_PUBLIC (ns)
-			    ? UNKNOWN_LOCATION : DECL_SOURCE_LOCATION (ns)));
+      write_location (sec, DECL_SOURCE_LOCATION (ns));
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
@@ -14287,37 +14298,36 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 /* Read the namespace hierarchy from MOD_SNAME_PFX.namespace.  Fill in
    SPACES from that data.  */
 
-vec<tree>
+bool
 module_state::read_namespaces (unsigned num)
 {
   bytes_in sec;
-  vec<tree> spaces;
-
-  spaces.create (num + 1);
-  spaces.quick_push (global_namespace);
-  
-  if (!num)
-    return spaces;
 
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".nms"))
-    return spaces;
+    return false;
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
 
   while (num--)
     {
+      unsigned entity_index = sec.u ();
       unsigned name = sec.u ();
       unsigned anon_name = name ? 0 : sec.u ();
-      unsigned parent = sec.u ();
+      unsigned ctx_index = sec.u ();
       /* See comment in write_namespace about why not bits.  */
       unsigned flags = sec.u ();
       location_t src_loc = read_location (sec);
 
-      if (parent >= spaces.length ())
+      if ((ctx_index && ctx_index >= entity_index)
+	  || !entity_index || entity_index > entity_num)
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
+
+      tree parent = global_namespace;
+      if (ctx_index)
+	parent = (*entity_ary)[entity_lwm + ctx_index - 1];
 
       tree id = name ? get_identifier (from ()->name (name)) : NULL_TREE;
       tree anon_id = anon_name
@@ -14327,25 +14337,24 @@ module_state::read_namespaces (unsigned num)
       bool export_p = flags & 1;
 
       dump () && dump ("Read namespace %P%s%s%s, %u",
-		       spaces[parent], id, export_p ? ", export" : "",
+		       parent, id, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
-		       inline_p ? ", inline" : "", spaces.length ());
+		       inline_p ? ", inline" : "", entity_index);
       bool visible_p = (export_p
 			|| (public_p && (is_partition () || is_primary ())));
-      tree inner = add_imported_namespace (spaces[parent], id, mod,
+      tree inner = add_imported_namespace (parent, id, mod,
 					   src_loc, visible_p, inline_p,
 					   anon_id);
       if (export_p && is_partition ())
 	DECL_MODULE_EXPORT_P (inner) = true;
 
-      spaces.quick_push (inner);
+      /* Install the namespace.  */
+      (*entity_ary)[entity_lwm + entity_index - 1] = inner;
     }
   dump.outdent ();
-
   if (!sec.end (from ()))
-    spaces.truncate (0);
-
-  return spaces;
+    return false;
+  return true;
 }
 
 /* Write the binding TABLE to MOD_SNAME_PFX.bind
@@ -14371,11 +14380,11 @@ module_state::write_bindings (elf_out *to, vec<depset *> sccs, unsigned *crc_p)
       if (b->is_binding ())
 	{
 	  tree ns = b->get_entity ();
-	  unsigned ns_num = b->deps[0]->section;
+	  depset *ns_dep = b->deps[0];
 	  dump () && dump ("Bindings %P section:%u", ns, b->get_name (),
 			   b->section);
 	  sec.u (to->name (b->get_name ()));
-	  sec.u (ns_num);
+	  sec.u (ns_dep->cluster);
 	  sec.u (b->section);
 	  num++;
 	}
@@ -14390,8 +14399,7 @@ module_state::write_bindings (elf_out *to, vec<depset *> sccs, unsigned *crc_p)
 /* Read the binding table from MOD_SNAME_PFX.bind.  */
 
 bool
-module_state::read_bindings (vec<tree> spaces, unsigned num,
-			     const range_t &range)
+module_state::read_bindings (unsigned num, const range_t &range)
 {
   bytes_in sec;
 
@@ -14403,15 +14411,17 @@ module_state::read_bindings (vec<tree> spaces, unsigned num,
   for (; !sec.get_overrun () && num--;)
     {
       const char *name = from ()->name (sec.u ());
-      unsigned nsnum = sec.u ();
+      unsigned ns_entity = sec.u ();
       unsigned snum = sec.u ();
 
-      if (nsnum >= spaces.length () || !name
-	  || snum < range.first || snum >= range.second)
+      if ((ns_entity && ns_entity >= entity_num)
+	  || !name || snum < range.first || snum >= range.second)
 	sec.set_overrun ();
       if (!sec.get_overrun ())
 	{
-	  tree ctx = spaces[nsnum];
+	  tree ctx = global_namespace;
+	  if (ns_entity)
+	    ctx = (*entity_ary)[entity_lwm + ns_entity - 1];
 	  tree id = get_identifier (name);
 	  dump () && dump ("Bindings %P section:%u", ctx, id, snum);
 	  if (mod && !import_module_binding (ctx, id, mod, snum))
@@ -14451,7 +14461,13 @@ module_state::write_entities (elf_out *to, vec<depset *> depsets,
 
 	  gcc_checking_assert (!d->is_unreached ()
 			       && d->cluster == current);
-	  sec.u (d->section);
+	  unsigned snum = 0;
+	  if (d->get_entity_kind () != depset::EK_NAMESPACE)
+	    {
+	      snum = d->section;
+	      gcc_checking_assert (snum);
+	    }
+	  sec.u (snum);
 	}
       }
   gcc_assert (count == current);
@@ -14475,14 +14491,15 @@ module_state::read_entities (unsigned count, const range_t &range)
   for (ix = 0; ix != count; ix++)
     {
       unsigned snum = sec.u ();
-      if (snum < range.first || snum >= range.second)
+      if (snum && (snum < range.first || snum >= range.second))
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
 
       mc_slot slot;
       slot.u.binding = NULL_TREE;
-      slot.set_lazy (snum);
+      if (snum)
+	slot.set_lazy (snum);
       entity_ary->quick_push (slot);
     }
   entity_num = ix;
@@ -16653,8 +16670,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	{
 	  /* A namespace decl, these are handled specially.  */
 	  gcc_checking_assert (size == 1);
-	  if (base[0]->get_entity () != global_namespace)
-	    n_spaces++;
+	  n_spaces++;
 	}
       else if (base[0]->get_entity_kind () == depset::EK_REDIRECT)
 	gcc_checking_assert (size == 1);
@@ -16697,6 +16713,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	      if (decl != global_namespace)
 		{
 		  spaces.quick_push (base[0]);
+		  base[0]->cluster = ++config.num_entities;
 		  config.num_namespaces++;
 		}
 	      kind = "namespace";
@@ -16727,7 +16744,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* We'd better have written as many sections and found as many
      namespaces as we predicted.  */
   gcc_assert (config.sec_range.second == to->get_section_limit ()
-	      && spaces.length () == n_spaces);
+	      && spaces.length () + (n_spaces != 0) == n_spaces);
 
   /* Write the entitites.  None happens if we contain namespaces or
      nothing. */
@@ -16736,7 +16753,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Write the namespaces.  */
   if (config.num_namespaces)
-    write_namespaces (to, spaces, &crc);
+    write_namespaces (to, spaces, config.num_namespaces, &crc);
 
   /* Write the bindings themselves.  */
   config.num_bindings = write_bindings (to, sccs, &crc);
@@ -16861,13 +16878,10 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	  goto bail;
 
 	/* Read the namespace hierarchy. */
-	vec<tree> spaces = read_namespaces (config.num_namespaces);
+	if (config.num_namespaces && !read_namespaces (config.num_namespaces))
+	  goto bail;
 
-	bool ok = spaces.length ()
-	  && read_bindings (spaces, config.num_bindings, config.sec_range);
-
-	spaces.release ();
-	if (!ok)
+	if (!read_bindings (config.num_bindings, config.sec_range))
 	  goto bail;
 
 	/* And unnamed.  */
