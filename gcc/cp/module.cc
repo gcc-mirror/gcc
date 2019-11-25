@@ -2588,12 +2588,15 @@ depset::entity_kind_name () const
   return names[kind];
 }
 
+/* Create a depset for a namespace binding NS::NAME.  */
+
 depset *depset::make_binding (tree ns, tree name)
 {
-  depset *r = new depset (ns);
+  depset *binding = new depset (ns);
 
-  r->discriminator = reinterpret_cast <uintptr_t> (name);
-  return r;
+  binding->discriminator = reinterpret_cast <uintptr_t> (name);
+
+  return binding;
 }
 
 depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
@@ -11178,7 +11181,12 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
 	      depset *bdep = *bslot;
 	      if (!bdep)
-		*bslot = bdep = make_binding (ctx, DECL_NAME (decl));
+		{
+		  *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
+		  depset *ns_dep = make_dependency (ctx, EK_NAMESPACE);
+		  bdep->deps.safe_push (ns_dep);
+		}
+
 	      bdep->deps.safe_push (dep);
 	      dep->deps.safe_push (bdep);
 	      dep->set_flag_bit<DB_GLOBAL_BIT> ();
@@ -11343,6 +11351,12 @@ depset::hash::add_binding (tree ns, tree value)
 				    : STRIP_TEMPLATE (decl)))
 	    OVL_EXPORT_P (maybe_using) = true;
 	  ek = depset::EK_USING;
+	}
+
+      if (!binding->deps.length ())
+	{
+	  depset *ns_dep = make_dependency (ns, EK_NAMESPACE);
+	  binding->deps.safe_push (ns_dep);
 	}
 
       depset *dep = make_dependency (maybe_using, ek);
@@ -11869,7 +11883,17 @@ depset::hash::finalize_dependencies ()
     {
       depset *dep = *iter;
       if (dep->is_binding ())
-	dep->deps.qsort (binding_cmp);
+	{
+	  /* Keep the containing namespace dep first.  */
+	  gcc_checking_assert (dep->deps.length () > 1
+			       && (dep->deps[0]->get_entity_kind ()
+				   == EK_NAMESPACE)
+			       && (dep->deps[0]->get_entity ()
+				   == dep->get_entity ()));
+	  if (dep->deps.length () > 2)
+	    gcc_qsort (&dep->deps[1], dep->deps.length () - 1,
+		       sizeof (dep->deps[1]), binding_cmp);
+	}
       else if (dep->refs_internal ())
 	{
 	  ok = false;
@@ -13793,8 +13817,13 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  for (unsigned jx = b->deps.length (); jx--;)
 	    {
 	      depset *dep = b->deps[jx];
-	      gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING
-				   || TREE_VISITED (dep->get_entity ()));
+	      if (jx)
+		gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING
+				     || TREE_VISITED (dep->get_entity ()));
+	      else
+		gcc_checking_assert (dep->get_entity_kind ()
+				     == depset::EK_NAMESPACE
+				     && dep->get_entity () == b->get_entity ());
 	    }
 	  break;
 
@@ -13852,7 +13881,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    /* Write in reverse order, so reading will see the exports
 	       first, thus building the overload chain will be
 	       optimized.  */
-	    for (unsigned jx = b->deps.length (); jx--;)
+	    for (unsigned jx = b->deps.length (); --jx;)
 	      {
 		depset *dep = b->deps[jx];
 		tree decl = dep->get_entity ();
@@ -13868,8 +13897,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		  }
 		else
 		  {
-		    /* An implicit typedef must be at zero.  */
-		    gcc_assert (!DECL_IMPLICIT_TYPEDEF_P (decl) || !jx);
+		    /* An implicit typedef must be at one.  */
+		    gcc_assert (!DECL_IMPLICIT_TYPEDEF_P (decl) || jx == 1);
 		    if (dep->is_hidden ())
 		      flags |= cbf_hidden;
 		    else if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (decl)))
@@ -16636,8 +16665,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	}
       base[0]->cluster = base[0]->section = 0;
 
-      /* Sort the cluster.  Later processing makes use of the ordering
-	 of others < EK_USING < EK_BINDING. */
+      /* Sort the cluster.  Later processing makes use of the
+	 ordering.  */
       qsort (base, size, sizeof (depset *), cluster_cmp);
 
       if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)

@@ -1,3 +1,14 @@
+2019-11-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (depset::hash::make_dependency): Add context
+	dependency when discovering a new GMF binding.
+	(depset::hash::add_binding): Likewise when discoving a non-empty binding.
+	(depset::hash::finalize_dependencies): Leave binding's namespace
+	dependency untouched.
+	(module_state::write_cluster): Assert binding's namespace in in
+	slot zero.  Adjust binding scan.
+
 2019-11-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
