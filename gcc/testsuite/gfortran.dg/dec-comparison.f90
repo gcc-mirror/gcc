@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do compile }
 ! { dg-options "-fdec" }
 !
 ! Test case contributed by Mark Eggleston  <mark.eggleston@codethink.com>
@@ -38,4 +38,3 @@ program convert
   if (a.ne.d) stop 17 ! { dg-error "Operands of comparison" }
   if (d.eq.a) stop 18 ! { dg-error "Operands of comparison" }
 end program
-
