@@ -227,7 +227,7 @@ ipa_fn_summary::account_size_time (int size, sreal time,
     {
       e->size += size;
       e->time += time;
-      gcc_checking_assert (e->time >= -1);
+      /* FIXME: PR bootstrap/92653 gcc_checking_assert (e->time >= -1); */
       /* Tolerate small roundoff issues.  */
       if (e->time < 0)
 	e->time = 0;

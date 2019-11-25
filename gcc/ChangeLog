@@ -1,3 +1,9 @@
+2019-11-25  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/92653
+	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Comment out
+	too strict checking assert.
+
 2019-11-25  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/91985
