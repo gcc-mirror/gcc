@@ -7,8 +7,7 @@ void f (void) {};
 
 [[gnu::alias("f")]] void g (void); /* { dg-error "only weak" "" { target *-*-darwin* } } */
 
-void [[gnu::alias("f")]] h (void); /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+void [[gnu::alias("f")]] h (void); /* { dg-warning "does not apply to types" } */
 
 struct [[gnu::packed]] s { int a; char b; };
 _Static_assert (sizeof (struct s) == (sizeof (int) + sizeof (char)));

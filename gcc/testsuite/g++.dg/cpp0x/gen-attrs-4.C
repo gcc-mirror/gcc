@@ -21,7 +21,7 @@ void two [[gnu::unused]] (void) {}
 [[gnu::unused]]
 int
 five(void)
-[[noreturn]] // { dg-warning "ignored" }
+[[noreturn]] // { dg-warning "does not apply to types" }
 { return 0; }
 
 [[noreturn]]

@@ -3857,11 +3857,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       inner->id_loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
       if (c_parser_nth_token_starts_std_attributes (parser, 1))
-	{
-	  tree std_attrs = c_parser_std_attribute_specifier_sequence (parser);
-	  if (std_attrs)
-	    inner = build_attrs_declarator (std_attrs, inner);
-	}
+	inner->u.id.attrs = c_parser_std_attribute_specifier_sequence (parser);
       return c_parser_direct_declarator_inner (parser, *seen_id, inner);
     }
 
@@ -3898,9 +3894,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 	    return NULL;
 	  else
 	    {
-	      inner
-		= build_function_declarator (args,
-					     build_id_declarator (NULL_TREE));
+	      inner = build_id_declarator (NULL_TREE);
 	      if (!(args->types
 		    && args->types != error_mark_node
 		    && TREE_CODE (TREE_VALUE (args->types)) == IDENTIFIER_NODE)
@@ -3911,6 +3905,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 		  if (std_attrs)
 		    inner = build_attrs_declarator (std_attrs, inner);
 		}
+	      inner = build_function_declarator (args, inner);
 	      return c_parser_direct_declarator_inner (parser, *seen_id,
 						       inner);
 	    }
@@ -4028,7 +4023,6 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 					   static_seen, star_seen);
       if (declarator == NULL)
 	return NULL;
-      inner = set_array_declarator_inner (declarator, inner);
       if (c_parser_nth_token_starts_std_attributes (parser, 1))
 	{
 	  tree std_attrs
@@ -4036,6 +4030,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	  if (std_attrs)
 	    inner = build_attrs_declarator (std_attrs, inner);
 	}
+      inner = set_array_declarator_inner (declarator, inner);
       return c_parser_direct_declarator_inner (parser, id_present, inner);
     }
   else if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
@@ -4052,7 +4047,6 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	return NULL;
       else
 	{
-	  inner = build_function_declarator (args, inner);
 	  if (!(args->types
 		&& args->types != error_mark_node
 		&& TREE_CODE (TREE_VALUE (args->types)) == IDENTIFIER_NODE)
@@ -4063,6 +4057,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	      if (std_attrs)
 		inner = build_attrs_declarator (std_attrs, inner);
 	    }
+	  inner = build_function_declarator (args, inner);
 	  return c_parser_direct_declarator_inner (parser, id_present, inner);
 	}
     }
@@ -4352,7 +4347,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs,
   c_declarator *id_declarator = declarator;
   while (id_declarator && id_declarator->kind != cdk_id)
     id_declarator = id_declarator->declarator;
-  location_t caret_loc = (id_declarator->u.id
+  location_t caret_loc = (id_declarator->u.id.id
 			  ? id_declarator->id_loc
 			  : start_loc);
   location_t param_loc = make_location (caret_loc, start_loc, end_loc);

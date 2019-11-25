@@ -1,3 +1,21 @@
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (struct c_declarator): Use a structure for id member.
+	* c-decl.c (grokdeclarator): Extract attributes from cdk_id
+	declarators at the start, not when handling individual declarators
+	later.  Use u.id.id instead of u.id.
+	(grokfield): Use u.id.id instead of u.id.
+	(build_id_declarator): Set u.id.id and u.id.attrs.
+	(finish_declspecs): Handle postfix attributes in case of typedef
+	name or typeof used.
+	* c-parser.c (c_parser_direct_declarator)
+	(c_parser_direct_declarator_inner): Place declarator for
+	attributes inside that for function or array, not outside.  Set
+	u.id.attrs for identifiers.
+	(c_parser_parameter_declaration): Use u.id.id instead of u.id.
+	* gimple-parser.c (c_parser_gimple_declaration): Use u.id.id
+	instead of u.id.
+
 2019-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90677
