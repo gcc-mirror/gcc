@@ -1,3 +1,7 @@
+2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/dec-comparison.f90: Change dg-do from run to compile.
+
 2019-11-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/92629
