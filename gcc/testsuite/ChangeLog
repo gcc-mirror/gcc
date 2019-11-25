@@ -1,3 +1,7 @@
+2019-11-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/torture/fp-int-convert-timode-1.c: Always run if int128.
+
 2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/addr14.adb: New test.
