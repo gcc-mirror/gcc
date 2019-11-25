@@ -1,3 +1,7 @@
+2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/addr14.adb: New test.
+
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91355
