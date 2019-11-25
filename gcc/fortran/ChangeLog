@@ -1,3 +1,9 @@
+2019-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92629
+	* simplify.c (convert_mpz_to_unsigned): Skip assert for argument
+	range when -fno-range-check is specified.
+
 2019-11-25  Mark Eggleston  <mark.eggleston@codethink.com>
 	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
 
