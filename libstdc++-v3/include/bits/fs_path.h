@@ -622,59 +622,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   size_t hash_value(const path& __p) noexcept;
 
-  /// Create a path from a UTF-8-encoded sequence of char
-  template<typename _InputIterator>
-    inline auto
-    u8path(_InputIterator __first, _InputIterator __last)
-    -> decltype(filesystem::path(__first, __last, std::locale::classic()))
-    {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      // XXX This assumes native wide encoding is UTF-16.
-      std::codecvt_utf8_utf16<path::value_type> __cvt;
-      path::string_type __tmp;
-      if constexpr (is_pointer_v<_InputIterator>)
-	{
-	  if (__str_codecvt_in_all(__first, __last, __tmp, __cvt))
-	    return path{ __tmp };
-	}
-      else
-	{
-	  const std::string __u8str{__first, __last};
-	  const char* const __ptr = __u8str.data();
-	  if (__str_codecvt_in_all(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
-	    return path{ __tmp };
-	}
-      _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	    "Cannot convert character sequence",
-	    std::make_error_code(errc::illegal_byte_sequence)));
-#else
-      // This assumes native normal encoding is UTF-8.
-      return path{ __first, __last };
-#endif
-    }
-
-  /// Create a path from a UTF-8-encoded sequence of char
-  template<typename _Source>
-    inline auto
-    u8path(const _Source& __source)
-    -> decltype(filesystem::path(__source, std::locale::classic()))
-    {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      if constexpr (is_convertible_v<const _Source&, std::string_view>)
-	{
-	  const std::string_view __s = __source;
-	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
-	}
-      else
-	{
-	  std::string __s = path::_S_string_from_iter(__source);
-	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
-	}
-#else
-      return path{ __source };
-#endif
-    }
-
   /// @}
 
   /// Exception type thrown by the Filesystem library
@@ -705,6 +652,65 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     struct _Impl;
     std::__shared_ptr<const _Impl> _M_impl;
   };
+
+  /** Create a path from a UTF-8-encoded sequence of char
+   *
+   * @relates std::filesystem::path
+   */
+  template<typename _InputIterator>
+    inline auto
+    u8path(_InputIterator __first, _InputIterator __last)
+    -> decltype(filesystem::path(__first, __last, std::locale::classic()))
+    {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      // XXX This assumes native wide encoding is UTF-16.
+      std::codecvt_utf8_utf16<path::value_type> __cvt;
+      path::string_type __tmp;
+      if constexpr (is_pointer_v<_InputIterator>)
+	{
+	  if (__str_codecvt_in_all(__first, __last, __tmp, __cvt))
+	    return path{ __tmp };
+	}
+      else
+	{
+	  const std::string __u8str{__first, __last};
+	  const char* const __ptr = __u8str.data();
+	  if (__str_codecvt_in_all(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
+	    return path{ __tmp };
+	}
+      _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	    "Cannot convert character sequence",
+	    std::make_error_code(errc::illegal_byte_sequence)));
+#else
+      // This assumes native normal encoding is UTF-8.
+      return path{ __first, __last };
+#endif
+    }
+
+  /** Create a path from a UTF-8-encoded sequence of char
+   *
+   * @relates std::filesystem::path
+   */
+  template<typename _Source>
+    inline auto
+    u8path(const _Source& __source)
+    -> decltype(filesystem::path(__source, std::locale::classic()))
+    {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      if constexpr (is_convertible_v<const _Source&, std::string_view>)
+	{
+	  const std::string_view __s = __source;
+	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	}
+      else
+	{
+	  std::string __s = path::_S_string_from_iter(__source);
+	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	}
+#else
+      return path{ __source };
+#endif
+    }
 
   /// @cond undocumented
 
