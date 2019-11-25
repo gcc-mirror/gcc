@@ -1,3 +1,8 @@
+2019-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/92575
+	* expect.c (__gnat_expect_poll [VMS, HPUX]): Fix typo.
+
 2019-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 	    Alexandre Oliva  <oliva@adacore.com>
 
