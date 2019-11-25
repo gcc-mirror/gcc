@@ -1,3 +1,22 @@
+2019-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_indirect_ref_1): Add location_t parameter
+	and use it in error messages.
+	(build_x_indirect_ref): Adjust call.
+	(build_indirect_ref): Likewise.
+	(cp_build_fold_indirect_ref): Likewise.
+	(cp_build_array_ref): Likewise.
+	* call.c (build_new_op_1): Likewise.
+	* semantics.c (finish_omp_clauses): Likewise.
+	(finish_omp_depobj): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+	* cp-tree.h (cp_build_indirect_ref): Update declaration.
+
+	* call.c (build_new_op_1): Use location argument in warning_at.
+
+	* typeck.c (cp_build_modify_expr): Consistently use the
+	location_t argument.
+
 2019-11-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/92365

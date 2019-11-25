@@ -6,5 +6,5 @@ enum E2 { b };
 
 int foo (E1 e1, E2 e2)
 {
-  return e1 == e2;  /* { dg-warning "comparison between" } */
+  return e1 == e2;  /* { dg-warning "13:comparison between" } */
 }
