@@ -388,7 +388,6 @@ extern unsigned get_field_ident (tree ctx, tree decl);
 extern tree lookup_field_ident (tree ctx, tree name, unsigned ix);
 extern tree lookup_by_ident (tree ctx, tree name, unsigned mod, int ident);
 extern tree lookup_by_type (tree ctx, tree name, tree type);
-extern tree get_imported_namespace (tree ctx, tree name, int origin);
 extern tree add_imported_namespace (tree ctx, tree name, int origin,
 				    location_t, bool visible_p, bool inline_p,
 				    tree anon_name);

@@ -1,5 +1,9 @@
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.h (get_imported_namespace): Don't delare.
+	* name-lookup.c (get_imported_namespace): Delete.
+
 	Namespaces are in the entity_ary
 	gcc/cp/
 	* module.cc (trees_out::decl_node): Namespace may be imported.

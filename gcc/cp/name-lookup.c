@@ -4448,38 +4448,6 @@ lookup_field_ident (tree ctx, tree name, unsigned ix)
   return val;
 }
 
-tree
-get_imported_namespace (tree ctx, tree name, int mod)
-{
-  tree binding = NULL_TREE;
-
-  if (tree *slot = find_namespace_slot (ctx, name))
-    {
-      if (mod <= 0)
-	{
-	  unsigned fixed = mod ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
-	  tree *mslot = get_fixed_binding_slot (slot, name, fixed, false);
-	  if (mslot)
-	    binding = *mslot;
-	}
-      else if (mc_slot *mslot = search_imported_binding_slot (slot, mod))
-	{
-	  if (!mslot->is_lazy ())
-	    binding = *mslot;
-	}
-
-      if (binding)
-	{
-	  binding = MAYBE_STAT_DECL (binding);
-	  if (TREE_CODE (binding) != NAMESPACE_DECL
-	      || DECL_NAMESPACE_ALIAS (binding))
-	    binding = NULL_TREE;
-	}
-    }
-
-  return binding;
-}
-
 /* Enter DECL into the symbol table, if that's appropriate.  Returns
    DECL, or a modified version thereof.  */
 
