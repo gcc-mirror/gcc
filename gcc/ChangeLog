@@ -1,3 +1,13 @@
+2019-11-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_expand_scalar_to_vector_address,
+	gcn_md_reorg): Remove unused variables.
+	(gcn_emutls_var_init): Add missing (but unreachable) return
+	to silence warning.
+	(gcn_hsa_declare_function_name): Add gcc_unreachable to ensure
+	target != TARGET_GCN3 or TARGET_GCN3 will fail instead of use
+	an uninitialized variable.
+
 2019-11-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92109
