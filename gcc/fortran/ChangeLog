@@ -1,4 +1,17 @@
-2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+2019-11-25  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* gfortran.texi: Update Hollerith constants support for character types
+	and use in comparisons.
+	* invoke.texi: Tidy up list of options. Update description of
+	-fdec-char-conversions.
+	* resolve.c (is_character_based): New.
+	(Convert_hollerith_to_character): New.  (convert_to_numeric): New.
+	(resolve_operator): If both sides are character based and -fdec is
+	enabled convert Hollerith to character. If an operand is Hollerith, the
+	other is numeric and -fdec is enabled convert to numeric.
+	(resolve_ordinary_assign): Add check for -fdec-char-conversions for
+	assignment of character literals.2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/92463
 	Revert r269139

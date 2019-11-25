@@ -1,3 +1,20 @@
+2019-11-25  Mark Eggleston <mark.eggleston@codethink.com>
+	    Jim MacArthur <jim.macarthur@codethink.co.uk>
+
+	* gfortran.dg/dec-comparison-character_1.f90: New test.
+	* gfortran.dg/dec-comparison-character_2.f90: New test.
+	* gfortran.dg/dec-comparison-character_3.f90: New test.
+	* gfortran.dg/dec-comparison-complex_1.f90: New test.
+	* gfortran.dg/dec-comparison-complex_2.f90: New test.
+	* gfortran.dg/dec-comparison-complex_3.f90: New test.
+	* gfortran.dg/dec-comparison-int_1.f90: New test.
+	* gfortran.dg/dec-comparison-int_2.f90: New test.
+	* gfortran.dg/dec-comparison-int_3.f90: New test.
+	* gfortran.dg/dec-comparison-real_1.f90: New test.
+	* gfortran.dg/dec-comparison-real_2.f90: New test.
+	* gfortran.dg/dec-comparison-real_3.f90: New test.
+	* gfortran.dg/dec-comparison.f90: New test.
+
 2019-11-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/91956
