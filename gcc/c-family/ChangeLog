@@ -27,7 +27,7 @@
 	(init_dynamic_diag_info): Adjust get_pointer_to_named_type callers
 	to call get_named_type instead.  Formatting fixes.
 
-	Implement P1920R1, Missing feature-test macros 2017-2019.
+	Implement P1902R1, Missing feature-test macros 2017-2019.
 	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_init_captures
 	and __cpp_generic_lambdas for -std=c++2a.  Define
 	__cpp_designated_initializers, __cpp_constexpr_in_decltype and
