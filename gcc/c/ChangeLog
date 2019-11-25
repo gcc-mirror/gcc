@@ -1,5 +1,11 @@
 2019-11-25  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/91985
+	* c-decl.c (finish_declspecs): Use int instead of decimal
+	floating-point types if decimal floating-point not supported.
+
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-tree.h (struct c_declarator): Use a structure for id member.
 	* c-decl.c (grokdeclarator): Extract attributes from cdk_id
 	declarators at the start, not when handling individual declarators

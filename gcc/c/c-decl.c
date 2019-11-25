@@ -11633,7 +11633,9 @@ finish_declspecs (struct c_declspecs *specs)
     case cts_dfloat128:
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p && !specs->complex_p);
-      if (specs->typespec_word == cts_dfloat32)
+      if (!targetm.decimal_float_supported_p ())
+	specs->type = integer_type_node;
+      else if (specs->typespec_word == cts_dfloat32)
 	specs->type = dfloat32_type_node;
       else if (specs->typespec_word == cts_dfloat64)
 	specs->type = dfloat64_type_node;

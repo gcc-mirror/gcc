@@ -136,12 +136,24 @@ DEF_PRIMITIVE_TYPE (BT_WINT, wint_type_node)
 DEF_PRIMITIVE_TYPE (BT_STRING, string_type_node)
 DEF_PRIMITIVE_TYPE (BT_CONST_STRING, const_string_type_node)
 
-DEF_PRIMITIVE_TYPE (BT_DFLOAT32, dfloat32_type_node)
-DEF_PRIMITIVE_TYPE (BT_DFLOAT64, dfloat64_type_node)
-DEF_PRIMITIVE_TYPE (BT_DFLOAT128, dfloat128_type_node)
-DEF_PRIMITIVE_TYPE (BT_DFLOAT32_PTR, dfloat32_ptr_type_node)
-DEF_PRIMITIVE_TYPE (BT_DFLOAT64_PTR, dfloat64_ptr_type_node)
-DEF_PRIMITIVE_TYPE (BT_DFLOAT128_PTR, dfloat128_ptr_type_node)
+DEF_PRIMITIVE_TYPE (BT_DFLOAT32, (dfloat32_type_node
+				  ? dfloat32_type_node
+				  : error_mark_node))
+DEF_PRIMITIVE_TYPE (BT_DFLOAT64, (dfloat64_type_node
+				  ? dfloat64_type_node
+				  : error_mark_node))
+DEF_PRIMITIVE_TYPE (BT_DFLOAT128, (dfloat128_type_node
+				   ? dfloat128_type_node
+				   : error_mark_node))
+DEF_PRIMITIVE_TYPE (BT_DFLOAT32_PTR, (dfloat32_ptr_type_node
+				      ? dfloat32_ptr_type_node
+				      : error_mark_node))
+DEF_PRIMITIVE_TYPE (BT_DFLOAT64_PTR, (dfloat64_ptr_type_node
+				      ? dfloat64_ptr_type_node
+				      : error_mark_node))
+DEF_PRIMITIVE_TYPE (BT_DFLOAT128_PTR, (dfloat128_ptr_type_node
+				       ? dfloat128_ptr_type_node
+				       : error_mark_node))
 
 DEF_PRIMITIVE_TYPE (BT_VALIST_REF, va_list_ref_type_node)
 DEF_PRIMITIVE_TYPE (BT_VALIST_ARG, va_list_arg_type_node)

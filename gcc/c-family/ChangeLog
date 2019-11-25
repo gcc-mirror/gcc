@@ -1,3 +1,14 @@
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/91985
+	* c-common.c (c_common_type_for_mode): Handle decimal
+	floating-point types being NULL_TREE.
+	* c-format.c (get_format_for_type_1): Handle specified types being
+	NULL_TREE.
+	* c-lex.c (interpret_float): Give an error for decimal
+	floating-point constants when decimal floating-point not
+	supported.
+
 2019-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83859

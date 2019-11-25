@@ -1,5 +1,13 @@
 2019-11-25  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/91985
+	* gcc.dg/c2x-no-dfp-1.c, gcc.dg/gnu2x-builtins-no-dfp-1.c: New
+	tests.
+	* gcc.dg/fltconst-pedantic-dfp.c: Expect errors when decimal
+	floating-point not supported.
+
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/gnu2x-attrs-1.c: Do not expect message about attributes
 	appertaining to types.
 	* gcc.dg/gnu2x-attrs-2.c: New test.
