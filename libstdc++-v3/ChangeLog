@@ -1,3 +1,9 @@
+2019-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91786
+	* include/bits/fs_path.h (filesystem_error): Move definition before
+	the use in u8path.
+
 2019-11-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/functions.h: Remove <bits/move.h> include.
