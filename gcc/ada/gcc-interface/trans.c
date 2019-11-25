@@ -8421,7 +8421,7 @@ gnat_to_gnu (Node_Id gnat_node)
       gnat_temp = Entity (Name (gnat_node));
       if (Freeze_Node (gnat_temp))
 	{
-	  tree gnu_address = gnat_to_gnu (Expression (gnat_node));
+	  tree gnu_address = gnat_to_gnu (Expression (gnat_node)), gnu_temp;
 
 	  /* Get the value to use as the address and save it as the equivalent
 	     for the object; when it is frozen, gnat_to_gnu_entity will do the
@@ -8431,7 +8431,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	     of the object is limited and it is initialized with the result of
 	     a function call.  */
 	  if (Is_Subprogram (gnat_temp))
-	    gnu_result = gnu_address;
+	    gnu_temp = gnu_address;
 	  else
 	    {
 	      tree gnu_type = gnat_to_gnu_type (Etype (gnat_temp));
@@ -8440,11 +8440,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	      gnu_type
 		= build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	      gnu_address = convert (gnu_type, gnu_address);
-	      gnu_result
+	      gnu_temp
 		= build_unary_op (INDIRECT_REF, NULL_TREE, gnu_address);
 	    }
 
-	  save_gnu_tree (gnat_temp, gnu_result, true);
+	  save_gnu_tree (gnat_temp, gnu_temp, true);
 	}
       break;
 
