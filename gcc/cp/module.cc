@@ -6974,6 +6974,7 @@ void
 trees_out::add_indirects (tree decl)
 {
   unsigned count = 0;
+
   // FIXME: We'll eventually want default fn parms of templates and
   // perhaps default template parms too.  I think the former can be
   // referenced from instantiations (as they are lazily instantiated).
@@ -7849,10 +7850,16 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
       else
 	{
+	  tree to_add = decl;
 	  if (ref == WK_value)
-	    tree_node (CP_DECL_CONTEXT (decl));
-	  else
-	    dep_hash->add_dependency (decl, depset::EK_NAMESPACE);
+	    {
+	      gcc_checking_assert (dep_hash->current->get_entity () == decl);
+	      to_add = CP_DECL_CONTEXT (decl);
+	      if (to_add == decl)
+		to_add = NULL_TREE;
+	    }
+	  if (to_add)
+	    dep_hash->add_dependency (to_add, depset::EK_NAMESPACE);
 	}
 
       int tag = insert (decl, ref);
@@ -11238,28 +11245,25 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 void
 depset::hash::add_dependency (depset *dep)
 {
-  if (dep->get_entity_kind () != EK_NAMESPACE)
+  current->deps.safe_push (dep);
+
+  if (dep->is_internal ())
+    current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
+
+  if (current->get_entity_kind () == EK_USING
+      && !OVL_USING_P (current->get_entity ())
+      && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
+      && TREE_CODE (TREE_TYPE (dep->get_entity ())) == ENUMERAL_TYPE)
     {
-      current->deps.safe_push (dep);
+      /* CURRENT is an unwrapped using-decl and DECL is an enum's
+	 implicit typedef.  Is CURRENT a member of the enum?  */
+      // FIXME: Can't we just handle this when depending the enum?
+      tree c_decl = OVL_FUNCTION (current->get_entity ());
 
-      if (dep->is_internal ())
-	current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
-
-      if (current->get_entity_kind () == EK_USING
-	  && !OVL_USING_P (current->get_entity ())
-	  && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
-	  && TREE_CODE (TREE_TYPE (dep->get_entity ())) == ENUMERAL_TYPE)
-	{
-	  /* CURRENT is an unwrapped using-decl and DECL is an enum's
-	     implicit typedef.  Is CURRENT a member of the enum?  */
-	  // FIXME: Can't we just handle this when depending the enum?
-	  tree c_decl = OVL_FUNCTION (current->get_entity ());
-
-	  if (TREE_CODE (c_decl) == CONST_DECL
-	      && DECL_CONTEXT (c_decl) == TREE_TYPE (dep->get_entity ()))
-	    /* Make DECL depend on CURRENT.  */
-	    dep->deps.safe_push (current);
-	}
+      if (TREE_CODE (c_decl) == CONST_DECL
+	  && DECL_CONTEXT (c_decl) == TREE_TYPE (dep->get_entity ()))
+	/* Make DECL depend on CURRENT.  */
+	dep->deps.safe_push (current);
     }
 
   if (dep->is_unreached ())
@@ -14205,7 +14209,7 @@ module_state::read_cluster (unsigned snum)
     }
   /* Look, function.c's interface to cfun does too much for us, we
      just need to restore the old value.  I do not want to go
-     redesigning that if right now.  */
+     redesigning that API right now.  */
 #undef cfun
   cfun = old_cfun;
   current_function_decl = old_cfd;
@@ -14441,7 +14445,7 @@ module_state::write_entities (elf_out *to, vec<depset *> depsets,
 {
   dump () && dump ("Writing entites");
   dump.indent ();
-
+  // FIXME:bytes_out
   trees_out sec (to, this, table);
   sec.begin ();
 
@@ -16186,27 +16190,6 @@ module_state::read_inits (unsigned count)
   return true;
 }
 
-/* Compare bindings for two namespaces.  Those closer to :: are
-   less.  */
-
-static int
-space_cmp (const void *a_, const void *b_)
-{
-  depset *a = *(depset *const *)a_;
-  depset *b = *(depset *const *)b_;
-  tree ns_a = a->get_entity ();
-  tree ns_b = b->get_entity ();
-
-  gcc_checking_assert (ns_a != ns_b);
-
-  /* Deeper namespaces come after shallower ones.  */
-  if (int delta = int (SCOPE_DEPTH (ns_a)) - int (SCOPE_DEPTH (ns_b)))
-    return delta;
-
-  /* Otherwise order by UID for consistent results.  */
-  return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
-}
-
 /* Tool configuration:  MOD_SNAME_PFX .config
 
    This is data that confirms current state (or fails).  */
@@ -16750,7 +16733,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
     write_entities (to, sccs, table, config.num_entities, &crc);
 
   /* Write the namespaces.  */
-  spaces.qsort (space_cmp);
   write_namespaces (to, table, spaces, &crc);
 
   /* Write the bindings themselves.  */

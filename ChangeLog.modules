@@ -1,6 +1,12 @@
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Add namespace dependency here.
+	(depset::hash::add_dependency): And here.
+	(space_cmp): Delete.
+	(module_state::write): No need to sort namespaces anymore.
+
+	gcc/cp/
 	* module.cc (depset::hash::make_dependency): Add context
 	dependency when discovering a new GMF binding.
 	(depset::hash::add_binding): Likewise when discoving a non-empty binding.
