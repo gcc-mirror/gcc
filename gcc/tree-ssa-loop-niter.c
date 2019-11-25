@@ -2367,27 +2367,23 @@ simplify_using_outer_evolutions (class loop *loop, tree expr)
 /* Returns true if EXIT is the only possible exit from LOOP.  */
 
 bool
-loop_only_exit_p (const class loop *loop, const_edge exit)
+loop_only_exit_p (const class loop *loop, basic_block *body, const_edge exit)
 {
-  basic_block *body;
   gimple_stmt_iterator bsi;
   unsigned i;
 
   if (exit != single_exit (loop))
     return false;
 
-  body = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     {
       for (bsi = gsi_start_bb (body[i]); !gsi_end_p (bsi); gsi_next (&bsi))
 	if (stmt_can_terminate_bb_p (gsi_stmt (bsi)))
 	  {
-	    free (body);
 	    return true;
 	  }
     }
 
-  free (body);
   return true;
 }
 
@@ -2403,7 +2399,8 @@ loop_only_exit_p (const class loop *loop, const_edge exit)
 bool
 number_of_iterations_exit_assumptions (class loop *loop, edge exit,
 				       class tree_niter_desc *niter,
-				       gcond **at_stmt, bool every_iteration)
+				       gcond **at_stmt, bool every_iteration,
+				       basic_block *body)
 {
   gimple *last;
   gcond *stmt;
@@ -2477,8 +2474,17 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
 
   iv0.base = expand_simple_operations (iv0.base);
   iv1.base = expand_simple_operations (iv1.base);
+  bool body_from_caller = true;
+  if (!body)
+    {
+      body = get_loop_body (loop);
+      body_from_caller = false;
+    }
+  bool only_exit_p = loop_only_exit_p (loop, body, exit);
+  if (!body_from_caller)
+    free (body);
   if (!number_of_iterations_cond (loop, type, &iv0, code, &iv1, niter,
-				  loop_only_exit_p (loop, exit), safe))
+				  only_exit_p, safe))
     {
       fold_undefer_and_ignore_overflow_warnings ();
       return false;
@@ -2721,11 +2727,12 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 bool
 number_of_iterations_exit (class loop *loop, edge exit,
 			   class tree_niter_desc *niter,
-			   bool warn, bool every_iteration)
+			   bool warn, bool every_iteration,
+			   basic_block *body)
 {
   gcond *stmt;
   if (!number_of_iterations_exit_assumptions (loop, exit, niter,
-					      &stmt, every_iteration))
+					      &stmt, every_iteration, body))
     return false;
 
   if (integer_nonzerop (niter->assumptions))
@@ -3837,15 +3844,12 @@ infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
 */
 
 static void
-infer_loop_bounds_from_undefined (class loop *loop)
+infer_loop_bounds_from_undefined (class loop *loop, basic_block *bbs)
 {
   unsigned i;
-  basic_block *bbs;
   gimple_stmt_iterator bsi;
   basic_block bb;
   bool reliable;
-
-  bbs = get_loop_body (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -3871,8 +3875,6 @@ infer_loop_bounds_from_undefined (class loop *loop)
   	}
 
     }
-
-  free (bbs);
 }
 
 /* Compare wide ints, callback for qsort.  */
@@ -4275,8 +4277,9 @@ estimate_numbers_of_iterations (class loop *loop)
      diagnose those loops with -Waggressive-loop-optimizations.  */
   number_of_latch_executions (loop);
 
-  exits = get_loop_exit_edges (loop);
-  likely_exit = single_likely_exit (loop);
+  basic_block *body = get_loop_body (loop);
+  exits = get_loop_exit_edges (loop, body);
+  likely_exit = single_likely_exit (loop, exits);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
       if (ex == likely_exit)
@@ -4296,7 +4299,8 @@ estimate_numbers_of_iterations (class loop *loop)
 	    }
 	}
 
-      if (!number_of_iterations_exit (loop, ex, &niter_desc, false, false))
+      if (!number_of_iterations_exit (loop, ex, &niter_desc,
+				      false, false, body))
 	continue;
 
       niter = niter_desc.niter;
@@ -4313,7 +4317,7 @@ estimate_numbers_of_iterations (class loop *loop)
   exits.release ();
 
   if (flag_aggressive_loop_optimizations)
-    infer_loop_bounds_from_undefined (loop);
+    infer_loop_bounds_from_undefined (loop, body);
 
   discover_iteration_bound_by_body_walk (loop);
 
