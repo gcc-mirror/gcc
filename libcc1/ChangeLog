@@ -1,3 +1,8 @@
+2019-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_pragma_push_user_expression): Update
+	cp_build_indirect_ref call.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.

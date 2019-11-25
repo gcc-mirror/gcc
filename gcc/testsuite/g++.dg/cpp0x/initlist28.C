@@ -4,5 +4,5 @@
 void foo()
 {
   int a[1];
-  throw a = {}; // { dg-error "assign" }
+  throw a = {}; // { dg-error "11:assigning to an array from an initializer list" }
 }

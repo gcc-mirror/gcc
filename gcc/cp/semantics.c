@@ -7193,7 +7193,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		remove = true;
 	      else
 		{
-		  t = cp_build_indirect_ref (addr, RO_UNARY_STAR,
+		  t = cp_build_indirect_ref (OMP_CLAUSE_LOCATION (c),
+					     addr, RO_UNARY_STAR,
 					     tf_warning_or_error);
 		  if (t == error_mark_node)
 		    remove = true;
@@ -9328,7 +9329,7 @@ finish_omp_depobj (location_t loc, tree depobj,
       if (addr == error_mark_node)
 	depobj = error_mark_node;
       else
-	depobj = cp_build_indirect_ref (addr, RO_UNARY_STAR,
+	depobj = cp_build_indirect_ref (loc, addr, RO_UNARY_STAR,
 					tf_warning_or_error);
     }
 

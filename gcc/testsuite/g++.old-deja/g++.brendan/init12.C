@@ -5,5 +5,5 @@ char * bob();
 int main()
 {
     char a[1][2];
-    a[0] = bob();// { dg-error "" } .*
+    a[0] = bob();// { dg-error "10:incompatible types in assignment" } .*
 }
