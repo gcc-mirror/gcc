@@ -1,6 +1,9 @@
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (struct unnamed_entity): Delete.
+
+	gcc/cp/
 	* name-lookup.h (get_imported_namespace): Don't delare.
 	* name-lookup.c (get_imported_namespace): Delete.
 

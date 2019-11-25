@@ -3158,24 +3158,6 @@ public:
 static loc_spans spans;
 
 /********************************************************************/
-/* Unnamed declarations.  (a) voldemort types, (b) instantiations.  */
-
-struct GTY(()) unnamed_entity
-{
-  mc_slot slot;  /* The decl, or section number. */
-  tree ns;	 /* If a specialization, the ns::id it specializes.  */
-  tree id;
-
-  unnamed_entity ()
-    :ns (NULL), id (NULL)
-  {
-    slot.u.binding = NULL;
-  }
-};
-
-/********************************************************************/
-
-/********************************************************************/
 /* Data needed by a module during the process of loading.  */
 struct GTY(()) slurping {
   vec<unsigned, va_heap, vl_embed> *
