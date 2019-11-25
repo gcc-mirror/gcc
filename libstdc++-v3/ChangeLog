@@ -1,5 +1,17 @@
 2019-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/iterator_concepts.h (ranges::iter_swap): Fix parameter
+	types of poison pill overload. Use remove_reference_t when checking
+	constraints.
+	* include/bits/stl_iterator.h (move_sentinel): Define for C++20.
+	(move_iterator): Adjust definitions of nested types for C++20. Add
+	hidden friends for move_sentinel operations, iter_move and iter_swap.
+	(common_iterator, counted_iterator): Define for C++20.
+	* testsuite/24_iterators/move_iterator/cust.cc: New test.
+	* testsuite/24_iterators/move_iterator/sentinel.cc: New test.
+	* testsuite/24_iterators/common_iterator/1.cc: New test.
+	* testsuite/24_iterators/counted_iterator/1.cc: New test.
+
 	PR libstdc++/91786
 	* include/bits/fs_path.h (filesystem_error): Move definition before
 	the use in u8path.
