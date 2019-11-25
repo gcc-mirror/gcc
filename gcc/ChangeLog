@@ -1,3 +1,17 @@
+2019-11-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	Build double32 / long-double32 multilibs if needed.
+
+	PR target/92055
+	* config/avr/t-avr:
+	(HAVE_DOUBLE_MULTILIB, HAVE_LONG_DOUBLE_MULTILIB): Remove vars.
+	(HAVE_DOUBLE32, HAVE_LONG_DOUBLE32, WITH_LONG_DOUBLE)
+	(HAVE_DOUBLE64, HAVE_LONG_DOUBLE64, WITH_DOUBLE): Set from
+	tm_defines and pass to genmultilib.awk.
+	* config/avr/genmultilib.awk: Use these variables to add double32
+	and / or long-double32 multilib(s) as needed.
+	* config/avr/driver-avr.c (avr_double_lib): Adjust comment.
+
 2019-11-25  Richard Biener  <rguenther@suse.de>
 
 	* cfgloop.h (get_loop_exit_edges): Add extra parameter denoting
