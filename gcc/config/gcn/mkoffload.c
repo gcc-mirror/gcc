@@ -36,17 +36,6 @@
 
 const char tool_name[] = "gcn mkoffload";
 
-#define COMMENT_PREFIX "#"
-
-struct id_map
-{
-  id_map *next;
-  char *gcn_name;
-};
-
-static id_map *func_ids, **funcs_tail = &func_ids;
-static id_map *var_ids, **vars_tail = &var_ids;
-
 /* Files to unlink.  */
 static const char *gcn_s1_name;
 static const char *gcn_s2_name;
