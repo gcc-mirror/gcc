@@ -1,3 +1,26 @@
+2019-11-25 Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/vector.md (vector_fp_comparison_simple): New code
+	iterator.
+	(vector_fp_comparison_complex): Likewise.
+	(vector_<code><mode> for VEC_F and vector_fp_comparison_simple): New
+	define_and_split.
+	(vector_<code><mode> for VEC_F and vector_fp_comparison_complex):
+	Likewise.
+	(vector_lt<mode> for VEC_F): Refactor with
+	vector_fp_comparison_simple.
+	(vector_le<mode> for VEC_F): Likewise.
+	(vector_unge<mode> for VEC_F): Likewise.
+	(vector_unle<mode> for VEC_F): Likewise.
+	(vector_ne<mode> for VEC_F): Likewise.
+	(vector_ungt<mode> for VEC_F): Likewise.
+	(vector_unlt<mode> for VEC_F): Likewise.
+	(vector_ltgt<mode> for VEC_F): Refactor with
+	vector_fp_comparison_complex.
+	(vector_ordered<mode> for VEC_F): Likewise.
+	(vector_uneq<mode> for VEC_F): Likewise.
+	(vector_unordered<mode> for VEC_F): Likewise.
+
 2019-11-24  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
 
 	PR fortran/92100
