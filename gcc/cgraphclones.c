@@ -1013,6 +1013,22 @@ cgraph_node::create_version_clone_with_body
   return new_version_node;
 }
 
+/* Remove the node from the tree of virtual and inline clones and make it a
+   standalone node - not a clone any more.  */
+
+void cgraph_node::remove_from_clone_tree ()
+{
+  if (next_sibling_clone)
+    next_sibling_clone->prev_sibling_clone = prev_sibling_clone;
+  if (prev_sibling_clone)
+    prev_sibling_clone->next_sibling_clone = next_sibling_clone;
+  else
+    clone_of->clones = next_sibling_clone;
+  next_sibling_clone = NULL;
+  prev_sibling_clone = NULL;
+  clone_of = NULL;
+}
+
 /* Given virtual clone, turn it into actual clone.  */
 
 static void
@@ -1033,22 +1049,15 @@ cgraph_materialize_clone (cgraph_node *node)
       dump_function_to_file (node->decl, symtab->dump_file, dump_flags);
     }
 
+  cgraph_node *clone_of = node->clone_of;
   /* Function is no longer clone.  */
-  if (node->next_sibling_clone)
-    node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
-  if (node->prev_sibling_clone)
-    node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
-  else
-    node->clone_of->clones = node->next_sibling_clone;
-  node->next_sibling_clone = NULL;
-  node->prev_sibling_clone = NULL;
-  if (!node->clone_of->analyzed && !node->clone_of->clones)
+  node->remove_from_clone_tree ();
+  if (!clone_of->analyzed && !clone_of->clones)
     {
-      node->clone_of->release_body ();
-      node->clone_of->remove_callees ();
-      node->clone_of->remove_all_references ();
+      clone_of->release_body ();
+      clone_of->remove_callees ();
+      clone_of->remove_all_references ();
     }
-  node->clone_of = NULL;
   bitmap_obstack_release (NULL);
 }
 

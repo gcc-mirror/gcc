@@ -967,6 +967,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 				     ipa_param_adjustments *param_adjustments,
 				     const char * suffix, unsigned num_suffix);
 
+  /* Remove the node from the tree of virtual and inline clones and make it a
+     standalone node - not a clone any more.  */
+  void remove_from_clone_tree ();
+
   /* cgraph node being removed from symbol table; see if its entry can be
    replaced by other inline clone.  */
   cgraph_node *find_replacement (void);

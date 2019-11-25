@@ -1,5 +1,15 @@
 2019-11-25  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/92109
+	* cgraph.h (cgraph_node::remove_from_clone_tree): Declare.
+	* cgraphclones.c (cgraph_node::remove_from_clone_tree): New method.
+	(cgraph_materialize_clone): Move removel from clone tree to the
+	the new method and use it instead.
+	* ipa.c (symbol_table::remove_unreachable_nodes): When removing
+	bodies of clones, also remove it from the clone tree.
+
+2019-11-25  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/91956
 	* ipa-sra.c (process_isra_node_results): Put the new node to the
 	same comdat group as the original node.
