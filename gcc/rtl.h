@@ -3514,7 +3514,6 @@ extern bool insn_nothrow_p (const_rtx);
 extern bool can_nonlocal_goto (const rtx_insn *);
 extern void copy_reg_eh_region_note_forward (rtx, rtx_insn *, rtx);
 extern void copy_reg_eh_region_note_backward (rtx, rtx_insn *, rtx);
-extern int inequality_comparisons_p (const_rtx);
 extern rtx replace_rtx (rtx, rtx, rtx, bool = false);
 extern void replace_label (rtx *, rtx, rtx, bool);
 extern void replace_label_in_insn (rtx_insn *, rtx_insn *, rtx_insn *, bool);

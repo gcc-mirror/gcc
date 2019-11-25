@@ -115,15 +115,6 @@
 	  && (INTVAL (op) >= (-0x7fffffff - 1) && INTVAL (op) <= 0x7fffffff));
 })
 
-;; Return true if X is a valid comparison operator for the dbcc
-;; instruction.  Note it rejects floating point comparison
-;; operators. (In the future we could use Fdbcc).  It also rejects
-;; some comparisons when CC_NO_OVERFLOW is set.
-
-(define_predicate "valid_dbcc_comparison_p"
-  (and (match_code "eq,ne,gtu,ltu,geu,leu,gt,lt,ge,le")
-       (match_test "valid_dbcc_comparison_p_2 (op, mode)")))
-
 (define_predicate "m68k_cstore_comparison_operator"
   (if_then_else (match_test "TARGET_68881")
 	        (match_operand 0 "comparison_operator")
@@ -210,10 +201,10 @@
   (and (match_code "const_int")
        (match_test "op == const1_rtx")))
 
-;; A valid operand for a HImode or QImode conditional operation.
-;; ColdFire has tst patterns, but not cmp patterns.
-(define_predicate "m68k_subword_comparison_operand"
-  (if_then_else (match_test "TARGET_COLDFIRE")
+;; A valid operand for a conditional operation.
+;; ColdFire has tst patterns for HImode and QImode, but not cmp patterns.
+(define_predicate "m68k_comparison_operand"
+  (if_then_else (match_test "TARGET_COLDFIRE && mode != SImode")
                 (and (match_code "const_int")
 		     (match_test "op == const0_rtx"))
 		(match_operand 0 "general_src_operand")))
@@ -234,15 +225,17 @@
 
 ;; Special case of general_src_operand, which rejects a few fp
 ;; constants (which we prefer in registers) before reload.
+;; Used only in comparisons, and we do want to allow zero.
 
 (define_predicate "fp_src_operand"
   (match_operand 0 "general_src_operand")
 {
-  return !CONSTANT_P (op)
-	 || (TARGET_68881
-	     && (!standard_68881_constant_p (op)
-		 || reload_in_progress
-		 || reload_completed));
+  return (!CONSTANT_P (op)
+	  || op == CONST0_RTX (mode)
+	  || (TARGET_68881
+	      && (!standard_68881_constant_p (op)
+		  || reload_in_progress
+		  || reload_completed)));
 })
 
 ;; Used to detect constants that are valid for addq/subq instructions
@@ -282,3 +275,6 @@
 
 (define_predicate "swap_peephole_relational_operator"
   (match_code "gtu,leu,gt,le"))
+
+(define_predicate "address_reg_operand"
+  (match_test ("ADDRESS_REG_P (op)")))

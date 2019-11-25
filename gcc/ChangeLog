@@ -1,3 +1,166 @@
+2019-11-25  Bernd Schmidt  <bernds_cb1@t-online.de>
+
+	* config/m68k/m68k.c (output_move_himode, output_move_qimode):
+	Replace code for non-CONST_INT constants with gcc_unreachable.
+	* config/m68k/m68k.md (cbranchdi): Don't generate individual
+	compare and test.
+	(CMPMODE): New mode_iterator.
+	(cbranchsi4, cbranchqi4, cbranchhi4): Replace expanders with
+	cbranch<mode>4.
+	(cstoresi4, cstoreqi4, cstorehi4): Replace expanders with
+	cstore<mode>4.
+	(cmp<mode>_68881): Remove 'F' constraint from first comparison
+	operand.
+	(bit test insns patterns): Use nonimmediate_operand, not
+	register_operand, for source operands that allow memory in
+	their constraints.
+	(divmodsi4, udivmodsi4, divmodhi4 and related unnamed patterns):
+	Use register_operand, not nonimmediate_operand, for the
+	destinations.
+	(DBCC): New mode_iterator.
+	(dbcc peepholes): Use it to reduce duplication.
+	(trap): Use const_true_rtx, not const1_rtx.
+	* config/m68k/predicates.md (m68k_comparison_operand): Renamed
+	from m68k_subword_comparison_operand and changed to handle
+	SImode.
+
+	PR target/91851
+	* config/m68k/m68k-protos.h (output-dbcc_and_branch): Adjust
+	declaration.
+	(m68k_init_cc): New declaration.
+	(m68k_output_compare_di, m68k_output_compare_si)
+	(m68k_output_compare_hi, m68k_output_compare_qi)
+	(m68k_output_compare_fp, m68k_output_btst, m68k_output_bftst)
+	(m68k_find_flags_value, m68k_output_scc, m68k_output_scc_float)
+	(m68k_output_branch_integer, m68k_output_branch_integer_rev.
+	m68k_output_branch_float, m68k_output_branch_float_rev):
+	Likewise.
+	(valid_dbcc_comparison_p_2, flags_in_68881)
+	(output_btst): Remove declaration.
+	* config/m68k/m68k.c (INCLDUE_STRING): Define.
+	(TARGET_ASM_FINAL_POSTSCAN_INSN): Define.
+	(valid_dbcc_comparison_p_2, flags_in_68881): Delete functions.
+	(flags_compare_op0, flags_compare_op1, flags_operand1,
+	flags_operand2, flags_valid): New static variables.
+	(m68k_find_flags_value, m68k_init_cc): New functions.
+	(handle_flags_for_move, m68k_asm_final_postscan_insn,
+	remember_compare_flags): New static functions.
+	(output_dbcc_and_branch): New argument CODE.  Use it, and add
+	PLUS and MINUS to the possible codes.  All callers changed.
+	(m68k_output_btst): Renamed from output_btst.  Remove OPERANDS
+	and INSN arguments, add CODE arg.  Return the comparison code
+	to use.  All callers changed.  Use CODE instead of
+	next_insn_tests_no_inequality, and replace cc_status management
+	with changing the return code.
+	(m68k_rtx_costs): Instead of testing for COMPARE, test for
+	RTX_COMPARE or RTX_COMM_COMPARE.
+	(output_move_simode, output_move_qimode): Call
+	handle_flags_for_move.
+	(notice_update_cc): Delete function.
+	(m68k_output_bftst, m68k_output_compare_di, m68k_output_compare_si,
+	m68k_output_compare_hi, m68k_output_compare_qi,
+	m68k_output_compare_fp, m68k_output_branch_integer,
+	m68k_output_branch_integer_rev, m68k_output_scc,
+	m68k_output_branch_float, m68k_output_branch_float_rev,
+	m68k_output_scc_float): New functions.
+	(output_andsi3, output_iorsi3, output_xorsi3): Call CC_STATUS_INIT
+	once at the start, and set flags_valid and flags_operand1 if the
+	flags are usable.
+	* config/m68k/m68k.h (CC_IN_68881, NOTICE_UPDATE_CC,
+	CC_OVERFLOW_UNUSABLE, CC_NO_CARRY, OUTPUT_JUMP): Remove
+	definitions.
+	(CC_STATUS_INIT): Define.
+	* config/m68k/m68k.md (flags_valid): New define_attr.
+	(tstdi, tstsi_internal_68020_cf, tstsi_internal, tsthi_internal,
+	tstqi_internal, tst<mode>_68881, tst<mode>_cf, cmpdi_internal,
+	cmpdi, unnamed cmpsi/cmphi/cmpqi patterns, cmpsi_cf,
+	cmp<mode>_68881, cmp<mode>_cf, unnamed btst patterns,
+	tst_bftst_reg, tst_bftst_reg, unnamed scc patterns, scc,
+	sls, sordered_1, sunordered_1, suneq_1, sunge_1, sungt_1,
+	sunle_1, sunlt_1, sltgt_1, fsogt_1, fsoge_1, fsolt_1, fsole_1,
+	bge0_di, blt0_di, beq, bne, bgt, bgtu, blt, bltu, bge, bgeu,
+	ble, bleu, bordered, bunordered, buneq, bunge, bungt, bunle,
+	bunlt, bltgt, beq_rev, bne_rev, bgt_rev, bgtu_rev,
+	blt_rev, bltu_rev, bge_rev, bgeu_rev, ble_rev, bleu_rev,
+	bordered_rev, bunordered_rev, buneq_rev, bunge_rv, bungt_rev,
+	bunle_rev, bunlt_rev, bltgt_rev, ctrapdi4, ctrapsi4, ctraphi4,
+	ctrapqi4, conditional_trap): Delete patterns.
+	(cbranchdi4_insn): New pattern.
+	(cbranchdi4): Don't generate cc0 patterns.  When testing LT or GE,
+	test high part only.  When testing EQ or NE, generate beq0_di
+	and bne0_di patterns directly.
+	(cstoredi4): When testing LT or GE, test high part only.
+	(both sets of cbranch<mode>4, cstore<mode>4): Don't generate cc0
+	patterns.
+	(scc0_constraints, cmp1_constraints, cmp2_constraints,
+	scc0_cf_constraints, cmp1_cf_constraints, cmp2_cf_constraints,
+	cmp2_cf_predicate): New define_mode_attrs.
+	(cbranch<mode>4_insn, cbranch<mode>4_insn_rev,
+	cbranch<mode>4_insn_cf, cbranch<mode>4_insn_cf_rev,
+	cstore<mode>4_insn, cstore<mode>4_insn_cf for integer modes)
+	New patterns.
+	(cbranch<mode>4_insn_68881, cbranch<mode>4_insn_rev_68881):
+	(cbranch<mode>4_insn_cf, cbranch<mode>4_insn_rev_cf,
+	cstore<mode>4_insn_68881, cstore<mode>4_insn_cf for FP):
+	New patterns.
+	(cbranchsi4_btst_mem_insn, cbranchsi4_btst_reg_insn,
+	cbranchsi4_btst_mem_insn_1, cbranchsi4_btst_reg_insn_1):
+	Likewise.
+	(BTST): New define_mode_iterator.
+	(btst_predicate, btst_constraint, btst_range): New
+	define_mode_attrs.
+	(cbranch_bftst<mode>_insn, cstore_bftst<mode>_insn): New
+	patterns.
+	(movsi_m68k_movsi_m68k2, movsi_cf, unnamed movstrict patterns,
+	unnamed movhi and movqi patterns, unnamed movsf, movdf and movxf
+	patterns): Set attr "flags_valid".
+	(truncsiqi2, trunchiqi2, truncsihi2): Remove manual CC_STATUS
+	management.  Set attr "flags_valid".
+	(extendsidi2, extendplussidi, unnamed float_extendsfdf pattern,
+	extendsfdf2_cf, fix_truncdfsi2, fix_truncdfhi2, fix_truncdfqi2,
+	addi_sexthishl32, adddi_dilshr32, adddi_dilshr32_cf,
+	addi_dishl32, subdi_sexthishl32, subdi_dishl32, subdi3): Remove
+	manual CC_STATUS management.
+	(addsi3_internal, addhi3, addqi3, subsi3, subhi3, subqi3,
+	unnamed strict_lowpart subhi and subqi patterns): Set attr
+	"flags_valid".
+	(unnamed strict_lowpart addhi3 and addqi3 patterns): Likewise.
+	Remove code to operate on address regs and assert the case
+	does not occur.
+	(unnamed mulsidi patterns, divmodhi4, udivmodhi4): Remove
+	manual CC_STATUS_INIT.
+	(andsi3_internal, andhi3, andqi3, iorsi3_internal, iorhi3, iorqi3,
+	xorsi3_internal, xorhi3, xorqi3, negsi2_internal,
+	negsi2_5200, neghi2, negqi2, one_cmplsi2_internal, one_cmplhi2,
+	one_cmplqi2, unnamed strict_lowpart patterns
+	for andhi, andqi, iorhi, iorqi, xorhi, xorqi, neghi, negqi,
+	one_cmplhi and one_cmplqi): Set attr "flags_valid".
+	(iorsi_zext_ashl16, iorsi_zext): Remove manual CC_STATUS_INIT.
+	(ashldi_sexthi, ashlsi_16, ashlsi_17_24): Remove manual
+	CC_STATUS_INIT.
+	(ashlsi3, ashlhi3, ashlqi3, ashrsi3, ashrhi3, ashrqi3, lshrsi3,
+	lshrhi3, shrqi3, rotlsi3, rotlhi3, rotlhi3_lowpart, rotlqi3,
+	rotlqi3_lowpart, rotrsi3, rotrhi3, rotrhi_lowpart, rotrqi3,
+	unnamed strict_low_part patterns for HI and
+	QI versions): Set attr "flags_valid".
+	(bsetmemqi, bsetmemqi_ext, bsetdreg, bchgdreg, bclrdreg,
+	bclrmemqi, extzv_8_16_reg, extzv_bfextu_mem, insv_bfchg_mem,
+	insv_bfclr_mem, insv_bfset_mem, extv_bfextu_reg,
+	insv_bfclr_reg, insv_bfset_reg, dbne_hi, dbne_si, dbge_hi,
+	dbge_si, extendsfxf2, extenddfxf2, ): Remove manual cc_status management.
+	(various unnamed peepholes): Adjust compare/branch sequences
+	for new cbranch patterns.
+	(dbcc peepholes): Likewise, and output the comparison here
+	as well.
+	* config/m68k/predicates.md (valid_dbcc_comparison_p): Delete.
+	(fp_src_operand): Allow constant zero.
+	(address_reg_operand): New predicate.
+
+	* rtl.h (inequality_comparisons_p): Remove declaration.
+	* recog.h (next_insn_tests_no_inequality): Likewise.
+	* rtlanal.c (inequality_comparisons_p): Delete function.
+	* recog.c (next_insn_tests_no_inequality): Likewise.
+
 2019-11-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Add assertion.
