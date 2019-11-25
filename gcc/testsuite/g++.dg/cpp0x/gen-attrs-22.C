@@ -3,5 +3,5 @@
 
 void f()
 {
-  static_cast<float *[[gnu::unused]]>(0); // { dg-warning "ignored" }
+  static_cast<float *[[gnu::unused]]>(0);
 }

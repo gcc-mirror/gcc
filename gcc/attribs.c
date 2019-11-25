@@ -593,21 +593,6 @@ decl_attributes (tree *node, tree attributes, int flags,
 	}
       gcc_assert (is_attribute_p (spec->name, name));
 
-      if (TYPE_P (*node)
-	  && cxx11_attr_p
-	  && !(flags & ATTR_FLAG_TYPE_IN_PLACE))
-	{
-	  /* This is a c++11 attribute that appertains to a
-	     type-specifier, outside of the definition of, a class
-	     type.  Ignore it.  */
-	  auto_diagnostic_group d;
-	  if (warning (OPT_Wattributes, "attribute ignored"))
-	    inform (input_location,
-		    "an attribute that appertains to a type-specifier "
-		    "is ignored");
-	  continue;
-	}
-
       if (spec->decl_required && !DECL_P (*anode))
 	{
 	  if (flags & ((int) ATTR_FLAG_DECL_NEXT

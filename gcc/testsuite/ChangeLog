@@ -1,3 +1,12 @@
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/gnu2x-attrs-1.c: Do not expect message about attributes
+	appertaining to types.
+	* gcc.dg/gnu2x-attrs-2.c: New test.
+	* g++.dg/cpp0x/gen-attrs-1.C, g++.dg/cpp0x/gen-attrs-22.C,
+	g++.dg/cpp0x/gen-attrs-4.C, g++.dg/cpp0x/lambda/lambda-attr1.C:
+	Update expected diagnostics.
+
 2019-11-25  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/torture/fp-int-convert-timode-1.c: Always run if int128.

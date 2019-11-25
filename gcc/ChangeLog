@@ -1,3 +1,8 @@
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* attribs.c (decl_attributes): Do not ignore C++11 attributes on
+	types.
+
 2019-11-25  Bernd Schmidt  <bernds_cb1@t-online.de>
 
 	* config/m68k/m68k.c (output_move_himode, output_move_qimode):
