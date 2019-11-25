@@ -1,5 +1,10 @@
 2019-11-25  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sem_item_optimizer::dump_cong_classes): Clean
+	up used dump message.
+
+2019-11-25  Martin Liska  <mliska@suse.cz>
+
 	PR bootstrap/92653
 	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Comment out
 	too strict checking assert.
