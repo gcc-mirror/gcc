@@ -2542,7 +2542,9 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype,
 
   /* We need to union stype over the incoming graph edges but we still
      want to limit recursion to stay O(N+E).  */
-  bool only_edge = (++visited.get_or_insert (node) < node->refcnt);
+  unsigned visited_cnt = ++visited.get_or_insert (node);
+  gcc_assert (visited_cnt <= node->refcnt);
+  bool only_edge = (visited_cnt != node->refcnt);
 
   /* Propagate hybrid down the SLP tree.  */
   if (stype == hybrid)
@@ -2680,12 +2682,19 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
   /* Then walk the SLP instance trees marking stmts with uses in
      non-SLP stmts as hybrid, also propagating hybrid down the
      SLP tree, collecting the above info on-the-fly.  */
-  hash_map<slp_tree, unsigned> visited;
-  FOR_EACH_VEC_ELT (slp_instances, i, instance)
+  for (unsigned j = 0;; ++j)
     {
-      for (unsigned i = 0; i < SLP_INSTANCE_GROUP_SIZE (instance); ++i)
-	vect_detect_hybrid_slp_stmts (SLP_INSTANCE_TREE (instance),
-				      i, pure_slp, visited);
+      hash_map<slp_tree, unsigned> visited;
+      bool any = false;
+      FOR_EACH_VEC_ELT (slp_instances, i, instance)
+	if (j < SLP_INSTANCE_GROUP_SIZE (instance))
+	  {
+	    any = true;
+	    vect_detect_hybrid_slp_stmts (SLP_INSTANCE_TREE (instance),
+					  j, pure_slp, visited);
+	  }
+      if (!any)
+	break;
     }
 }
 

@@ -1,3 +1,9 @@
+2019-11-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Add assertion.
+	(vect_detect_hybrid_slp): Swap lane and instance iteration,
+	properly re-building the visited hash-map for each lane.
+
 2019-11-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_expand_scalar_to_vector_address,
