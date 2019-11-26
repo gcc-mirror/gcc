@@ -168,7 +168,7 @@ namespace __gnu_debug
 		      std::random_access_iterator_tag)
     {
       return
-	__valid_range_aux(__first, __last, std::input_iterator_tag{})
+	__valid_range_aux(__first, __last, std::input_iterator_tag())
 	&& __first <= __last;
     }
 
@@ -192,7 +192,7 @@ namespace __gnu_debug
 		      typename _Distance_traits<_InputIterator>::__type& __dist,
 		      std::__false_type)
     {
-      if (!__valid_range_aux(__first, __last, std::input_iterator_tag{}))
+      if (!__valid_range_aux(__first, __last, std::input_iterator_tag()))
 	return false;
 
       __dist = __get_distance(__first, __last);
