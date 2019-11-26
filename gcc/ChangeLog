@@ -312,11 +312,6 @@
 	(vector_uneq<mode> for VEC_F): Likewise.
 	(vector_unordered<mode> for VEC_F): Likewise.
 
-2019-11-24  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
-
-	PR fortran/92100
-	gfortran.dg/streamio_18.f90: New test.
-
 2019-11-24  Bernd Schmidt  <bernds_cb1@t-online.de>
 
 	* config/i386/i386.c (ix86_rtx_costs): Handle care of a PLUS in a
