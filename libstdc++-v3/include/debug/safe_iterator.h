@@ -140,6 +140,10 @@ namespace __gnu_debug
       typedef typename _Traits::reference		reference;
       typedef typename _Traits::pointer			pointer;
 
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      using iterator_concept = std::__detail::__iter_concept<_Iterator>;
+#endif
+
       /// @post the iterator is singular and unattached
       _Safe_iterator() _GLIBCXX_NOEXCEPT : _Iter_base() { }
 

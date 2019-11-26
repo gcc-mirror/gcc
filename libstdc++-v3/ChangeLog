@@ -1,3 +1,9 @@
+2019-11-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h
+	[__cpp_lib_concepts](_Safe_iterator<>::iterator_concept): Define for
+	C++20.
+
 2019-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h (ranges::iter_swap): Fix parameter
