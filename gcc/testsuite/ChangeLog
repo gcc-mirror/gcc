@@ -1,3 +1,8 @@
+2019-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* gcc.target/i386/pr92645.c: New testcase.
+
 2019-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/dec-comparison.f90: Change dg-do from run to compile.
