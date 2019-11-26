@@ -1,5 +1,8 @@
 2019-11-26  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/array (array<>::fill): Add C++20 constexpr.
+	(array<>::swap): Likewise.
+
 	* include/debug/safe_iterator.h
 	[__cpp_lib_concepts](_Safe_iterator<>::iterator_concept): Define for
 	C++20.
