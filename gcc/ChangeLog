@@ -1,3 +1,7 @@
+2019-11-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/linux.h: Add undef for MUSL_DYNAMIC_LINKERxx.
+
 2019-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92644
