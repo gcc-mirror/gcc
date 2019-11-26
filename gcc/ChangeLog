@@ -1,3 +1,9 @@
+2019-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92669
+	* cfganal.c (pre_and_rev_post_order_compute_fn): Deal with
+	NULL pre_order.
+
 2019-11-26  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/linux.h: Add undef for MUSL_DYNAMIC_LINKERxx.
