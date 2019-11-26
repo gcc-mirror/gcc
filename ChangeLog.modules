@@ -1,6 +1,9 @@
 2019-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Remove a scope.
+
+	gcc/cp/
 	* module.cc (depset): Delete EK_UNNAMED, EK_MAYBE_SPEC.
 	(trees_out::decl_node): Use EK_DECL for those.
 	(depset::hash::make_dependency): Likewise.

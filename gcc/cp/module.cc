@@ -8113,8 +8113,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  tree inst = get_instantiating_module_decl (decl);
-
   /* Everything left should be a thing that is in the entity table.
      Things that can be defined outside of their (original
      declaration) context.  */
@@ -8154,6 +8152,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
+  tree inst = get_instantiating_module_decl (decl);
   int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
   if (origin)
     origin = (*modules)[origin]->remap;
@@ -8164,7 +8163,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   unsigned code = tt_named;
   int ident = -2;
   tree proxy = decl;
-  tree ctx = NULL_TREE;
+  tree ctx = CP_DECL_CONTEXT (decl);
 
   if (use_tpl > 0)
     {
@@ -8208,121 +8207,117 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	gcc_assert (dep->get_entity_kind () == depset::EK_DECL);
     }
 
-  {
-    ctx = CP_DECL_CONTEXT (decl);
+  if (TREE_CODE (ctx) == FUNCTION_DECL)
+    {
+      /* We cannot lookup by name inside a function.  */
+      if (!streaming_p ()
+	  && (is_import
+	      || (dep_hash->sneakoscope
+		  // FIXME: do I need to consider scopes from ctx
+		  // outwards to the containing namespace?
+		  && ctx == dep_hash->current->get_entity ())))
+	{
+	  gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
+	  /* We've found a voldemort type.  Add it as a
+	     dependency.  */
+	  dep = dep_hash->add_dependency (decl, depset::EK_DECL);
+	  gcc_assert (dep->is_import () == is_import);
+	  kind = "unnamed";
+	  goto insert;
+	}
 
-    if (TREE_CODE (ctx) == FUNCTION_DECL)
-      {
-	/* We cannot lookup by name inside a function.  */
-	if (!streaming_p ()
-	    && (is_import
-		|| (dep_hash->sneakoscope
-		    // FIXME: do I need to consider scopes from ctx
-		    // outwards to the containing namespace?
-		    && ctx == dep_hash->current->get_entity ())))
-	  {
-	    gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
-	    /* We've found a voldemort type.  Add it as a
-	       dependency.  */
-	    dep = dep_hash->add_dependency (decl, depset::EK_DECL);
-	    gcc_assert (dep->is_import () == is_import);
-	    kind = "unnamed";
-	    goto insert;
-	  }
+      if (streaming_p ())
+	{
+	  dep = dep_hash->find_dependency (decl);
+	  if (dep && dep->get_entity_kind () == depset::EK_DECL)
+	    goto direct_entity;
+	}
 
-	if (streaming_p ())
-	  {
-	    dep = dep_hash->find_dependency (decl);
-	    if (dep && dep->get_entity_kind () == depset::EK_DECL)
-	      goto direct_entity;
-	  }
+      /* Some (non-mergeable?) internal entity of the function.  Do
+	 by value.  */
+      // FIXME: pass DEP to the value streamer?
+      gcc_assert (!is_import);
+      decl_value (decl, NULL);
+      return false;
+    }
 
-	/* Some (non-mergeable?) internal entity of the function.  Do
-	   by value.  */
-	// FIXME: pass DEP to the value streamer?
-	gcc_assert (!is_import);
-	decl_value (decl, NULL);
-	return false;
-      }
+  /* A named decl -> tt_named_decl.  */
+  if (streaming_p ())
+    {
+      if (TREE_CODE (decl) == TEMPLATE_DECL
+	  && (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
+	      || TREE_CODE (ctx) == ENUMERAL_TYPE)
+	  && !DECL_MEMBER_TEMPLATE_P (decl))
+	{
+	  /* An implicit member template.  Look for the templated
+	     decl.  */
+	  proxy = DECL_TEMPLATE_RESULT (decl);
+	  code = tt_implicit_template;
+	}
 
-    /* A named decl -> tt_named_decl.  */
-    if (streaming_p ())
-      {
-	if (TREE_CODE (decl) == TEMPLATE_DECL
-	    && (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
-		|| TREE_CODE (ctx) == ENUMERAL_TYPE)
-	    && !DECL_MEMBER_TEMPLATE_P (decl))
-	  {
-	    /* An implicit member template.  Look for the templated
-	       decl.  */
-	    proxy = DECL_TEMPLATE_RESULT (decl);
-	    code = tt_implicit_template;
-	  }
+      if (name && IDENTIFIER_ANON_P (name)
+	  && TREE_CODE (ctx) != NAMESPACE_DECL)
+	name = NULL_TREE;
 
-	if (name && IDENTIFIER_ANON_P (name)
-	    && TREE_CODE (ctx) != NAMESPACE_DECL)
-	  name = NULL_TREE;
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	{
+	direct_entity:
+	  gcc_assert (code == tt_named);
+	  code = tt_entity;
+	  /* Locate the entity.  */
+	  unsigned entity_num = import_entity_index (decl);
+	  if (is_import)
+	    {
+	      // FIXME: Not relying on origin, as we're gonna move
+	      // away from that
+	      /* An import.  */
+	      module_state *from = import_entity_module (entity_num);
+	      gcc_checking_assert (from->remap == origin);
+	      ident = entity_num - from->entity_lwm;
+	      kind = "import";
+	    }
+	  else
+	    {
+	      /* It should be what we put there.  */
+	      gcc_checking_assert (dep_hash->find_dependency (decl)->cluster
+				   == -entity_num);
+	      ident = ~entity_num;
 
-	if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	  {
-	  direct_entity:
-	    gcc_assert (code == tt_named);
-	    code = tt_entity;
-	    /* Locate the entity.  */
-	    unsigned entity_num = import_entity_index (decl);
-	    if (is_import)
-	      {
-		// FIXME: Not relying on origin, as we're gonna move
-		// away from that
-		/* An import.  */
-		module_state *from = import_entity_module (entity_num);
-		gcc_checking_assert (from->remap == origin);
-		ident = entity_num - from->entity_lwm;
-		kind = "import";
-	      }
-	    else
-	      {
-		/* It should be what we put there.  */
-		gcc_checking_assert (dep_hash->find_dependency (decl)->cluster
-				     == -entity_num);
-		ident = ~entity_num;
+	      tree o = get_originating_module_decl (decl);
+	      kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
+		      ? "purview" : "GMF");
+	    }
+	}
+      else
+	{
+	  // FIXME: Fields should get here
+	  ident = get_lookup_ident (ctx, name, origin, proxy);
+	  /* Make sure we can find it by name.  */
+	  gcc_checking_assert
+	    (proxy == lookup_by_ident (ctx, name, origin, ident));
+	  kind = is_import ? "import" : "member";
+	}
 
-		tree o = get_originating_module_decl (decl);
-		kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
-			? "purview" : "GMF");
-	      }
-	  }
-	else
-	  {
-	    // FIXME: Fields should get here
-	    ident = get_lookup_ident (ctx, name, origin, proxy);
-	    /* Make sure we can find it by name.  */
-	    gcc_checking_assert
-	      (proxy == lookup_by_ident (ctx, name, origin, ident));
-	    kind = is_import ? "import" : "member";
-	  }
-
-	i (code);
-	if (code != tt_entity)
-	  {
-	    tree_node (ctx);
-	    tree_node (name);
-	  }
-	u (origin);
-	i (ident);
-      }
-    else
-      {
-	if (is_import)
-	  ;
-	else if (TREE_CODE (ctx) != NAMESPACE_DECL)
+      i (code);
+      if (code != tt_entity)
+	{
 	  tree_node (ctx);
-	else
-	  dep_hash->add_dependency (decl, depset::EK_DECL);
+	  tree_node (name);
+	}
+      u (origin);
+      i (ident);
+    }
+  else
+    {
+      if (is_import)
+	;
+      else if (TREE_CODE (ctx) != NAMESPACE_DECL)
+	tree_node (ctx);
+      else
+	dep_hash->add_dependency (decl, depset::EK_DECL);
 
-	tree_node (name);
-      }
-  }
+      tree_node (name);
+    }
 
  insert:
   int tag = insert (decl);
@@ -11085,6 +11080,10 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 
   if (!dep)
     {
+      /* We should only be creating dependencies when initializing
+	 non-DECL entries, or when discovering dependencies.  */
+      gcc_checking_assert (ek != EK_DECL || current);
+
       bool has_def = ek != EK_USING && has_definition (decl);
       if (for_binding)
 	ek = EK_DECL;
