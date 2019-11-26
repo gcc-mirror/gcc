@@ -1,6 +1,15 @@
 2019-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset): Delete EK_UNNAMED, EK_MAYBE_SPEC.
+	(trees_out::decl_node): Use EK_DECL for those.
+	(depset::hash::make_dependency): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-[12]_a.C: Adjust scans.
+	* g++.dg/modules/tpl-spec-5_a.C: Likewise.
+	* g++.dg/modules/vmort-2_a.C: Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Assert more.
 
 	gcc/cp/

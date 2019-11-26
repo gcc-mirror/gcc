@@ -9,7 +9,7 @@ export auto frobber (int i)
   return [=] (int j) { return i + j; };
 }
 
-// { dg-final { scan-lang-dump {Connecting definition unnamed type_decl:'::frobber::._anon_0'} module } }
+// { dg-final { scan-lang-dump {Connecting definition decl type_decl:'::frobber::._anon_0'} module } }
 // { dg-final { scan-lang-dump {Entities 2} module } }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::frobber'\n  \[1\]=unnamed definition '::frobber::._anon_0'\n  \[2\]=binding '::frobber'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::frobber'\n  \[1\]=decl definition '::frobber::._anon_0'\n  \[2\]=binding '::frobber'} module } }

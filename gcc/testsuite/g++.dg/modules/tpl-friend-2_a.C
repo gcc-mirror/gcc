@@ -17,7 +17,6 @@ void foo (int, void *);
 
 // { dg-final { scan-lang-dump-not {Connecting declaration decl template_decl:'::foo'} module } }
 
-// { dg-final { scan-lang-dump {Template friend '::foo<int>' discovered} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::TPL'\n  \[1\]=binding '::TPL'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo<int>'\n  \[1\]=binding '::foo'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL<int>'} module } }

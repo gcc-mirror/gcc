@@ -2263,14 +2263,11 @@ public:
   {
     EK_DECL,		/* A decl.  */
     EK_SPECIALIZATION,  /* A specialization.  */
-    EK_UNNAMED,		/* An unnameable entity.  */
     EK_USING,		/* A using declaration (at namespace scope).  */
     EK_NAMESPACE,	/* A namespace.  */
     EK_REDIRECT,	/* Redirect to a template_decl.  */
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
-    EK_MAYBE_SPEC,	/* Potentially a specialization,
-			   else a DECL or MEMBER, never a returned kind.  */
     EK_FOR_BINDING,	/* A decl being inserted for a binding.  */
 
     EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
@@ -2494,8 +2491,7 @@ public:
     vec<depset *> worklist;  /* Worklist of decls to walk.  */
     depset *current;         /* Current depset being depended.  */
     unsigned section;	     /* When writing out, the section.  */
-    bool sneakoscope;        /* Detecting dark magic (of a voldemort
-				type).  */
+    bool sneakoscope;        /* Detecting dark magic (of a voldemort).  */
     bool reached_unreached;  /* We reached an unreached entity.  */
 
   public:
@@ -2580,9 +2576,7 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"decl", "specialization", "unnamed",
-     "using", "namespace", "redirect",
-     "binding"};
+    {"decl", "specialization", "using", "namespace", "redirect", "binding"};
   entity_kind kind = get_entity_kind ();
   gcc_checking_assert (kind < sizeof (names) / sizeof(names[0]));
   return names[kind];
@@ -8185,7 +8179,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       if (!streaming_p ())
 	{
 	  gcc_checking_assert (decl == get_instantiating_module_decl (decl));
-	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC);
+	  dep = dep_hash->add_dependency (decl, depset::EK_DECL);
 	  /* We should always insert or find something.  */
 	  gcc_assert (dep && dep->is_import () == (origin != 0));
 	}
@@ -8230,7 +8224,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
 	    /* We've found a voldemort type.  Add it as a
 	       dependency.  */
-	    dep = dep_hash->add_dependency (decl, depset::EK_UNNAMED);
+	    dep = dep_hash->add_dependency (decl, depset::EK_DECL);
 	    gcc_assert (dep->is_import () == is_import);
 	    kind = "unnamed";
 	    goto insert;
@@ -8239,7 +8233,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	if (streaming_p ())
 	  {
 	    dep = dep_hash->find_dependency (decl);
-	    if (dep && dep->get_entity_kind () == depset::EK_UNNAMED)
+	    if (dep && dep->get_entity_kind () == depset::EK_DECL)
 	      goto direct_entity;
 	  }
 
@@ -11064,10 +11058,6 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
   if (ek == EK_USING)
     gcc_checking_assert (TREE_CODE (decl) == OVERLOAD);
 
-  if (ek == EK_UNNAMED)
-    /* Unnameable things are not namespace scope  */
-    gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL);
-
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
       /* The template should have copied these from its result decl.  */
@@ -11089,28 +11079,13 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	}
     }
 
-  if (ek != EK_USING)
-    /* We should only be given instantiating decls, except for
-       voldemorts, where we should only get non-instantiating decls.  */
-    gcc_checking_assert ((decl == get_instantiating_module_decl (decl))
-			 == (ek != EK_UNNAMED));
-
   depset **slot = entity_slot (decl, true);
   depset *dep = *slot;
   bool for_binding = ek == EK_FOR_BINDING;
-  bool maybe_spec = ek == EK_MAYBE_SPEC;
 
   if (!dep)
     {
       bool has_def = ek != EK_USING && has_definition (decl);
-      if (maybe_spec)
-	{
-	  /* We were probing, and didn't find anything.  Therefore
-	     this is a regular decl.  */
-	  ek = EK_DECL;
-	  dump (dumper::DEPEND)
-	    && dump ("Pseudo specialization %N discovered", decl);
-	}
       if (for_binding)
 	ek = EK_DECL;
 
@@ -11128,15 +11103,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	if (unsigned origin
 	    = DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0)
 	  if ((*modules)[origin]->remap)
-	    {
-	      dep->set_flag_bit<DB_IMPORTED_BIT> ();
-	      // FIXME: Eventually anything can be here, and we can
-	      // then store the absolute import, index tuple on
-	      // cluster, section, which will elide multiple hash look
-	      // ups and binary searches.  Woo!
-	      gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
-				   || ek == EK_NAMESPACE || maybe_spec);
-	    }
+	    dep->set_flag_bit<DB_IMPORTED_BIT> ();
 
       if (ek == EK_DECL
 	  && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
@@ -11209,26 +11176,11 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       if (!dep->is_import ())
 	worklist.safe_push (dep);
     }
-  else if (maybe_spec || for_binding)
-    /* It's whatever we already found.  */
-    ek = dep->get_entity_kind ();
-  else if (ek == EK_DECL && dep->get_entity_kind () == EK_SPECIALIZATION)
-    /* decl is a friend of a template instantiation.  These
-       have some of the properties of regular decls.  */
-    dump (dumper::DEPEND) && dump ("Template friend %N discovered", decl);
-  else
-    /* Make sure we have consistent categorization.  */
-    gcc_checking_assert (dep->get_entity_kind () == ek);
-
-  if (ek == EK_REDIRECT)
-    {
-      dump (dumper::DEPEND)
-	&& dump ("Redirect for %C:%N found", TREE_CODE (decl), decl);
-      return dep;
-    }
 
   dump (dumper::DEPEND)
-    && dump ("%s on %s %C:%N added", for_binding ? "Binding" : "Dependency",
+    && dump ("%s on %s %C:%N found",
+	     ek == EK_REDIRECT ? "Redirect"
+	     : for_binding ? "Binding" : "Dependency",
 	     dep->entity_kind_name (), TREE_CODE (decl), decl);
 
   return dep;
@@ -11240,6 +11192,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 void
 depset::hash::add_dependency (depset *dep)
 {
+  gcc_checking_assert (current);
   current->deps.safe_push (dep);
 
   if (dep->is_internal ())
@@ -11534,7 +11487,7 @@ specialization_cmp (const void *a_, const void *b_)
 /* Insert a redirect for the DECL_TEMPLATE_RESULT of a partial
    specialization, as we're unable to go from there to here (without
    repeating the DECL_TEMPLATE_SPECIALIZATIONS walk for *every*
-   MAYBE_SPEC dependency add.  */
+   dependency add.  */
 
 depset *
 depset::hash::add_partial_redirect (depset *partial)
@@ -13831,7 +13784,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  /* FALLTHROUGH  */
 
 	case depset::EK_DECL:
-	case depset::EK_UNNAMED:
 	  b->cluster = ++entities;
 	  sec.mark_declaration (b->get_entity (), b->has_defn ());
 	  /* FALLTHROUGH  */
@@ -13926,7 +13878,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    flags |= cdf_is_partial;
 	  /* FALLTHROUGH.  */
 
-	case depset::EK_UNNAMED:
 	case depset::EK_DECL:
 	  dump () && dump ("Depset:%u %s entity:%u %C:%N", ix,
 			   b->entity_kind_name (), b->cluster - 1,
