@@ -26629,6 +26629,15 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
 
+    if (as == NULL)
+      {
+	/* For unknown attributes, just skip balanced tokens instead of
+	   trying to parse the arguments.  */
+	for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 1; n; --n)
+	  cp_lexer_consume_token (parser->lexer);
+	return attribute;
+      }
+
     vec = cp_parser_parenthesized_expression_list
       (parser, attr_flag, /*cast_p=*/false,
        /*allow_expansion_p=*/true,
@@ -26637,7 +26646,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       arguments = error_mark_node;
     else
       {
-	if (vec->is_empty())
+	if (vec->is_empty ())
 	  /* e.g. [[attr()]].  */
 	  error_at (token->location, "parentheses must be omitted if "
 		    "%qE attribute argument list is empty",
