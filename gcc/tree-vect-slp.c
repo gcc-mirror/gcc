@@ -1410,10 +1410,11 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 					matches, npermutes,
 					&this_tree_size, bst_map)) != NULL)
 	{
-	  /* If we have all children of child built up from scalars then just
-	     throw that away and build it up this node from scalars.  */
+	  /* If we have all children of a non-unary child built up from
+	     scalars then just throw that away and build it up this node
+	     from scalars.  */
 	  if (is_a <bb_vec_info> (vinfo)
-	      && !SLP_TREE_CHILDREN (child).is_empty ()
+	      && SLP_TREE_CHILDREN (child).length () > 1
 	      /* ???  Rejecting patterns this way doesn't work.  We'd have to
 		 do extra work to cancel the pattern so the uses see the
 		 scalar version.  */
@@ -1549,10 +1550,11 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 					    tem, npermutes,
 					    &this_tree_size, bst_map)) != NULL)
 	    {
-	      /* If we have all children of child built up from scalars then
-		 just throw that away and build it up this node from scalars.  */
+	      /* If we have all children of a non-unary child built up from
+		 scalars then just throw that away and build it up this node
+		 from scalars.  */
 	      if (is_a <bb_vec_info> (vinfo)
-		  && !SLP_TREE_CHILDREN (child).is_empty ()
+		  && SLP_TREE_CHILDREN (child).length () > 1
 		  /* ???  Rejecting patterns this way doesn't work.  We'd have
 		     to do extra work to cancel the pattern so the uses see the
 		     scalar version.  */
