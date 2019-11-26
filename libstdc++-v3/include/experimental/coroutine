@@ -39,10 +39,10 @@
 
 #if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
 #  include <compare>
-#  define THE_SPACESHIP_HAS_LANDED 1
+#  define _COROUTINES_USE_SPACESHIP 1
 #else
 #  include <bits/stl_function.h>
-#  define THE_SPACESHIP_HAS_LANDED 0
+#  define _COROUTINES_USE_SPACESHIP 0
 #endif
 
 namespace std _GLIBCXX_VISIBILITY (default)
@@ -52,7 +52,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
 #if __cpp_coroutines
 
   namespace experimental {
-  inline namespace coroutines_n4835 {
+  inline namespace __n4835 {
 
   // [coroutine.traits]
   // [coroutine.traits.primary]
@@ -70,23 +70,23 @@ namespace std _GLIBCXX_VISIBILITY (default)
   {
   public:
     // 17.12.3.1, construct/reset
-    constexpr coroutine_handle () noexcept : __fr_ptr (0) {}
+    constexpr coroutine_handle () noexcept : _M_fr_ptr (0) {}
     constexpr coroutine_handle (decltype (nullptr) __h) noexcept
-      : __fr_ptr (__h)
+      : _M_fr_ptr (__h)
     {}
     coroutine_handle &operator= (decltype (nullptr)) noexcept
     {
-      __fr_ptr = nullptr;
+      _M_fr_ptr = nullptr;
       return *this;
     }
 
   public:
     // 17.12.3.2, export/import
-    constexpr void *address () const noexcept { return __fr_ptr; }
+    constexpr void *address () const noexcept { return _M_fr_ptr; }
     constexpr static coroutine_handle from_address (void *__a) noexcept
     {
       coroutine_handle __self;
-      __self.__fr_ptr = __a;
+      __self._M_fr_ptr = __a;
       return __self;
     }
 
@@ -94,16 +94,16 @@ namespace std _GLIBCXX_VISIBILITY (default)
     // 17.12.3.3, observers
     constexpr explicit operator bool () const noexcept
     {
-      return bool(__fr_ptr);
+      return bool(_M_fr_ptr);
     }
-    bool done () const noexcept { return __builtin_coro_done (__fr_ptr); }
+    bool done () const noexcept { return __builtin_coro_done (_M_fr_ptr); }
     // 17.12.3.4, resumption
     void operator() () const { resume (); }
-    void resume () const { __builtin_coro_resume (__fr_ptr); }
-    void destroy () const { __builtin_coro_destroy (__fr_ptr); }
+    void resume () const { __builtin_coro_resume (_M_fr_ptr); }
+    void destroy () const { __builtin_coro_destroy (_M_fr_ptr); }
 
   protected:
-    void *__fr_ptr;
+    void *_M_fr_ptr;
   };
 
   // [coroutine.handle.compare]
@@ -114,7 +114,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
     return __a.address () == __b.address ();
   }
 
-#if THE_SPACESHIP_HAS_LANDED
+#if _COROUTINES_USE_SPACESHIP
   constexpr strong_ordering
   operator<=> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
 #else
@@ -157,7 +157,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
     static coroutine_handle from_promise (_Promise &p)
     {
       coroutine_handle __self;
-      __self.__fr_ptr
+      __self._M_fr_ptr
 	= __builtin_coro_promise ((char *) &p, __alignof(_Promise), true);
       return __self;
     }
@@ -170,14 +170,14 @@ namespace std _GLIBCXX_VISIBILITY (default)
     constexpr static coroutine_handle from_address (void *__a)
     {
       coroutine_handle __self;
-      __self.__fr_ptr = __a;
+      __self._M_fr_ptr = __a;
       return __self;
     }
     // 17.12.3.5, promise accesss
     _Promise &promise () const
     {
       void *__t
-	= __builtin_coro_promise (this->__fr_ptr, __alignof(_Promise), false);
+	= __builtin_coro_promise (this->_M_fr_ptr, __alignof(_Promise), false);
       return *static_cast<_Promise *> (__t);
     }
   };
@@ -218,7 +218,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
     _Promise &promise () const
     {
       return *static_cast<_Promise *> (
-	__builtin_coro_promise (this->__fr_ptr, __alignof(_Promise), false));
+	__builtin_coro_promise (this->_M_fr_ptr, __alignof(_Promise), false));
     }
 
     // 17.12.4.2.4, address
@@ -226,7 +226,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
   private:
     friend coroutine_handle<noop_coroutine_promise> noop_coroutine () noexcept;
 
-    coroutine_handle () noexcept { this->__fr_ptr = (void *) &__noop_coro_fr; }
+    coroutine_handle () noexcept { this->_M_fr_ptr = (void *) &__noop_coro_fr; }
   };
 
   using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
@@ -253,7 +253,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
     void await_resume () {}
   };
 
-  } // namespace coroutines_n4835
+  } // namespace __n4835
   } // namespace experimental
 
 #else
