@@ -16989,24 +16989,58 @@ module_state::load_section (unsigned snum)
   unsigned old_current = slurp->current;
   slurp->current = snum;
   slurp->lru = 0;  /* Do not swap out.  */
+  slurp->remaining--;
   read_cluster (snum);
   slurp->lru = ++lazy_lru;
   slurp->current = old_current;
-  slurp->remaining--;
 }
 
 /* After a reading operation, make sure things are still ok.  If not,
-   emit an error and clean up.  In order to get some kind of context
-   information, OUTERMOST is true, if this is the outermost cause of a
-   read happening (eiher an import, or a lazy binding found during
-   name-lookup).  In the latter case NS and ID provide the binding.  */
+   emit an error and clean up.  */
 
 bool
 module_state::check_read (unsigned diag_count, tree ns, tree id)
 {
-  bool done = (slurp->current == ~0u
-	       && (from ()->get_error () || !slurp->remaining));
-  if (done)
+  gcc_checking_assert (!id || slurp->current == ~0u);
+
+  bool ok = true;
+  if (int e = from ()->get_error ())
+    {
+      if (slurp->current == ~0u)
+	{
+	  const char *err = from ()->get_error (filename);
+	  if (id)
+	    error_at (loc, "failed to load binding %<%E%s%E@%s%>: %s",
+		      ns, &"::"[ns == global_namespace ? 2 : 0], id,
+		      get_flatname (), err);
+	  else
+	    error_at (loc, "failed to read compiled module: %s", err);
+	  note_cmi_name ();
+
+	  if (e == EMFILE
+	      || e == ENFILE
+#if MAPPED_READING
+	      || e == ENOMEM
+#endif
+	      || false)
+	    inform (loc, "consider using %<-fno-module-lazy%>,"
+		    " reducing %<--param %s%> value,"
+		    " or increasing the per-process file descriptor limit",
+		    "?");
+	}
+
+      if (diag_count)
+	fatal_error (loc, "jumping off the crazy train to crashville");
+
+      ok = false;
+    }
+  else if (id && diag_count <= unsigned (errorcount))
+    inform (input_location,
+	    is_header () ? G_("during lazy loading of %<%E%s%E%>")
+	    : G_("during lazy loading of %<%E%s%E@%s%>"),
+	    ns, ns == global_namespace ? "" : "::", id, get_flatname ());
+
+  if (slurp->current == ~0u && !slurp->remaining)
     {
       lazy_open--;
       if (slurp->macro_defs.size)
@@ -17014,52 +17048,10 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
       if (slurp->macro_tbl.size)
 	from ()->preserve (slurp->macro_tbl);
       from ()->end ();
-    }
-
-  bool ok = true;
-  if (int e = from ()->get_error ())
-    {
-      const char *err = from ()->get_error (filename);
-      /* Failure to read a module is going to cause big
-	 problems, so bail out, if this is the top level.
-	 Otherwise return NULL to let our importer know (and
-	 fail).  */
-      if (slurp->remaining && id)
-	error_at (loc, "failed to load binding %<%E%s%E@%s%>: %s",
-		  ns, &"::"[ns == global_namespace ? 2 : 0], id,
-		  get_flatname (), err);
-      else
-	error_at (loc, "failed to read compiled module: %s", err);
-      note_cmi_name ();
-
-      if (e == EMFILE
-	  || e == ENFILE
-#if MAPPED_READING
-	  || e == ENOMEM
-#endif
-	  || false)
-	inform (loc, "consider using %<-fno-module-lazy%>,"
-		" reducing %<--param %s%> value,"
-		" or increasing the per-process file descriptor limit",
-		"?");
-      ok = false;
-    }
-
-  if (done)
-    {
       slurp->close ();
       if (!is_header ())
 	slurped ();
     }
-
-  if (id && diag_count <= unsigned (errorcount) && flag_module_lazy)
-    inform (input_location,
-	    is_header () ? G_("during lazy loading of %<%E%s%E%>")
-	    : G_("during lazy loading of %<%E%s%E@%s%>"),
-	    ns, ns == global_namespace ? "" : "::", id, get_flatname ());
-
-  if (!ok && diag_count)
-    fatal_error (loc, "jumping off the crazy train to crashville");
 
   return ok;
 }
