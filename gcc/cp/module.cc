@@ -7873,12 +7873,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
   if (ref == WK_value)
     {
-      if (TREE_CODE (decl) != TEMPLATE_DECL
-	  && TREE_CODE (decl) != FUNCTION_DECL
-	  && TREE_CODE (decl) != VAR_DECL
-	  && TREE_CODE (decl) != TYPE_DECL)
-	return true;
-
       depset *dep = dep_hash->find_dependency (decl);
       if (dep && !dep->is_mergeable ())
 	dep = NULL;
@@ -8180,6 +8174,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
   if (use_tpl > 0)
     {
+      gcc_checking_assert (TREE_CODE (DECL_CONTEXT (decl)) != FUNCTION_DECL
+			   || DECL_IMPLICIT_TYPEDEF_P (decl));
+
       /* Some kind of specialization.  Not all specializations are in
          the table, so we have to query it.  Those that are not there
          are findable by name, but a specializations in that their
@@ -8230,6 +8227,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 		    // outwards to the containing namespace?
 		    && ctx == dep_hash->current->get_entity ())))
 	  {
+	    gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
 	    /* We've found a voldemort type.  Add it as a
 	       dependency.  */
 	    dep = dep_hash->add_dependency (decl, depset::EK_UNNAMED);
