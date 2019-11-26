@@ -1,3 +1,10 @@
+2019-11-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92683
+	* gimple-fold.c (gimple_fold_builtin_string_compare): Restore a test
+	inadvertently removed in a previous change.  Rename local variable
+	for clarity.
+
 2019-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/92669
