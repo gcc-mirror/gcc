@@ -1,3 +1,10 @@
+2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/61414
+	* class.c (enum_to_min_precision): New hash_map.
+	(enum_min_precision): New function.
+	(check_bitfield_decl): Use it.
+
 2019-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_build_indirect_ref_1): Add location_t parameter
