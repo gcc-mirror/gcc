@@ -1,3 +1,11 @@
+2019-11-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Stream _EXPR operands in
+	forward order.
+	(trees_out::decl_node): Move NULL DECL_CONTEXT handling to ...
+	(trees_out::tree_node): ... here.
+
 2019-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

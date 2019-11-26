@@ -5711,9 +5711,13 @@ trees_out::core_vals (tree t)
     {
       state->write_location (*this, t->exp.locus);
 
+      /* Walk in forward order, as (for instance) REQUIRES_EXPR has a
+         bunch of unscoped parms on its first operand.  It's safer to
+         create those in order.  */
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
-      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
-			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
+      for (unsigned limit = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			     : TREE_OPERAND_LENGTH (t)),
+	     ix = unsigned (vl); ix != limit; ix++)
 	WT (TREE_OPERAND (t, ix));
     }
   else
@@ -5734,12 +5738,15 @@ trees_out::core_vals (tree t)
       break;
 
     case ARGUMENT_PACK_SELECT:  /* Transient during instantiation.  */
-    case DEFERRED_PARSE:
-    case IDENTIFIER_NODE:
-    case MODULE_VECTOR:
+    case DEFERRED_PARSE:	/* Expanded upon completion of
+				   outermost class.  */
+    case IDENTIFIER_NODE:	/* Streamed specially.  */
+    case MODULE_VECTOR:		/* Only in namespace-scope symbol
+				   table.  */
     case SSA_NAME:
-    case TRANSLATION_UNIT_DECL:
-    case USERDEF_LITERAL:  /* Expanded during parsing.  */
+    case TRANSLATION_UNIT_DECL: /* There is only one, it is a
+				   global_tree.  */
+    case USERDEF_LITERAL:  	/* Expanded during parsing.  */
       gcc_unreachable (); /* Should never meet.  */
 
       /* Constants.  */
@@ -6148,8 +6155,9 @@ trees_in::core_vals (tree t)
       t->exp.locus = state->read_location (*this);
 
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
-      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
-			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
+      for (unsigned limit = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			     : TREE_OPERAND_LENGTH (t)),
+	     ix = unsigned (vl); ix != limit; ix++)
 	RT (TREE_OPERAND (t, ix));
     }
 
@@ -7813,7 +7821,8 @@ trees_in::decl_value ()
 bool
 trees_out::decl_node (tree decl, walk_kind ref)
 {
-  gcc_checking_assert (DECL_P (decl));
+  gcc_checking_assert (DECL_P (decl) && !DECL_TEMPLATE_PARM_P (decl)
+		       && DECL_CONTEXT (decl));
 
   if (TREE_CODE (decl) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (decl))
@@ -7877,12 +7886,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       decl_value (decl, dep);
       return false;
     }
-
-  if (!DECL_CONTEXT (decl))
-    return true;
-
-  if (DECL_TEMPLATE_PARM_P (decl))
-    return true;
 
   switch (TREE_CODE (decl))
     {
@@ -8659,8 +8662,8 @@ trees_in::tree_value ()
 }
 
 /* Stream out tree node T.  We automatically create local back
-   references, which is essentially the lisp self-referential
-   structure pretty-printer.  */
+   references, which is essentially a single pass lisp
+   self-referential structure pretty-printer.  */
 
 void
 trees_out::tree_node (tree t)
@@ -8748,7 +8751,6 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
- skip_normal:
   if (DECL_P (t))
     {
       if (DECL_TEMPLATE_PARM_P (t))
@@ -8757,11 +8759,42 @@ trees_out::tree_node (tree t)
 	  goto done;
 	}
 
-      if (!decl_node (t, ref))
-	goto done;
+      if (!DECL_CONTEXT (t))
+	{
+	  /* There are a few cases of decls with no context.  We'll write
+	     these by value, but first assert they are cases we expect.  */
+	  gcc_checking_assert (ref == WK_normal);
+	  switch (TREE_CODE (t))
+	    {
+	    default: gcc_unreachable ();
+
+	    case LABEL_DECL:
+	      /* CASE_LABEL_EXPRs contain uncontexted LABEL_DECLs.  */
+	      gcc_checking_assert (!DECL_NAME (t));
+	      break;
+
+	    case VAR_DECL:
+	      /* AGGR_INIT_EXPRs cons up anonymous uncontexted VAR_DECLs.  */
+	      gcc_checking_assert (!DECL_NAME (t)
+				   && DECL_ARTIFICIAL (t));
+	      break;
+
+	    case PARM_DECL:
+	      /* REQUIRES_EXPRs have a tree list of uncontexted
+		 PARM_DECLS.  It'd be nice if they had a
+		 distinguishing flag to double check.  */
+	      break;
+	    }
+	  goto by_value;
+	}
     }
 
+ skip_normal:
+  if (DECL_P (t) && !decl_node (t, ref))
+    goto done;
+
   /* Otherwise by value */
+ by_value:
   tree_value (t);
 
  done:
