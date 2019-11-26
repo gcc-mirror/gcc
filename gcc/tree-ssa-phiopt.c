@@ -1381,7 +1381,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* Turn EQ/NE of extreme values to order comparisons.  */
   if ((cmp == NE_EXPR || cmp == EQ_EXPR)
-      && TREE_CODE (rhs) == INTEGER_CST)
+      && TREE_CODE (rhs) == INTEGER_CST
+      && INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
     {
       if (wi::eq_p (wi::to_wide (rhs), wi::min_value (TREE_TYPE (rhs))))
 	{
@@ -1407,7 +1408,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       larger = rhs;
       /* If we have smaller < CST it is equivalent to smaller <= CST-1.
 	 Likewise smaller <= CST is equivalent to smaller < CST+1.  */
-      if (TREE_CODE (larger) == INTEGER_CST)
+      if (TREE_CODE (larger) == INTEGER_CST
+	  && INTEGRAL_TYPE_P (TREE_TYPE (larger)))
 	{
 	  if (cmp == LT_EXPR)
 	    {
@@ -1435,7 +1437,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       larger = gimple_cond_lhs (cond);
       /* If we have larger > CST it is equivalent to larger >= CST+1.
 	 Likewise larger >= CST is equivalent to larger > CST-1.  */
-      if (TREE_CODE (smaller) == INTEGER_CST)
+      if (TREE_CODE (smaller) == INTEGER_CST
+	  && INTEGRAL_TYPE_P (TREE_TYPE (smaller)))
 	{
 	  wi::overflow_type overflow;
 	  if (cmp == GT_EXPR)

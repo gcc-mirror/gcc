@@ -1,3 +1,8 @@
+2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92644
+	* g++.dg/opt/pr92644.C: New test.
+
 2019-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92645
