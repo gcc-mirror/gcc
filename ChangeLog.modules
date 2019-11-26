@@ -1,6 +1,11 @@
 2019-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Tag and add indirects for
+	uninstantiated template friend.
+	(trees_in::tree_node): Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Remove a scope.
 
 	gcc/cp/

@@ -7917,6 +7917,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	{
 	  /* A (local template) friend of a template.  */
+	  // FIXME: Perhaps this can go when we do everything by index?
 	  if (streaming_p ())
 	    {
 	      i (tt_friend_template);
@@ -7926,6 +7927,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
 	  tree klass = DECL_CHAIN (decl);
 	  tree_node (klass);
+	  int tag = insert (decl);
 
 	  if (streaming_p ())
 	    {
@@ -7938,8 +7940,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 		      {
 			u (ix);
 			dump (dumper::TREE)
-			  && dump ("Wrote friend %N[%u], %C:%N",
-				   klass, ix, TREE_CODE (decl), decl);
+			  && dump ("Wrote friend:%d %N[%u], %C:%N",
+				   tag, klass, ix, TREE_CODE (decl), decl);
 			break;
 		      }
 
@@ -7950,6 +7952,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	      /* We must have found it.  */
 	      gcc_checking_assert (decls);
 	    }
+
+	  add_indirects (decl);
 
 	  return false;
 	}
@@ -9450,9 +9454,17 @@ trees_in::tree_node ()
 	    {
 	      if (TREE_CODE (res) != TEMPLATE_DECL)
 		res = DECL_TI_TEMPLATE (res);
+
+	      int tag = insert (res);
 	      dump (dumper::TREE)
-		&& dump ("Read friend %N[%d] %C:%N",
-			 klass, ix, TREE_CODE (res), res);
+		&& dump ("Read friend:%d %N[%d] %C:%N",
+			 tag, klass, ix, TREE_CODE (res), res);
+
+	      if (!add_indirects (res))
+		{
+		  set_overrun ();
+		  res = NULL_TREE;
+		}
 	    }
 	}
       break;
