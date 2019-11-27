@@ -1,3 +1,7 @@
+2019-11-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (movsi_internal): Reformat.
+
 2019-11-27  Peter Bergner <bergner@linux.ibm.com>
 
 	PR bootstrap/92661
