@@ -1,3 +1,13 @@
+2019-11-16  Jason Merrill  <jason@redhat.com>
+
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Handle alias
+	template-id.
+	* pt.c (complex_alias_template_p): True if constraints.
+	(get_underlying_template, tsubst): Check alias constraints.
+	(push_template_decl_real): Set alias constraints here.
+	* parser.c (cp_parser_alias_declaration): Not here.
+	* constraint.cc (get_constraints): Take const_tree.
+
 2019-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92206 - ICE with typedef to dependent alias.

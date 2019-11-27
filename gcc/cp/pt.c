@@ -215,6 +215,7 @@ static tree listify_autos (tree, tree);
 static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
 static tree instantiate_alias_template (tree, tree, tsubst_flags_t);
 static bool complex_alias_template_p (const_tree tmpl);
+static tree get_underlying_template (tree);
 static tree tsubst_attributes (tree, tree, tsubst_flags_t, tree);
 static tree canonicalize_expr_argument (tree, tsubst_flags_t);
 static tree make_argument_pack (tree);
@@ -5989,9 +5990,18 @@ push_template_decl_real (tree decl, bool is_friend)
 	}
 
       if (TREE_CODE (decl) == TYPE_DECL
-	  && TYPE_DECL_ALIAS_P (decl)
-	  && complex_alias_template_p (tmpl))
-	TEMPLATE_DECL_COMPLEX_ALIAS_P (tmpl) = true;
+	  && TYPE_DECL_ALIAS_P (decl))
+	{
+	  if (tree constr
+	      = TEMPLATE_PARMS_CONSTRAINTS (DECL_TEMPLATE_PARMS (tmpl)))
+	    {
+	      /* ??? Why don't we do this here for all templates?  */
+	      constr = build_constraints (constr, NULL_TREE);
+	      set_constraints (decl, constr);
+	    }
+	  if (complex_alias_template_p (tmpl))
+	    TEMPLATE_DECL_COMPLEX_ALIAS_P (tmpl) = true;
+	}
     }
 
   /* The DECL_TI_ARGS of DECL contains full set of arguments referring
@@ -6350,6 +6360,14 @@ uses_all_template_parms_r (tree t, void *data_)
 static bool
 complex_alias_template_p (const_tree tmpl)
 {
+  /* A renaming alias isn't complex.  */
+  if (get_underlying_template (CONST_CAST_TREE (tmpl)) != tmpl)
+    return false;
+
+  /* Any other constrained alias is complex.  */
+  if (get_constraints (tmpl))
+    return true;
+
   struct uses_all_template_parms_data data;
   tree pat = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
   tree parms = DECL_TEMPLATE_PARMS (tmpl);
@@ -6395,7 +6413,7 @@ dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
 /* Return the number of innermost template parameters in TMPL.  */
 
 static int
-num_innermost_template_parms (tree tmpl)
+num_innermost_template_parms (const_tree tmpl)
 {
   tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
   return TREE_VEC_LENGTH (parms);
@@ -6428,6 +6446,11 @@ get_underlying_template (tree tmpl)
 
       tree alias_args = INNERMOST_TEMPLATE_ARGS (generic_targs_for (tmpl));
       if (!comp_template_args (TI_ARGS (tinfo), alias_args))
+	break;
+
+      /* If TMPL adds or changes any constraints, it isn't equivalent.  I think
+	 it's appropriate to treat a less-constrained alias as equivalent.  */
+      if (!at_least_as_constrained (underlying, tmpl))
 	break;
 
       /* Alias is equivalent.  Strip it and repeat.  */
@@ -9679,7 +9702,9 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
          Note that the check is deferred until after the hash
          lookup. This prevents redundant checks on previously
          instantiated specializations. */
-      if (flag_concepts && !constraints_satisfied_p (gen_tmpl, arglist))
+      if (flag_concepts
+	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl)
+	  && !constraints_satisfied_p (gen_tmpl, arglist))
         {
           if (complain & tf_error)
             {
@@ -20499,8 +20524,6 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
 {
   if (tmpl == error_mark_node || args == error_mark_node)
     return error_mark_node;
-  if (!push_tinst_level (tmpl, args))
-    return error_mark_node;
 
   args =
     coerce_innermost_template_parms (DECL_TEMPLATE_PARMS (tmpl),
@@ -20508,6 +20531,22 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
 				     /*require_all_args=*/true,
 				     /*use_default_args=*/true);
 
+  /* FIXME check for satisfaction in check_instantiated_args.  */
+  if (flag_concepts
+      && !any_dependent_template_arguments_p (args)
+      && !constraints_satisfied_p (tmpl, args))
+    {
+      if (complain & tf_error)
+	{
+	  auto_diagnostic_group d;
+	  error ("template constraint failure for %qD", tmpl);
+	  diagnose_constraints (input_location, tmpl, args);
+	}
+      return error_mark_node;
+    }
+
+  if (!push_tinst_level (tmpl, args))
+    return error_mark_node;
   tree r = instantiate_template (tmpl, args, complain);
   pop_tinst_level ();
 

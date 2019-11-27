@@ -1124,7 +1124,7 @@ static GTY ((cache)) decl_tree_cache_map *decl_constraints;
    constrained, return NULL_TREE. Note that T must be non-null. */
 
 tree
-get_constraints (tree t)
+get_constraints (const_tree t)
 {
   if (!flag_concepts)
     return NULL_TREE;
@@ -1134,7 +1134,7 @@ get_constraints (tree t)
   gcc_assert (DECL_P (t));
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
-  tree* found = decl_constraints->get (t);
+  tree* found = decl_constraints->get (CONST_CAST_TREE (t));
   if (found)
     return *found;
   else
@@ -2964,6 +2964,17 @@ more_constrained (tree d1, tree d2)
   if (subsumes (n2, n1))
     --winner;
   return winner;
+}
+
+/* Return whether D1 is at least as constrained as D2.  */
+
+bool
+at_least_as_constrained (tree d1, tree d2)
+{
+  tree n1 = get_normalized_constraints_from_decl (d1);
+  tree n2 = get_normalized_constraints_from_decl (d2);
+
+  return subsumes (n1, n2);
 }
 
 /*---------------------------------------------------------------------------
