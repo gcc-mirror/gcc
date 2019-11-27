@@ -1,3 +1,9 @@
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/91944
+	* simplify.c (gfc_simplify_spread): Check gfc_init_expr_flag instead
+	of gfc_current_ns->sym_root->n.sym->attr.flavor == FL_PARAMETER.
+
 2019-11-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/92463
