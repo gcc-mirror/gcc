@@ -11812,7 +11812,9 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 
   /* If X is a comparison operator, rewrite it in a new mode.  This
      probably won't match, but may allow further simplifications.  */
-  else if (COMPARISON_P (x))
+  else if (COMPARISON_P (x)
+	   && SCALAR_INT_MODE_P (imode)
+	   && SCALAR_INT_MODE_P (omode))
     return gen_rtx_fmt_ee (GET_CODE (x), omode, XEXP (x, 0), XEXP (x, 1));
 
   /* If we couldn't simplify X any other way, just enclose it in a

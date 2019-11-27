@@ -1,3 +1,10 @@
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/92510
+	* combine.c (gen_lowpart_for_combine): Only transform lowpart subreg
+	of comparison into a comparison with different mode if both imode and
+	omode are scalar integral modes.
+
 2019-11-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/90007

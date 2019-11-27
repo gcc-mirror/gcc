@@ -1,3 +1,8 @@
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/92510
+	* gcc.dg/pr92510.c: New test.
+
 2019-11-27  Andrew Sutton  <asutton@lock3software.com>
 
 	PR c++/92236
