@@ -1,3 +1,9 @@
+2019-11-27  Bernd Schmidt  <bernds_cb1@t-online.de>
+
+	* config/m68k/m68k.c (m68k_output_compare_fp): Restore differences
+	between Coldfire and regular m68k.
+	* config/m68k/m68k.md (cmp1_cf_constraints): Disallow constants.
+
 2019-11-27  Richard Biener  <rguenther@suse.de>
 
 	* target.def (TARGET_VECTORIZE_BUILTIN_CONVERSION): Remove.
