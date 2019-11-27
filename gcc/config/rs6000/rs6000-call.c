@@ -2935,6 +2935,10 @@ def_builtin (const char *name, tree type, enum rs6000_builtins code)
   unsigned classify = rs6000_builtin_info[(int)code].attr;
   const char *attr_string = "";
 
+  /* Don't define the builtin if it doesn't have a type.  See PR92661.  */
+  if (type == NULL_TREE)
+    return;
+
   gcc_assert (name != NULL);
   gcc_assert (IN_RANGE ((int)code, 0, (int)RS6000_BUILTIN_COUNT));
 
@@ -7702,6 +7706,11 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
   if (!ret_type && h.uns_p[0])
     ret_type = builtin_mode_to_type[h.mode[0]][0];
 
+  /* If the required decimal float type has been disabled,
+     then return NULL_TREE.  */
+  if (!ret_type && DECIMAL_FLOAT_MODE_P (h.mode[0]))
+    return NULL_TREE;
+
   if (!ret_type)
     fatal_error (input_location,
 		 "internal error: builtin function %qs had an unexpected "
@@ -7718,6 +7727,11 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       arg_type[i] = builtin_mode_to_type[m][uns_p];
       if (!arg_type[i] && uns_p)
 	arg_type[i] = builtin_mode_to_type[m][0];
+
+      /* If the required decimal float type has been disabled,
+	 then return NULL_TREE.  */
+      if (!arg_type[i] && DECIMAL_FLOAT_MODE_P (m))
+	return NULL_TREE;
 
       if (!arg_type[i])
 	fatal_error (input_location,

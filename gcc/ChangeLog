@@ -1,3 +1,11 @@
+2019-11-27  Peter Bergner <bergner@linux.ibm.com>
+
+	PR bootstrap/92661
+	* config/rs6000/rs6000-call.c: (def_builtin): Do not define the
+	builtin if we don't have an actual type.
+	(builtin_function_type): If the builtin function uses a DFP type
+	and decimal float has been disabled, then return NULL_TREE.
+
 2019-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/92510
