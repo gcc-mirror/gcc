@@ -1263,6 +1263,7 @@ build_function_check (tree tmpl, tree args, tsubst_flags_t /*complain*/)
   ++processing_template_decl;
   vec<tree, va_gc> *fargs = make_tree_vector ();
   tree call = build_min_nt_call_vec (id, fargs);
+  TREE_TYPE (call) = boolean_type_node;
   release_tree_vector (fargs);
   --processing_template_decl;
 
@@ -1397,6 +1398,7 @@ build_constrained_parameter (tree cnc, tree proto, tree args)
 
    Note that the constraints are neither reduced nor decomposed. That is
    done only after the requires clause has been parsed (or not).  */
+
 tree
 finish_shorthand_constraint (tree decl, tree constr)
 {

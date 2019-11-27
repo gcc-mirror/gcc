@@ -1622,6 +1622,15 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case CALL_EXPR:
+      /* Evaluate function concept checks instead of treating them as
+	 normal functions.  */
+      if (concept_check_p (stmt))
+	{
+	  *stmt_p = evaluate_concept_check (stmt, tf_warning_or_error);
+	  * walk_subtrees = 0;
+	  break;
+	}
+
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p ((SANITIZE_NULL
 				| SANITIZE_ALIGNMENT | SANITIZE_VPTR)))
@@ -1677,6 +1686,13 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  && TREE_CODE (TARGET_EXPR_INITIAL (stmt)) == CONSTRUCTOR
 	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (TARGET_EXPR_INITIAL (stmt)))
 	TARGET_EXPR_NO_ELIDE (stmt) = 1;
+      break;
+
+    case TEMPLATE_ID_EXPR:
+      gcc_assert (concept_check_p (stmt));
+      /* Emit the value of the concept check.  */
+      *stmt_p = evaluate_concept_check (stmt, tf_warning_or_error);
+      walk_subtrees = 0;
       break;
 
     default:

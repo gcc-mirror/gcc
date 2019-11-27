@@ -18860,12 +18860,6 @@ tsubst_copy_and_build (tree t,
 	    if (function_concept_p (TREE_OPERAND (id, 0)))
 	      RETURN (id);
 
-	    /* Evaluate the concept, if needed.  */
-	    tree args = TREE_OPERAND (id, 1);
-	    if (!uses_template_parms (args)
-		&& !processing_constraint_expression_p ())
-	      RETURN (evaluate_concept_check (check, complain));
-
 	    RETURN (check);
 	  }
 
@@ -19650,11 +19644,6 @@ tsubst_copy_and_build (tree t,
 
 	    /* Ensure the result is wrapped as a call expression.  */
 	    ret = build_concept_check (tmpl, args, tf_warning_or_error);
-
-	    /* Possibly evaluate the check if it is non-dependent.   */
-	    if (!uses_template_parms (args)
-		&& !processing_constraint_expression_p ())
-	      ret = evaluate_concept_check (ret, complain);
 	  }
 	else
 	  ret = finish_call_expr (function, &call_args,

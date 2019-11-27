@@ -1672,6 +1672,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			  bool lval,
 			  bool *non_constant_p, bool *overflow_p)
 {
+  /* Handle concept checks separately.  */
+  if (concept_check_p (t))
+    return evaluate_concept_check (t, tf_warning_or_error);
+
   location_t loc = cp_expr_loc_or_input_loc (t);
   tree fun = get_function_named_in_call (t);
   constexpr_call new_call
@@ -5645,14 +5649,26 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       {
         /* We can evaluate template-id that refers to a concept only if
 	   the template arguments are non-dependent.  */
-	if (!concept_definition_p (TREE_OPERAND (t, 0)))
+	tree id = unpack_concept_check (t);
+	tree tmpl = TREE_OPERAND (id, 0);
+	if (!concept_definition_p (tmpl))
 	  internal_error ("unexpected template-id %qE", t);
 
+	if (function_concept_p (tmpl))
+	  {
+	    if (!ctx->quiet)
+	      error_at (cp_expr_loc_or_input_loc (t),
+			"function concept must be called");
+	    r = error_mark_node;
+	    break;
+	  }
+
 	if (!processing_template_decl)
-	  return evaluate_concept_check (t, tf_warning_or_error);
+	  r = evaluate_concept_check (t, tf_warning_or_error);
 	else
 	  *non_constant_p = true;
-	return t;
+
+	break;
       }
 
     case ASM_EXPR:
@@ -5809,12 +5825,16 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	       || TREE_CODE (t) == AGGR_INIT_EXPR
 	       || TREE_CODE (t) == TARGET_EXPR))
     {
-      tree x = t;
-      if (TREE_CODE (x) == TARGET_EXPR)
-	x = TARGET_EXPR_INITIAL (x);
-      tree fndecl = cp_get_callee_fndecl_nofold (x);
-      if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
-	is_consteval = true;
+      /* For non-concept checks, determine if it is consteval.  */
+      if (!concept_check_p (t))
+	{
+	  tree x = t;
+	  if (TREE_CODE (x) == TARGET_EXPR)
+	    x = TARGET_EXPR_INITIAL (x);
+	  tree fndecl = cp_get_callee_fndecl_nofold (x);
+	  if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	    is_consteval = true;
+	}
     }
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
     {

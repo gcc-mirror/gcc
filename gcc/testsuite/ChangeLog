@@ -1,5 +1,12 @@
 2019-11-27  Andrew Sutton  <asutton@lock3software.com>
 
+	PR c++/92236
+	* g++.dg/cpp2a/concepts-iconv1.C: Update diagnostics.
+	* g++.dg/cpp2a/concepts-requires5.C: Likewise.
+	* g++.dg/cpp2a/concepts6.C: New test.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
 	PR c++/92439
 	* g++.dg/cpp2a/concepts-requires20.C: New.
 

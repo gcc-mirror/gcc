@@ -1,5 +1,29 @@
 2019-11-27  Andrew Sutton  <asutton@lock3software.com>
 
+	PR c++/92236
+	Defer evaluation of concept checks so that static assertions can
+	emit more detailed diagnostics.
+	* constexpr.c (cxx_eval_call_expression): Handle concept checks.
+	(cxx_eval_constant_expression): Diagnose misuse of function concepts
+	as template-id expressions. Follow the usual return path for results.
+	(cxx_eval_outermost_constant_expr): Avoid calling
+	cp_get_callee_fndecl_nofold for function concepts.
+	* constraint.cc (build_function_check): Fully type the concept check
+	so that we don't ICE in conversions.
+	* cp-gimplify.c (cp_genericize_r) [CALL_EXPR]: Handle concept checks.
+	[TEMPLATE_ID_EXPR] Likewise.
+	* cvt.c (convert_to_void): Always evaluate concept checks so we don't
+	accidentally ignore them. Substitution during satisfaction can make
+	a program ill-formed (example in g++.dg/cpp2a/concepts6.C).
+	* pt.c (tsubst_copy_and_build): [CALL_EXPR]: Don't evaluate concepts.
+	[TEMPLATE_ID_EXPR]: Likewise.
+	* semantics.c (finish_call_expr): Don't evaluate concepts.
+	(finish_id_expression_1): Likewise.
+	(finish_static_assert): Preserve the original condition so we can
+	diagnose concept errors when a check returns false.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
 	PR c++/92439
 	Improve quality of diagnostics for subexpressions that need parens.
 	* parser.c (cp_parser_requires_clause_opt): Add a flag to indicate

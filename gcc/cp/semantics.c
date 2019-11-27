@@ -2605,10 +2605,6 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
       /* Ensure the result is wrapped as a call expression.  */
       result = build_concept_check (tmpl, args, tf_warning_or_error);
-
-      /* Evaluate the check if it is non-dependent.   */
-      if (!uses_template_parms (args))
-	result = evaluate_concept_check (result, complain);
     }
   else if (is_overloaded_fn (fn))
     {
@@ -3890,13 +3886,8 @@ finish_id_expression_1 (tree id_expression,
 	}
       else if (concept_check_p (decl))
 	{
-	  /* If this is a standard or variable concept check, potentially
-	     evaluate it. Function concepts need to be called as functions,
-	     so don't try evaluating them here.  */
-	  tree tmpl = TREE_OPERAND (decl, 0);
-	  tree args = TREE_OPERAND (decl, 1);
-	  if (!function_concept_p (tmpl) && !uses_template_parms (args))
-	    decl = evaluate_concept_check (decl, tf_warning_or_error);
+	  /* Nothing more to do. All of the analysis for concept checks
+	     is done by build_conept_id, called from the parser.  */
 	}
       else if (scope)
 	{
@@ -9564,6 +9555,9 @@ finish_static_assert (tree condition, tree message, location_t location,
       return;
     }
 
+  /* Save the condition in case it was a concept check.  */
+  tree orig_condition = condition;
+
   /* Fold the expression and convert it to a boolean value. */
   condition = perform_implicit_conversion_flags (boolean_type_node, condition,
 						 complain, LOOKUP_NORMAL);
@@ -9590,6 +9584,10 @@ finish_static_assert (tree condition, tree message, location_t location,
 	  else
             error ("static assertion failed: %s",
 		   TREE_STRING_POINTER (message));
+
+	  /* Actually explain the failure if this is a concept check.  */
+	  if (concept_check_p (orig_condition))
+	    diagnose_constraints (location, orig_condition, NULL_TREE);
 	}
       else if (condition && condition != error_mark_node)
 	{
