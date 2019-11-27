@@ -9274,18 +9274,27 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       compute_in_loop = true;
     }
 
+  bool diff_first_stmt_info
+    = first_stmt_info_for_drptr && first_stmt_info != first_stmt_info_for_drptr;
+
   if ((alignment_support_scheme == dr_explicit_realign_optimized
        || alignment_support_scheme == dr_explicit_realign)
       && !compute_in_loop)
     {
-      msq = vect_setup_realignment (first_stmt_info, gsi, &realignment_token,
-				    alignment_support_scheme, NULL_TREE,
-				    &at_loop);
+      /* If we have different first_stmt_info, we can't set up realignment
+	 here, since we can't guarantee first_stmt_info DR has been
+	 initialized yet, use first_stmt_info_for_drptr DR by bumping the
+	 distance from first_stmt_info DR instead as below.  */
+      if (!diff_first_stmt_info)
+	msq = vect_setup_realignment (first_stmt_info, gsi, &realignment_token,
+				      alignment_support_scheme, NULL_TREE,
+				      &at_loop);
       if (alignment_support_scheme == dr_explicit_realign_optimized)
 	{
 	  phi = as_a <gphi *> (SSA_NAME_DEF_STMT (msq));
 	  byte_offset = size_binop (MINUS_EXPR, TYPE_SIZE_UNIT (vectype),
 				    size_one_node);
+	  gcc_assert (!first_stmt_info_for_drptr);
 	}
     }
   else
@@ -9341,8 +9350,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr_info->dr));
 	      dataref_offset = build_int_cst (ref_type, 0);
 	    }
-	  else if (first_stmt_info_for_drptr
-		   && first_stmt_info != first_stmt_info_for_drptr)
+	  else if (diff_first_stmt_info)
 	    {
 	      dataref_ptr
 		= vect_create_data_ref_ptr (first_stmt_info_for_drptr,
@@ -9359,6 +9367,14 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 					    DR_INIT (ptrdr)));
 	      dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 					     stmt_info, diff);
+	      if (alignment_support_scheme == dr_explicit_realign)
+		{
+		  msq = vect_setup_realignment (first_stmt_info_for_drptr, gsi,
+						&realignment_token,
+						alignment_support_scheme,
+						dataref_ptr, &at_loop);
+		  gcc_assert (!compute_in_loop);
+		}
 	    }
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	    vect_get_gather_scatter_ops (loop, stmt_info, &gs_info,
