@@ -2514,11 +2514,11 @@ public:
   public:
     depset *find_dependency (tree entity);
     depset *find_binding (tree ctx, tree name);
-    depset *make_dependency (tree decl, entity_kind);
+    depset *make_dependency (tree decl, entity_kind, bool imported);
     void add_dependency (depset *);
 
   public:
-    depset *add_dependency (tree decl, entity_kind);
+    depset *add_dependency (tree decl, entity_kind, bool imported);
 
   private:
     depset *add_partial_redirect (depset *partial);
@@ -3933,6 +3933,18 @@ node_template_info (tree decl, int &use)
 
   use = use_tpl;
   return ti;
+}
+
+// FIXME: I think we can eventually just return the entity_index + 1
+// and then store it directly into the depset so we don't have to
+// lookup again?
+static bool
+will_be_import (tree decl)
+{
+  if (unsigned origin
+      = DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0)
+    return (*modules)[origin]->remap != 0;
+  return false;
 }
 
 /* Find the index in entity_ary for an imported DECL.  It must be
@@ -7854,7 +7866,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 		to_add = NULL_TREE;
 	    }
 	  if (to_add)
-	    dep_hash->add_dependency (to_add, depset::EK_NAMESPACE);
+	    dep_hash->add_dependency (to_add, depset::EK_NAMESPACE,
+				      will_be_import (to_add));
 	}
 
       int tag = insert (decl, ref);
@@ -8140,7 +8153,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
   const char *kind = NULL;
   depset *dep = NULL;
   tree name = DECL_NAME (decl);
-  unsigned code = tt_named;
   int ident = -2;
   tree proxy = decl;
   tree ctx = CP_DECL_CONTEXT (decl);
@@ -8180,10 +8192,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  if (is_import
 	      || TREE_CODE (decl) == TEMPLATE_DECL
 	      || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl)))
-	    {
-	      dep = dep_hash->add_dependency (decl, depset::EK_DECL);
-	      gcc_assert (dep->is_import () == is_import);
-	    }
+	    dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
 	}
       else
 	dep = dep_hash->find_dependency (decl);
@@ -8210,10 +8219,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
          definitions can be generated anywhere -- we need to write
          them out if we did it.  */
       if (!streaming_p ())
-	{
-	  dep = dep_hash->add_dependency (decl, depset::EK_DECL);
-	  gcc_assert (dep->is_import () == is_import);
-	}
+	dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
       else
 	dep = dep_hash->find_dependency (decl);
 
@@ -8240,10 +8246,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   if (TREE_CODE (ctx) == NAMESPACE_DECL)
     {
       if (!streaming_p ())
-	{
-	  dep = dep_hash->add_dependency (decl, depset::EK_DECL);
-	  gcc_assert (dep->is_import () == is_import);
-	}
+	dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
       else
 	dep = dep_hash->find_dependency (decl);
 
@@ -8258,6 +8261,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   gcc_checking_assert (TREE_CODE (ctx) != NAMESPACE_DECL);
   if (streaming_p ())
     {
+      unsigned code = tt_named;
       if (TREE_CODE (decl) == TEMPLATE_DECL
 	  && (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
 	      || TREE_CODE (ctx) == ENUMERAL_TYPE)
@@ -11059,7 +11063,7 @@ depset::hash::find_binding (tree ctx, tree name)
    prevents us wanting to do it anyway.  */
 
 depset *
-depset::hash::make_dependency (tree decl, entity_kind ek)
+depset::hash::make_dependency (tree decl, entity_kind ek, bool imported)
 {
   /* Make sure we're being told consistent information.  */
   gcc_checking_assert ((ek == EK_NAMESPACE)
@@ -11114,17 +11118,10 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	gcc_checking_assert
 	  (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
 
-      if (ek != EK_USING)
-	// FIXME: I think we know whether it's an import when we do
-	// the call, so pass a flag in, maybe? (Like we used to do!)
-	if (unsigned origin
-	    = DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0)
-	  if ((*modules)[origin]->remap)
-	    dep->set_flag_bit<DB_IMPORTED_BIT> ();
-
-      if (ek == EK_DECL
-	  && !dep->is_import ()
-	  && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+      if (imported)
+	dep->set_flag_bit<DB_IMPORTED_BIT> ();
+      else if (ek == EK_DECL
+	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	{
 	  tree ctx = CP_DECL_CONTEXT (decl);
 	  tree not_tmpl = STRIP_TEMPLATE (decl);
@@ -11170,7 +11167,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      if (!bdep)
 		{
 		  *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
-		  depset *ns_dep = make_dependency (ctx, EK_NAMESPACE);
+		  depset *ns_dep = make_dependency (ctx, EK_NAMESPACE,
+						    will_be_import (ctx));
 		  bdep->deps.safe_push (ns_dep);
 		}
 
@@ -11244,9 +11242,9 @@ depset::hash::add_dependency (depset *dep)
 }
 
 depset *
-depset::hash::add_dependency (tree decl, entity_kind ek)
+depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 {
-  depset *dep = make_dependency (decl, ek);
+  depset *dep = make_dependency (decl, ek, is_import);
   if (dep->get_entity_kind () != EK_REDIRECT)
     add_dependency (dep);
   return dep;
@@ -11304,6 +11302,7 @@ depset::hash::add_binding (tree ns, tree value)
       bool using_p = iter.using_p ();
       depset::entity_kind ek = depset::EK_FOR_BINDING;
       tree maybe_using = decl;
+      bool is_import = false;
       if (using_p)
 	{
 	  maybe_using = iter.get_using ();
@@ -11322,14 +11321,19 @@ depset::hash::add_binding (tree ns, tree value)
 	    OVL_EXPORT_P (maybe_using) = true;
 	  ek = depset::EK_USING;
 	}
+      else
+	/* An import can turn up on an emitted binding via entity
+	   merging.  */
+	is_import = will_be_import (decl);
 
       if (!binding->deps.length ())
 	{
-	  depset *ns_dep = make_dependency (ns, EK_NAMESPACE);
+	  depset *ns_dep = make_dependency (ns, EK_NAMESPACE,
+					    will_be_import (ns));
 	  binding->deps.safe_push (ns_dep);
 	}
 
-      depset *dep = make_dependency (maybe_using, ek);
+      depset *dep = make_dependency (maybe_using, ek, is_import);
       if (iter.hidden_p ())
 	{
 	  /* It is safe to mark the target decl with the hidden bit,
@@ -11417,7 +11421,8 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
 	  bool not_empty = add_namespace_entities (value, partitions);
 	  if (not_empty || DECL_MODULE_EXPORT_P (value))
 	    {
-	      make_dependency (value, depset::EK_NAMESPACE);
+	      make_dependency (value, depset::EK_NAMESPACE,
+			       will_be_import (value));
 	      count++;
 	    }
 	}
@@ -11646,7 +11651,8 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
+      depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION,
+				     will_be_import (spec));
       gcc_assert (dep->is_import ()
 		  == ((*modules)[DECL_LANG_SPECIFIC (spec)
 				 ? DECL_MODULE_ORIGIN (spec) : 0]->remap != 0));

@@ -1,6 +1,12 @@
 2019-11-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (will_be_import): New.
+	(depset::hash::make_dependency): Add is_import parm, rather than
+	calculate. Update all callers.
+	(depset::hash::add_dependency): Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Untangle namespace-scope
 	emission from class-scope.
 	(trees_in::tree_node): Fix tt_entity ident signedness.
