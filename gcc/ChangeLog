@@ -1,3 +1,18 @@
+2019-11-27  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92222
+	* tree-vect-slp.c (_slp_oprnd_info::first_pattern): Remove.
+	(_slp_oprnd_info::second_pattern): Likewise.
+	(_slp_oprnd_info::any_pattern): New.
+	(vect_create_oprnd_info): Adjust.
+	(vect_get_and_check_slp_defs): Compute whether any stmt is
+	in a pattern.
+	(vect_build_slp_tree_2): Avoid building up a node from scalars
+	if any of the operand defs, not just the first, is in a pattern.
+
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91355
