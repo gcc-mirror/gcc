@@ -23,17 +23,17 @@ void global_function_0 ()
 {
   p0 = p1 + 3;			// { dg-error "" } 
   p0 = p1 - 3;			// { dg-error "" } 
-  p1++;				/* { dg-error "" } caught by g++ */
-  ++p1;				/* { dg-error "" } caught by g++ */
-  p1--;				/* { dg-error "" } caught by g++ */
-  --p1;				/* { dg-error "" } caught by g++ */
+  p1++;				/* { dg-error "3:no post-increment" } caught by g++ */
+  ++p1;				/* { dg-error "5:no pre-increment" } caught by g++ */
+  p1--;				/* { dg-error "3:no post-decrement" } caught by g++ */
+  --p1;				/* { dg-error "5:no pre-decrement" } caught by g++ */
 
   fp0 = fp1 + 3;		// { dg-error "" } 
   fp0 = fp1 - 3;		// { dg-error "" } 
-  fp1++;			/* { dg-error "" } */
-  ++fp1;			/* { dg-error "" } */
-  fp1--;			/* { dg-error "" } */
-  --fp1;			/* { dg-error "" } */
+  fp1++;			/* { dg-error "3:no post-increment" } */
+  ++fp1;			/* { dg-error "5:no pre-increment" } */
+  fp1--;			/* { dg-error "3:no post-decrement" } */
+  --fp1;			/* { dg-error "5:no pre-decrement" } */
 }
 
 int main () { return 0; }

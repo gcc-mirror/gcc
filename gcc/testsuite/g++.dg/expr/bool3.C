@@ -11,11 +11,11 @@ int main()
   my_bool b = false;
   int i;
 
-  b++; // { dg-warning "deprecated" "" { target { ! c++17 } } }
-  // { dg-error "forbidden" "" { target c++17 } .-1 }
+  b++; // { dg-warning "3:use of an operand of type .bool. in .operator\\+\\+. is deprecated" "" { target { ! c++17 } } }
+  // { dg-error "3:use of an operand of type .bool. in .operator\\+\\+. is forbidden" "" { target c++17 } .-1 }
   // { dg-warning ".volatile.-qualified type is deprecated" "" { target c++2a } .-2 }
-  b++; // { dg-warning "deprecated" "" { target { ! c++17 } } }
-  // { dg-error "forbidden" "" { target c++17 } .-1 }
+  b++; // { dg-warning "3:use of an operand of type .bool. in .operator\\+\\+. is deprecated" "" { target { ! c++17 } } }
+  // { dg-error "3:use of an operand of type .bool. in .operator\\+\\+. is forbidden" "" { target c++17 } .-1 }
   // { dg-warning ".volatile.-qualified type is deprecated" "" { target c++2a } .-2 }
   i = b;
   if (i != 1)

@@ -1,3 +1,22 @@
+2019-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1z/bool-increment1.C: Test location(s) too.
+	* g++.dg/expr/bitfield3.C: Likewise.
+	* g++.dg/expr/bitfield4.C: Likewise.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.dg/expr/bitfield6.C: Likewise.
+	* g++.dg/expr/bool1.C: Likewise.
+	* g++.dg/expr/bool2.C: Likewise.
+	* g++.dg/expr/bool3.C: Likewise.
+	* g++.dg/expr/bool4.C: Likewise.
+	* g++.dg/expr/lval3.C: Likewise.
+	* g++.dg/other/error18.C: Likewise.
+	* g++.dg/warn/Wpointer-arith-1.C: Likewise.
+	* g++.old-deja/g++.bugs/900212_01.C: Likewise.
+	* g++.old-deja/g++.bugs/900428_02.C: Likewise.
+	* g++.old-deja/g++.jason/rfg14.C: Likewise.
+	* g++.old-deja/g++.other/overload11.C: Likewise.
+
 2019-11-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92683

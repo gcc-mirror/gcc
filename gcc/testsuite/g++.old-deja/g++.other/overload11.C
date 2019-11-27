@@ -38,8 +38,8 @@ int main (int argc, char **argv)
   
   // 13.3.1.1 indicates that the following are errors -- the primary expression
   // is not the name of a function.
-  (0, ovl) (1);             // { dg-error "" } not suitable for overload resolution
-  (0, &ovl) (1);            // { dg-error "" } not suitable for overload resolution
+  (0, ovl) (1);             // { dg-error "7:no context" } not suitable for overload resolution
+  (0, &ovl) (1);            // { dg-error "7:no context" } not suitable for overload resolution
   (argc ? ovl : ovl) (1);   // { dg-error "" } not suitable for overload resolution
   (argc ? &ovl : &ovl) (1); // { dg-error "" } not suitable for overload resolution
   
@@ -52,15 +52,15 @@ int main (int argc, char **argv)
   
   ptr = (ovl);              // ok
   ptr = (&ovl);             // ok
-  ptr = (0, ovl);           // ok { dg-error "no context" }
-  ptr = (0, &ovl);          // ok { dg-error "no context" }
+  ptr = (0, ovl);           // ok { dg-error "13:no context" }
+  ptr = (0, &ovl);          // ok { dg-error "13:no context" }
   ptr = (argc ? ovl : ovl); // ok { dg-error "no context" }
   ptr = (argc ? &ovl : &ovl);// ok { dg-error "no context" }
   
   vptr = (ovl);              // { dg-error "" } no matching candidates
   vptr = (&ovl);             // { dg-error "" } no matching candidates
-  vptr = (0, ovl);           // { dg-error "" } no matching candidates
-  vptr = (0, &ovl);          // { dg-error "" } no matching candidates
+  vptr = (0, ovl);           // { dg-error "14:no context" } no matching candidates
+  vptr = (0, &ovl);          // { dg-error "14:no context" } no matching candidates
   vptr = (argc ? ovl : ovl); // { dg-error "" } no matching candidates
   vptr = (argc ? &ovl : &ovl);// { dg-error "" } no matching candidates
   
@@ -81,11 +81,11 @@ int main (int argc, char **argv)
   static_cast<void>(ovl);        // { dg-error "" } not suitable for overload
   static_cast<void>(&ovl);       // { dg-error "" } not suitable for overload
   ((void)1, f);             // { dg-warning "" "" { xfail *-*-* } } not a call
-  ((void)1, ovl);           // { dg-error "" } not suitable for overload
-  ((void)1, &ovl);          // { dg-error "" } not suitable for overload
+  ((void)1, ovl);           // { dg-error "13:no context" } not suitable for overload
+  ((void)1, &ovl);          // { dg-error "13:no context" } not suitable for overload
   (void)((void)1, f);           // ok
-  (void)((void)1, ovl);         // { dg-error "" } not suitable for overload
-  (void)((void)1, &ovl);        // { dg-error "" } not suitable for overload
+  (void)((void)1, ovl);         // { dg-error "19:no context" } not suitable for overload
+  (void)((void)1, &ovl);        // { dg-error "19:no context" } not suitable for overload
 
   return 0;
 }
