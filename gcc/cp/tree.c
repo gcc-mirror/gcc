@@ -1489,7 +1489,7 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
     return t;
 
   if (!(flags & STF_STRIP_DEPENDENT)
-      && dependent_alias_template_spec_p (t))
+      && dependent_alias_template_spec_p (t, nt_opaque))
     /* DR 1558: However, if the template-id is dependent, subsequent
        template argument substitution still applies to the template-id.  */
     return t;
@@ -1673,14 +1673,19 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	  if ((flags & STF_USER_VISIBLE)
 	      && !user_facing_original_type_p (t))
 	    return t;
+	  /* If T is a non-template alias or typedef, we can assume that
+	     instantiating its definition will hit any substitution failure,
+	     so we don't need to retain it here as well.  */
+	  if (!alias_template_specialization_p (t, nt_opaque))
+	    flags |= STF_STRIP_DEPENDENT;
 	  result = strip_typedefs (DECL_ORIGINAL_TYPE (TYPE_NAME (t)),
-				   remove_attributes,
-				   flags | STF_STRIP_DEPENDENT);
+				   remove_attributes, flags);
 	}
       else
 	result = TYPE_MAIN_VARIANT (t);
     }
   gcc_assert (!typedef_variant_p (result)
+	      || dependent_alias_template_spec_p (result, nt_opaque)
 	      || ((flags & STF_USER_VISIBLE)
 		  && !user_facing_original_type_p (result)));
 
