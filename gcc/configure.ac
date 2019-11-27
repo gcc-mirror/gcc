@@ -228,6 +228,48 @@ elif test "${with_sysroot+set}" = set; then
   fi
 fi
 
+# Configuration for an alternate set of C++ headers.
+gcc_gxx_libcxx_include_dir=
+# Specify the alternate g++ header file directory
+AC_ARG_WITH(gxx-libcxx-include-dir,
+[AS_HELP_STRING([--with-gxx-libcxx-include-dir=DIR],
+                [specifies directory to find libc++ header files])],
+[case "${withval}" in
+yes)	AC_MSG_ERROR(bad value ${withval} given for libc++ include directory) ;;
+no)	;;
+*)	gcc_gxx_libcxx_include_dir=$with_gxx_libcxx_include_dir ;;
+esac])
+
+# If both --with-sysroot and --with-gxx-libcxx-include-dir are passed, we
+# check to see if the latter starts with the former and, upon success, compute
+# gcc_gxx_libcxx_include_dir as relative to the sysroot.
+gcc_gxx_libcxx_include_dir_add_sysroot=0
+
+if test x${gcc_gxx_libcxx_include_dir} != x; then
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 1,
+            [Define if the -stdlib= option should be enabled.])
+else
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 0)
+fi
+# ??? This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
+if test x${gcc_gxx_libcxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gcc_gxx_libcxx_include_dir='${libsubdir}/libc++_include/c++/v1'
+  else
+    libcxx_incdir='libc++_include/c++/$(version)/v1'
+    if test x$host != x$target; then
+       libcxx_incdir="$target_alias/$libcxx_incdir"
+    fi
+    gcc_gxx_libcxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libcxx_incdir"
+  fi
+elif test "${with_sysroot+set}" = set; then
+  gcc_gxx_libcxx_without_sysroot=`expr "${gcc_gxx_libcxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
+  if test "${gcc_gxx_libcxx_without_sysroot}"; then
+    gcc_gxx_libcxx_include_dir="${gcc_gxx_libcxx_without_sysroot}"
+    gcc_gxx_libcxx_include_dir_add_sysroot=1
+  fi
+fi
+
 AC_ARG_WITH(cpp_install_dir,
 [AC_HELP_STRING([--with-cpp-install-dir=DIR],
                 [install the user visible C preprocessor in DIR
@@ -7096,6 +7138,8 @@ AC_SUBST(float_h_file)
 AC_SUBST(gcc_config_arguments)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_gxx_include_dir_add_sysroot)
+AC_SUBST(gcc_gxx_libcxx_include_dir)
+AC_SUBST(gcc_gxx_libcxx_include_dir_add_sysroot)
 AC_SUBST(host_exeext)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(host_xm_include_list)

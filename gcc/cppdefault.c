@@ -55,6 +55,11 @@ const struct default_include cpp_include_defaults[]
     { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1,
       GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 0 },
 #endif
+#ifdef GPLUSPLUS_LIBCXX_INCLUDE_DIR
+    /* Pick up libc++ include files, if we have -stdlib=libc++.  */
+    { GPLUSPLUS_LIBCXX_INCLUDE_DIR, "G++", 2, 1,
+      GPLUSPLUS_LIBCXX_INCLUDE_DIR_ADD_SYSROOT, 0 },
+#endif
 #ifdef GCC_INCLUDE_DIR
     /* This is the dir for gcc's private headers.  */
     { GCC_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
