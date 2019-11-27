@@ -18870,7 +18870,12 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	if (variable_template_p (templ))
-	  RETURN (lookup_and_finish_template_variable (templ, targs, complain));
+	  {
+	    tree r = lookup_and_finish_template_variable (templ, targs,
+							  complain);
+	    r = maybe_wrap_with_location (r, EXPR_LOCATION (t));
+	    RETURN (r);
+	  }
 
 	if (TREE_CODE (templ) == COMPONENT_REF)
 	  {
