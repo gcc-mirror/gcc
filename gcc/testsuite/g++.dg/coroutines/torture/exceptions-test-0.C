@@ -1,30 +1,9 @@
 //  { dg-do run }
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
-# include "../coro.h"
-#endif
+
+// Test exceptions.
+
+#include "../coro.h"
 #include <exception>
-
-namespace coro = std::experimental;
-
-// Test returning an int.
-// We will use the promise to contain this to avoid having to include
-// additional C++ headers.
-
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
-
-#ifndef OUTPUT
-#  define PRINT(X)
-#  define PRINTF (void)
-#else
-#  define PRINT(X) puts(X)
-#  define PRINTF printf
-#endif
 
 int gX = 0;
 

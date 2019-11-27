@@ -1,4 +1,5 @@
 //  { dg-additional-options "-fsyntax-only -w" }
+
 #include "coro.h"
 
 namespace coro = std::experimental;

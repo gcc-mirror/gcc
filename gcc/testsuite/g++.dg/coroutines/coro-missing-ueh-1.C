@@ -1,4 +1,7 @@
 //  { dg-additional-options "-fsyntax-only -fexceptions -w" }
+
+// Diagose missing unhandled_exception() in the promise type.
+
 #include "coro.h"
 #include "coro-missing-ueh.h"
 

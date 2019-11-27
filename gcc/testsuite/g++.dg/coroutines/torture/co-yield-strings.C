@@ -1,29 +1,11 @@
 //  { dg-do run }
 
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
+// using non-trivial types in the coro.
+
 # include "../coro.h"
-#endif
 
 #include <vector>
 #include <string>
-
-namespace coro = std::experimental;
-
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
-
-#ifndef OUTPUT
-#  define PRINT(X)
-#  define PRINTF (void)
-#else
-#  define PRINT(X) puts(X)
-#  define PRINTF printf
-#endif
 
 template <typename T> 
 struct looper {

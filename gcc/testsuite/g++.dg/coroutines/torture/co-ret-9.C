@@ -1,25 +1,8 @@
 //  { dg-do run }
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
-# include "../coro.h"
-#endif
 
-namespace coro = std::experimental;
+// boolean return from await_suspend ().
 
-/* boolean return from await_suspend ().  */
-
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
-
-#ifndef OUTPUT
-#  define PRINT(X)
-#else
-#  define PRINT(X) puts(X)
-#endif
+#include "../coro.h"
 
 struct coro1 {
   struct promise_type;

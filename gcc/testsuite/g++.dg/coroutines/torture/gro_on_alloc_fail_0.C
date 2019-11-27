@@ -1,14 +1,8 @@
 //  { dg-do run }
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
-# include "../coro.h"
-#endif
-
-namespace coro = std::experimental;
 
 // check the code-gen for the failed alloc return.
+
+#include "../coro.h"
 
 #if __has_include(<new>)
 #  include <new>
@@ -27,17 +21,6 @@ namespace std {
 
 void* operator new(std::size_t, const std::nothrow_t&) noexcept;
 void  operator delete(void* __p, const std::nothrow_t&) noexcept;
-#endif
-
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
-
-#ifndef OUTPUT
-#  define PRINT(X)
-#else
-#  define PRINT(X) puts(X)
 #endif
 
 struct coro1 {

@@ -1,9 +1,9 @@
 //  { dg-additional-options "-fsyntax-only -w" }
+
 #include "coro.h"
 
-namespace coro = std::experimental;
+// Diagose missing return_void() in the promise type.
 
-/* Diagose missing return_void() in the promise type.  */
 struct MissingRetVoid {
   coro::coroutine_handle<> handle;
   MissingRetVoid () : handle (nullptr) {}

@@ -1,28 +1,8 @@
 // { dg-do run }
-//
+
 // Check that "co_return expression;" only evaluates expression once.
 
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
-# include "../coro.h"
-#endif
-
-namespace coro = std::experimental;
-
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
-
-#ifndef OUTPUT
-#  define PRINT(X)
-#  define PRINTF (void)
-#else
-#  define PRINT(X) puts(X)
-#  define PRINTF printf
-#endif
+#include "../coro.h"
 
 struct coro1 {
   struct promise_type;

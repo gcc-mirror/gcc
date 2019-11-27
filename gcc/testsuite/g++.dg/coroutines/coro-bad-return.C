@@ -1,11 +1,6 @@
 //  { dg-additional-options "-fsyntax-only -w" }
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
-# include "coro.h"
-#endif
-namespace coro = std::experimental;
+
+#include "coro.h"
 
 struct Coro {
   struct promise_type;

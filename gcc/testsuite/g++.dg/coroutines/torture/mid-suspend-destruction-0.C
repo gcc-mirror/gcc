@@ -7,27 +7,7 @@
 // Check that we still get the right DTORs run when we let a suspended coro
 // go out of scope.
 
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
-# include "../coro.h"
-#endif
-
-namespace coro = std::experimental;
-
-// GRO differs from the eventual return type.
-
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
-
-#ifndef OUTPUT
-#  define PRINT(X)
-#else
-#  define PRINT(X) puts(X)
-#endif
+#include "../coro.h"
 
 struct coro1 {
   struct promise_type;
@@ -112,7 +92,7 @@ int main ()
     }
 
 #if __has_builtin (__builtin_coro_suspended)
-  if (! x.handle.suspended_p())
+  if (! __builtin_coro_suspended(handle))
     {
       PRINT ("main: f() should be suspended, but says it isn't");
       abort();

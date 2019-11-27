@@ -1,9 +1,9 @@
 //  { dg-additional-options "-fsyntax-only -w" }
+
+// Diagose missing get_return_object() in the promise type.
+
 #include "coro.h"
 
-namespace coro = std::experimental;
-
-/* Diagose missing return_void() in the promise type.  */
 struct MissingGRO {
   coro::coroutine_handle<> handle;
   MissingGRO () : handle (nullptr) {}

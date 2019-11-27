@@ -1,29 +1,8 @@
 //  { dg-do run }
-#if __clang__
-# include <experimental/coroutine>
-# include <utility>
-#else
-# include "../coro.h"
-#endif
-
-namespace coro = std::experimental;
 
 // Test templated co-return.
 
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
-
-#define BROKEN
-
-#ifndef OUTPUT
-#  define PRINT(X)
-#  define PRINTF (void)
-#else
-#  define PRINT(X) puts(X)
-#  define PRINTF printf
-#endif
+#include "../coro.h"
 
 struct suspend_never_prt {
   bool await_ready() const noexcept { return true; }

@@ -1,9 +1,7 @@
 #ifndef __MissingUEH_H
 #define __MissingUEH_H
 
-namespace coro = std::experimental;
-
-/* Diagose missing unhandled_exception() in the promise type.  */
+/* Common code for testing missing unhandled_exception.  */
 struct MissingUEH {
   coro::coroutine_handle<> handle;
   MissingUEH () : handle (nullptr) {}

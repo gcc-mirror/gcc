@@ -2,18 +2,24 @@
 
 #include <experimental/coroutine>
 
+#  if __clang__
+#    include <utility>
+#  endif
+
 #else
-#ifndef __CORO_H_n4835
-#define __CORO_H_n4835
+
+/* Dummy version to allow tests without an installed header.  */
+#  ifndef __TESTSUITE_CORO_H_n4835
+#  define __TESTSUITE_CORO_H_n4835
 
 // Fragments (with short-cuts) to mimic enough of the library header to
 // make some progress.
 
-#if __cpp_coroutines
+#  if __cpp_coroutines
 
 namespace std {
 namespace experimental {
-inline namespace coroutines_n4835 {
+inline namespace __n4835 {
 
 // 21.11.1 coroutine traits
 template<typename _R, typename...> struct coroutine_traits {
@@ -105,11 +111,26 @@ struct suspend_never {
   void await_resume() {}
 };
 
-}}} // namespace std::experimental::coroutines_n4775
+}}} // namespace std::experimental::__n4835
 
+#  else
+#    error "coro.h requires support for coroutines, add -fcoroutines"
+#  endif
+#  endif // __TESTSUITE_CORO_H_n4835
+
+#endif // __has_include(<experimental/coroutine>)
+
+namespace coro = std::experimental;
+
+/* just to avoid cluttering dump files. */
+extern "C" int puts (const char *);
+extern "C" int printf (const char *, ...);
+extern "C" void abort (void) __attribute__((__noreturn__));
+
+#ifndef OUTPUT
+#  define PRINT(X)
+#  define PRINTF (void)
 #else
-# error "coro.h requires support for coroutines, add -fcoroutines"
-#endif
-#endif // __CORO_H_n4835
-
+#  define PRINT(X) puts(X)
+#  define PRINTF printf
 #endif
