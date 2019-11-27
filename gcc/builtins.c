@@ -11045,7 +11045,7 @@ do_mpfr_ckconv (mpfr_srcptr m, tree type, int inexact)
     {
       REAL_VALUE_TYPE rr;
 
-      real_from_mpfr (&rr, m, type, GMP_RNDN);
+      real_from_mpfr (&rr, m, type, MPFR_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR value,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
 	 but the mpft_t is not, then we underflowed in the
@@ -11085,8 +11085,8 @@ do_mpc_ckconv (mpc_srcptr m, tree type, int inexact, int force_convert)
     {
       REAL_VALUE_TYPE re, im;
 
-      real_from_mpfr (&re, mpc_realref (m), TREE_TYPE (type), GMP_RNDN);
-      real_from_mpfr (&im, mpc_imagref (m), TREE_TYPE (type), GMP_RNDN);
+      real_from_mpfr (&re, mpc_realref (m), TREE_TYPE (type), MPFR_RNDN);
+      real_from_mpfr (&im, mpc_imagref (m), TREE_TYPE (type), MPFR_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR values,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
 	 but the mpft_t is not, then we underflowed in the
@@ -11138,14 +11138,14 @@ do_mpfr_remquo (tree arg0, tree arg1, tree arg_quo)
         {
 	  const struct real_format *fmt = REAL_MODE_FORMAT (TYPE_MODE (type));
 	  const int prec = fmt->p;
-	  const mp_rnd_t rnd = fmt->round_towards_zero? GMP_RNDZ : GMP_RNDN;
+	  const mpfr_rnd_t rnd = fmt->round_towards_zero? MPFR_RNDZ : MPFR_RNDN;
 	  tree result_rem;
 	  long integer_quo;
 	  mpfr_t m0, m1;
 
 	  mpfr_inits2 (prec, m0, m1, NULL);
-	  mpfr_from_real (m0, ra0, GMP_RNDN);
-	  mpfr_from_real (m1, ra1, GMP_RNDN);
+	  mpfr_from_real (m0, ra0, MPFR_RNDN);
+	  mpfr_from_real (m1, ra1, MPFR_RNDN);
 	  mpfr_clear_flags ();
 	  mpfr_remquo (m0, &integer_quo, m0, m1, rnd);
 	  /* Remquo is independent of the rounding mode, so pass
@@ -11218,13 +11218,13 @@ do_mpfr_lgamma_r (tree arg, tree arg_sg, tree type)
         {
 	  const struct real_format *fmt = REAL_MODE_FORMAT (TYPE_MODE (type));
 	  const int prec = fmt->p;
-	  const mp_rnd_t rnd = fmt->round_towards_zero? GMP_RNDZ : GMP_RNDN;
+	  const mpfr_rnd_t rnd = fmt->round_towards_zero? MPFR_RNDZ : MPFR_RNDN;
 	  int inexact, sg;
 	  mpfr_t m;
 	  tree result_lg;
 
 	  mpfr_init2 (m, prec);
-	  mpfr_from_real (m, ra, GMP_RNDN);
+	  mpfr_from_real (m, ra, MPFR_RNDN);
 	  mpfr_clear_flags ();
 	  inexact = mpfr_lgamma (m, &sg, m, rnd);
 	  result_lg = do_mpfr_ckconv (m, type, inexact);
@@ -11287,7 +11287,8 @@ do_mpc_arg2 (tree arg0, tree arg1, tree type, int do_nonfinite,
 	  const struct real_format *const fmt =
 	    REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (type)));
 	  const int prec = fmt->p;
-	  const mp_rnd_t rnd = fmt->round_towards_zero ? GMP_RNDZ : GMP_RNDN;
+	  const mpfr_rnd_t rnd = fmt->round_towards_zero
+				 ? MPFR_RNDZ : MPFR_RNDN;
 	  const mpc_rnd_t crnd = fmt->round_towards_zero ? MPC_RNDZZ : MPC_RNDNN;
 	  int inexact;
 	  mpc_t m0, m1;

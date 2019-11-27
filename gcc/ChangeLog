@@ -1,3 +1,21 @@
+2019-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/92463
+	* builtins.c (do_mpfr_ckconv, do_mpc_ckconv, do_mpfr_remquo,
+	do_mpfr_lgamma_r, do_mpc_arg2): Use MPFR_RNDx instead of GMP_RNDx,
+	mpfr_rnd_t instead of mp_rnd_t.
+	* fold-const-call.c (do_mpfr_ckconv, do_mpfr_arg1, do_mpfr_sincos,
+	do_mpfr_arg2, do_mpfr_arg3, do_mpc_arg1, do_mpc_arg2): Likewise.
+	* gimple-ssa-sprintf.c (format_floating_max, format_floating):
+	Use mpfr_exp_t instead of mp_exp_t.
+	* real.c (real_from_string, dconst_e_ptr, dconst_sqrt2_ptr): Use
+	MPFR_RNDx instead of GMP_RNDx.
+	* realmpfr.c (real_from_mpfr, mpfr_from_real): Use mpfr_rnd_t and
+	mpfr_exp_t instead mp_rnd_t and mp_exp_t, respectively.
+	* realmpfr.h (real_from_mpfr, mpfr_from_real): Use mpfr_rnd_t instead
+	of mp_rnd_t and remove MPFR_RNDx poisoning.
+	* ubsan.c (ubsan_instrument_float_cast): MPFR_RNDx instead of GMP_RNDx.
+
 2019-11-27  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/91790
