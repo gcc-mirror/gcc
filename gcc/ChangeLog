@@ -1,5 +1,22 @@
 2019-11-27  Richard Biener  <rguenther@suse.de>
 
+	* target.def (TARGET_VECTORIZE_BUILTIN_CONVERSION): Remove.
+	* targhooks.c (default_builtin_vectorized_conversion): Likewise.
+	* targhooks.h (default_builtin_vectorized_conversion): Likewise.
+	* optabs-tree.c (supportable_convert_operation): Do not call
+	targetm.vectorize.builtin_conversion.  Remove unused decl parameter.
+	* optabs-tree.h (supportable_convert_operation): Adjust.
+	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_CONVERSION): Remove.
+	* doc/tm.texi: Regenerate.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Adjust.
+	* tree-vect-generic.c (expand_vector_conversion): Likewise.
+	* tree-vect-stmts.c (vect_gen_widened_results_half): Remove
+	unused decl parameter and adjust.
+	(vect_create_vectorized_promotion_stmts): Likewise.
+	(vectorizable_conversion): Adjust.
+
+2019-11-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92690
 	* tree-ssa-forwprop.c (simplify_vector_constructor): Avoid
 	converting elements not originally converted.

@@ -1797,22 +1797,6 @@ return type of the vectorized function shall be of vector type\n\
  tree, (tree fndecl, tree vec_type_out, tree vec_type_in),
  default_builtin_md_vectorized_function)
 
-/* Returns a function declaration for a builtin that realizes the
-   vector conversion, or NULL_TREE if not available.  */
-DEFHOOK
-(builtin_conversion,
- "This hook should return the DECL of a function that implements conversion of the\n\
-input vector of type @var{src_type} to type @var{dest_type}.\n\
-The value of @var{code} is one of the enumerators in @code{enum tree_code} and\n\
-specifies how the conversion is to be applied\n\
-(truncation, rounding, etc.).\n\
-\n\
-If this hook is defined, the autovectorizer will use the\n\
-@code{TARGET_VECTORIZE_BUILTIN_CONVERSION} target hook when vectorizing\n\
-conversion. Otherwise, it will return @code{NULL_TREE}.",
- tree, (unsigned code, tree dest_type, tree src_type),
- default_builtin_vectorized_conversion)
-
 /* Cost of different vector/scalar statements in vectorization cost
    model. In case of misaligned vector loads and stores the cost depends
    on the data type and misalignment value.  */
