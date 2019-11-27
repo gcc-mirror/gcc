@@ -2150,11 +2150,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	      ? build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])), nelts)
 	      : type)
 	   : TREE_TYPE (orig[0]));
-      tree tem;
       if (conv_code != ERROR_MARK
-	  && (!supportable_convert_operation (conv_code, type, conv_src_type,
-					      &tem, &conv_code)
-	      || conv_code == CALL_EXPR))
+	  && !supportable_convert_operation (conv_code, type, conv_src_type,
+					     &conv_code))
 	return false;
       if (nelts != refnelts)
 	{
@@ -2179,10 +2177,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       conv_src_type = (nelts == refnelts
 		       ? perm_type
 		       : build_vector_type (TREE_TYPE (perm_type), nelts));
-      tree tem;
       if (conv_code != ERROR_MARK
 	  && (!supportable_convert_operation (conv_code, type, conv_src_type,
-					      &tem, &conv_code)
+					      &conv_code)
 	      || conv_code == CALL_EXPR))
 	return false;
 

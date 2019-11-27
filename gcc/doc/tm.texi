@@ -5959,18 +5959,6 @@ instruction pattern.  There is no need for the hook to handle these two
 implementation approaches itself.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{dest_type}, tree @var{src_type})
-This hook should return the DECL of a function that implements conversion of the
-input vector of type @var{src_type} to type @var{dest_type}.
-The value of @var{code} is one of the enumerators in @code{enum tree_code} and
-specifies how the conversion is to be applied
-(truncation, rounding, etc.).
-
-If this hook is defined, the autovectorizer will use the
-@code{TARGET_VECTORIZE_BUILTIN_CONVERSION} target hook when vectorizing
-conversion. Otherwise, it will return @code{NULL_TREE}.
-@end deftypefn
-
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (unsigned @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})
 This hook should return the decl of a function that implements the
 vectorized variant of the function with the @code{combined_fn} code
