@@ -16,4 +16,5 @@ v4sf vec_cast_perm(v4si f)
 }
 
 /* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "cddce1" { target { i?86-*-* x86_64-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "\\\(v4sf\\\) " 2 "cddce1" { target { i?86-*-* x86_64-*-* } } } } */
+/* Catch (v4sf) and (vector(4) float).  */
+/* { dg-final { scan-tree-dump-times " = \\\(v" 2 "cddce1" { target { i?86-*-* x86_64-*-* } } } } */

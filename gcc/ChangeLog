@@ -1,3 +1,9 @@
+2019-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92690
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Avoid
+	converting elements not originally converted.
+
 2019-11-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/92463
