@@ -1,5 +1,32 @@
 2019-11-27  Andrew Sutton  <asutton@lock3software.com>
 
+	PR c++/92439
+	Improve quality of diagnostics for subexpressions that need parens.
+	* parser.c (cp_parser_requires_clause_opt): Add a flag to indicate
+	when parsing a requires-clause before lambda parameters, and...
+	(cp_parser_lambda_declarator_opt): ... use that here ...
+	(cp_parser_type_parameter): ... and here ...
+	(cp_parser_late_return_type_opt): ... and here ...
+	(cp_parser_explicit_template_declaration): ... and here.
+	(cp_parser_diagnose_ungrouped_constraint_plain): Adjust the message
+	because this can apply to subexpressions that are not immediately
+	after a requires-clause.
+	(cp_parser_diagnose_ungrouped_constraint_rich): Likewise.
+	(primary_constraint_error): New.
+	(cp_parser_constraint_requires_parens): New.
+	(cp_parser_unary_constraint_requires_parens): New.
+	(cp_parser_constraint_primary_expression): Check for unary expressions
+	before parsing the primary expression. Also check for binary and
+	postfix operators after a successful parse of the primary expression.
+	Force a re-parse if the result would form a lower-precedence string.
+	(cp_parser_constraint_logical_and_expression): Propagate lambda flag;
+	move checks for ill-formed constraints into the constraint primary
+	expression.
+	(cp_parser_constraint_logical_or_expression): Likewise.
+	(cp_parser_requires_clause_expression): Propagate lambda flag.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
 	PR c++/88395
 	* constraint.cc (satisfy_declaration_constraints): Push tinst levels
 	around satisfaction.
