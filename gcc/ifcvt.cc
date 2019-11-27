@@ -3288,7 +3288,9 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	 we'll end up trying to emit r4:HI = cond ? (r1:SI) : (r3:HI).
 	 Wrap the two cmove operands into subregs if appropriate to prevent
 	 that.  */
-      if (GET_MODE (new_val) != GET_MODE (temp))
+
+      if (!CONSTANT_P (new_val)
+	  && GET_MODE (new_val) != GET_MODE (temp))
 	{
 	  machine_mode src_mode = GET_MODE (new_val);
 	  machine_mode dst_mode = GET_MODE (temp);
@@ -3299,7 +3301,8 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	    }
 	  new_val = lowpart_subreg (dst_mode, new_val, src_mode);
 	}
-      if (GET_MODE (old_val) != GET_MODE (temp))
+      if (!CONSTANT_P (old_val)
+	  && GET_MODE (old_val) != GET_MODE (temp))
 	{
 	  machine_mode src_mode = GET_MODE (old_val);
 	  machine_mode dst_mode = GET_MODE (temp);
@@ -3441,9 +3444,9 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb)
       if (!REG_P (dest))
 	return false;
 
-      if (!(REG_P (src)
-	   || (GET_CODE (src) == SUBREG && REG_P (SUBREG_REG (src))
-	       && subreg_lowpart_p (src))))
+      if (!((REG_P (src) || CONSTANT_P (src))
+	    || (GET_CODE (src) == SUBREG && REG_P (SUBREG_REG (src))
+	      && subreg_lowpart_p (src))))
 	return false;
 
       /* Destination must be appropriate for a conditional write.  */
