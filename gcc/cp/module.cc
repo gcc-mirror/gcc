@@ -8181,28 +8181,27 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    {
 	      dep = dep_hash->add_dependency (decl, depset::EK_DECL);
 	      gcc_assert (dep->is_import () == is_import);
-	      kind = "unnamed";
-	      goto insert;
 	    }
 	}
       else
+	dep = dep_hash->find_dependency (decl);
+
+      if (!dep)
 	{
-	  dep = dep_hash->find_dependency (decl);
-	  if (dep)
-	    goto direct_entity;
+	  /* Some (non-mergeable?) internal entity of the function.  Do
+	     by value.  */
+	  decl_value (decl, NULL);
+	  return false;
 	}
 
-      /* Some (non-mergeable?) internal entity of the function.  Do
-	 by value.  */
-      decl_value (decl, NULL);
-      return false;
+      gcc_checking_assert (dep->get_entity_kind () != depset::EK_REDIRECT);
+      if (streaming_p ())
+	goto direct_entity;
+      goto insert;
     }
 
   if (use_tpl > 0)
     {
-      gcc_checking_assert (TREE_CODE (DECL_CONTEXT (decl)) != FUNCTION_DECL
-			   || DECL_IMPLICIT_TYPEDEF_P (decl));
-
       /* Some kind of specialization.  Not all specializations are in
          the table, so we have to query it.  Those that are not there
          are findable by name, but a specializations in that their
@@ -8210,10 +8209,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
          them out if we did it.  */
       if (!streaming_p ())
 	{
-	  gcc_checking_assert (decl == get_instantiating_module_decl (decl));
 	  dep = dep_hash->add_dependency (decl, depset::EK_DECL);
-	  /* We should always insert or find something.  */
-	  gcc_assert (dep && dep->is_import () == (origin != 0));
+	  gcc_assert (dep->is_import () == is_import);
 	}
       else
 	dep = dep_hash->find_dependency (decl);
@@ -8229,15 +8226,13 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  tpl = redirect->get_entity ();
 	  goto partial_template;
 	}
-      else if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
+
+      if (dep->get_entity_kind () != depset::EK_DECL)
 	{
 	  if (streaming_p ())
 	    goto direct_entity;
-	  kind = "specialization";
 	  goto insert;
 	}
-      else
-	gcc_assert (dep->get_entity_kind () == depset::EK_DECL);
     }
 
   /* A named decl -> tt_named_decl.  */
@@ -8322,7 +8317,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
   int tag = insert (decl);
   if (streaming_p ())
     dump (dumper::TREE)
-      && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
+      && dump ("Wrote %s:%d %C:%N@%M", kind ? kind : "entity",
+	       tag, TREE_CODE (decl), decl,
 	       origin < 0 ? NULL : (*modules)[origin]);
 
   add_indirects (decl);

@@ -1,6 +1,10 @@
 2019-11-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Refactor function scope
+	& specialization emission.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Deal with function scope
 	before instantiations.
 
