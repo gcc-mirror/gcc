@@ -1,5 +1,11 @@
 2019-11-27  Iain Sandoe  <iain@sandoe.co.uk>
 
+	libstdc++-v3/
+	* include/experimental/coroutine: Update document group
+	information.
+
+2019-11-27  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/co-yield-syntax-3.C: Move common code to
 	coro.h.

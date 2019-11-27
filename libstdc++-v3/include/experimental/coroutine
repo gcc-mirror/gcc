@@ -22,9 +22,8 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/coroutine
- *  This is an experimental C++ Library header against the C++20 CD n4835.
- *  @ingroup coroutine-ts
+/** @file include/coroutine
+ *  This is a Standard C++ Library header.
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_COROUTINE
@@ -36,6 +35,12 @@
 #if __cplusplus >= 201402L
 
 #include <bits/c++config.h>
+
+/**
+ * @defgroup coroutines Coroutines
+ *
+ * Components for supporting coroutine implementations.
+ */
 
 #if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
 #  include <compare>
