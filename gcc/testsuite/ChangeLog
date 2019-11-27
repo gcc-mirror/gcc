@@ -1,3 +1,8 @@
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92524
+	* g++.dg/cpp0x/pr92524.C: New test.
+
 2019-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92645
