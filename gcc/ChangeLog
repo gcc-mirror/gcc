@@ -1,5 +1,11 @@
 2019-11-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92645
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Handle
+	CTORs with just a subset of the original vectors.
+
+2019-11-27  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/92674
 	* tree-inline.c (expand_call_inline): Delay purging EH/abnormal
 	edges and instead record blocks in bitmap.
