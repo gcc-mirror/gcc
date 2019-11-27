@@ -1,3 +1,8 @@
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/92664
+	* dwarf2out.c (lookup_filename): Use "<stdin>" instead of "".
+
 2019-11-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92683
