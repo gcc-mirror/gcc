@@ -772,7 +772,7 @@ static int noce_try_addcc (struct noce_if_info *);
 static int noce_try_store_flag_constants (struct noce_if_info *);
 static int noce_try_store_flag_mask (struct noce_if_info *);
 static rtx noce_emit_cmove (struct noce_if_info *, rtx, enum rtx_code, rtx,
-			    rtx, rtx, rtx);
+			    rtx, rtx, rtx, rtx = NULL, rtx = NULL);
 static int noce_try_cmove (struct noce_if_info *);
 static int noce_try_cmove_arith (struct noce_if_info *);
 static rtx noce_get_alt_condition (struct noce_if_info *, rtx, rtx_insn **);
@@ -1711,7 +1711,8 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 
 static rtx
 noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
-		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue)
+		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue, rtx cc_cmp,
+		 rtx rev_cc_cmp)
 {
   rtx target ATTRIBUTE_UNUSED;
   int unsignedp ATTRIBUTE_UNUSED;
@@ -1743,23 +1744,30 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
       end_sequence ();
     }
 
-  /* Don't even try if the comparison operands are weird
-     except that the target supports cbranchcc4.  */
-  if (! general_operand (cmp_a, GET_MODE (cmp_a))
-      || ! general_operand (cmp_b, GET_MODE (cmp_b)))
-    {
-      if (!have_cbranchcc4
-	  || GET_MODE_CLASS (GET_MODE (cmp_a)) != MODE_CC
-	  || cmp_b != const0_rtx)
-	return NULL_RTX;
-    }
-
   unsignedp = (code == LTU || code == GEU
 	       || code == LEU || code == GTU);
 
-  target = emit_conditional_move (x, code, cmp_a, cmp_b, VOIDmode,
-				  vtrue, vfalse, GET_MODE (x),
-				  unsignedp);
+  if (cc_cmp != NULL_RTX && rev_cc_cmp != NULL_RTX)
+    target = emit_conditional_move (x, cc_cmp, rev_cc_cmp,
+				    vtrue, vfalse, GET_MODE (x));
+  else
+    {
+      /* Don't even try if the comparison operands are weird
+	 except that the target supports cbranchcc4.  */
+      if (! general_operand (cmp_a, GET_MODE (cmp_a))
+	  || ! general_operand (cmp_b, GET_MODE (cmp_b)))
+	{
+	  if (!have_cbranchcc4
+	      || GET_MODE_CLASS (GET_MODE (cmp_a)) != MODE_CC
+	      || cmp_b != const0_rtx)
+	    return NULL_RTX;
+	}
+
+      target = emit_conditional_move (x, { code, cmp_a, cmp_b, VOIDmode },
+				      vtrue, vfalse, GET_MODE (x),
+				      unsignedp);
+    }
+
   if (target)
     return target;
 
@@ -1795,8 +1803,9 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 
       promoted_target = gen_reg_rtx (GET_MODE (reg_vtrue));
 
-      target = emit_conditional_move (promoted_target, code, cmp_a, cmp_b,
-				      VOIDmode, reg_vtrue, reg_vfalse,
+      target = emit_conditional_move (promoted_target,
+				      { code, cmp_a, cmp_b, VOIDmode },
+				      reg_vtrue, reg_vfalse,
 				      GET_MODE (reg_vtrue), unsignedp);
       /* Nope, couldn't do it in that mode either.  */
       if (!target)

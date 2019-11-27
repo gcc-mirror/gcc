@@ -4124,8 +4124,8 @@ expand_sdiv_pow2 (scalar_int_mode mode, rtx op0, HOST_WIDE_INT d)
       temp = force_reg (mode, temp);
 
       /* Construct "temp2 = (temp2 < 0) ? temp : temp2".  */
-      temp2 = emit_conditional_move (temp2, LT, temp2, const0_rtx,
-				     mode, temp, temp2, mode, 0);
+      temp2 = emit_conditional_move (temp2, { LT, temp2, const0_rtx, mode },
+				     temp, temp2, mode, 0);
       if (temp2)
 	{
 	  rtx_insn *seq = get_insns ();
@@ -6127,10 +6127,10 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	return 0;
 
       if (and_them)
-	tem = emit_conditional_move (target, code, op0, op1, mode,
+	tem = emit_conditional_move (target, { code, op0, op1, mode },
 				     tem, const0_rtx, GET_MODE (tem), 0);
       else
-	tem = emit_conditional_move (target, code, op0, op1, mode,
+	tem = emit_conditional_move (target, { code, op0, op1, mode },
 				     trueval, tem, GET_MODE (tem), 0);
 
       if (tem == 0)

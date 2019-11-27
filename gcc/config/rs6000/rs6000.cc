@@ -16373,10 +16373,10 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
     c = GEU;
 
   if (code == SMAX || code == UMAX)
-    target = emit_conditional_move (dest, c, op0, op1, mode,
+    target = emit_conditional_move (dest, { c, op0, op1, mode },
 				    op0, op1, mode, 0);
   else
-    target = emit_conditional_move (dest, c, op0, op1, mode,
+    target = emit_conditional_move (dest, { c, op0, op1, mode },
 				    op1, op0, mode, 0);
   gcc_assert (target);
   if (target != dest)
@@ -22769,7 +22769,7 @@ rs6000_emit_swsqrt (rtx dst, rtx src, bool recip)
 
       if (mode == SFmode)
 	{
-	  rtx target = emit_conditional_move (e, GT, src, zero, mode,
+	  rtx target = emit_conditional_move (e, { GT, src, zero, mode },
 					      e, zero, mode, 0);
 	  if (target != e)
 	    emit_move_insn (e, target);
