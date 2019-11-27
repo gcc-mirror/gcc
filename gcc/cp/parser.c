@@ -18082,8 +18082,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 						 /*ambiguous_decls=*/NULL,
 						 token->location);
 	      if (tmpl && tmpl != error_mark_node
-		  && (DECL_CLASS_TEMPLATE_P (tmpl)
-		      || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))
+		  && ctad_template_p (tmpl))
 		type = make_template_placeholder (tmpl);
 	      else if (flag_concepts && tmpl && concept_definition_p (tmpl))
 		type = cp_parser_placeholder_type_specifier (parser, loc,

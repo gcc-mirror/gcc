@@ -1116,6 +1116,25 @@ build_constraints (tree tr, tree dr)
   return (tree)ci;
 }
 
+/* Add constraint RHS to the end of CONSTRAINT_INFO ci.  */
+
+tree
+append_constraint (tree ci, tree rhs)
+{
+  tree tr = ci ? CI_TEMPLATE_REQS (ci) : NULL_TREE;
+  tree dr = ci ? CI_DECLARATOR_REQS (ci) : NULL_TREE;
+  dr = combine_constraint_expressions (dr, rhs);
+  if (ci)
+    {
+      CI_DECLARATOR_REQS (ci) = dr;
+      tree ac = combine_constraint_expressions (tr, dr);
+      CI_ASSOCIATED_CONSTRAINTS (ci) = ac;
+    }
+  else
+    ci = build_constraints (tr, dr);
+  return ci;
+}
+
 /* A mapping from declarations to constraint information.  */
 
 static GTY ((cache)) decl_tree_cache_map *decl_constraints;

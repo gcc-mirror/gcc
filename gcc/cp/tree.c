@@ -2338,6 +2338,9 @@ lookup_mark (tree ovl, bool val)
 tree
 lookup_add (tree fns, tree lookup)
 {
+  if (fns == error_mark_node || lookup == error_mark_node)
+    return error_mark_node;
+
   if (lookup || TREE_CODE (fns) == TEMPLATE_DECL)
     {
       lookup = ovl_make (fns, lookup);
