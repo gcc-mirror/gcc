@@ -3786,27 +3786,27 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
    cxx_eval_constant_expression.  */
 
 static void
-non_const_var_error (tree r)
+non_const_var_error (location_t loc, tree r)
 {
   auto_diagnostic_group d;
   tree type = TREE_TYPE (r);
   if (DECL_NAME (r) == heap_uninit_identifier
       || DECL_NAME (r) == heap_identifier)
     {
-      error ("the content of uninitialized storage is not usable "
-	     "in a constant expression");
+      error_at (loc, "the content of uninitialized storage is not usable "
+		"in a constant expression");
       inform (DECL_SOURCE_LOCATION (r), "allocated here");
       return;
     }
   if (DECL_NAME (r) == heap_deleted_identifier)
     {
-      error ("use of allocated storage after deallocation in a "
-	     "constant expression");
+      error_at (loc, "use of allocated storage after deallocation in a "
+		"constant expression");
       inform (DECL_SOURCE_LOCATION (r), "allocated here");
       return;
     }
-  error ("the value of %qD is not usable in a constant "
-	 "expression", r);
+  error_at (loc, "the value of %qD is not usable in a constant "
+	    "expression", r);
   /* Avoid error cascade.  */
   if (DECL_INITIAL (r) == error_mark_node)
     return;
@@ -4765,6 +4765,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       return t;
     }
 
+  location_t loc = cp_expr_loc_or_input_loc (t);
+
   STRIP_ANY_LOCATION_WRAPPER (t);
 
   if (CONSTANT_CLASS_P (t))
@@ -4794,7 +4796,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
   if (++ctx->global->constexpr_ops_count >= constexpr_ops_limit)
     {
       if (!ctx->quiet)
-	error_at (cp_expr_loc_or_input_loc (t),
+	error_at (loc,
 		  "%<constexpr%> evaluation operation count exceeds limit of "
 		  "%wd (use %<-fconstexpr-ops-limit=%> to increase the limit)",
 		  constexpr_ops_limit);
@@ -4877,7 +4879,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (DECL_P (r))
 	{
 	  if (!ctx->quiet)
-	    non_const_var_error (r);
+	    non_const_var_error (loc, r);
 	  *non_constant_p = true;
 	}
       break;
@@ -5086,9 +5088,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					  jump_target);
 	if (!CLEANUP_EH_ONLY (t) && !*non_constant_p)
 	  {
-	    location_t loc = input_location;
-	    if (EXPR_HAS_LOCATION (t))
-	      input_location = EXPR_LOCATION (t);
+	    iloc_sentinel ils (loc);
 	    /* Also evaluate the cleanup.  If we weren't skipping at the
 	       start of the CLEANUP_BODY, change jump_target temporarily
 	       to &initial_jump_target, so that even a return or break or
@@ -5097,7 +5097,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					  non_constant_p, overflow_p,
 					  jump_target ? &initial_jump_target
 					  : NULL);
-	    input_location = loc;
 	  }
       }
       break;
@@ -5365,7 +5364,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (REINTERPRET_CAST_P (t))
 	{
 	  if (!ctx->quiet)
-	    error_at (cp_expr_loc_or_input_loc (t),
+	    error_at (loc,
 		      "%<reinterpret_cast%> is not a constant expression");
 	  *non_constant_p = true;
 	  return t;
@@ -5405,7 +5404,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		if (TYPE_REF_P (type))
 		  {
 		    if (!ctx->quiet)
-		      error_at (cp_expr_loc_or_input_loc (t),
+		      error_at (loc,
 				"dereferencing a null pointer");
 		    *non_constant_p = true;
 		    return t;
@@ -5417,7 +5416,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		    if (!can_convert (type, from, tf_none))
 		      {
 			if (!ctx->quiet)
-			  error_at (cp_expr_loc_or_input_loc (t),
+			  error_at (loc,
 				    "conversion of %qT null pointer to %qT "
 				    "is not a constant expression",
 				    from, type);
@@ -5432,8 +5431,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		     reinterpret_cast<void*>(sizeof 0)
 		*/
 		if (!ctx->quiet)
-		  error_at (cp_expr_loc_or_input_loc (t),
-			    "%<reinterpret_cast<%T>(%E)%> is not "
+		  error_at (loc, "%<reinterpret_cast<%T>(%E)%> is not "
 			    "a constant expression",
 			    type, op);
 		*non_constant_p = true;
@@ -5534,8 +5532,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case BASELINK:
     case OFFSET_REF:
       if (!ctx->quiet)
-        error_at (cp_expr_loc_or_input_loc (t),
-		  "expression %qE is not a constant expression", t);
+	error_at (loc, "expression %qE is not a constant expression", t);
       *non_constant_p = true;
       break;
 
@@ -5552,8 +5549,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    || !DECL_P (get_base_address (TREE_OPERAND (obj, 0))))
 	  {
 	    if (!ctx->quiet)
-	      error_at (cp_expr_loc_or_input_loc (t),
-			"expression %qE is not a constant expression", t);
+	      error_at (loc, "expression %qE is not a constant expression", t);
 	    *non_constant_p = true;
 	    return t;
 	  }
@@ -5661,7 +5657,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case ASM_EXPR:
       if (!ctx->quiet)
-	inline_asm_in_constexpr_error (cp_expr_loc_or_input_loc (t));
+	inline_asm_in_constexpr_error (loc);
       *non_constant_p = true;
       return t;
 
@@ -6724,7 +6720,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  && !is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
         {
           if (flags & tf_error)
-            non_const_var_error (t);
+	    non_const_var_error (loc, t);
           return false;
         }
       return true;

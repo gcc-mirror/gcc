@@ -1,3 +1,11 @@
+2019-11-26  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: Remember the
+	location of a variable template-id.
+	* constexpr.c (cxx_eval_constant_expression): Get expr location
+	before stripping location wrappers.
+	(non_const_var_error): Take location argument.
+
 2019-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_build_unary_op): Consistently use the accurate
