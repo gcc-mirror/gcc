@@ -1,3 +1,10 @@
+2019-11-27  Bernd Schmidt  <bernds_cb1@t-online.de>
+
+	* auto-inc-dec.c (merge_in_block): Allow autoinc in jumps unless
+	LRA is enabled.
+	* combine.c (can_combine_p): Disallow autoinc in jumps unless LRA is
+	disabled.
+
 2019-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/92664
