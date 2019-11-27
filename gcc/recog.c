@@ -2740,10 +2740,9 @@ constrain_operands (int strict, alternative_mask alternatives)
 			       /* Before reload, accept what reload can turn
 				  into a mem.  */
 			       || (strict < 0 && CONSTANT_P (op))
-			       /* Before reload, accept a pseudo,
+			       /* Before reload, accept a pseudo or hard register,
 				  since LRA can turn it into a mem.  */
-			       || (strict < 0 && targetm.lra_p () && REG_P (op)
-				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+			       || (strict < 0 && targetm.lra_p () && REG_P (op))
 			       /* During reload, accept a pseudo  */
 			       || (reload_in_progress && REG_P (op)
 				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)))

@@ -1,3 +1,9 @@
+2019-11-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/90007
+	* recog.c (constrain_operands): Permit hard registers too for
+	memory when LRA is used.
+
 2019-11-27  Bernd Schmidt  <bernds_cb1@t-online.de>
 
 	* config/m68k/m68k.c (m68k_output_compare_fp): Restore differences
