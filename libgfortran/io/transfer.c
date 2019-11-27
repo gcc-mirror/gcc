@@ -3138,8 +3138,9 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
           if (dtp->pos != dtp->u.p.current_unit->strm_pos)
             {
-              fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
-              if (sseek (dtp->u.p.current_unit->s, dtp->pos - 1, SEEK_SET) < 0)
+              fbuf_reset (dtp->u.p.current_unit);
+              if (sseek (dtp->u.p.current_unit->s,
+		  dtp->pos - 1, SEEK_SET) < 0)
                 {
                   generate_error (&dtp->common, LIBERROR_OS, NULL);
                   return;
