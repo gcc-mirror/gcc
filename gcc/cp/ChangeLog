@@ -1,3 +1,33 @@
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
+	Diagnose certain constraint errors as hard errors, but otherwise treat
+	them the same as normal SFINAE-type errors. Also, generally clean up
+	the satisfaction functions.
+
+	* constexpr.c (cxx_eval_constant_expression): Use
+	evaluate_concept_check.
+	* constraint.cc (normalize_concept_definition): Accept a diagnostic
+	flag and only cache when not diagnosing errors.
+	(decl_satisfied_cache): Map to trees instead of bools.
+	(satisfy_atom): Guarantee a location for the errors, propagate complain
+	flags to force_rvalue, and emit errors for non-boolean constraints.
+	(get_normalized_constraints_and_args): New overloads. Factored out of
+	satisfy_constraint_expression and satisfy_declaration_constraints.
+	(satisfy_constraint_expression): Propagate diagnostic info to
+	normalization.
+	(satisfy_declaration_constraints): New. Factored out of
+	constraints_satisfied_p.
+	(constraint_satisfaction_value): New. Calls
+	satisfy_constraint_expression or satisfy_declaration_constraints.
+	(constraints_satisfied_p): Call constraint_satisfaction_value.
+	(evaluate_concept_check): Don't take tsubst_falgs_t. Replay
+	satisfaction if an error is encountered.
+	(current_failed_constraint): Moved from pt.c.
+	(diagnose_constraints): Call constraint_satisfaction_value.
+	* cp-tree.h: Update declarations.
+	* pt.c (current_failed_constraint): Moved to constraint.cc.
+	* semantics.c (finish_id_expression_1): Remove a duplicate case.
+
 2019-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92524

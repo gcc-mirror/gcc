@@ -3970,16 +3970,6 @@ finish_id_expression_1 (tree id_expression,
 
 	  decl = baselink_for_fns (decl);
 	}
-      else if (concept_check_p (decl))
-	{
-	  /* If this is a standard or variable concept check, potentially
-	     evaluate it. Function concepts need to be called as functions,
-	     so don't try evaluating them here.  */
-	  tree tmpl = TREE_OPERAND (decl, 0);
-	  tree args = TREE_OPERAND (decl, 1);
-	  if (!function_concept_p (tmpl) && !uses_template_parms (args))
-	    decl = evaluate_concept_check (decl, tf_warning_or_error);
-	}
       else
 	{
 	  if (DECL_P (decl) && DECL_NONLOCAL (decl)

@@ -3358,6 +3358,9 @@ cp_print_error_function (diagnostic_context *context,
      to be wrong, so just rely on print_instantiation_full_context.  */
   if (current_instantiation ())
     return;
+  /* The above is true for constraint satisfaction also.  */
+  if (current_failed_constraint)
+    return;
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       char *old_prefix = pp_take_prefix (context->printer);

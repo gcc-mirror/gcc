@@ -1,3 +1,9 @@
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
+	Emit hard errors for certain satisfaction errors.
+	* g++.dg/concepts/pr84330.C: Update diagnostics.
+	* g++.dg/cpp2a/concepts-requires2.C: Likewise.
+
 2019-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92690
