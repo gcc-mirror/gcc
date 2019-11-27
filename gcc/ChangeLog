@@ -1,3 +1,14 @@
+2019-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92674
+	* tree-inline.c (expand_call_inline): Delay purging EH/abnormal
+	edges and instead record blocks in bitmap.
+	(gimple_expand_calls_inline): Adjust.
+	(fold_marked_statements): Delay EH cleanup until all folding is
+	done.
+	(optimize_inline_calls): Do EH/abnormal cleanup for calls after
+	inlining finished.
+
 2019-11-27  Bernd Schmidt  <bernds_cb1@t-online.de>
 
 	* auto-inc-dec.c (merge_in_block): Allow autoinc in jumps unless
