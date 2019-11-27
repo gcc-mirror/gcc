@@ -1,3 +1,11 @@
+2019-11-27  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92222
+	* gcc.dg/torture/pr92222.c: New testcase.
+
 2019-11-26  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
 
 	Backport from trunk
