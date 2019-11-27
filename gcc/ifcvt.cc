@@ -3414,14 +3414,17 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
    (SET (REG) (REG)) insns suitable for conversion to a series
    of conditional moves.  Also check that we have more than one set
    (other routines can handle a single set better than we would), and
-   fewer than PARAM_MAX_RTL_IF_CONVERSION_INSNS sets.  */
+   fewer than PARAM_MAX_RTL_IF_CONVERSION_INSNS sets.  While going
+   through the insns store the sum of their potential costs in COST.  */
 
 static bool
-bb_ok_for_noce_convert_multiple_sets (basic_block test_bb)
+bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
 {
   rtx_insn *insn;
   unsigned count = 0;
   unsigned param = param_max_rtl_if_conversion_insns;
+  bool speed_p = optimize_bb_for_speed_p (test_bb);
+  unsigned potential_cost = 0;
 
   FOR_BB_INSNS (test_bb, insn)
     {
@@ -3457,8 +3460,12 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb)
       if (!can_conditionally_move_p (GET_MODE (dest)))
 	return false;
 
+      potential_cost += insn_cost (insn, speed_p);
+
       count++;
     }
+
+  *cost += potential_cost;
 
   /* If we would only put out one conditional move, the other strategies
      this pass tries are better optimized and will be more appropriate.
@@ -3507,11 +3514,24 @@ noce_process_if_block (struct noce_if_info *if_info)
      to calculate a value for x.
      ??? For future expansion, further expand the "multiple X" rules.  */
 
-  /* First look for multiple SETS.  */
+  /* First look for multiple SETS.  The original costs already include
+     a base cost of COSTS_N_INSNS (2): one instruction for the compare
+     (which we will be needing either way) and one instruction for the
+     branch.  When comparing costs we want to use the branch instruction
+     cost and the sets vs. the cmovs generated here.  Therefore subtract
+     the costs of the compare before checking.
+     ??? Actually, instead of the branch instruction costs we might want
+     to use COSTS_N_INSNS (BRANCH_COST ()) as in other places.  */
+
+  unsigned potential_cost = if_info->original_cost - COSTS_N_INSNS (1);
+  unsigned old_cost = if_info->original_cost;
   if (!else_bb
       && HAVE_conditional_move
-      && bb_ok_for_noce_convert_multiple_sets (then_bb))
+      && bb_ok_for_noce_convert_multiple_sets (then_bb, &potential_cost))
     {
+      /* Temporarily set the original costs to what we estimated so
+	 we can determine if the transformation is worth it.  */
+      if_info->original_cost = potential_cost;
       if (noce_convert_multiple_sets (if_info))
 	{
 	  if (dump_file && if_info->transform_name)
@@ -3519,6 +3539,9 @@ noce_process_if_block (struct noce_if_info *if_info)
 		     if_info->transform_name);
 	  return TRUE;
 	}
+
+      /* Restore the original costs.  */
+      if_info->original_cost = old_cost;
     }
 
   bool speed_p = optimize_bb_for_speed_p (test_bb);
