@@ -1,5 +1,11 @@
 2019-11-27  Andrew Sutton  <asutton@lock3software.com>
 
+	PR c++/88395
+	* constraint.cc (satisfy_declaration_constraints): Push tinst levels
+	around satisfaction.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
 	Diagnose certain constraint errors as hard errors, but otherwise treat
 	them the same as normal SFINAE-type errors. Also, generally clean up
 	the satisfaction functions.

@@ -1,3 +1,11 @@
+2019-11-18  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/88395
+	* g++.dg/cpp2a/concepts-pr88395.C: New.
+	* g++.dg/cpp2a/concepts-recursive-sat1.C: New.
+	* g++.dg/cpp2a/concepts-recursive-sat2.C: New.
+	* g++.dg/cpp2a/concepts-recursive-sat3.C: New.
+
 2019-11-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/90007
