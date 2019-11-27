@@ -8132,9 +8132,23 @@ trees_out::decl_node (tree decl, walk_kind ref)
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
   tree tpl = NULL_TREE;
+  tree inst = get_instantiating_module_decl (decl);
+  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
+  if (origin)
+    origin = (*modules)[origin]->remap;
+  bool is_import = origin != 0;
+  const char *kind = NULL;
+  depset *dep = NULL;
+  tree name = DECL_NAME (decl);
+  unsigned code = tt_named;
+  int ident = -2;
+  tree proxy = decl;
+  tree ctx = CP_DECL_CONTEXT (decl);
 
-  /* TI_TEMPLATE is not a TEMPLATE_DECL for (some) friends, because
-     we matched a non-template.  */
+
+  /* If this is the TEMPLATE_DECL_RESULT of a TEMPLATE_DECL, get the
+     TEMPLATE_DECL.  Note TI_TEMPLATE is not a TEMPLATE_DECL for
+     (some) friends, so we need to check that.  */
   if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
       && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
     {
@@ -8156,18 +8170,33 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  tree inst = get_instantiating_module_decl (decl);
-  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
-  if (origin)
-    origin = (*modules)[origin]->remap;
-  bool is_import = origin != 0;
-  const char *kind = NULL;
-  depset *dep = NULL;
-  tree name = DECL_NAME (decl);
-  unsigned code = tt_named;
-  int ident = -2;
-  tree proxy = decl;
-  tree ctx = CP_DECL_CONTEXT (decl);
+  if (TREE_CODE (ctx) == FUNCTION_DECL)
+    {
+      /* We cannot lookup by name inside a function.  */
+      if (!streaming_p ())
+	{
+	  if (is_import
+	      || TREE_CODE (decl) == TEMPLATE_DECL
+	      || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl)))
+	    {
+	      dep = dep_hash->add_dependency (decl, depset::EK_DECL);
+	      gcc_assert (dep->is_import () == is_import);
+	      kind = "unnamed";
+	      goto insert;
+	    }
+	}
+      else
+	{
+	  dep = dep_hash->find_dependency (decl);
+	  if (dep)
+	    goto direct_entity;
+	}
+
+      /* Some (non-mergeable?) internal entity of the function.  Do
+	 by value.  */
+      decl_value (decl, NULL);
+      return false;
+    }
 
   if (use_tpl > 0)
     {
@@ -8209,40 +8238,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
       else
 	gcc_assert (dep->get_entity_kind () == depset::EK_DECL);
-    }
-
-  if (TREE_CODE (ctx) == FUNCTION_DECL)
-    {
-      /* We cannot lookup by name inside a function.  */
-      if (!streaming_p ()
-	  && (is_import
-	      || (dep_hash->sneakoscope
-		  // FIXME: do I need to consider scopes from ctx
-		  // outwards to the containing namespace?
-		  && ctx == dep_hash->current->get_entity ())))
-	{
-	  gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
-	  /* We've found a voldemort type.  Add it as a
-	     dependency.  */
-	  dep = dep_hash->add_dependency (decl, depset::EK_DECL);
-	  gcc_assert (dep->is_import () == is_import);
-	  kind = "unnamed";
-	  goto insert;
-	}
-
-      if (streaming_p ())
-	{
-	  dep = dep_hash->find_dependency (decl);
-	  if (dep && dep->get_entity_kind () == depset::EK_DECL)
-	    goto direct_entity;
-	}
-
-      /* Some (non-mergeable?) internal entity of the function.  Do
-	 by value.  */
-      // FIXME: pass DEP to the value streamer?
-      gcc_assert (!is_import);
-      decl_value (decl, NULL);
-      return false;
     }
 
   /* A named decl -> tt_named_decl.  */
