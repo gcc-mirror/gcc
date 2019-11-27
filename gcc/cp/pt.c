@@ -27784,6 +27784,29 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
   return newdecl;
 }
 
+/* As rewrite_template_parm, but for the whole TREE_LIST representing a
+   template parameter.  */
+
+static tree
+rewrite_tparm_list (tree oldelt, unsigned index, unsigned level,
+		    tree targs, unsigned targs_index, tsubst_flags_t complain)
+{
+  tree olddecl = TREE_VALUE (oldelt);
+  tree newdecl = rewrite_template_parm (olddecl, index, level,
+					targs, complain);
+  if (newdecl == error_mark_node)
+    return error_mark_node;
+  tree newdef = tsubst_template_arg (TREE_PURPOSE (oldelt),
+				     targs, complain, NULL_TREE);
+  tree list = build_tree_list (newdef, newdecl);
+  TEMPLATE_PARM_CONSTRAINTS (list)
+    = tsubst_constraint_info (TEMPLATE_PARM_CONSTRAINTS (oldelt),
+			      targs, complain, NULL_TREE);
+  int depth = TMPL_ARGS_DEPTH (targs);
+  TMPL_ARG (targs, depth, targs_index) = template_parm_to_arg (list);
+  return list;
+}
+
 /* Returns a C++17 class deduction guide template based on the constructor
    CTOR.  As a special case, CTOR can be a RECORD_TYPE for an implicit default
    guide, REFERENCE_TYPE for an implicit copy/move guide, or TREE_LIST for an
@@ -27897,19 +27920,12 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 	      unsigned index = i + clen;
 	      unsigned level = 1;
 	      tree oldelt = TREE_VEC_ELT (ftparms, i);
-	      tree olddecl = TREE_VALUE (oldelt);
-	      tree newdecl = rewrite_template_parm (olddecl, index, level,
-						    tsubst_args, complain);
-	      if (newdecl == error_mark_node)
+	      tree newelt
+		= rewrite_tparm_list (oldelt, index, level,
+				      tsubst_args, i, complain);
+	      if (newelt == error_mark_node)
 		ok = false;
-	      tree newdef = tsubst_template_arg (TREE_PURPOSE (oldelt),
-						 tsubst_args, complain, ctor);
-	      tree list = build_tree_list (newdef, newdecl);
-	      TEMPLATE_PARM_CONSTRAINTS (list)
-		= tsubst_constraint_info (TEMPLATE_PARM_CONSTRAINTS (oldelt),
-					  tsubst_args, complain, ctor);
-	      TREE_VEC_ELT (new_vec, index) = list;
-	      TMPL_ARG (tsubst_args, depth, i) = template_parm_to_arg (list);
+	      TREE_VEC_ELT (new_vec, index) = newelt;
 	    }
 
 	  /* Now we have a final set of template parms to substitute into the
@@ -27984,19 +28000,47 @@ collect_ctor_idx_types (tree ctor, tree list)
   return list;
 }
 
+/* Return whether ETYPE is, or is derived from, a specialization of TMPL.  */
+
+static bool
+is_spec_or_derived (tree etype, tree tmpl)
+{
+  if (!etype || !CLASS_TYPE_P (etype))
+    return false;
+
+  tree type = TREE_TYPE (tmpl);
+  tree tparms = (INNERMOST_TEMPLATE_PARMS
+		 (DECL_TEMPLATE_PARMS (tmpl)));
+  tree targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
+  int err = unify (tparms, targs, type, etype,
+		   UNIFY_ALLOW_DERIVED, /*explain*/false);
+  ggc_free (targs);
+  return !err;
+}
+
 /* Return a C++20 aggregate deduction candidate for TYPE initialized from
    INIT.  */
 
 static tree
-maybe_aggr_guide (tree type, tree init)
+maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 {
   if (cxx_dialect < cxx2a)
     return NULL_TREE;
 
   if (init == NULL_TREE)
     return NULL_TREE;
+
+  tree type = TREE_TYPE (tmpl);
   if (!CP_AGGREGATE_TYPE_P (type))
     return NULL_TREE;
+
+  /* No aggregate candidate for copy-initialization.  */
+  if (args->length() == 1)
+    {
+      tree val = (*args)[0];
+      if (is_spec_or_derived (tmpl, TREE_TYPE (val)))
+	return NULL_TREE;
+    }
 
   /* If we encounter a problem, we just won't add the candidate.  */
   tsubst_flags_t complain = tf_none;
@@ -28039,22 +28083,292 @@ maybe_aggr_guide (tree type, tree init)
   return NULL_TREE;
 }
 
-/* Return whether ETYPE is, or is derived from, a specialization of TMPL.  */
+/* UGUIDES are the deduction guides for the underlying template of alias
+   template TMPL; adjust them to be deduction guides for TMPL.  */
 
-static bool
-is_spec_or_derived (tree etype, tree tmpl)
+static tree
+alias_ctad_tweaks (tree tmpl, tree uguides)
 {
-  if (!etype || !CLASS_TYPE_P (etype))
-    return false;
+  /* [over.match.class.deduct]: When resolving a placeholder for a deduced
+     class type (9.2.8.2) where the template-name names an alias template A,
+     the defining-type-id of A must be of the form
 
+     typename(opt) nested-name-specifier(opt) template(opt) simple-template-id
+
+     as specified in 9.2.8.2. The guides of A are the set of functions or
+     function templates formed as follows. For each function or function
+     template f in the guides of the template named by the simple-template-id
+     of the defining-type-id, the template arguments of the return type of f
+     are deduced from the defining-type-id of A according to the process in
+     13.10.2.5 with the exception that deduction does not fail if not all
+     template arguments are deduced. Let g denote the result of substituting
+     these deductions into f. If substitution succeeds, form a function or
+     function template f' with the following properties and add it to the set
+     of guides of A:
+
+     * The function type of f' is the function type of g.
+
+     * If f is a function template, f' is a function template whose template
+     parameter list consists of all the template parameters of A (including
+     their default template arguments) that appear in the above deductions or
+     (recursively) in their default template arguments, followed by the
+     template parameters of f that were not deduced (including their default
+     template arguments), otherwise f' is not a function template.
+
+     * The associated constraints (13.5.2) are the conjunction of the
+     associated constraints of g and a constraint that is satisfied if and only
+     if the arguments of A are deducible (see below) from the return type.
+
+     * If f is a copy deduction candidate (12.4.1.8), then f' is considered to
+     be so as well.
+
+     * If f was generated from a deduction-guide (12.4.1.8), then f' is
+     considered to be so as well.
+
+     * The explicit-specifier of f' is the explicit-specifier of g (if
+     any).  */
+
+  /* This implementation differs from the above in two significant ways:
+
+     1) We include all template parameters of A, not just some.
+     2) The added constraint is same_type instead of deducible.
+
+     I believe that while it's probably possible to construct a testcase that
+     behaves differently with this simplification, it should have the same
+     effect for real uses.  Including all template parameters means that we
+     deduce all parameters of A when resolving the call, so when we're in the
+     constraint we don't need to deduce them again, we can just check whether
+     the deduction produced the desired result.  */
+
+  tsubst_flags_t complain = tf_warning_or_error;
+  tree atype = TREE_TYPE (tmpl);
+  tree aguides = NULL_TREE;
+  tree atparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
+  unsigned natparms = TREE_VEC_LENGTH (atparms);
+  tree utype = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+  for (ovl_iterator iter (uguides); iter; ++iter)
+    {
+      tree f = *iter;
+      tree in_decl = f;
+      location_t loc = DECL_SOURCE_LOCATION (f);
+      tree ret = TREE_TYPE (TREE_TYPE (f));
+      tree fprime = f;
+      if (TREE_CODE (f) == TEMPLATE_DECL)
+	{
+	  processing_template_decl_sentinel ptds (/*reset*/false);
+	  ++processing_template_decl;
+
+	  /* Deduce template arguments for f from the type-id of A.  */
+	  tree ftparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (f));
+	  unsigned len = TREE_VEC_LENGTH (ftparms);
+	  tree targs = make_tree_vec (len);
+	  int err = unify (ftparms, targs, ret, utype, UNIFY_ALLOW_NONE, false);
+	  gcc_assert (!err);
+
+	  /* The number of parms for f' is the number of parms for A plus
+	     non-deduced parms of f.  */
+	  unsigned ndlen = 0;
+	  unsigned j;
+	  for (unsigned i = 0; i < len; ++i)
+	    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
+	      ++ndlen;
+	  tree gtparms = make_tree_vec (natparms + ndlen);
+
+	  /* First copy over the parms of A.  */
+	  for (j = 0; j < natparms; ++j)
+	    TREE_VEC_ELT (gtparms, j) = TREE_VEC_ELT (atparms, j);
+	  /* Now rewrite the non-deduced parms of f.  */
+	  for (unsigned i = 0; ndlen && i < len; ++i)
+	    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
+	      {
+		--ndlen;
+		unsigned index = j++;
+		unsigned level = 1;
+		tree oldlist = TREE_VEC_ELT (ftparms, i);
+		tree list = rewrite_tparm_list (oldlist, index, level,
+						targs, i, complain);
+		TREE_VEC_ELT (gtparms, index) = list;
+	      }
+	  gtparms = build_tree_list (size_one_node, gtparms);
+
+	  /* Substitute the deduced arguments plus the rewritten template
+	     parameters into f to get g.  This covers the type, copyness,
+	     guideness, and explicit-specifier.  */
+	  tree g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain);
+	  if (g == error_mark_node)
+	    return error_mark_node;
+	  DECL_USE_TEMPLATE (g) = 0;
+	  fprime = build_template_decl (g, gtparms, false);
+	  DECL_TEMPLATE_RESULT (fprime) = g;
+	  TREE_TYPE (fprime) = TREE_TYPE (g);
+	  tree gtargs = template_parms_to_args (gtparms);
+	  DECL_TEMPLATE_INFO (g) = build_template_info (fprime, gtargs);
+	  DECL_PRIMARY_TEMPLATE (fprime) = fprime;
+
+	  /* Substitute the associated constraints.  */
+	  tree ci = get_constraints (f);
+	  if (ci)
+	    ci = tsubst_constraint_info (ci, targs, complain, in_decl);
+	  if (ci == error_mark_node)
+	    return error_mark_node;
+
+	  /* Add a constraint that the return type matches the instantiation of
+	     A with the same template arguments.  */
+	  ret = TREE_TYPE (TREE_TYPE (fprime));
+	  if (!same_type_p (atype, ret)
+	      /* FIXME this should mean they don't compare as equivalent.  */
+	      || dependent_alias_template_spec_p (atype, nt_opaque))
+	    {
+	      tree same = finish_trait_expr (loc, CPTK_IS_SAME_AS, atype, ret);
+	      ci = append_constraint (ci, same);
+	    }
+
+	  if (ci)
+	    set_constraints (fprime, ci);
+	}
+      else
+	{
+	  /* For a non-template deduction guide, if the arguments of A aren't
+	     deducible from the return type, don't add the candidate.  */
+	  tree targs = make_tree_vec (natparms);
+	  int err = unify (atparms, targs, utype, ret, UNIFY_ALLOW_NONE, false);
+	  for (unsigned i = 0; !err && i < natparms; ++i)
+	    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
+	      err = true;
+	  if (err)
+	    continue;
+	}
+
+      aguides = lookup_add (fprime, aguides);
+    }
+
+  return aguides;
+}
+
+/* Return artificial deduction guides built from the constructors of class
+   template TMPL.  */
+
+static tree
+ctor_deduction_guides_for (tree tmpl, tsubst_flags_t complain)
+{
   tree type = TREE_TYPE (tmpl);
-  tree tparms = (INNERMOST_TEMPLATE_PARMS
-		 (DECL_TEMPLATE_PARMS (tmpl)));
-  tree targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
-  int err = unify (tparms, targs, type, etype,
-		   UNIFY_ALLOW_DERIVED, /*explain*/false);
-  ggc_free (targs);
-  return !err;
+  tree outer_args = NULL_TREE;
+  if (DECL_CLASS_SCOPE_P (tmpl)
+      && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
+    {
+      outer_args = CLASSTYPE_TI_ARGS (DECL_CONTEXT (tmpl));
+      type = TREE_TYPE (most_general_template (tmpl));
+    }
+
+  tree cands = NULL_TREE;
+
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type)); iter; ++iter)
+    {
+      /* Skip inherited constructors.  */
+      if (iter.using_p ())
+	continue;
+
+      tree guide = build_deduction_guide (type, *iter, outer_args, complain);
+      cands = lookup_add (guide, cands);
+    }
+
+  /* Add implicit default constructor deduction guide.  */
+  if (!TYPE_HAS_USER_CONSTRUCTOR (type))
+    {
+      tree guide = build_deduction_guide (type, type, outer_args,
+					  complain);
+      cands = lookup_add (guide, cands);
+    }
+
+  /* Add copy guide.  */
+  {
+    tree gtype = build_reference_type (type);
+    tree guide = build_deduction_guide (type, gtype, outer_args,
+					complain);
+    cands = lookup_add (guide, cands);
+  }
+
+  return cands;
+}
+
+static GTY((deletable)) hash_map<tree, tree_pair_p> *dguide_cache;
+
+/* Return the non-aggregate deduction guides for deducible template TMPL.  The
+   aggregate candidate is added separately because it depends on the
+   initializer.  */
+
+static tree
+deduction_guides_for (tree tmpl, tsubst_flags_t complain)
+{
+  tree guides = NULL_TREE;
+  if (DECL_ALIAS_TEMPLATE_P (tmpl))
+    {
+      tree under = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+      tree tinfo = get_template_info (under);
+      guides = deduction_guides_for (TI_TEMPLATE (tinfo), complain);
+    }
+  else
+    {
+      guides = lookup_qualified_name (CP_DECL_CONTEXT (tmpl),
+				      dguide_name (tmpl),
+				      /*type*/false, /*complain*/false,
+				      /*hidden*/false);
+      if (guides == error_mark_node)
+	guides = NULL_TREE;
+    }
+
+  /* Cache the deduction guides for a template.  We also remember the result of
+     lookup, and rebuild everything if it changes; should be very rare.  */
+  tree_pair_p cache = NULL;
+  if (tree_pair_p &r
+      = hash_map_safe_get_or_insert<hm_ggc> (dguide_cache, tmpl))
+    {
+      cache = r;
+      if (cache->purpose == guides)
+	return cache->value;
+    }
+  else
+    {
+      r = cache = ggc_cleared_alloc<tree_pair_s> ();
+      cache->purpose = guides;
+    }
+
+  tree cands = NULL_TREE;
+  if (DECL_ALIAS_TEMPLATE_P (tmpl))
+    cands = alias_ctad_tweaks (tmpl, guides);
+  else
+    {
+      cands = ctor_deduction_guides_for (tmpl, complain);
+      for (ovl_iterator it (guides); it; ++it)
+	cands = lookup_add (*it, cands);
+    }
+
+  cache->value = cands;
+  return cands;
+}
+
+/* Return whether TMPL is a (class template argument-) deducible template.  */
+
+bool
+ctad_template_p (tree tmpl)
+{
+  /* A deducible template is either a class template or is an alias template
+     whose defining-type-id is of the form
+
+      typename(opt) nested-name-specifier(opt) template(opt) simple-template-id
+
+     where the nested-name-specifier (if any) is non-dependent and the
+     template-name of the simple-template-id names a deducible template.  */
+
+  if (DECL_CLASS_TEMPLATE_P (tmpl)
+      || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
+    return true;
+  if (!DECL_ALIAS_TEMPLATE_P (tmpl))
+    return false;
+  tree orig = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+  if (tree tinfo = get_template_info (orig))
+    return ctad_template_p (TI_TEMPLATE (tinfo));
+  return false;
 }
 
 /* Deduce template arguments for the class template placeholder PTYPE for
@@ -28062,18 +28376,29 @@ is_spec_or_derived (tree etype, tree tmpl)
    type.  */
 
 static tree
-do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
-		    tsubst_flags_t complain)
+do_class_deduction (tree ptype, tree tmpl, tree init,
+		    int flags, tsubst_flags_t complain)
 {
-  if (!DECL_CLASS_TEMPLATE_P (tmpl))
+  /* We should have handled this in the caller.  */
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
+    return ptype;
+
+  /* Look through alias templates that just rename another template.  */
+  tmpl = get_underlying_template (tmpl);
+  if (!ctad_template_p (tmpl))
     {
-      /* We should have handled this in the caller.  */
-      if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
-	return ptype;
       if (complain & tf_error)
-	error ("non-class template %qT used without template arguments", tmpl);
+	error ("non-deducible template %qT used without template arguments", tmpl);
       return error_mark_node;
     }
+  else if (cxx_dialect < cxx2a && DECL_ALIAS_TEMPLATE_P (tmpl))
+    {
+      /* This doesn't affect conforming C++17 code, so just pedwarn.  */
+      if (complain & tf_warning_or_error)
+	pedwarn (input_location, 0, "alias template deduction only available "
+		 "with %<-std=c++2a%> or %<-std=gnu++2a%>");
+    }
+
   if (init && TREE_TYPE (init) == ptype)
     /* Using the template parm as its own argument.  */
     return ptype;
@@ -28081,7 +28406,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   tree type = TREE_TYPE (tmpl);
 
   bool try_list_ctor = false;
-  bool copy_init = false;
 
   releasing_vec rv_args = NULL;
   vec<tree,va_gc> *&args = *&rv_args;
@@ -28089,7 +28413,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     args = make_tree_vector ();
   else if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      if (CONSTRUCTOR_NELTS (init) == 1)
+      try_list_ctor = TYPE_HAS_LIST_CTOR (type);
+      if (try_list_ctor && CONSTRUCTOR_NELTS (init) == 1)
 	{
 	  /* As an exception, the first phase in 16.3.1.7 (considering the
 	     initializer list as a single argument) is omitted if the
@@ -28097,34 +28422,30 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	     where U is a specialization of C or a class derived from a
 	     specialization of C.  */
 	  tree elt = CONSTRUCTOR_ELT (init, 0)->value;
-	  copy_init = is_spec_or_derived (TREE_TYPE (elt), tmpl);
+	  if (is_spec_or_derived (TREE_TYPE (elt), tmpl))
+	    try_list_ctor = false;
 	}
-      try_list_ctor = !copy_init && TYPE_HAS_LIST_CTOR (type);
       if (try_list_ctor || is_std_init_list (type))
 	args = make_tree_vector_single (init);
       else
 	args = make_tree_vector_from_ctor (init);
     }
+  else if (TREE_CODE (init) == TREE_LIST)
+    args = make_tree_vector_from_list (init);
   else
-    {
-      if (TREE_CODE (init) == TREE_LIST)
-	args = make_tree_vector_from_list (init);
-      else
-	args = make_tree_vector_single (init);
+    args = make_tree_vector_single (init);
 
-      if (args->length() == 1)
-	copy_init = is_spec_or_derived (TREE_TYPE ((*args)[0]), tmpl);
-    }
+  /* Do this now to avoid problems with erroneous args later on.  */
+  args = resolve_args (args, complain);
+  if (args == NULL)
+    return error_mark_node;
 
-  tree dname = dguide_name (tmpl);
-  tree cands = lookup_qualified_name (CP_DECL_CONTEXT (tmpl), dname,
-				      /*type*/false, /*complain*/false,
-				      /*hidden*/false);
-  bool elided = false;
+  tree cands = deduction_guides_for (tmpl, complain);
   if (cands == error_mark_node)
-    cands = NULL_TREE;
+    return error_mark_node;
 
   /* Prune explicit deduction guides in copy-initialization context.  */
+  bool elided = false;
   if (flags & LOOKUP_ONLYCONVERTING)
     {
       for (lkp_iterator iter (cands); !elided && iter; ++iter)
@@ -28143,37 +28464,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	}
     }
 
-  tree outer_args = NULL_TREE;
-  if (DECL_CLASS_SCOPE_P (tmpl)
-      && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
-    {
-      outer_args = CLASSTYPE_TI_ARGS (DECL_CONTEXT (tmpl));
-      type = TREE_TYPE (most_general_template (tmpl));
-    }
-
-  bool saw_ctor = false;
-  // FIXME cache artificial deduction guides
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type)); iter; ++iter)
-    {
-      /* Skip inherited constructors.  */
-      if (iter.using_p ())
-	continue;
-
-      tree guide = build_deduction_guide (type, *iter, outer_args, complain);
-      if (guide == error_mark_node)
-	return error_mark_node;
-      if ((flags & LOOKUP_ONLYCONVERTING)
-	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
-	elided = true;
-      else
-	cands = lookup_add (guide, cands);
-
-      saw_ctor = true;
-    }
-
-  if (!copy_init)
-    if (tree guide = maybe_aggr_guide (type, init))
-      cands = lookup_add (guide, cands);
+  if (tree guide = maybe_aggr_guide (tmpl, init, args))
+    cands = lookup_add (guide, cands);
 
   tree call = error_mark_node;
 
@@ -28202,28 +28494,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	}
     }
 
-  /* Maybe generate an implicit deduction guide.  */
-  if (call == error_mark_node && args->length () < 2)
-    {
-      tree gtype = NULL_TREE;
-
-      if (args->length () == 1)
-	/* Generate a copy guide.  */
-	gtype = build_reference_type (type);
-      else if (!saw_ctor)
-	/* Generate a default guide.  */
-	gtype = type;
-
-      if (gtype)
-	{
-	  tree guide = build_deduction_guide (type, gtype, outer_args,
-					      complain);
-	  if (guide == error_mark_node)
-	    return error_mark_node;
-	  cands = lookup_add (guide, cands);
-	}
-    }
-
   if (elided && !cands)
     {
       error ("cannot deduce template arguments for copy-initialization"
@@ -28245,7 +28515,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
       --cp_unevaluated_operand;
     }
 
-  if (call == error_mark_node && (complain & tf_warning_or_error))
+  if (call == error_mark_node
+      && (complain & tf_warning_or_error))
     {
       error ("class template argument deduction failed:");
 

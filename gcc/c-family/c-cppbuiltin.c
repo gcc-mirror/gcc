@@ -980,7 +980,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_capture_star_this=201603L");
 	  cpp_define (pfile, "__cpp_inline_variables=201606L");
 	  cpp_define (pfile, "__cpp_aggregate_bases=201603L");
-	  cpp_define (pfile, "__cpp_deduction_guides=201703L");
+	  if (cxx_dialect <= cxx17)
+	    cpp_define (pfile, "__cpp_deduction_guides=201703L");
 	  cpp_define (pfile, "__cpp_noexcept_function_type=201510L");
 	  /* Old macro, superseded by
 	     __cpp_nontype_template_parameter_auto.  */
@@ -1000,6 +1001,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
 	  cpp_define (pfile, "__cpp_consteval=201811L");
 	  cpp_define (pfile, "__cpp_constinit=201907L");
+	  cpp_define (pfile, "__cpp_deduction_guides=201907L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806L");
 	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806L");
 	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907L");

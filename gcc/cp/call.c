@@ -4398,7 +4398,7 @@ build_converted_constant_bool_expr (tree expr, tsubst_flags_t complain)
 
 /* Do any initial processing on the arguments to a function call.  */
 
-static vec<tree, va_gc> *
+vec<tree, va_gc> *
 resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 {
   unsigned int ix;

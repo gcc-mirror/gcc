@@ -1,5 +1,16 @@
 2019-11-16  Jason Merrill  <jason@redhat.com>
 
+	Implement P1814R0, CTAD for alias templates.
+	* pt.c (rewrite_tparm_list): Factor out of build_deduction_guide.
+	(maybe_aggr_guide): Check for copy-init here.
+	(alias_ctad_tweaks, deduction_guides_for): New.
+	(ctor_deduction_guides_for): Factor out of do_class_deduction.
+	(ctad_template_p): New.
+	* parser.c (cp_parser_simple_type_specifier): Use it.
+	* constraint.cc (append_constraint): New.
+
+2019-11-16  Jason Merrill  <jason@redhat.com>
+
 	* cxx-pretty-print.c (pp_cxx_unqualified_id): Handle alias
 	template-id.
 	* pt.c (complex_alias_template_p): True if constraints.
