@@ -336,6 +336,27 @@ proc offload_target_to_openacc_device_type { offload_target } {
     }
 }
 
+# Return 1 if compiling for offload target nvptx.
+proc check_effective_target_offload_target_nvptx { } {
+    # Consider all actual options, including the flags passed to
+    # 'gcc-dg-runtest', or 'gfortran-dg-runtest' (see the 'libgomp.*/*.exp'
+    # files; in particular, '-foffload', 'libgomp.oacc-*/*.exp'), which don't
+    # get passed on to 'check_effective_target_*' functions.  (Not caching the
+    # result due to that.)
+    set options [current_compiler_flags]
+    # Instead of inspecting command-line options, look what the compiler driver
+    # decides.  This is somewhat modelled after
+    # 'gcc/testsuite/lib/target-supports.exp:check_configured_with'.
+    set gcc_output [libgomp_target_compile "-v $options" "" "none" ""]
+    if [regexp "(?n)^OFFLOAD_TARGET_NAMES=(.*)" $gcc_output dummy offload_targets] {
+	verbose "compiling for offload targets: $offload_targets"
+	return [string match "*:nvptx*:*" ":$offload_targets:"]
+    }
+
+    verbose "not compiling for any offload targets"
+    return 0
+}
+
 # Return 1 if offload device is available.
 proc check_effective_target_offload_device { } {
     return [check_runtime_nocache offload_device_available_ {
