@@ -6520,7 +6520,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	if (TREE_CODE (argtype) == ENUMERAL_TYPE)
           {
             if (complain & tf_error)
-              permerror (input_location, (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+              permerror (location, (code == PREINCREMENT_EXPR
+				    || code == POSTINCREMENT_EXPR)
                          ? G_("ISO C++ forbids incrementing an enum")
                          : G_("ISO C++ forbids decrementing an enum"));
             else
@@ -6536,22 +6537,26 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	    if (!COMPLETE_OR_VOID_TYPE_P (type))
               {
                 if (complain & tf_error)
-                  error (((code == PREINCREMENT_EXPR
-                           || code == POSTINCREMENT_EXPR))
-                         ? G_("cannot increment a pointer to incomplete type %qT")
-                         : G_("cannot decrement a pointer to incomplete type %qT"),
-                         TREE_TYPE (argtype));
+                  error_at (location, ((code == PREINCREMENT_EXPR
+					|| code == POSTINCREMENT_EXPR))
+			    ? G_("cannot increment a pointer to incomplete "
+				 "type %qT")
+			    : G_("cannot decrement a pointer to incomplete "
+				 "type %qT"),
+			    TREE_TYPE (argtype));
                 else
                   return error_mark_node;
               }
 	    else if (!TYPE_PTROB_P (argtype)) 
               {
                 if (complain & tf_error)
-                  pedwarn (input_location, OPT_Wpointer_arith,
+                  pedwarn (location, OPT_Wpointer_arith,
 			   (code == PREINCREMENT_EXPR
                               || code == POSTINCREMENT_EXPR)
-			   ? G_("ISO C++ forbids incrementing a pointer of type %qT")
-			   : G_("ISO C++ forbids decrementing a pointer of type %qT"),
+			   ? G_("ISO C++ forbids incrementing a pointer "
+				"of type %qT")
+			   : G_("ISO C++ forbids decrementing a pointer "
+				"of type %qT"),
 			   argtype);
                 else
                   return error_mark_node;
@@ -6597,8 +6602,9 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	    if (code == POSTDECREMENT_EXPR || code == PREDECREMENT_EXPR)
 	      {
                 if (complain & tf_error)
-		  error ("use of an operand of type %qT in %<operator--%> "
-			 "is forbidden", boolean_type_node);
+		  error_at (location,
+			    "use of an operand of type %qT in %<operator--%> "
+			    "is forbidden", boolean_type_node);
 		return error_mark_node;
 	      }
 	    else
@@ -6606,16 +6612,18 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 		if (cxx_dialect >= cxx17)
 		  {
 		    if (complain & tf_error)
-		      error ("use of an operand of type %qT in "
-			     "%<operator++%> is forbidden in C++17",
-			     boolean_type_node);
+		      error_at (location,
+				"use of an operand of type %qT in "
+				"%<operator++%> is forbidden in C++17",
+				boolean_type_node);
 		    return error_mark_node;
 		  }
 		/* Otherwise, [depr.incr.bool] says this is deprecated.  */
 		else
-		  warning (OPT_Wdeprecated, "use of an operand of type %qT "
-			   "in %<operator++%> is deprecated",
-			   boolean_type_node);
+		  warning_at (location, OPT_Wdeprecated,
+			      "use of an operand of type %qT "
+			      "in %<operator++%> is deprecated",
+			      boolean_type_node);
 	      }
 	    val = boolean_increment (code, arg);
 	  }
@@ -6646,7 +6654,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
     }
 
   if (complain & tf_error)
-    error ("%s", errstring);
+    error_at (location, "%s", errstring);
   return error_mark_node;
 }
 
@@ -7038,7 +7046,8 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
   if (type_unknown_p (rhs))
     {
       if (complain & tf_error)
-	error ("no context to resolve type of %qE", rhs);
+	error_at (cp_expr_loc_or_input_loc (rhs),
+		  "no context to resolve type of %qE", rhs);
       return error_mark_node;
     }
   
