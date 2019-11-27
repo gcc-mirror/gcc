@@ -4501,7 +4501,12 @@ m68k_output_compare_fp (rtx op0, rtx op1, rtx_code code)
   if (op1 == CONST0_RTX (GET_MODE (op0)))
     {
       if (FP_REG_P (op0))
-	output_asm_insn ("ftst%.x %0", ops);
+	{
+	  if (TARGET_COLDFIRE_FPU)
+	    output_asm_insn ("ftst%.d %0", ops);
+	  else
+	    output_asm_insn ("ftst%.x %0", ops);
+	}
       else
 	output_asm_insn (("ftst%." + prec + " %0").c_str (), ops);
       return code;
@@ -4510,7 +4515,10 @@ m68k_output_compare_fp (rtx op0, rtx op1, rtx_code code)
   switch (which_alternative)
     {
     case 0:
-      output_asm_insn ("fcmp%.x %1,%0", ops);
+      if (TARGET_COLDFIRE_FPU)
+	output_asm_insn ("fcmp%.d %1,%0", ops);
+      else
+	output_asm_insn ("fcmp%.x %1,%0", ops);
       break;
     case 1:
       output_asm_insn (("fcmp%." + prec + " %f1,%0").c_str (), ops);
