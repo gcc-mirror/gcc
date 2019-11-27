@@ -19901,14 +19901,6 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (decl == error_mark_node)
     return decl;
 
-  /* Attach constraints to the alias declaration.  */
-  if (flag_concepts && current_template_parms)
-    {
-      tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-      tree constr = build_constraints (reqs, NULL_TREE);
-      set_constraints (decl, constr);
-    }
-
   cp_finish_decl (decl, NULL_TREE, 0, NULL_TREE, 0);
 
   if (pushed_scope)
