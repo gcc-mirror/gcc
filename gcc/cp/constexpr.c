@@ -5649,7 +5649,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  internal_error ("unexpected template-id %qE", t);
 
 	if (!processing_template_decl)
-	  return satisfy_constraint_expression (t);
+	  return evaluate_concept_check (t, tf_warning_or_error);
 	else
 	  *non_constant_p = true;
 	return t;
