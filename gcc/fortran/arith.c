@@ -385,8 +385,8 @@ gfc_check_real_range (mpfr_t p, int kind)
 
       /* Set emin and emax for the current model number.  */
       en = gfc_real_kinds[i].min_exponent - gfc_real_kinds[i].digits + 1;
-      mpfr_set_emin ((mp_exp_t) en);
-      mpfr_set_emax ((mp_exp_t) gfc_real_kinds[i].max_exponent);
+      mpfr_set_emin ((mpfr_exp_t) en);
+      mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[i].max_exponent);
       mpfr_check_range (q, 0, GFC_RND_MODE);
       mpfr_subnormalize (q, 0, GFC_RND_MODE);
 

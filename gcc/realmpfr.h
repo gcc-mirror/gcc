@@ -27,15 +27,9 @@
 /* Convert between MPFR and REAL_VALUE_TYPE.  The caller is
    responsible for initializing and clearing the MPFR parameter.  */
 
-extern void real_from_mpfr (REAL_VALUE_TYPE *, mpfr_srcptr, tree, mp_rnd_t);
+extern void real_from_mpfr (REAL_VALUE_TYPE *, mpfr_srcptr, tree, mpfr_rnd_t);
 extern void real_from_mpfr (REAL_VALUE_TYPE *, mpfr_srcptr,
-			    const real_format *, mp_rnd_t);
-extern void mpfr_from_real (mpfr_ptr, const REAL_VALUE_TYPE *, mp_rnd_t);
-
-#if (GCC_VERSION >= 3000)
-  /* For compatibility with mpfr 2.4 and earlier, we want to only use
-     GMP_RND*.  */
-  #pragma GCC poison MPFR_RNDN MPFR_RNDZ MPFR_RNDU MPFR_RNDD
-#endif
+			    const real_format *, mpfr_rnd_t);
+extern void mpfr_from_real (mpfr_ptr, const REAL_VALUE_TYPE *, mpfr_rnd_t);
 
 #endif /* ! GCC_REALGMP_H */
