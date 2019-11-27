@@ -1882,7 +1882,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
   switch (tclass)
     {
     case tcc_type:
-      if (alias_template_specialization_p (arg))
+      if (tree ats = alias_template_specialization_p (arg, nt_transparent))
 	{
 	  // We want an alias specialization that survived strip_typedefs
 	  // to hash differently from its TYPE_CANONICAL, to avoid hash
@@ -1891,7 +1891,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	  // left alone, or untouched specializations because
 	  // coerce_template_parms returns the unconverted template
 	  // arguments if it sees incomplete argument packs.
-	  tree ti = TYPE_ALIAS_TEMPLATE_INFO (arg);
+	  tree ti = TYPE_ALIAS_TEMPLATE_INFO (ats);
 	  return hash_tmpl_and_args (TI_TEMPLATE (ti), TI_ARGS (ti));
 	}
       if (TYPE_CANONICAL (arg))
@@ -3575,7 +3575,7 @@ primary_template_specialization_p (const_tree t)
     return (CLASSTYPE_TEMPLATE_INFO (t)
 	    && CLASSTYPE_USE_TEMPLATE (t)
 	    && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
-  else if (alias_template_specialization_p (t))
+  else if (alias_template_specialization_p (t, nt_transparent))
     return true;
   return false;
 }
@@ -6298,18 +6298,30 @@ alias_type_or_template_p (tree t)
 	  || DECL_ALIAS_TEMPLATE_P (t));
 }
 
-/* Return TRUE iff T is a specialization of an alias template.  */
+/* If T is a specialization of an alias template, return it; otherwise return
+   NULL_TREE.  If TRANSPARENT_TYPEDEFS is true, look through other aliases.  */
 
-bool
-alias_template_specialization_p (const_tree t)
+tree
+alias_template_specialization_p (const_tree t,
+				 bool transparent_typedefs)
 {
+  if (!TYPE_P (t))
+    return NULL_TREE;
+
   /* It's an alias template specialization if it's an alias and its
      TYPE_NAME is a specialization of a primary template.  */
-  if (TYPE_ALIAS_P (t))
-    if (tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t))
-      return PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo));
+  if (typedef_variant_p (t))
+    {
+      if (tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t))
+	if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo)))
+	  return CONST_CAST_TREE (t);
+      if (transparent_typedefs)
+	return alias_template_specialization_p (DECL_ORIGINAL_TYPE
+						(TYPE_NAME (t)),
+						transparent_typedefs);
+    }
 
-  return false;
+  return NULL_TREE;
 }
 
 /* An alias template is complex from a SFINAE perspective if a template-id
@@ -6354,24 +6366,30 @@ complex_alias_template_p (const_tree tmpl)
   return false;
 }
 
-/* Return TRUE iff T is a specialization of a complex alias template with
-   dependent template-arguments.  */
+/* If T is a specialization of a complex alias template with dependent
+   template-arguments, return it; otherwise return NULL_TREE.  If T is a
+   typedef to such a specialization, return the specialization.  */
 
-bool
-dependent_alias_template_spec_p (const_tree t)
+tree
+dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
 {
-  if (!alias_template_specialization_p (t))
-    return false;
+  if (!TYPE_P (t) || !typedef_variant_p (t))
+    return NULL_TREE;
 
   tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t);
-  if (!TEMPLATE_DECL_COMPLEX_ALIAS_P (TI_TEMPLATE (tinfo)))
-    return false;
+  if (tinfo
+      && TEMPLATE_DECL_COMPLEX_ALIAS_P (TI_TEMPLATE (tinfo))
+      && (any_dependent_template_arguments_p
+	  (INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo)))))
+    return CONST_CAST_TREE (t);
 
-  tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo));
-  if (!any_dependent_template_arguments_p (args))
-    return false;
+  if (transparent_typedefs)
+    {
+      tree utype = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
+      return dependent_alias_template_spec_p (utype, transparent_typedefs);
+    }
 
-  return true;
+  return NULL_TREE;
 }
 
 /* Return the number of innermost template parameters in TMPL.  */
@@ -10384,9 +10402,9 @@ any_template_parm_r (tree t, void *data)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       /* Search for template parameters in type aliases.  */
-      if (alias_template_specialization_p (t))
+      if (tree ats = alias_template_specialization_p (t, nt_opaque))
 	{
-	  tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t);
+	  tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (ats);
 	  WALK_SUBTREE (TI_ARGS (tinfo));
         }
       break;
@@ -14896,7 +14914,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     {
       tree decl = TYPE_NAME (t);
 
-      if (alias_template_specialization_p (t))
+      if (alias_template_specialization_p (t, nt_opaque))
 	{
 	  /* DECL represents an alias template and we want to
 	     instantiate it.  */
@@ -25815,7 +25833,7 @@ dependent_type_p_r (tree type)
 
   /* An alias template specialization can be dependent even if the
      resulting type is not.  */
-  if (dependent_alias_template_spec_p (type))
+  if (dependent_alias_template_spec_p (type, nt_transparent))
     return true;
 
   /* -- a cv-qualified type where the cv-unqualified type is

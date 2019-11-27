@@ -421,7 +421,7 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 static void
 dump_alias_template_specialization (cxx_pretty_printer *pp, tree t, int flags)
 {
-  gcc_assert (alias_template_specialization_p (t));
+  gcc_assert (alias_template_specialization_p (t, nt_opaque));
 
   tree decl = TYPE_NAME (t);
   if (!(flags & TFF_UNQUALIFIED_NAME))
@@ -454,7 +454,7 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 				    ? STF_USER_VISIBLE : 0);
 	  t = strip_typedefs (t, NULL, stf_flags);
 	}
-      else if (alias_template_specialization_p (t))
+      else if (alias_template_specialization_p (t, nt_opaque))
 	{
 	  dump_alias_template_specialization (pp, t, flags);
 	  return;
@@ -711,7 +711,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
       typdef = (!DECL_ARTIFICIAL (name)
 		/* An alias specialization is not considered to be a
 		   typedef.  */
-		&& !alias_template_specialization_p (t));
+		&& !alias_template_specialization_p (t, nt_opaque));
 
       if ((typdef
 	   && ((flags & TFF_CHASE_TYPEDEF)

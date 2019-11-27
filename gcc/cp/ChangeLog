@@ -1,3 +1,15 @@
+2019-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92206 - ICE with typedef to dependent alias.
+	* pt.c (dependent_alias_template_spec_p)
+	(alias_template_specialization_p): Add transparent_typedefs
+	parameter.
+	(iterative_hash_template_arg, any_template_parm_r)
+	(primary_template_specialization_p, tsubst, dependent_type_p_r):
+	Adjust.
+	* decl.c (check_elaborated_type_specifier): Adjust.
+	* error.c (dump_template_bindings, dump_aggr_type): Adjust.
+
 2019-11-27  Andrew Sutton  <asutton@lock3software.com>
 
 	PR c++/92236
