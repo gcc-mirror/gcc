@@ -1,4 +1,9 @@
-2019-11-18  Andrew Sutton  <asutton@lock3software.com>
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92439
+	* g++.dg/cpp2a/concepts-requires20.C: New.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
 
 	PR c++/88395
 	* g++.dg/cpp2a/concepts-pr88395.C: New.
