@@ -1,6 +1,13 @@
 2019-11-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Untangle namespace-scope
+	emission from class-scope.
+	(trees_in::tree_node): Fix tt_entity ident signedness.
+	(depset::hash::make_dependency): Check is_import before checking
+	GMF reachability.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Refactor function scope
 	& specialization emission.
 

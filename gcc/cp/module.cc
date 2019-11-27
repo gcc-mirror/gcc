@@ -8170,6 +8170,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
+  // FIXME: The following blocks are all very similar.  Merge once
+  // everything's an entity index.
   if (TREE_CODE (ctx) == FUNCTION_DECL)
     {
       /* We cannot lookup by name inside a function.  */
@@ -8235,7 +8237,25 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
     }
 
+  if (TREE_CODE (ctx) == NAMESPACE_DECL)
+    {
+      if (!streaming_p ())
+	{
+	  dep = dep_hash->add_dependency (decl, depset::EK_DECL);
+	  gcc_assert (dep->is_import () == is_import);
+	}
+      else
+	dep = dep_hash->find_dependency (decl);
+
+      gcc_checking_assert (dep->get_entity_kind () != depset::EK_REDIRECT);
+
+      if (streaming_p ())
+	goto direct_entity;
+      goto insert;
+    }
+
   /* A named decl -> tt_named_decl.  */
+  gcc_checking_assert (TREE_CODE (ctx) != NAMESPACE_DECL);
   if (streaming_p ())
     {
       if (TREE_CODE (decl) == TEMPLATE_DECL
@@ -8253,72 +8273,65 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  && TREE_CODE (ctx) != NAMESPACE_DECL)
 	name = NULL_TREE;
 
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	{
-	direct_entity:
-	  gcc_assert (code == tt_named);
-	  code = tt_entity;
-	  /* Locate the entity.  */
-	  unsigned entity_num = import_entity_index (decl);
-	  if (is_import)
-	    {
-	      // FIXME: Not relying on origin, as we're gonna move
-	      // away from that
-	      /* An import.  */
-	      module_state *from = import_entity_module (entity_num);
-	      gcc_checking_assert (from->remap == origin);
-	      ident = entity_num - from->entity_lwm;
-	      kind = "import";
-	    }
-	  else
-	    {
-	      /* It should be what we put there.  */
-	      gcc_checking_assert (dep_hash->find_dependency (decl)->cluster
-				   == -entity_num);
-	      ident = ~entity_num;
-
-	      tree o = get_originating_module_decl (decl);
-	      kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
-		      ? "purview" : "GMF");
-	    }
-	}
-      else
-	{
-	  // FIXME: Fields should get here
-	  ident = get_lookup_ident (ctx, name, origin, proxy);
-	  /* Make sure we can find it by name.  */
-	  gcc_checking_assert
-	    (proxy == lookup_by_ident (ctx, name, origin, ident));
-	  kind = is_import ? "import" : "member";
-	}
+      // FIXME: Fields should get here
+      ident = get_lookup_ident (ctx, name, origin, proxy);
+      /* Make sure we can find it by name.  */
+      gcc_checking_assert
+	(proxy == lookup_by_ident (ctx, name, origin, ident));
+      kind = is_import ? "import" : "member";
 
       i (code);
-      if (code != tt_entity)
-	{
-	  tree_node (ctx);
-	  tree_node (name);
-	}
+      tree_node (ctx);
+      tree_node (name);
       u (origin);
       i (ident);
     }
   else
     {
-      if (is_import)
-	;
-      else if (TREE_CODE (ctx) != NAMESPACE_DECL)
+      if (!is_import)
 	tree_node (ctx);
-      else
-	dep_hash->add_dependency (decl, depset::EK_DECL);
 
       tree_node (name);
+    }
+
+  if (false) // FIXME: yeah, yeah
+    {
+    direct_entity:
+
+      /* Locate the entity.  */
+      unsigned entity_num = import_entity_index (decl);
+      if (is_import)
+	{
+	  // FIXME: Not relying on origin, as we're gonna move
+	  // away from that
+	  /* An import.  */
+	  module_state *from = import_entity_module (entity_num);
+	  gcc_checking_assert (from->remap == origin);
+	  ident = entity_num - from->entity_lwm;
+	  kind = "import";
+	}
+      else
+	{
+	  /* It should be what we put there.  */
+	  gcc_checking_assert (dep_hash->find_dependency (decl)->cluster
+			       == -entity_num);
+	  ident = ~entity_num;
+
+	  tree o = get_originating_module_decl (decl);
+	  kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
+		  ? "purview" : "GMF");
+	}
+
+      i (tt_entity);
+      u (origin);
+      u (ident);
     }
 
  insert:
   int tag = insert (decl);
   if (streaming_p ())
     dump (dumper::TREE)
-      && dump ("Wrote %s:%d %C:%N@%M", kind ? kind : "entity",
-	       tag, TREE_CODE (decl), decl,
+      && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
 	       origin < 0 ? NULL : (*modules)[origin]);
 
   add_indirects (decl);
@@ -9332,7 +9345,7 @@ trees_in::tree_node ()
       /* Index into the entity table.  Perhaps not loaded yet!  */
       {
 	unsigned origin = state->slurp->remap_module (u ());
-	int ident = i (); // FIXME: unsigned when tt_named etc die
+	int ident = u ();
 	module_state *from = (*modules)[origin];
 
 	if (unsigned (ident) >= from->entity_num)
@@ -11102,12 +11115,15 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
 
       if (ek != EK_USING)
+	// FIXME: I think we know whether it's an import when we do
+	// the call, so pass a flag in, maybe? (Like we used to do!)
 	if (unsigned origin
 	    = DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0)
 	  if ((*modules)[origin]->remap)
 	    dep->set_flag_bit<DB_IMPORTED_BIT> ();
 
       if (ek == EK_DECL
+	  && !dep->is_import ()
 	  && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	{
 	  tree ctx = CP_DECL_CONTEXT (decl);
