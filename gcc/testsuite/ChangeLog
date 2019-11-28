@@ -1,6 +1,11 @@
 2019-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92645
+	* gcc.dg/tree-ssa/inline-12.c: New testcase.
+
+2019-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
 	* gcc.target/i386/pr92645-4.c: New testcase.
 
 2019-11-28  Christophe Lyon  <christophe.lyon@linaro.org>
