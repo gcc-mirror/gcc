@@ -310,6 +310,20 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     }
   if (known)
     *known = true;
+  /* Watch for cases where one count is IPA and other is not.  */
+  if (in.ipa ().initialized_p ())
+    {
+      gcc_checking_assert (ipa ().initialized_p ());
+      /* If current count is inter-procedurally 0 and IN is inter-procedurally
+	 non-zero, return 0.  */
+      if (in.ipa ().nonzero_p ()
+	  && !ipa().nonzero_p ())
+	return 0;
+    }
+  else 
+    /* We can handle correctly 0 IPA count within locally estimated
+       profile, but otherwise we are lost and this should not happen.   */
+    gcc_checking_assert (!ipa ().initialized_p () || !ipa ().nonzero_p ());
   if (*this == zero ())
     return 0;
   if (m_val == in.m_val)
