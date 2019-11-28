@@ -4915,30 +4915,11 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 static machine_mode
 rs6000_preferred_simd_mode (scalar_mode mode)
 {
-  if (TARGET_VSX)
-    switch (mode)
-      {
-      case E_DFmode:
-	return V2DFmode;
-      default:;
-      }
-  if (TARGET_ALTIVEC || TARGET_VSX)
-    switch (mode)
-      {
-      case E_SFmode:
-	return V4SFmode;
-      case E_TImode:
-	return V1TImode;
-      case E_DImode:
-	return V2DImode;
-      case E_SImode:
-	return V4SImode;
-      case E_HImode:
-	return V8HImode;
-      case E_QImode:
-	return V16QImode;
-      default:;
-      }
+  opt_machine_mode vmode = mode_for_vector (mode, 16 / GET_MODE_SIZE (mode));
+
+  if (vmode.exists () && !VECTOR_UNIT_NONE_P (vmode.require ()))
+    return vmode.require ();
+
   return word_mode;
 }
 
