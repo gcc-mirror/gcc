@@ -1541,9 +1541,12 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	 assignment to the equivalent of the original RESULT_DECL.
 	 If RETVAL is just the result decl, the result decl has
 	 already been set (e.g. a recent "foo (&result_decl, ...)");
-	 just toss the entire GIMPLE_RETURN.  */
+	 just toss the entire GIMPLE_RETURN.  Likewise for when the
+	 call doesn't want the return value.  */
       if (retval
 	  && (TREE_CODE (retval) != RESULT_DECL
+	      && (!id->call_stmt
+		  || gimple_call_lhs (id->call_stmt) != NULL_TREE)
 	      && (TREE_CODE (retval) != SSA_NAME
 		  || ! SSA_NAME_VAR (retval)
 		  || TREE_CODE (SSA_NAME_VAR (retval)) != RESULT_DECL)))
