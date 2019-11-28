@@ -1,5 +1,11 @@
 2019-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*movsi_internal1): Fix formatting.  Improve
+	formatting.
+	(*movdi_internal64): Ditto.
+
+2019-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR target/92602
 	* config/rs6000/rs6000.md (bswap<mode>2_load for HSI): Change the
 	indexed_or_indirect_operand to be memory_operand.
