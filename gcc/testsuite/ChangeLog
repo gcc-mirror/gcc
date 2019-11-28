@@ -1,3 +1,9 @@
+2019-11-28  Martin Liska  <mliska@suse.cz>
+
+	PR lto/92609
+	* g++.dg/lto/pr92609_0.C: New test.
+	* g++.dg/lto/pr92609_1.C: New test.
+
 2019-11-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr32219-2.c: Adjust scan-assembler entries
