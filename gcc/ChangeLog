@@ -1,3 +1,13 @@
+2019-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92691
+	* tree-ssa-strlen.c (handle_store): Clarify return value meaning
+	in function comment.
+	(strlen_check_and_optimize_call): Likewise.  For handle_printf_call
+	calls, return !handle_printf_call rather than always returning true.
+	(check_and_optimize_stmt): Describe return value meaning in function
+	comment.  Formatting fix.
+
 2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile-count.c (profile_count::to_sreal_scale): Handle correctly
