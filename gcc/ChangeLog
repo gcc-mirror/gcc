@@ -1,5 +1,11 @@
 2019-11-28  Martin Liska  <mliska@suse.cz>
 
+	PR debug/46558
+	* dbgcnt.c (dbg_cnt_list_all_counters): Mark table
+	headers for translation.
+
+2019-11-28  Martin Liska  <mliska@suse.cz>
+
 	PR lto/92609
 	* ipa-devirt.c (warn_types_mismatch): Use TYPE_MAIN_VARIANT
 	consistently.
