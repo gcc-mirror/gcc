@@ -1,5 +1,10 @@
 2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* profile-count.c (profile_count::combine_with_ipa_count): Return
+	uninitialized count if called on ininitialized count.
+
+2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-transform.c (inline_transform): Scale profile before
 	redirecting.
 
