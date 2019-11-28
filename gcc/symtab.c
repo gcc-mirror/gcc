@@ -914,8 +914,10 @@ symtab_node::dump_base (FILE *f)
       if (DECL_STATIC_DESTRUCTOR (decl))
 	fprintf (f, " destructor");
     }
+  if (ifunc_resolver)
+    fprintf (f, " ifunc_resolver");
   fprintf (f, "\n");
-  
+
   if (same_comdat_group)
     fprintf (f, "  Same comdat group as: %s\n",
 	     same_comdat_group->dump_asm_name ());
