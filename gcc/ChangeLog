@@ -1,3 +1,11 @@
+2019-11-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	Must use push insn to pass varargs arguments of DFmode because
+	otherwise the middle-end generates wrong code.
+
+	PR target/92055
+	* config/avr/avr.md (MPUSH) [DF, DC]: Add modes to mode iterator.
+
 2019-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92691
