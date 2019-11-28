@@ -992,6 +992,14 @@ public:
 
   profile_count max (profile_count other) const
     {
+      profile_count val = *this;
+
+      /* Always prefer nonzero IPA counts over local counts.  */
+      if (ipa ().nonzero_p () || other.ipa ().nonzero_p ())
+	{
+	  val = ipa ();
+	  other = other.ipa ();
+	}
       if (!initialized_p ())
 	return other;
       if (!other.initialized_p ())
@@ -1001,8 +1009,8 @@ public:
       if (other == zero ())
 	return *this;
       gcc_checking_assert (compatible_p (other));
-      if (m_val < other.m_val || (m_val == other.m_val
-				  && m_quality < other.m_quality))
+      if (val.m_val < other.m_val || (m_val == other.m_val
+				      && val.m_quality < other.m_quality))
 	return other;
       return *this;
     }
@@ -1075,8 +1083,11 @@ public:
       ret.m_val = MIN (val, max_count);
       ret.m_quality = MIN (MIN (MIN (m_quality, ADJUSTED),
 			        num.m_quality), den.m_quality);
-      if (num.ipa_p () && !ret.ipa_p ())
-	ret.m_quality = MIN (num.m_quality, GUESSED);
+      /* Be sure that ret is not local if num is global.
+	 Also ensure that ret is not global0 when num is global.  */
+      if (num.ipa_p ())
+	ret.m_quality = MAX (ret.m_quality,
+			     num == num.ipa () ? GUESSED : num.m_quality);
       return ret;
     }
 
