@@ -1,5 +1,10 @@
 2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-utils.c (ipa_merge_profiles): Be sure that all type transtions
+	of counters are done same way.
+
+2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-cp.c (update_profiling_info): Fix scaling.
 
 2019-11-28  Richard Biener  <rguenther@suse.de>
