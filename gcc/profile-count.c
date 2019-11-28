@@ -373,6 +373,8 @@ profile_count::adjust_for_ipa_scaling (profile_count *num,
 profile_count
 profile_count::combine_with_ipa_count (profile_count ipa)
 {
+  if (!initialized_p ())
+    return *this;
   ipa = ipa.ipa ();
   if (ipa.nonzero_p ())
     return ipa;
