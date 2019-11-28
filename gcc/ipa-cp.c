@@ -4091,6 +4091,7 @@ update_profiling_info (struct cgraph_node *orig_node,
   struct caller_statistics stats;
   profile_count new_sum, orig_sum;
   profile_count remainder, orig_node_count = orig_node->count;
+  profile_count orig_new_node_count = new_node->count;
 
   if (!(orig_node_count.ipa () > profile_count::zero ()))
     return;
@@ -4128,14 +4129,19 @@ update_profiling_info (struct cgraph_node *orig_node,
   remainder = orig_node_count.combine_with_ipa_count (orig_node_count.ipa ()
 						      - new_sum.ipa ());
   new_sum = orig_node_count.combine_with_ipa_count (new_sum);
+  new_node->count = new_sum;
   orig_node->count = remainder;
 
-  profile_count::adjust_for_ipa_scaling (&new_sum, &orig_node_count);
+  profile_count::adjust_for_ipa_scaling (&new_sum, &orig_new_node_count);
   for (cs = new_node->callees; cs; cs = cs->next_callee)
-    cs->count = cs->count.apply_scale (new_sum, orig_node_count);
+    cs->count = cs->count.apply_scale (new_sum, orig_new_node_count);
+  for (cs = new_node->indirect_calls; cs; cs = cs->next_callee)
+    cs->count = cs->count.apply_scale (new_sum, orig_new_node_count);
 
   profile_count::adjust_for_ipa_scaling (&remainder, &orig_node_count);
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
+    cs->count = cs->count.apply_scale (remainder, orig_node_count);
+  for (cs = orig_node->indirect_calls; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (remainder, orig_node_count);
 
   if (dump_file)
