@@ -1,3 +1,12 @@
+2019-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/92602
+	* config/rs6000/rs6000.md (bswap<mode>2_load for HSI): Change the
+	indexed_or_indirect_operand to be memory_operand.
+	(bswap<mode>2_store for HSI): Ditto.
+	(bswapdi2_load): Ditto.
+	(bswapdi2_store): Ditto.
+
 2019-11-28  Martin Liska  <mliska@suse.cz>
 
 	PR debug/46558
