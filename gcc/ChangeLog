@@ -1,5 +1,10 @@
 2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-transform.c (inline_transform): Scale profile before
+	redirecting.
+
+2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* profile-count.h (profile_count::max): Work on profiles of different
 	type.
 	(profile_count::apply_scale): Be sure that ret is not local or global0

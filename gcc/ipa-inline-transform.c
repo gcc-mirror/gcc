@@ -681,6 +681,31 @@ inline_transform (struct cgraph_node *node)
   if (preserve_function_body_p (node))
     save_inline_function_body (node);
 
+  profile_count num = node->count;
+  profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  bool scale = num.initialized_p () && !(num == den);
+  if (scale)
+    {
+      profile_count::adjust_for_ipa_scaling (&num, &den);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Applying count scale ");
+	  num.dump (dump_file);
+	  fprintf (dump_file, "/");
+	  den.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+
+      basic_block bb;
+      cfun->cfg->count_max = profile_count::uninitialized ();
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  bb->count = bb->count.apply_scale (num, den);
+	  cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+	}
+      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
+    }
+
   for (e = node->callees; e; e = next)
     {
       if (!e->inline_failed)
@@ -693,32 +718,8 @@ inline_transform (struct cgraph_node *node)
   timevar_push (TV_INTEGRATION);
   if (node->callees && (opt_for_fn (node->decl, optimize) || has_inline))
     {
-      profile_count num = node->count;
-      profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-      bool scale = num.initialized_p () && !(num == den);
-      if (scale)
-	{
-	  profile_count::adjust_for_ipa_scaling (&num, &den);
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Applying count scale ");
-	      num.dump (dump_file);
-	      fprintf (dump_file, "/");
-	      den.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	    }
-
-	  basic_block bb;
-	  cfun->cfg->count_max = profile_count::uninitialized ();
-	  FOR_ALL_BB_FN (bb, cfun)
-	    {
-	      bb->count = bb->count.apply_scale (num, den);
-	      cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
-	    }
-	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
-	}
       todo = optimize_inline_calls (current_function_decl);
-   }
+    }
   timevar_pop (TV_INTEGRATION);
 
   cfun->always_inline_functions_inlined = true;
