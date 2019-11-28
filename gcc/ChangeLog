@@ -1,3 +1,11 @@
+2019-11-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92697
+	* cgraph.c (cgraph_node_cannot_be_local_p_1): Return true for
+	ifunc_resolvers.
+	* symtab.c (symtab_node::dump_base): Dump ifunc_resolver flag.
+	Removed trailig whitespace.
+
 2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile-count.h (profile_count::combine_with_ipa_count_within):

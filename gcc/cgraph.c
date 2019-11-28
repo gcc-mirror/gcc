@@ -2227,6 +2227,7 @@ static bool
 cgraph_node_cannot_be_local_p_1 (cgraph_node *node, void *)
 {
   return !(!node->force_output
+	   && !node->ifunc_resolver
 	   && ((DECL_COMDAT (node->decl)
 		&& !node->forced_by_abi
 		&& !node->used_from_object_file_p ()

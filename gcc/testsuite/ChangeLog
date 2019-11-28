@@ -1,3 +1,8 @@
+2019-11-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92697
+	* g++.dg/ipa/pr92697.C: New.
+
 2019-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92645
