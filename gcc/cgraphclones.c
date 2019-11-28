@@ -80,6 +80,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "dumpfile.h"
 #include "gimple-pretty-print.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "tree-vrp.h"
+#include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 
 /* Create clone of edge in the node N represented by CALL_EXPR
    the callgraph.  */
@@ -136,8 +141,9 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
   if (update_original)
-    count = count.combine_with_ipa_count (count.ipa () 
-					  - new_edge->count.ipa ());
+    count = count.combine_with_ipa_count_within (count.ipa () 
+						 - new_edge->count.ipa (),
+						 caller->count);
   symtab->call_edge_duplication_hooks (this, new_edge);
   return new_edge;
 }
@@ -268,6 +274,8 @@ cgraph_node::expand_all_artificial_thunks ()
 	    thunk->thunk.thunk_p = false;
 	    thunk->analyze ();
 	  }
+	ipa_analyze_node (thunk);
+	inline_analyze_function (thunk);
 	thunk->expand_all_artificial_thunks ();
       }
     else
@@ -341,7 +349,14 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
   if (update_original)
-    count = count.combine_with_ipa_count (count.ipa () - prof_count.ipa ());
+    {
+      if (inlined_to)
+        count = count.combine_with_ipa_count_within (count.ipa ()
+						     - prof_count.ipa (),
+						     inlined_to->count);
+      else
+        count = count.combine_with_ipa_count (count.ipa () - prof_count.ipa ());
+    }
   new_node->decl = new_decl;
   new_node->register_symbol ();
   new_node->origin = origin;
