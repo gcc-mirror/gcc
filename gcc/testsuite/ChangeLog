@@ -1,3 +1,7 @@
+2019-11-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/asm-flag-4.c: Use -mfloat-abi=softfp.
+
 2019-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92691
