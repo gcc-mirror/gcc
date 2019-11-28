@@ -80,11 +80,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "dumpfile.h"
 #include "gimple-pretty-print.h"
-#include "alloc-pool.h"
-#include "symbol-summary.h"
-#include "tree-vrp.h"
-#include "ipa-prop.h"
-#include "ipa-fnsummary.h"
 
 /* Create clone of edge in the node N represented by CALL_EXPR
    the callgraph.  */
@@ -274,8 +269,6 @@ cgraph_node::expand_all_artificial_thunks ()
 	    thunk->thunk.thunk_p = false;
 	    thunk->analyze ();
 	  }
-	ipa_analyze_node (thunk);
-	inline_analyze_function (thunk);
 	thunk->expand_all_artificial_thunks ();
       }
     else

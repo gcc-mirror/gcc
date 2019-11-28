@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "wide-int.h"
 #include "sreal.h"
-#include "selftest.h"
 
 /* Names from profile_quality enum values.  */
 
@@ -292,7 +291,6 @@ profile_count::to_cgraph_frequency (profile_count entry_bb_count) const
     return 0;
   gcc_checking_assert (entry_bb_count.initialized_p ());
   uint64_t scale;
-  gcc_checking_assert (compatible_p (entry_bb_count));
   if (!safe_scale_64bit (!entry_bb_count.m_val ? m_val + 1 : m_val,
 			 CGRAPH_FREQ_BASE, MAX (1, entry_bb_count.m_val), &scale))
     return CGRAPH_FREQ_MAX;
@@ -330,7 +328,6 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     return 0;
   if (m_val == in.m_val)
     return 1;
-  gcc_checking_assert (compatible_p (in));
 
   if (!in.m_val)
     {
@@ -376,8 +373,6 @@ profile_count::adjust_for_ipa_scaling (profile_count *num,
 profile_count
 profile_count::combine_with_ipa_count (profile_count ipa)
 {
-  if (!initialized_p ())
-    return *this;
   ipa = ipa.ipa ();
   if (ipa.nonzero_p ())
     return ipa;
@@ -447,65 +442,3 @@ profile_probability::combine_with_count (profile_count count1,
   else
     return *this * even () + other * even ();
 }
-
-#if CHECKING_P
-namespace selftest {
-
-/* Verify non-trivial type conversions for IPA scaling.  This happens often
-   during inlining.  */
-
-static void
-profile_count_verify_ipa_scaling (void)
-{
-  profile_count cnt1 = profile_count::from_gcov_type (4).global0 ();
-  profile_count cnt2 = profile_count::from_gcov_type (2);
-  profile_count cnt3 = profile_count::from_gcov_type (8);
-  profile_count cnt4 = cnt3.apply_scale (cnt1, cnt2);
-
-  /* Result should be 16 with GUESSED_GLOBAL0.  */
-  ASSERT_EQ (cnt4.ipa (), profile_count::zero ());
-  ASSERT_EQ (cnt4.to_gcov_type (), 16);
-
-  cnt1 = profile_count::from_gcov_type (4).global0adjusted ();
-  cnt4 = cnt3.apply_scale (cnt1, cnt2);
-  /* Result should be 16 with GUESSED_GLOBAL0_ADJUSTED.  */
-  ASSERT_EQ (cnt4.ipa (), profile_count::adjusted_zero ());
-  ASSERT_EQ (cnt4.to_gcov_type (), 16);
-}
-
-/* Verify non-trivial cases of sreal scale calculations.  */
-
-static void
-profile_count_verify_to_sreal_scale (void)
-{
-  profile_count cnt1 = profile_count::from_gcov_type (4).global0 ();
-  profile_count cnt2 = profile_count::from_gcov_type (8);
-
-  /* If count is globally 0 it should have 0 scale in non-zero global count.  */
-  ASSERT_EQ (cnt1.to_sreal_scale (cnt2), 0);
-}
-
-/* Verify non-trivial cases of probability_in calculations.  */
-
-static void
-profile_count_verify_probability_in (void)
-{
-  /*profile_count cnt1 = profile_count::from_gcov_type (4).global0 ();
-  profile_count cnt2 = profile_count::from_gcov_type (8);*/
-
-  /* If count is globally 0 it should have 0 probability in non-zero global
-     count.  */
-  /*ASSERT_EQ (cnt1.probability_in (cnt2), profile_probability::never ());*/
-}
-
-/* Run all of the selftests within this file.  */
-
-void profile_count_c_tests (void)
-{
-  profile_count_verify_ipa_scaling ();
-  profile_count_verify_to_sreal_scale ();
-  profile_count_verify_probability_in ();
-}
-
-}
-#endif
