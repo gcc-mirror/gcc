@@ -1,3 +1,13 @@
+2019-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* tree-ssa-forwprop.c (get_bit_field_ref_def): Also handle
+	conversions inside a mode class.  Remove restriction on
+	preserving the element size.
+	(simplify_vector_constructor): Deal with the above and for
+	identity permutes also try using VEC_UNPACK_[FLOAT_]LO_EXPR
+	and VEC_PACK_TRUNC_EXPR.
+
 2019-11-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	Must use push insn to pass varargs arguments of DFmode because

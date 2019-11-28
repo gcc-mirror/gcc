@@ -2004,16 +2004,12 @@ get_bit_field_ref_def (tree val, enum tree_code &conv_code)
     return NULL_TREE;
   enum tree_code code = gimple_assign_rhs_code (def_stmt);
   if (code == FLOAT_EXPR
-      || code == FIX_TRUNC_EXPR)
+      || code == FIX_TRUNC_EXPR
+      || CONVERT_EXPR_CODE_P (code))
     {
       tree op1 = gimple_assign_rhs1 (def_stmt);
       if (conv_code == ERROR_MARK)
-	{
-	  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (val))),
-			GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))))
-	    return NULL_TREE;
-	  conv_code = code;
-	}
+	conv_code = code;
       else if (conv_code != code)
 	return NULL_TREE;
       if (TREE_CODE (op1) != SSA_NAME)
@@ -2078,9 +2074,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  && VECTOR_TYPE_P (TREE_TYPE (ref))
 	  && useless_type_conversion_p (TREE_TYPE (op1),
 					TREE_TYPE (TREE_TYPE (ref)))
-	  && known_eq (bit_field_size (op1), elem_size)
 	  && constant_multiple_p (bit_field_offset (op1),
-				  elem_size, &elem)
+				  bit_field_size (op1), &elem)
 	  && TYPE_VECTOR_SUBPARTS (TREE_TYPE (ref)).is_constant (&refnelts))
 	{
 	  unsigned int j;
@@ -2153,7 +2148,83 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       if (conv_code != ERROR_MARK
 	  && !supportable_convert_operation (conv_code, type, conv_src_type,
 					     &conv_code))
-	return false;
+	{
+	  /* Only few targets implement direct conversion patterns so try
+	     some simple special cases via VEC_[UN]PACK[_FLOAT]_LO_EXPR.  */
+	  optab optab;
+	  tree halfvectype, dblvectype;
+	  if (CONVERT_EXPR_CODE_P (conv_code)
+	      && (2 * TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig[0])))
+		  == TYPE_PRECISION (TREE_TYPE (type)))
+	      && mode_for_vector (as_a <scalar_mode>
+				  (TYPE_MODE (TREE_TYPE (TREE_TYPE (orig[0])))),
+				  nelts * 2).exists ()
+	      && (dblvectype
+		  = build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])),
+				       nelts * 2))
+	      && (optab = optab_for_tree_code (FLOAT_TYPE_P (TREE_TYPE (type))
+					       ? VEC_UNPACK_FLOAT_LO_EXPR
+					       : VEC_UNPACK_LO_EXPR,
+					       dblvectype,
+					       optab_default))
+	      && (optab_handler (optab, TYPE_MODE (dblvectype))
+		  != CODE_FOR_nothing))
+	    {
+	      gimple_seq stmts = NULL;
+	      tree dbl;
+	      if (refnelts == nelts)
+		{
+		  /* ???  Paradoxical subregs don't exist, so insert into
+		     the lower half of a wider zero vector.  */
+		  dbl = gimple_build (&stmts, BIT_INSERT_EXPR, dblvectype,
+				      build_zero_cst (dblvectype), orig[0],
+				      bitsize_zero_node);
+		}
+	      else if (refnelts == 2 * nelts)
+		dbl = orig[0];
+	      else
+		dbl = gimple_build (&stmts, BIT_FIELD_REF, dblvectype,
+				    orig[0], TYPE_SIZE (dblvectype),
+				    bitsize_zero_node);
+	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	      gimple_assign_set_rhs_with_ops (gsi,
+					      FLOAT_TYPE_P (TREE_TYPE (type))
+					      ? VEC_UNPACK_FLOAT_LO_EXPR
+					      : VEC_UNPACK_LO_EXPR,
+					      dbl);
+	    }
+	  else if (CONVERT_EXPR_CODE_P (conv_code)
+		   && (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig[0])))
+		       == 2 * TYPE_PRECISION (TREE_TYPE (type)))
+		   && mode_for_vector (as_a <scalar_mode>
+				         (TYPE_MODE
+					   (TREE_TYPE (TREE_TYPE (orig[0])))),
+				       nelts / 2).exists ()
+		   && (halfvectype
+		         = build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])),
+					      nelts / 2))
+		   && (optab = optab_for_tree_code (VEC_PACK_TRUNC_EXPR,
+						    halfvectype,
+						    optab_default))
+		   && (optab_handler (optab, TYPE_MODE (halfvectype))
+		       != CODE_FOR_nothing))
+	    {
+	      gimple_seq stmts = NULL;
+	      tree low = gimple_build (&stmts, BIT_FIELD_REF, halfvectype,
+				       orig[0], TYPE_SIZE (halfvectype),
+				       bitsize_zero_node);
+	      tree hig = gimple_build (&stmts, BIT_FIELD_REF, halfvectype,
+				       orig[0], TYPE_SIZE (halfvectype),
+				       TYPE_SIZE (halfvectype));
+	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	      gimple_assign_set_rhs_with_ops (gsi, VEC_PACK_TRUNC_EXPR,
+					      low, hig);
+	    }
+	  else
+	    return false;
+	  update_stmt (gsi_stmt (*gsi));
+	  return true;
+	}
       if (nelts != refnelts)
 	{
 	  gassign *lowpart
@@ -2178,9 +2249,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		       ? perm_type
 		       : build_vector_type (TREE_TYPE (perm_type), nelts));
       if (conv_code != ERROR_MARK
-	  && (!supportable_convert_operation (conv_code, type, conv_src_type,
-					      &conv_code)
-	      || conv_code == CALL_EXPR))
+	  && !supportable_convert_operation (conv_code, type, conv_src_type,
+					     &conv_code))
 	return false;
 
       /* Now that we know the number of elements of the source build the
