@@ -1007,9 +1007,22 @@ data_desc:
 	    goto fail;
 	  if (u != FMT_POSINT)
 	    {
-	      error = G_("Positive exponent width required in format string "
-			 "at %L");
-	      goto syntax;
+	      if (u == FMT_ZERO)
+		{
+		  if (!gfc_notify_std (GFC_STD_F2018,
+				      "Positive exponent width required in "
+				      "format string at %L", &format_locus))
+		    {
+		      saved_token = u;
+		      goto fail;
+		    }
+		}
+	      else
+		{
+		  error = G_("Positive exponent width required in format "
+			     "string at %L");
+		  goto syntax;
+		}
 	    }
 	}
 
