@@ -1,3 +1,8 @@
+2019-11-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr32219-2.c: Adjust scan-assembler entries
+	for revised common default.
+
 2019-11-28  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
 
 	PR fortran/90374
