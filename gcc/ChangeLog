@@ -1,3 +1,9 @@
+2019-11-28  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92566
+	* gcc/config/rs6000/rs6000.c (rs6000_preferred_simd_mode): Check
+	by VECTOR_UNIT_NONE_P instead.
+
 2019-11-28  Hongtao Liu  <hongtao.liu@inte.com>
 
 	* gcc/config/i386/sse.md (avx512f_maskcmp<mode>3):
