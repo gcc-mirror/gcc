@@ -1,7 +1,13 @@
+2019-11-28  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io/format.c (parse_format_list): Relax format checking to allow
+	e0 exponent specifier.
+
 2019-11-24  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
 
 	PR fortran/92100
-	io/transfer.c (data_transfer_init_worker): Use fbuf_reset
+	* io/transfer.c (data_transfer_init_worker): Use fbuf_reset
 	instead of fbuf_flush before the seek. Note that fbuf_reset
 	calls fbuf_flush and adjusts fbuf pointers.
 

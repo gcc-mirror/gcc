@@ -1,3 +1,8 @@
+2019-11-28  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* gfortran.dg/fmt_zero_width.f90: Update test.
+
 2019-11-28  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92697

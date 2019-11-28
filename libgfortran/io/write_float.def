@@ -482,7 +482,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
       for (i = abs (e); i >= 10; i /= 10)
 	edigits++;
 
-      if (f->u.real.e < 0)
+      if (f->u.real.e <= 0)
 	{
 	  /* Width not specified.  Must be no more than 3 digits.  */
 	  if (e > 999 || e < -999)
