@@ -25,6 +25,7 @@ See dbgcnt.def for usage information.  */
 #include "diagnostic-core.h"
 #include "dumpfile.h"
 #include "selftest.h"
+#include "intl.h"
 
 #include "dbgcnt.h"
 
@@ -222,7 +223,7 @@ void
 dbg_cnt_list_all_counters (void)
 {
   int i;
-  printf ("  %-30s %s\n", "counter name", "closed intervals");
+  printf ("  %-30s %s\n", G_("counter name"), G_("closed intervals"));
   printf ("-----------------------------------------------------------------\n");
   for (i = 0; i < debug_counter_number_of_counters; i++)
     {
