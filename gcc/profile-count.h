@@ -700,6 +700,7 @@ private:
   uint64_t UINT64_BIT_FIELD_ALIGN m_val : n_bits;
 #undef UINT64_BIT_FIELD_ALIGN
   enum profile_quality m_quality : 3;
+public:
 
   /* Return true if both values can meaningfully appear in single function
      body.  We have either all counters in function local or global, otherwise
@@ -711,9 +712,18 @@ private:
       if (*this == zero ()
 	  || other == zero ())
 	return true;
+      /* Do not allow nonzero global profile together with local guesses
+	 that are globally0.  */
+      if (ipa ().nonzero_p ()
+	  && !(other.ipa () == other))
+	return false;
+      if (other.ipa ().nonzero_p ()
+	  && !(ipa () == *this))
+	return false;
+	
       return ipa_p () == other.ipa_p ();
     }
-public:
+
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
@@ -992,6 +1002,14 @@ public:
 
   profile_count max (profile_count other) const
     {
+      profile_count val = *this;
+
+      /* Always prefer nonzero IPA counts over local counts.  */
+      if (ipa ().nonzero_p () || other.ipa ().nonzero_p ())
+	{
+	  val = ipa ();
+	  other = other.ipa ();
+	}
       if (!initialized_p ())
 	return other;
       if (!other.initialized_p ())
@@ -1001,8 +1019,8 @@ public:
       if (other == zero ())
 	return *this;
       gcc_checking_assert (compatible_p (other));
-      if (m_val < other.m_val || (m_val == other.m_val
-				  && m_quality < other.m_quality))
+      if (val.m_val < other.m_val || (m_val == other.m_val
+				      && val.m_quality < other.m_quality))
 	return other;
       return *this;
     }
@@ -1061,6 +1079,7 @@ public:
     {
       if (*this == zero ())
 	return *this;
+
       if (num == zero ())
 	return num;
       if (!initialized_p () || !num.initialized_p () || !den.initialized_p ())
@@ -1075,7 +1094,9 @@ public:
       ret.m_val = MIN (val, max_count);
       ret.m_quality = MIN (MIN (MIN (m_quality, ADJUSTED),
 			        num.m_quality), den.m_quality);
-      if (num.ipa_p () && !ret.ipa_p ())
+      /* Be sure that ret is not local or global0 type 
+	 if num is global.  */
+      if (num.ipa_p () && (!ret.ipa_p () || !(ret.ipa () == ret)))
 	ret.m_quality = MIN (num.m_quality, GUESSED);
       return ret;
     }
@@ -1153,8 +1174,8 @@ public:
       if (*this == overall && m_quality == PRECISE)
 	return profile_probability::always ();
       profile_probability ret;
-      gcc_checking_assert (compatible_p (overall));
 
+      gcc_checking_assert (compatible_p (overall));
       if (overall.m_val < m_val)
 	{
 	  ret.m_val = profile_probability::max_probability;
@@ -1193,6 +1214,10 @@ public:
      and if IPA is zero, turning THIS into corresponding local profile with
      global0.  */
   profile_count combine_with_ipa_count (profile_count ipa);
+
+  /* Same as combine_with_ipa_count but inside function with count IPA2.  */
+  profile_count combine_with_ipa_count_within
+		 (profile_count ipa, profile_count ipa2);
 
   /* The profiling runtime uses gcov_type, which is usually 64bit integer.
      Conversions back and forth are used to read the coverage and get it

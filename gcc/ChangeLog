@@ -1,5 +1,14 @@
 2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* profile-count.h (profile_count::combine_with_ipa_count_within):
+	Declare.
+	* profile-count.c (profile_count::combine_with_ipa_count_within):
+	New.
+	* cgraphclones.c (cgraph_edge::clone, cgraph_node::create_clone): Use
+	it.
+
+2019-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-utils.c (ipa_merge_profiles): Be sure that all type transtions
 	of counters are done same way.
 
