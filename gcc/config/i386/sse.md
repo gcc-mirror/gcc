@@ -3129,8 +3129,8 @@
 (define_insn "avx512f_maskcmp<mode>3"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(match_operator:<avx512fmaskmode> 3 "sse_comparison_operator"
-	  [(match_operand:VF 1 "register_operand" "v")
-	   (match_operand:VF 2 "nonimmediate_operand" "vm")]))]
+	  [(match_operand:VF_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VF_AVX512VL 2 "nonimmediate_operand" "vm")]))]
   "TARGET_AVX512F"
   "vcmp%D3<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecmp")

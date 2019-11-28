@@ -1,3 +1,8 @@
+2019-11-28  Hongtao Liu  <hongtao.liu@inte.com>
+
+	* gcc/config/i386/sse.md (avx512f_maskcmp<mode>3):
+	Refine VF to VF_AVX512VL.
+
 2019-11-27  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.md (movsi_internal): Reformat.
