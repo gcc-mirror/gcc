@@ -1,5 +1,17 @@
 2019-11-29  Tom Honermann  <tom@honermann.net>
 
+	New tests
+	* testsuite/27_io/basic_ostream/inserters_character/char/deleted.cc:
+	New test to validate deleted overloads of character and string
+	inserters for narrow ostreams.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/deleted.cc:
+	New test to validate deleted overloads of character and string
+	inserters for wide ostreams.
+	* testsuite/27_io/filesystem/path/factory/u8path-char8_t.cc: New test
+	to validate u8path invocations with sequences of char8_t.
+	* testsuite/experimental/filesystem/path/factory/u8path-char8_t.cc:
+	New test to validate u8path invocations with sequences of char8_t.
+
 	Updates to existing tests
 	* testsuite/experimental/feat-char8_t.cc: Updated the expected
 	__cpp_lib_char8_t feature test macro value.
