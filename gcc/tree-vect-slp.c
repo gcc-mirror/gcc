@@ -3447,7 +3447,7 @@ vect_slp_bb (basic_block bb)
 /* Return 1 if vector type STMT_VINFO is a boolean vector.  */
 
 static bool
-vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo)
+vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo, unsigned op_num)
 {
   enum tree_code code = gimple_expr_code (stmt_vinfo->stmt);
   tree op, vectype;
@@ -3472,9 +3472,17 @@ vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo)
       tree cond = gimple_assign_rhs1 (stmt);
 
       if (TREE_CODE (cond) == SSA_NAME)
-	op = cond;
+	{
+	  if (op_num > 0)
+	    return VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_vinfo));
+	  op = cond;
+	}
       else
-	op = TREE_OPERAND (cond, 0);
+	{
+	  if (op_num > 1)
+	    return VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_vinfo));
+	  op = TREE_OPERAND (cond, 0);
+	}
 
       if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &dt, &vectype))
 	gcc_unreachable ();
@@ -3605,9 +3613,10 @@ duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
    operands.  */
 
 static void
-vect_get_constant_vectors (slp_tree op_node, slp_tree slp_node,
+vect_get_constant_vectors (slp_tree slp_node, unsigned op_num,
                            vec<tree> *vec_oprnds)
 {
+  slp_tree op_node = SLP_TREE_CHILDREN (slp_node)[op_num];
   stmt_vec_info stmt_vinfo = SLP_TREE_SCALAR_STMTS (slp_node)[0];
   vec_info *vinfo = stmt_vinfo->vinfo;
   unsigned HOST_WIDE_INT nunits;
@@ -3629,7 +3638,7 @@ vect_get_constant_vectors (slp_tree op_node, slp_tree slp_node,
   /* Check if vector type is a boolean vector.  */
   tree stmt_vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
-      && vect_mask_constant_operand_p (stmt_vinfo))
+      && vect_mask_constant_operand_p (stmt_vinfo, op_num))
     vector_type = truth_type_for (stmt_vectype);
   else
     vector_type = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), op_node);
@@ -3862,7 +3871,7 @@ vect_get_slp_defs (slp_tree slp_node, vec<vec<tree> > *vec_oprnds, unsigned n)
 	  vect_get_slp_vect_defs (child, &vec_defs);
 	}
       else
-	vect_get_constant_vectors (child, slp_node, &vec_defs);
+	vect_get_constant_vectors (slp_node, i, &vec_defs);
 
       vec_oprnds->quick_push (vec_defs);
     }
