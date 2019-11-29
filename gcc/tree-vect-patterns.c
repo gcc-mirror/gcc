@@ -3944,7 +3944,8 @@ search_type_for_mask_1 (tree var, vec_info *vinfo,
 					     vinfo, cache);
 	      if (!res || (res2 && TYPE_PRECISION (res) > TYPE_PRECISION (res2)))
 		res = res2;
-	      break;
+	      if (res)
+		break;
 	    }
 
 	  comp_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1));
