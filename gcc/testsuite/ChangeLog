@@ -1,7 +1,12 @@
+2019-11-29 Tobias Burnus  <tobias@codesourcery.com>
+
+	* fortran.dg/goacc/common-block-3.f90: Check that unused common-block
+	variables do not get mapped.
+
 2019-11-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92476
-        * g++.dg/lto/pr92476_[01].C: New test.
+	* g++.dg/lto/pr92476_[01].C: New test.
 
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
