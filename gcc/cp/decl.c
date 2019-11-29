@@ -16318,7 +16318,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && !implicit_default_ctor_p (decl1))
     cp_ubsan_maybe_initialize_vtbl_ptrs (current_class_ptr);
 
-  start_lambda_scope (decl1);
+  if (!DECL_OMP_DECLARE_REDUCTION_P (decl1))
+    start_lambda_scope (decl1);
 
   return true;
 }
@@ -16703,7 +16704,8 @@ finish_function (bool inline_p)
   if (fndecl == NULL_TREE)
     return error_mark_node;
 
-  finish_lambda_scope ();
+  if (!DECL_OMP_DECLARE_REDUCTION_P (fndecl))
+    finish_lambda_scope ();
 
   if (c_dialect_objc ())
     objc_finish_function ();
@@ -16845,7 +16847,9 @@ finish_function (bool inline_p)
     invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
 
   /* Perform delayed folding before NRV transformation.  */
-  if (!processing_template_decl && !DECL_IMMEDIATE_FUNCTION_P (fndecl))
+  if (!processing_template_decl
+      && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
+      && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_fold_function (fndecl);
 
   /* Set up the named return value optimization, if we can.  Candidate
@@ -16958,7 +16962,9 @@ finish_function (bool inline_p)
     do_warn_unused_parameter (fndecl);
 
   /* Genericize before inlining.  */
-  if (!processing_template_decl && !DECL_IMMEDIATE_FUNCTION_P (fndecl))
+  if (!processing_template_decl
+      && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
+      && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
 
  cleanup:

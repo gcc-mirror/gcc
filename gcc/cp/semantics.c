@@ -4417,7 +4417,9 @@ expand_or_defer_fn_1 (tree fn)
       if (DECL_INTERFACE_KNOWN (fn))
 	/* We've already made a decision as to how this function will
 	   be handled.  */;
-      else if (!at_eof || DECL_IMMEDIATE_FUNCTION_P (fn))
+      else if (!at_eof
+	       || DECL_IMMEDIATE_FUNCTION_P (fn)
+	       || DECL_OMP_DECLARE_REDUCTION_P (fn))
 	tentative_decl_linkage (fn);
       else
 	import_export_decl (fn);
@@ -4429,6 +4431,7 @@ expand_or_defer_fn_1 (tree fn)
       if (DECL_DECLARED_INLINE_P (fn)
 	  && !DECL_REALLY_EXTERN (fn)
 	  && !DECL_IMMEDIATE_FUNCTION_P (fn)
+	  && !DECL_OMP_DECLARE_REDUCTION_P (fn)
 	  && (flag_keep_inline_functions
 	      || (flag_keep_inline_dllexport
 		  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn)))))
@@ -4460,6 +4463,9 @@ expand_or_defer_fn_1 (tree fn)
       TREE_ASM_WRITTEN (fn) = 1;
       return false;
     }
+
+  if (DECL_OMP_DECLARE_REDUCTION_P (fn))
+    return false;
 
   return true;
 }
