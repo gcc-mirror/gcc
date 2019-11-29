@@ -291,6 +291,7 @@ profile_count::to_cgraph_frequency (profile_count entry_bb_count) const
     return 0;
   gcc_checking_assert (entry_bb_count.initialized_p ());
   uint64_t scale;
+  gcc_checking_assert (compatible_p (entry_bb_count));
   if (!safe_scale_64bit (!entry_bb_count.m_val ? m_val + 1 : m_val,
 			 CGRAPH_FREQ_BASE, MAX (1, entry_bb_count.m_val), &scale))
     return CGRAPH_FREQ_MAX;
@@ -328,6 +329,7 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     return 0;
   if (m_val == in.m_val)
     return 1;
+  gcc_checking_assert (compatible_p (in));
 
   if (!in.m_val)
     {

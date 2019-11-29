@@ -1,3 +1,11 @@
+2019-11-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.c (profile_count::to_cgraph_frequency,
+	profile_count::to_sreal_scale): Check for compaibility of counts.
+	* profile-count.h (compatible_p): Make public; add checking for
+	global0 versus global types.
+	* cgraph.c (cgraph_node::verify_node): Verify count compatibility.
+
 2019-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92715
