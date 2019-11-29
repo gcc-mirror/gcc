@@ -107,15 +107,15 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    gcc_assert (TREE_CODE (align_t) == INTEGER_CST);
 	    gcc_assert (TREE_CODE (from) == INTEGER_CST);
 	    bool dir = wi::to_wide (from) != 0;
-	    tree vptr = build_pointer_type (void_type_node);
 	    HOST_WIDE_INT promise_align = TREE_INT_CST_LOW (align_t);
-	    HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
-	    HOST_WIDE_INT align = TYPE_ALIGN_UNIT (vptr);
+	    HOST_WIDE_INT psize =
+	      TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ptr_type_node));
+	    HOST_WIDE_INT align = TYPE_ALIGN_UNIT (ptr_type_node);
 	    align = MAX (align, promise_align);
 	    psize *= 2; /* Start with two pointers.  */
 	    psize = ROUND_UP (psize, align);
 	    HOST_WIDE_INT offs = dir ? -psize : psize;
-	    tree repl = build2 (POINTER_PLUS_EXPR, vptr, ptr,
+	    tree repl = build2 (POINTER_PLUS_EXPR, ptr_type_node, ptr,
 				build_int_cst (sizetype, offs));
 	    gassign *grpl = gimple_build_assign (lhs, repl);
 	    gsi_replace (gsi, grpl, true);
@@ -128,8 +128,8 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	case BUILT_IN_CORO_RESUME:
 	  {
 	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	    tree vptr = build_pointer_type (void_type_node);
-	    HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
+	    HOST_WIDE_INT psize =
+	      TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ptr_type_node));
 	    HOST_WIDE_INT offset = call_idx * psize;
 	    tree fntype = TREE_TYPE (decl);
 	    tree fntype_ptr = build_pointer_type (fntype);
@@ -156,15 +156,14 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      }
 	    /* When we're done, the resume fn is set to NULL.  */
 	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	    tree vptr = build_pointer_type (void_type_node);
-	    tree vpp = build_pointer_type (vptr);
+	    tree vpp = build_pointer_type (ptr_type_node);
 	    tree indirect
 	      = fold_build2 (MEM_REF, vpp, ptr, wide_int_to_tree (vpp, 0));
-	    tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (vptr));
+	    tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (ptr_type_node));
 	    gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
 	    gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
 	    tree done = fold_build2 (EQ_EXPR, boolean_type_node, d_ptr_tmp,
-				     wide_int_to_tree (vptr, 0));
+				     wide_int_to_tree (ptr_type_node, 0));
 	    gassign *get_res = gimple_build_assign (lhs, done);
 	    gsi_replace (gsi, get_res, true);
 	    *handled_ops_p = true;
