@@ -1,3 +1,13 @@
+2019-11-29  Tom Honermann  <tom@honermann.net>
+
+	Decouple constraints for u8path from path constructors
+	* include/bits/fs_path.h: Moved helper utilities out of
+	std::filesystem::path into a detail namespace to make them
+	available for use by u8path.
+	* include/experimental/bits/fs_path.h: Moved helper utilities out
+	of std::experimental::filesystem::v1::path into a detail
+	namespace to make them available for use by u8path.
+
 2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91997
