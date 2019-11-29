@@ -3915,7 +3915,16 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 	  || thisarginfo.dt == vect_external_def)
 	gcc_assert (thisarginfo.vectype == NULL_TREE);
       else
-	gcc_assert (thisarginfo.vectype != NULL_TREE);
+	{
+	  gcc_assert (thisarginfo.vectype != NULL_TREE);
+	  if (VECTOR_BOOLEAN_TYPE_P (thisarginfo.vectype))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "vector mask arguments are not supported\n");
+	      return false;
+	    }
+	}
 
       /* For linear arguments, the analyze phase should have saved
 	 the base and step in STMT_VINFO_SIMD_CLONE_INFO.  */

@@ -1,6 +1,15 @@
 2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
+	2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/92710
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Reject
+	vector mask arguments.
+
+2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
 	2019-11-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/92420
