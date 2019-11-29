@@ -1,3 +1,9 @@
+2019-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60228
+	* g++.dg/gomp/openmp-simd-2.C: Don't expect bodies for
+	DECL_OMP_DECLARE_REDUCTION_P functions.
+
 2019-11-29  Martin Liska  <mliska@suse.cz>
 
 	PR lto/91574
