@@ -71,111 +71,116 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   using std::basic_string_view;
 #endif
 
-  /**
-   * @addtogroup filesystem-ts
-   * @{
+  /** @addtogroup filesystem-ts
+   *  @{
    */
+
+  /// @cond undocumented
+namespace __detail
+{
+  template<typename _CharT,
+	   typename _Ch = typename remove_const<_CharT>::type>
+    using __is_encoded_char
+      = __or_<is_same<_Ch, char>,
+	      is_same<_Ch, wchar_t>,
+#ifdef _GLIBCXX_USE_CHAR8_T
+	      is_same<_Ch, char8_t>,
+#endif
+	      is_same<_Ch, char16_t>,
+	      is_same<_Ch, char32_t>>;
+
+  template<typename _Iter,
+	   typename _Iter_traits = std::iterator_traits<_Iter>>
+    using __is_path_iter_src
+      = __and_<__is_encoded_char<typename _Iter_traits::value_type>,
+	       std::is_base_of<std::input_iterator_tag,
+			       typename _Iter_traits::iterator_category>>;
+
+  template<typename _Iter>
+    static __is_path_iter_src<_Iter>
+    __is_path_src(_Iter, int);
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    static __is_encoded_char<_CharT>
+    __is_path_src(const basic_string<_CharT, _Traits, _Alloc>&, int);
+
+#if __cplusplus >= 201402L
+  template<typename _CharT, typename _Traits>
+    static __is_encoded_char<_CharT>
+    __is_path_src(const basic_string_view<_CharT, _Traits>&, int);
+#endif
+
+  template<typename _Unknown>
+    static std::false_type
+    __is_path_src(const _Unknown&, ...);
+
+  template<typename _Tp1, typename _Tp2>
+    struct __constructible_from;
+
+  template<typename _Iter>
+    struct __constructible_from<_Iter, _Iter>
+    : __is_path_iter_src<_Iter>
+    { };
+
+  template<typename _Source>
+    struct __constructible_from<_Source, void>
+    : decltype(__is_path_src(std::declval<_Source>(), 0))
+    { };
+
+  template<typename _Tp1, typename _Tp2 = void,
+	   typename _Tp1_nocv = typename remove_cv<_Tp1>::type,
+	   typename _Tp1_noptr = typename remove_pointer<_Tp1>::type>
+    using _Path = typename
+      std::enable_if<__and_<__not_<is_same<_Tp1_nocv, path>>,
+			    __not_<is_void<_Tp1_noptr>>,
+			    __constructible_from<_Tp1, _Tp2>>::value,
+		     path>::type;
+
+  template<typename _Source>
+    static _Source
+    _S_range_begin(_Source __begin) { return __begin; }
+
+  struct __null_terminated { };
+
+  template<typename _Source>
+    static __null_terminated
+    _S_range_end(_Source) { return {}; }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    static const _CharT*
+    _S_range_begin(const basic_string<_CharT, _Traits, _Alloc>& __str)
+    { return __str.data(); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    static const _CharT*
+    _S_range_end(const basic_string<_CharT, _Traits, _Alloc>& __str)
+    { return __str.data() + __str.size(); }
+
+#if __cplusplus >= 201402L
+  template<typename _CharT, typename _Traits>
+    static const _CharT*
+    _S_range_begin(const basic_string_view<_CharT, _Traits>& __str)
+    { return __str.data(); }
+
+  template<typename _CharT, typename _Traits>
+    static const _CharT*
+    _S_range_end(const basic_string_view<_CharT, _Traits>& __str)
+    { return __str.data() + __str.size(); }
+#endif
+
+  template<typename _Tp,
+	   typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
+	   typename _Val = typename std::iterator_traits<_Iter>::value_type>
+    using __value_type_is_char = typename std::enable_if<
+      std::is_same<typename std::remove_const<_Val>::type, char>::value
+      >::type;
+
+} // namespace __detail
+  /// @endcond
 
   /// A filesystem path.
   class path
   {
-    template<typename _CharT,
-	     typename _Ch = typename remove_const<_CharT>::type>
-      using __is_encoded_char
-	= __or_<is_same<_Ch, char>,
-		is_same<_Ch, wchar_t>,
-#ifdef _GLIBCXX_USE_CHAR8_T
-		is_same<_Ch, char8_t>,
-#endif
-		is_same<_Ch, char16_t>,
-		is_same<_Ch, char32_t>>;
-
-    template<typename _Iter,
-	     typename _Iter_traits = std::iterator_traits<_Iter>>
-      using __is_path_iter_src
-	= __and_<__is_encoded_char<typename _Iter_traits::value_type>,
-		 std::is_base_of<std::input_iterator_tag,
-				 typename _Iter_traits::iterator_category>>;
-
-    template<typename _Iter>
-      static __is_path_iter_src<_Iter>
-      __is_path_src(_Iter, int);
-
-    template<typename _CharT, typename _Traits, typename _Alloc>
-      static __is_encoded_char<_CharT>
-      __is_path_src(const basic_string<_CharT, _Traits, _Alloc>&, int);
-
-#if __cplusplus >= 201402L
-    template<typename _CharT, typename _Traits>
-      static __is_encoded_char<_CharT>
-      __is_path_src(const basic_string_view<_CharT, _Traits>&, int);
-#endif
-
-    template<typename _Unknown>
-      static std::false_type
-      __is_path_src(const _Unknown&, ...);
-
-    template<typename _Tp1, typename _Tp2>
-      struct __constructible_from;
-
-    template<typename _Iter>
-      struct __constructible_from<_Iter, _Iter>
-      : __is_path_iter_src<_Iter>
-      { };
-
-    template<typename _Source>
-      struct __constructible_from<_Source, void>
-      : decltype(__is_path_src(std::declval<_Source>(), 0))
-      { };
-
-    template<typename _Tp1, typename _Tp2 = void,
-	     typename _Tp1_nocv = typename remove_cv<_Tp1>::type,
-	     typename _Tp1_noptr = typename remove_pointer<_Tp1>::type>
-      using _Path = typename
-	std::enable_if<__and_<__not_<is_same<_Tp1_nocv, path>>,
-			      __not_<is_void<_Tp1_noptr>>,
-			      __constructible_from<_Tp1, _Tp2>>::value,
-		       path>::type;
-
-    template<typename _Source>
-      static _Source
-      _S_range_begin(_Source __begin) { return __begin; }
-
-    struct __null_terminated { };
-
-    template<typename _Source>
-      static __null_terminated
-      _S_range_end(_Source) { return {}; }
-
-    template<typename _CharT, typename _Traits, typename _Alloc>
-      static const _CharT*
-      _S_range_begin(const basic_string<_CharT, _Traits, _Alloc>& __str)
-      { return __str.data(); }
-
-    template<typename _CharT, typename _Traits, typename _Alloc>
-      static const _CharT*
-      _S_range_end(const basic_string<_CharT, _Traits, _Alloc>& __str)
-      { return __str.data() + __str.size(); }
-
-#if __cplusplus >= 201402L
-    template<typename _CharT, typename _Traits>
-      static const _CharT*
-      _S_range_begin(const basic_string_view<_CharT, _Traits>& __str)
-      { return __str.data(); }
-
-    template<typename _CharT, typename _Traits>
-      static const _CharT*
-      _S_range_end(const basic_string_view<_CharT, _Traits>& __str)
-      { return __str.data() + __str.size(); }
-#endif
-
-    template<typename _Tp,
-	     typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
-	     typename _Val = typename std::iterator_traits<_Iter>::value_type>
-      using __value_type_is_char = typename std::enable_if<
-	std::is_same<typename std::remove_const<_Val>::type, char>::value
-	>::type;
-
   public:
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
     typedef wchar_t				value_type;
@@ -205,29 +210,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     { _M_split_cmpts(); }
 
     template<typename _Source,
-	     typename _Require = _Path<_Source>>
+	     typename _Require = __detail::_Path<_Source>>
       path(_Source const& __source)
-      : _M_pathname(_S_convert(_S_range_begin(__source),
-			       _S_range_end(__source)))
+      : _M_pathname(_S_convert(__detail::_S_range_begin(__source),
+			       __detail::_S_range_end(__source)))
       { _M_split_cmpts(); }
 
     template<typename _InputIterator,
-	     typename _Require = _Path<_InputIterator, _InputIterator>>
+	     typename _Require = __detail::_Path<_InputIterator, _InputIterator>>
       path(_InputIterator __first, _InputIterator __last)
       : _M_pathname(_S_convert(__first, __last))
       { _M_split_cmpts(); }
 
     template<typename _Source,
-	     typename _Require = _Path<_Source>,
-	     typename _Require2 = __value_type_is_char<_Source>>
+	     typename _Require = __detail::_Path<_Source>,
+	     typename _Require2 = __detail::__value_type_is_char<_Source>>
       path(_Source const& __source, const locale& __loc)
-      : _M_pathname(_S_convert_loc(_S_range_begin(__source),
-				   _S_range_end(__source), __loc))
+      : _M_pathname(_S_convert_loc(__detail::_S_range_begin(__source),
+				   __detail::_S_range_end(__source), __loc))
       { _M_split_cmpts(); }
 
     template<typename _InputIterator,
-	     typename _Require = _Path<_InputIterator, _InputIterator>,
-	     typename _Require2 = __value_type_is_char<_InputIterator>>
+	     typename _Require = __detail::_Path<_InputIterator, _InputIterator>,
+	     typename _Require2 = __detail::__value_type_is_char<_InputIterator>>
       path(_InputIterator __first, _InputIterator __last, const locale& __loc)
       : _M_pathname(_S_convert_loc(__first, __last, __loc))
       { _M_split_cmpts(); }
@@ -242,17 +247,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path& assign(string_type&& __source);
 
     template<typename _Source>
-      _Path<_Source>&
+      __detail::_Path<_Source>&
       operator=(_Source const& __source)
       { return *this = path(__source); }
 
     template<typename _Source>
-      _Path<_Source>&
+      __detail::_Path<_Source>&
       assign(_Source const& __source)
       { return *this = path(__source); }
 
     template<typename _InputIterator>
-      _Path<_InputIterator, _InputIterator>&
+      __detail::_Path<_InputIterator, _InputIterator>&
       assign(_InputIterator __first, _InputIterator __last)
       { return *this = path(__first, __last); }
 
@@ -261,20 +266,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path& operator/=(const path& __p) { return _M_append(__p._M_pathname); }
 
     template <class _Source>
-      _Path<_Source>&
+      __detail::_Path<_Source>&
       operator/=(_Source const& __source)
       { return append(__source); }
 
     template<typename _Source>
-      _Path<_Source>&
+      __detail::_Path<_Source>&
       append(_Source const& __source)
       {
-	return _M_append(_S_convert(_S_range_begin(__source),
-				    _S_range_end(__source)));
+	return _M_append(_S_convert(__detail::_S_range_begin(__source),
+				    __detail::_S_range_end(__source)));
       }
 
     template<typename _InputIterator>
-      _Path<_InputIterator, _InputIterator>&
+      __detail::_Path<_InputIterator, _InputIterator>&
       append(_InputIterator __first, _InputIterator __last)
       { return _M_append(_S_convert(__first, __last)); }
 
@@ -289,20 +294,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
     template<typename _Source>
-      _Path<_Source>&
+      __detail::_Path<_Source>&
       operator+=(_Source const& __x) { return concat(__x); }
 
     template<typename _CharT>
-      _Path<_CharT*, _CharT*>&
+      __detail::_Path<_CharT*, _CharT*>&
       operator+=(_CharT __x);
 
     template<typename _Source>
-      _Path<_Source>&
+      __detail::_Path<_Source>&
       concat(_Source const& __x)
-      { return *this += _S_convert(_S_range_begin(__x), _S_range_end(__x)); }
+      {
+	return *this += _S_convert(__detail::_S_range_begin(__x),
+				   __detail::_S_range_end(__x));
+      }
 
     template<typename _InputIterator>
-      _Path<_InputIterator, _InputIterator>&
+      __detail::_Path<_InputIterator, _InputIterator>&
       concat(_InputIterator __first, _InputIterator __last)
       { return *this += _S_convert(__first, __last); }
 
@@ -446,11 +454,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       struct _Cvt;
 
     static string_type
-    _S_convert(value_type* __src, __null_terminated)
+    _S_convert(value_type* __src, __detail::__null_terminated)
     { return string_type(__src); }
 
     static string_type
-    _S_convert(const value_type* __src, __null_terminated)
+    _S_convert(const value_type* __src, __detail::__null_terminated)
     { return string_type(__src); }
 
     template<typename _Iter>
@@ -464,7 +472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     template<typename _InputIterator>
       static string_type
-      _S_convert(_InputIterator __src, __null_terminated)
+      _S_convert(_InputIterator __src, __detail::__null_terminated)
       {
 	auto __s = _S_string_from_iter(__src);
 	return _S_convert(__s.c_str(), __s.c_str() + __s.size());
@@ -484,7 +492,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     template<typename _InputIterator>
       static string_type
-      _S_convert_loc(_InputIterator __src, __null_terminated,
+      _S_convert_loc(_InputIterator __src, __detail::__null_terminated,
 		     const std::locale& __loc)
       {
 	const std::string __s = _S_string_from_iter(__src);
@@ -580,8 +588,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     }
 
   /// Create a path from a UTF-8-encoded sequence of char
-  // TODO constrain with _Path<InputIterator, InputIterator> and __value_type_is_char
-  template<typename _InputIterator>
+  template<typename _InputIterator,
+	   typename _Require = __detail::_Path<_InputIterator, _InputIterator>,
+	   typename _Require2 = __detail::__value_type_is_char<_InputIterator>>
     inline path
     u8path(_InputIterator __first, _InputIterator __last)
     {
@@ -602,8 +611,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     }
 
   /// Create a path from a UTF-8-encoded sequence of char
-  // TODO constrain with _Path<Source> and __value_type_is_char
-  template<typename _Source>
+  template<typename _Source,
+	   typename _Require = __detail::_Path<_Source>,
+	   typename _Require2 = __detail::__value_type_is_char<_Source>>
     inline path
     u8path(const _Source& __source)
     {
@@ -872,7 +882,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
   template<typename _CharT>
-    inline path::_Path<_CharT*, _CharT*>&
+    inline __detail::_Path<_CharT*, _CharT*>&
     path::operator+=(_CharT __x)
     {
       auto* __addr = std::__addressof(__x);
