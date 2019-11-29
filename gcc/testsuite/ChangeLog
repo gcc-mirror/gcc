@@ -1,5 +1,10 @@
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/92677
+	* gcc.dg/vect/pr92677.c: New test.
+
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/92596
 	* gcc.dg/vect/bb-slp-pr92596.c: New test.
 	* gcc.dg/vect/bb-slp-43.c: Likewise.

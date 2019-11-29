@@ -1,5 +1,11 @@
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/92677
+	* tree-vect-loop.c (vect_dissolve_slp_only_groups): Set the gap
+	to zero when dissolving a group of strided accesses.
+
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/92596
 	* tree-vect-stmts.c (vectorizable_call): Punt on hybrid mask/nonmask
 	operations.

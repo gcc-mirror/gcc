@@ -1829,7 +1829,10 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 		  DR_GROUP_FIRST_ELEMENT (vinfo) = vinfo;
 		  DR_GROUP_NEXT_ELEMENT (vinfo) = NULL;
 		  DR_GROUP_SIZE (vinfo) = 1;
-		  DR_GROUP_GAP (vinfo) = group_size - 1;
+		  if (STMT_VINFO_STRIDED_P (first_element))
+		    DR_GROUP_GAP (vinfo) = 0;
+		  else
+		    DR_GROUP_GAP (vinfo) = group_size - 1;
 		  vinfo = next;
 		}
 	    }
