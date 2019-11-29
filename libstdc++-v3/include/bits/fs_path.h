@@ -272,7 +272,7 @@ namespace __detail
 
     path& operator/=(const path& __p);
 
-    template <class _Source>
+    template<typename _Source>
       __detail::_Path<_Source>&
       operator/=(_Source const& __source)
       {

@@ -1,3 +1,10 @@
+2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::operator/=): Change template-head to
+	use typename instead of class.
+	* include/experimental/bits/fs_path.h (path::operator/=): Likewise.
+	* include/std/ostream (operator<<): Likewise.
+
 2019-11-29  Tom Honermann  <tom@honermann.net>
 
 	New tests
