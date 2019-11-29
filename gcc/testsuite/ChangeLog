@@ -1,3 +1,9 @@
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR ipa/84963
+	* gfortran.dg/goacc/pr84963.f90: Use dg-additional-options not
+	dg-options as otherwise -fopenacc is not used.
+
 2019-11-29  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/vect/slp-reduc-3.c: Turn off epilogue-nomask.
