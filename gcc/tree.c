@@ -10340,19 +10340,16 @@ build_common_tree_nodes (bool signed_char)
       TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE;
       SET_TYPE_MODE (dfloat32_type_node, SDmode);
       layout_type (dfloat32_type_node);
-      dfloat32_ptr_type_node = build_pointer_type (dfloat32_type_node);
 
       dfloat64_type_node = make_node (REAL_TYPE);
       TYPE_PRECISION (dfloat64_type_node) = DECIMAL64_TYPE_SIZE;
       SET_TYPE_MODE (dfloat64_type_node, DDmode);
       layout_type (dfloat64_type_node);
-      dfloat64_ptr_type_node = build_pointer_type (dfloat64_type_node);
 
       dfloat128_type_node = make_node (REAL_TYPE);
       TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE;
       SET_TYPE_MODE (dfloat128_type_node, TDmode);
       layout_type (dfloat128_type_node);
-      dfloat128_ptr_type_node = build_pointer_type (dfloat128_type_node);
     }
 
   complex_integer_type_node = build_complex_type (integer_type_node, true);

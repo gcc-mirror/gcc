@@ -4098,9 +4098,6 @@ tree_strip_any_location_wrapper (tree exp)
 #define dfloat32_type_node              global_trees[TI_DFLOAT32_TYPE]
 #define dfloat64_type_node              global_trees[TI_DFLOAT64_TYPE]
 #define dfloat128_type_node             global_trees[TI_DFLOAT128_TYPE]
-#define dfloat32_ptr_type_node          global_trees[TI_DFLOAT32_PTR_TYPE]
-#define dfloat64_ptr_type_node          global_trees[TI_DFLOAT64_PTR_TYPE]
-#define dfloat128_ptr_type_node         global_trees[TI_DFLOAT128_PTR_TYPE]
 
 /* The fixed-point types.  */
 #define sat_short_fract_type_node       global_trees[TI_SAT_SFRACT_TYPE]
