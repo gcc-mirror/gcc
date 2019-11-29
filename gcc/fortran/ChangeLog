@@ -1,3 +1,10 @@
+2019-11-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from mainline
+	PR fortran/92629
+	* simplify.c (convert_mpz_to_unsigned): Skip assert for argument
+	range when -fno-range-check is specified.
+
 2019-11-25  Tobias Burnus  <tobias@codesourcery.com
 
 	Backport from mainline
