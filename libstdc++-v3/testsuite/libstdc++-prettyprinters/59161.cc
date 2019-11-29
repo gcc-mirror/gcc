@@ -45,8 +45,6 @@ int main()
   std::list<C> l;
   l.push_back(c);
   std::list<C>::iterator liter = l.begin();
-  // Need to ensure the list<C>::iterator::_Node typedef is in the debuginfo:
-  int tmp __attribute__((unused)) = (*liter).ref;
 // { dg-final { regexp-test liter {ref = @0x.*} } }
 
   __gnu_cxx::slist<C> sl;
