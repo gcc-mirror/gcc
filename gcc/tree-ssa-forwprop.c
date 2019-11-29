@@ -2038,13 +2038,13 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   constructor_elt *elt;
   bool maybe_ident;
 
-  gcc_checking_assert (gimple_assign_rhs_code (stmt) == CONSTRUCTOR);
-
   op = gimple_assign_rhs1 (stmt);
   type = TREE_TYPE (op);
-  gcc_checking_assert (TREE_CODE (type) == VECTOR_TYPE);
+  gcc_checking_assert (TREE_CODE (op) == CONSTRUCTOR
+		       && TREE_CODE (type) == VECTOR_TYPE);
 
-  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
+  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts)
+      || uniform_vector_p (op))
     return false;
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
@@ -2136,6 +2136,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       || ! VECTOR_TYPE_P (TREE_TYPE (orig[0])))
     return false;
   refnelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig[0])).to_constant ();
+  /* We currently do not handle larger destination vectors.  */
+  if (refnelts < nelts)
+    return false;
 
   if (maybe_ident)
     {

@@ -1,3 +1,10 @@
+2019-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92715
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Bail
+	out for uniform vectors and source vectors with less elements
+	than the destination.
+
 2019-11-29  Martin Liska  <mliska@suse.cz>
 
 	PR lto/91574
