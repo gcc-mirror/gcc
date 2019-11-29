@@ -169,8 +169,10 @@ convert_mpz_to_unsigned (mpz_t x, int bitsize)
     }
   else
     {
-      /* Confirm that no bits above the signed range are set.  */
-      gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
+      /* Confirm that no bits above the signed range are set if we
+	 are doing range checking.  */
+      if (flag_range_check != 0)
+	gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
     }
 }
 
