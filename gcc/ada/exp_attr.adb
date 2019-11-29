@@ -4242,6 +4242,11 @@ package body Exp_Attr is
       when Attribute_Invalid_Value =>
          Rewrite (N, Get_Simple_Init_Val (Ptyp, N));
 
+         --  The value produced may be a conversion of a literal, which
+         --  must be resolved to establish its proper type.
+
+         Analyze_And_Resolve (N);
+
       ----------
       -- Last --
       ----------
