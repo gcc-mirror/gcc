@@ -1,3 +1,9 @@
+2019-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92704
+	* tree-if-conv.c (combine_blocks): Deal with virtual PHIs
+	in loops performing only loads.
+
 2019-11-29  Julian Brown  <julian@codesourcery.com>
 
 	* builtin-types.def (BT_DFLOAT32_PTR, BT_DFLOAT64_PTR,
