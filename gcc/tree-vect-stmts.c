@@ -11323,14 +11323,15 @@ get_vectype_for_scalar_type (vec_info *vinfo, tree scalar_type, slp_tree node)
 
    Returns the mask type corresponding to a result of comparison
    of vectors of specified SCALAR_TYPE as supported by target.
-   NODE, if nonnull, is the SLP tree node that will use the returned
-   vector type.  */
+   If GROUP_SIZE is nonzero and we're performing BB vectorization,
+   make sure that the number of elements in the vector is no bigger
+   than GROUP_SIZE.  */
 
 tree
 get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type,
-			       slp_tree node)
+			       unsigned int group_size)
 {
-  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type, node);
+  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type, group_size);
 
   if (!vectype)
     return NULL;
@@ -12190,11 +12191,12 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 
 /* Try to determine the correct vector type for STMT_INFO, which is a
    statement that produces a scalar boolean result.  Return the vector
-   type on success, otherwise return NULL_TREE.  NODE, if nonnull,
-   is the SLP tree node that will use the returned vector type.  */
+   type on success, otherwise return NULL_TREE.  If GROUP_SIZE is nonzero
+   and we're performing BB vectorization, make sure that the number of
+   elements in the vector is no bigger than GROUP_SIZE.  */
 
 opt_tree
-vect_get_mask_type_for_stmt (stmt_vec_info stmt_info, slp_tree node)
+vect_get_mask_type_for_stmt (stmt_vec_info stmt_info, unsigned int group_size)
 {
   vec_info *vinfo = stmt_info->vinfo;
   gimple *stmt = stmt_info->stmt;
@@ -12206,7 +12208,8 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info, slp_tree node)
       && !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
     {
       scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-      mask_type = get_mask_type_for_scalar_type (vinfo, scalar_type, node);
+      mask_type = get_mask_type_for_scalar_type (vinfo, scalar_type,
+						 group_size);
 
       if (!mask_type)
 	return opt_tree::failure_at (stmt,

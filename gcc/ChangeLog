@@ -1,5 +1,15 @@
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (get_mask_type_for_scalar_type): Replace
+	the slp_tree parameter with a group size parameter.
+	(vect_get_mask_type_for_stmt): Likewise.
+	* tree-vect-stmts.c (get_mask_type_for_scalar_type): Likewise.
+	(vect_get_mask_type_for_stmt): Likewise.
+	* tree-vect-slp.c (vect_slp_analyze_node_operations_1): Update
+	call accordingly.
+
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_operation): Punt early
 	on codes that are handled elsewhere.
 
