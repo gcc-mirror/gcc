@@ -278,7 +278,7 @@ namespace __detail
 
     path& operator/=(const path& __p) { return _M_append(__p._M_pathname); }
 
-    template <class _Source>
+    template<typename _Source>
       __detail::_Path<_Source>&
       operator/=(_Source const& __source)
       { return append(__source); }
