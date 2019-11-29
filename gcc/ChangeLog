@@ -1,3 +1,14 @@
+2019-11-29  Julian Brown  <julian@codesourcery.com>
+
+	* builtin-types.def (BT_DFLOAT32_PTR, BT_DFLOAT64_PTR,
+	BT_DFLOAT128_PTR) Remove.
+	* tree-core.h (TI_DFLOAT32_PTR_TYPE, TI_DFLOAT64_PTR_TYPE,
+	TI_DFLOAT128_PTR_TYPE): Remove.
+	* tree.c (build_common_type_nodes): Remove dfloat32_ptr_type_node,
+	dfloat64_ptr_type_node and dfloat128_ptr_type_node initialisation.
+	* tree.h (dfloat32_ptr_type_node, dfloat64_ptr_type_node,
+	dfloat128_ptr_type_node): Remove macros.
+
 2019-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*movsi_internal1): Fix formatting.  Improve
