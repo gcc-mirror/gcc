@@ -1,3 +1,14 @@
+2019-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (struct c_parser): Add members raw_tokens and
+	raw_tokens_used.
+	(c_lex_one_token): Add argument raw.  Handle lexing raw tokens and
+	using previously-lexed raw tokens.
+	(c_parser_peek_nth_token_raw)
+	(c_parser_check_balanced_raw_token_sequence): New functions.
+	(c_parser_nth_token_starts_std_attributes): Use
+	c_parser_check_balanced_raw_token_sequence for Objective-C.
+
 2019-11-25  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/91985

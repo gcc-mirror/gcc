@@ -1,3 +1,7 @@
+2019-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc.dg/attributes/gnu2x-attr-syntax-1.m: New test.
+
 2019-11-28  Martin Liska  <mliska@suse.cz>
 
 	PR lto/92609
