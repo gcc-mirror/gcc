@@ -170,10 +170,23 @@ namespace __detail
 
   template<typename _Tp,
 	   typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
-	   typename _Val = typename std::iterator_traits<_Iter>::value_type>
+	   typename _Val = typename std::iterator_traits<_Iter>::value_type,
+	   typename _UnqualVal = typename std::remove_const<_Val>::type>
     using __value_type_is_char = typename std::enable_if<
-      std::is_same<typename std::remove_const<_Val>::type, char>::value
-      >::type;
+      std::is_same<_UnqualVal, char>::value,
+      _UnqualVal>::type;
+
+  template<typename _Tp,
+	   typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
+	   typename _Val = typename std::iterator_traits<_Iter>::value_type,
+	   typename _UnqualVal = typename std::remove_const<_Val>::type>
+    using __value_type_is_char_or_char8_t = typename std::enable_if<
+      __or_<
+	std::is_same<_UnqualVal, char>
+#ifdef _GLIBCXX_USE_CHAR8_T
+	,std::is_same<_UnqualVal, char8_t>
+#endif
+      >::value, _UnqualVal>::type;
 
 } // namespace __detail
   /// @endcond
@@ -588,13 +601,11 @@ namespace __detail
     }
 
   /// Create a path from a UTF-8-encoded sequence of char
-  template<typename _InputIterator,
-	   typename _Require = __detail::_Path<_InputIterator, _InputIterator>,
-	   typename _Require2 = __detail::__value_type_is_char<_InputIterator>>
-    inline path
-    u8path(_InputIterator __first, _InputIterator __last)
-    {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  template<typename _InputIterator>
+    inline path
+    __u8path(_InputIterator __first, _InputIterator __last, char)
+    {
       // XXX This assumes native wide encoding is UTF-16.
       std::codecvt_utf8_utf16<path::value_type> __cvt;
       path::string_type __tmp;
@@ -605,21 +616,61 @@ namespace __detail
       _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	    "Cannot convert character sequence",
 	    std::make_error_code(errc::illegal_byte_sequence)));
+    }
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<typename _InputIterator>
+    inline path
+    __u8path(_InputIterator __first, _InputIterator __last, char8_t)
+    {
+      return path{ __first, __last };
+    }
+#endif // _GLIBCXX_USE_CHAR8_T
+#endif // _GLIBCXX_FILESYSTEM_IS_WINDOWS
+
+  template<typename _InputIterator,
+	   typename _Require = __detail::_Path<_InputIterator, _InputIterator>,
+	   typename _CharT =
+	     __detail::__value_type_is_char_or_char8_t<_InputIterator>>
+    inline path
+    u8path(_InputIterator __first, _InputIterator __last)
+    {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      return __u8path(__first, __last, _CharT{});
 #else
       return path{ __first, __last };
 #endif
     }
 
   /// Create a path from a UTF-8-encoded sequence of char
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  template<typename _Source>
+    inline path
+    __u8path(const _Source& __source, char)
+    {
+      std::string __s = path::_S_string_from_iter(__source);
+      return filesystem::u8path(__s.data(), __s.data() + __s.size());
+    }
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<typename _Source>
+    inline path
+    __u8path(const _Source& __source, char8_t)
+    {
+      return path{ __source };
+    }
+#endif // _GLIBCXX_USE_CHAR8_T
+#endif // _GLIBCXX_FILESYSTEM_IS_WINDOWS
+
   template<typename _Source,
 	   typename _Require = __detail::_Path<_Source>,
-	   typename _Require2 = __detail::__value_type_is_char<_Source>>
+	   typename _CharT =
+	     __detail::__value_type_is_char_or_char8_t<_Source>>
     inline path
     u8path(const _Source& __source)
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      std::string __s = path::_S_string_from_iter(__source);
-      return filesystem::u8path(__s.data(), __s.data() + __s.size());
+      return __u8path(__source, _CharT{});
 #else
       return path{ __source };
 #endif

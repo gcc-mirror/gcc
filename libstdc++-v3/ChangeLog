@@ -1,5 +1,16 @@
 2019-11-29  Tom Honermann  <tom@honermann.net>
 
+	Update feature test macro, add deleted operators, update u8path
+	* include/bits/c++config: Bumped the value of the __cpp_lib_char8_t
+	feature test macro.
+	* include/bits/fs_path.h (u8path): Modified u8path to accept sequences
+	of char8_t.
+	* include/experimental/bits/fs_path.h (u8path): Modified u8path to
+	accept sequences of char8_t.
+	* include/std/ostream: Added deleted overloads of wchar_t, char8_t,
+	char16_t, and char32_t for ordinary and wide formatted character and
+	string inserters.
+
 	Decouple constraints for u8path from path constructors
 	* include/bits/fs_path.h: Moved helper utilities out of
 	std::filesystem::path into a detail namespace to make them

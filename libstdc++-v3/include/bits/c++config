@@ -620,7 +620,7 @@ namespace std
 # endif
 #endif
 #ifdef _GLIBCXX_USE_CHAR8_T
-# define __cpp_lib_char8_t 201811L
+# define __cpp_lib_char8_t 201907L
 #endif
 
 /* Define if __float128 is supported on this host. */
