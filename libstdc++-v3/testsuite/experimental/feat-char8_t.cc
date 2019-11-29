@@ -12,6 +12,6 @@
 
 #ifndef  __cpp_lib_char8_t
 #  error "__cpp_lib_char8_t"
-#elif  __cpp_lib_char8_t != 201811L
-#  error "__cpp_lib_char8_t != 201811L"
+#elif  __cpp_lib_char8_t != 201907L
+#  error "__cpp_lib_char8_t != 201907L"
 #endif

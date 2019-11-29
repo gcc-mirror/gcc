@@ -1,5 +1,15 @@
 2019-11-29  Tom Honermann  <tom@honermann.net>
 
+	Updates to existing tests
+	* testsuite/experimental/feat-char8_t.cc: Updated the expected
+	__cpp_lib_char8_t feature test macro value.
+	* testsuite/27_io/filesystem/path/factory/u8path.cc: Added testing of
+	u8path invocation with std::string, std::string_view, and iterators
+	thereof.
+	* testsuite/experimental/filesystem/path/factory/u8path.cc: Added
+	testing of u8path invocation with std::string, std::string_view, and
+	iterators thereof.
+
 	Update feature test macro, add deleted operators, update u8path
 	* include/bits/c++config: Bumped the value of the __cpp_lib_char8_t
 	feature test macro.
