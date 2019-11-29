@@ -1,3 +1,16 @@
+2019-11-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92476
+	* ipa-cp.c (set_single_call_flag): Set node_calling_single_call in
+	the summary only if the summary exists.
+	(find_more_scalar_values_for_callers_subset): Check node_dead in
+	the summary only if the summary exists.
+	(ipcp_store_bits_results): Ignore nodes without lattices.
+	(ipcp_store_vr_results): Likewise.
+	* cgraphclones.c: Include ipa-fnsummary.h and ipa-prop.h and the
+	header files required by them.
+	(cgraph_node::expand_all_artificial_thunks): Analyze expanded thunks.
+
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/92710

@@ -1165,7 +1165,7 @@ set_single_call_flag (cgraph_node *node, void *)
   /* Local thunks can be handled transparently, skip them.  */
   while (cs && cs->caller->thunk.thunk_p && cs->caller->local)
     cs = cs->next_caller;
-  if (cs)
+  if (cs && IPA_NODE_REF (cs->caller))
     {
       IPA_NODE_REF (cs->caller)->node_calling_single_call = true;
       return true;
@@ -4417,7 +4417,7 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  struct ipa_jump_func *jump_func;
 	  tree t;
 
-	  if (IPA_NODE_REF (cs->caller)->node_dead)
+	  if (IPA_NODE_REF (cs->caller) && IPA_NODE_REF (cs->caller)->node_dead)
 	    continue;
 
 	  if (!IPA_EDGE_REF (cs)
@@ -5422,6 +5422,9 @@ ipcp_store_bits_results (void)
 
       if (info->ipcp_orig_node)
 	info = IPA_NODE_REF (info->ipcp_orig_node);
+      if (!info->lattices)
+	/* Newly expanded artificial thunks do not have lattices.  */
+	continue;
 
       unsigned count = ipa_get_param_count (info);
       for (unsigned i = 0; i < count; i++)
@@ -5495,6 +5498,9 @@ ipcp_store_vr_results (void)
 
       if (info->ipcp_orig_node)
 	info = IPA_NODE_REF (info->ipcp_orig_node);
+      if (!info->lattices)
+	/* Newly expanded artificial thunks do not have lattices.  */
+	continue;
 
       unsigned count = ipa_get_param_count (info);
       for (unsigned i = 0; i < count; i++)
