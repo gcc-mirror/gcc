@@ -1,3 +1,12 @@
+2019-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91003
+	* tree-vect-slp.c (vect_mask_constant_operand_p): Pass in the
+	operand number, avoid handling the non-condition operands of
+	COND_EXPRs as comparisons.
+	(vect_get_constant_vectors): Pass down the operand number.
+	(vect_get_slp_defs): Likewise.
+
 2019-11-29  Frederik Harwath  <frederik@codesourcery.com>
 
 	* gimple-match-head.c (maybe_resimplify_conditional_op): Use
