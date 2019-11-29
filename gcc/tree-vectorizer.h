@@ -1089,6 +1089,23 @@ public:
   unsigned int operation_precision;
   signop operation_sign;
 
+  /* If the statement produces a boolean result, this value describes
+     how we should choose the associated vector type.  The possible
+     values are:
+
+     - an integer precision N if we should use the vector mask type
+       associated with N-bit integers.  This is only used if all relevant
+       input booleans also want the vector mask type for N-bit integers,
+       or if we can convert them into that form by pattern-matching.
+
+     - ~0U if we considered choosing a vector mask type but decided
+       to treat the boolean as a normal integer type instead.
+
+     - 0 otherwise.  This means either that the operation isn't one that
+       could have a vector mask type (and so should have a normal vector
+       type instead) or that we simply haven't made a choice either way.  */
+  unsigned int mask_precision;
+
   /* True if this is only suitable for SLP vectorization.  */
   bool slp_vect_only_p;
 };
@@ -1243,6 +1260,15 @@ nested_in_vect_loop_p (class loop *loop, stmt_vec_info stmt_info)
 {
   return (loop->inner
 	  && (loop->inner == (gimple_bb (stmt_info->stmt))->loop_father));
+}
+
+/* Return true if STMT_INFO should produce a vector mask type rather than
+   a normal nonmask type.  */
+
+static inline bool
+vect_use_mask_type_p (stmt_vec_info stmt_info)
+{
+  return stmt_info->mask_precision && stmt_info->mask_precision != ~0U;
 }
 
 /* Return TRUE if a statement represented by STMT_INFO is a part of a

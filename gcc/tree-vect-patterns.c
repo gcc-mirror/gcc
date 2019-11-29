@@ -112,7 +112,12 @@ vect_init_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
   STMT_VINFO_DEF_TYPE (pattern_stmt_info)
     = STMT_VINFO_DEF_TYPE (orig_stmt_info);
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
-    STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
+    {
+      gcc_assert (VECTOR_BOOLEAN_TYPE_P (vectype)
+		  == vect_use_mask_type_p (orig_stmt_info));
+      STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
+      pattern_stmt_info->mask_precision = orig_stmt_info->mask_precision;
+    }
   return pattern_stmt_info;
 }
 
@@ -131,17 +136,25 @@ vect_set_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
 
 /* Add NEW_STMT to STMT_INFO's pattern definition statements.  If VECTYPE
    is nonnull, record that NEW_STMT's vector type is VECTYPE, which might
-   be different from the vector type of the final pattern statement.  */
+   be different from the vector type of the final pattern statement.
+   If VECTYPE is a mask type, SCALAR_TYPE_FOR_MASK is the scalar type
+   from which it was derived.  */
 
 static inline void
 append_pattern_def_seq (stmt_vec_info stmt_info, gimple *new_stmt,
-			tree vectype = NULL_TREE)
+			tree vectype = NULL_TREE,
+			tree scalar_type_for_mask = NULL_TREE)
 {
+  gcc_assert (!scalar_type_for_mask
+	      == (!vectype || !VECTOR_BOOLEAN_TYPE_P (vectype)));
   vec_info *vinfo = stmt_info->vinfo;
   if (vectype)
     {
       stmt_vec_info new_stmt_info = vinfo->add_stmt (new_stmt);
       STMT_VINFO_VECTYPE (new_stmt_info) = vectype;
+      if (scalar_type_for_mask)
+	new_stmt_info->mask_precision
+	  = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (scalar_type_for_mask));
     }
   gimple_seq_add_stmt_without_update (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_info),
 				      new_stmt);
@@ -3886,108 +3899,22 @@ adjust_bool_stmts (hash_set <gimple *> &bool_stmt_set,
   return gimple_assign_lhs (pattern_stmt);
 }
 
-/* Helper for search_type_for_mask.  */
+/* Return the proper type for converting bool VAR into
+   an integer value or NULL_TREE if no such type exists.
+   The type is chosen so that the converted value has the
+   same number of elements as VAR's vector type.  */
 
 static tree
-search_type_for_mask_1 (tree var, vec_info *vinfo,
-			hash_map<gimple *, tree> &cache)
+integer_type_for_mask (tree var, vec_info *vinfo)
 {
-  tree rhs1;
-  enum tree_code rhs_code;
-  tree res = NULL_TREE, res2;
-
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
   stmt_vec_info def_stmt_info = vect_get_internal_def (vinfo, var);
-  if (!def_stmt_info)
+  if (!def_stmt_info || !vect_use_mask_type_p (def_stmt_info))
     return NULL_TREE;
 
-  gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt);
-  if (!def_stmt)
-    return NULL_TREE;
-
-  tree *c = cache.get (def_stmt);
-  if (c)
-    return *c;
-
-  rhs_code = gimple_assign_rhs_code (def_stmt);
-  rhs1 = gimple_assign_rhs1 (def_stmt);
-
-  switch (rhs_code)
-    {
-    case SSA_NAME:
-    case BIT_NOT_EXPR:
-    CASE_CONVERT:
-      res = search_type_for_mask_1 (rhs1, vinfo, cache);
-      break;
-
-    case BIT_AND_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-      res = search_type_for_mask_1 (rhs1, vinfo, cache);
-      res2 = search_type_for_mask_1 (gimple_assign_rhs2 (def_stmt), vinfo,
-				     cache);
-      if (!res || (res2 && TYPE_PRECISION (res) > TYPE_PRECISION (res2)))
-	res = res2;
-      break;
-
-    default:
-      if (TREE_CODE_CLASS (rhs_code) == tcc_comparison)
-	{
-	  tree comp_vectype, mask_type;
-
-	  if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (rhs1)))
-	    {
-	      res = search_type_for_mask_1 (rhs1, vinfo, cache);
-	      res2 = search_type_for_mask_1 (gimple_assign_rhs2 (def_stmt),
-					     vinfo, cache);
-	      if (!res || (res2 && TYPE_PRECISION (res) > TYPE_PRECISION (res2)))
-		res = res2;
-	      if (res)
-		break;
-	    }
-
-	  comp_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1));
-	  if (comp_vectype == NULL_TREE)
-	    {
-	      res = NULL_TREE;
-	      break;
-	    }
-
-	  mask_type = get_mask_type_for_scalar_type (vinfo, TREE_TYPE (rhs1));
-	  if (!mask_type
-	      || !expand_vec_cmp_expr_p (comp_vectype, mask_type, rhs_code))
-	    {
-	      res = NULL_TREE;
-	      break;
-	    }
-
-	  if (TREE_CODE (TREE_TYPE (rhs1)) != INTEGER_TYPE
-	      || !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
-	    {
-	      scalar_mode mode = SCALAR_TYPE_MODE (TREE_TYPE (rhs1));
-	      res = build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
-	    }
-	  else
-	    res = TREE_TYPE (rhs1);
-	}
-    }
-
-  cache.put (def_stmt, res);
-  return res;
-}
-
-/* Return the proper type for converting bool VAR into
-   an integer value or NULL_TREE if no such type exists.
-   The type is chosen so that converted value has the
-   same number of elements as VAR's vector type.  */
-
-static tree
-search_type_for_mask (tree var, vec_info *vinfo)
-{
-  hash_map<gimple *, tree> cache;
-  return search_type_for_mask_1 (var, vinfo, cache);
+  return build_nonstandard_integer_type (def_stmt_info->mask_precision, 1);
 }
 
 /* Function vect_recog_bool_pattern
@@ -4079,7 +4006,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	}
       else
 	{
-	  tree type = search_type_for_mask (var, vinfo);
+	  tree type = integer_type_for_mask (var, vinfo);
 	  tree cst0, cst1, tmp;
 
 	  if (!type)
@@ -4164,7 +4091,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	rhs = adjust_bool_stmts (bool_stmts, TREE_TYPE (vectype), stmt_vinfo);
       else
 	{
-	  tree type = search_type_for_mask (var, vinfo);
+	  tree type = integer_type_for_mask (var, vinfo);
 	  tree cst0, cst1, new_vectype;
 
 	  if (!type)
@@ -4219,7 +4146,7 @@ build_mask_conversion (tree mask, tree vectype, stmt_vec_info stmt_vinfo)
   masktype = truth_type_for (vectype);
   tmp = vect_recog_temp_ssa_var (TREE_TYPE (masktype), NULL);
   stmt = gimple_build_assign (tmp, CONVERT_EXPR, mask);
-  append_pattern_def_seq (stmt_vinfo, stmt, masktype);
+  append_pattern_def_seq (stmt_vinfo, stmt, masktype, TREE_TYPE (vectype));
 
   return tmp;
 }
@@ -4285,7 +4212,7 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	}
 
       tree mask_arg = gimple_call_arg (last_stmt, mask_argno);
-      tree mask_arg_type = search_type_for_mask (mask_arg, vinfo);
+      tree mask_arg_type = integer_type_for_mask (mask_arg, vinfo);
       if (!mask_arg_type)
 	return NULL;
       vectype2 = get_mask_type_for_scalar_type (vinfo, mask_arg_type);
@@ -4338,7 +4265,7 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
       if (TREE_CODE (rhs1) == SSA_NAME)
 	{
-	  rhs1_type = search_type_for_mask (rhs1, vinfo);
+	  rhs1_type = integer_type_for_mask (rhs1, vinfo);
 	  if (!rhs1_type)
 	    return NULL;
 	}
@@ -4358,7 +4285,7 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
 	     it is better for b1 and b2 to use the mask type associated
 	     with int elements rather bool (byte) elements.  */
-	  rhs1_type = search_type_for_mask (TREE_OPERAND (rhs1, 0), vinfo);
+	  rhs1_type = integer_type_for_mask (TREE_OPERAND (rhs1, 0), vinfo);
 	  if (!rhs1_type)
 	    rhs1_type = TREE_TYPE (TREE_OPERAND (rhs1, 0));
 	}
@@ -4414,7 +4341,8 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	  tmp = vect_recog_temp_ssa_var (TREE_TYPE (rhs1), NULL);
 	  pattern_stmt = gimple_build_assign (tmp, rhs1);
 	  rhs1 = tmp;
-	  append_pattern_def_seq (stmt_vinfo, pattern_stmt, vectype2);
+	  append_pattern_def_seq (stmt_vinfo, pattern_stmt, vectype2,
+				  rhs1_type);
 	}
 
       if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype1),
@@ -4447,8 +4375,8 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
   rhs2 = gimple_assign_rhs2 (last_stmt);
 
-  rhs1_type = search_type_for_mask (rhs1, vinfo);
-  rhs2_type = search_type_for_mask (rhs2, vinfo);
+  rhs1_type = integer_type_for_mask (rhs1, vinfo);
+  rhs2_type = integer_type_for_mask (rhs2, vinfo);
 
   if (!rhs1_type || !rhs2_type
       || TYPE_PRECISION (rhs1_type) == TYPE_PRECISION (rhs2_type))
@@ -4509,7 +4437,7 @@ static tree
 vect_convert_mask_for_vectype (tree mask, tree vectype,
 			       stmt_vec_info stmt_info, vec_info *vinfo)
 {
-  tree mask_type = search_type_for_mask (mask, vinfo);
+  tree mask_type = integer_type_for_mask (mask, vinfo);
   if (mask_type)
     {
       tree mask_vectype = get_mask_type_for_scalar_type (vinfo, mask_type);
@@ -4949,6 +4877,148 @@ vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
   vect_set_min_input_precision (stmt_info, type, min_input_precision);
 }
 
+/* Return true if the statement described by STMT_INFO sets a boolean
+   SSA_NAME and if we know how to vectorize this kind of statement using
+   vector mask types.  */
+
+static bool
+possible_vector_mask_operation_p (stmt_vec_info stmt_info)
+{
+  tree lhs = gimple_get_lhs (stmt_info->stmt);
+  if (!lhs
+      || TREE_CODE (lhs) != SSA_NAME
+      || !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
+    return false;
+
+  if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
+    {
+      tree_code rhs_code = gimple_assign_rhs_code (assign);
+      switch (rhs_code)
+	{
+	CASE_CONVERT:
+	case SSA_NAME:
+	case BIT_NOT_EXPR:
+	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	case BIT_AND_EXPR:
+	  return true;
+
+	default:
+	  return TREE_CODE_CLASS (rhs_code) == tcc_comparison;
+	}
+    }
+  return false;
+}
+
+/* If STMT_INFO sets a boolean SSA_NAME, see whether we should use
+   a vector mask type instead of a normal vector type.  Record the
+   result in STMT_INFO->mask_precision.  */
+
+static void
+vect_determine_mask_precision (stmt_vec_info stmt_info)
+{
+  vec_info *vinfo = stmt_info->vinfo;
+
+  if (!possible_vector_mask_operation_p (stmt_info)
+      || stmt_info->mask_precision)
+    return;
+
+  auto_vec<stmt_vec_info, 32> worklist;
+  worklist.quick_push (stmt_info);
+  while (!worklist.is_empty ())
+    {
+      stmt_info = worklist.last ();
+      unsigned int orig_length = worklist.length ();
+
+      /* If at least one boolean input uses a vector mask type,
+	 pick the mask type with the narrowest elements.
+
+	 ??? This is the traditional behavior.  It should always produce
+	 the smallest number of operations, but isn't necessarily the
+	 optimal choice.  For example, if we have:
+
+	   a = b & c
+
+	 where:
+
+	 - the user of a wants it to have a mask type for 16-bit elements (M16)
+	 - b also uses M16
+	 - c uses a mask type for 8-bit elements (M8)
+
+	 then picking M8 gives:
+
+	 - 1 M16->M8 pack for b
+	 - 1 M8 AND for a
+	 - 2 M8->M16 unpacks for the user of a
+
+	 whereas picking M16 would have given:
+
+	 - 2 M8->M16 unpacks for c
+	 - 2 M16 ANDs for a
+
+	 The number of operations are equal, but M16 would have given
+	 a shorter dependency chain and allowed more ILP.  */
+      unsigned int precision = ~0U;
+      gassign *assign = as_a <gassign *> (stmt_info->stmt);
+      unsigned int nops = gimple_num_ops (assign);
+      for (unsigned int i = 1; i < nops; ++i)
+	{
+	  tree rhs = gimple_op (assign, i);
+	  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (rhs)))
+	    continue;
+
+	  stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
+	  if (!def_stmt_info)
+	    /* Don't let external or constant operands influence the choice.
+	       We can convert them to whichever vector type we pick.  */
+	    continue;
+
+	  if (def_stmt_info->mask_precision)
+	    {
+	      if (precision > def_stmt_info->mask_precision)
+		precision = def_stmt_info->mask_precision;
+	    }
+	  else if (possible_vector_mask_operation_p (def_stmt_info))
+	    worklist.safe_push (def_stmt_info);
+	}
+
+      /* Defer the choice if we need to visit operands first.  */
+      if (orig_length != worklist.length ())
+	continue;
+
+      /* If the statement compares two values that shouldn't use vector masks,
+	 try comparing the values as normal scalars instead.  */
+      tree_code rhs_code = gimple_assign_rhs_code (assign);
+      if (precision == ~0U
+	  && TREE_CODE_CLASS (rhs_code) == tcc_comparison)
+	{
+	  tree rhs1_type = TREE_TYPE (gimple_assign_rhs1 (assign));
+	  scalar_mode mode;
+	  tree vectype, mask_type;
+	  if (is_a <scalar_mode> (TYPE_MODE (rhs1_type), &mode)
+	      && (vectype = get_vectype_for_scalar_type (vinfo, rhs1_type))
+	      && (mask_type = get_mask_type_for_scalar_type (vinfo, rhs1_type))
+	      && expand_vec_cmp_expr_p (vectype, mask_type, rhs_code))
+	    precision = GET_MODE_BITSIZE (mode);
+	}
+
+      if (dump_enabled_p ())
+	{
+	  if (precision == ~0U)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "using normal nonmask vectors for %G",
+			     stmt_info->stmt);
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "using boolean precision %d for %G",
+			     precision, stmt_info->stmt);
+	}
+
+      stmt_info->mask_precision = precision;
+      worklist.pop ();
+    }
+}
+
 /* Handle vect_determine_precisions for STMT_INFO, given that we
    have already done so for the users of its result.  */
 
@@ -4961,6 +5031,7 @@ vect_determine_stmt_precisions (stmt_vec_info stmt_info)
       vect_determine_precisions_from_range (stmt_info, stmt);
       vect_determine_precisions_from_users (stmt_info, stmt);
     }
+  vect_determine_mask_precision (stmt_info);
 }
 
 /* Walk backwards through the vectorizable region to determine the
