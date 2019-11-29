@@ -1,3 +1,9 @@
+2019-11-29  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91574
+	* ipa-devirt.c (types_same_for_odr): Check for existence
+	of TYPE_NAMEs first.
+
 2019-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92704
