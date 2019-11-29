@@ -1,3 +1,8 @@
+2019-11-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Extend by
+	adding a common-block test case.
+
 2019-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60228
