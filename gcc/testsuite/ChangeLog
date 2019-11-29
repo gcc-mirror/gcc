@@ -1,3 +1,7 @@
+2019-11-29  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/slp-reduc-3.c: Turn off epilogue-nomask.
+
 2019-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92715
