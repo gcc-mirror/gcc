@@ -1,3 +1,8 @@
+2019-11-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Bail
+	out early for too large objects.
+
 2019-11-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92476
