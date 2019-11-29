@@ -1,3 +1,9 @@
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/92710
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Reject
+	vector mask arguments.
+
 2019-11-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile-count.c (profile_count::to_cgraph_frequency,
