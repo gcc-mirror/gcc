@@ -1,3 +1,10 @@
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (vect_bool_cmp): Document.
+	* tree-vect-patterns.c (search_type_for_mask_1): If neither
+	operand to a boolean comparison is a natural vector mask,
+	handle both operands like normal integers instead.
+
 2019-11-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Bail
