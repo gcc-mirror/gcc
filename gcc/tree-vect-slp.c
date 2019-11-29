@@ -2757,7 +2757,8 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   if (bb_vinfo && STMT_VINFO_VECTYPE (stmt_info) == boolean_type_node)
     {
-      tree vectype = vect_get_mask_type_for_stmt (stmt_info, node);
+      unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
+      tree vectype = vect_get_mask_type_for_stmt (stmt_info, group_size);
       if (!vectype)
 	/* vect_get_mask_type_for_stmt has already explained the
 	   failure.  */
