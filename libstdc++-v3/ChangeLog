@@ -1,3 +1,25 @@
+2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91997
+	* python/libstdcxx/v6/printers.py (find_type): Fail more gracefully
+	if we run out of base classes to look at.
+	(llokup_templ_spec, lookup_node_type): New utilities to find node
+	types for node-based containers.
+	(StdListPrinter.children, NodeIteratorPrinter.__init__)
+	(NodeIteratorPrinter.to_string, StdSlistPrinter.children)
+	(StdSlistIteratorPrinter.to_string, StdRbtreeIteratorPrinter.__init__)
+	(StdMapPrinter.children, StdSetPrinter.children)
+	(StdForwardListPrinter.children): Use lookup_node_type instead of
+	find_type.
+	(StdListIteratorPrinter.__init__, StdFwdListIteratorPrinter.__init__):
+	Pass name of node type to NodeIteratorPrinter constructor.
+	(Tr1HashtableIterator.__init__): Rename argument.
+	(StdHashtableIterator.__init__): Likewise. Use lookup_templ_spec
+	instead of find_type.
+	* testsuite/libstdc++-prettyprinters/59161.cc: Remove workaround for
+	_Node typedef not being present in debuginfo.
+	* testsuite/libstdc++-prettyprinters/91997.cc: New test.
+
 2019-11-26  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/helper_functions.h (__valid_range_aux): Use C++98
