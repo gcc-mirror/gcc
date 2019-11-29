@@ -356,6 +356,13 @@ types_same_for_odr (const_tree type1, const_tree type2)
       || (type_with_linkage_p (type2) && type_in_anonymous_namespace_p (type2)))
     return false;
 
+  /* If both type has mangled defined check if they are same.
+     Watch for anonymous types which are all mangled as "<anon">.  */
+  if (!type_with_linkage_p (type1) || !type_with_linkage_p (type2))
+    return false;
+  if (type_in_anonymous_namespace_p (type1)
+      || type_in_anonymous_namespace_p (type2))
+    return false;
   return (DECL_ASSEMBLER_NAME (TYPE_NAME (type1))
 	  == DECL_ASSEMBLER_NAME (TYPE_NAME (type2)));
 }
