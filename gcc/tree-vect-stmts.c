@@ -5944,6 +5944,21 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   orig_code = code = gimple_assign_rhs_code (stmt);
 
+  /* Shifts are handled in vectorizable_shift.  */
+  if (code == LSHIFT_EXPR
+      || code == RSHIFT_EXPR
+      || code == LROTATE_EXPR
+      || code == RROTATE_EXPR)
+   return false;
+
+  /* Comparisons are handled in vectorizable_comparison.  */
+  if (TREE_CODE_CLASS (code) == tcc_comparison)
+    return false;
+
+  /* Conditions are handled in vectorizable_condition.  */
+  if (code == COND_EXPR)
+    return false;
+
   /* For pointer addition and subtraction, we should use the normal
      plus and minus for the vector operation.  */
   if (code == POINTER_PLUS_EXPR)
@@ -6067,11 +6082,6 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     }
 
   gcc_assert (ncopies >= 1);
-
-  /* Shifts are handled in vectorizable_shift ().  */
-  if (code == LSHIFT_EXPR || code == RSHIFT_EXPR || code == LROTATE_EXPR
-      || code == RROTATE_EXPR)
-   return false;
 
   /* Supportable by target?  */
 

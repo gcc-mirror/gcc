@@ -1,5 +1,10 @@
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_operation): Punt early
+	on codes that are handled elsewhere.
+
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/sourcebuild.texi (vect_bool_cmp): Document.
 	* tree-vect-patterns.c (search_type_for_mask_1): If neither
 	operand to a boolean comparison is a natural vector mask,
