@@ -1,3 +1,9 @@
+2019-11-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gimple-match-head.c (maybe_resimplify_conditional_op): Use
+  	generic_expr_could_trap_p to check if the condition of COND_EXPR or
+  	VEC_COND_EXPR can trap.
+
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/92677

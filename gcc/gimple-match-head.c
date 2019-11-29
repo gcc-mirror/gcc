@@ -144,9 +144,21 @@ maybe_resimplify_conditional_op (gimple_seq *seq, gimple_match_op *res_op,
       /* Likewise if the operation would not trap.  */
       bool honor_trapv = (INTEGRAL_TYPE_P (res_op->type)
 			  && TYPE_OVERFLOW_TRAPS (res_op->type));
-      if (!operation_could_trap_p ((tree_code) res_op->code,
-				   FLOAT_TYPE_P (res_op->type),
-				   honor_trapv, res_op->op_or_null (1)))
+      tree_code op_code = (tree_code) res_op->code;
+      bool op_could_trap;
+
+      /* COND_EXPR and VEC_COND_EXPR will trap if, and only if, the condition
+	 traps and hence we have to check this.  For all other operations, we
+	 don't need to consider the operands.  */
+      if (op_code == COND_EXPR || op_code == VEC_COND_EXPR)
+	op_could_trap = generic_expr_could_trap_p (res_op->ops[0]);
+      else
+	op_could_trap = operation_could_trap_p ((tree_code) res_op->code,
+						FLOAT_TYPE_P (res_op->type),
+						honor_trapv,
+						res_op->op_or_null (1));
+
+      if (!op_could_trap)
 	{
 	  res_op->cond.cond = NULL_TREE;
 	  return false;
