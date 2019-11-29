@@ -700,6 +700,7 @@ private:
   uint64_t UINT64_BIT_FIELD_ALIGN m_val : n_bits;
 #undef UINT64_BIT_FIELD_ALIGN
   enum profile_quality m_quality : 3;
+public:
 
   /* Return true if both values can meaningfully appear in single function
      body.  We have either all counters in function local or global, otherwise
@@ -711,9 +712,18 @@ private:
       if (*this == zero ()
 	  || other == zero ())
 	return true;
+      /* Do not allow nonzero global profile together with local guesses
+	 that are globally0.  */
+      if (ipa ().nonzero_p ()
+	  && !(other.ipa () == other))
+	return false;
+      if (other.ipa ().nonzero_p ()
+	  && !(ipa () == *this))
+	return false;
+	
       return ipa_p () == other.ipa_p ();
     }
-public:
+
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
