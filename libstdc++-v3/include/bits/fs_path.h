@@ -154,9 +154,24 @@ namespace __detail
 
   template<typename _Tp,
 	   typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
-	   typename _Val = typename std::iterator_traits<_Iter>::value_type>
+	   typename _Val = typename std::iterator_traits<_Iter>::value_type,
+	   typename _UnqualVal = std::remove_const_t<_Val>>
     using __value_type_is_char
-      = std::enable_if_t<std::is_same_v<std::remove_const_t<_Val>, char>>;
+      = std::enable_if_t<std::is_same_v<_UnqualVal, char>,
+			 _UnqualVal>;
+
+  template<typename _Tp,
+	   typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
+	   typename _Val = typename std::iterator_traits<_Iter>::value_type,
+	   typename _UnqualVal = std::remove_const_t<_Val>>
+    using __value_type_is_char_or_char8_t
+      = std::enable_if_t<__or_v<
+			   std::is_same<_UnqualVal, char>
+#ifdef _GLIBCXX_USE_CHAR8_T
+			   , std::is_same<_UnqualVal, char8_t>
+#endif
+			   >,
+			 _UnqualVal>;
 
 } // namespace __detail
   /// @endcond
@@ -670,29 +685,41 @@ namespace __detail
    */
   template<typename _InputIterator,
 	   typename _Require = __detail::_Path<_InputIterator, _InputIterator>,
-	   typename _Require2 = __detail::__value_type_is_char<_InputIterator>>
+	   typename _CharT
+	     = __detail::__value_type_is_char_or_char8_t<_InputIterator>>
     inline path
     u8path(_InputIterator __first, _InputIterator __last)
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      // XXX This assumes native wide encoding is UTF-16.
-      std::codecvt_utf8_utf16<path::value_type> __cvt;
-      path::string_type __tmp;
-      if constexpr (is_pointer_v<_InputIterator>)
+#ifdef _GLIBCXX_USE_CHAR8_T
+      if constexpr (is_same_v<_CharT, char8_t>)
 	{
-	  if (__str_codecvt_in_all(__first, __last, __tmp, __cvt))
-	    return path{ __tmp };
+	  return path{ __first, __last };
 	}
       else
 	{
-	  const std::string __u8str{__first, __last};
-	  const char* const __ptr = __u8str.data();
-	  if (__str_codecvt_in_all(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
-	    return path{ __tmp };
+#endif
+	  // XXX This assumes native wide encoding is UTF-16.
+	  std::codecvt_utf8_utf16<path::value_type> __cvt;
+	  path::string_type __tmp;
+	  if constexpr (is_pointer_v<_InputIterator>)
+	    {
+	      if (__str_codecvt_in_all(__first, __last, __tmp, __cvt))
+		return path{ __tmp };
+	    }
+	  else
+	    {
+	      const std::string __u8str{__first, __last};
+	      const char* const __ptr = __u8str.data();
+	      if (__str_codecvt_in_all(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
+		return path{ __tmp };
+	    }
+	  _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	      "Cannot convert character sequence",
+	      std::make_error_code(errc::illegal_byte_sequence)));
+#ifdef _GLIBCXX_USE_CHAR8_T
 	}
-      _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	    "Cannot convert character sequence",
-	    std::make_error_code(errc::illegal_byte_sequence)));
+#endif
 #else
       // This assumes native normal encoding is UTF-8.
       return path{ __first, __last };
@@ -705,21 +732,32 @@ namespace __detail
    */
   template<typename _Source,
 	   typename _Require = __detail::_Path<_Source>,
-	   typename _Require2 = __detail::__value_type_is_char<_Source>>
+	   typename _CharT = __detail::__value_type_is_char_or_char8_t<_Source>>
     inline path
     u8path(const _Source& __source)
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      if constexpr (is_convertible_v<const _Source&, std::string_view>)
+#ifdef _GLIBCXX_USE_CHAR8_T
+      if constexpr (is_same_v<_CharT, char8_t>)
 	{
-	  const std::string_view __s = __source;
-	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	  return path{ __source };
 	}
       else
 	{
-	  std::string __s = path::_S_string_from_iter(__source);
-	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+#endif
+	  if constexpr (is_convertible_v<const _Source&, std::string_view>)
+	    {
+	      const std::string_view __s = __source;
+	      return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	    }
+	  else
+	    {
+	      std::string __s = path::_S_string_from_iter(__source);
+	      return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	    }
+#ifdef _GLIBCXX_USE_CHAR8_T
 	}
+#endif
 #else
       return path{ __source };
 #endif
