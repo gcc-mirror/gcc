@@ -1,4 +1,4 @@
-2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+2019-11-29 Tobias Burnus  <tobias@codesourcery.com>
 
 	PR ipa/84963
 	* gfortran.dg/goacc/pr84963.f90: Use dg-additional-options not
