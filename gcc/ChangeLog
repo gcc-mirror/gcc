@@ -1,5 +1,26 @@
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/92596
+	* tree-vect-stmts.c (vectorizable_call): Punt on hybrid mask/nonmask
+	operations.
+	(vectorizable_operation): Likewise, instead of relying on
+	vect_get_mask_type_for_stmt to do this.
+	(vect_get_vector_types_for_stmt): Always return a vector type
+	immediately, rather than deferring the choice for boolean results.
+	Use a vector mask type instead of a normal vector if
+	vect_use_mask_type_p.
+	(vect_get_mask_type_for_stmt): Delete.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt_1): Remove
+	mask_producers argument and special boolean_type_node handling.
+	(vect_determine_vf_for_stmt): Remove mask_producers argument and
+	update calls to vect_determine_vf_for_stmt_1.  Remove doubled call.
+	(vect_determine_vectorization_factor): Update call accordingly.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Remove special
+	boolean_type_node handling.
+	(vect_slp_analyze_node_operations_1): Likewise.
+
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (stmt_vec_info::mask_precision): New field.
 	(vect_use_mask_type_p): New function.
 	* tree-vect-patterns.c (vect_init_pattern_stmt): Copy the
