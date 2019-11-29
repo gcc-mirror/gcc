@@ -1,6 +1,12 @@
 2019-11-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
+	* coroutine-passes.cc (lower_coro_builtin): Use nodes and APIs
+	consistent with other places in the middle end.
+
+2019-11-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
 	* coroutine-passes.cc (lower_coro_builtin): Use ptr_type_node
 	throughout instead of building nodes each time.
 

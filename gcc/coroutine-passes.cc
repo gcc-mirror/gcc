@@ -116,7 +116,7 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    psize = ROUND_UP (psize, align);
 	    HOST_WIDE_INT offs = dir ? -psize : psize;
 	    tree repl = build2 (POINTER_PLUS_EXPR, ptr_type_node, ptr,
-				build_int_cst (sizetype, offs));
+				size_int (offs));
 	    gassign *grpl = gimple_build_assign (lhs, repl);
 	    gsi_replace (gsi, grpl, true);
 	    *handled_ops_p = true;
@@ -135,7 +135,7 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    tree fntype_ptr = build_pointer_type (fntype);
 	    tree fntype_ppp = build_pointer_type (fntype_ptr);
 	    tree indirect = fold_build2 (MEM_REF, fntype_ptr, ptr,
-					 wide_int_to_tree (fntype_ppp, offset));
+					 build_int_cst (fntype_ppp, offset));
 	    tree f_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (fntype_ptr));
 	    gassign *get_fptr = gimple_build_assign (f_ptr_tmp, indirect);
 	    gsi_insert_before (gsi, get_fptr, GSI_SAME_STMT);
@@ -158,12 +158,12 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
 	    tree vpp = build_pointer_type (ptr_type_node);
 	    tree indirect
-	      = fold_build2 (MEM_REF, vpp, ptr, wide_int_to_tree (vpp, 0));
-	    tree d_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (ptr_type_node));
+	      = fold_build2 (MEM_REF, vpp, ptr, build_int_cst (vpp, 0));
+	    tree d_ptr_tmp = make_ssa_name (ptr_type_node);
 	    gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
 	    gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
 	    tree done = fold_build2 (EQ_EXPR, boolean_type_node, d_ptr_tmp,
-				     wide_int_to_tree (ptr_type_node, 0));
+				     null_pointer_node);
 	    gassign *get_res = gimple_build_assign (lhs, done);
 	    gsi_replace (gsi, get_res, true);
 	    *handled_ops_p = true;
