@@ -1,5 +1,28 @@
 2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (stmt_vec_info::mask_precision): New field.
+	(vect_use_mask_type_p): New function.
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Copy the
+	mask precision to the pattern statement.
+	(append_pattern_def_seq): Add a scalar_type_for_mask parameter
+	and use it to initialize the new stmt's mask precision.
+	(search_type_for_mask_1): Delete.
+	(search_type_for_mask): Replace with...
+	(integer_type_for_mask): ...this new function.  Use the information
+	cached in the stmt_vec_info.
+	(vect_recog_bool_pattern): Update accordingly.
+	(build_mask_conversion): Pass the scalar type associated with the
+	mask type to append_pattern_def_seq.
+	(vect_recog_mask_conversion_pattern): Likewise.  Call
+	integer_type_for_mask instead of search_type_for_mask.
+	(vect_convert_mask_for_vectype): Call integer_type_for_mask instead
+	of search_type_for_mask.
+	(possible_vector_mask_operation_p): New function.
+	(vect_determine_mask_precision): Likewise.
+	(vect_determine_stmt_precisions): Call it.
+
+2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (get_mask_type_for_scalar_type): Replace
 	the slp_tree parameter with a group size parameter.
 	(vect_get_mask_type_for_stmt): Likewise.
