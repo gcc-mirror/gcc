@@ -163,8 +163,7 @@ static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
 static opt_result
 vect_determine_vf_for_stmt_1 (stmt_vec_info stmt_info,
 			      bool vectype_maybe_set_p,
-			      poly_uint64 *vf,
-			      vec<stmt_vec_info > *mask_producers)
+			      poly_uint64 *vf)
 {
   gimple *stmt = stmt_info->stmt;
 
@@ -192,8 +191,6 @@ vect_determine_vf_for_stmt_1 (stmt_vec_info stmt_info,
 	gcc_assert ((STMT_VINFO_DATA_REF (stmt_info)
 		     || vectype_maybe_set_p)
 		    && STMT_VINFO_VECTYPE (stmt_info) == stmt_vectype);
-      else if (stmt_vectype == boolean_type_node)
-	mask_producers->safe_push (stmt_info);
       else
 	STMT_VINFO_VECTYPE (stmt_info) = stmt_vectype;
     }
@@ -206,21 +203,17 @@ vect_determine_vf_for_stmt_1 (stmt_vec_info stmt_info,
 
 /* Subroutine of vect_determine_vectorization_factor.  Set the vector
    types of STMT_INFO and all attached pattern statements and update
-   the vectorization factor VF accordingly.  If some of the statements
-   produce a mask result whose vector type can only be calculated later,
-   add them to MASK_PRODUCERS.  Return true on success or false if
-   something prevented vectorization.  */
+   the vectorization factor VF accordingly.  Return true on success
+   or false if something prevented vectorization.  */
 
 static opt_result
-vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
-			    vec<stmt_vec_info > *mask_producers)
+vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf)
 {
   vec_info *vinfo = stmt_info->vinfo;
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: %G",
 		     stmt_info->stmt);
-  opt_result res
-    = vect_determine_vf_for_stmt_1 (stmt_info, false, vf, mask_producers);
+  opt_result res = vect_determine_vf_for_stmt_1 (stmt_info, false, vf);
   if (!res)
     return res;
 
@@ -239,10 +232,7 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "==> examining pattern def stmt: %G",
 			     def_stmt_info->stmt);
-	  if (!vect_determine_vf_for_stmt_1 (def_stmt_info, true,
-					     vf, mask_producers))
-	  res = vect_determine_vf_for_stmt_1 (def_stmt_info, true,
-					      vf, mask_producers);
+	  res = vect_determine_vf_for_stmt_1 (def_stmt_info, true, vf);
 	  if (!res)
 	    return res;
 	}
@@ -251,7 +241,7 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "==> examining pattern statement: %G",
 			 stmt_info->stmt);
-      res = vect_determine_vf_for_stmt_1 (stmt_info, true, vf, mask_producers);
+      res = vect_determine_vf_for_stmt_1 (stmt_info, true, vf);
       if (!res)
 	return res;
     }
@@ -296,7 +286,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   tree vectype;
   stmt_vec_info stmt_info;
   unsigned i;
-  auto_vec<stmt_vec_info> mask_producers;
 
   DUMP_VECT_SCOPE ("vect_determine_vectorization_factor");
 
@@ -354,8 +343,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	{
 	  stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  opt_result res
-	    = vect_determine_vf_for_stmt (stmt_info, &vectorization_factor,
-					  &mask_producers);
+	    = vect_determine_vf_for_stmt (stmt_info, &vectorization_factor);
 	  if (!res)
 	    return res;
         }
@@ -373,16 +361,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
     return opt_result::failure_at (vect_location,
 				   "not vectorized: unsupported data-type\n");
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
-
-  for (i = 0; i < mask_producers.length (); i++)
-    {
-      stmt_info = mask_producers[i];
-      opt_tree mask_type = vect_get_mask_type_for_stmt (stmt_info);
-      if (!mask_type)
-	return opt_result::propagate_failure (mask_type);
-      STMT_VINFO_VECTYPE (stmt_info) = mask_type;
-    }
-
   return opt_result::success ();
 }
 

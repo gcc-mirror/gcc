@@ -925,17 +925,6 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	      || rhs_code == LROTATE_EXPR
 	      || rhs_code == RROTATE_EXPR)
 	    {
-	      if (vectype == boolean_type_node)
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: shift of a"
-				     " boolean.\n");
-		  /* Fatal mismatch.  */
-		  matches[0] = false;
-		  return false;
-		}
-
 	      vec_mode = TYPE_MODE (vectype);
 
 	      /* First see if we have a vector/vector shift.  */
@@ -1157,9 +1146,8 @@ vect_build_slp_tree_1 (unsigned char *swap,
   if (alt_stmt_code != ERROR_MARK
       && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
     {
-      if (vectype == boolean_type_node
-	  || !vect_two_operations_perm_ok_p (stmts, group_size,
-					     vectype, alt_stmt_code))
+      if (!vect_two_operations_perm_ok_p (stmts, group_size,
+					  vectype, alt_stmt_code))
 	{
 	  for (i = 0; i < group_size; ++i)
 	    if (gimple_assign_rhs_code (stmts[i]->stmt) == alt_stmt_code)
@@ -2750,25 +2738,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
   gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
-
-  /* For BB vectorization vector types are assigned here.
-     Memory accesses already got their vector type assigned
-     in vect_analyze_data_refs.  */
-  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  if (bb_vinfo && STMT_VINFO_VECTYPE (stmt_info) == boolean_type_node)
-    {
-      unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
-      tree vectype = vect_get_mask_type_for_stmt (stmt_info, group_size);
-      if (!vectype)
-	/* vect_get_mask_type_for_stmt has already explained the
-	   failure.  */
-	return false;
-
-      stmt_vec_info sstmt_info;
-      unsigned int i;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, sstmt_info)
-	STMT_VINFO_VECTYPE (sstmt_info) = vectype;
-    }
 
   /* Calculate the number of vector statements to be created for the
      scalar stmts in this node.  For SLP reductions it is equal to the
