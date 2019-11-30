@@ -497,6 +497,8 @@ public:
      and their visibility needs to be copied from their "masters" at
      the end of parsing.  */
   unsigned cpp_implicit_alias : 1;
+  /* The alias is a symbol version.  */
+  unsigned symver : 1;
   /* Set once the definition was analyzed.  The list of references and
      other properties are built during analysis.  */
   unsigned analyzed : 1;

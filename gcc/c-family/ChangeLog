@@ -1,3 +1,8 @@
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-attribs.c (handle_symver_attribute): New function
+	(c_common_attributes): Add symver.
+
 2019-11-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.c (pointer_int_sum): Use verify_type_context to check

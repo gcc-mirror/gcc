@@ -3711,6 +3711,41 @@ Function Attributes}, @ref{PowerPC Function Attributes},
 @ref{Nios II Function Attributes}, and @ref{S/390 Function Attributes}
 for details.
 
+@item symver ("@var{name2}@@@var{nodename}")
+On ELF targets this attribute creates a symbol version.  The @var{name2} part
+of the parameter is the actual name of the symbol by which it will be
+externally referenced.  The @code{nodename} portion should be the name of a
+node specified in the version script supplied to the linker when building a
+shared library.  Versioned symbol must be defined and must be exported with
+default visibility.
+
+@smallexample
+__attribute__ ((__symver__ ("foo@@VERS_1"))) int
+foo_v1 (void)
+@{
+@}
+@end smallexample
+
+Will produce a @code{.symver foo_v1, foo@@VERS_1} directive in the assembler
+output. 
+
+It's an error to define multiple version of a given symbol.  In such case
+an alias can be used.
+
+@smallexample
+__attribute__ ((__symver__ ("foo@@VERS_2")))
+__attribute__ ((alias ("foo_v1")))
+int symver_foo_v1 (void);
+@end smallexample
+
+This example creates an alias of @code{foo_v1} with symbol name
+@code{symver_foo_v1} which will be version @code{VERS_2} of @code{foo}.
+
+Finally if the parameter is @code{"@var{name2}@@@@@var{nodename}"} then in
+addition to creating a symbol version (as if
+@code{"@var{name2}@@@var{nodename}"} was used) the version will be also used
+to resolve @var{name2} by the linker.
+
 @item target_clones (@var{options})
 @cindex @code{target_clones} function attribute
 The @code{target_clones} attribute is used to specify that a function

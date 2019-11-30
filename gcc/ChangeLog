@@ -1,3 +1,21 @@
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (symtab_node): Add symver flag.
+	* cgraphunit.c (process_symver_attribute): New.
+	(process_common_attributes): Use process_symver_attribute.
+	* lto-cgraph.c (lto_output_node): Stream symver.
+	(lto_output_varpool_node): Stream symver.
+	(input_overwrite_node): Stream symver.
+	(input_varpool_node): Stream symver.
+	* output.h (do_assemble_symver): Decalre.
+	* symtab.c (symtab_node::dump_base): Dump symver.
+	(symtab_node::verify_base): Verify symver.
+	(symtab_node::resolve_alias): Handle symver.
+	* varasm.c (do_assemble_symver): New function.
+	* varpool.c (varpool_node::assemble_aliases): Use it.
+	* doc/extend.texi: (symver attribute): Document.
+	* config/elfos.h (ASM_OUTPUT_SYMVER_DIRECTIVE): New.
+
 2019-11-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* target.h (type_context_kind): New enum.

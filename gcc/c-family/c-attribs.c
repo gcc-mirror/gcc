@@ -66,6 +66,7 @@ static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
+static tree handle_symver_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -475,6 +476,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      NULL },
   { "nocf_check",	      0, 0, false, true, true, true,
 			      handle_nocf_check_attribute, NULL },
+  { "symver",		      1, -1, true, false, false, false,
+			      handle_symver_attribute, NULL},
   { "copy",                   1, 1, false, false, false, false,
 			      handle_copy_attribute, NULL },
   { "noinit",		      0, 0, true,  false, false, false,
@@ -2334,6 +2337,62 @@ handle_noplt_attribute (tree *node, tree name,
     }
   return NULL_TREE;
 }
+
+/* Handle a "symver" attribute.  */
+
+static tree
+handle_symver_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+			 int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree symver;
+  const char *symver_str;
+
+  if (TREE_CODE (*node) != FUNCTION_DECL && TREE_CODE (*node) != VAR_DECL)
+    {
+      warning (OPT_Wattributes,
+	       "%<symver%> attribute only applies to functions and variables");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (!decl_in_symtab_p (*node))
+    {
+      warning (OPT_Wattributes,
+	       "%<symver%> attribute is only applicable to symbols");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  for (; args; args = TREE_CHAIN (args))
+    {
+      symver = TREE_VALUE (args);
+      if (TREE_CODE (symver) != STRING_CST)
+	{
+	  error ("%<symver%> attribute argument not a string constant");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      symver_str = TREE_STRING_POINTER (symver);
+
+      int ats = 0;
+      for (int n = 0; (int)n < TREE_STRING_LENGTH (symver); n++)
+	if (symver_str[n] == '@')
+	  ats++;
+
+      if (ats != 1 && ats != 2)
+	{
+	  error ("symver attribute argument must have format %<name@nodename%>");
+	  error ("%<symver%> attribute argument %qs must contain one or two "
+		 "%<@%>", symver_str);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
+
+  return NULL_TREE;
+}
+
 
 /* Handle an "alias" or "ifunc" attribute; arguments as in
    struct attribute_spec.handler, except that IS_ALIAS tells us
