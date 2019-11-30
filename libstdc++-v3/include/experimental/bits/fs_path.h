@@ -644,8 +644,22 @@ namespace __detail
 
   /// Create a path from a UTF-8-encoded sequence of char
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  inline path
+  __u8path(const string& __s, char)
+  {
+    return filesystem::u8path(__s.data(), __s.data() + __s.size());
+  }
+
   template<typename _Source>
-    inline path
+    inline __enable_if_t<is_convertible<const _Source&, string>::value, path>
+    __u8path(const _Source& __source, char)
+    {
+      std::string __s = __source;
+      return filesystem::u8path(__s.data(), __s.data() + __s.size());
+    }
+
+  template<typename _Source>
+    inline __enable_if_t<!is_convertible<const _Source&, string>::value, path>
     __u8path(const _Source& __source, char)
     {
       std::string __s = path::_S_string_from_iter(__source);
@@ -733,8 +747,21 @@ namespace __detail
     struct path::_Cvt
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#ifdef _GLIBCXX_USE_CHAR8_T
       static string_type
-      _S_wconvert(const char* __f, const char* __l, true_type)
+      _S_wconvert(const char8_t* __f, const char8_t* __l, const char8_t*)
+      {
+	const char* __f2 = (const char*)__f;
+	const char* __l2 = (const char*)__l;
+	std::wstring __wstr;
+	std::codecvt_utf8_utf16<wchar_t> __wcvt;
+	if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
+	  return __wstr;
+      }
+#endif
+
+      static string_type
+      _S_wconvert(const char* __f, const char* __l, const char*)
       {
 	using _Cvt = std::codecvt<wchar_t, char, mbstate_t>;
 	const auto& __cvt = std::use_facet<_Cvt>(std::locale{});
@@ -747,36 +774,29 @@ namespace __detail
       }
 
       static string_type
-      _S_wconvert(const _CharT* __f, const _CharT* __l, false_type)
+      _S_wconvert(const _CharT* __f, const _CharT* __l, const void*)
       {
-#ifdef _GLIBCXX_USE_CHAR8_T
-	if constexpr (is_same<_CharT, char8_t>::value)
-	  return _S_wconvert((const char*)__f, (const char*)__l, true_type());
-	else
-#endif
+	struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
+	{ } __cvt;
+	std::string __str;
+	if (__str_codecvt_out_all(__f, __l, __str, __cvt))
 	  {
-	    struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
-	    { } __cvt;
-	    std::string __str;
-	    if (__str_codecvt_out_all(__f, __l, __str, __cvt))
-	      {
-		const char* __f2 = __str.data();
-		const char* __l2 = __f2 + __str.size();
-		std::codecvt_utf8_utf16<wchar_t> __wcvt;
-		std::wstring __wstr;
-		if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
-		  return __wstr;
-	      }
-	    _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-		  "Cannot convert character sequence",
-		  std::make_error_code(errc::illegal_byte_sequence)));
+	    const char* __f2 = __str.data();
+	    const char* __l2 = __f2 + __str.size();
+	    std::codecvt_utf8_utf16<wchar_t> __wcvt;
+	    std::wstring __wstr;
+	    if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
+	      return __wstr;
 	  }
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	      "Cannot convert character sequence",
+	      std::make_error_code(errc::illegal_byte_sequence)));
       }
 
       static string_type
       _S_convert(const _CharT* __f, const _CharT* __l)
       {
-	return _S_wconvert(__f, __l, is_same<_CharT, char>{});
+	return _S_wconvert(__f, __l, (const _CharT*)nullptr);
       }
 #else
       static string_type
@@ -786,19 +806,17 @@ namespace __detail
 	if constexpr (is_same<_CharT, char8_t>::value)
 	  return string_type(__f, __l);
 	else
-	  {
 #endif
+	  {
 	    struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
 	    { } __cvt;
 	    std::string __str;
 	    if (__str_codecvt_out_all(__f, __l, __str, __cvt))
 	      return __str;
-#ifdef _GLIBCXX_USE_CHAR8_T
+	    _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+		  "Cannot convert character sequence",
+		  std::make_error_code(errc::illegal_byte_sequence)));
 	  }
-#endif
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "Cannot convert character sequence",
-	      std::make_error_code(errc::illegal_byte_sequence)));
       }
 #endif
 

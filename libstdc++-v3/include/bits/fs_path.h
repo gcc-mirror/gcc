@@ -691,14 +691,8 @@ namespace __detail
     u8path(_InputIterator __first, _InputIterator __last)
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-#ifdef _GLIBCXX_USE_CHAR8_T
-      if constexpr (is_same_v<_CharT, char8_t>)
+      if constexpr (is_same_v<_CharT, char>)
 	{
-	  return path{ __first, __last };
-	}
-      else
-	{
-#endif
 	  // XXX This assumes native wide encoding is UTF-16.
 	  std::codecvt_utf8_utf16<path::value_type> __cvt;
 	  path::string_type __tmp;
@@ -710,16 +704,16 @@ namespace __detail
 	  else
 	    {
 	      const std::string __u8str{__first, __last};
-	      const char* const __ptr = __u8str.data();
-	      if (__str_codecvt_in_all(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
+	      const char* const __p = __u8str.data();
+	      if (__str_codecvt_in_all(__p, __p + __u8str.size(), __tmp, __cvt))
 		return path{ __tmp };
 	    }
 	  _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	      "Cannot convert character sequence",
 	      std::make_error_code(errc::illegal_byte_sequence)));
-#ifdef _GLIBCXX_USE_CHAR8_T
 	}
-#endif
+      else
+	return path{ __first, __last };
 #else
       // This assumes native normal encoding is UTF-8.
       return path{ __first, __last };
@@ -737,14 +731,8 @@ namespace __detail
     u8path(const _Source& __source)
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-#ifdef _GLIBCXX_USE_CHAR8_T
-      if constexpr (is_same_v<_CharT, char8_t>)
+      if constexpr (is_same_v<_CharT, char>)
 	{
-	  return path{ __source };
-	}
-      else
-	{
-#endif
 	  if constexpr (is_convertible_v<const _Source&, std::string_view>)
 	    {
 	      const std::string_view __s = __source;
@@ -755,9 +743,9 @@ namespace __detail
 	      std::string __s = path::_S_string_from_iter(__source);
 	      return filesystem::u8path(__s.data(), __s.data() + __s.size());
 	    }
-#ifdef _GLIBCXX_USE_CHAR8_T
 	}
-#endif
+      else
+	return path{ __source };
 #else
       return path{ __source };
 #endif
