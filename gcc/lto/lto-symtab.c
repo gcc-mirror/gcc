@@ -69,6 +69,13 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   if (node->definition && prevailing_node->definition
       && DECL_COMDAT (node->decl) && DECL_COMDAT (prevailing_node->decl))
     prevailing_node->merged_comdat = true;
+  else if ((node->definition || node->body_removed)
+	   && DECL_DECLARED_INLINE_P (node->decl)
+	   && DECL_EXTERNAL (node->decl)
+	   && prevailing_node->definition)
+    prevailing_node->merged_extern_inline = true;
+  prevailing_node->merged_comdat |= node->merged_comdat;
+  prevailing_node->merged_extern_inline |= node->merged_extern_inline;
 
   /* Redirect all incoming edges.  */
   compatible_p

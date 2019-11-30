@@ -913,6 +913,9 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	       ? "inlined" : cgraph_inline_failed_string (edge-> inline_failed),
 	       indent, "", edge->sreal_frequency ().to_double ());
 
+      if (cross_module_call_p (edge))
+	fprintf (f, " cross module");
+
       if (es)
 	fprintf (f, " loop depth:%2i size:%2i time: %2i",
 		 es->loop_depth, es->call_stmt_size, es->call_stmt_time);

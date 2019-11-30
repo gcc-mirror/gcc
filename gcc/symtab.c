@@ -1863,6 +1863,13 @@ symtab_node::noninterposable_alias (void)
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
       DECL_STATIC_DESTRUCTOR (new_decl) = 0;
       new_node = cgraph_node::create_alias (new_decl, node->decl);
+
+      cgraph_node *new_cnode = dyn_cast <cgraph_node *> (new_node),
+		   *cnode = dyn_cast <cgraph_node *> (node);
+
+      new_cnode->unit_id = cnode->unit_id;
+      new_cnode->merged_comdat = cnode->merged_comdat;
+      new_cnode->merged_extern_inline = cnode->merged_extern_inline;
     }
   else
     {

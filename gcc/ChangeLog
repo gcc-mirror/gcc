@@ -1,3 +1,28 @@
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::dump): Dump unit_id and merged_extern_inline.
+	* cgraph.h (cgraph_node): Add unit_id and
+	merged_extern_inline.
+	(symbol_table): Add max_unit.
+	(symbol_table::symbol_table): Initialize it.
+	* cgraphclones.c (duplicate_thunk_for_node): Copy unit_id.
+	merged_comdat, merged_extern_inline.
+	(cgraph_node::create_clone): Likewise.
+	(cgraph_node::create_version_clone): Likewise.
+	* ipa-fnsummary.c (dump_ipa_call_summary): Dump info about cross module
+	calls.
+	* ipa-fnsummary.h (cross_module_call_p): New inline function.
+	* ipa-inline-analyssi.c (simple_edge_hints): Use it.
+	* ipa-inline.c (inline_small_functions): Likewise.
+	* lto-symtab.c (lto_cgraph_replace_node): Record merged_extern_inline;
+	copy merged_comdat and merged_extern_inline.
+	* lto-cgraph.c (lto_output_node): Stream out merged_comdat,
+	merged_extern_inline and unit_id.
+	(input_overwrite_node): Stream in these.
+	(input_cgraph_1): Set unit_base.
+	* lto-streamer.h (lto_file_decl_data): Add unit_base.
+	* symtab.c (symtab_node::make_decl_local): Record former_comdat.
+
 2019-11-30  Maciej W. Rozycki  <macro@wdc.com>
 
 	* gcc.c (process_command): Only warn about an ineffective `-x'

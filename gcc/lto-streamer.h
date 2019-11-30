@@ -626,6 +626,8 @@ struct GTY(()) lto_file_decl_data
   lto_section lto_section_header;
 
   int order_base;
+
+  int unit_base;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
