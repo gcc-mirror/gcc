@@ -526,6 +526,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->transparent_alias, 1);
   bp_pack_value (&bp, node->weakref, 1);
+  bp_pack_value (&bp, node->symver, 1);
   bp_pack_value (&bp, node->frequency, 2);
   bp_pack_value (&bp, node->only_called_at_startup, 1);
   bp_pack_value (&bp, node->only_called_at_exit, 1);
@@ -609,6 +610,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->transparent_alias, 1);
   bp_pack_value (&bp, node->weakref, 1);
+  bp_pack_value (&bp, node->symver, 1);
   bp_pack_value (&bp, node->analyzed && (!boundary_p || node->alias), 1);
   gcc_assert (node->definition || !node->analyzed);
   /* Constant pool initializers can be de-unified into individual ltrans units.
@@ -1173,6 +1175,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->alias = bp_unpack_value (bp, 1);
   node->transparent_alias = bp_unpack_value (bp, 1);
   node->weakref = bp_unpack_value (bp, 1);
+  node->symver = bp_unpack_value (bp, 1);
   node->frequency = (enum node_frequency)bp_unpack_value (bp, 2);
   node->only_called_at_startup = bp_unpack_value (bp, 1);
   node->only_called_at_exit = bp_unpack_value (bp, 1);
@@ -1371,6 +1374,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->alias = bp_unpack_value (&bp, 1);
   node->transparent_alias = bp_unpack_value (&bp, 1);
   node->weakref = bp_unpack_value (&bp, 1);
+  node->symver = bp_unpack_value (&bp, 1);
   node->analyzed = bp_unpack_value (&bp, 1);
   node->used_from_other_partition = bp_unpack_value (&bp, 1);
   node->in_other_partition = bp_unpack_value (&bp, 1);

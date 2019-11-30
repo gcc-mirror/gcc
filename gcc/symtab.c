@@ -848,6 +848,8 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, " transparent_alias");
   if (weakref)
     fprintf (f, " weakref");
+  if (symver)
+    fprintf (f, " symver");
   if (cpp_implicit_alias)
     fprintf (f, " cpp_implicit_alias");
   if (alias_target)
@@ -1145,6 +1147,11 @@ symtab_node::verify_base (void)
   if (transparent_alias && !alias)
     {
       error ("node is transparent_alias but not an alias");
+      error_found = true;
+    }
+  if (symver && !alias)
+    {
+      error ("node is symver but not alias");
       error_found = true;
     }
   if (same_comdat_group)
@@ -1782,7 +1789,9 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
 	  if (target->get_comdat_group ())
 	    alias_alias->add_to_same_comdat_group (target);
 	}
-      if (!alias_alias->transparent_alias || transparent)
+      if ((!alias_alias->transparent_alias
+	   && !alias_alias->symver)
+	  || transparent)
 	{
 	  alias_alias->remove_all_references ();
 	  alias_alias->create_reference (target, IPA_REF_ALIAS, NULL);
