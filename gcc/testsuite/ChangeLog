@@ -1,3 +1,11 @@
+
+2019-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91783
+	* gfortran.dg/dependency_56.f90: New test. Backport from trunk on
+	the off-chance that somebody backports something that will break
+	this test case.
+
 2019-11-29  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from mainline
