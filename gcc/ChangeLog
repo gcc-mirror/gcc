@@ -1,5 +1,10 @@
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-cfg.c (execute_fixup_cfg): Update also max_bb_count when
+	scaling happen.
+
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.h (symtab_node): Add symver flag.
 	* cgraphunit.c (process_symver_attribute): New.
 	(process_common_attributes): Use process_symver_attribute.
