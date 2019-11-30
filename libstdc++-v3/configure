@@ -74551,6 +74551,9 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
       solaris*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
+      mingw*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
       *)
         enable_libstdcxx_filesystem_ts=no
         ;;

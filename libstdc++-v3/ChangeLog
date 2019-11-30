@@ -1,5 +1,9 @@
 2019-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Enable by default for
+	mingw targets.
+	* configure: Regenerate.
+
 	* include/bits/fs_path.h (u8path(InputIterator, InputIterator))
 	(u8path(const Source&)) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Simplify
 	conditions.
