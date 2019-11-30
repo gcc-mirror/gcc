@@ -1,3 +1,23 @@
+2019-11-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (lookup_promise_member): Remove.
+	(coro_init_identifiers): New.
+	(coro_promise_type_found_p): Initialize the coroutines state
+	and identifiers lazily.
+	(lookup_promise_method): New.
+	(build_co_await): Use pre-built identifiers for coroutine,
+	promise and awaiter names.
+	(finish_co_await_expr): Likewise.
+	(finish_co_yield_expr): Likewise.
+	(finish_co_return_stmt): Likewise.
+	(co_await_expander): Likewise.
+	(build_actor_fn): Likewise.
+	(build_init_or_final_await): Likewise.
+	(morph_fn_to_coro): Likewise.
+	* cp-tree.h (enum cp_tree_index): Remove coroutine identifiers.
+	* decl.c (initialize_predefined_identifiers): Likewise.
+
 2019-11-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/

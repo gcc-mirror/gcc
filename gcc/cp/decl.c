@@ -4220,9 +4220,6 @@ initialize_predefined_identifiers (void)
     {"heap uninit", &heap_uninit_identifier, cik_normal},
     {"heap ", &heap_identifier, cik_normal},
     {"heap deleted", &heap_deleted_identifier, cik_normal},
-    {"coroutine_traits", &coro_traits_identifier, cik_normal},
-    {"coroutine_handle", &coro_handle_identifier, cik_normal},
-    {"promise_type", &coro_promise_type_identifier, cik_normal},
     {NULL, NULL, cik_normal}
   };
 

@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 static tree find_coro_traits_template_decl (location_t);
 static tree find_coro_handle_type (location_t, tree);
 static tree find_promise_type (tree);
-static tree lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
 
 /* GCC C++ coroutines implementation.
@@ -109,6 +108,9 @@ struct coroutine_info_hasher : ggc_ptr_hash<coroutine_info>
 
 static GTY (()) hash_table<coroutine_info_hasher> *coroutine_info_table;
 
+/* We will initialise state lazily.  */
+static bool coro_initialized = false;
+
 /* Return a hash value for the entry pointed to by INFO.
    The compare type is a tree, but the only trees we are going use are
    function decls.  We use the DECL_UID as the hash value since that is
@@ -175,6 +177,58 @@ get_coroutine_info (tree fn_decl)
   if (slot)
     return *slot;
   return NULL;
+}
+
+/* We will lazily create all the identifiers that are used by coroutines
+   on the first attempt to lookup the traits.  */
+
+/* Identifiers that are used by all coroutines.  */
+static tree coro_traits_identifier;
+static tree coro_handle_identifier;
+static tree coro_promise_type_identifier;
+
+/* Required promise method name identifiers.  */
+static tree coro_await_transform_identifier;
+static tree coro_initial_suspend_identifier;
+static tree coro_final_suspend_identifier;
+static tree coro_return_void_identifier;
+static tree coro_return_value_identifier;
+static tree coro_yield_value_identifier;
+static tree coro_resume_identifier;
+static tree coro_from_address_identifier;
+static tree coro_get_return_object_identifier;
+static tree coro_gro_on_allocation_fail_identifier;
+static tree coro_unhandled_exception_identifier;
+
+/* Awaitable methods.  */
+static tree coro_await_ready_identifier;
+static tree coro_await_suspend_identifier;
+static tree coro_await_resume_identifier;
+
+/* Create the identifiers used by the coroutines library interfaces.  */
+static void
+coro_init_identifiers ()
+{
+  coro_traits_identifier = get_identifier ("coroutine_traits");
+  coro_handle_identifier = get_identifier ("coroutine_handle");
+  coro_promise_type_identifier = get_identifier ("promise_type");
+
+  coro_await_transform_identifier = get_identifier ("await_transform");
+  coro_initial_suspend_identifier = get_identifier ("initial_suspend");
+  coro_final_suspend_identifier = get_identifier ("final_suspend");
+  coro_return_void_identifier = get_identifier ("return_void");
+  coro_return_value_identifier = get_identifier ("return_value");
+  coro_yield_value_identifier = get_identifier ("yield_value");
+  coro_resume_identifier = get_identifier ("resume");
+  coro_from_address_identifier = get_identifier ("from_address");
+  coro_get_return_object_identifier = get_identifier ("get_return_object");
+  coro_gro_on_allocation_fail_identifier =
+    get_identifier ("get_return_object_on_allocation_failure");
+  coro_unhandled_exception_identifier = get_identifier ("unhandled_exception");
+
+  coro_await_ready_identifier = get_identifier ("await_ready");
+  coro_await_suspend_identifier = get_identifier ("await_suspend");
+  coro_await_resume_identifier = get_identifier ("await_resume");
 }
 
 /* ================= Parse, Semantics and Type checking ================= */
@@ -298,8 +352,17 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 
   /* We only need one entry per coroutine in a TU, the assumption here is that
      there are typically not 1000s.  */
-  if (coroutine_info_table == NULL)
-    coroutine_info_table = hash_table<coroutine_info_hasher>::create_ggc (11);
+  if (!coro_initialized)
+    {
+      gcc_checking_assert (coroutine_info_table == NULL);
+      /* A table to hold the state, per coroutine decl.  */
+      coroutine_info_table =
+	hash_table<coroutine_info_hasher>::create_ggc (11);
+      /* Set up the identifiers we will use.  */
+      gcc_checking_assert (coro_traits_identifier == NULL);
+      coro_init_identifiers ();
+      coro_initialized = true;
+    }
 
   coroutine_info *coro_info = get_or_insert_coroutine_info (fndecl);
   /* Without this, we cannot really proceed.  */
@@ -388,20 +451,18 @@ get_coroutine_promise_proxy (tree decl)
   return NULL_TREE;
 }
 
-/* Lookup a Promise member.  */
-
 static tree
-lookup_promise_member (tree fndecl, const char *member_name, location_t loc,
+lookup_promise_method (tree fndecl, tree member_id, location_t loc,
 		       bool musthave)
 {
-  tree pm_name = get_identifier (member_name);
   tree promise = get_coroutine_promise_type (fndecl);
   tree pm_memb
-    = lookup_member (promise, pm_name,
+    = lookup_member (promise, member_id,
 		     /*protect*/ 1, /*want_type*/ 0, tf_warning_or_error);
   if (musthave && (pm_memb == NULL_TREE || pm_memb == error_mark_node))
     {
-      error_at (loc, "no member named %qs in %qT", member_name, promise);
+      error_at (loc, "no member named %qs in %qT",
+		IDENTIFIER_POINTER (member_id), promise);
       return error_mark_node;
     }
   return pm_memb;
@@ -542,14 +603,14 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 
   /* Check for required awaitable members and their types.  */
   tree awrd_meth
-    = lookup_member (o_type, get_identifier ("await_ready"),
+    = lookup_member (o_type, coro_await_ready_identifier,
 		     /* protect */ 1, /*want_type=*/0, tf_warning_or_error);
 
   if (!awrd_meth || awrd_meth == error_mark_node)
     return error_mark_node;
 
   tree awsp_meth
-    = lookup_member (o_type, get_identifier ("await_suspend"),
+    = lookup_member (o_type, coro_await_suspend_identifier,
 		     /* protect */ 1, /*want_type=*/0, tf_warning_or_error);
 
   if (!awsp_meth || awsp_meth == error_mark_node)
@@ -558,7 +619,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   /* The type of the co_await is the return type of the awaitable's
      co_resume(), so we need to look that up.  */
   tree awrs_meth
-    = lookup_member (o_type, get_identifier ("await_resume"),
+    = lookup_member (o_type, coro_await_resume_identifier,
 		     /* protect */ 1, /*want_type=*/0, tf_warning_or_error);
 
   if (!awrs_meth || awrs_meth == error_mark_node)
@@ -668,7 +729,8 @@ finish_co_await_expr (location_t kw, tree expr)
      The incoming cast expression might be transformed by a promise
      'await_transform()'.  */
   tree at_meth
-    = lookup_promise_member (current_function_decl, "await_transform", kw,
+    = lookup_promise_method (current_function_decl,
+			     coro_await_transform_identifier, kw,
 			     /*musthave*/ false);
   if (at_meth == error_mark_node)
     return error_mark_node;
@@ -738,7 +800,8 @@ finish_co_yield_expr (location_t kw, tree expr)
 
   /* The incoming expr is "e" per [expr.yield] para 1, lookup and build a
      call for p.yield_value(e).  */
-  tree y_meth = lookup_promise_member (current_function_decl, "yield_value", kw,
+  tree y_meth = lookup_promise_method (current_function_decl,
+				       coro_yield_value_identifier, kw,
 				       true /*musthave*/);
   if (!y_meth || y_meth == error_mark_node)
     return error_mark_node;
@@ -823,7 +886,8 @@ finish_co_return_stmt (location_t kw, tree expr)
   if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
     {
       tree crv_meth
-	= lookup_promise_member (current_function_decl, "return_void", kw,
+	= lookup_promise_method (current_function_decl,
+				 coro_return_void_identifier, kw,
 				 /*musthave=*/ true);
       if (!crv_meth || crv_meth == error_mark_node)
 	return error_mark_node;
@@ -835,7 +899,8 @@ finish_co_return_stmt (location_t kw, tree expr)
   else
     {
       tree crv_meth
-	= lookup_promise_member (current_function_decl, "return_value", kw,
+	= lookup_promise_method (current_function_decl,
+				 coro_return_value_identifier, kw,
 				 /*musthave=*/ true);
       if (!crv_meth || crv_meth == error_mark_node)
 	return error_mark_node;
@@ -1245,7 +1310,7 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 		      suspend);
       append_to_statement_list (r, &body_list);
       tree resume
-	= lookup_member (TREE_TYPE (sv_handle), get_identifier ("resume"), 1, 0,
+	= lookup_member (TREE_TYPE (sv_handle), coro_resume_identifier, 1, 0,
 			 tf_warning_or_error);
       resume = build_new_method_call (sv_handle, resume, NULL, NULL_TREE,
 				      LOOKUP_NORMAL, NULL, tf_warning_or_error);
@@ -1806,7 +1871,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree ash = build_class_member_access_expr (actor_frame, ash_m, NULL_TREE,
 					     false, tf_warning_or_error);
   /* So construct the self-handle from the frame address.  */
-  tree hfa_m = lookup_member (handle_type, get_identifier ("from_address"), 1,
+  tree hfa_m = lookup_member (handle_type, coro_from_address_identifier, 1,
 			      0, tf_warning_or_error);
 
   r = build1 (CONVERT_EXPR, build_pointer_type (void_type_node), actor_fp);
@@ -1837,7 +1902,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   tree return_void = NULL_TREE;
   tree rvm
-    = lookup_promise_member (orig, "return_void", loc, false /*musthave*/);
+    = lookup_promise_method (orig, coro_return_void_identifier, loc,
+			     /*musthave*/false);
   if (rvm && rvm != error_mark_node)
     return_void
       = build_new_method_call (ap, rvm, NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
@@ -2091,8 +2157,9 @@ get_fn_local_identifier (tree orig, const char *append)
 static tree
 build_init_or_final_await (location_t loc, bool is_final)
 {
-  const char *suspend_alt = is_final ? "final_suspend" : "initial_suspend";
-  tree setup_meth = lookup_promise_member (current_function_decl, suspend_alt,
+  tree suspend_alt = is_final ? coro_final_suspend_identifier
+			      : coro_initial_suspend_identifier;
+  tree setup_meth = lookup_promise_method (current_function_decl, suspend_alt,
 					   loc, true /*musthave*/);
   if (!setup_meth || setup_meth == error_mark_node)
     return error_mark_node;
@@ -2876,7 +2943,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      The get_return_object_on_allocation_failure() must be a static method.
   */
   tree grooaf_meth
-    = lookup_promise_member (orig, "get_return_object_on_allocation_failure",
+    = lookup_promise_method (orig, coro_gro_on_allocation_fail_identifier,
 			     fn_start, false /*musthave*/);
 
   /* Allocate the frame.  This is a place-holder which we might alter or lower
@@ -3091,8 +3158,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   BIND_EXPR_BLOCK (gro_context_bind) = gro_block;
   add_stmt (gro_context_bind);
 
-  tree gro_meth = lookup_promise_member (orig, "get_return_object", fn_start,
-					 true /*musthave*/);
+  tree gro_meth = lookup_promise_method (orig,
+					 coro_get_return_object_identifier,
+					 fn_start, /*musthave*/ true );
   tree get_ro
     = build_new_method_call (p, gro_meth, NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
 			     tf_warning_or_error);
@@ -3202,11 +3270,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       BIND_EXPR_BLOCK (first) = replace_blk;
     }
 
-  const char *ueh_name = "unhandled_exception";
   if (flag_exceptions)
     {
       tree ueh_meth
-	= lookup_promise_member (orig, ueh_name, fn_start, /*musthave*/ true);
+	= lookup_promise_method (orig, coro_unhandled_exception_identifier,
+				 fn_start, /*musthave*/ true);
       /* Build promise.unhandled_exception();  */
       tree ueh
 	= build_new_method_call (p, ueh_meth, NULL, NULL_TREE, LOOKUP_NORMAL,
@@ -3246,9 +3314,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       /* We still try to look for the promise method and warn if it's not
 	 present.  */
       tree ueh_meth
-	= lookup_promise_member (orig, ueh_name, fn_start, /*musthave*/ false);
+	= lookup_promise_method (orig, coro_unhandled_exception_identifier,
+				 fn_start, /*musthave*/ false);
       if (!ueh_meth || ueh_meth == error_mark_node)
-	warning_at (fn_start, 0, "no member named %qs in %qT", ueh_name,
+	warning_at (fn_start, 0, "no member named %qs in %qT",
+		    IDENTIFIER_POINTER (coro_unhandled_exception_identifier),
 		    get_coroutine_promise_type (orig));
     } /* Else we don't check and don't care if the method is missing.  */
 
