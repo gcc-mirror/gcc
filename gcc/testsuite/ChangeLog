@@ -1,3 +1,8 @@
+2019-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/lto/inline-crossmodule-1.h: New testcase.

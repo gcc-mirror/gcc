@@ -715,6 +715,9 @@ namespace aarch64_sve {
 			   tree, unsigned int, tree *);
   gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
   rtx expand_builtin (unsigned int, tree, rtx);
+#ifdef GCC_TARGET_H
+  bool verify_type_context (location_t, type_context_kind, const_tree, bool);
+#endif
 }
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);

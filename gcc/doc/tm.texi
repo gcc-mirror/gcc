@@ -11976,6 +11976,19 @@ conversion rules.
 This is currently used only by the C and C++ front ends.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_VERIFY_TYPE_CONTEXT (location_t @var{loc}, type_context_kind @var{context}, const_tree @var{type}, bool @var{silent_p})
+If defined, this hook returns false if there is a target-specific reason
+why type @var{type} cannot be used in the source language context described
+by @var{context}.  When @var{silent_p} is false, the hook also reports an
+error against @var{loc} for invalid uses of @var{type}.
+
+Calls to this hook should be made through the global function
+@code{verify_type_context}, which makes the @var{silent_p} parameter
+default to false and also handles @code{error_mark_node}.
+
+The default implementation always returns true.
+@end deftypefn
+
 @defmac OBJC_JBLEN
 This macro determines the size of the objective C jump buffer for the
 NeXT runtime. By default, OBJC_JBLEN is defined to an innocuous value.

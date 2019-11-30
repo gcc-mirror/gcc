@@ -5021,7 +5021,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	  {
 	    /* A complete type is ok if size is fixed.  */
 
-	    if (TREE_CODE (TYPE_SIZE (TREE_TYPE (decl))) != INTEGER_CST
+	    if (!poly_int_tree_p (TYPE_SIZE (TREE_TYPE (decl)))
 		|| C_DECL_VARIABLE_SIZE (decl))
 	      {
 		error ("variable-sized object may not be initialized");
@@ -5304,6 +5304,15 @@ finish_decl (tree decl, location_t init_loc, tree init,
 
       complete_flexible_array_elts (DECL_INITIAL (decl));
 
+      if (is_global_var (decl))
+	{
+	  type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
+				       ? TCTX_THREAD_STORAGE
+				       : TCTX_STATIC_STORAGE);
+	  if (!verify_type_context (input_location, context, TREE_TYPE (decl)))
+	    TREE_TYPE (decl) = error_mark_node;
+	}
+
       if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node
 	  && COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	layout_decl (decl, 0);
@@ -5333,7 +5342,9 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  && TREE_STATIC (decl))
 	incomplete_record_decls.safe_push (decl);
 
-      if (is_global_var (decl) && DECL_SIZE (decl) != NULL_TREE)
+      if (is_global_var (decl)
+	  && DECL_SIZE (decl) != NULL_TREE
+	  && TREE_TYPE (decl) != error_mark_node)
 	{
 	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
 	    constant_expression_warning (DECL_SIZE (decl));
@@ -5652,6 +5663,10 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
       c_incomplete_type_error (loc, NULL_TREE, type);
       return error_mark_node;
     }
+
+  if (TREE_STATIC (decl)
+      && !verify_type_context (loc, TCTX_STATIC_STORAGE, type))
+    return error_mark_node;
 
   stmt = build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl);
   complit = build1 (COMPOUND_LITERAL_EXPR, type, stmt);
@@ -6369,6 +6384,12 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	    if (type == error_mark_node)
 	      continue;
+
+	    if (!verify_type_context (loc, TCTX_ARRAY_ELEMENT, type))
+	      {
+		type = error_mark_node;
+		continue;
+	      }
 
 	    /* If size was specified, set ITYPE to a range-type for
 	       that size.  Otherwise, ITYPE remains null.  finish_decl
@@ -7217,6 +7238,10 @@ grokdeclarator (const struct c_declarator *declarator,
 	    if (orig_qual_indirect == 0)
 	      orig_qual_type = NULL_TREE;
 	  }
+	if (type != error_mark_node
+	    && !verify_type_context (loc, TCTX_FIELD, type))
+	  type = error_mark_node;
+
 	type = c_build_qualified_type (type, type_quals, orig_qual_type,
 				       orig_qual_indirect);
 	decl = build_decl (declarator->id_loc,

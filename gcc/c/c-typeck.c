@@ -3892,6 +3892,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
   addr_space_t as0 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op0)));
   addr_space_t as1 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op1)));
   tree target_type = TREE_TYPE (TREE_TYPE (op0));
+  tree orig_op0 = op0;
   tree orig_op1 = op1;
 
   /* If the operands point into different address spaces, we need to
@@ -3962,6 +3963,10 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");
+  else if (verify_type_context (loc, TCTX_POINTER_ARITH,
+				TREE_TYPE (TREE_TYPE (orig_op0))))
+    verify_type_context (loc, TCTX_POINTER_ARITH,
+			 TREE_TYPE (TREE_TYPE (orig_op1)));
 
   op1 = c_size_in_bytes (target_type);
 
@@ -4614,6 +4619,9 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 		  pedwarn (location, OPT_Wpointer_arith,
 			   "wrong type argument to decrement");
 	      }
+	    else
+	      verify_type_context (location, TCTX_POINTER_ARITH,
+				   TREE_TYPE (argtype));
 
 	    inc = c_size_in_bytes (TREE_TYPE (argtype));
 	    inc = convert_to_ptrofftype_loc (location, inc);

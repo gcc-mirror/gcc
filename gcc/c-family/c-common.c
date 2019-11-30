@@ -3146,6 +3146,9 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 	return error_mark_node;
       size_exp = integer_one_node;
     }
+  else if (!verify_type_context (loc, TCTX_POINTER_ARITH,
+				 TREE_TYPE (result_type)))
+    size_exp = integer_one_node;
   else
     size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
 
@@ -3691,6 +3694,13 @@ c_sizeof_or_alignof_type (location_t loc,
 		  "incomplete element type", op_name, type);
       return error_mark_node;
     }
+  else if (!verify_type_context (loc, is_sizeof ? TCTX_SIZEOF : TCTX_ALIGNOF,
+				 type, !complain))
+    {
+      if (!complain)
+	return error_mark_node;
+      value = size_one_node;
+    }
   else
     {
       if (is_sizeof)
@@ -3723,7 +3733,10 @@ c_alignof_expr (location_t loc, tree expr)
 {
   tree t;
 
-  if (VAR_OR_FUNCTION_DECL_P (expr))
+  if (!verify_type_context (loc, TCTX_ALIGNOF, TREE_TYPE (expr)))
+    t = size_one_node;
+
+  else if (VAR_OR_FUNCTION_DECL_P (expr))
     t = size_int (DECL_ALIGN_UNIT (expr));
 
   else if (TREE_CODE (expr) == COMPONENT_REF

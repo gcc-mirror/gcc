@@ -16200,6 +16200,15 @@ aarch64_mangle_type (const_tree type)
   return NULL;
 }
 
+/* Implement TARGET_VERIFY_TYPE_CONTEXT.  */
+
+static bool
+aarch64_verify_type_context (location_t loc, type_context_kind context,
+			     const_tree type, bool silent_p)
+{
+  return aarch64_sve::verify_type_context (loc, context, type, silent_p);
+}
+
 /* Find the first rtx_insn before insn that will generate an assembly
    instruction.  */
 
@@ -21859,6 +21868,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
+
+#undef TARGET_VERIFY_TYPE_CONTEXT
+#define TARGET_VERIFY_TYPE_CONTEXT aarch64_verify_type_context
 
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST aarch64_memory_move_cost
