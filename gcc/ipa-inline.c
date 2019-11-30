@@ -2257,11 +2257,12 @@ inline_small_functions (void)
 
 	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			   " Inlined %C into %C which now has time %f and "
-			   "size %i, net change of %s.\n",
+			   "size %i, net change of %s%s.\n",
 			   edge->callee, edge->caller,
 			   s->time.to_double (),
 			   ipa_size_summaries->get (edge->caller)->size,
-			   buf_net_change);
+			   buf_net_change,
+			   cross_module_call_p (edge) ? " (cross module)":"");
 	}
       if (min_size > overall_size)
 	{

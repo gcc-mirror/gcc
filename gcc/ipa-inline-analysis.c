@@ -163,9 +163,7 @@ simple_edge_hints (struct cgraph_edge *edge)
   if (to_scc_no && to_scc_no  == callee_scc_no && !edge->recursive_p ())
     hints |= INLINE_HINT_same_scc;
 
-  if (callee->lto_file_data && edge->caller->lto_file_data
-      && edge->caller->lto_file_data != callee->lto_file_data
-      && !callee->merged_comdat && !callee->icf_merged)
+  if (cross_module_call_p (edge))
     hints |= INLINE_HINT_cross_module;
 
   return hints;

@@ -234,6 +234,9 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
   new_thunk->clone.param_adjustments = node->clone.param_adjustments;
+  new_thunk->unit_id = thunk->unit_id;
+  new_thunk->merged_comdat = thunk->merged_comdat;
+  new_thunk->merged_extern_inline = thunk->merged_extern_inline;
 
   cgraph_edge *e = new_thunk->create_edge (node, NULL, new_thunk->count);
   symtab->call_edge_duplication_hooks (thunk->callees, e);
@@ -383,6 +386,9 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->icf_merged = icf_merged;
   new_node->merged_comdat = merged_comdat;
   new_node->thunk = thunk;
+  new_node->unit_id = unit_id;
+  new_node->merged_comdat = merged_comdat;
+  new_node->merged_extern_inline = merged_extern_inline;
 
   if (param_adjustments)
     new_node->clone.param_adjustments = param_adjustments;
@@ -888,6 +894,9 @@ cgraph_node::create_version_clone (tree new_decl,
    new_version->inlined_to = inlined_to;
    new_version->rtl = rtl;
    new_version->count = count;
+   new_version->unit_id = unit_id;
+   new_version->merged_comdat = merged_comdat;
+   new_version->merged_extern_inline = merged_extern_inline;
 
    for (e = callees; e; e=e->next_callee)
      if (!bbs_to_copy

@@ -375,4 +375,21 @@ void ipa_fnsummary_c_finalize (void);
 HOST_WIDE_INT ipa_get_stack_frame_offset (struct cgraph_node *node);
 void ipa_remove_from_growth_caches (struct cgraph_edge *edge);
 
+/* Return true if EDGE is a cross module call.  */
+
+static inline bool
+cross_module_call_p (struct cgraph_edge *edge)
+{
+  /* Here we do not want to walk to alias target becuase ICF may create
+     cross-unit aliases.  */
+  if (edge->caller->unit_id == edge->callee->unit_id)
+    return false;
+  /* If the call is to a (former) comdat function or s symbol with mutiple
+     extern inline definitions then treat is as in-module call.  */
+  if (edge->callee->merged_extern_inline || edge->callee->merged_comdat
+      || DECL_COMDAT (edge->callee->decl))
+    return false;
+  return true;
+}
+
 #endif /* GCC_IPA_FNSUMMARY_H */

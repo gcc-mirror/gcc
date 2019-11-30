@@ -1923,6 +1923,9 @@ cgraph_node::dump (FILE *f)
   if (profile_id)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
+  if (unit_id)
+    fprintf (f, "  Unit id: %i\n",
+	     unit_id);
   cgraph_function_version_info *vi = function_version ();
   if (vi != NULL)
     {
@@ -1973,6 +1976,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " icf_merged");
   if (merged_comdat)
     fprintf (f, " merged_comdat");
+  if (merged_extern_inline)
+    fprintf (f, " merged_extern_inline");
   if (split_part)
     fprintf (f, " split_part");
   if (indirect_call_target)

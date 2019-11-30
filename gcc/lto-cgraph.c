@@ -533,6 +533,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->calls_comdat_local, 1);
   bp_pack_value (&bp, node->icf_merged, 1);
   bp_pack_value (&bp, node->nonfreeing_fn, 1);
+  bp_pack_value (&bp, node->merged_comdat, 1);
+  bp_pack_value (&bp, node->merged_extern_inline, 1);
   bp_pack_value (&bp, node->thunk.thunk_p, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
@@ -559,6 +561,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.indirect_offset);
     }
   streamer_write_hwi_stream (ob->main_stream, node->profile_id);
+  streamer_write_hwi_stream (ob->main_stream, node->unit_id);
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
     streamer_write_hwi_stream (ob->main_stream, node->get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (node->decl))
@@ -1177,6 +1180,8 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->calls_comdat_local = bp_unpack_value (bp, 1);
   node->icf_merged = bp_unpack_value (bp, 1);
   node->nonfreeing_fn = bp_unpack_value (bp, 1);
+  node->merged_comdat = bp_unpack_value (bp, 1);
+  node->merged_extern_inline = bp_unpack_value (bp, 1);
   node->thunk.thunk_p = bp_unpack_value (bp, 1);
   node->parallelized_function = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
@@ -1310,6 +1315,9 @@ input_node (struct lto_file_decl_data *file_data,
   if (node->alias && !node->analyzed && node->weakref)
     node->alias_target = get_alias_symbol (node->decl);
   node->profile_id = streamer_read_hwi (ib);
+  node->unit_id = streamer_read_hwi (ib) + file_data->unit_base;
+  if (symtab->max_unit < node->unit_id)
+    symtab->max_unit = node->unit_id;
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
     node->set_init_priority (streamer_read_hwi (ib));
   if (DECL_STATIC_DESTRUCTOR (node->decl))
@@ -1502,6 +1510,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 
   tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
   file_data->order_base = symtab->order;
+  file_data->unit_base = symtab->max_unit + 1;
   while (tag)
     {
       if (tag == LTO_symtab_edge)
