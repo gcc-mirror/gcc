@@ -1,3 +1,10 @@
+2019-11-30  Maciej W. Rozycki  <macro@wdc.com>
+
+	* doc/install.texi (Options specification): Remove the list of
+	target library subdirectories supporting
+	`--enable-version-specific-runtime-libs'.  Document defaults for
+	the option.
+
 2019-11-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/92283
