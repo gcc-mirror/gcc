@@ -3296,6 +3296,55 @@ builtin_type_p (const_tree type)
   return svbool_type_p (type) || nvectors_if_data_type (type) > 0;
 }
 
+/* Implement TARGET_VERIFY_TYPE_CONTEXT for SVE types.  */
+bool
+verify_type_context (location_t loc, type_context_kind context,
+		     const_tree type, bool silent_p)
+{
+  if (!builtin_type_p (type))
+    return true;
+
+  switch (context)
+    {
+    case TCTX_SIZEOF:
+    case TCTX_STATIC_STORAGE:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT does not have a fixed size", type);
+      return false;
+
+    case TCTX_ALIGNOF:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT does not have a defined alignment", type);
+      return false;
+
+    case TCTX_THREAD_STORAGE:
+      if (!silent_p)
+	error_at (loc, "variables of type %qT cannot have thread-local"
+		  " storage duration", type);
+      return false;
+
+    case TCTX_POINTER_ARITH:
+      if (!silent_p)
+	error_at (loc, "arithmetic on pointer to SVE type %qT", type);
+      return false;
+
+    case TCTX_FIELD:
+      if (silent_p)
+	;
+      else if (lang_GNU_CXX ())
+	error_at (loc, "member variables cannot have SVE type %qT", type);
+      else
+	error_at (loc, "fields cannot have SVE type %qT", type);
+      return false;
+
+    case TCTX_ARRAY_ELEMENT:
+      if (!silent_p)
+	error_at (loc, "array elements cannot have SVE type %qT", type);
+      return false;
+    }
+  gcc_unreachable ();
+}
+
 }
 
 using namespace aarch64_sve;

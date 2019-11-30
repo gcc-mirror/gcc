@@ -1,3 +1,17 @@
+2019-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.c (start_decl): Allow initialization of variables whose
+	size is a POLY_INT_CST.
+	(finish_decl): Use verify_type_context to check whether the target
+	allows variables with a particular type to have static or thread-local
+	storage duration.  Don't raise a second error if such variables do
+	not have a constant size.
+	(grokdeclarator): Use verify_type_context to check whether the
+	target allows fields or array elements to have a particular type.
+	* c-typeck.c (pointer_diff): Use verify_type_context to test whether
+	the target allows pointer difference for the types involved.
+	(build_unary_op): Likewise for pointer increment and decrement.
+
 2019-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (struct c_parser): Add members raw_tokens and

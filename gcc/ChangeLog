@@ -1,3 +1,18 @@
+2019-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.h (type_context_kind): New enum.
+	(verify_type_context): Declare.
+	* target.def (verify_type_context): New target hook.
+	* doc/tm.texi.in (TARGET_VERIFY_TYPE_CONTEXT): Likewise.
+	* doc/tm.texi: Regenerate.
+	* tree.c (verify_type_context): New function.
+	* config/aarch64/aarch64-protos.h (aarch64_sve::verify_type_context):
+	Declare.
+	* config/aarch64/aarch64-sve-builtins.cc (verify_type_context):
+	New function.
+	* config/aarch64/aarch64.c (aarch64_verify_type_context): Likewise.
+	(TARGET_VERIFY_TYPE_CONTEXT): Define.
+
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::dump): Dump unit_id and merged_extern_inline.

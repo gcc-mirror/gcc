@@ -15123,6 +15123,21 @@ max_object_size (void)
   return TYPE_MAX_VALUE (ptrdiff_type_node);
 }
 
+/* A wrapper around TARGET_VERIFY_TYPE_CONTEXT that makes the silent_p
+   parameter default to false and that weeds out error_mark_node.  */
+
+bool
+verify_type_context (location_t loc, type_context_kind context,
+		     const_tree type, bool silent_p)
+{
+  if (type == error_mark_node)
+    return true;
+
+  gcc_assert (TYPE_P (type));
+  return (!targetm.verify_type_context
+	  || targetm.verify_type_context (loc, context, type, silent_p));
+}
+
 #if CHECKING_P
 
 namespace selftest {
