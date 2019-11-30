@@ -1,5 +1,10 @@
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (compute_max_insns): Return int64_t.
+	(inline_small_functions): Simplify.
+
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-cfg.c (execute_fixup_cfg): Update also max_bb_count when
 	scaling happen.
 
