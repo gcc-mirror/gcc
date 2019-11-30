@@ -1722,7 +1722,7 @@ recursive_inlining (struct cgraph_edge *edge,
 /* Given whole compilation unit estimate of INSNS, compute how large we can
    allow the unit to grow.  */
 
-static int
+static int64_t
 compute_max_insns (cgraph_node *node, int insns)
 {
   int max_insns = insns;
@@ -1977,9 +1977,8 @@ inline_small_functions (void)
       if (dump_file)
 	fprintf (dump_file, "Enqueueing calls in %s.\n", node->dump_name ());
 
-      for (edge = node->callees; edge; edge = next)
+      for (edge = node->callees; edge; edge = edge->next_callee)
 	{
-	  next = edge->next_callee;
 	  if (edge->inline_failed
 	      && !edge->aux
 	      && can_inline_edge_p (edge, true)
