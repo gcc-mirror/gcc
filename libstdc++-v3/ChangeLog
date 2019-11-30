@@ -1,3 +1,14 @@
+2019-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (u8path(InputIterator, InputIterator))
+	(u8path(const Source&)) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Simplify
+	conditions.
+	* include/experimental/bits/fs_path.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(__u8path(const Source&, char)): Add overloads for std::string and
+	types convertible to std::string.
+	(_Cvt::_S_wconvert): Add a new overload for char8_t strings and use
+	codecvt_utf8_utf16 to do the correct conversion.
+
 2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (path::operator/=): Change template-head to
