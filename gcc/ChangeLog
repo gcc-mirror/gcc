@@ -1,5 +1,10 @@
 2019-11-30  Maciej W. Rozycki  <macro@wdc.com>
 
+	* gcc.c (process_command): Only warn about an ineffective `-x'
+	option if any input files have actually been supplied.
+
+2019-11-30  Maciej W. Rozycki  <macro@wdc.com>
+
 	* doc/install.texi (Options specification): Remove the list of
 	target library subdirectories supporting
 	`--enable-version-specific-runtime-libs'.  Document defaults for
