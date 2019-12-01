@@ -184,7 +184,7 @@ maybe_hot_count_p (struct function *fun, profile_count count)
   /* Code executed at most once is not hot.  */
   if (count <= MAX (profile_info ? profile_info->runs : 1, 1))
     return false;
-  return (count.to_gcov_type () >= get_hot_bb_threshold ());
+  return (count >= get_hot_bb_threshold ());
 }
 
 /* Return true if basic block BB of function FUN can be CPU intensive

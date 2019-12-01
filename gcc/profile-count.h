@@ -930,14 +930,14 @@ public:
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val < (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val < (uint64_t) other;
     }
 
   bool operator> (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val > (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val > (uint64_t) other;
     }
 
   bool operator<= (const profile_count &other) const
@@ -968,14 +968,14 @@ public:
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val <= (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val <= (uint64_t) other;
     }
 
   bool operator>= (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val >= (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val >= (uint64_t) other;
     }
 
   /* Return true when value is not zero and can be used for scaling. 
