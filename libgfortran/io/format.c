@@ -1027,17 +1027,19 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	{
 	  t = format_lex (fmt);
 	  if (t != FMT_POSINT)
-	    if (t == FMT_ZERO)
-	      {
-		notify_std (&dtp->common, GFC_STD_F2018,
-			    "Positive exponent width required");
-	      }
-	    else
-	      {
-		fmt->error = "Positive exponent width required in "
-			     "format string at %L";
-		goto finished;
-	      }
+	    {
+	      if (t == FMT_ZERO)
+		{
+		  notify_std (&dtp->common, GFC_STD_F2018,
+			      "Positive exponent width required");
+		}
+	      else
+		{
+		  fmt->error = "Positive exponent width required in "
+			       "format string at %L";
+		  goto finished;
+		}
+	    }
 	  tail->u.real.e = fmt->value;
 	}
 
