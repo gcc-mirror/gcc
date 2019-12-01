@@ -1,5 +1,14 @@
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* profile-count.h (profile_count::operator<): Use IPA value for
+	comparsion.
+	(profile_count::operator>): Likewise.
+	(profile_count::operator<=): Likewise.
+	(profile_count::operator>=): Likewise.
+	* predict.c (maybe_hot_count_p): Do not convert to gcov_type.
+
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (compute_max_insns): Return int64_t.
 	(inline_small_functions): Simplify.
 
