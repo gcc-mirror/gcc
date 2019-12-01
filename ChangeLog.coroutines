@@ -1,3 +1,14 @@
+2019-12-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* coroutine-passes.cc (lower_coro_builtin): Amend comments.
+	(execute_early_expand_coro_ifns): Expand CO_FRAME.
+	(execute_finalize_frame): Remove.
+	(class pass_coroutine_finalize_frame): Remove.
+	(make_pass_coroutine_finalize_frame): Remove.
+	* passes.def: Remove finalize frame pass.
+	* tree-pass.h (make_pass_coroutine_finalize_frame): Remove.
+
 2019-11-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

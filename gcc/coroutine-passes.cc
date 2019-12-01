@@ -62,13 +62,13 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     return NULL_TREE;
 
   /* This internal function implements an exit from scope without
-     performing any cleanups; it jumpt directly to the label provided.  */
+     performing any cleanups; it jumps directly to the label provided.  */
   if (gimple_call_internal_p (stmt)
       && gimple_call_internal_fn (stmt) == IFN_CO_SUSPN)
     {
       tree dest = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
       ggoto *g = gimple_build_goto (dest);
-      gsi_replace (gsi, g, false /* don't re-do EH.  */);
+      gsi_replace (gsi, g, /* do EH */ false);
       *handled_ops_p = true;
       return NULL_TREE;
     }
@@ -310,6 +310,21 @@ execute_early_expand_coro_ifns (void)
 	  }
 	switch (gimple_call_internal_fn (stmt))
 	  {
+	  case IFN_CO_FRAME:
+	    {
+	      /* This internal function is a placeholder for the frame
+		 size.  In principle, we might lower it later (after some
+		 optimisation had reduced the frame size).  At present,
+		 without any such optimisation, we just set it here.  */
+	      tree lhs = gimple_call_lhs (stmt);
+	      tree size = gimple_call_arg (stmt, 0);
+	      /* Right now, this is a trivial operation - copy through
+		 the size computed during initial layout.  */
+	      gassign *grpl = gimple_build_assign (lhs, size);
+	      gsi_replace (&gsi, grpl, true);
+	      gsi_next (&gsi);
+	    }
+	    break;
 	  case IFN_CO_ACTOR:
 	    changed = true;
 	    gsi_next (&gsi);
@@ -520,101 +535,4 @@ gimple_opt_pass *
 make_pass_coroutine_early_expand_ifns (gcc::context *ctxt)
 {
   return new pass_coroutine_early_expand_ifns (ctxt);
-}
-
-/* Optimize (not yet) and lower frame allocation.
-
-   This is a place-holder for an optimisation to remove unused frame
-   entries and re-size the frame to minimum.  */
-
-static unsigned int
-execute_finalize_frame (void)
-{
-  /* Don't rebuild stuff unless we have to. */
-  unsigned int todoflags = 0;
-  bool changed = false;
-
-  basic_block bb;
-
-  gimple_stmt_iterator gsi;
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
-      {
-	gimple *stmt = gsi_stmt (gsi);
-	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
-	  {
-	    gsi_next (&gsi);
-	    continue;
-	  }
-	switch (gimple_call_internal_fn (stmt))
-	  {
-	  case IFN_CO_FRAME:
-	    {
-	      tree lhs = gimple_call_lhs (stmt);
-	      tree size = gimple_call_arg (stmt, 0);
-	      /* Right now, this is a trivial operation - copy through
-		 the size computed during initial layout.  */
-	      gassign *grpl = gimple_build_assign (lhs, size);
-	      gsi_replace (&gsi, grpl, true);
-	      changed = true;
-	    }
-	    break;
-	  default:
-	    gsi_next (&gsi);
-	    break;
-	  }
-      }
-
-  if (!changed)
-    {
-      if (dump_file)
-	fprintf (dump_file, "coro: nothing to do\n");
-      return todoflags;
-    }
-  else if (dump_file)
-    fprintf (dump_file, "called frame expansion for %s\n",
-	     IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_coroutine_finalize_frame = {
-  GIMPLE_PASS,		 /* type */
-  "coro-finalize-frame", /* name */
-  OPTGROUP_NONE,	 /* optinfo_flags */
-  TV_NONE,		 /* tv_id */
-  (PROP_cfg | PROP_ssa), /* properties_required */
-  0,			 /* properties_provided */
-  0,			 /* properties_destroyed */
-  0,			 /* todo_flags_start */
-  0			 /* todo_flags_finish, set this in the fn. */
-};
-
-class pass_coroutine_finalize_frame : public gimple_opt_pass
-{
-public:
-  pass_coroutine_finalize_frame (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_coroutine_finalize_frame, ctxt)
-  {}
-
-  /* opt_pass methods:
-     FIXME: we should not execute this for every function, even when
-     coroutines are enabled, it should be only for the ramp - or any
-     function into which the ramp is inlined.  */
-  virtual bool gate (function *) { return flag_coroutines; };
-
-  virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
-  {
-    return execute_finalize_frame ();
-  }
-
-}; // class pass_coroutine_finalize_frame
-
-} // namespace
-
-gimple_opt_pass *
-make_pass_coroutine_finalize_frame (gcc::context *ctxt)
-{
-  return new pass_coroutine_finalize_frame (ctxt);
 }
