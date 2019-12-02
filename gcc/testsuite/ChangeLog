@@ -1,5 +1,10 @@
 2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR middle-end/92741
+	* gcc.dg/pr92741.c: New test.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/general/nosve_4.c: New test.
 	* gcc.target/aarch64/sve/acle/general/nosve_5.c: Likewise.
 	* gcc.target/aarch64/sve/pcs/nosve_4.c: Expected a second error

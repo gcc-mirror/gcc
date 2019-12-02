@@ -1,5 +1,11 @@
 2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR middle-end/92741
+	* fold-const.c (fold_convertible_p): Check vector types more
+	thoroughly.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_report_sve_required): New function.
 	(aarch64_expand_mov_immediate): Use it when attempting to measure
 	the length of an SVE vector.
