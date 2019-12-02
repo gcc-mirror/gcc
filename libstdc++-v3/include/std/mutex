@@ -134,22 +134,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __timed_mutex_impl
     {
     protected:
-      typedef chrono::high_resolution_clock 	__clock_t;
-
       template<typename _Rep, typename _Period>
 	bool
 	_M_try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
 	{
-	  using chrono::steady_clock;
-	  auto __rt = chrono::duration_cast<steady_clock::duration>(__rtime);
-	  if (ratio_greater<steady_clock::period, _Period>())
+#if _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
+	  using __clock = chrono::steady_clock;
+#else
+	  using __clock = chrono::system_clock;
+#endif
+
+	  auto __rt = chrono::duration_cast<__clock::duration>(__rtime);
+	  if (ratio_greater<__clock::period, _Period>())
 	    ++__rt;
-	  return _M_try_lock_until(steady_clock::now() + __rt);
+	  return _M_try_lock_until(__clock::now() + __rt);
 	}
 
       template<typename _Duration>
 	bool
-	_M_try_lock_until(const chrono::time_point<__clock_t,
+	_M_try_lock_until(const chrono::time_point<chrono::system_clock,
 						   _Duration>& __atime)
 	{
 	  auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
@@ -163,12 +166,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return static_cast<_Derived*>(this)->_M_timedlock(__ts);
 	}
 
+#ifdef _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
+      template<typename _Duration>
+	bool
+	_M_try_lock_until(const chrono::time_point<chrono::steady_clock,
+						   _Duration>& __atime)
+	{
+	  auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+	  auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	  __gthread_time_t __ts = {
+	    static_cast<std::time_t>(__s.time_since_epoch().count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+	  return static_cast<_Derived*>(this)->_M_clocklock(CLOCK_MONOTONIC,
+							    __ts);
+	}
+#endif
+
       template<typename _Clock, typename _Duration>
 	bool
 	_M_try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
 	{
 	  auto __rtime = __atime - _Clock::now();
-	  return _M_try_lock_until(__clock_t::now() + __rtime);
+	  return _M_try_lock_for(__rtime);
 	}
     };
 
@@ -229,6 +251,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_timedlock(const __gthread_time_t& __ts)
       { return !__gthread_mutex_timedlock(&_M_mutex, &__ts); }
+
+#if _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
+      bool
+      _M_clocklock(clockid_t clockid, const __gthread_time_t& __ts)
+      { return !pthread_mutex_clocklock(&_M_mutex, clockid, &__ts); }
+#endif
   };
 
   /// recursive_timed_mutex
@@ -289,6 +317,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_timedlock(const __gthread_time_t& __ts)
       { return !__gthread_recursive_mutex_timedlock(&_M_mutex, &__ts); }
+
+#ifdef _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
+      bool
+      _M_clocklock(clockid_t clockid, const __gthread_time_t& __ts)
+      { return !pthread_mutex_clocklock(&_M_mutex, clockid, &__ts); }
+#endif
   };
 
 #else // !_GTHREAD_USE_MUTEX_TIMEDLOCK

@@ -225,6 +225,9 @@ GLIBCXX_CHECK_TMPNAM
 # For pthread_cond_clockwait
 GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT
 
+# For pthread_mutex_clocklock
+GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK
+
 AC_LC_MESSAGES
 
 # For hardware_concurrency
