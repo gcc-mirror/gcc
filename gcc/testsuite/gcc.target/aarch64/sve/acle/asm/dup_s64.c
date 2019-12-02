@@ -849,7 +849,7 @@ TEST_UNIFORM_Z (dup_m8000_s64_z, svint64_t,
 
 /*
 ** dup_0_s64_z:
-**	mov	z0\.d, p0/z, #0
+**	mov	z0\.[bhsd], #0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_s64_z, svint64_t,

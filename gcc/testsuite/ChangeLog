@@ -1,3 +1,19 @@
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/eqne_dup_1.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_f16.c (dup_0_f16_z): Expect
+	the call to be folded to zero.
+	* gcc.target/aarch64/sve/acle/asm/dup_f32.c (dup_0_f32_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_f64.c (dup_0_f64_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s8.c (dup_0_s8_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s16.c (dup_0_s16_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s32.c (dup_0_s32_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s64.c (dup_0_s64_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u8.c (dup_0_u8_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u16.c (dup_0_u16_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u32.c (dup_0_u32_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u64.c (dup_0_u64_z): Likewise.
+
 2019-12-02  Sudakshina Das  <sudi.das@arm.com>
 
 	* g++.dg/ext/arm-fp16/arm-fp16-ops.h: Remove volatile keyword.

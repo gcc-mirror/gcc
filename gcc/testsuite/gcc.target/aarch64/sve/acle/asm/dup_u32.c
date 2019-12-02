@@ -849,7 +849,7 @@ TEST_UNIFORM_Z (dup_m8000_u32_z, svuint32_t,
 
 /*
 ** dup_0_u32_z:
-**	mov	z0\.s, p0/z, #0
+**	mov	z0\.[bhsd], #0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_u32_z, svuint32_t,
