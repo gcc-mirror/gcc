@@ -1,3 +1,7 @@
+2019-12-02  Sudakshina Das  <sudi.das@arm.com>
+
+	* g++.dg/ext/arm-fp16/arm-fp16-ops.h: Remove volatile keyword.
+
 2019-12-02  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/lto/odr-7_0.C: New test.
