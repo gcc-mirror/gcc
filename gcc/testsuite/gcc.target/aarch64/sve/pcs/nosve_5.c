@@ -11,5 +11,6 @@ void take_svuint8_eventually (float, float, float, float,
 void
 f (svuint8_t *ptr)
 {
-  take_svuint8_eventually (0, 0, 0, 0, 0, 0, 0, 0, *ptr); /* { dg-error {arguments of type '(svuint8_t|__SVUint8_t)' require the SVE ISA extension} } */
+  take_svuint8_eventually (0, 0, 0, 0, 0, 0, 0, 0, *ptr); /* { dg-error {this operation requires the SVE ISA extension} } */
+  /* { dg-error {arguments of type '(svuint8_t|__SVUint8_t)' require the SVE ISA extension} "" { target *-*-* } .-1 } */
 }
