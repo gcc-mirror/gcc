@@ -1,3 +1,13 @@
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(gimple_folder::force_vector): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::force_vector): New function.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svcmp_impl::fold): Likewise.
+	(svdup_impl::fold): Handle svdup_z too.
+
 2019-12-02  Martin Liska  <mliska@suse.cz>
 
 	* ipa-devirt.c (warn_types_mismatch): Use get_odr_name_for_type

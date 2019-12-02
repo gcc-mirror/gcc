@@ -333,6 +333,28 @@ public:
   CONSTEXPR svcmp_impl (tree_code code, int unspec_for_fp)
     : m_code (code), m_unspec_for_fp (unspec_for_fp) {}
 
+  gimple *
+  fold (gimple_folder &f) const OVERRIDE
+  {
+    tree pg = gimple_call_arg (f.call, 0);
+    tree rhs1 = gimple_call_arg (f.call, 1);
+    tree rhs2 = gimple_call_arg (f.call, 2);
+
+    /* Convert a ptrue-predicated integer comparison into the corresponding
+       gimple-level operation.  */
+    if (integer_all_onesp (pg)
+	&& f.type_suffix (0).element_bytes == 1
+	&& f.type_suffix (0).integer_p)
+      {
+	gimple_seq stmts = NULL;
+	rhs2 = f.force_vector (stmts, TREE_TYPE (rhs1), rhs2);
+	gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+	return gimple_build_assign (f.lhs, m_code, rhs1, rhs2);
+      }
+
+    return NULL;
+  }
+
   rtx
   expand (function_expander &e) const OVERRIDE
   {
@@ -698,6 +720,17 @@ public:
 	   the truth vector element type.  */
 	if (!f.type_suffix (0).bool_p)
 	  return gimple_build_assign (f.lhs, VEC_DUPLICATE_EXPR, rhs);
+      }
+
+    /* svdup_z (pg, x) == VEC_COND_EXPR <pg, VEC_DUPLICATE_EXPR <x>, 0>.  */
+    if (f.pred == PRED_z)
+      {
+	gimple_seq stmts = NULL;
+	tree pred = f.convert_pred (stmts, vec_type, 0);
+	rhs = f.force_vector (stmts, vec_type, rhs);
+	gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+	return gimple_build_assign (f.lhs, VEC_COND_EXPR, pred, rhs,
+				    build_zero_cst (vec_type));
       }
 
     return NULL;
