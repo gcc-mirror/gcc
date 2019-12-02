@@ -1,5 +1,24 @@
 2019-12-02  Mike Crowe  <mac@mcrowe.com>
 
+	PR libstdc++/91906 Fix timed_mutex::try_lock_until on arbitrary clock
+	* include/std/mutex (__timed_mutex_impl::_M_try_lock_until): Loop
+	until the absolute timeout time is reached as measured against the
+	appropriate clock.
+	* testsuite/util/slow_clock.h: New file. Move implementation of
+	slow_clock test class.
+	* testsuite/30_threads/condition_variable/members/2.cc: Include
+	slow_clock from header.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/3.cc: Convert
+	existing test to templated function so that it can be called with
+	both system_clock and steady_clock.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: Also run test
+	using slow_clock to test above fix.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/4.cc: Add
+	new test that try_lock_until behaves as try_lock if the timeout has
+	already expired or exactly matches the current time.
+
 	PR libstdc++/78237 Add full steady_clock support to timed_mutex
 	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK): Define to
 	detect presence of pthread_mutex_clocklock function.

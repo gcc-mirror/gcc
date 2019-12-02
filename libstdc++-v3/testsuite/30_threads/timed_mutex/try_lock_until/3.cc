@@ -26,6 +26,7 @@
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
+#include <slow_clock.h>
 
 template <typename clock_type>
 void test()
@@ -71,4 +72,5 @@ int main()
 {
   test<std::chrono::system_clock>();
   test<std::chrono::steady_clock>();
+  test<slow_clock>();
 }
