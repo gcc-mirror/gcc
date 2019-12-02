@@ -1,3 +1,10 @@
+2019-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92742
+	* tree-vect-loop.c (vect_fixup_reduc_chain): Do not
+	touch the def-type but verify it is consistent with the
+	original stmts.
+
 2019-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92712
