@@ -1,5 +1,16 @@
 2019-12-02  Mike Crowe  <mac@mcrowe.com>
 
+	Fix try_lock_until and try_lock_shared_until on arbitrary clock
+	* include/std/shared_mutex (shared_timed_mutex::try_lock_until)
+	(shared_timed_mutex::try_lock_shared_until): Loop until the absolute
+	timeout time is reached as measured against the appropriate clock.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
+	file. Test try_lock_until and try_lock_shared_until timeouts against
+	various clocks.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
+	file. Test try_lock_until and try_lock_shared_until timeouts against
+	various clocks.
+
 	Add full steady_clock support to shared_timed_mutex
 	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK): Define
 	to check for the presence of both pthread_rwlock_clockrdlock and

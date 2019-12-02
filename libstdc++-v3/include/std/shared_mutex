@@ -554,9 +554,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
       {
+	// The user-supplied clock may not tick at the same rate as
+	// steady_clock, so we must loop in order to guarantee that
+	// the timeout has expired before returning false.
 	typename _Clock::time_point __now = _Clock::now();
-	auto __rtime = __atime - __now;
-	return try_lock_for(__rtime);
+	do {
+	    auto __rtime = __atime - __now;
+	    if (try_lock_for(__rtime))
+	      return true;
+	    __now = _Clock::now();
+	} while (__atime > __now);
+	return false;
       }
 
     // Shared ownership
@@ -631,9 +639,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       try_lock_shared_until(const chrono::time_point<_Clock,
 						     _Duration>& __atime)
       {
+	// The user-supplied clock may not tick at the same rate as
+	// steady_clock, so we must loop in order to guarantee that
+	// the timeout has expired before returning false.
 	typename _Clock::time_point __now = _Clock::now();
-	auto __rtime = __atime - __now;
-	return try_lock_shared_for(__rtime);
+	do {
+	    auto __rtime = __atime - __now;
+	    if (try_lock_shared_for(__rtime))
+	      return true;
+	    __now = _Clock::now();
+	} while (__atime > __now);
+	return false;
       }
 
 #else // ! (_GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK)
