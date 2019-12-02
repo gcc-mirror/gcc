@@ -1,3 +1,10 @@
+2019-12-02  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        * config/rs6000/rs6000-call.c (rs6000_invalid_builtin): Make
+        static.
+        * config/rs6000/rs6000-internal.h (rs6000_invalid_builtin): Remove
+        decl.
+
 2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/92741
