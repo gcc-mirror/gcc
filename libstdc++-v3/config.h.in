@@ -1005,6 +1005,10 @@
 /* Define if pthread_mutex_clocklock is available in <pthread.h>. */
 #undef _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
 
+/* Define if pthread_rwlock_clockrdlock and pthread_rwlock_clockwrlock are
+   available in <pthread.h>. */
+#undef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
+
 /* Define if POSIX read/write locks are available in <gthr.h>. */
 #undef _GLIBCXX_USE_PTHREAD_RWLOCK_T
 
