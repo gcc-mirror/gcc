@@ -1,3 +1,23 @@
+2019-12-02  Feng Xue <fxue@os.amperecomputing.com>
+
+	PR ipa/92133
+	* doc/invoke.texi (ipa-cp-max-recursive-depth): Document new option.
+	(ipa-cp-min-recursive-probability): Likewise.
+	* params.opt (ipa-cp-max-recursive-depth): New.
+	(ipa-cp-min-recursive-probability): Likewise.
+	* ipa-cp.c (ipcp_lattice<valtype>::add_value): Add two new parameters
+	val_p and unlimited.
+	(self_recursively_generated_p): New function.
+	(get_val_across_arith_op): Likewise.
+	(propagate_vals_across_arith_jfunc): Add constant propagation for
+	self-recursive function.
+	(incorporate_penalties): Do not penalize pure self-recursive function.
+	(good_cloning_opportunity_p): Dump node_is_self_scc flag.
+	(propagate_constants_topo): Set node_is_self_scc flag for cgraph node.
+	(get_info_about_necessary_edges): Relax hotness check for edge to
+	self-recursive function.
+	* ipa-prop.h (ipa_node_params): Add new field node_is_self_scc.
+
 2019-12-01  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/92499

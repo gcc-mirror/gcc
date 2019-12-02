@@ -497,6 +497,8 @@ public:
   unsigned node_dead : 1;
   /* Node is involved in a recursion, potentionally indirect.  */
   unsigned node_within_scc : 1;
+  /* Node contains only direct recursion.  */
+  unsigned node_is_self_scc : 1;
   /* Node is calling a private function called only once.  */
   unsigned node_calling_single_call : 1;
   /* False when there is something makes versioning impossible.  */

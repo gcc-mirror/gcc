@@ -228,7 +228,9 @@ public:
   inline bool set_contains_variable ();
   bool add_value (valtype newval, cgraph_edge *cs,
 		  ipcp_value<valtype> *src_val = NULL,
-		  int src_idx = 0, HOST_WIDE_INT offset = -1);
+		  int src_idx = 0, HOST_WIDE_INT offset = -1,
+		  ipcp_value<valtype> **val_p = NULL,
+		  bool unlimited = false);
   void print (FILE * f, bool dump_sources, bool dump_benefits);
 };
 
@@ -1817,22 +1819,32 @@ allocate_and_init_ipcp_value (ipa_polymorphic_call_context source)
 /* Try to add NEWVAL to LAT, potentially creating a new ipcp_value for it.  CS,
    SRC_VAL SRC_INDEX and OFFSET are meant for add_source and have the same
    meaning.  OFFSET -1 means the source is scalar and not a part of an
-   aggregate.  */
+   aggregate.  If non-NULL, VAL_P records address of existing or newly added
+   ipcp_value.  UNLIMITED means whether value count should not exceed the limit
+   given by PARAM_IPA_CP_VALUE_LIST_SIZE.  */
 
 template <typename valtype>
 bool
 ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 				  ipcp_value<valtype> *src_val,
-				  int src_idx, HOST_WIDE_INT offset)
+				  int src_idx, HOST_WIDE_INT offset,
+				  ipcp_value<valtype> **val_p,
+				  bool unlimited)
 {
-  ipcp_value<valtype> *val;
+  ipcp_value<valtype> *val, *last_val = NULL;
+
+  if (val_p)
+    *val_p = NULL;
 
   if (bottom)
     return false;
 
-  for (val = values; val; val = val->next)
+  for (val = values; val; last_val = val, val = val->next)
     if (values_equal_for_ipcp_p (val->value, newval))
       {
+	if (val_p)
+	  *val_p = val;
+
 	if (ipa_edge_within_scc (cs))
 	  {
 	    ipcp_value_source<valtype> *s;
@@ -1847,7 +1859,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	return false;
       }
 
-  if (values_count == param_ipa_cp_value_list_size)
+  if (!unlimited && values_count == param_ipa_cp_value_list_size)
     {
       /* We can only free sources, not the values themselves, because sources
 	 of other values in this SCC might point to them.   */
@@ -1860,7 +1872,6 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	      ipcp_sources_pool.remove ((ipcp_value_source<tree>*)src);
 	    }
 	}
-
       values = NULL;
       return set_to_bottom ();
     }
@@ -1868,9 +1879,79 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
   values_count++;
   val = allocate_and_init_ipcp_value (newval);
   val->add_source (cs, src_val, src_idx, offset);
-  val->next = values;
-  values = val;
+  val->next = NULL;
+
+  /* Add the new value to end of value list, which can reduce iterations
+     of propagation stage for recursive function.  */
+  if (last_val)
+    last_val->next = val;
+  else
+    values = val;
+
+  if (val_p)
+    *val_p = val;
+
   return true;
+}
+
+/* Return true, if a ipcp_value VAL is orginated from parameter value of
+   self-feeding recursive function by applying non-passthrough arithmetic
+   transformation.  */
+
+static bool
+self_recursively_generated_p (ipcp_value<tree> *val)
+{
+  class ipa_node_params *info = NULL;
+
+  for (ipcp_value_source<tree> *src = val->sources; src; src = src->next)
+    {
+      cgraph_edge *cs = src->cs;
+
+      if (!src->val || cs->caller != cs->callee->function_symbol ()
+	  || src->val == val)
+	return false;
+
+      if (!info)
+	info = IPA_NODE_REF (cs->caller);
+
+      class ipcp_param_lattices *plats = ipa_get_parm_lattices (info,
+								src->index);
+      ipcp_lattice<tree> *src_lat = src->offset == -1 ? &plats->itself
+						      : plats->aggs;
+      ipcp_value<tree> *src_val;
+
+      for (src_val = src_lat->values; src_val; src_val = src_val->next)
+	if (src_val == val)
+	  break;
+
+      if (!src_val)
+	return false;
+    }
+
+  return true;
+}
+
+/* A helper function that returns result of operation specified by OPCODE on
+   the value of SRC_VAL.  If non-NULL, OPND1_TYPE is expected type for the
+   value of SRC_VAL.  If the operation is binary, OPND2 is a constant value
+   acting as its second operand.  If non-NULL, RES_TYPE is expected type of
+   the result.  */
+
+static tree
+get_val_across_arith_op (enum tree_code opcode,
+			 tree opnd1_type,
+			 tree opnd2,
+			 ipcp_value<tree> *src_val,
+			 tree res_type)
+{
+  tree opnd1 = src_val->value;
+
+  /* Skip source values that is incompatible with specified type.  */
+  if (opnd1_type
+      && !useless_type_conversion_p (opnd1_type, TREE_TYPE (opnd1)))
+    return NULL_TREE;
+
+  return ipa_get_jf_arith_result (opcode, opnd1, opnd2, res_type);
 }
 
 /* Propagate values through an arithmetic transformation described by a jump
@@ -1896,24 +1977,76 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
   ipcp_value<tree> *src_val;
   bool ret = false;
 
-  /* Do not create new values when propagating within an SCC because if there
-     are arithmetic functions with circular dependencies, there is infinite
-     number of them and we would just make lattices bottom.  If this condition
-     is ever relaxed we have to detect self-feeding recursive calls in
-     cgraph_edge_brings_value_p in a smarter way.  */
+  /* Due to circular dependencies, propagating within an SCC through arithmetic
+     transformation would create infinite number of values.  But for
+     self-feeding recursive function, we could allow propagation in a limited
+     count, and this can enable a simple kind of recursive function versioning.
+     For other scenario, we would just make lattices bottom.  */
   if (opcode != NOP_EXPR && ipa_edge_within_scc (cs))
-    ret = dest_lat->set_contains_variable ();
+    {
+      int i;
+
+      if (src_lat != dest_lat || param_ipa_cp_max_recursive_depth < 1)
+	return dest_lat->set_contains_variable ();
+
+      /* No benefit if recursive execution is in low probability.  */
+      if (cs->sreal_frequency () * 100
+	  <= ((sreal) 1) * param_ipa_cp_min_recursive_probability)
+	return dest_lat->set_contains_variable ();
+
+      auto_vec<ipcp_value<tree> *, 8> val_seeds;
+
+      for (src_val = src_lat->values; src_val; src_val = src_val->next)
+	{
+	  /* Now we do not use self-recursively generated value as propagation
+	     source, this is absolutely conservative, but could avoid explosion
+	     of lattice's value space, especially when one recursive function
+	     calls another recursive.  */
+	  if (self_recursively_generated_p (src_val))
+	    {
+	      ipcp_value_source<tree> *s;
+
+	      /* If the lattice has already been propagated for the call site,
+		 no need to do that again.  */
+	      for (s = src_val->sources; s; s = s->next)
+		if (s->cs == cs)
+		  return dest_lat->set_contains_variable ();
+	    }
+	  else
+	    val_seeds.safe_push (src_val);
+	}
+
+      /* Recursively generate lattice values with a limited count.  */
+      FOR_EACH_VEC_ELT (val_seeds, i, src_val)
+	{
+	  for (int j = 1; j < param_ipa_cp_max_recursive_depth; j++)
+	    {
+	      tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
+						     src_val, res_type);
+	      if (!cstval)
+		break;
+
+	      ret |= dest_lat->add_value (cstval, cs, src_val, src_idx,
+					  src_offset, &src_val, true);
+	      gcc_checking_assert (src_val);
+	    }
+	}
+      ret |= dest_lat->set_contains_variable ();
+    }
   else
     for (src_val = src_lat->values; src_val; src_val = src_val->next)
       {
-	tree opnd1 = src_val->value;
-	tree cstval = NULL_TREE;
+	/* Now we do not use self-recursively generated value as propagation
+	   source, otherwise it is easy to make value space of normal lattice
+	   overflow.  */
+	if (self_recursively_generated_p (src_val))
+	  {
+	    ret |= dest_lat->set_contains_variable ();
+	    continue;
+	  }
 
-	/* Skip source values that is incompatible with specified type.  */
-	if (!opnd1_type
-	    || useless_type_conversion_p (opnd1_type, TREE_TYPE (opnd1)))
-	  cstval = ipa_get_jf_arith_result (opcode, opnd1, opnd2, res_type);
-
+	tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
+					       src_val, res_type);
 	if (cstval)
 	  ret |= dest_lat->add_value (cstval, cs, src_val, src_idx,
 				      src_offset);
@@ -3038,7 +3171,7 @@ hint_time_bonus (ipa_hints hints)
 static inline int64_t
 incorporate_penalties (ipa_node_params *info, int64_t evaluation)
 {
-  if (info->node_within_scc)
+  if (info->node_within_scc && !info->node_is_self_scc)
     evaluation = (evaluation
 		  * (100 - param_ipa_cp_recursion_penalty)) / 100;
 
@@ -3082,7 +3215,8 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 	  count_sum.dump (dump_file);
 	  fprintf (dump_file, "%s%s) -> evaluation: " "%" PRId64
 		 ", threshold: %i\n",
-		 info->node_within_scc ? ", scc" : "",
+		 info->node_within_scc
+		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
 		 evaluation, param_ipa_cp_eval_threshold);
 	}
@@ -3100,7 +3234,8 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 "size: %i, freq_sum: %i%s%s) -> evaluation: "
 		 "%" PRId64 ", threshold: %i\n",
 		 time_benefit, size_cost, freq_sum,
-		 info->node_within_scc ? ", scc" : "",
+		 info->node_within_scc
+		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
 		 evaluation, param_ipa_cp_eval_threshold);
 
@@ -3594,14 +3729,30 @@ propagate_constants_topo (class ipa_topo_info *topo)
       while (v)
 	{
 	  struct cgraph_edge *cs;
+	  class ipa_node_params *info = NULL;
+	  bool self_scc = true;
 
 	  for (cs = v->callees; cs; cs = cs->next_callee)
 	    if (ipa_edge_within_scc (cs))
 	      {
-		IPA_NODE_REF (v)->node_within_scc = true;
+		cgraph_node *callee = cs->callee->function_symbol ();
+
+		if (v != callee)
+		  self_scc = false;
+
+		if (!info)
+		  {
+		    info = IPA_NODE_REF (v);
+		    info->node_within_scc = true;
+		  }
+
 		if (propagate_constants_across_call (cs))
-		  push_node_to_stack (topo, cs->callee->function_symbol ());
+		  push_node_to_stack (topo, callee);
 	      }
+
+	  if (info)
+	    info->node_is_self_scc = self_scc;
+
 	  v = pop_node_from_stack (topo);
 	}
 
@@ -3983,6 +4134,9 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
 	      hot |= cs->maybe_hot_p ();
 	      if (cs->caller != dest)
 		non_self_recursive = true;
+	      else if (src->val)
+		gcc_assert (values_equal_for_ipcp_p (src->val->value,
+						     val->value));
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
@@ -3996,6 +4150,19 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
   *freq_sum = freq;
   *count_sum = cnt;
   *caller_count = count;
+
+  if (!hot && IPA_NODE_REF (dest)->node_within_scc)
+    {
+      struct cgraph_edge *cs;
+
+      /* Cold non-SCC source edge could trigger hot recursive execution of
+	 function. Consider the case as hot and rely on following cost model
+	 computation to further select right one.  */
+      for (cs = dest->callers; cs; cs = cs->next_caller)
+	if (cs->caller == dest && cs->maybe_hot_p ())
+	  return true;
+    }
+
   return hot;
 }
 
