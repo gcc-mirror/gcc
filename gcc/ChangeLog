@@ -1,3 +1,20 @@
+2019-12-02  Li Jia He  <helijia@linux.ibm.com>
+
+	Partial backport from mainline
+	PR target/92098
+	2019-11-08  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92132
+	* config/rs6000/predicates.md
+	(signed_or_equality_comparison_operator): New predicate.
+	(unsigned_or_equality_comparison_operator): Likewise.
+	* config/rs6000/rs6000.md (one_cmpl<mode>2): Remove expand.
+	(one_cmpl<mode>3_internal): Rename to one_cmpl<mode>2.
+	* config/rs6000/vector.md
+	(vcond_mask_<mode><mode> for VEC_I and VEC_I): New expand.
+	(vec_cmp<mode><mode> for VEC_I and VEC_I): Likewise.
+	(vec_cmpu<mode><mode> for VEC_I and VEC_I): Likewise.
+
 2019-11-27  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

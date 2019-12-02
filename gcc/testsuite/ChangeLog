@@ -1,3 +1,12 @@
+2019-12-02  Li Jia He  <helijia@linux.ibm.com>
+
+	Partial backport from trunk
+	PR target/92098
+	2019-11-08  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92132
+	* gcc.target/powerpc/pr92132-fp-1.c: New test.
+	* gcc.target/powerpc/pr92132-fp-2.c: New test.
 
 2019-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
