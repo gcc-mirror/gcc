@@ -4228,6 +4228,37 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT], [
 ])
 
 dnl
+dnl Check whether pthread_mutex_clocklock is available in <pthread.h> for std::timed_mutex to use,
+dnl and define _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  ac_save_LIBS="$LIBS"
+  LIBS="$LIBS -lpthread"
+
+  AC_MSG_CHECKING([for pthread_mutex_clocklock])
+  AC_CACHE_VAL(glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <pthread.h>],
+      [pthread_mutex_t mutex; struct timespec ts; int n = pthread_mutex_clocklock(&mutex, CLOCK_REALTIME, &ts);],
+      [glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK=yes],
+      [glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK=no])
+  ])
+  if test $glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK = yes; then
+    AC_DEFINE(_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK, 1, [Define if pthread_mutex_clocklock is available in <pthread.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  LIBS="$ac_save_LIBS"
+  AC_LANG_RESTORE
+])
+
+dnl
 dnl Check whether sysctl is available in <pthread.h>, and define _GLIBCXX_USE_SYSCTL_HW_NCPU.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SYSCTL_HW_NCPU], [

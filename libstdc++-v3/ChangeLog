@@ -1,5 +1,22 @@
 2019-12-02  Mike Crowe  <mac@mcrowe.com>
 
+	PR libstdc++/78237 Add full steady_clock support to timed_mutex
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK): Define to
+	detect presence of pthread_mutex_clocklock function.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK.
+	* include/std/mutex (__timed_mutex_impl): Remove unnecessary __clock_t.
+	(__timed_mutex_impl::_M_try_lock_for): Use best clock to turn relative
+	timeout into absolute timeout.
+	(__timed_mutex_impl::_M_try_lock_until): Keep existing implementation
+	for system_clock. Add new implementation for steady_clock that calls
+	_M_clocklock. Modify overload for user-defined clock to use a relative
+	wait so that it automatically uses the best clock.
+	[_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK] (timed_mutex::_M_clocklock):
+	New member function.
+	(recursive_timed_mutex::_M_clocklock): Likewise.
+
 	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
 	New test. Ensure that timed_mutex::try_lock_until actually times out
 	after the specified time when using both system_clock and
