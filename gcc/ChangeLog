@@ -1,3 +1,9 @@
+2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR driver/92757
+	* doc/invoke.texi (Warning Options): Add caveat about some warnings
+	depending on optimization settings.
+
 2020-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/90838
