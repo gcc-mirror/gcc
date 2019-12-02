@@ -248,4 +248,18 @@ odr_type_p (const_tree t)
          && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t));
 }
 
+/* If TYPE has mangled ODR name, return it.  Otherwise return NULL.
+   The function works only when free_lang_data is run.  */
+
+inline const char *
+get_odr_name_for_type (tree type)
+{
+  tree type_name = TYPE_NAME (type);
+  if (type_name == NULL_TREE
+      || !DECL_ASSEMBLER_NAME_SET_P (type_name))
+    return NULL;
+
+  return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (type_name));
+}
+
 #endif  /* GCC_IPA_UTILS_H  */

@@ -1,3 +1,10 @@
+2019-12-02  Martin Liska  <mliska@suse.cz>
+
+	* ipa-devirt.c (warn_types_mismatch): Use get_odr_name_for_type
+	function.
+	(debug_tree_odr_name): New.
+	* ipa-utils.h (get_odr_name_for_type): New.
+
 2019-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92742
