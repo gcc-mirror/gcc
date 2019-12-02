@@ -1,4 +1,13 @@
-2019-12-02  Feng Xue <fxue@os.amperecomputing.com>
+2019-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92712
+	* match.pd ((A * B) +- A -> (B +- 1) * A,
+	A +- (A * B) -> (1 +- B) * A): Allow optimizing signed integers
+	even when we don't know anything about range of A, but do know
+	something about range of B and the simplification won't introduce
+	new UB.
+
+2019-12-02  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/92133
 	* doc/invoke.texi (ipa-cp-max-recursive-depth): Document new option.
@@ -4543,7 +4552,7 @@
 	(lto_free_file_name_hash): New function.
 	* lto-streamer.h (lto_free_file_name_hash): New.
 
-2019-11-07  Feng Xue <fxue@os.amperecomputing.com>
+2019-11-07  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR tree-optimization/89134
 	* doc/invoke.texi (min-loop-cond-split-prob): Document new --params.
