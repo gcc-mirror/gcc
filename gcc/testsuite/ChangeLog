@@ -1,5 +1,10 @@
 2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle.exp: Run the
+	general/* tests too.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/general/eqne_dup_1.c: New test.
 	* gcc.target/aarch64/sve/acle/asm/dup_f16.c (dup_0_f16_z): Expect
 	the call to be folded to zero.
