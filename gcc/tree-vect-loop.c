@@ -643,6 +643,8 @@ vect_fixup_reduc_chain (stmt_vec_info stmt_info)
   do
     {
       stmtp = STMT_VINFO_RELATED_STMT (stmt_info);
+      gcc_checking_assert (STMT_VINFO_DEF_TYPE (stmtp)
+			   == STMT_VINFO_DEF_TYPE (stmt_info));
       REDUC_GROUP_FIRST_ELEMENT (stmtp) = firstp;
       stmt_info = REDUC_GROUP_NEXT_ELEMENT (stmt_info);
       if (stmt_info)
@@ -650,7 +652,6 @@ vect_fixup_reduc_chain (stmt_vec_info stmt_info)
 	  = STMT_VINFO_RELATED_STMT (stmt_info);
     }
   while (stmt_info);
-  STMT_VINFO_DEF_TYPE (stmtp) = vect_reduction_def;
 }
 
 /* Fixup scalar cycles that now have their stmts detected as patterns.  */
