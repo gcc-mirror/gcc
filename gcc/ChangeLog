@@ -1,3 +1,12 @@
+2019-12-02  Wilco Dijkstra  <wdijkstr@arm.com> 
+
+	* config/aarch64/aarch64-cores.def (ares): Define.
+	(cortex-a76): Likewise.
+	(neoverse-n1): Likewise.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document ares, cortex-a75 and
+	neoverse-n1.
+
 2019-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/89014
