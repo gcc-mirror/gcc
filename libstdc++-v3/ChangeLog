@@ -1,3 +1,17 @@
+2019-12-02  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	New test. Ensure that timed_mutex::try_lock_until actually times out
+	after the specified time when using both system_clock and
+	steady_clock.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: New test.
+	Likewise but for recursive_timed_mutex.
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Template
+	test functions and use them to test both steady_clock and system_clock.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise. Wrap call
+	to timed_mutex::try_lock_until in VERIFY macro to check its return
+	value.
+
 2019-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Enable by default for

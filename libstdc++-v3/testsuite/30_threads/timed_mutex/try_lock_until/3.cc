@@ -1,9 +1,10 @@
 // { dg-do run }
 // { dg-options "-pthread"  }
-// { dg-require-effective-target c++11 }
+// { dg-require-effective-target c++14 }
 // { dg-require-effective-target pthread }
+// { dg-require-gthreads "" }
 
-// Copyright (C) 2008-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,8 +22,8 @@
 // <http://www.gnu.org/licenses/>.
 
 
-#include <chrono>
 #include <mutex>
+#include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
 
@@ -30,29 +31,31 @@ template <typename clock_type>
 void test()
 {
   typedef std::timed_mutex mutex_type;
-  typedef std::unique_lock<mutex_type> lock_type;
 
-  try 
+  try
     {
       mutex_type m;
-      lock_type l(m, std::defer_lock);
-      const typename clock_type::time_point t = clock_type::now()
-	+ std::chrono::seconds(1);
+      m.lock();
+      bool b;
 
-      try
-	{
-	  VERIFY( l.try_lock_until(t) );
-	}
-      catch(const std::system_error&)
-	{
-	  VERIFY( false );
-	}
-      catch (...)
-	{
-	  VERIFY( false );
-	}
-      
-      VERIFY( l.owns_lock() );
+      std::thread t([&] {
+	try
+	  {
+	    using namespace std::chrono;
+	    const auto timeout = 100ms;
+	    const auto start = clock_type::now();
+	    const auto b = m.try_lock_until(start + timeout);
+	    const auto t = clock_type::now() - start;
+	    VERIFY( !b );
+	    VERIFY( t >= timeout );
+	  }
+	catch (const std::system_error& e)
+	  {
+	    VERIFY( false );
+	  }
+	});
+      t.join();
+      m.unlock();
     }
   catch (const std::system_error& e)
     {
@@ -68,5 +71,4 @@ int main()
 {
   test<std::chrono::system_clock>();
   test<std::chrono::steady_clock>();
-  return 0;
 }
