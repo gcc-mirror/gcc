@@ -5548,6 +5548,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	tree obj = OBJ_TYPE_REF_OBJECT (t);
 	obj = cxx_eval_constant_expression (ctx, obj, lval, non_constant_p,
 					    overflow_p);
+	STRIP_NOPS (obj);
 	/* We expect something in the form of &x.D.2103.D.2094; get x. */
 	if (TREE_CODE (obj) != ADDR_EXPR
 	    || !DECL_P (get_base_address (TREE_OPERAND (obj, 0))))
