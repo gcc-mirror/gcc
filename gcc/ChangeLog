@@ -1,5 +1,13 @@
 2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_report_sve_required): New function.
+	(aarch64_expand_mov_immediate): Use it when attempting to measure
+	the length of an SVE vector.
+	(aarch64_mov_operand_p): Only allow SVE CNT immediates when
+	SVE is enabled.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve-builtins.h
 	(gimple_folder::force_vector): Declare.
 	* config/aarch64/aarch64-sve-builtins.cc

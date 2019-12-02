@@ -1473,6 +1473,25 @@ aarch64_err_no_fpadvsimd (machine_mode mode)
 	     " vector types", "+nofp");
 }
 
+/* Report when we try to do something that requires SVE when SVE is disabled.
+   This is an error of last resort and isn't very high-quality.  It usually
+   involves attempts to measure the vector length in some way.  */
+static void
+aarch64_report_sve_required (void)
+{
+  static bool reported_p = false;
+
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_p)
+    return;
+
+  error ("this operation requires the SVE ISA extension");
+  inform (input_location, "you can enable SVE using the command-line"
+	  " option %<-march%>, or by using the %<target%>"
+	  " attribute or pragma");
+  reported_p = true;
+}
+
 /* Return true if REGNO is P0-P15 or one of the special FFR-related
    registers.  */
 inline bool
@@ -4525,6 +4544,11 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	 folding it into the relocation.  */
       if (!offset.is_constant (&const_offset))
 	{
+	  if (!TARGET_SVE)
+	    {
+	      aarch64_report_sve_required ();
+	      return;
+	    }
 	  if (base == const0_rtx && aarch64_sve_cnt_immediate_p (offset))
 	    emit_insn (gen_rtx_SET (dest, imm));
 	  else
@@ -16864,7 +16888,7 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
   if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
-  if (aarch64_sve_cnt_immediate_p (x))
+  if (TARGET_SVE && aarch64_sve_cnt_immediate_p (x))
     return true;
 
   return aarch64_classify_symbolic_expression (x)

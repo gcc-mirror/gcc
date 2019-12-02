@@ -1,5 +1,14 @@
 2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/general/nosve_4.c: New test.
+	* gcc.target/aarch64/sve/acle/general/nosve_5.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/nosve_4.c: Expected a second error
+	for the copy.
+	* gcc.target/aarch64/sve/pcs/nosve_5.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/nosve_6.c: Likewise.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/aarch64-sve-acle.exp: Run the
 	general/* tests too.
 
