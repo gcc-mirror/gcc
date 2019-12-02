@@ -493,6 +493,101 @@
     FAIL;
 })
 
+;; To support vector condition vectorization, define vcond_mask and vec_cmp.
+
+;; Same mode for condition true/false values and predicate operand.
+(define_expand "vcond_mask_<mode><mode>"
+  [(match_operand:VEC_I 0 "vint_operand")
+   (match_operand:VEC_I 1 "vint_operand")
+   (match_operand:VEC_I 2 "vint_operand")
+   (match_operand:VEC_I 3 "vint_operand")]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  emit_insn (gen_vector_select_<mode> (operands[0], operands[2], operands[1],
+                                  operands[3]));
+  DONE;
+})
+
+;; For signed integer vectors comparison.
+(define_expand "vec_cmp<mode><mode>"
+  [(set (match_operand:VEC_I 0 "vint_operand")
+        (match_operator 1 "signed_or_equality_comparison_operator"
+          [(match_operand:VEC_I 2 "vint_operand")
+           (match_operand:VEC_I 3 "vint_operand")]))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  switch (code)
+    {
+    case NE:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+      break;
+    case EQ:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case GE:
+      emit_insn (gen_vector_nlt<mode> (operands[0],operands[2], operands[3],
+                                       tmp));
+      break;
+    case GT:
+      emit_insn (gen_vector_gt<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case LE:
+      emit_insn (gen_vector_ngt<mode> (operands[0], operands[2], operands[3],
+                                       tmp));
+      break;
+    case LT:
+      emit_insn (gen_vector_gt<mode> (operands[0], operands[3], operands[2]));
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+  DONE;
+})
+
+;; For unsigned integer vectors comparison.
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:VEC_I 0 "vint_operand")
+        (match_operator 1 "unsigned_or_equality_comparison_operator"
+          [(match_operand:VEC_I 2 "vint_operand")
+           (match_operand:VEC_I 3 "vint_operand")]))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  switch (code)
+    {
+    case NE:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[0]));
+      break;
+    case EQ:
+      emit_insn (gen_vector_eq<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case GEU:
+      emit_insn (gen_vector_nltu<mode> (operands[0], operands[2], operands[3],
+                                        tmp));
+      break;
+    case GTU:
+      emit_insn (gen_vector_gtu<mode> (operands[0], operands[2], operands[3]));
+      break;
+    case LEU:
+      emit_insn (gen_vector_ngtu<mode> (operands[0], operands[2], operands[3],
+                                        tmp));
+      break;
+    case LTU:
+      emit_insn (gen_vector_gtu<mode> (operands[0], operands[3], operands[2]));
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+  DONE;
+})
+
 (define_expand "vector_eq<mode>"
   [(set (match_operand:VEC_C 0 "vlogical_operand")
 	(eq:VEC_C (match_operand:VEC_C 1 "vlogical_operand")
