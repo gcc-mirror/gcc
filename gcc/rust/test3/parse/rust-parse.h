@@ -312,6 +312,7 @@ namespace Rust {
         AST::ReferenceType* parse_reference_type();
         AST::BareFunctionType* parse_bare_function_type(::std::vector<AST::LifetimeParam> for_lifetimes);
         AST::Type* parse_paren_prefixed_type();
+        AST::TypeNoBounds* parse_paren_prefixed_type_no_bounds();
         AST::Type* parse_for_prefixed_type();
         AST::MaybeNamedParam parse_maybe_named_param();
 

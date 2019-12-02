@@ -6184,9 +6184,6 @@ namespace Rust {
 
     // Parses a type (will further disambiguate any type).
     AST::Type* Parser::parse_type() {
-        // TODO
-        return NULL;
-
         /* rules for all types:
          * NeverType:               '!'
          * SliceType:               '[' Type ']'
@@ -6246,6 +6243,13 @@ namespace Rust {
             case AMP: // does this also include AMP_AMP?
                 // reference type
                 return parse_reference_type();
+            case LIFETIME: {
+                // probably a lifetime bound, so probably type param bounds in TraitObjectType
+                ::std::vector< ::std::unique_ptr<AST::TypeParamBound> > bounds
+                  = parse_type_param_bounds();
+
+                return new AST::TraitObjectType(::std::move(bounds));
+            }
             case IDENTIFIER:
             case SUPER:
             case SELF:
@@ -6789,7 +6793,8 @@ namespace Rust {
         // parse inner type (required)
         AST::Type* inner_type = parse_type();
         if (inner_type == NULL) {
-            error_at(lexer.peek_token()->get_locus(), "failed to parse inner type in slice or array type");
+            error_at(
+              lexer.peek_token()->get_locus(), "failed to parse inner type in slice or array type");
             return NULL;
         }
 
@@ -6808,7 +6813,8 @@ namespace Rust {
                 // parse required array size expression
                 AST::Expr* size = parse_expr();
                 if (size == NULL) {
-                    error_at(lexer.peek_token()->get_locus(), "failed to parse size expression in array type");
+                    error_at(lexer.peek_token()->get_locus(),
+                      "failed to parse size expression in array type");
                     return NULL;
                 }
 
@@ -6820,14 +6826,264 @@ namespace Rust {
             }
             default:
                 // error
-                error_at(t->get_locus(), "unrecognised token '%s' in slice or array type after inner type", t->get_token_description());
+                error_at(t->get_locus(),
+                  "unrecognised token '%s' in slice or array type after inner type",
+                  t->get_token_description());
+                return NULL;
         }
     }
 
     // Parses a type, taking into account type boundary disambiguation.
     AST::TypeNoBounds* Parser::parse_type_no_bounds() {
-        // TODO
-        return NULL;
+        const_TokenPtr t = lexer.peek_token();
+        switch (t->get_id()) {
+            case EXCLAM:
+                // never type - can't be macro as no path beforehand
+                lexer.skip_token();
+                return new AST::NeverType();
+            case LEFT_SQUARE:
+                // slice type or array type - requires further disambiguation
+                return parse_slice_or_array_type();
+            case LEFT_ANGLE: {
+                // qualified path in type
+                AST::QualifiedPathInType path = parse_qualified_path_in_type();
+                if (path.is_error()) {
+                    error_at(t->get_locus(), "failed to parse qualified path in type");
+                    return NULL;
+                }
+                return new AST::QualifiedPathInType(::std::move(path));
+            }
+            case UNDERSCORE:
+                // inferred type
+                lexer.skip_token();
+                return new AST::InferredType();
+            case ASTERISK:
+                // raw pointer type
+                return parse_raw_pointer_type();
+            case AMP: // does this also include AMP_AMP?
+                // reference type
+                return parse_reference_type();
+            case LIFETIME: {
+                // probably a lifetime bound, so probably type param bounds in TraitObjectType
+                // this is not allowed, but detection here for error message
+                error_at(t->get_locus(), "lifetime bounds (i.e. in type param bounds, in "
+                                         "TraitObjectType) are not allowed as TypeNoBounds");
+                return NULL;
+            }
+            case IDENTIFIER:
+            case SUPER:
+            case SELF:
+            case SELF_ALIAS:
+            case CRATE:
+            case DOLLAR_SIGN:
+            case SCOPE_RESOLUTION: {
+                // macro invocation or type path - requires further disambiguation.
+                /* for parsing path component of each rule, perhaps parse it as a typepath and
+                 * attempt conversion to simplepath if a trailing '!' is found */
+                /* Type path also includes TraitObjectTypeOneBound BUT if it starts with it, it is
+                 * exactly the same as a TypePath syntactically, so this is a syntactical ambiguity.
+                 * As such, the parser will parse it as a TypePath.
+                 * This, however, does not prevent TraitObjectType from starting with a typepath. */
+
+                // parse path as type path
+                AST::TypePath path = parse_type_path();
+                if (path.is_error()) {
+                    error_at(
+                      t->get_locus(), "failed to parse path as first component of type no bounds");
+                    return NULL;
+                }
+
+                // branch on next token
+                t = lexer.peek_token();
+                switch (t->get_id()) {
+                    case EXCLAM: {
+                        // macro invocation
+                        // convert to simple path
+                        AST::SimplePath macro_path = path.as_simple_path();
+                        if (macro_path.is_empty()) {
+                            error_at(t->get_locus(),
+                              "failed to parse simple path in macro invocation (for type)");
+                            return NULL;
+                        }
+
+                        lexer.skip_token();
+
+                        AST::DelimTokenTree tok_tree = parse_delim_token_tree();
+
+                        return new AST::MacroInvocation(::std::move(macro_path),
+                          ::std::move(tok_tree), ::std::vector<AST::Attribute>());
+                    }
+                    case PLUS: {
+                        // type param bounds - not allowed, here for error message
+                        error_at(t->get_locus(),
+                          "type param bounds (in TraitObjectType) are not allowed as TypeNoBounds");
+                        return NULL;
+                    }
+                    default:
+                        // assume that this is a type path and not an error
+                        return new AST::TypePath(::std::move(path));
+                }
+            }
+            case LEFT_PAREN:
+                // tuple type or parenthesised type - requires further disambiguation (the usual)
+                // ok apparently can be a parenthesised TraitBound too, so could be 
+                // TraitObjectTypeOneBound
+                return parse_paren_prefixed_type_no_bounds();
+            case FOR:
+            case ASYNC:
+            case CONST:
+            case UNSAFE:
+            case EXTERN_TOK:
+            case FN_TOK:
+                // bare function type (with no for lifetimes)
+                return parse_bare_function_type(::std::vector<AST::LifetimeParam>());
+            case IMPL:
+                lexer.skip_token();
+                if (lexer.peek_token()->get_id() == LIFETIME) {
+                    // cannot be one bound because lifetime prevents it from being traitbound
+                    // not allowed as type no bounds, only here for error message
+                    error_at(lexer.peek_token()->get_locus(),
+                      "lifetime (probably lifetime bound, in type param bounds, in ImplTraitType) is "
+                      "not allowed in TypeNoBounds");
+                    return NULL;
+                } else {
+                    // should be trait bound, so parse trait bound
+                    AST::TraitBound* initial_bound = parse_trait_bound();
+                    if (initial_bound == NULL) {
+                        error_at(lexer.peek_token()->get_locus(),
+                          "failed to parse ImplTraitTypeOneBound bound");
+                        return NULL;
+                    }
+
+                    // ensure not a trait with multiple bounds
+                    t = lexer.peek_token();
+                    if (t->get_id() == PLUS) {
+                        error_at(t->get_locus(), "plus after trait bound means an ImplTraitType, "
+                                                 "which is not allowed as a TypeNoBounds");
+                        return NULL;
+                    }
+
+                    // convert trait bound to value object
+                    AST::TraitBound value_bound(*initial_bound);
+                    delete initial_bound;
+
+                    return new AST::ImplTraitTypeOneBound(::std::move(value_bound));
+                }
+            case DYN:
+            case QUESTION_MARK: {
+                // either TraitObjectTypeOneBound
+                bool has_dyn = false;
+                if (t->get_id() == DYN) {
+                    lexer.skip_token();
+                    has_dyn = true;
+                }
+
+                if (lexer.peek_token()->get_id() == LIFETIME) {
+                    // means that cannot be TraitObjectTypeOneBound - so here for error message
+                    error_at(lexer.peek_token()->get_locus(),
+                      "lifetime as bound in TraitObjectTypeOneBound "
+                      "is not allowed, so cannot be TypeNoBounds");
+                    return NULL;
+                }
+
+                // should be trait bound, so parse trait bound
+                AST::TraitBound* initial_bound = parse_trait_bound();
+                if (initial_bound == NULL) {
+                    error_at(lexer.peek_token()->get_locus(),
+                      "failed to parse TraitObjectTypeOneBound initial bound");
+                    return NULL;
+                }
+
+                // detect error with plus as next token
+                t = lexer.peek_token();
+                if (t->get_id() == PLUS) {
+                    error_at(t->get_locus(), "plus after trait bound means a TraitObjectType, "
+                                             "which is not allowed as a TypeNoBounds");
+                    return NULL;
+                }
+
+                // convert trait bound to value object
+                AST::TraitBound value_bound(*initial_bound);
+                delete initial_bound;
+
+                return new AST::TraitObjectTypeOneBound(::std::move(value_bound), has_dyn);
+            }
+            default:
+                error_at(t->get_locus(), "unrecognised token '%s' in type no bounds",
+                  t->get_token_description());
+                return NULL;
+        }
+    }
+
+    // Parses a type no bounds beginning with '('.
+    AST::TypeNoBounds* Parser::parse_paren_prefixed_type_no_bounds() {
+        /* NOTE: this could probably be parsed without the HACK solution of parse_paren_prefixed_type, but
+         * I was lazy. So FIXME for future.*/
+        
+        /* NOTE: again, syntactical ambiguity of a parenthesised trait bound is considered a trait bound,
+         * not a parenthesised type, so that it can still be used in type param bounds. */
+
+        // skip left delim
+        lexer.skip_token();
+        // while next token isn't close delim, parse comma-separated types, saving whether trailing
+        // comma happens
+        const_TokenPtr t = lexer.peek_token();
+        bool trailing_comma = true;
+        ::std::vector< ::std::unique_ptr<AST::Type> > types;
+
+        while (t->get_id() != RIGHT_PAREN) {
+            AST::Type* type = parse_type();
+            if (type == NULL) {
+                error_at(t->get_locus(),
+                  "failed to parse type inside parentheses (probably tuple or parenthesised)");
+                return NULL;
+            }
+            types.push_back(::std::unique_ptr<AST::Type>(type));
+
+            t = lexer.peek_token();
+            if (t->get_id() != COMMA) {
+                trailing_comma = false;
+                break;
+            }
+            lexer.skip_token();
+
+            t = lexer.peek_token();
+        }
+
+        if (!skip_token(RIGHT_PAREN)) {
+            return NULL;
+        }
+
+        // if only one type and no trailing comma, then not a tuple type
+        if (types.size() == 1 && !trailing_comma) {
+            // must be a TraitObjectType (with more than one bound)
+            if (lexer.peek_token()->get_id() == PLUS) {
+                // error - this is not allowed for type no bounds
+                error_at(lexer.peek_token()->get_id(), "plus (implying TraitObjectType as type param bounds) is not allowed in type no bounds");
+                return NULL;
+            } else {
+                // release vector pointer
+                AST::Type* released_ptr = types[0].release();
+                // HACK: attempt to convert to trait bound. if fails, parenthesised type
+                AST::TraitBound* converted_bound = released_ptr->to_trait_bound(true);
+                if (converted_bound == NULL) {
+                    // parenthesised type
+                    return new AST::ParenthesisedType(released_ptr);
+                } else {
+                    // trait object type (one bound)
+                    delete released_ptr;
+
+                    // get value semantics trait bound
+                    AST::TraitBound value_bound(*converted_bound);
+                    delete converted_bound;
+
+                    return new AST::TraitObjectTypeOneBound(value_bound);
+                }
+            }
+        } else {
+            return new AST::TupleType(::std::move(types));
+        }
+        // TODO: ensure that this ensures that dynamic dispatch for traits is not lost somehow
     }
 
     /* Parses a literal pattern or range pattern. Assumes that literals passed in are valid range
