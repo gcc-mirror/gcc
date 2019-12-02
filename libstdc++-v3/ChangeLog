@@ -1,5 +1,24 @@
 2019-12-02  Mike Crowe  <mac@mcrowe.com>
 
+	Add full steady_clock support to shared_timed_mutex
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK): Define
+	to check for the presence of both pthread_rwlock_clockrdlock and
+	pthread_rwlock_clockwrlock.
+	* config.h.in: Regenerate.
+	* configure.ac: Call GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK.
+	* configure: Regenerate.
+	* include/std/shared_mutex (shared_timed_mutex): Define __clock_t as
+	the best clock to use for relative waits.
+	(shared_timed_mutex::try_lock_for) Round up wait duration if necessary.
+	(shared_timed_mutex::try_lock_shared_for): Likewise.
+	(shared_timed_mutex::try_lock_until): Use existing try_lock_until
+	implementation for system_clock (which matches __clock_t when
+	_GLIBCCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK is not defined). Add new
+	overload for steady_clock that uses pthread_rwlock_clockwrlock if it
+	is available. Simplify overload for non-standard clock to just call
+	try_lock_for with a relative timeout.
+	(shared_timed_mutex::try_lock_shared_until): Likewise.
+
 	PR libstdc++/91906 Fix timed_mutex::try_lock_until on arbitrary clock
 	* include/std/mutex (__timed_mutex_impl::_M_try_lock_until): Loop
 	until the absolute timeout time is reached as measured against the

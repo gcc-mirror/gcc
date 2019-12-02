@@ -228,6 +228,9 @@ GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT
 # For pthread_mutex_clocklock
 GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK
 
+# For pthread_rwlock_clockrdlock and pthread_rwlock_clockwrlock
+GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK
+
 AC_LC_MESSAGES
 
 # For hardware_concurrency
