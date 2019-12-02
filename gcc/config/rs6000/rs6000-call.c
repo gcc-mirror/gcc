@@ -5091,7 +5091,7 @@ rs6000_builtin_is_supported_p (enum rs6000_builtins fncode)
 /* Raise an error message for a builtin function that is called without the
    appropriate target options being set.  */
 
-void
+static void
 rs6000_invalid_builtin (enum rs6000_builtins fncode)
 {
   size_t uns_fncode = (size_t) fncode;
