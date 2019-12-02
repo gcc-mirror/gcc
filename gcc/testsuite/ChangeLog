@@ -1,3 +1,7 @@
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/inline-crossmodule-1_0.C: fix template.
+
 2019-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92742
