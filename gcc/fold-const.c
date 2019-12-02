@@ -2375,9 +2375,14 @@ fold_convertible_p (const_tree type, const_tree arg)
 
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
-    case VECTOR_TYPE:
     case VOID_TYPE:
       return TREE_CODE (type) == TREE_CODE (orig);
+
+    case VECTOR_TYPE:
+      return (VECTOR_TYPE_P (orig)
+	      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+			   TYPE_VECTOR_SUBPARTS (orig))
+	      && fold_convertible_p (TREE_TYPE (type), TREE_TYPE (orig)));
 
     default:
       return false;
