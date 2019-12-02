@@ -1,3 +1,17 @@
+2019-12-01  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/92499
+
+	* config/nios2/nios2.c (nios2_in_small_data_p): Do not consider
+	objects of flexible types to be small if they have internal linkage
+	or are declared extern.
+	* config/nios2/nios2.h (ASM_OUTPUT_ALIGNED_LOCAL): Replace with...
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): ...this.  Use targetm.in_small_data_p
+	instead of the size of the object initializer.
+	* tree.c (flexible_array_type_p): Move from C front end, and
+	generalize to handle fields in non-C structures.
+	* tree.h (flexible_array_type_p): Declare.
+
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile-count.h (profile_count::operator<): Use IPA value for
