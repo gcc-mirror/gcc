@@ -1,3 +1,8 @@
+2019-12-02  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/92133
+	* gcc.dg/ipa/ipa-clone-2.c: New test.
+
 2019-12-01  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/92499
