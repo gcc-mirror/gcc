@@ -49,8 +49,9 @@ along with GCC; see the file COPYING3.  If not see
    Cross-module references are by (remapped) module number and
    module-local index.
 
-   WARNING: the above is in transition.  Namespace-scope and
-   instantiations behave as above, but class members do not (yet).
+   WARNING: the above is in transition.  Namespaces, namespace-scope,
+   instantiations & voldemort entities behave as above, but class
+   members do not (yet).
 
    Each importable DECL contains 3 flags -- DECL_EXPORT_P,
    DECL_MODULE_PURVIEW_P and DECL_MODULE_IMPORT_P.  The first
@@ -58,15 +59,19 @@ along with GCC; see the file COPYING3.  If not see
    module purview (as opposed to the global module fragment), and the
    third indicates whether it was an import or not.
 
-   The originating module determines ownership of everything within
-   that context, and the permisibility of redefinitions from other
-   TUs.
+   WARNING: That last description is a lie.  DECL_MODULE_ORIGIN
+   contains the module index of the entity.  It is non-zero for
+   imported entities.  The intent is to change that.
+
+   The originating module determines module ownership of everything
+   within that context, and the permisibility of redefinitions from
+   other TUs.
 
    Header units are module-like.
 
    For namespace-scope lookup, the decls for a particular module are
    held located in a sparse array hanging off the binding of the name.
-   This is partitioned into two: a set of Fixed slots at the start
+   This is partitioned into two: a few fixed slots at the start
    followed by the sparse slots afterwards.  By construction we only
    need to append new slots to the end -- there is never a need to
    insert in the middle.  The fixed slots are MODULE_SLOT_CURRENT for
@@ -87,7 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 
    There is only one instance of each extern-linkage namespace.  It
    appears in every module slot that makes it visible.  It also
-   appears in MODULE_SLOT_GLOBAL. (it is an ODR violation if they
+   appears in MODULE_SLOT_GLOBAL.  (It is an ODR violation if they
    collide with some other global module entity.)  We also have an
    optimization that shares the slot for adjacent modules that declare
    the same such namespace.
@@ -121,11 +126,11 @@ along with GCC; see the file COPYING3.  If not see
    does mean we can get larger SCCs than if we separated them.  It is
    unclear whether this is a win or not.
 
-   Notice this means we embed section indices into the contents of
-   other sections.  Thus random manipulation of the CMI file by ELF
-   tools may well break it.  The kosher way would probably be to
-   introduce indirection via section symbols, but that would require
-   defining a relocation type.
+   Notice that we embed section indices into the contents of other
+   sections.  Thus random manipulation of the CMI file by ELF tools
+   may well break it.  The kosher way would probably be to introduce
+   indirection via section symbols, but that would require defining a
+   relocation type.
 
    Notice that lazy loading of one module's decls can cause lazy
    loading of other decls in the same or another module.  Clearly we
@@ -135,7 +140,7 @@ along with GCC; see the file COPYING3.  If not see
    also orders the SCCs wrt each other, so dependent SCCs come first.
    As we load dependent modules first, we know there can be no
    reference to a higher-numbered module, and because we write out
-   dependent SCCs first likewise for SCCs within the module.  This
+   dependent SCCs first, likewise for SCCs within the module.  This
    allows us to immediately detect broken references.  When loading,
    we must ensure the rest of the compiler doesn't cause some
    unconnected load to occur (for instance, instantiate a template).
@@ -4131,6 +4136,7 @@ dumper::impl::nested_name (tree t)
 {
   tree ti = NULL_TREE;
   int origin = -1;
+  tree name = NULL_TREE;
 
   if (t && TREE_CODE (t) == TREE_BINFO)
     t = BINFO_TYPE (t);
@@ -4150,36 +4156,41 @@ dumper::impl::nested_name (tree t)
       int use_tpl;
       ti = node_template_info (t, use_tpl);
       if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
-	  && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == t)
+	  && (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == t))
 	t = TI_TEMPLATE (ti);
+      if (TREE_CODE (t) == TEMPLATE_DECL)
+	fputs ("template ", stream);
 
       if (DECL_LANG_SPECIFIC (t) && DECL_MODULE_ORIGIN (t))
 	origin = DECL_MODULE_ORIGIN (t);
 
-      t = DECL_NAME (t) ? DECL_NAME (t)
+      name = DECL_NAME (t) ? DECL_NAME (t)
 	: HAS_DECL_ASSEMBLER_NAME_P (t) ? DECL_ASSEMBLER_NAME_RAW (t)
 	: NULL_TREE;
     }
+  else
+    name = t;
 
-  if (t)
-    switch (TREE_CODE (t))
+  if (name)
+    switch (TREE_CODE (name))
       {
       default:
 	fputs ("#unnamed#", stream);
 	break;
 
       case IDENTIFIER_NODE:
-	fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), stream);
+	fwrite (IDENTIFIER_POINTER (name), 1, IDENTIFIER_LENGTH (name), stream);
 	break;
 
       case INTEGER_CST:
-	print_hex (wi::to_wide (t), stream);
+	print_hex (wi::to_wide (name), stream);
 	break;
 
       case STRING_CST:
 	/* If TREE_TYPE is NULL, this is a raw string.  */
-	fwrite (TREE_STRING_POINTER (t), 1,
-		TREE_STRING_LENGTH (t) - (TREE_TYPE (t) != NULL_TREE), stream);
+	fwrite (TREE_STRING_POINTER (name), 1,
+		TREE_STRING_LENGTH (name) - (TREE_TYPE (name) != NULL_TREE),
+		stream);
 	break;
       }
   else
@@ -6939,9 +6950,10 @@ trees_out::add_indirect_tpl_parms (tree parms)
 	break;
 
       int tag = insert (parms);
-      dump (dumper::TREE)
-	&& dump ("Indirect:%d template's parameter %u %C:%N",
-		 tag, len, TREE_CODE (parms), parms);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Indirect:%d template's parameter %u %C:%N",
+		   tag, len, TREE_CODE (parms), parms);
     }
 
   if (streaming_p ())

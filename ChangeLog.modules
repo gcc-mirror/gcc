@@ -1,3 +1,17 @@
+2019-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (dumper::impl::nested_name): Add 'template '
+	disambiguator.
+	(trees_out::add_indirect_tpl_parms): Check if streaming before
+	dumping.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[234]_[bc].C: Adjust scans.
+	* g++.dg/modules/inst-3_b.C: Likewise.
+	* g++.dg/modules/late-ret-[23]_[ac].[HC]: Likewise.
+	* g++.dg/modules/tpl-friend-[12]_a.C: Likewise.
+	* g++.dg/modules/tpl-spec-[1245]_[abcd].C: Likewise.
+
 2019-11-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

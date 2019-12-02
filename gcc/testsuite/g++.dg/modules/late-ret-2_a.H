@@ -11,4 +11,4 @@ template<typename T>
 auto Bar (T *arg)
   -> TPL<decltype (arg)> ;
 
-// { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=decl definition '::Foo'\n  \[1\]=specialization declaration '::TPL<#null#>'\n  \[2\]=binding '::Foo'\n} module } }
+// { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=decl definition '::template Foo'\n  \[1\]=specialization declaration '::TPL<#null#>'\n  \[2\]=binding '::Foo'\n} module } }

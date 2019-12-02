@@ -15,11 +15,11 @@ int main ()
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::frob'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Loading entity foo\[2\] section:2} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo@foo:.::frob@foo:.'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo@foo:.::template frob@foo:.'@foo} module } }
 // { dg-final { scan-lang-dump-not {Wrote mergeable} module } }
 
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::quux'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Loading entity foo\[1\] section:1} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo@foo:.::X@foo:.'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo@foo:.::template X@foo:.'@foo} module } }
 // { dg-final { scan-lang-dump {Read:-[0-9]* function_decl:'::foo@foo:.::frob<0x0>'} module } }
