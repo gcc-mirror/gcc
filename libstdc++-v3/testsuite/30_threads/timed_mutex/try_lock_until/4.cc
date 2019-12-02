@@ -31,31 +31,23 @@
 template <typename clock_type>
 void test()
 {
-  typedef std::recursive_timed_mutex mutex_type;
+  typedef std::timed_mutex mutex_type;
 
   try
     {
+      using namespace std::chrono;
       mutex_type m;
-      m.lock();
-      bool b;
 
-      std::thread t([&] {
-	try
-	  {
-	    using namespace std::chrono;
-	    const auto timeout = 100ms;
-	    const auto start = clock_type::now();
-	    const auto b = m.try_lock_until(start + timeout);
-	    const auto t = clock_type::now() - start;
-	    VERIFY( !b );
-	    VERIFY( t >= timeout );
-	  }
-	catch (const std::system_error& e)
-	  {
-	    VERIFY( false );
-	  }
-	});
-      t.join();
+      // Confirm that try_lock_until acts like try_lock if the timeout has
+      // already passed.
+
+      // First test with a timeout that is definitely in the past.
+      VERIFY( m.try_lock_until( clock_type::now() - 1s ) );
+      m.unlock();
+
+      // Then attempt to test with a timeout that might exactly match the
+      // current time.
+      VERIFY( m.try_lock_until( clock_type::now() ) );
       m.unlock();
     }
   catch (const std::system_error& e)

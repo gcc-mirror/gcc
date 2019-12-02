@@ -189,8 +189,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool
 	_M_try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
 	{
-	  auto __rtime = __atime - _Clock::now();
-	  return _M_try_lock_for(__rtime);
+	  // The user-supplied clock may not tick at the same rate as
+	  // steady_clock, so we must loop in order to guarantee that
+	  // the timeout has expired before returning false.
+	  auto __now = _Clock::now();
+	  do {
+	    auto __rtime = __atime - __now;
+	    if (_M_try_lock_for(__rtime))
+	      return true;
+	    __now = _Clock::now();
+	  } while (__atime > __now);
+	  return false;
 	}
     };
 
