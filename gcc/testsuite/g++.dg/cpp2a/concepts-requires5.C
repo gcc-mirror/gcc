@@ -33,13 +33,13 @@ int driver_1()
 // Test implicit conversion requirements
 
 template<typename T, typename U>
-concept ConvertibleTo = requires(T& t) { {t} -> U&; };
+concept ConvertibleTo = requires(T& t) { {t} -> U&; }; // { dg-error "inaccessible" }
 
 struct B { };
 class D : /*private*/ B { };
 
 void driver_2()
 {
-  static_assert(ConvertibleTo<D, B>()); // { dg-error "cannot be used as a function" }
+  static_assert(ConvertibleTo<D, B>()); // { dg-error "cannot call" }
   static_assert(ConvertibleTo<D, B>); // { dg-error "static assertion failed" }
 }

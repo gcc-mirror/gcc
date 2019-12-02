@@ -540,7 +540,10 @@ varpool_node::assemble_aliases (void)
   FOR_EACH_ALIAS (this, ref)
     {
       varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
-      if (!alias->transparent_alias)
+      if (alias->symver)
+	do_assemble_symver (alias->decl,
+			    DECL_ASSEMBLER_NAME (decl));
+      else if (!alias->transparent_alias)
 	do_assemble_alias (alias->decl,
 			   DECL_ASSEMBLER_NAME (decl));
       alias->assemble_aliases ();

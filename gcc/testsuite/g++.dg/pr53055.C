@@ -2,4 +2,4 @@
 // { dg-do compile }
 
 struct A A :: * p ;
-int i = p ->* p ; // { dg-error "" }
+int i = p ->* p ; // { dg-error "11:left hand operand" }

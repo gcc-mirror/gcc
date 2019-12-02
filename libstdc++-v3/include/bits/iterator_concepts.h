@@ -700,7 +700,7 @@ namespace ranges
   namespace __cust_iswap
   {
     template<typename _It1, typename _It2>
-      void iter_swap(_It1&, _It2&) = delete;
+      void iter_swap(_It1, _It2) = delete;
 
     template<typename _Tp, typename _Up>
       concept __adl_iswap
@@ -744,7 +744,8 @@ namespace ranges
     public:
       template<typename _Tp, typename _Up>
 	requires __adl_iswap<_Tp, _Up>
-	|| (readable<_Tp> && readable<_Up>
+	|| (readable<remove_reference_t<_Tp>>
+	    && readable<remove_reference_t<_Up>>
 	    && swappable_with<iter_reference_t<_Tp>, iter_reference_t<_Up>>)
 	|| (indirectly_movable_storable<_Tp, _Up>
 	    && indirectly_movable_storable<_Up, _Tp>)

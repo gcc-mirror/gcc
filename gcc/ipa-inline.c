@@ -701,10 +701,8 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
 			     "  will not early inline: %C->%C, "
-			     "growth %i exceeds --param early-inlining-insns%s\n",
-			     e->caller, callee, growth,
-			     opt_for_fn (e->caller->decl, optimize) >= 3
-			     ? "" : "-O2");
+			     "growth %i exceeds --param early-inlining-insns\n",
+			     e->caller, callee, growth);
 	  want_inline = false;
 	}
       else if ((n = num_calls (callee)) != 0
@@ -713,11 +711,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
 			     "  will not early inline: %C->%C, "
-			     "growth %i exceeds --param early-inlining-insns%s "
+			     "growth %i exceeds --param early-inlining-insns "
 			     "divided by number of calls\n",
-			     e->caller, callee, growth,
-			     opt_for_fn (e->caller->decl, optimize) >= 3
-			     ? "" : "-O2");
+			     e->caller, callee, growth);
 	  want_inline = false;
 	}
     }
@@ -861,12 +857,9 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 		- ipa_call_summaries->get (e)->call_stmt_size
 	      > inline_insns_single (e->caller, true))
     {
-      if (opt_for_fn (e->caller->decl, optimize) >= 3)
-	e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
-			    ? CIF_MAX_INLINE_INSNS_SINGLE_LIMIT
-			    : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
-      else
-	e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
+      e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
+			  ? CIF_MAX_INLINE_INSNS_SINGLE_LIMIT
+			  : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
       want_inline = false;
     }
   else
@@ -1729,7 +1722,7 @@ recursive_inlining (struct cgraph_edge *edge,
 /* Given whole compilation unit estimate of INSNS, compute how large we can
    allow the unit to grow.  */
 
-static int
+static int64_t
 compute_max_insns (cgraph_node *node, int insns)
 {
   int max_insns = insns;
@@ -1984,9 +1977,8 @@ inline_small_functions (void)
       if (dump_file)
 	fprintf (dump_file, "Enqueueing calls in %s.\n", node->dump_name ());
 
-      for (edge = node->callees; edge; edge = next)
+      for (edge = node->callees; edge; edge = edge->next_callee)
 	{
-	  next = edge->next_callee;
 	  if (edge->inline_failed
 	      && !edge->aux
 	      && can_inline_edge_p (edge, true)
@@ -2264,11 +2256,12 @@ inline_small_functions (void)
 
 	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			   " Inlined %C into %C which now has time %f and "
-			   "size %i, net change of %s.\n",
+			   "size %i, net change of %s%s.\n",
 			   edge->callee, edge->caller,
 			   s->time.to_double (),
 			   ipa_size_summaries->get (edge->caller)->size,
-			   buf_net_change);
+			   buf_net_change,
+			   cross_module_call_p (edge) ? " (cross module)":"");
 	}
       if (min_size > overall_size)
 	{

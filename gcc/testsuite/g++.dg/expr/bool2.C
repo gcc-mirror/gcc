@@ -7,7 +7,7 @@ typedef bool my_bool;
 int main()
 {
   my_bool b = false;
-  b--; // { dg-error "" }
+  b--; // { dg-error "3:use of an operand of type .bool. in .operator\\-\\-. is forbidden" }
   return 0;
 }
 

@@ -1,3 +1,120 @@
+2019-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Enable by default for
+	mingw targets.
+	* configure: Regenerate.
+
+	* include/bits/fs_path.h (u8path(InputIterator, InputIterator))
+	(u8path(const Source&)) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Simplify
+	conditions.
+	* include/experimental/bits/fs_path.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(__u8path(const Source&, char)): Add overloads for std::string and
+	types convertible to std::string.
+	(_Cvt::_S_wconvert): Add a new overload for char8_t strings and use
+	codecvt_utf8_utf16 to do the correct conversion.
+
+2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::operator/=): Change template-head to
+	use typename instead of class.
+	* include/experimental/bits/fs_path.h (path::operator/=): Likewise.
+	* include/std/ostream (operator<<): Likewise.
+
+2019-11-29  Tom Honermann  <tom@honermann.net>
+
+	New tests
+	* testsuite/27_io/basic_ostream/inserters_character/char/deleted.cc:
+	New test to validate deleted overloads of character and string
+	inserters for narrow ostreams.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/deleted.cc:
+	New test to validate deleted overloads of character and string
+	inserters for wide ostreams.
+	* testsuite/27_io/filesystem/path/factory/u8path-char8_t.cc: New test
+	to validate u8path invocations with sequences of char8_t.
+	* testsuite/experimental/filesystem/path/factory/u8path-char8_t.cc:
+	New test to validate u8path invocations with sequences of char8_t.
+
+	Updates to existing tests
+	* testsuite/experimental/feat-char8_t.cc: Updated the expected
+	__cpp_lib_char8_t feature test macro value.
+	* testsuite/27_io/filesystem/path/factory/u8path.cc: Added testing of
+	u8path invocation with std::string, std::string_view, and iterators
+	thereof.
+	* testsuite/experimental/filesystem/path/factory/u8path.cc: Added
+	testing of u8path invocation with std::string, std::string_view, and
+	iterators thereof.
+
+	Update feature test macro, add deleted operators, update u8path
+	* include/bits/c++config: Bumped the value of the __cpp_lib_char8_t
+	feature test macro.
+	* include/bits/fs_path.h (u8path): Modified u8path to accept sequences
+	of char8_t.
+	* include/experimental/bits/fs_path.h (u8path): Modified u8path to
+	accept sequences of char8_t.
+	* include/std/ostream: Added deleted overloads of wchar_t, char8_t,
+	char16_t, and char32_t for ordinary and wide formatted character and
+	string inserters.
+
+	Decouple constraints for u8path from path constructors
+	* include/bits/fs_path.h: Moved helper utilities out of
+	std::filesystem::path into a detail namespace to make them
+	available for use by u8path.
+	* include/experimental/bits/fs_path.h: Moved helper utilities out
+	of std::experimental::filesystem::v1::path into a detail
+	namespace to make them available for use by u8path.
+
+2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91997
+	* python/libstdcxx/v6/printers.py (find_type): Fail more gracefully
+	if we run out of base classes to look at.
+	(llokup_templ_spec, lookup_node_type): New utilities to find node
+	types for node-based containers.
+	(StdListPrinter.children, NodeIteratorPrinter.__init__)
+	(NodeIteratorPrinter.to_string, StdSlistPrinter.children)
+	(StdSlistIteratorPrinter.to_string, StdRbtreeIteratorPrinter.__init__)
+	(StdMapPrinter.children, StdSetPrinter.children)
+	(StdForwardListPrinter.children): Use lookup_node_type instead of
+	find_type.
+	(StdListIteratorPrinter.__init__, StdFwdListIteratorPrinter.__init__):
+	Pass name of node type to NodeIteratorPrinter constructor.
+	(Tr1HashtableIterator.__init__): Rename argument.
+	(StdHashtableIterator.__init__): Likewise. Use lookup_templ_spec
+	instead of find_type.
+	* testsuite/libstdc++-prettyprinters/59161.cc: Remove workaround for
+	_Node typedef not being present in debuginfo.
+	* testsuite/libstdc++-prettyprinters/91997.cc: New test.
+
+2019-11-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/helper_functions.h (__valid_range_aux): Use C++98
+	std::input_iterator_tag default constructor invocation.
+
+	* include/debug/array (array<>::fill): Add C++20 constexpr.
+	(array<>::swap): Likewise.
+
+	* include/debug/safe_iterator.h
+	[__cpp_lib_concepts](_Safe_iterator<>::iterator_concept): Define for
+	C++20.
+
+2019-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (ranges::iter_swap): Fix parameter
+	types of poison pill overload. Use remove_reference_t when checking
+	constraints.
+	* include/bits/stl_iterator.h (move_sentinel): Define for C++20.
+	(move_iterator): Adjust definitions of nested types for C++20. Add
+	hidden friends for move_sentinel operations, iter_move and iter_swap.
+	(common_iterator, counted_iterator): Define for C++20.
+	* testsuite/24_iterators/move_iterator/cust.cc: New test.
+	* testsuite/24_iterators/move_iterator/sentinel.cc: New test.
+	* testsuite/24_iterators/common_iterator/1.cc: New test.
+	* testsuite/24_iterators/counted_iterator/1.cc: New test.
+
+	PR libstdc++/91786
+	* include/bits/fs_path.h (filesystem_error): Move definition before
+	the use in u8path.
+
 2019-11-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/functions.h: Remove <bits/move.h> include.

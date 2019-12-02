@@ -2346,18 +2346,19 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
   tree str1 = gimple_call_arg (stmt, 0);
   tree str2 = gimple_call_arg (stmt, 1);
   tree lhs = gimple_call_lhs (stmt);
-  tree len = NULL_TREE;
+
+  tree bound_node = NULL_TREE;
   unsigned HOST_WIDE_INT bound = HOST_WIDE_INT_M1U;
 
   /* Handle strncmp and strncasecmp functions.  */
   if (gimple_call_num_args (stmt) == 3)
     {
-      len = gimple_call_arg (stmt, 2);
-      if (tree_fits_uhwi_p (len))
-	bound = tree_to_uhwi (len);
+      bound_node = gimple_call_arg (stmt, 2);
+      if (tree_fits_uhwi_p (bound_node))
+	bound = tree_to_uhwi (bound_node);
     }
 
-  /* If the LEN parameter is zero, return zero.  */
+  /* If the BOUND parameter is zero, return zero.  */
   if (bound == 0)
     {
       replace_call_with_value (gsi, integer_zero_node);
@@ -2418,6 +2419,9 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 	case BUILT_IN_STRNCMP:
 	case BUILT_IN_STRNCMP_EQ:
 	  {
+	    if (bound == HOST_WIDE_INT_M1U)
+	      break;
+
 	    /* Reduce the bound to be no more than the length
 	       of the shorter of the two strings, or the sizes
 	       of the unterminated arrays.  */

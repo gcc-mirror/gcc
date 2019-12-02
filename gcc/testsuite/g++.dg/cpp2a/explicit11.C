@@ -9,7 +9,7 @@ struct A {
 };
 
 int i;
-A a1 = { i, i }; // { dg-error "deduction|cannot" }
+A a1 = { i, i }; // { dg-error "deduction|cannot|no match" }
 A a2{ i, i };
 A a3{ 0, i };
 A a4 = { 0, i };

@@ -1753,6 +1753,12 @@ void *
 vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
 				   HOST_WIDE_INT maxsizei)
 {
+  const HOST_WIDE_INT bufsize = 64;
+  /* We're using a fixed buffer for encoding so fail early if the object
+     we want to interpret is bigger.  */
+  if (maxsizei > bufsize * BITS_PER_UNIT)
+    return (void *)-1;
+
   if (partial_defs.is_empty ())
     {
       partial_defs.safe_push (pd);
@@ -1823,16 +1829,17 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
   /* Now simply native encode all partial defs in reverse order.  */
   unsigned ndefs = partial_defs.length ();
   /* We support up to 512-bit values (for V8DFmode).  */
-  unsigned char buffer[64];
+  unsigned char buffer[bufsize];
   int len;
 
   while (!partial_defs.is_empty ())
     {
       pd_data pd = partial_defs.pop ();
+      gcc_checking_assert (pd.offset < bufsize);
       if (TREE_CODE (pd.rhs) == CONSTRUCTOR)
 	/* Empty CONSTRUCTOR.  */
 	memset (buffer + MAX (0, pd.offset),
-		0, MIN ((HOST_WIDE_INT)sizeof (buffer) - MAX (0, pd.offset),
+		0, MIN (bufsize - MAX (0, pd.offset),
 			pd.size + MIN (0, pd.offset)));
       else
 	{
@@ -1847,7 +1854,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
 	      pad = GET_MODE_SIZE (mode) - pd.size;
 	    }
 	  len = native_encode_expr (pd.rhs, buffer + MAX (0, pd.offset),
-				    sizeof (buffer) - MAX (0, pd.offset),
+				    bufsize - MAX (0, pd.offset),
 				    MAX (0, -pd.offset) + pad);
 	  if (len <= 0 || len < (pd.size - MAX (0, -pd.offset)))
 	    {

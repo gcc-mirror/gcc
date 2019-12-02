@@ -9,6 +9,6 @@ template <class X> bool input_iterator{weak_input_iterator<X>}; // { dg-warning 
 template <class X> bool forward_iterator{input_iterator<X>};
 template <class X> bool bidirectional_iterator{forward_iterator<X>};
 template <class X>
-concept bool random_access_iterator{bidirectional_iterator<X>};
+concept bool random_access_iterator{bidirectional_iterator<X>}; // { dg-error "constant" }
 void fn1(random_access_iterator);
 int main() { fn1(0); }  // { dg-error "" }

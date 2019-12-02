@@ -4399,7 +4399,7 @@ build_converted_constant_bool_expr (tree expr, tsubst_flags_t complain)
 
 /* Do any initial processing on the arguments to a function call.  */
 
-static vec<tree, va_gc> *
+vec<tree, va_gc> *
 resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 {
   unsigned int ix;
@@ -6366,11 +6366,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 		  && (TYPE_MAIN_VARIANT (arg1_type)
 		      != TYPE_MAIN_VARIANT (arg2_type))
 		  && (complain & tf_warning))
-		{
-		  warning (OPT_Wenum_compare,
-			   "comparison between %q#T and %q#T",
-			   arg1_type, arg2_type);
-		}
+		warning_at (loc, OPT_Wenum_compare,
+			    "comparison between %q#T and %q#T",
+			    arg1_type, arg2_type);
 	      break;
 	    default:
 	      break;
@@ -6428,7 +6426,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       return cp_build_modify_expr (loc, arg1, code2, arg2, complain);
 
     case INDIRECT_REF:
-      return cp_build_indirect_ref (arg1, RO_UNARY_STAR, complain);
+      return cp_build_indirect_ref (loc, arg1, RO_UNARY_STAR, complain);
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
@@ -6485,8 +6483,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       return cp_build_array_ref (input_location, arg1, arg2, complain);
 
     case MEMBER_REF:
-      return build_m_component_ref (cp_build_indirect_ref (arg1, RO_ARROW_STAR, 
-                                                           complain), 
+      return build_m_component_ref (cp_build_indirect_ref (loc, arg1,
+							   RO_ARROW_STAR,
+                                                           complain),
                                     arg2, complain);
 
       /* The caller will deal with these.  */

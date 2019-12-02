@@ -8,7 +8,7 @@ void bar()
 {
   //-g++: incompatible types in assignment of 'const char[]' to 'char[]'
   //-edg: expression must be a modifiable lvalue
-  foo = "0123456789012345678901234"; // { dg-error "" } // ERROR -
+  foo = "0123456789012345678901234"; // { dg-error "7:invalid array assignment" } // ERROR -
 }
 
 

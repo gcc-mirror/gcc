@@ -2473,7 +2473,7 @@ lra (FILE *f)
 		 But don't remove dead insns or change global live
 		 info as we can undo inheritance transformations after
 		 inheritance pseudo assigning.  */
-	      lra_create_live_ranges (true, false);
+	      lra_create_live_ranges (true, !lra_simple_p);
 	      live_p = true;
 	      /* If we don't spill non-reload and non-inheritance
 		 pseudos, there is no sense to run memory-memory move
@@ -2514,6 +2514,11 @@ lra (FILE *f)
 		}
 	    }
 	  while (fails_p);
+	  if (! live_p) {
+	    /* We need the correct reg notes for work of constraint sub-pass.  */
+	    lra_create_live_ranges (true, true);
+	    live_p = true;
+	  }
 	}
       /* Don't clear optional reloads bitmap until all constraints are
 	 satisfied as we need to differ them from regular reloads.  */

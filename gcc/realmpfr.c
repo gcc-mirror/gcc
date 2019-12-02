@@ -28,7 +28,7 @@
    for initializing and clearing the MPFR parameter.  */
 
 void
-mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r, mp_rnd_t rndmode)
+mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r, mpfr_rnd_t rndmode)
 {
   /* We use a string as an intermediate type.  */
   char buf[128];
@@ -59,11 +59,11 @@ mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r, mp_rnd_t rndmode)
 
 void
 real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m, const real_format *format,
-		mp_rnd_t rndmode)
+		mpfr_rnd_t rndmode)
 {
   /* We use a string as an intermediate type.  */
   char buf[128], *rstr;
-  mp_exp_t exp;
+  mpfr_exp_t exp;
 
   /* Take care of Infinity and NaN.  */
   if (mpfr_inf_p (m))
@@ -105,7 +105,8 @@ real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m, const real_format *format,
    mode RNDMODE.  TYPE is only relevant if M is a NaN.  */
 
 void
-real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m, tree type, mp_rnd_t rndmode)
+real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m, tree type,
+		mpfr_rnd_t rndmode)
 {
   real_from_mpfr (r, m, type ? REAL_MODE_FORMAT (TYPE_MODE (type)) : NULL,
 		  rndmode);

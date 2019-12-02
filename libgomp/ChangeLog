@@ -1,3 +1,24 @@
+2019-11-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Extend by
+	adding a common-block test case.
+
+2019-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60228
+	* testsuite/libgomp.c++/udr-20.C: New test.
+	* testsuite/libgomp.c++/udr-21.C: New test.
+
+2019-11-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_nvptx): New proc.
+	* testsuite/libgomp.fortran/target-print-1.f90: Use it with
+	'dg-skip-if'.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target-print-1-nvptx.f90: New file.
+	* testsuite/libgomp.oacc-fortran/print-1-nvptx.f90: Likewise.
+
 2019-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/libgomp.c/pr39591-1.c: Rename err to e.

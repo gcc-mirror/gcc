@@ -3151,8 +3151,7 @@ sem_item_optimizer::dump_cong_classes (void)
 	   "class: %u)\n", (unsigned long) m_classes.elements (),
 	   m_items.length (), m_items.length () - single_element_classes);
   fprintf (dump_file,
-	   "Class size histogram [num of members]: number of classe number "
-	   "of classess\n");
+	   "Class size histogram [number of members]: number of classes\n");
   for (unsigned int i = 0; i <= max_index; i++)
     if (histogram[i])
       fprintf (dump_file, "%6u: %6u\n", i, histogram[i]);

@@ -630,7 +630,8 @@ plugin_pragma_push_user_expression (cpp_reader *)
 	 usable.  */
       tree this_val = lookup_name (get_identifier ("this"));
       current_class_ref = !this_val ? NULL_TREE
-	: cp_build_indirect_ref (this_val, RO_NULL, tf_warning_or_error);
+	: cp_build_indirect_ref (input_location, this_val, RO_NULL,
+				 tf_warning_or_error);
       current_class_ptr = this_val;
     }
 }

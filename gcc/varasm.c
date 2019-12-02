@@ -5960,6 +5960,23 @@ do_assemble_alias (tree decl, tree target)
 #endif
 }
 
+/* Output .symver directive.  */
+
+void
+do_assemble_symver (tree decl, tree target)
+{
+  tree id = DECL_ASSEMBLER_NAME (decl);
+  ultimate_transparent_alias_target (&id);
+  ultimate_transparent_alias_target (&target);
+#ifdef ASM_OUTPUT_SYMVER_DIRECTIVE
+  ASM_OUTPUT_SYMVER_DIRECTIVE (asm_out_file,
+			       IDENTIFIER_POINTER (target),
+			       IDENTIFIER_POINTER (id));
+#else
+  error ("symver is only supported on ELF platforms");
+#endif
+}
+
 /* Emit an assembler directive to make the symbol for DECL an alias to
    the symbol for TARGET.  */
 

@@ -6,5 +6,5 @@ struct S {
 
 void f()
 {
-  s->i = 3; // { dg-error "" } base operand
+  s->i = 3; // { dg-error "4:base operand of .->. has non-pointer type .S." } base operand
 }

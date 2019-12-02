@@ -2060,7 +2060,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  return expr;
 	}
 
-      return cp_build_indirect_ref (last_rval, RO_ARROW, complain);
+      return cp_build_indirect_ref (loc, last_rval, RO_ARROW, complain);
     }
 
   if (complain & tf_error)

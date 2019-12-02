@@ -2442,7 +2442,7 @@ static tree cp_parser_concept_definition
 static tree cp_parser_constraint_expression
   (cp_parser *);
 static tree cp_parser_requires_clause_opt
-  (cp_parser *);
+  (cp_parser *, bool);
 static tree cp_parser_requires_expression
   (cp_parser *);
 static tree cp_parser_requirement_parameter_list
@@ -10927,7 +10927,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       /* We may have a constrained generic lambda; parse the requires-clause
 	 immediately after the template-parameter-list and combine with any
 	 shorthand constraints present.  */
-      tree dreqs = cp_parser_requires_clause_opt (parser);
+      tree dreqs = cp_parser_requires_clause_opt (parser, true);
       if (flag_concepts)
 	{
 	  tree reqs = get_shorthand_constraints (current_template_parms);
@@ -11020,7 +11020,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	gnu_attrs = cp_parser_gnu_attributes_opt (parser);
 
       /* Parse optional trailing requires clause.  */
-      trailing_requires_clause = cp_parser_requires_clause_opt (parser);
+      trailing_requires_clause = cp_parser_requires_clause_opt (parser, false);
 
       /* The function parameters must be in scope all the way until after the
          trailing-return-type in case of decltype.  */
@@ -16367,11 +16367,11 @@ cp_parser_type_parameter (cp_parser* parser, bool *is_parameter_pack)
 	/* Look for the `>'.  */
 	cp_parser_require (parser, CPP_GREATER, RT_GREATER);
 
-        // If template requirements are present, parse them.
+	/* If template requirements are present, parse them.  */
 	if (flag_concepts)
           {
 	    tree reqs = get_shorthand_constraints (current_template_parms);
-	    if (tree dreqs = cp_parser_requires_clause_opt (parser))
+	    if (tree dreqs = cp_parser_requires_clause_opt (parser, false))
               reqs = combine_constraint_expressions (reqs, dreqs);
 	    TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
           }
@@ -18121,8 +18121,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 						 /*ambiguous_decls=*/NULL,
 						 token->location);
 	      if (tmpl && tmpl != error_mark_node
-		  && (DECL_CLASS_TEMPLATE_P (tmpl)
-		      || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))
+		  && ctad_template_p (tmpl))
 		type = make_template_placeholder (tmpl);
 	      else if (flag_concepts && tmpl && concept_definition_p (tmpl))
 		type = cp_parser_placeholder_type_specifier (parser, loc,
@@ -19939,14 +19938,6 @@ cp_parser_alias_declaration (cp_parser* parser)
 		       attributes, NULL_TREE, &pushed_scope);
   if (decl == error_mark_node)
     return decl;
-
-  /* Attach constraints to the alias declaration.  */
-  if (flag_concepts && current_template_parms)
-    {
-      tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-      tree constr = build_constraints (reqs, NULL_TREE);
-      set_constraints (decl, constr);
-    }
 
   cp_finish_decl (decl, NULL_TREE, 0, NULL_TREE, 0);
 
@@ -21979,7 +21970,7 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_declarator *declarator,
 
   /* Function declarations may be followed by a trailing
      requires-clause.  */
-  requires_clause = cp_parser_requires_clause_opt (parser);
+  requires_clause = cp_parser_requires_clause_opt (parser, false);
 
   if (declare_simd_p)
     declarator->attributes
@@ -26703,6 +26694,15 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
 
+    if (as == NULL)
+      {
+	/* For unknown attributes, just skip balanced tokens instead of
+	   trying to parse the arguments.  */
+	for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 1; n; --n)
+	  cp_lexer_consume_token (parser->lexer);
+	return attribute;
+      }
+
     vec = cp_parser_parenthesized_expression_list
       (parser, attr_flag, /*cast_p=*/false,
        /*allow_expansion_p=*/true,
@@ -26711,7 +26711,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       arguments = error_mark_node;
     else
       {
-	if (vec->is_empty())
+	if (vec->is_empty ())
 	  /* e.g. [[attr()]].  */
 	  error_at (token->location, "parentheses must be omitted if "
 		    "%qE attribute argument list is empty",
@@ -27187,8 +27187,7 @@ cp_parser_concept_definition (cp_parser *parser)
 static void
 cp_parser_diagnose_ungrouped_constraint_plain (location_t loc)
 {
-  error_at (loc, "expression after %<requires%> must be enclosed "
-		 "in parentheses");
+  error_at (loc, "expression must be enclosed in parentheses");
 }
 
 static void
@@ -27197,56 +27196,48 @@ cp_parser_diagnose_ungrouped_constraint_rich (location_t loc)
   gcc_rich_location richloc (loc);
   richloc.add_fixit_insert_before ("(");
   richloc.add_fixit_insert_after (")");
-  error_at (&richloc, "expression after %<requires%> must be enclosed "
-		      "in parentheses");
+  error_at (&richloc, "expression must be enclosed in parentheses");
 }
 
-/* Parse a primary expression within a constraint.  */
-
-static cp_expr
-cp_parser_constraint_primary_expression (cp_parser *parser)
+/* Characterizes the likely kind of expression intended by a mis-written
+   primary constraint.  */
+enum primary_constraint_error
 {
-  cp_parser_parse_tentatively (parser);
-  cp_id_kind idk;
-  location_t loc = input_location;
-  cp_expr expr = cp_parser_primary_expression (parser,
-					       /*address_p=*/false,
-					       /*cast_p=*/false,
-					       /*template_arg_p=*/false,
-					       &idk);
-  expr.maybe_add_location_wrapper ();
-  if (expr != error_mark_node)
-    expr = finish_constraint_primary_expr (expr);
-  if (cp_parser_parse_definitely (parser))
-    return expr;
+  pce_ok,
+  pce_maybe_operator,
+  pce_maybe_postfix,
+};
 
-  /* Retry the parse at a lower precedence. If that succeeds, diagnose the
-     error, but return the expression as if it were valid.  */
-  cp_parser_parse_tentatively (parser);
-  expr = cp_parser_simple_cast_expression (parser);
-  if (cp_parser_parse_definitely (parser))
-    {
-      cp_parser_diagnose_ungrouped_constraint_rich (expr.get_location());
-      return expr;
-    }
+/* Returns true if the token(s) following a primary-expression in a
+   constraint-logical-* expression would require parentheses.  */
 
-  /* Otherwise, something has gone wrong, but we can't generate a more
-     meaningful diagnostic or recover.  */
-  cp_parser_diagnose_ungrouped_constraint_plain (loc);
-  return error_mark_node;
-}
-
-/* Examine the token following EXPR. If it is an operator in a non-logical
-   binary expression, diagnose that as an error. Returns ERROR_MARK_NODE.  */
-
-static cp_expr
-cp_parser_check_non_logical_constraint (cp_parser *parser, cp_expr lhs)
+static primary_constraint_error
+cp_parser_constraint_requires_parens (cp_parser *parser, bool lambda_p)
 {
   cp_token *token = cp_lexer_peek_token (parser->lexer);
   switch (token->type)
     {
       default:
-        return lhs;
+	return pce_ok;
+
+      case CPP_EQ:
+	{
+	  /* An equal sign may be part of the the definition of a function,
+	     and not an assignment operator, when parsing the expression
+	     for a trailing requires-clause. For example:
+
+		template<typename T>
+		struct S {
+		  S() requires C<T> = default;
+		};
+
+	     Don't try to reparse this a binary operator.  */
+	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_DELETE)
+	      || cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_DEFAULT))
+	    return pce_ok;
+
+	  gcc_fallthrough ();
+	}
 
       /* Arithmetic operators.  */
       case CPP_PLUS:
@@ -27261,15 +27252,13 @@ cp_parser_check_non_logical_constraint (cp_parser *parser, cp_expr lhs)
       case CPP_RSHIFT:
       case CPP_LSHIFT:
       /* Relational operators.  */
-      /* FIXME: Handle '<=>'.  */
       case CPP_EQ_EQ:
       case CPP_NOT_EQ:
       case CPP_LESS:
       case CPP_GREATER:
       case CPP_LESS_EQ:
       case CPP_GREATER_EQ:
-      /* Conditional operator */
-      case CPP_QUERY:
+      case CPP_SPACESHIP:
       /* Pointer-to-member.  */
       case CPP_DOT_STAR:
       case CPP_DEREF_STAR:
@@ -27284,52 +27273,138 @@ cp_parser_check_non_logical_constraint (cp_parser *parser, cp_expr lhs)
       case CPP_XOR_EQ:
       case CPP_RSHIFT_EQ:
       case CPP_LSHIFT_EQ:
-        break;
+      /* Conditional operator */
+      case CPP_QUERY:
+	/* Unenclosed binary or conditional operator.  */
+	return pce_maybe_operator;
 
-      case CPP_EQ: {
-	/* An equal sign may be part of the the definition of a function,
-	   and not an assignment operator, when parsing the expression
-	   for a trailing requires-clause. For example:
+      case CPP_OPEN_PAREN:
+	{
+	  /* A primary constraint that precedes the parameter-list of a
+	     lambda expression is followed by an open paren.
 
-	      template<typename T>
-	      struct S {
-		S() requires C<T> = default;
-	      }
+		[]<typename T> requires C (T a, T b) { ... }
 
-	   This is not an error.  */
-	if (cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_DELETE)
-	    || cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_DEFAULT))
-	  return lhs;
+	     Don't try to re-parse this as a postfix expression.  */
+	  if (lambda_p)
+	    return pce_ok;
 
-        break;
-      }
+	  gcc_fallthrough ();
+	}
+      case CPP_OPEN_SQUARE:
+      case CPP_PLUS_PLUS:
+      case CPP_MINUS_MINUS:
+      case CPP_DOT:
+      case CPP_DEREF:
+	/* Unenclosed postfix operator.  */
+	return pce_maybe_postfix;
    }
+}
 
-   /* Try to parse the RHS as either the remainder of a conditional-expression
-      or a logical-or-expression so we can form a good diagnostic.  */
+/* Returns true if the next token begins a unary expression, preceded by
+   an operator or keyword.  */
+
+static bool
+cp_parser_unary_constraint_requires_parens (cp_parser *parser)
+{
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  switch (token->type)
+    {
+      case CPP_NOT:
+      case CPP_PLUS:
+      case CPP_MINUS:
+      case CPP_MULT:
+      case CPP_COMPL:
+      case CPP_PLUS_PLUS:
+      case CPP_MINUS_MINUS:
+	return true;
+
+      case CPP_KEYWORD:
+	{
+	  switch (token->keyword)
+	    {
+	      case RID_STATCAST:
+	      case RID_DYNCAST:
+	      case RID_REINTCAST:
+	      case RID_CONSTCAST:
+	      case RID_TYPEID:
+	      case RID_SIZEOF:
+	      case RID_ALIGNOF:
+	      case RID_NOEXCEPT:
+	      case RID_NEW:
+	      case RID_DELETE:
+	      case RID_THROW:
+		return true;
+
+	     default:
+		break;
+	  }
+	}
+
+      default:
+	break;
+    }
+
+  return false;
+}
+
+/* Parse a primary expression within a constraint.  */
+
+static cp_expr
+cp_parser_constraint_primary_expression (cp_parser *parser, bool lambda_p)
+{
+  /* If this looks like a unary expression, parse it as such, but diagnose
+     it as ill-formed; it requires parens.  */
+  if (cp_parser_unary_constraint_requires_parens (parser))
+    {
+      cp_expr e = cp_parser_assignment_expression (parser, NULL, false, false);
+      cp_parser_diagnose_ungrouped_constraint_rich (e.get_location());
+      return e;
+    }
+
   cp_parser_parse_tentatively (parser);
-  cp_expr rhs;
-  if (token->type == CPP_QUERY)
-    rhs = cp_parser_question_colon_clause (parser, lhs);
+  cp_id_kind idk;
+  location_t loc = input_location;
+  cp_expr expr = cp_parser_primary_expression (parser,
+					       /*address_p=*/false,
+					       /*cast_p=*/false,
+					       /*template_arg_p=*/false,
+					       &idk);
+  expr.maybe_add_location_wrapper ();
+
+  primary_constraint_error pce = pce_ok;
+  if (expr != error_mark_node)
+    {
+      /* The primary-expression could be part of an unenclosed non-logical
+	 compound expression.  */
+      pce = cp_parser_constraint_requires_parens (parser, lambda_p);
+      if (pce != pce_ok)
+	cp_parser_simulate_error (parser);
+      else
+	expr = finish_constraint_primary_expr (expr);
+    }
+  if (cp_parser_parse_definitely (parser))
+    return expr;
+  if (expr == error_mark_node)
+    return error_mark_node;
+
+  /* Retry the parse at a lower precedence. If that succeeds, diagnose the
+     error, but return the expression as if it were valid.  */
+  gcc_assert (pce != pce_ok);
+  cp_parser_parse_tentatively (parser);
+  if (pce == pce_maybe_operator)
+    expr = cp_parser_assignment_expression (parser, NULL, false, false);
   else
+    expr = cp_parser_simple_cast_expression (parser);
+  if (cp_parser_parse_definitely (parser))
     {
-      cp_lexer_consume_token (parser->lexer);
-      rhs = cp_parser_binary_expression (parser, false, false, false,
-					 PREC_NOT_OPERATOR, NULL);
+      cp_parser_diagnose_ungrouped_constraint_rich (expr.get_location());
+      return expr;
     }
 
-  /* If we couldn't parse the RHS, then emit the best diagnostic we can.  */
-  if (!cp_parser_parse_definitely (parser))
-    {
-      cp_parser_diagnose_ungrouped_constraint_plain (token->location);
-      return error_mark_node;
-    }
-
-  /* Otherwise, emit a fixit for the complete binary expression.  */
-  location_t loc = make_location (token->location,
-				  lhs.get_start(),
-				  rhs.get_finish());
-  cp_parser_diagnose_ungrouped_constraint_rich (loc);
+  /* Otherwise, something has gone very wrong, and we can't generate a more
+     meaningful diagnostic or recover.  */
+  cp_parser_diagnose_ungrouped_constraint_plain (loc);
   return error_mark_node;
 }
 
@@ -27340,16 +27415,16 @@ cp_parser_check_non_logical_constraint (cp_parser *parser, cp_expr lhs)
        constraint-logical-and-expression '&&' primary-expression  */
 
 static cp_expr
-cp_parser_constraint_logical_and_expression (cp_parser *parser)
+cp_parser_constraint_logical_and_expression (cp_parser *parser, bool lambda_p)
 {
-  cp_expr lhs = cp_parser_constraint_primary_expression (parser);
+  cp_expr lhs = cp_parser_constraint_primary_expression (parser, lambda_p);
   while (cp_lexer_next_token_is (parser->lexer, CPP_AND_AND))
     {
       cp_token *op = cp_lexer_consume_token (parser->lexer);
-      tree rhs = cp_parser_constraint_primary_expression (parser);
+      tree rhs = cp_parser_constraint_primary_expression (parser, lambda_p);
       lhs = finish_constraint_and_expr (op->location, lhs, rhs);
     }
-  return cp_parser_check_non_logical_constraint (parser, lhs);
+  return lhs;
 }
 
 /* Parse a constraint-logical-or-expression.
@@ -27359,27 +27434,27 @@ cp_parser_constraint_logical_and_expression (cp_parser *parser)
        constraint-logical-or-expression '||' constraint-logical-and-expression  */
 
 static cp_expr
-cp_parser_constraint_logical_or_expression (cp_parser *parser)
+cp_parser_constraint_logical_or_expression (cp_parser *parser, bool lambda_p)
 {
-  cp_expr lhs = cp_parser_constraint_logical_and_expression (parser);
+  cp_expr lhs = cp_parser_constraint_logical_and_expression (parser, lambda_p);
   while (cp_lexer_next_token_is (parser->lexer, CPP_OR_OR))
     {
       cp_token *op = cp_lexer_consume_token (parser->lexer);
-      cp_expr rhs = cp_parser_constraint_logical_and_expression (parser);
+      cp_expr rhs = cp_parser_constraint_logical_and_expression (parser, lambda_p);
       lhs = finish_constraint_or_expr (op->location, lhs, rhs);
     }
-  return cp_parser_check_non_logical_constraint (parser, lhs);
+  return lhs;
 }
 
 /* Parse the expression after a requires-clause. This has a different grammar
     than that in the concepts TS.  */
 
 static tree
-cp_parser_requires_clause_expression (cp_parser *parser)
+cp_parser_requires_clause_expression (cp_parser *parser, bool lambda_p)
 {
   processing_constraint_expression_sentinel parsing_constraint;
   ++processing_template_decl;
-  cp_expr expr = cp_parser_constraint_logical_or_expression (parser);
+  cp_expr expr = cp_parser_constraint_logical_or_expression (parser, lambda_p);
   if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
   --processing_template_decl;
@@ -27412,12 +27487,15 @@ cp_parser_constraint_expression (cp_parser *parser)
 /* Optionally parse a requires clause:
 
       requires-clause:
-        `requires` constraint-logical-or-expression.
+	`requires` constraint-logical-or-expression.
    [ConceptsTS]
-        `requires constraint-expression.  */
+	`requires constraint-expression.
+
+   LAMBDA_P is true when the requires-clause is parsed before the
+   parameter-list of a lambda-declarator.  */
 
 static tree
-cp_parser_requires_clause_opt (cp_parser *parser)
+cp_parser_requires_clause_opt (cp_parser *parser, bool lambda_p)
 {
   cp_token *tok = cp_lexer_peek_token (parser->lexer);
   if (tok->keyword != RID_REQUIRES)
@@ -27437,7 +27515,7 @@ cp_parser_requires_clause_opt (cp_parser *parser)
   cp_lexer_consume_token (parser->lexer);
 
   if (!flag_concepts_ts)
-    return cp_parser_requires_clause_expression (parser);
+    return cp_parser_requires_clause_expression (parser, lambda_p);
   else
     return cp_parser_constraint_expression (parser);
 }
@@ -28992,7 +29070,7 @@ cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
   if (flag_concepts)
   {
     tree reqs = get_shorthand_constraints (current_template_parms);
-    if (tree treqs = cp_parser_requires_clause_opt (parser))
+    if (tree treqs = cp_parser_requires_clause_opt (parser, false))
       reqs = combine_constraint_expressions (reqs, treqs);
     TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
   }
@@ -41243,6 +41321,8 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
   combiner = cp_parser_expression (parser);
   finish_expr_stmt (combiner);
   block = finish_omp_structured_block (block);
+  if (processing_template_decl)
+    block = build_stmt (input_location, EXPR_STMT, block);
   add_stmt (block);
 
   if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
@@ -41347,6 +41427,8 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
 
       block = finish_omp_structured_block (block);
       cp_walk_tree (&block, cp_remove_omp_priv_cleanup_stmt, omp_priv, NULL);
+      if (processing_template_decl)
+	block = build_stmt (input_location, EXPR_STMT, block);
       add_stmt (block);
 
       if (ctor)

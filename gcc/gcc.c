@@ -4741,7 +4741,7 @@ process_command (unsigned int decoded_options_count,
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
 
-  if (n_infiles == last_language_n_infiles && spec_lang != 0)
+  if (n_infiles != 0 && n_infiles == last_language_n_infiles && spec_lang != 0)
     warning (0, "%<-x %s%> after last input file has no effect", spec_lang);
 
   /* Synthesize -fcompare-debug flag from the GCC_COMPARE_DEBUG

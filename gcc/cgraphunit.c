@@ -711,6 +711,89 @@ symbol_table::process_same_body_aliases (void)
   cpp_implicit_aliases_done = true;
 }
 
+/* Process a symver attribute.  */
+
+static void
+process_symver_attribute (symtab_node *n)
+{
+  tree value = lookup_attribute ("symver", DECL_ATTRIBUTES (n->decl));
+
+  if (!value)
+    return;
+  if (lookup_attribute ("symver", TREE_CHAIN (value)))
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"multiple versions for one symbol");
+      return;
+    }
+  tree symver = get_identifier_with_length
+		  (TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (value))),
+		   TREE_STRING_LENGTH (TREE_VALUE (TREE_VALUE (value))));
+  symtab_node *def = symtab_node::get_for_asmname (symver);
+
+  if (def)
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"duplicate definition of a symbol version");
+      inform (DECL_SOURCE_LOCATION (def->decl),
+	      "same version was previously defined here");
+      return;
+    }
+  if (!n->definition)
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"symbol needs to be defined to have a version");
+      return;
+    }
+  if (DECL_COMMON (n->decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"common symbol cannot be versioned");
+      return;
+    }
+  if (DECL_COMDAT (n->decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"comdat symbol cannot be versioned");
+      return;
+    }
+  if (n->weakref)
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"weakref cannot be versioned");
+      return;
+    }
+  if (!TREE_PUBLIC (n->decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"versioned symbol must be public");
+      return;
+    }
+  if (DECL_VISIBILITY (n->decl) != VISIBILITY_DEFAULT)
+    {
+      error_at (DECL_SOURCE_LOCATION (n->decl),
+		"versioned symbol must have default visibility");
+      return;
+    }
+
+  /* Create new symbol table entry representing the version.  */
+  tree new_decl = copy_node (n->decl);
+
+  DECL_INITIAL (new_decl) = NULL_TREE;
+  if (TREE_CODE (new_decl) == FUNCTION_DECL)
+    DECL_STRUCT_FUNCTION (new_decl) = NULL;
+  SET_DECL_ASSEMBLER_NAME (new_decl, symver);
+  TREE_PUBLIC (new_decl) = 1;
+  DECL_ATTRIBUTES (new_decl) = NULL;
+
+  symtab_node *symver_node = symtab_node::get_create (new_decl);
+  symver_node->alias = true;
+  symver_node->definition = true;
+  symver_node->symver = true;
+  symver_node->create_reference (n, IPA_REF_ALIAS, NULL);
+  symver_node->analyzed = true;
+}
+
 /* Process attributes common for vars and functions.  */
 
 static void
@@ -730,6 +813,7 @@ process_common_attributes (symtab_node *node, tree decl)
 
   if (lookup_attribute ("no_reorder", DECL_ATTRIBUTES (decl)))
     node->no_reorder = 1;
+  process_symver_attribute (node);
 }
 
 /* Look for externally_visible and used attributes and mark cgraph nodes
@@ -2137,8 +2221,12 @@ cgraph_node::assemble_thunks_and_aliases (void)
 	  /* Force assemble_alias to really output the alias this time instead
 	     of buffering it in same alias pairs.  */
 	  TREE_ASM_WRITTEN (decl) = 1;
-	  do_assemble_alias (alias->decl,
-			     DECL_ASSEMBLER_NAME (decl));
+	  if (alias->symver)
+	    do_assemble_symver (alias->decl,
+				DECL_ASSEMBLER_NAME (decl));
+	  else
+	    do_assemble_alias (alias->decl,
+			       DECL_ASSEMBLER_NAME (decl));
 	  alias->assemble_thunks_and_aliases ();
 	  TREE_ASM_WRITTEN (decl) = saved_written;
 	}

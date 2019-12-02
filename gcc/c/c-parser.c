@@ -176,6 +176,12 @@ struct GTY(()) c_parser {
   /* How many look-ahead tokens are available (0 - 4, or
      more if parsing from pre-lexed tokens).  */
   unsigned int tokens_avail;
+  /* Raw look-ahead tokens, used only for checking in Objective-C
+     whether '[[' starts attributes.  */
+  vec<c_token, va_gc> *raw_tokens;
+  /* The number of raw look-ahead tokens that have since been fully
+     lexed.  */
+  unsigned int raw_tokens_used;
   /* True if a syntax error is being recovered from; false otherwise.
      c_parser_error sets this flag.  It should clear this flag when
      enough tokens have been consumed to recover from the error.  */
@@ -251,20 +257,39 @@ c_parser_set_error (c_parser *parser, bool err)
 
 static GTY (()) c_parser *the_parser;
 
-/* Read in and lex a single token, storing it in *TOKEN.  */
+/* Read in and lex a single token, storing it in *TOKEN.  If RAW,
+   context-sensitive postprocessing of the token is not done.  */
 
 static void
-c_lex_one_token (c_parser *parser, c_token *token)
+c_lex_one_token (c_parser *parser, c_token *token, bool raw = false)
 {
   timevar_push (TV_LEX);
 
-  token->type = c_lex_with_flags (&token->value, &token->location,
-				  &token->flags,
-				  (parser->lex_joined_string
-				   ? 0 : C_LEX_STRING_NO_JOIN));
-  token->id_kind = C_ID_NONE;
-  token->keyword = RID_MAX;
-  token->pragma_kind = PRAGMA_NONE;
+  if (raw || vec_safe_length (parser->raw_tokens) == 0)
+    {
+      token->type = c_lex_with_flags (&token->value, &token->location,
+				      &token->flags,
+				      (parser->lex_joined_string
+				       ? 0 : C_LEX_STRING_NO_JOIN));
+      token->id_kind = C_ID_NONE;
+      token->keyword = RID_MAX;
+      token->pragma_kind = PRAGMA_NONE;
+    }
+  else
+    {
+      /* Use a token previously lexed as a raw look-ahead token, and
+	 complete the processing on it.  */
+      *token = (*parser->raw_tokens)[parser->raw_tokens_used];
+      ++parser->raw_tokens_used;
+      if (parser->raw_tokens_used == vec_safe_length (parser->raw_tokens))
+	{
+	  vec_free (parser->raw_tokens);
+	  parser->raw_tokens_used = 0;
+	}
+    }
+
+  if (raw)
+    goto out;
 
   switch (token->type)
     {
@@ -434,6 +459,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
     default:
       break;
     }
+ out:
   timevar_pop (TV_LEX);
 }
 
@@ -482,6 +508,32 @@ c_parser_peek_nth_token (c_parser *parser, unsigned int n)
   c_lex_one_token (parser, &parser->tokens[n - 1]);
   parser->tokens_avail = n;
   return &parser->tokens[n - 1];
+}
+
+/* Return a pointer to the Nth token from PARSER, reading it in as a
+   raw look-ahead token if necessary.  The N-1th token is already read
+   in.  Raw look-ahead tokens remain available for when the non-raw
+   functions above are called.  */
+
+c_token *
+c_parser_peek_nth_token_raw (c_parser *parser, unsigned int n)
+{
+  /* N is 1-based, not zero-based.  */
+  gcc_assert (n > 0);
+
+  if (parser->tokens_avail >= n)
+    return &parser->tokens[n - 1];
+  unsigned int raw_len = vec_safe_length (parser->raw_tokens);
+  unsigned int raw_avail
+    = parser->tokens_avail + raw_len - parser->raw_tokens_used;
+  gcc_assert (raw_avail >= n - 1);
+  if (raw_avail >= n)
+    return &(*parser->raw_tokens)[parser->raw_tokens_used
+				  + n - 1 - parser->tokens_avail];
+  vec_safe_reserve (parser->raw_tokens, 1);
+  parser->raw_tokens->quick_grow (raw_len + 1);
+  c_lex_one_token (parser, &(*parser->raw_tokens)[raw_len], true);
+  return &(*parser->raw_tokens)[raw_len];
 }
 
 bool
@@ -3857,11 +3909,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       inner->id_loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
       if (c_parser_nth_token_starts_std_attributes (parser, 1))
-	{
-	  tree std_attrs = c_parser_std_attribute_specifier_sequence (parser);
-	  if (std_attrs)
-	    inner = build_attrs_declarator (std_attrs, inner);
-	}
+	inner->u.id.attrs = c_parser_std_attribute_specifier_sequence (parser);
       return c_parser_direct_declarator_inner (parser, *seen_id, inner);
     }
 
@@ -3898,9 +3946,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 	    return NULL;
 	  else
 	    {
-	      inner
-		= build_function_declarator (args,
-					     build_id_declarator (NULL_TREE));
+	      inner = build_id_declarator (NULL_TREE);
 	      if (!(args->types
 		    && args->types != error_mark_node
 		    && TREE_CODE (TREE_VALUE (args->types)) == IDENTIFIER_NODE)
@@ -3911,6 +3957,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 		  if (std_attrs)
 		    inner = build_attrs_declarator (std_attrs, inner);
 		}
+	      inner = build_function_declarator (args, inner);
 	      return c_parser_direct_declarator_inner (parser, *seen_id,
 						       inner);
 	    }
@@ -4028,7 +4075,6 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 					   static_seen, star_seen);
       if (declarator == NULL)
 	return NULL;
-      inner = set_array_declarator_inner (declarator, inner);
       if (c_parser_nth_token_starts_std_attributes (parser, 1))
 	{
 	  tree std_attrs
@@ -4036,6 +4082,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	  if (std_attrs)
 	    inner = build_attrs_declarator (std_attrs, inner);
 	}
+      inner = set_array_declarator_inner (declarator, inner);
       return c_parser_direct_declarator_inner (parser, id_present, inner);
     }
   else if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
@@ -4052,7 +4099,6 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	return NULL;
       else
 	{
-	  inner = build_function_declarator (args, inner);
 	  if (!(args->types
 		&& args->types != error_mark_node
 		&& TREE_CODE (TREE_VALUE (args->types)) == IDENTIFIER_NODE)
@@ -4063,6 +4109,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	      if (std_attrs)
 		inner = build_attrs_declarator (std_attrs, inner);
 	    }
+	  inner = build_function_declarator (args, inner);
 	  return c_parser_direct_declarator_inner (parser, id_present, inner);
 	}
     }
@@ -4352,7 +4399,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs,
   c_declarator *id_declarator = declarator;
   while (id_declarator && id_declarator->kind != cdk_id)
     id_declarator = id_declarator->declarator;
-  location_t caret_loc = (id_declarator->u.id
+  location_t caret_loc = (id_declarator->u.id.id
 			  ? id_declarator->id_loc
 			  : start_loc);
   location_t param_loc = make_location (caret_loc, start_loc, end_loc);
@@ -4973,6 +5020,80 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
   return nreverse (attributes);
 }
 
+/* Look past an optional balanced token sequence of raw look-ahead
+   tokens starting with the *Nth token.  *N is updated to point to the
+   following token.  Return true if such a sequence was found, false
+   if the tokens parsed were not balanced.  */
+
+static bool
+c_parser_check_balanced_raw_token_sequence (c_parser *parser, unsigned int *n)
+{
+  while (true)
+    {
+      c_token *token = c_parser_peek_nth_token_raw (parser, *n);
+      switch (token->type)
+	{
+	case CPP_OPEN_BRACE:
+	  {
+	    ++*n;
+	    if (c_parser_check_balanced_raw_token_sequence (parser, n))
+	      {
+		token = c_parser_peek_nth_token_raw (parser, *n);
+		if (token->type == CPP_CLOSE_BRACE)
+		  ++*n;
+		else
+		  return false;
+	      }
+	    else
+	      return false;
+	    break;
+	  }
+
+	case CPP_OPEN_PAREN:
+	  {
+	    ++*n;
+	    if (c_parser_check_balanced_raw_token_sequence (parser, n))
+	      {
+		token = c_parser_peek_nth_token_raw (parser, *n);
+		if (token->type == CPP_CLOSE_PAREN)
+		  ++*n;
+		else
+		  return false;
+	      }
+	    else
+	      return false;
+	    break;
+	  }
+
+	case CPP_OPEN_SQUARE:
+	  {
+	    ++*n;
+	    if (c_parser_check_balanced_raw_token_sequence (parser, n))
+	      {
+		token = c_parser_peek_nth_token_raw (parser, *n);
+		if (token->type == CPP_CLOSE_SQUARE)
+		  ++*n;
+		else
+		  return false;
+	      }
+	    else
+	      return false;
+	    break;
+	  }
+
+	case CPP_CLOSE_BRACE:
+	case CPP_CLOSE_PAREN:
+	case CPP_CLOSE_SQUARE:
+	case CPP_EOF:
+	  return true;
+
+	default:
+	  ++*n;
+	  break;
+	}
+    }
+}
+
 /* Return whether standard attributes start with the Nth token.  */
 
 static bool
@@ -4981,10 +5102,18 @@ c_parser_nth_token_starts_std_attributes (c_parser *parser, unsigned int n)
   if (!(c_parser_peek_nth_token (parser, n)->type == CPP_OPEN_SQUARE
 	&& c_parser_peek_nth_token (parser, n + 1)->type == CPP_OPEN_SQUARE))
     return false;
-  /* In C, '[[' must start attributes.  In Objective-C, identifying
-     whether those tokens start attributes requires unbounded
-     lookahead, which is not yet implemented.  */
-  return !c_dialect_objc ();
+  /* In C, '[[' must start attributes.  In Objective-C, we need to
+     check whether '[[' is matched by ']]'.  */
+  if (!c_dialect_objc ())
+    return true;
+  n += 2;
+  if (!c_parser_check_balanced_raw_token_sequence (parser, &n))
+    return false;
+  c_token *token = c_parser_peek_nth_token_raw (parser, n);
+  if (token->type != CPP_CLOSE_SQUARE)
+    return false;
+  token = c_parser_peek_nth_token_raw (parser, n + 1);
+  return token->type == CPP_CLOSE_SQUARE;
 }
 
 static tree

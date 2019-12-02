@@ -356,6 +356,13 @@ types_same_for_odr (const_tree type1, const_tree type2)
       || (type_with_linkage_p (type2) && type_in_anonymous_namespace_p (type2)))
     return false;
 
+  /* If both type has mangled defined check if they are same.
+     Watch for anonymous types which are all mangled as "<anon">.  */
+  if (!type_with_linkage_p (type1) || !type_with_linkage_p (type2))
+    return false;
+  if (type_in_anonymous_namespace_p (type1)
+      || type_in_anonymous_namespace_p (type2))
+    return false;
   return (DECL_ASSEMBLER_NAME (TYPE_NAME (type1))
 	  == DECL_ASSEMBLER_NAME (TYPE_NAME (type2)));
 }
@@ -986,21 +993,24 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 
   /* It is a quite common bug to reference anonymous namespace type in
      non-anonymous namespace class.  */
-  if ((type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
-       && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
-      || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
-	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
+  tree mt1 = TYPE_MAIN_VARIANT (t1);
+  tree mt2 = TYPE_MAIN_VARIANT (t2);
+  if ((type_with_linkage_p (mt1)
+       && type_in_anonymous_namespace_p (mt1))
+      || (type_with_linkage_p (mt2)
+	  && type_in_anonymous_namespace_p (mt2)))
     {
-      if (!type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
-	  || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
+      if (!type_with_linkage_p (mt1)
+	  || !type_in_anonymous_namespace_p (mt1))
 	{
 	  std::swap (t1, t2);
+	  std::swap (mt1, mt2);
 	  std::swap (loc_t1, loc_t2);
 	}
-      gcc_assert (TYPE_NAME (t1)
-		  && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL);
-      tree n1 = TYPE_NAME (t1);
-      tree n2 = TYPE_NAME (t2) ? TYPE_NAME (t2) : NULL;
+      gcc_assert (TYPE_NAME (mt1)
+		  && TREE_CODE (TYPE_NAME (mt1)) == TYPE_DECL);
+      tree n1 = TYPE_NAME (mt1);
+      tree n2 = TYPE_NAME (mt2) ? TYPE_NAME (mt2) : NULL;
 
       if (TREE_CODE (n1) == TYPE_DECL)
 	n1 = DECL_NAME (n1);
@@ -1023,8 +1033,6 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 	        "the incompatible type defined in another translation unit");
       return;
     }
-  tree mt1 = TYPE_MAIN_VARIANT (t1);
-  tree mt2 = TYPE_MAIN_VARIANT (t2);
   /* If types have mangled ODR names and they are different, it is most
      informative to output those.
      This also covers types defined in different namespaces.  */

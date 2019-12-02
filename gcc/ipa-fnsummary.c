@@ -227,7 +227,7 @@ ipa_fn_summary::account_size_time (int size, sreal time,
     {
       e->size += size;
       e->time += time;
-      gcc_checking_assert (e->time >= -1);
+      /* FIXME: PR bootstrap/92653 gcc_checking_assert (e->time >= -1); */
       /* Tolerate small roundoff issues.  */
       if (e->time < 0)
 	e->time = 0;
@@ -912,6 +912,9 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	       !edge->inline_failed
 	       ? "inlined" : cgraph_inline_failed_string (edge-> inline_failed),
 	       indent, "", edge->sreal_frequency ().to_double ());
+
+      if (cross_module_call_p (edge))
+	fprintf (f, " cross module");
 
       if (es)
 	fprintf (f, " loop depth:%2i size:%2i time: %2i",

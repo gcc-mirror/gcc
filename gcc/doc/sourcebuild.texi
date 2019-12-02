@@ -1522,6 +1522,10 @@ Target does not support a vector add instruction on @code{int}.
 @item vect_no_bitwise
 Target does not support vector bitwise instructions.
 
+@item vect_bool_cmp
+Target supports comparison of @code{bool} vectors for at least one
+vector length.
+
 @item vect_char_add
 Target supports addition of @code{char} vectors for at least one
 vector length.

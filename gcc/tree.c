@@ -10334,23 +10334,23 @@ build_common_tree_nodes (bool signed_char)
   uint64_type_node = make_or_reuse_type (64, 1);
 
   /* Decimal float types. */
-  dfloat32_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE;
-  SET_TYPE_MODE (dfloat32_type_node, SDmode);
-  layout_type (dfloat32_type_node);
-  dfloat32_ptr_type_node = build_pointer_type (dfloat32_type_node);
+  if (targetm.decimal_float_supported_p ())
+    {
+      dfloat32_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE;
+      SET_TYPE_MODE (dfloat32_type_node, SDmode);
+      layout_type (dfloat32_type_node);
 
-  dfloat64_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat64_type_node) = DECIMAL64_TYPE_SIZE;
-  SET_TYPE_MODE (dfloat64_type_node, DDmode);
-  layout_type (dfloat64_type_node);
-  dfloat64_ptr_type_node = build_pointer_type (dfloat64_type_node);
+      dfloat64_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (dfloat64_type_node) = DECIMAL64_TYPE_SIZE;
+      SET_TYPE_MODE (dfloat64_type_node, DDmode);
+      layout_type (dfloat64_type_node);
 
-  dfloat128_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE;
-  SET_TYPE_MODE (dfloat128_type_node, TDmode);
-  layout_type (dfloat128_type_node);
-  dfloat128_ptr_type_node = build_pointer_type (dfloat128_type_node);
+      dfloat128_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE;
+      SET_TYPE_MODE (dfloat128_type_node, TDmode);
+      layout_type (dfloat128_type_node);
+    }
 
   complex_integer_type_node = build_complex_type (integer_type_node, true);
   complex_float_type_node = build_complex_type (float_type_node, true);
@@ -15003,6 +15003,41 @@ default_is_empty_record (const_tree type)
   return default_is_empty_type (TYPE_MAIN_VARIANT (type));
 }
 
+/* Determine whether TYPE is a structure with a flexible array member,
+   or a union containing such a structure (possibly recursively).  */
+
+bool
+flexible_array_type_p (const_tree type)
+{
+  tree x, last;
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+      last = NULL_TREE;
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = DECL_CHAIN (x))
+	if (TREE_CODE (x) == FIELD_DECL)
+	  last = x;
+      if (last == NULL_TREE)
+	return false;
+      if (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE
+	  && TYPE_SIZE (TREE_TYPE (last)) == NULL_TREE
+	  && TYPE_DOMAIN (TREE_TYPE (last)) != NULL_TREE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (last))) == NULL_TREE)
+	return true;
+      return false;
+    case UNION_TYPE:
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = DECL_CHAIN (x))
+	{
+	  if (TREE_CODE (x) == FIELD_DECL
+	      && flexible_array_type_p (TREE_TYPE (x)))
+	    return true;
+	}
+      return false;
+    default:
+      return false;
+  }
+}
+
 /* Like int_size_in_bytes, but handle empty records specially.  */
 
 HOST_WIDE_INT
@@ -15121,6 +15156,21 @@ max_object_size (void)
 {
   /* To do: Make this a configurable parameter.  */
   return TYPE_MAX_VALUE (ptrdiff_type_node);
+}
+
+/* A wrapper around TARGET_VERIFY_TYPE_CONTEXT that makes the silent_p
+   parameter default to false and that weeds out error_mark_node.  */
+
+bool
+verify_type_context (location_t loc, type_context_kind context,
+		     const_tree type, bool silent_p)
+{
+  if (type == error_mark_node)
+    return true;
+
+  gcc_assert (TYPE_P (type));
+  return (!targetm.verify_type_context
+	  || targetm.verify_type_context (loc, context, type, silent_p));
 }
 
 #if CHECKING_P

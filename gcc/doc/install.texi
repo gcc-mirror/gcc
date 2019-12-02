@@ -1559,8 +1559,8 @@ addition, @samp{libstdc++}'s include files will be installed into
 @file{@var{libdir}} unless you overruled it by using
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
-parallel.  This is currently supported by @samp{libgfortran},
-@samp{libstdc++}, and @samp{libobjc}.
+parallel.  The default is @samp{yes} for @samp{libada}, and @samp{no} for
+the remaining libraries.
 
 @item @anchor{WithAixSoname}--with-aix-soname=@samp{aix}, @samp{svr4} or @samp{both}
 Traditional AIX shared library versioning (versioned @code{Shared Object}

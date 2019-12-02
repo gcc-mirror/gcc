@@ -2117,12 +2117,16 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 
   /* If INSN contains an autoincrement or autodecrement, make sure that
      register is not used between there and I3, and not already used in
-     I3 either.  Neither must it be used in PRED or SUCC, if they exist.  */
+     I3 either.  Neither must it be used in PRED or SUCC, if they exist.
+     Also insist that I3 not be a jump if using LRA; if it were one
+     and the incremented register were spilled, we would lose.
+     Reload handles this correctly.  */
 
   if (AUTO_INC_DEC)
     for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
       if (REG_NOTE_KIND (link) == REG_INC
-	  && (reg_used_between_p (XEXP (link, 0), insn, i3)
+	  && ((JUMP_P (i3) && targetm.lra_p ())
+	      || reg_used_between_p (XEXP (link, 0), insn, i3)
 	      || (pred != NULL_RTX
 		  && reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (pred)))
 	      || (pred2 != NULL_RTX
@@ -11808,7 +11812,9 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 
   /* If X is a comparison operator, rewrite it in a new mode.  This
      probably won't match, but may allow further simplifications.  */
-  else if (COMPARISON_P (x))
+  else if (COMPARISON_P (x)
+	   && SCALAR_INT_MODE_P (imode)
+	   && SCALAR_INT_MODE_P (omode))
     return gen_rtx_fmt_ee (GET_CODE (x), omode, XEXP (x, 0), XEXP (x, 1));
 
   /* If we couldn't simplify X any other way, just enclose it in a

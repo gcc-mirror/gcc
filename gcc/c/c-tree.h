@@ -460,9 +460,15 @@ struct c_declarator {
   /* Except for cdk_id, the contained declarator.  For cdk_id, NULL.  */
   struct c_declarator *declarator;
   union {
-    /* For identifiers, an IDENTIFIER_NODE or NULL_TREE if an abstract
-       declarator.  */
-    tree id;
+    /* For identifiers.  */
+    struct {
+      /* An IDENTIFIER_NODE, or NULL_TREE if an abstract
+	 declarator.  */
+      tree id;
+      /* Any attributes (which apply to the declaration rather than to
+	 the type described by the outer declarators).  */
+      tree attrs;
+    } id;
     /* For functions.  */
     struct c_arg_info *arg_info;
     /* For arrays.  */

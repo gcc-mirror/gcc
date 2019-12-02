@@ -93,8 +93,6 @@ extern const char * default_invalid_within_doloop (const rtx_insn *);
 extern tree default_builtin_vectorized_function (unsigned int, tree, tree);
 extern tree default_builtin_md_vectorized_function (tree, tree, tree);
 
-extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
-
 extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 
 extern tree default_builtin_reciprocal (tree);

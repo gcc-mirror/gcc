@@ -226,6 +226,35 @@ enum omp_device_kind_arch_isa {
        will choose the first mode that works.  */
 const unsigned int VECT_COMPARE_COSTS = 1U << 0;
 
+/* The contexts in which the use of a type T can be checked by
+   TARGET_VERIFY_TYPE_CONTEXT.  */
+enum type_context_kind {
+  /* Directly measuring the size of T.  */
+  TCTX_SIZEOF,
+
+  /* Directly measuring the alignment of T.  */
+  TCTX_ALIGNOF,
+
+  /* Creating objects of type T with static storage duration.  */
+  TCTX_STATIC_STORAGE,
+
+  /* Creating objects of type T with thread-local storage duration.  */
+  TCTX_THREAD_STORAGE,
+
+  /* Creating a field of type T.  */
+  TCTX_FIELD,
+
+  /* Creating an array with elements of type T.  */
+  TCTX_ARRAY_ELEMENT,
+
+  /* Adding to or subtracting from a pointer to T, or computing the
+     difference between two pointers when one of them is a pointer to T.  */
+  TCTX_POINTER_ARITH
+};
+
+extern bool verify_type_context (location_t, type_context_kind, const_tree,
+				 bool = false);
+
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;
 #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME) PARAMS;

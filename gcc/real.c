@@ -2104,7 +2104,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 
       /* Nonzero value, possibly overflowing or underflowing.  */
       mpfr_init2 (m, SIGNIFICAND_BITS);
-      inexact = mpfr_strtofr (m, str, NULL, 10, GMP_RNDZ);
+      inexact = mpfr_strtofr (m, str, NULL, 10, MPFR_RNDZ);
       /* The result should never be a NaN, and because the rounding is
 	 toward zero should never be an infinity.  */
       gcc_assert (!mpfr_nan_p (m) && !mpfr_inf_p (m));
@@ -2120,7 +2120,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	}
       else
 	{
-	  real_from_mpfr (r, m, NULL_TREE, GMP_RNDZ);
+	  real_from_mpfr (r, m, NULL_TREE, MPFR_RNDZ);
 	  /* 1 to 3 bits may have been shifted off (with a sticky bit)
 	     because the hex digits used in real_from_mpfr did not
 	     start with a digit 8 to f, but the exponent bounds above
@@ -2431,9 +2431,9 @@ dconst_e_ptr (void)
     {
       mpfr_t m;
       mpfr_init2 (m, SIGNIFICAND_BITS);
-      mpfr_set_ui (m, 1, GMP_RNDN);
-      mpfr_exp (m, m, GMP_RNDN);
-      real_from_mpfr (&value, m, NULL_TREE, GMP_RNDN);
+      mpfr_set_ui (m, 1, MPFR_RNDN);
+      mpfr_exp (m, m, MPFR_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
       mpfr_clear (m);
 
     }
@@ -2474,8 +2474,8 @@ dconst_sqrt2_ptr (void)
     {
       mpfr_t m;
       mpfr_init2 (m, SIGNIFICAND_BITS);
-      mpfr_sqrt_ui (m, 2, GMP_RNDN);
-      real_from_mpfr (&value, m, NULL_TREE, GMP_RNDN);
+      mpfr_sqrt_ui (m, 2, MPFR_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
       mpfr_clear (m);
     }
   return &value;
@@ -5410,13 +5410,13 @@ build_sinatan_real (REAL_VALUE_TYPE * r, tree type)
 
   mpfr_inits (mpfr_const1, mpfr_c, mpfr_maxval, NULL);
 
-  mpfr_from_real (mpfr_const1, &dconst1, GMP_RNDN);
-  mpfr_from_real (mpfr_maxval, &maxval,  GMP_RNDN);
+  mpfr_from_real (mpfr_const1, &dconst1, MPFR_RNDN);
+  mpfr_from_real (mpfr_maxval, &maxval,  MPFR_RNDN);
 
-  mpfr_sub (mpfr_c, mpfr_maxval, mpfr_const1, GMP_RNDN);
-  mpfr_sqrt (mpfr_c, mpfr_c, GMP_RNDZ);
+  mpfr_sub (mpfr_c, mpfr_maxval, mpfr_const1, MPFR_RNDN);
+  mpfr_sqrt (mpfr_c, mpfr_c, MPFR_RNDZ);
 
-  real_from_mpfr (r, mpfr_c, fmt, GMP_RNDZ);
+  real_from_mpfr (r, mpfr_c, fmt, MPFR_RNDZ);
   
   mpfr_clears (mpfr_const1, mpfr_c, mpfr_maxval, NULL);
 }

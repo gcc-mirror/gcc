@@ -688,16 +688,6 @@ default_builtin_md_vectorized_function (tree, tree, tree)
   return NULL_TREE;
 }
 
-/* Vectorized conversion.  */
-
-tree
-default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
-				       tree dest_type ATTRIBUTE_UNUSED,
-				       tree src_type ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
 /* Default vectorizer cost model values.  */
 
 int

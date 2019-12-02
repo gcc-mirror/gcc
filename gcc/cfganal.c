@@ -1030,6 +1030,8 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
     }
 
   /* Clear the temporarily allocated flag.  */
+  if (!rev_post_order)
+    rev_post_order = pre_order;
   for (int i = 0; i < pre_order_num; ++i)
     BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags &= ~visited;
 

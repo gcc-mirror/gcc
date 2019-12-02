@@ -1,3 +1,197 @@
+2019-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60228
+	* parser.c (cp_parser_omp_declare_reduction_exprs): If
+	processing_template_decl, wrap the combiner or initializer
+	into EXPR_STMT.
+	* decl.c (start_preparsed_function): Don't start a lambda scope
+	for DECL_OMP_DECLARE_REDUCTION_P functions.
+	(finish_function): Don't finish a lambda scope for
+	DECL_OMP_DECLARE_REDUCTION_P functions, nor cp_fold_function
+	them nor cp_genericize them.
+	* mangle.c (decl_mangling_context): Look through
+	DECL_OMP_DECLARE_REDUCTION_P functions.
+	* semantics.c (expand_or_defer_fn_1): For DECL_OMP_DECLARE_REDUCTION_P
+	functions, use tentative linkage, don't keep their bodies with
+	-fkeep-inline-functions and return false at the end.
+
+2019-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92695
+	* decl2.c (mark_used): Don't call note_vague_linkage_fn for pure
+	virtual functions, even if they are declared inline.
+
+2019-11-16  Jason Merrill  <jason@redhat.com>
+
+	Implement P1814R0, CTAD for alias templates.
+	* pt.c (rewrite_tparm_list): Factor out of build_deduction_guide.
+	(maybe_aggr_guide): Check for copy-init here.
+	(alias_ctad_tweaks, deduction_guides_for): New.
+	(ctor_deduction_guides_for): Factor out of do_class_deduction.
+	(ctad_template_p): New.
+	* parser.c (cp_parser_simple_type_specifier): Use it.
+	* constraint.cc (append_constraint): New.
+
+2019-11-16  Jason Merrill  <jason@redhat.com>
+
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Handle alias
+	template-id.
+	* pt.c (complex_alias_template_p): True if constraints.
+	(get_underlying_template, tsubst): Check alias constraints.
+	(push_template_decl_real): Set alias constraints here.
+	* parser.c (cp_parser_alias_declaration): Not here.
+	* constraint.cc (get_constraints): Take const_tree.
+
+2019-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92206 - ICE with typedef to dependent alias.
+	* pt.c (dependent_alias_template_spec_p)
+	(alias_template_specialization_p): Add transparent_typedefs
+	parameter.
+	(iterative_hash_template_arg, any_template_parm_r)
+	(primary_template_specialization_p, tsubst, dependent_type_p_r):
+	Adjust.
+	* decl.c (check_elaborated_type_specifier): Adjust.
+	* error.c (dump_template_bindings, dump_aggr_type): Adjust.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92236
+	Defer evaluation of concept checks so that static assertions can
+	emit more detailed diagnostics.
+	* constexpr.c (cxx_eval_call_expression): Handle concept checks.
+	(cxx_eval_constant_expression): Diagnose misuse of function concepts
+	as template-id expressions. Follow the usual return path for results.
+	(cxx_eval_outermost_constant_expr): Avoid calling
+	cp_get_callee_fndecl_nofold for function concepts.
+	* constraint.cc (build_function_check): Fully type the concept check
+	so that we don't ICE in conversions.
+	* cp-gimplify.c (cp_genericize_r) [CALL_EXPR]: Handle concept checks.
+	[TEMPLATE_ID_EXPR] Likewise.
+	* cvt.c (convert_to_void): Always evaluate concept checks so we don't
+	accidentally ignore them. Substitution during satisfaction can make
+	a program ill-formed (example in g++.dg/cpp2a/concepts6.C).
+	* pt.c (tsubst_copy_and_build): [CALL_EXPR]: Don't evaluate concepts.
+	[TEMPLATE_ID_EXPR]: Likewise.
+	* semantics.c (finish_call_expr): Don't evaluate concepts.
+	(finish_id_expression_1): Likewise.
+	(finish_static_assert): Preserve the original condition so we can
+	diagnose concept errors when a check returns false.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92439
+	Improve quality of diagnostics for subexpressions that need parens.
+	* parser.c (cp_parser_requires_clause_opt): Add a flag to indicate
+	when parsing a requires-clause before lambda parameters, and...
+	(cp_parser_lambda_declarator_opt): ... use that here ...
+	(cp_parser_type_parameter): ... and here ...
+	(cp_parser_late_return_type_opt): ... and here ...
+	(cp_parser_explicit_template_declaration): ... and here.
+	(cp_parser_diagnose_ungrouped_constraint_plain): Adjust the message
+	because this can apply to subexpressions that are not immediately
+	after a requires-clause.
+	(cp_parser_diagnose_ungrouped_constraint_rich): Likewise.
+	(primary_constraint_error): New.
+	(cp_parser_constraint_requires_parens): New.
+	(cp_parser_unary_constraint_requires_parens): New.
+	(cp_parser_constraint_primary_expression): Check for unary expressions
+	before parsing the primary expression. Also check for binary and
+	postfix operators after a successful parse of the primary expression.
+	Force a re-parse if the result would form a lower-precedence string.
+	(cp_parser_constraint_logical_and_expression): Propagate lambda flag;
+	move checks for ill-formed constraints into the constraint primary
+	expression.
+	(cp_parser_constraint_logical_or_expression): Likewise.
+	(cp_parser_requires_clause_expression): Propagate lambda flag.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/88395
+	* constraint.cc (satisfy_declaration_constraints): Push tinst levels
+	around satisfaction.
+
+2019-11-27  Andrew Sutton  <asutton@lock3software.com>
+
+	Diagnose certain constraint errors as hard errors, but otherwise treat
+	them the same as normal SFINAE-type errors. Also, generally clean up
+	the satisfaction functions.
+
+	* constexpr.c (cxx_eval_constant_expression): Use
+	evaluate_concept_check.
+	* constraint.cc (normalize_concept_definition): Accept a diagnostic
+	flag and only cache when not diagnosing errors.
+	(decl_satisfied_cache): Map to trees instead of bools.
+	(satisfy_atom): Guarantee a location for the errors, propagate complain
+	flags to force_rvalue, and emit errors for non-boolean constraints.
+	(get_normalized_constraints_and_args): New overloads. Factored out of
+	satisfy_constraint_expression and satisfy_declaration_constraints.
+	(satisfy_constraint_expression): Propagate diagnostic info to
+	normalization.
+	(satisfy_declaration_constraints): New. Factored out of
+	constraints_satisfied_p.
+	(constraint_satisfaction_value): New. Calls
+	satisfy_constraint_expression or satisfy_declaration_constraints.
+	(constraints_satisfied_p): Call constraint_satisfaction_value.
+	(evaluate_concept_check): Don't take tsubst_falgs_t. Replay
+	satisfaction if an error is encountered.
+	(current_failed_constraint): Moved from pt.c.
+	(diagnose_constraints): Call constraint_satisfaction_value.
+	* cp-tree.h: Update declarations.
+	* pt.c (current_failed_constraint): Moved to constraint.cc.
+	* semantics.c (finish_id_expression_1): Remove a duplicate case.
+
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92524
+	* tree.c (replace_placeholders_r): Don't walk constructor elts with
+	RANGE_EXPR indexes.
+
+2019-11-26  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: Remember the
+	location of a variable template-id.
+	* constexpr.c (cxx_eval_constant_expression): Get expr location
+	before stripping location wrappers.
+	(non_const_var_error): Take location argument.
+
+2019-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_unary_op): Consistently use the accurate
+	location in seven additional diagnostic messages.
+	(cp_build_compound_expr): Use cp_expr_loc_or_input_loc in one place.
+
+2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92648
+	* parser.c (cp_parser_std_attribute): For unknown attributes,
+	skip balanced token seq instead of trying to parse
+	attribute-argument-clause as expression list.  Formatting fix.
+
+	PR c++/61414
+	* class.c (enum_to_min_precision): New hash_map.
+	(enum_min_precision): New function.
+	(check_bitfield_decl): Use it.
+
+2019-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_indirect_ref_1): Add location_t parameter
+	and use it in error messages.
+	(build_x_indirect_ref): Adjust call.
+	(build_indirect_ref): Likewise.
+	(cp_build_fold_indirect_ref): Likewise.
+	(cp_build_array_ref): Likewise.
+	* call.c (build_new_op_1): Likewise.
+	* semantics.c (finish_omp_clauses): Likewise.
+	(finish_omp_depobj): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+	* cp-tree.h (cp_build_indirect_ref): Update declaration.
+
+	* call.c (build_new_op_1): Use location argument in warning_at.
+
+	* typeck.c (cp_build_modify_expr): Consistently use the
+	location_t argument.
+
 2019-11-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/92365

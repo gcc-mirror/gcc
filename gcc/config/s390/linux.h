@@ -75,7 +75,9 @@ along with GCC; see the file COPYING3.  If not see
 #define GLIBC_DYNAMIC_LINKER32 "/lib/ld.so.1"
 #define GLIBC_DYNAMIC_LINKER64 "/lib/ld64.so.1"
 
+#undef MUSL_DYNAMIC_LINKER32
 #define MUSL_DYNAMIC_LINKER32 "/lib/ld-musl-s390.so.1"
+#undef MUSL_DYNAMIC_LINKER64
 #define MUSL_DYNAMIC_LINKER64 "/lib/ld-musl-s390x.so.1"
 
 #undef  LINK_SPEC

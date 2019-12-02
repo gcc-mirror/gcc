@@ -1463,10 +1463,13 @@ structural_comptypes (tree t1, tree t2, int strict)
      substitute into the specialization arguments at instantiation
      time.  And aliases can't be equivalent without being ==, so
      we don't need to look any deeper.  */
-  if (comparing_specializations
-      && (dependent_alias_template_spec_p (t1)
-	  || dependent_alias_template_spec_p (t2)))
-    return false;
+  if (comparing_specializations)
+    {
+      tree dep1 = dependent_alias_template_spec_p (t1, nt_transparent);
+      tree dep2 = dependent_alias_template_spec_p (t2, nt_transparent);
+      if ((dep1 || dep2) && dep1 != dep2)
+	return false;
+    }
 
   /* If we get here, we know that from a target independent POV the
      types are the same.  Make sure the target attributes are also
@@ -3278,7 +3281,7 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
   rval = build_new_op (loc, INDIRECT_REF, LOOKUP_NORMAL, expr,
 		       NULL_TREE, NULL_TREE, &overload, complain);
   if (!rval)
-    rval = cp_build_indirect_ref (expr, errorstring, complain);
+    rval = cp_build_indirect_ref (loc, expr, errorstring, complain);
 
   if (processing_template_decl && rval != error_mark_node)
     {
@@ -3296,7 +3299,7 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
    constructs.  If DO_FOLD is true, fold away INDIRECT_REF of ADDR_EXPR.  */
 
 static tree
-cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
+cp_build_indirect_ref_1 (location_t loc, tree ptr, ref_operator errorstring,
 			 tsubst_flags_t complain, bool do_fold)
 {
   tree pointer, type;
@@ -3345,7 +3348,7 @@ cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
 	  /* A pointer to incomplete type (other than cv void) can be
 	     dereferenced [expr.unary.op]/1  */
           if (complain & tf_error)
-            error ("%qT is not a pointer-to-object type", type);
+            error_at (loc, "%qT is not a pointer-to-object type", type);
 	  return error_mark_node;
 	}
       else if (do_fold && TREE_CODE (pointer) == ADDR_EXPR
@@ -3376,23 +3379,25 @@ cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
     switch (errorstring)
       {
          case RO_ARRAY_INDEXING:
-           error ("invalid use of array indexing on pointer to member");
+           error_at (loc,
+		     "invalid use of array indexing on pointer to member");
            break;
          case RO_UNARY_STAR:
-           error ("invalid use of unary %<*%> on pointer to member");
+           error_at (loc, "invalid use of unary %<*%> on pointer to member");
            break;
          case RO_IMPLICIT_CONVERSION:
-           error ("invalid use of implicit conversion on pointer to member");
+           error_at (loc, "invalid use of implicit conversion on pointer "
+		     "to member");
            break;
          case RO_ARROW_STAR:
-           error ("left hand operand of %<->*%> must be a pointer to class, "
-		  "but is a pointer to member of type %qT", type);
+           error_at (loc, "left hand operand of %<->*%> must be a pointer to "
+		     "class, but is a pointer to member of type %qT", type);
            break;
          default:
            gcc_unreachable ();
       }
   else if (pointer != error_mark_node)
-    invalid_indirection_error (input_location, type, errorstring);
+    invalid_indirection_error (loc, type, errorstring);
 
   return error_mark_node;
 }
@@ -3400,10 +3405,10 @@ cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
 /* Entry point used by c-common, which expects folding.  */
 
 tree
-build_indirect_ref (location_t /*loc*/,
-		    tree ptr, ref_operator errorstring)
+build_indirect_ref (location_t loc, tree ptr, ref_operator errorstring)
 {
-  return cp_build_indirect_ref_1 (ptr, errorstring, tf_warning_or_error, true);
+  return cp_build_indirect_ref_1 (loc, ptr, errorstring,
+				  tf_warning_or_error, true);
 }
 
 /* Entry point used by internal indirection needs that don't correspond to any
@@ -3412,17 +3417,18 @@ build_indirect_ref (location_t /*loc*/,
 tree
 cp_build_fold_indirect_ref (tree pointer)
 {
-  return cp_build_indirect_ref_1 (pointer, RO_NULL, tf_warning_or_error, true);
+  return cp_build_indirect_ref_1 (input_location, pointer, RO_NULL,
+				  tf_warning_or_error, true);
 }
 
 /* Entry point used by indirection needs that correspond to some syntactic
    construct.  */
 
 tree
-cp_build_indirect_ref (tree ptr, ref_operator errorstring,
+cp_build_indirect_ref (location_t loc, tree ptr, ref_operator errorstring,
 		       tsubst_flags_t complain)
 {
-  return cp_build_indirect_ref_1 (ptr, errorstring, complain, false);
+  return cp_build_indirect_ref_1 (loc, ptr, errorstring, complain, false);
 }
 
 /* This handles expressions of the form "a[i]", which denotes
@@ -3599,7 +3605,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
     ret = cp_build_binary_op (input_location, PLUS_EXPR, ar, ind, complain);
     if (first)
       ret = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (ret), first, ret);
-    ret = cp_build_indirect_ref (ret, RO_ARRAY_INDEXING, complain);
+    ret = cp_build_indirect_ref (loc, ret, RO_ARRAY_INDEXING, complain);
     protected_set_expr_location (ret, loc);
     if (non_lvalue)
       ret = non_lvalue_loc (loc, ret);
@@ -6517,7 +6523,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	if (TREE_CODE (argtype) == ENUMERAL_TYPE)
           {
             if (complain & tf_error)
-              permerror (input_location, (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+              permerror (location, (code == PREINCREMENT_EXPR
+				    || code == POSTINCREMENT_EXPR)
                          ? G_("ISO C++ forbids incrementing an enum")
                          : G_("ISO C++ forbids decrementing an enum"));
             else
@@ -6533,22 +6540,26 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	    if (!COMPLETE_OR_VOID_TYPE_P (type))
               {
                 if (complain & tf_error)
-                  error (((code == PREINCREMENT_EXPR
-                           || code == POSTINCREMENT_EXPR))
-                         ? G_("cannot increment a pointer to incomplete type %qT")
-                         : G_("cannot decrement a pointer to incomplete type %qT"),
-                         TREE_TYPE (argtype));
+                  error_at (location, ((code == PREINCREMENT_EXPR
+					|| code == POSTINCREMENT_EXPR))
+			    ? G_("cannot increment a pointer to incomplete "
+				 "type %qT")
+			    : G_("cannot decrement a pointer to incomplete "
+				 "type %qT"),
+			    TREE_TYPE (argtype));
                 else
                   return error_mark_node;
               }
 	    else if (!TYPE_PTROB_P (argtype)) 
               {
                 if (complain & tf_error)
-                  pedwarn (input_location, OPT_Wpointer_arith,
+                  pedwarn (location, OPT_Wpointer_arith,
 			   (code == PREINCREMENT_EXPR
                               || code == POSTINCREMENT_EXPR)
-			   ? G_("ISO C++ forbids incrementing a pointer of type %qT")
-			   : G_("ISO C++ forbids decrementing a pointer of type %qT"),
+			   ? G_("ISO C++ forbids incrementing a pointer "
+				"of type %qT")
+			   : G_("ISO C++ forbids decrementing a pointer "
+				"of type %qT"),
 			   argtype);
                 else
                   return error_mark_node;
@@ -6594,8 +6605,9 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	    if (code == POSTDECREMENT_EXPR || code == PREDECREMENT_EXPR)
 	      {
                 if (complain & tf_error)
-		  error ("use of an operand of type %qT in %<operator--%> "
-			 "is forbidden", boolean_type_node);
+		  error_at (location,
+			    "use of an operand of type %qT in %<operator--%> "
+			    "is forbidden", boolean_type_node);
 		return error_mark_node;
 	      }
 	    else
@@ -6603,16 +6615,18 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 		if (cxx_dialect >= cxx17)
 		  {
 		    if (complain & tf_error)
-		      error ("use of an operand of type %qT in "
-			     "%<operator++%> is forbidden in C++17",
-			     boolean_type_node);
+		      error_at (location,
+				"use of an operand of type %qT in "
+				"%<operator++%> is forbidden in C++17",
+				boolean_type_node);
 		    return error_mark_node;
 		  }
 		/* Otherwise, [depr.incr.bool] says this is deprecated.  */
 		else
-		  warning (OPT_Wdeprecated, "use of an operand of type %qT "
-			   "in %<operator++%> is deprecated",
-			   boolean_type_node);
+		  warning_at (location, OPT_Wdeprecated,
+			      "use of an operand of type %qT "
+			      "in %<operator++%> is deprecated",
+			      boolean_type_node);
 	      }
 	    val = boolean_increment (code, arg);
 	  }
@@ -6643,7 +6657,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
     }
 
   if (complain & tf_error)
-    error ("%s", errstring);
+    error_at (location, "%s", errstring);
   return error_mark_node;
 }
 
@@ -7035,7 +7049,8 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
   if (type_unknown_p (rhs))
     {
       if (complain & tf_error)
-	error ("no context to resolve type of %qE", rhs);
+	error_at (cp_expr_loc_or_input_loc (rhs),
+		  "no context to resolve type of %qE", rhs);
       return error_mark_node;
     }
   
@@ -8280,7 +8295,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	if (VOID_TYPE_P (TREE_TYPE (rhs)))
 	  {
 	    if (complain & tf_error)
-	      error ("void value not ignored as it ought to be");
+	      error_at (cp_expr_loc_or_loc (rhs, loc),
+			"void value not ignored as it ought to be");
 	    return error_mark_node;
 	  }
 
@@ -8493,7 +8509,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	  if (modifycode != INIT_EXPR)
 	    {
 	      if (complain & tf_error)
-		error ("assigning to an array from an initializer list");
+		error_at (loc,
+			  "assigning to an array from an initializer list");
 	      return error_mark_node;
 	    }
 	  if (check_array_initializer (lhs, lhstype, newrhs))
@@ -8520,8 +8537,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 				     TYPE_MAIN_VARIANT (TREE_TYPE (newrhs))))
 	{
 	  if (complain & tf_error)
-	    error ("incompatible types in assignment of %qT to %qT",
-		   TREE_TYPE (rhs), lhstype);
+	    error_at (loc, "incompatible types in assignment of %qT to %qT",
+		      TREE_TYPE (rhs), lhstype);
 	  return error_mark_node;
 	}
 
@@ -8534,9 +8551,9 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	  if (complain & tf_error)
 	    {
 	      if (modifycode == INIT_EXPR)
-		error ("array used as initializer");
+		error_at (loc, "array used as initializer");
 	      else
-		error ("invalid array assignment");
+		error_at (loc, "invalid array assignment");
 	    }
 	  return error_mark_node;
 	}

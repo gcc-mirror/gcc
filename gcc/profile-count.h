@@ -700,6 +700,7 @@ private:
   uint64_t UINT64_BIT_FIELD_ALIGN m_val : n_bits;
 #undef UINT64_BIT_FIELD_ALIGN
   enum profile_quality m_quality : 3;
+public:
 
   /* Return true if both values can meaningfully appear in single function
      body.  We have either all counters in function local or global, otherwise
@@ -711,9 +712,18 @@ private:
       if (*this == zero ()
 	  || other == zero ())
 	return true;
+      /* Do not allow nonzero global profile together with local guesses
+	 that are globally0.  */
+      if (ipa ().nonzero_p ()
+	  && !(other.ipa () == other))
+	return false;
+      if (other.ipa ().nonzero_p ()
+	  && !(ipa () == *this))
+	return false;
+	
       return ipa_p () == other.ipa_p ();
     }
-public:
+
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
@@ -920,14 +930,14 @@ public:
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val < (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val < (uint64_t) other;
     }
 
   bool operator> (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val > (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val > (uint64_t) other;
     }
 
   bool operator<= (const profile_count &other) const
@@ -958,14 +968,14 @@ public:
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val <= (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val <= (uint64_t) other;
     }
 
   bool operator>= (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
-      return initialized_p () && m_val >= (uint64_t) other;
+      return ipa ().initialized_p () && ipa ().m_val >= (uint64_t) other;
     }
 
   /* Return true when value is not zero and can be used for scaling. 
@@ -992,6 +1002,14 @@ public:
 
   profile_count max (profile_count other) const
     {
+      profile_count val = *this;
+
+      /* Always prefer nonzero IPA counts over local counts.  */
+      if (ipa ().nonzero_p () || other.ipa ().nonzero_p ())
+	{
+	  val = ipa ();
+	  other = other.ipa ();
+	}
       if (!initialized_p ())
 	return other;
       if (!other.initialized_p ())
@@ -1001,8 +1019,8 @@ public:
       if (other == zero ())
 	return *this;
       gcc_checking_assert (compatible_p (other));
-      if (m_val < other.m_val || (m_val == other.m_val
-				  && m_quality < other.m_quality))
+      if (val.m_val < other.m_val || (m_val == other.m_val
+				      && val.m_quality < other.m_quality))
 	return other;
       return *this;
     }
@@ -1075,8 +1093,11 @@ public:
       ret.m_val = MIN (val, max_count);
       ret.m_quality = MIN (MIN (MIN (m_quality, ADJUSTED),
 			        num.m_quality), den.m_quality);
-      if (num.ipa_p () && !ret.ipa_p ())
-	ret.m_quality = MIN (num.m_quality, GUESSED);
+      /* Be sure that ret is not local if num is global.
+	 Also ensure that ret is not global0 when num is global.  */
+      if (num.ipa_p ())
+	ret.m_quality = MAX (ret.m_quality,
+			     num == num.ipa () ? GUESSED : num.m_quality);
       return ret;
     }
 
@@ -1193,6 +1214,10 @@ public:
      and if IPA is zero, turning THIS into corresponding local profile with
      global0.  */
   profile_count combine_with_ipa_count (profile_count ipa);
+
+  /* Same as combine_with_ipa_count but inside function with count IPA2.  */
+  profile_count combine_with_ipa_count_within
+		 (profile_count ipa, profile_count ipa2);
 
   /* The profiling runtime uses gcov_type, which is usually 64bit integer.
      Conversions back and forth are used to read the coverage and get it

@@ -270,20 +270,16 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 
    Convert operations we currently support directly are FIX_TRUNC and FLOAT.
    This function checks if these operations are supported
-   by the target platform either directly (via vector tree-codes), or via
-   target builtins.
+   by the target platform directly (via vector tree-codes).
 
    Output:
    - CODE1 is code of vector operation to be used when
-   vectorizing the operation, if available.
-   - DECL is decl of target builtin functions to be used
-   when vectorizing the operation, if available.  In this case,
-   CODE1 is CALL_EXPR.  */
+   vectorizing the operation, if available.  */
 
 bool
 supportable_convert_operation (enum tree_code code,
 			       tree vectype_out, tree vectype_in,
-			       tree *decl, enum tree_code *code1)
+			       enum tree_code *code1)
 {
   machine_mode m1,m2;
   bool truncp;
@@ -317,15 +313,6 @@ supportable_convert_operation (enum tree_code code,
       return true;
     }
 
-  /* Now check for builtin.  */
-  if (targetm.vectorize.builtin_conversion
-      && targetm.vectorize.builtin_conversion (code, vectype_out, vectype_in))
-    {
-      *code1 = CALL_EXPR;
-      *decl = targetm.vectorize.builtin_conversion (code, vectype_out,
-						    vectype_in);
-      return true;
-    }
   return false;
 }
 

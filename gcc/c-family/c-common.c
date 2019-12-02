@@ -2326,11 +2326,14 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
 	return build_vector_type_for_mode (inner_type, mode);
     }
 
-  if (mode == TYPE_MODE (dfloat32_type_node))
+  if (dfloat32_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat32_type_node))
     return dfloat32_type_node;
-  if (mode == TYPE_MODE (dfloat64_type_node))
+  if (dfloat64_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat64_type_node))
     return dfloat64_type_node;
-  if (mode == TYPE_MODE (dfloat128_type_node))
+  if (dfloat128_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat128_type_node))
     return dfloat128_type_node;
 
   if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))
@@ -3148,6 +3151,9 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 	return error_mark_node;
       size_exp = integer_one_node;
     }
+  else if (!verify_type_context (loc, TCTX_POINTER_ARITH,
+				 TREE_TYPE (result_type)))
+    size_exp = integer_one_node;
   else
     size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
 
@@ -3693,6 +3699,13 @@ c_sizeof_or_alignof_type (location_t loc,
 		  "incomplete element type", op_name, type);
       return error_mark_node;
     }
+  else if (!verify_type_context (loc, is_sizeof ? TCTX_SIZEOF : TCTX_ALIGNOF,
+				 type, !complain))
+    {
+      if (!complain)
+	return error_mark_node;
+      value = size_one_node;
+    }
   else
     {
       if (is_sizeof)
@@ -3725,7 +3738,10 @@ c_alignof_expr (location_t loc, tree expr)
 {
   tree t;
 
-  if (VAR_OR_FUNCTION_DECL_P (expr))
+  if (!verify_type_context (loc, TCTX_ALIGNOF, TREE_TYPE (expr)))
+    t = size_one_node;
+
+  else if (VAR_OR_FUNCTION_DECL_P (expr))
     t = size_int (DECL_ALIGN_UNIT (expr));
 
   else if (TREE_CODE (expr) == COMPONENT_REF

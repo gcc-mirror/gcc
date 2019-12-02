@@ -6329,6 +6329,7 @@ extern tree build_converted_constant_expr	(tree, tree, tsubst_flags_t);
 extern tree build_converted_constant_bool_expr	(tree, tsubst_flags_t);
 extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
+extern vec<tree,va_gc> *resolve_args (vec<tree,va_gc>*, tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
 extern tree build_cxx_call			(tree, int, tree *,
 						 tsubst_flags_t,
@@ -6829,6 +6830,7 @@ extern tree make_constrained_auto		(tree, tree);
 extern tree make_constrained_decltype_auto	(tree, tree);
 extern tree make_template_placeholder		(tree);
 extern bool template_placeholder_p		(tree);
+extern bool ctad_template_p			(tree);
 extern tree do_auto_deduction                   (tree, tree, tree,
                                                  tsubst_flags_t
 						 = tf_warning_or_error,
@@ -6947,8 +6949,9 @@ extern tree instantiate_non_dependent_expr_internal (tree, tsubst_flags_t);
 extern tree instantiate_non_dependent_or_null   (tree);
 extern bool variable_template_specialization_p  (tree);
 extern bool alias_type_or_template_p            (tree);
-extern bool alias_template_specialization_p     (const_tree);
-extern bool dependent_alias_template_spec_p     (const_tree);
+enum { nt_opaque = false, nt_transparent = true };
+extern tree alias_template_specialization_p     (const_tree, bool);
+extern tree dependent_alias_template_spec_p     (const_tree, bool);
 extern bool template_parm_object_p		(const_tree);
 extern bool explicit_class_specialization_p     (tree);
 extern bool push_tinst_level                    (tree);
@@ -7491,9 +7494,11 @@ extern tree build_class_member_access_expr      (cp_expr, tree, tree, bool,
 extern tree finish_class_member_access_expr     (cp_expr, tree, bool,
 						 tsubst_flags_t);
 extern tree build_x_indirect_ref		(location_t, tree,
-						 ref_operator, tsubst_flags_t);
-extern tree cp_build_indirect_ref		(tree, ref_operator,
-                                                 tsubst_flags_t);
+						 ref_operator,
+						 tsubst_flags_t);
+extern tree cp_build_indirect_ref		(location_t, tree,
+						 ref_operator,
+						 tsubst_flags_t);
 extern tree cp_build_fold_indirect_ref		(tree);
 extern tree build_array_ref			(location_t, tree, tree);
 extern tree cp_build_array_ref			(location_t, tree, tree,
@@ -7778,7 +7783,8 @@ extern cp_expr finish_constraint_and_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_primary_expr	(cp_expr);
 extern tree finish_concept_definition		(cp_expr, tree);
 extern tree combine_constraint_expressions      (tree, tree);
-extern tree get_constraints                     (tree);
+extern tree append_constraint			(tree, tree);
+extern tree get_constraints                     (const_tree);
 extern void set_constraints                     (tree, tree);
 extern void remove_constraints                  (tree);
 extern tree current_template_constraints	(void);
@@ -7828,8 +7834,8 @@ extern bool processing_constraint_expression_p	();
 extern tree unpack_concept_check		(tree);
 extern tree evaluate_concept_check              (tree, tsubst_flags_t);
 extern tree satisfy_constraint_expression	(tree);
-extern bool constraints_satisfied_p             (tree);
-extern bool constraints_satisfied_p             (tree, tree);
+extern bool constraints_satisfied_p		(tree);
+extern bool constraints_satisfied_p		(tree, tree);
 extern void clear_satisfaction_cache		();
 extern bool* lookup_subsumption_result          (tree, tree);
 extern bool save_subsumption_result             (tree, tree, bool);
@@ -7840,6 +7846,7 @@ extern bool subsumes_constraints                (tree, tree);
 extern bool strictly_subsumes			(tree, tree, tree);
 extern bool weakly_subsumes			(tree, tree, tree);
 extern int more_constrained                     (tree, tree);
+extern bool at_least_as_constrained             (tree, tree);
 extern bool constraints_equivalent_p            (tree, tree);
 extern bool atomic_constraints_identical_p	(tree, tree);
 extern hashval_t iterative_hash_constraint      (tree, hashval_t);
