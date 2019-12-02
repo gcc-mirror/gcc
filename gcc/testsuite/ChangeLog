@@ -1,3 +1,14 @@
+2019-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92712
+	* gcc.dg/tree-ssa/pr92712-1.c: New test.
+	* gcc.dg/tree-ssa/pr92712-2.c: New test.
+	* gcc.dg/tree-ssa/pr92712-3.c: New test.
+	* gfortran.dg/loop_versioning_1.f90: Adjust expected number of
+	likely to be innermost dimension messages.
+	* gfortran.dg/loop_versioning_10.f90: Likewise.
+	* gfortran.dg/loop_versioning_6.f90: Likewise.
+
 2019-12-02  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/92133
