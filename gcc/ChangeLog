@@ -1,3 +1,8 @@
+2019-12-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md: Change "vcondu" patterns to use VEC_1REG_MODE
+	for the data mode.
+
 2019-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92758
