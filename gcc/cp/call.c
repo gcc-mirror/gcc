@@ -865,6 +865,22 @@ next_conversion (conversion *conv)
   return conv->u.next;
 }
 
+/* Strip to the first ck_user, ck_ambig, ck_list, ck_aggr or ck_identity
+   encountered.  */
+
+static conversion *
+strip_standard_conversion (conversion *conv)
+{
+  while (conv
+	 && conv->kind != ck_user
+	 && conv->kind != ck_ambig
+	 && conv->kind != ck_list
+	 && conv->kind != ck_aggr
+	 && conv->kind != ck_identity)
+    conv = next_conversion (conv);
+  return conv;
+}
+
 /* Subroutine of build_aggr_conv: check whether CTOR, a braced-init-list,
    is a valid aggregate initializer for array type ATYPE.  */
 
@@ -6370,8 +6386,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	  conv = cand->convs[0];
 	  if (conv->user_conv_p)
 	    {
-	      while (conv->kind != ck_user)
-		conv = next_conversion (conv);
+	      conv = strip_standard_conversion (conv);
 	      arg1 = convert_like (conv, arg1, complain);
 	    }
 
@@ -6380,8 +6395,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      conv = cand->convs[1];
 	      if (conv->user_conv_p)
 		{
-		  while (conv->kind != ck_user)
-		    conv = next_conversion (conv);
+		  conv = strip_standard_conversion (conv);
 		  arg2 = convert_like (conv, arg2, complain);
 		}
 	    }
@@ -6391,8 +6405,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      conv = cand->convs[2];
 	      if (conv->user_conv_p)
 		{
-		  while (conv->kind != ck_user)
-		    conv = next_conversion (conv);
+		  conv = strip_standard_conversion (conv);
 		  arg3 = convert_like (conv, arg3, complain);
 		}
 	    }
@@ -10538,17 +10551,8 @@ compare_ics (conversion *ics1, conversion *ics2)
   if (ics1->user_conv_p || ics1->kind == ck_list
       || ics1->kind == ck_aggr || ics2->kind == ck_aggr)
     {
-      conversion *t1;
-      conversion *t2;
-
-      for (t1 = ics1; t1 && t1->kind != ck_user; t1 = next_conversion (t1))
-	if (t1->kind == ck_ambig || t1->kind == ck_aggr
-	    || t1->kind == ck_list)
-	  break;
-      for (t2 = ics2; t2 && t2->kind != ck_user; t2 = next_conversion (t2))
-	if (t2->kind == ck_ambig || t2->kind == ck_aggr
-	    || t2->kind == ck_list)
-	  break;
+      conversion *t1 = strip_standard_conversion (ics1);
+      conversion *t2 = strip_standard_conversion (ics2);
 
       if (!t1 || !t2 || t1->kind != t2->kind)
 	return 0;
@@ -10956,14 +10960,7 @@ compare_ics (conversion *ics1, conversion *ics2)
 static tree
 source_type (conversion *t)
 {
-  for (;; t = next_conversion (t))
-    {
-      if (t->kind == ck_user
-	  || t->kind == ck_ambig
-	  || t->kind == ck_identity)
-	return t->type;
-    }
-  gcc_unreachable ();
+  return strip_standard_conversion (t)->type;
 }
 
 /* Note a warning about preferring WINNER to LOSER.  We do this by storing
