@@ -1,3 +1,20 @@
+2019-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/inconsistent-deduction-1.C: New.
+	* g++.dg/diagnostic/returning-a-value-1.C: Likewise.
+	* g++.dg/cpp0x/decltype3.C: Check location(s) too.
+	* g++.dg/cpp0x/decltype4.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg.C: Likewise.
+	* g++.dg/cpp2a/consteval13.C: Likewise.
+	* g++.dg/expr/pmf-1.C: Likewise.
+	* g++.dg/other/ptrmem2.C: Likewise.
+	* g++.dg/template/ptrmem17.C: Likewise.
+	* g++.old-deja/g++.bugs/900213_03.C: Likewise.
+	* g++.old-deja/g++.other/pmf7.C: Likewise.
+	* g++.old-deja/g++.other/ptrmem7.C: Likewise.
+
+	* g++.dg/diagnostic/main2.C: New.
+
 2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91369

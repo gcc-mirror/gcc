@@ -12,5 +12,5 @@ int main ()
 {
   A a;
   &a.f;				// { dg-error "" } overloaded
-  &a.g;				// { dg-error "" } can't write a pmf like this
+  &a.g;				// { dg-error "6:ISO C\\+\\+ forbids taking the address of a bound member function" } can't write a pmf like this
 }

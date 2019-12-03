@@ -23,7 +23,7 @@ struct A {
 }; 
 
 CHECK_DECLTYPE(decltype(&A::x), int A::*);
-decltype(&A::y) Ay; // { dg-error "cannot create pointer to reference member|invalid type" }
+decltype(&A::y) Ay; // { dg-error "14:cannot create pointer to reference member|invalid type" }
 CHECK_DECLTYPE(decltype(&A::foo), int (A::*) (char));
 CHECK_DECLTYPE(decltype(&A::bar), int& (A::*) () const);
 
