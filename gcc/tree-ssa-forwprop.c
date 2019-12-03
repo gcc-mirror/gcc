@@ -2043,8 +2043,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   gcc_checking_assert (TREE_CODE (op) == CONSTRUCTOR
 		       && TREE_CODE (type) == VECTOR_TYPE);
 
-  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts)
-      || uniform_vector_p (op))
+  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
     return false;
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
