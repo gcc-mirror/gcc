@@ -1025,8 +1025,10 @@ struct constexpr_global_ctx {
   /* Heap VAR_DECLs created during the evaluation of the outermost constant
      expression.  */
   auto_vec<tree, 16> heap_vars;
+  /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
+  vec<tree> *cleanups;
   /* Constructor.  */
-  constexpr_global_ctx () : constexpr_ops_count (0) {}
+  constexpr_global_ctx () : constexpr_ops_count (0), cleanups (NULL) {}
 };
 
 /* The constexpr expansion context.  CALL is the current function
@@ -1039,8 +1041,8 @@ struct constexpr_ctx {
   constexpr_global_ctx *global;
   /* The innermost call we're evaluating.  */
   constexpr_call *call;
-  /* SAVE_EXPRs that we've seen within the current LOOP_EXPR.  NULL if we
-     aren't inside a loop.  */
+  /* SAVE_EXPRs and TARGET_EXPR_SLOT vars of TARGET_EXPRs that we've seen
+     within the current LOOP_EXPR.  NULL if we aren't inside a loop.  */
   vec<tree> *save_exprs;
   /* The CONSTRUCTOR we're currently building up for an aggregate
      initializer.  */
@@ -2085,8 +2087,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  else
 	    ctx->global->values.put (res, NULL_TREE);
 
-	  /* Track the callee's evaluated SAVE_EXPRs so that we can forget
-	     their values after the call.  */
+	  /* Track the callee's evaluated SAVE_EXPRs and TARGET_EXPRs so that
+	     we can forget their values after the call.  */
 	  constexpr_ctx ctx_with_save_exprs = *ctx;
 	  auto_vec<tree, 10> save_exprs;
 	  ctx_with_save_exprs.save_exprs = &save_exprs;
@@ -2135,7 +2137,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      TREE_READONLY (e) = true;
 	    }
 
-	  /* Forget the saved values of the callee's SAVE_EXPRs.  */
+	  /* Forget the saved values of the callee's SAVE_EXPRs and
+	     TARGET_EXPRs.  */
 	  unsigned int i;
 	  tree save_expr;
 	  FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
@@ -4635,7 +4638,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	    gcc_assert (*jump_target);
 	}
 
-      /* Forget saved values of SAVE_EXPRs.  */
+      /* Forget saved values of SAVE_EXPRs and TARGET_EXPRs.  */
       unsigned int i;
       tree save_expr;
       FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
@@ -4659,7 +4662,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	 && (!switches (jump_target) || count == 0)
 	 && !*non_constant_p);
 
-  /* Forget saved values of SAVE_EXPRs.  */
+  /* Forget saved values of SAVE_EXPRs and TARGET_EXPRs.  */
   unsigned int i;
   tree save_expr;
   FOR_EACH_VEC_ELT (save_exprs, i, save_expr)
@@ -5004,6 +5007,14 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  *non_constant_p = true;
 	  break;
 	}
+      /* Avoid evaluating a TARGET_EXPR more than once.  */
+      if (tree *p = ctx->global->values.get (TARGET_EXPR_SLOT (t)))
+	{
+	  if (lval)
+	    return TARGET_EXPR_SLOT (t);
+	  r = *p;
+	  break;
+	}
       if ((AGGREGATE_TYPE_P (TREE_TYPE (t)) || VECTOR_TYPE_P (TREE_TYPE (t))))
 	{
 	  /* We're being expanded without an explicit target, so start
@@ -5024,13 +5035,14 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (!*non_constant_p)
 	/* Adjust the type of the result to the type of the temporary.  */
 	r = adjust_temp_type (TREE_TYPE (t), r);
+      if (TARGET_EXPR_CLEANUP (t) && !CLEANUP_EH_ONLY (t))
+	ctx->global->cleanups->safe_push (TARGET_EXPR_CLEANUP (t));
+      r = unshare_constructor (r);
+      ctx->global->values.put (TARGET_EXPR_SLOT (t), r);
+      if (ctx->save_exprs)
+	ctx->save_exprs->safe_push (TARGET_EXPR_SLOT (t));
       if (lval)
-	{
-	  tree slot = TARGET_EXPR_SLOT (t);
-	  r = unshare_constructor (r);
-	  ctx->global->values.put (slot, r);
-	  return slot;
-	}
+	return TARGET_EXPR_SLOT (t);
       break;
 
     case INIT_EXPR:
@@ -5080,10 +5092,15 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	}
       break;
 
-    case NON_LVALUE_EXPR:
     case TRY_CATCH_EXPR:
+      if (TREE_OPERAND (t, 0) == NULL_TREE)
+	{
+	  r = void_node;
+	  break;
+	}
+      /* FALLTHRU */
+    case NON_LVALUE_EXPR:
     case TRY_BLOCK:
-    case CLEANUP_POINT_EXPR:
     case MUST_NOT_THROW_EXPR:
     case EXPR_STMT:
     case EH_SPEC_BLOCK:
@@ -5091,6 +5108,26 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					lval,
 					non_constant_p, overflow_p,
 					jump_target);
+      break;
+
+    case CLEANUP_POINT_EXPR:
+      {
+	auto_vec<tree, 2> cleanups;
+	vec<tree> *prev_cleanups = ctx->global->cleanups;
+	ctx->global->cleanups = &cleanups;
+	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
+					  lval,
+					  non_constant_p, overflow_p,
+					  jump_target);
+	ctx->global->cleanups = prev_cleanups;
+	unsigned int i;
+	tree cleanup;
+	/* Evaluate the cleanups.  */
+	FOR_EACH_VEC_ELT_REVERSE (cleanups, i, cleanup)
+	  cxx_eval_constant_expression (ctx, cleanup, false,
+					non_constant_p, overflow_p,
+					jump_target);
+      }
       break;
 
     case TRY_FINALLY_EXPR:
@@ -5903,6 +5940,9 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	r = TARGET_EXPR_INITIAL (r);
     }
 
+  auto_vec<tree, 16> cleanups;
+  global_ctx.cleanups = &cleanups;
+
   instantiate_constexpr_fns (r);
   r = cxx_eval_constant_expression (&ctx, r,
 				    false, &non_constant_p, &overflow_p);
@@ -5911,6 +5951,13 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
   else
     DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (object) = true;
+
+  unsigned int i;
+  tree cleanup;
+  /* Evaluate the cleanups.  */
+  FOR_EACH_VEC_ELT_REVERSE (cleanups, i, cleanup)
+    cxx_eval_constant_expression (&ctx, cleanup, false,
+				  &non_constant_p, &overflow_p);
 
   /* Mutable logic is a bit tricky: we want to allow initialization of
      constexpr variables with mutable members, but we can't copy those

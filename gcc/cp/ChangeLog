@@ -1,3 +1,20 @@
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369
+	* constexpr.c (struct constexpr_global_ctx): Add cleanups member,
+	initialize it in the ctor.
+	(cxx_eval_constant_expression) <case TARGET_EXPR>: If TARGET_EXPR_SLOT
+	is already in the values hash_map, don't evaluate it again.  Put
+	TARGET_EXPR_SLOT into hash_map even if not lval, and push it into
+	save_exprs too.  If there is TARGET_EXPR_CLEANUP and not
+	CLEANUP_EH_ONLY, push the cleanup to cleanups vector.
+	<case CLEANUP_POINT_EXPR>: Save outer cleanups, set cleanups to
+	local auto_vec, after evaluating the body evaluate cleanups and
+	restore previous cleanups.
+	<case TRY_CATCH_EXPR>: Don't crash if the first operand is NULL_TREE.
+	(cxx_eval_outermost_constant_expr): Set cleanups to local auto_vec,
+	after evaluating the expression evaluate cleanups.
+
 2019-12-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.
