@@ -21,7 +21,7 @@ struct0 *ptr;
 
 void global_function_0 ()
 {
-  fmp = &ptr->function_member;	// { dg-error "" } 
+  fmp = &ptr->function_member;	// { dg-error "15:ISO C\\+\\+ forbids taking the address of a bound member function" } 
   //dmp = &ptr->data_member;	//  caught by g++, missed by cfront
 }
 
