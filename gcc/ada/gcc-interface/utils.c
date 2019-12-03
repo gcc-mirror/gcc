@@ -2246,13 +2246,6 @@ rest_of_record_type_compilation (tree record_type)
 	      pos = compute_related_constant (curpos, last_pos);
 	    }
 
-	  /* If we can't compute a position, set it to zero.
-
-	     ??? We really should abort here, but it's too much work
-	     to get this correct for all cases.  */
-	  if (!pos)
-	    pos = bitsize_zero_node;
-
 	  /* See if this type is variable-sized and make a pointer type
 	     and indicate the indirection if so.  Beware that the debug
 	     back-end may adjust the position computed above according
@@ -2272,6 +2265,13 @@ rest_of_record_type_compilation (tree record_type)
 		  pos = compute_related_constant (curpos, last_pos);
 		}
 	    }
+
+	  /* If we can't compute a position, set it to zero.
+
+	     ??? We really should abort here, but it's too much work
+	     to get this correct for all cases.  */
+	  if (!pos)
+	    pos = bitsize_zero_node;
 
 	  /* Make a new field name, if necessary.  */
 	  if (var || align != 0)
