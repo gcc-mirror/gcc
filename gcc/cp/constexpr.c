@@ -1240,6 +1240,9 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
       return boolean_true_node;
     }
 
+  if (fndecl_built_in_p (fun, CP_BUILT_IN_SOURCE_LOCATION, BUILT_IN_FRONTEND))
+    return fold_builtin_source_location (EXPR_LOCATION (t));
+
   /* Be permissive for arguments to built-ins; __builtin_constant_p should
      return constant false for a non-constant argument.  */
   constexpr_ctx new_ctx = *ctx;

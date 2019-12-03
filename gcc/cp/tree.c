@@ -445,7 +445,9 @@ builtin_valid_in_constant_expr_p (const_tree decl)
   if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
     {
       if (fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-			   BUILT_IN_FRONTEND))
+			     BUILT_IN_FRONTEND)
+	  || fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
+				BUILT_IN_FRONTEND))
 	return true;
       /* Not a built-in.  */
       return false;
