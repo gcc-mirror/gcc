@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-into-ssa.h"
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -2890,6 +2891,10 @@ compute_fn_summary (struct cgraph_node *node, bool early)
     {
        /* Even is_gimple_min_invariant rely on current_function_decl.  */
        push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+
+       /* During IPA profile merging we may be called w/o virtual SSA form
+	  built.  */
+       update_ssa (TODO_update_ssa_only_virtuals);
 
        /* Can this function be inlined at all?  */
        if (!opt_for_fn (node->decl, optimize)
