@@ -1,3 +1,9 @@
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* tree-ssa.c (execute_update_addresses_taken): Avoid representing
+	a full def of a vector via a BIT_INSERT_EXPR.
+
 2019-12-02  Bill Schmidt  <wschmidt@linux.ibm.com>
 
         * config/rs6000/rs6000-call.c (rs6000_invalid_builtin): Make
