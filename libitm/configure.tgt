@@ -31,6 +31,9 @@
 if test "$gcc_cv_have_tls" = yes ; then
   case "${target}" in
 
+    *-*-musl*)
+	;;
+
     # For x86, we use slots in the TCB head for most of our TLS.
     # The setup of those slots in beginTransaction can afford to
     # use the global-dynamic model.

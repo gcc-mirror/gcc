@@ -17,6 +17,9 @@ if test $gcc_cv_have_tls = yes ; then
     *-*-k*bsd*-gnu*)
 	;;
 
+    *-*-musl*)
+	;;
+
     *-*-linux* | *-*-gnu*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec -DUSING_INITIAL_EXEC_TLS"
 	;;
