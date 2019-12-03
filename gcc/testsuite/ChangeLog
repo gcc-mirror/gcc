@@ -1,3 +1,13 @@
+2019-12-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Fix bugs relating to flexibly-sized objects in nios2 backend.
+	
+	PR target/92499
+
+	* gcc.target/nios2/pr92499-1.c: New.
+	* gcc.target/nios2/pr92499-2.c: New.
+	* gcc.target/nios2/pr92499-3.c: New.
+
 2019-12-02  Li Jia He  <helijia@linux.ibm.com>
 
 	Partial backport from trunk
