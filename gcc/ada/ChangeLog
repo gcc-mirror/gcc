@@ -1,5 +1,10 @@
 2019-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (fold_convert_size): New function.
+	(fold_bit_position): Invoke it to do further folding.
+
+2019-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_subprog_type): With the Copy-In/
 	Copy-Out mechanism, do not promote the mode of the return type to an
 	integral mode if it contains a field on a non-integral type and even
