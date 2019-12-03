@@ -1,3 +1,10 @@
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92734
+	* match.pd ((CST1 - A) +- CST2 -> CST3 - A,
+	CST1 - (CST2 - A) -> CST3 + A): Handle nop casts around
+	inner subtraction.
+
 2019-12-03  Uroš Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

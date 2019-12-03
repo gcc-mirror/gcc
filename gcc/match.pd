@@ -2237,17 +2237,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
    (simplify
-    (outer_op (minus CONSTANT_CLASS_P@1 @0) CONSTANT_CLASS_P@2)
-    (with { tree cst = const_binop (outer_op, type, @1, @2); }
-     (if (cst && !TREE_OVERFLOW (cst))
-      (minus { cst; } @0)))))
+    (outer_op (nop_convert (minus CONSTANT_CLASS_P@1 @0)) CONSTANT_CLASS_P@2)
+    /* If one of the types wraps, use that one.  */
+    (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
+     /* If all 3 captures are CONSTANT_CLASS_P, punt, as we might recurse
+	forever if something doesn't simplify into a constant.  */
+     (if (!CONSTANT_CLASS_P (@0))
+      (minus (outer_op (view_convert @1) @2) (view_convert @0)))
+     (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	  || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+      (view_convert (minus (outer_op @1 (view_convert @2)) @0))
+      (if (types_match (type, @0))
+       (with { tree cst = const_binop (outer_op, type, @1, @2); }
+	(if (cst && !TREE_OVERFLOW (cst))
+	 (minus { cst; } @0))))))))
 
-  /* CST1 - (CST2 - A) -> CST3 + A  */
+  /* CST1 - (CST2 - A) -> CST3 + A
+     Use view_convert because it is safe for vectors and equivalent for
+     scalars.  */
   (simplify
-   (minus CONSTANT_CLASS_P@1 (minus CONSTANT_CLASS_P@2 @0))
-   (with { tree cst = const_binop (MINUS_EXPR, type, @1, @2); }
-    (if (cst && !TREE_OVERFLOW (cst))
-     (plus { cst; } @0))))
+   (minus CONSTANT_CLASS_P@1 (nop_convert (minus CONSTANT_CLASS_P@2 @0)))
+   /* If one of the types wraps, use that one.  */
+   (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
+    /* If all 3 captures are CONSTANT_CLASS_P, punt, as we might recurse
+      forever if something doesn't simplify into a constant.  */
+    (if (!CONSTANT_CLASS_P (@0))
+     (plus (view_convert @0) (minus @1 (view_convert @2))))
+    (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	 || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+     (view_convert (plus @0 (minus (view_convert @1) @2)))
+     (if (types_match (type, @0))
+      (with { tree cst = const_binop (MINUS_EXPR, type, @1, @2); }
+       (if (cst && !TREE_OVERFLOW (cst))
+	(plus { cst; } @0)))))))
 
 /* ((T)(A)) + CST -> (T)(A + CST)  */
 #if GIMPLE
