@@ -1,5 +1,11 @@
 2019-12-03  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_node::verify_node): Check that calls_comdat_local
+	is set only for symbol in comdat group.
+	* symtab.c (symtab_node::dissolve_same_comdat_group_1): Clear it.
+
+2019-12-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.c: Include tree-into-ssa.h
 	(cgraph_node::get_body): Call update_ssa.
 	* cgraphunit.c (cgraph_node::expand): Likewise.

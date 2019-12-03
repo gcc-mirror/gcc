@@ -489,6 +489,8 @@ symtab_node::dissolve_same_comdat_group_list (void)
     {
       next = n->same_comdat_group;
       n->same_comdat_group = NULL;
+      if (dyn_cast <cgraph_node *> (n))
+	dyn_cast <cgraph_node *> (n)->calls_comdat_local = false;
       /* Clear comdat_group for comdat locals, since
          make_decl_local doesn't.  */
       if (!TREE_PUBLIC (n->decl))

@@ -3094,6 +3094,11 @@ cgraph_node::verify_node (void)
       error ("inline clone is forced to output");
       error_found = true;
     }
+  if (calls_comdat_local && !same_comdat_group)
+    {
+      error ("calls_comdat_local is set outside of a comdat group");
+      error_found = true;
+    }
   for (e = indirect_calls; e; e = e->next_callee)
     {
       if (e->aux)
