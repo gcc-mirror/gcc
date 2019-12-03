@@ -272,7 +272,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit constexpr pair(const _T1& __a, const _T2& __b)
       : first(__a), second(__b) { }
 #endif
-      //@}
 
 #if __cplusplus < 201103L
       /// There is also a templated constructor to convert from other pairs.
