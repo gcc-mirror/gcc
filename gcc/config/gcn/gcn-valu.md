@@ -2596,10 +2596,10 @@
     DONE;
   })
 
-(define_expand "vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>"
-  [(match_operand:VEC_1REG_INT_MODE 0 "register_operand")
-   (match_operand:VEC_1REG_INT_MODE 1 "gcn_vop3_operand")
-   (match_operand:VEC_1REG_INT_MODE 2 "gcn_alu_operand")
+(define_expand "vcondu<VEC_1REG_MODE:mode><VEC_1REG_INT_ALT:mode>"
+  [(match_operand:VEC_1REG_MODE 0 "register_operand")
+   (match_operand:VEC_1REG_MODE 1 "gcn_vop3_operand")
+   (match_operand:VEC_1REG_MODE 2 "gcn_alu_operand")
    (match_operator 3 "comparison_operator"
      [(match_operand:VEC_1REG_INT_ALT 4 "gcn_alu_operand")
       (match_operand:VEC_1REG_INT_ALT 5 "gcn_vop3_operand")])]
@@ -2608,15 +2608,15 @@
     rtx tmp = gen_reg_rtx (DImode);
     emit_insn (gen_vec_cmp<VEC_1REG_INT_ALT:mode>di
 	       (tmp, operands[3], operands[4], operands[5]));
-    emit_insn (gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di
+    emit_insn (gen_vcond_mask_<VEC_1REG_MODE:mode>di
 	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 
-(define_expand "vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>_exec"
-  [(match_operand:VEC_1REG_INT_MODE 0 "register_operand")
-   (match_operand:VEC_1REG_INT_MODE 1 "gcn_vop3_operand")
-   (match_operand:VEC_1REG_INT_MODE 2 "gcn_alu_operand")
+(define_expand "vcondu<VEC_1REG_MODE:mode><VEC_1REG_INT_ALT:mode>_exec"
+  [(match_operand:VEC_1REG_MODE 0 "register_operand")
+   (match_operand:VEC_1REG_MODE 1 "gcn_vop3_operand")
+   (match_operand:VEC_1REG_MODE 2 "gcn_alu_operand")
    (match_operator 3 "comparison_operator"
      [(match_operand:VEC_1REG_INT_ALT 4 "gcn_alu_operand")
       (match_operand:VEC_1REG_INT_ALT 5 "gcn_vop3_operand")])
@@ -2626,7 +2626,7 @@
     rtx tmp = gen_reg_rtx (DImode);
     emit_insn (gen_vec_cmp<VEC_1REG_INT_ALT:mode>di_exec
 	       (tmp, operands[3], operands[4], operands[5], operands[6]));
-    emit_insn (gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di
+    emit_insn (gen_vcond_mask_<VEC_1REG_MODE:mode>di
 	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
