@@ -1117,6 +1117,10 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
   tree stripped_init = init;
 
+  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+      && CONSTRUCTOR_IS_PAREN_INIT (init))
+    flags |= LOOKUP_AGGREGATE_PAREN_INIT;
+
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue
      (g++.old-deja/g++.law/casts2.C).  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
@@ -1224,7 +1228,9 @@ digest_init_r (tree type, tree init, int nested, int flags,
   if ((code != COMPLEX_TYPE || BRACE_ENCLOSED_INITIALIZER_P (stripped_init))
       && (SCALAR_TYPE_P (type) || code == REFERENCE_TYPE))
     {
-      if (nested)
+      /* Narrowing is OK when initializing an aggregate from
+	 a parenthesized list.  */
+      if (nested && !(flags & LOOKUP_AGGREGATE_PAREN_INIT))
 	flags |= LOOKUP_NO_NARROWING;
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,
@@ -1386,9 +1392,12 @@ static tree
 massage_init_elt (tree type, tree init, int nested, int flags,
 		  tsubst_flags_t complain)
 {
-  flags &= LOOKUP_ALLOW_FLEXARRAY_INIT;
-  flags |= LOOKUP_IMPLICIT;
-  init = digest_init_r (type, init, nested ? 2 : 1, flags, complain);
+  int new_flags = LOOKUP_IMPLICIT;
+  if (flags & LOOKUP_ALLOW_FLEXARRAY_INIT)
+    new_flags |= LOOKUP_ALLOW_FLEXARRAY_INIT;
+  if (flags & LOOKUP_AGGREGATE_PAREN_INIT)
+    new_flags |= LOOKUP_AGGREGATE_PAREN_INIT;
+  init = digest_init_r (type, init, nested ? 2 : 1, new_flags, complain);
   /* Strip a simple TARGET_EXPR when we know this is an initializer.  */
   if (SIMPLE_TARGET_EXPR_P (init))
     init = TARGET_EXPR_INITIAL (init);

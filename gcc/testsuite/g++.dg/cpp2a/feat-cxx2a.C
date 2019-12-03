@@ -460,6 +460,12 @@
 #  error "__cpp_constexpr_dynamic_alloc != 201907"
 #endif
 
+#ifndef __cpp_aggregate_paren_init
+#  error "__cpp_aggregate_paren_init"
+#elif __cpp_aggregate_paren_init != 201902
+#  error "__cpp_aggregate_paren_init != 201902"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)

@@ -1,3 +1,9 @@
+2019-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_aggregate_paren_init=201902 for -std=c++2a.
+
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-attribs.c (handle_symver_attribute): New function

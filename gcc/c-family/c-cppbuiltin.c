@@ -1006,6 +1006,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806L");
 	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907L");
 	  cpp_define (pfile, "__cpp_impl_three_way_comparison=201907L");
+	  cpp_define (pfile, "__cpp_aggregate_paren_init=201902L");
 	}
       if (flag_concepts)
         {

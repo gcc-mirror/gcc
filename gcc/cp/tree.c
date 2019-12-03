@@ -669,6 +669,15 @@ build_aggr_init_expr (tree type, tree init)
 tree
 build_cplus_new (tree type, tree init, tsubst_flags_t complain)
 {
+  /* This function should cope with what build_special_member_call
+     can produce.  When performing parenthesized aggregate initialization,
+     it can produce a { }.  */
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    {
+      gcc_assert (cxx_dialect >= cxx2a);
+      return finish_compound_literal (type, init, complain);
+    }
+
   tree rval = build_aggr_init_expr (type, init);
   tree slot;
 

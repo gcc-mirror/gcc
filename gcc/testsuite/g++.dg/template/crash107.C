@@ -3,7 +3,7 @@
 // { dg-options "" }
 // { dg-additional-options "-Wno-return-type" }
 
-template<typename FP_> struct Vec { // { dg-message "note" }
+template<typename FP_> struct Vec { // { dg-message "note" "" { target c++17_down } }
     Vec& operator^=(Vec& rhs)     {
         union {
             struct {FP_ x,y,z;}; // { dg-error "20:anonymous struct" }
@@ -14,6 +14,6 @@ template<typename FP_> struct Vec { // { dg-message "note" }
         return Vec(*this)^=rhs; // { dg-message "required" }
     }
 };
-Vec<double> v(3,4,12); // { dg-error "no matching" }
-Vec<double> V(12,4,3);  // { dg-error "no matching" }
+Vec<double> v(3,4,12); // { dg-error "no matching|too many initializers" }
+Vec<double> V(12,4,3);  // { dg-error "no matching|too many initializers" }
 Vec<double> c = v^V;   // { dg-message "required" }
