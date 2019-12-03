@@ -1,3 +1,20 @@
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/srcloc1.C: New test.
+	* g++.dg/cpp2a/srcloc2.C: New test.
+	* g++.dg/cpp2a/srcloc3.C: New test.
+	* g++.dg/cpp2a/srcloc4.C: New test.
+	* g++.dg/cpp2a/srcloc5.C: New test.
+	* g++.dg/cpp2a/srcloc6.C: New test.
+	* g++.dg/cpp2a/srcloc7.C: New test.
+	* g++.dg/cpp2a/srcloc8.C: New test.
+	* g++.dg/cpp2a/srcloc9.C: New test.
+	* g++.dg/cpp2a/srcloc10.C: New test.
+	* g++.dg/cpp2a/srcloc11.C: New test.
+	* g++.dg/cpp2a/srcloc12.C: New test.
+	* g++.dg/cpp2a/srcloc13.C: New test.
+	* g++.dg/cpp2a/srcloc14.C: New test.
+
 2019-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/inconsistent-deduction-1.C: New.

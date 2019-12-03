@@ -35,6 +35,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
+#include "output.h"
+#include "file-prefix-map.h"
+#include "cgraph.h"
 
 /* Forward declarations.  */
 
@@ -896,8 +899,12 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  tree decl = cp_get_callee_fndecl_nofold (*expr_p);
 	  if (decl
 	      && fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				  BUILT_IN_FRONTEND))
+				    BUILT_IN_FRONTEND))
 	    *expr_p = boolean_false_node;
+	  else if (decl
+		   && fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
+					 BUILT_IN_FRONTEND))
+	    *expr_p = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
 	}
       break;
 
@@ -2657,8 +2664,16 @@ cp_fold (tree x)
 	/* Defer folding __builtin_is_constant_evaluated.  */
 	if (callee
 	    && fndecl_built_in_p (callee, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				BUILT_IN_FRONTEND))
+				  BUILT_IN_FRONTEND))
 	  break;
+
+	if (callee
+	    && fndecl_built_in_p (callee, CP_BUILT_IN_SOURCE_LOCATION,
+				  BUILT_IN_FRONTEND))
+	  {
+	    x = fold_builtin_source_location (EXPR_LOCATION (x));
+	    break;
+	  }
 
 	x = copy_node (x);
 
@@ -2882,6 +2897,248 @@ process_stmt_hotness_attribute (tree std_attrs, location_t attrs_loc)
       std_attrs = remove_hotness_attribute (std_attrs);
     }
   return std_attrs;
+}
+
+/* Helper of fold_builtin_source_location, return the
+   std::source_location::__impl type after performing verification
+   on it.  LOC is used for reporting any errors.  */
+
+static tree
+get_source_location_impl_type (location_t loc)
+{
+  tree name = get_identifier ("source_location");
+  tree decl = lookup_qualified_name (std_node, name);
+  if (TREE_CODE (decl) != TYPE_DECL)
+    {
+      auto_diagnostic_group d;
+      if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
+	qualified_name_lookup_error (std_node, name, decl, loc);
+      else
+	error_at (loc, "%qD is not a type", decl);
+      return error_mark_node;
+    }
+  name = get_identifier ("__impl");
+  tree type = TREE_TYPE (decl);
+  decl = lookup_qualified_name (type, name);
+  if (TREE_CODE (decl) != TYPE_DECL)
+    {
+      auto_diagnostic_group d;
+      if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
+	qualified_name_lookup_error (type, name, decl, loc);
+      else
+	error_at (loc, "%qD is not a type", decl);
+      return error_mark_node;
+    }
+  type = TREE_TYPE (decl);
+  if (TREE_CODE (type) != RECORD_TYPE)
+    {
+      error_at (loc, "%qD is not a class type", decl);
+      return error_mark_node;
+    }
+
+  int cnt = 0;
+  for (tree field = TYPE_FIELDS (type);
+       (field = next_initializable_field (field)) != NULL_TREE;
+       field = DECL_CHAIN (field))
+    {
+      if (DECL_NAME (field) != NULL_TREE)
+	{
+	  const char *n = IDENTIFIER_POINTER (DECL_NAME (field));
+	  if (strcmp (n, "_M_file_name") == 0
+	      || strcmp (n, "_M_function_name") == 0)
+	    {
+	      if (TREE_TYPE (field) != const_string_type_node)
+		{
+		  error_at (loc, "%qD does not have %<const char *%> type",
+			    field);
+		  return error_mark_node;
+		}
+	      cnt++;
+	      continue;
+	    }
+	  else if (strcmp (n, "_M_line") == 0 || strcmp (n, "_M_column") == 0)
+	    {
+	      if (TREE_CODE (TREE_TYPE (field)) != INTEGER_TYPE)
+		{
+		  error_at (loc, "%qD does not have integral type", field);
+		  return error_mark_node;
+		}
+	      cnt++;
+	      continue;
+	    }
+	}
+      cnt = 0;
+      break;
+    }
+  if (cnt != 4)
+    {
+      error_at (loc, "%<std::source_location::__impl%> does not contain only "
+		     "non-static data members %<_M_file_name%>, "
+		     "%<_M_function_name%>, %<_M_line%> and %<_M_column%>");
+      return error_mark_node;
+    }
+  return build_qualified_type (type, TYPE_QUAL_CONST);
+}
+
+/* Type for source_location_table hash_set.  */
+struct GTY((for_user)) source_location_table_entry {
+  location_t loc;
+  unsigned uid;
+  tree var;
+};
+
+/* Traits class for function start hash maps below.  */
+
+struct source_location_table_entry_hash
+  : ggc_remove <source_location_table_entry>
+{
+  typedef source_location_table_entry value_type;
+  typedef source_location_table_entry compare_type;
+
+  static hashval_t
+  hash (const source_location_table_entry &ref)
+  {
+    inchash::hash hstate (0);
+    hstate.add_int (ref.loc);
+    hstate.add_int (ref.uid);
+    return hstate.end ();
+  }
+
+  static bool
+  equal (const source_location_table_entry &ref1,
+	 const source_location_table_entry &ref2)
+  {
+    return ref1.loc == ref2.loc && ref1.uid == ref2.uid;
+  }
+
+  static void
+  mark_deleted (source_location_table_entry &ref)
+  {
+    ref.loc = UNKNOWN_LOCATION;
+    ref.uid = -1U;
+    ref.var = NULL_TREE;
+  }
+
+  static void
+  mark_empty (source_location_table_entry &ref)
+  {
+    ref.loc = UNKNOWN_LOCATION;
+    ref.uid = 0;
+    ref.var = NULL_TREE;
+  }
+
+  static bool
+  is_deleted (const source_location_table_entry &ref)
+  {
+    return (ref.loc == UNKNOWN_LOCATION
+	    && ref.uid == -1U
+	    && ref.var == NULL_TREE);
+  }
+
+  static bool
+  is_empty (const source_location_table_entry &ref)
+  {
+    return (ref.loc == UNKNOWN_LOCATION
+	    && ref.uid == 0
+	    && ref.var == NULL_TREE);
+  }
+};
+
+static GTY(()) hash_table <source_location_table_entry_hash>
+  *source_location_table;
+static GTY(()) unsigned int source_location_id;
+
+/* Fold __builtin_source_location () call.  LOC is the location
+   of the call.  */
+
+tree
+fold_builtin_source_location (location_t loc)
+{
+  if (source_location_impl == NULL_TREE)
+    {
+      auto_diagnostic_group d;
+      source_location_impl = get_source_location_impl_type (loc);
+      if (source_location_impl == error_mark_node)
+	inform (loc, "evaluating %qs", "__builtin_source_location");
+    }
+  if (source_location_impl == error_mark_node)
+    return build_zero_cst (const_ptr_type_node);
+  if (source_location_table == NULL)
+    source_location_table
+      = hash_table <source_location_table_entry_hash>::create_ggc (64);
+  const line_map_ordinary *map;
+  source_location_table_entry entry;
+  entry.loc
+    = linemap_resolve_location (line_table, loc, LRK_MACRO_EXPANSION_POINT,
+				&map);
+  entry.uid = current_function_decl ? DECL_UID (current_function_decl) : -1;
+  entry.var = error_mark_node;
+  source_location_table_entry *entryp
+    = source_location_table->find_slot (entry, INSERT);
+  tree var;
+  if (entryp->var)
+    var = entryp->var;
+  else
+    {
+      char tmp_name[32];
+      ASM_GENERATE_INTERNAL_LABEL (tmp_name, "Lsrc_loc", source_location_id++);
+      var = build_decl (loc, VAR_DECL, get_identifier (tmp_name),
+			source_location_impl);
+      TREE_STATIC (var) = 1;
+      TREE_PUBLIC (var) = 0;
+      DECL_ARTIFICIAL (var) = 1;
+      DECL_IGNORED_P (var) = 1;
+      DECL_EXTERNAL (var) = 0;
+      DECL_DECLARED_CONSTEXPR_P (var) = 1;
+      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (var) = 1;
+      layout_decl (var, 0);
+
+      vec<constructor_elt, va_gc> *v = NULL;
+      vec_alloc (v, 4);
+      for (tree field = TYPE_FIELDS (source_location_impl);
+	   (field = next_initializable_field (field)) != NULL_TREE;
+	   field = DECL_CHAIN (field))
+	{
+	  const char *n = IDENTIFIER_POINTER (DECL_NAME (field));
+	  tree val = NULL_TREE;
+	  if (strcmp (n, "_M_file_name") == 0)
+	    {
+	      if (const char *fname = LOCATION_FILE (loc))
+		{
+		  fname = remap_macro_filename (fname);
+		  val = build_string_literal (strlen (fname) + 1, fname);
+		}
+	      else
+		val = build_string_literal (1, "");
+	    }
+	  else if (strcmp (n, "_M_function_name") == 0)
+	    {
+	      const char *name = "";
+
+	      if (current_function_decl)
+		name = cxx_printable_name (current_function_decl, 0);
+
+	      val = build_string_literal (strlen (name) + 1, name);
+	    }
+	  else if (strcmp (n, "_M_line") == 0)
+	    val = build_int_cst (TREE_TYPE (field), LOCATION_LINE (loc));
+	  else if (strcmp (n, "_M_column") == 0)
+	    val = build_int_cst (TREE_TYPE (field), LOCATION_COLUMN (loc));
+	  else
+	    gcc_unreachable ();
+	  CONSTRUCTOR_APPEND_ELT (v, field, val);
+	}
+
+      tree ctor = build_constructor (source_location_impl, v);
+      TREE_CONSTANT (ctor) = 1;
+      TREE_STATIC (ctor) = 1;
+      DECL_INITIAL (var) = ctor;
+      varpool_node::finalize_decl (var);
+      *entryp = entry;
+      entryp->var = var;
+    }
+
+  return build_fold_addr_expr_with_type_loc (loc, var, const_ptr_type_node);
 }
 
 #include "gt-cp-cp-gimplify.h"
