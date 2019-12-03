@@ -1,3 +1,9 @@
+2019-12-03  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (SOURCES): Add doc/lto-dump.1.
+	(install-man): Add $(LTO_DUMP_INSTALL_NAME)$(man1ext).
+	($(LTO_DUMP_INSTALL_NAME)$(man1ext): New.
+
 2019-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92751
@@ -28,10 +34,10 @@
 
 2019-12-02  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-        * config/rs6000/rs6000-call.c (rs6000_invalid_builtin): Make
-        static.
-        * config/rs6000/rs6000-internal.h (rs6000_invalid_builtin): Remove
-        decl.
+	* config/rs6000/rs6000-call.c (rs6000_invalid_builtin): Make
+	static.
+	* config/rs6000/rs6000-internal.h (rs6000_invalid_builtin): Remove
+	decl.
 
 2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
