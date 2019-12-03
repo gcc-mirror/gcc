@@ -1,5 +1,14 @@
 2019-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (potential_alignment_gap): Delete.
+	(rest_of_record_type_compilation): Do not call above function.  Use
+	the alignment of the field instead of that of its type, if need be.
+	When the original field has variable size, always lower the alignment
+	of the pointer type.  Reset the bit-field status of the new field if
+	it does not encode a bit-field.
+
+2019-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (fold_convert_size): New function.
 	(fold_bit_position): Invoke it to do further folding.
 
