@@ -1223,7 +1223,6 @@ input_function (tree fn_decl, class data_in *data_in,
   fixup_call_stmt_edges (node, stmts);
   execute_all_ipa_stmt_fixups (node, stmts);
 
-  update_ssa (TODO_update_ssa_only_virtuals);
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
   free (stmts);

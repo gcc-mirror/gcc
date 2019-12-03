@@ -1693,10 +1693,10 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
       else
 	result = TYPE_MAIN_VARIANT (t);
     }
-  gcc_assert (!typedef_variant_p (result)
+  /*gcc_assert (!typedef_variant_p (result)
 	      || dependent_alias_template_spec_p (result, nt_opaque)
 	      || ((flags & STF_USER_VISIBLE)
-		  && !user_facing_original_type_p (result)));
+		  && !user_facing_original_type_p (result)));*/
 
   if (COMPLETE_TYPE_P (result) && !COMPLETE_TYPE_P (t))
   /* If RESULT is complete and T isn't, it's likely the case that T
