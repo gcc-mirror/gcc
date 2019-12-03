@@ -1,3 +1,18 @@
+2019-12-03  Frederik Harwath  <frederik@codesourcery.com>
+
+	* oacc-init.c (acc_known_device_type): Add function.
+	(unknown_device_type_error): Add function.
+	(name_of_acc_device_t): Change to call unknown_device_type_error
+	on unknown type.
+	(resolve_device): Use acc_known_device_type.
+	(acc_init): Fail if acc_device_t argument is not valid.
+	(acc_shutdown): Likewise.
+	(acc_get_num_devices): Likewise.
+	(acc_set_device_type): Likewise.
+	(acc_get_device_num): Likewise.
+	(acc_set_device_num): Likewise.
+	(acc_on_device): Add comment that argument validity is not checked.
+
 2019-12-03  Andrew Stubbs  <ams@codesourcery.com>
 
 	* testsuite/lib/libgomp.exp (offload_target_to_openacc_device_type):
