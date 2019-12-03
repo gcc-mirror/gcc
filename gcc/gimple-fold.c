@@ -986,36 +986,33 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 
       src_align = get_pointer_alignment (src);
       dest_align = get_pointer_alignment (dest);
-      if (dest_align < TYPE_ALIGN (desttype)
-	  || src_align < TYPE_ALIGN (srctype))
-	return false;
 
+      /* Choose between src and destination type for the access based
+         on alignment, whether the access constitutes a register access
+	 and whether it may actually expose a declaration for SSA rewrite
+	 or SRA decomposition.  */
       destvar = NULL_TREE;
+      srcvar = NULL_TREE;
       if (TREE_CODE (dest) == ADDR_EXPR
 	  && var_decl_component_p (TREE_OPERAND (dest, 0))
-	  && tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
+	  && tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len)
+	  && dest_align >= TYPE_ALIGN (desttype)
+	  && (is_gimple_reg_type (desttype)
+	      || src_align >= TYPE_ALIGN (desttype)))
 	destvar = fold_build2 (MEM_REF, desttype, dest, off0);
-
-      srcvar = NULL_TREE;
-      if (TREE_CODE (src) == ADDR_EXPR
-	  && var_decl_component_p (TREE_OPERAND (src, 0))
-	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
-	{
-	  if (!destvar
-	      || src_align >= TYPE_ALIGN (desttype))
-	    srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
-				  src, off0);
-	  else if (!STRICT_ALIGNMENT)
-	    {
-	      srctype = build_aligned_type (TYPE_MAIN_VARIANT (desttype),
-					    src_align);
-	      srcvar = fold_build2 (MEM_REF, srctype, src, off0);
-	    }
-	}
-
+      else if (TREE_CODE (src) == ADDR_EXPR
+	       && var_decl_component_p (TREE_OPERAND (src, 0))
+	       && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len)
+	       && src_align >= TYPE_ALIGN (srctype)
+	       && (is_gimple_reg_type (srctype)
+		   || dest_align >= TYPE_ALIGN (srctype)))
+	srcvar = fold_build2 (MEM_REF, srctype, src, off0);
       if (srcvar == NULL_TREE && destvar == NULL_TREE)
 	return false;
 
+      /* Now that we chose an access type express the other side in
+         terms of it if the target allows that with respect to alignment
+	 constraints.  */
       if (srcvar == NULL_TREE)
 	{
 	  if (src_align >= TYPE_ALIGN (desttype))
