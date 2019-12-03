@@ -5620,6 +5620,32 @@ gnat_to_gnu_profile_type (Entity_Id gnat_type)
   return gnu_type;
 }
 
+/* Return true if TYPE contains only integral data, recursively if need be.  */
+
+static bool
+type_contains_only_integral_data (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+	if (!type_contains_only_integral_data (TREE_TYPE (field)))
+	  return false;
+      return true;
+
+    case ARRAY_TYPE:
+    case COMPLEX_TYPE:
+      return type_contains_only_integral_data (TREE_TYPE (type));
+
+    default:
+      return INTEGRAL_TYPE_P (type);
+    }
+
+  gcc_unreachable ();
+}
+
 /* Return a GCC tree for a subprogram type corresponding to GNAT_SUBPROG.
    DEFINITION is true if this is for a subprogram being defined.  DEBUG_INFO_P
    is true if we need to write debug information for other types that we may
@@ -5649,8 +5675,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
      the TYPE_CI_CO_LIST field of the FUNCTION_TYPE node we create.  */
   tree gnu_cico_list = NULL_TREE;
   tree gnu_cico_return_type = NULL_TREE;
-  /* Fields in return type of procedure with copy-in copy-out parameters.  */
-  tree gnu_field_list = NULL_TREE;
+  tree gnu_cico_field_list = NULL_TREE;
+  bool gnu_cico_only_integral_type = true;
   /* The semantics of "pure" in Ada essentially matches that of "const"
      or "pure" in GCC.  In particular, both properties are orthogonal
      to the "nothrow" property if the EH circuitry is explicit in the
@@ -5976,9 +6002,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 				         NULL_TREE, 0, 0);
 		  Sloc_to_locus (Sloc (gnat_subprog),
 			         &DECL_SOURCE_LOCATION (gnu_field));
-		  gnu_field_list = gnu_field;
+		  gnu_cico_field_list = gnu_field;
 		  gnu_cico_list
 		    = tree_cons (gnu_field, void_type_node, NULL_TREE);
+		  if (!type_contains_only_integral_data (gnu_return_type))
+		    gnu_cico_only_integral_type = false;
 		}
 
 	      TYPE_NAME (gnu_cico_return_type) = get_identifier ("RETURN");
@@ -5995,9 +6023,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 				 0, 0);
 	  Sloc_to_locus (Sloc (gnat_param),
 			 &DECL_SOURCE_LOCATION (gnu_field));
-	  DECL_CHAIN (gnu_field) = gnu_field_list;
-	  gnu_field_list = gnu_field;
+	  DECL_CHAIN (gnu_field) = gnu_cico_field_list;
+	  gnu_cico_field_list = gnu_field;
 	  gnu_cico_list = tree_cons (gnu_field, gnu_param, gnu_cico_list);
+	  if (!type_contains_only_integral_data (gnu_param_type))
+	    gnu_cico_only_integral_type = false;
 	}
     }
 
@@ -6014,12 +6044,14 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	 since structures are incomplete for the back-end.  */
       else if (Convention (gnat_subprog) != Convention_Stubbed)
 	{
-	  finish_record_type (gnu_cico_return_type, nreverse (gnu_field_list),
+	  finish_record_type (gnu_cico_return_type,
+			      nreverse (gnu_cico_field_list),
 			      0, false);
 
-	  /* Try to promote the mode of the return type if it is passed
-	     in registers, again to speed up accesses.  */
+	  /* Try to promote the mode if the return type is fully returned
+	     in integer registers, again to speed up accesses.  */
 	  if (TYPE_MODE (gnu_cico_return_type) == BLKmode
+	      && gnu_cico_only_integral_type
 	      && !targetm.calls.return_in_memory (gnu_cico_return_type,
 						  NULL_TREE))
 	    {
@@ -6041,6 +6073,17 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 		    = size_int (GET_MODE_SIZE (mode));
 		}
 	    }
+
+	  /* But demote the mode if the return type is partly returned in FP
+	     registers to avoid creating problematic paradoxical subregs.
+	     Note that we need to cater to historical 32-bit architectures
+	     that incorrectly use the mode to select the return mechanism.  */
+	  else if (INTEGRAL_MODE_P (TYPE_MODE (gnu_cico_return_type))
+		   && !gnu_cico_only_integral_type
+		   && BITS_PER_WORD >= 64
+		   && !targetm.calls.return_in_memory (gnu_cico_return_type,
+						       NULL_TREE))
+	    SET_TYPE_MODE (gnu_cico_return_type, BLKmode);
 
 	  if (debug_info_p)
 	    rest_of_record_type_compilation (gnu_cico_return_type);
