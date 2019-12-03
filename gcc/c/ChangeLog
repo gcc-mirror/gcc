@@ -1,3 +1,9 @@
+2019-12-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88704
+	* c-decl.c (store_parm_decls_oldstyle): Diagnose use of [*] in
+	old-style parameter definitions.
+
 2019-12-01  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/92499
