@@ -4325,6 +4325,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define CONSTRUCTOR_IS_DESIGNATED_INIT(NODE) \
   (TREE_LANG_FLAG_6 (CONSTRUCTOR_CHECK (NODE)))
 
+/* True if this CONSTRUCTOR comes from a parenthesized list of values, e.g.
+   A(1, 2, 3).  */
+#define CONSTRUCTOR_IS_PAREN_INIT(NODE) \
+  (CONSTRUCTOR_CHECK(NODE)->base.private_flag)
+
 /* True if NODE represents a conversion for direct-initialization in a
    template.  Set by perform_implicit_conversion_flags.  */
 #define IMPLICIT_CONV_EXPR_DIRECT_INIT(NODE) \
@@ -5583,6 +5588,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    args), then we swap the conversions back in build_new_op_1 (so they
    correspond to the order of the args in the candidate).  */
 #define LOOKUP_REVERSED (LOOKUP_REWRITTEN << 1)
+/* We're initializing an aggregate from a parenthesized list of values.  */
+#define LOOKUP_AGGREGATE_PAREN_INIT (LOOKUP_REVERSED << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))

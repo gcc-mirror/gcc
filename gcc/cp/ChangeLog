@@ -1,3 +1,23 @@
+2019-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.
+	* call.c (build_new_method_call_1): Handle parenthesized initialization
+	of aggregates by building up a CONSTRUCTOR.
+	(extend_ref_init_temps): Do nothing for CONSTRUCTOR_IS_PAREN_INIT.
+	* cp-tree.h (CONSTRUCTOR_IS_PAREN_INIT, LOOKUP_AGGREGATE_PAREN_INIT):
+	Define.
+	* decl.c (grok_reference_init): Handle aggregate initialization from
+	a parenthesized list of values.
+	(reshape_init): Do nothing for CONSTRUCTOR_IS_PAREN_INIT.
+	(check_initializer): Handle initialization of an array from a
+	parenthesized list of values.  Use NULL_TREE instead of NULL.
+	* tree.c (build_cplus_new): Handle BRACE_ENCLOSED_INITIALIZER_P.
+	* typeck2.c (digest_init_r): Set LOOKUP_AGGREGATE_PAREN_INIT if it
+	receives a CONSTRUCTOR with CONSTRUCTOR_IS_PAREN_INIT set.  Allow
+	narrowing when LOOKUP_AGGREGATE_PAREN_INIT.
+	(massage_init_elt): Don't lose LOOKUP_AGGREGATE_PAREN_INIT when passing
+	flags to digest_init_r.
+
 2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92732

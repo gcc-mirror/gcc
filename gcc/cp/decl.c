@@ -5531,11 +5531,28 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (init) == TREE_LIST)
-    init = build_x_compound_expr_from_list (init, ELK_INIT,
-					    tf_warning_or_error);
-
   tree ttype = TREE_TYPE (type);
+  if (TREE_CODE (init) == TREE_LIST)
+    {
+      /* This handles (C++20 only) code like
+
+	   const A& r(1, 2, 3);
+
+	 where we treat the parenthesized list as a CONSTRUCTOR.  */
+      if (TREE_TYPE (init) == NULL_TREE
+	  && CP_AGGREGATE_TYPE_P (ttype)
+	  && !DECL_DECOMPOSITION_P (decl)
+	  && (cxx_dialect >= cxx2a))
+	{
+	  init = build_constructor_from_list (init_list_type_node, init);
+	  CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	  CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	}
+      else
+	init = build_x_compound_expr_from_list (init, ELK_INIT,
+						tf_warning_or_error);
+    }
+
   if (TREE_CODE (ttype) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
     /* Note: default conversion is only called in very special cases.  */
@@ -6437,6 +6454,11 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   if (vec_safe_is_empty (v))
     return init;
 
+  /* Brace elision is not performed for a CONSTRUCTOR representing
+     parenthesized aggregate initialization.  */
+  if (CONSTRUCTOR_IS_PAREN_INIT (init))
+    return init;
+
   /* Handle [dcl.init.list] direct-list-initialization from
      single element of enumeration with a fixed underlying type.  */
   if (is_direct_enum_init (type, init))
@@ -6640,6 +6662,41 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      flags |= LOOKUP_NO_NARROWING;
 	    }
 	}
+      /* [dcl.init] "Otherwise, if the destination type is an array, the object
+	 is initialized as follows..."  So handle things like
+
+	  int a[](1, 2, 3);
+
+	 which is permitted in C++20 by P0960.  */
+      else if (TREE_CODE (init) == TREE_LIST
+	       && TREE_TYPE (init) == NULL_TREE
+	       && TREE_CODE (type) == ARRAY_TYPE
+	       && !DECL_DECOMPOSITION_P (decl)
+	       && (cxx_dialect >= cxx2a))
+	{
+	  /* [dcl.init.string] "An array of ordinary character type [...]
+	     can be initialized by an ordinary string literal [...] by an
+	     appropriately-typed string literal enclosed in braces" only
+	     talks about braces, but GCC has always accepted
+
+	       char a[]("foobar");
+
+	     so we continue to do so.  */
+	  tree val = TREE_VALUE (init);
+	  if (TREE_CHAIN (init) == NULL_TREE
+	      && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	      && TREE_CODE (tree_strip_any_location_wrapper (val))
+		 == STRING_CST)
+	    /* If the list has a single element and it's a string literal,
+	       then it's the initializer for the array as a whole.  */
+	    init = val;
+	  else
+	    {
+	      init = build_constructor_from_list (init_list_type_node, init);
+	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	      CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	    }
+	}
       else if (TREE_CODE (init) == TREE_LIST
 	       && TREE_TYPE (init) != unknown_type_node
 	       && !MAYBE_CLASS_TYPE_P (type))
@@ -6683,6 +6740,9 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	    init_code = TREE_OPERAND (init_code, 0);
 	  if (TREE_CODE (init_code) == INIT_EXPR)
 	    {
+	      /* In C++20, the call to build_aggr_init could have created
+		 an INIT_EXPR with a CONSTRUCTOR as the RHS to handle
+		 A(1, 2).  */
 	      init = TREE_OPERAND (init_code, 1);
 	      init_code = NULL_TREE;
 	      /* Don't call digest_init; it's unnecessary and will complain
@@ -6736,7 +6796,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 			0, "array %qD initialized by parenthesized "
 			"string literal %qE",
 			decl, DECL_INITIAL (decl));
-	  init = NULL;
+	  init = NULL_TREE;
 	}
     }
   else
