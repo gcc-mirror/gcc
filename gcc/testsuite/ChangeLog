@@ -1,5 +1,10 @@
 2019-12-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/92645
+	* gcc.target/i386/pr92645-5.c: New testcase.
+
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92751
 	* g++.dg/tree-ssa/pr92751.C: New testcase.
 
