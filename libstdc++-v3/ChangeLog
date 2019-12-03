@@ -1,3 +1,7 @@
+2019-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/slow_clock.h: Fix copyright date.
+
 2019-12-02  Mike Crowe  <mac@mcrowe.com>
 
 	Fix try_lock_until and try_lock_shared_until on arbitrary clock
@@ -148,7 +152,7 @@
 	PR libstdc++/91997
 	* python/libstdcxx/v6/printers.py (find_type): Fail more gracefully
 	if we run out of base classes to look at.
-	(llokup_templ_spec, lookup_node_type): New utilities to find node
+	(lookup_templ_spec, lookup_node_type): New utilities to find node
 	types for node-based containers.
 	(StdListPrinter.children, NodeIteratorPrinter.__init__)
 	(NodeIteratorPrinter.to_string, StdSlistPrinter.children)
