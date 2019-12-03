@@ -1761,6 +1761,9 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
 
   if (partial_defs.is_empty ())
     {
+      /* If we get a clobber upfront, fail.  */
+      if (TREE_CLOBBER_P (pd.rhs))
+	return (void *)-1;
       partial_defs.safe_push (pd);
       first_range.offset = pd.offset;
       first_range.size = pd.size;
@@ -1792,7 +1795,8 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       && ranges_known_overlap_p (r->offset, r->size + 1,
 				 newr.offset, newr.size))
     {
-      /* Ignore partial defs already covered.  */
+      /* Ignore partial defs already covered.  Here we also drop shadowed
+         clobbers arriving here at the floor.  */
       if (known_subrange_p (newr.offset, newr.size, r->offset, r->size))
 	return NULL;
       r->size = MAX (r->offset + r->size, newr.offset + newr.size) - r->offset;
@@ -1817,6 +1821,9 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
 		     rafter->offset + rafter->size) - r->offset;
       splay_tree_remove (known_ranges, (splay_tree_key)&rafter->offset);
     }
+  /* If we get a clobber, fail.  */
+  if (TREE_CLOBBER_P (pd.rhs))
+    return (void *)-1;
   partial_defs.safe_push (pd);
 
   /* Now we have merged newr into the range tree.  When we have covered
@@ -2355,10 +2362,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
   poly_int64 offset = ref->offset;
   poly_int64 maxsize = ref->max_size;
 
-  /* We can't deduce anything useful from clobbers.  */
-  if (gimple_clobber_p (def_stmt))
-    return (void *)-1;
-
   /* def_stmt may-defs *ref.  See if we can derive a value for *ref
      from that definition.
      1) Memset.  */
@@ -2508,6 +2511,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  if (data->partial_defs.is_empty ()
 	      && known_subrange_p (offset, maxsize, offset2, size2))
 	    {
+	      /* While technically undefined behavior do not optimize
+	         a full read from a clobber.  */
+	      if (gimple_clobber_p (def_stmt))
+		return (void *)-1;
 	      tree val = build_zero_cst (vr->type);
 	      return vn_reference_lookup_or_insert_for_pieces
 		  (vuse, get_alias_set (lhs), vr->type, vr->operands, val);
@@ -2522,6 +2529,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		   && size2.is_constant (&size2i)
 		   && size2i % BITS_PER_UNIT == 0)
 	    {
+	      /* Let clobbers be consumed by the partial-def tracker
+	         which can choose to ignore them if they are shadowed
+		 by a later def.  */
 	      pd_data pd;
 	      pd.rhs = gimple_assign_rhs1 (def_stmt);
 	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;

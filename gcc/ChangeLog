@@ -1,3 +1,11 @@
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92751
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Fail
+	when a clobber ends up in the partial-def vector.
+	(vn_reference_lookup_3): Let clobbers be handled by the
+	assignment from CTOR handling.
+
 2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92734
