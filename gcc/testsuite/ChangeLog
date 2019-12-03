@@ -1,3 +1,7 @@
+2019-12-03  Luo Xiong Hu  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/pr72804.c: Fix missing space.
+
 2019-12-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/88704
