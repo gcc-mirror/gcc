@@ -520,7 +520,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_coroutines; };
+  virtual bool gate (function *f)
+    {
+      return flag_coroutines && f->coroutine_component;
+    }
 
   virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
   {

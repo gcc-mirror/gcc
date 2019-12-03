@@ -1,3 +1,17 @@
+2019-12-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* coroutine-passes.cc (gate): Check for coroutine components in
+	addition to the coroutine enable flag before executing the IFN
+	lowering pass.
+	* function.h (struct function): Allocate a bit to indicate that
+	the function is a coroutine component.
+
+	gcc/cp/
+	* decl.c (emit_coro_helper): Set coroutine component bit when
+	needed.
+	(finish_function): Likewise.
+
 2019-12-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r278894.
