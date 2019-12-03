@@ -1,5 +1,20 @@
 2019-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_pair.h [__cpp_lib_three_way_comparison]
+	(operator<=>): Define for C++20.
+	* libsupc++/compare (__cmp2way_res_t): Rename to __cmp3way_res_t,
+	move into __detail namespace. Do not turn argument types into lvalues.
+	(__cmp3way_helper): Rename to __cmp3way_res_impl, move into __detail
+	namespace. Constrain with concepts instead of using void_t.
+	(compare_three_way_result): Adjust name of base class.
+	(compare_three_way_result_t): Use __cmp3way_res_impl directly.
+	(__detail::__3way_cmp_with): Add workaround for PR 91073.
+	(compare_three_way): Use workaround.
+	(__detail::__synth3way, __detail::__synth3way_t): Define new helpers
+	implementing synth-three-way and synth-three-way-result semantics.
+	* testsuite/20_util/pair/comparison_operators/constexpr_c++20.cc: New
+	test.
+
 	* include/bits/stl_pair.h (pair): Remove stray Doxygen closing marker.
 
 	* testsuite/util/slow_clock.h: Fix copyright date.

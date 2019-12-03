@@ -59,7 +59,10 @@
 #include <bits/move.h> // for std::move / std::forward, and std::swap
 
 #if __cplusplus >= 201103L
-#include <type_traits> // for std::__decay_and_strip too
+# include <type_traits> // for std::__decay_and_strip, std::is_reference_v
+#endif
+#if __cplusplus > 201703L
+# include <compare>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -447,7 +450,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX20_CONSTEXPR
         pair(tuple<_Args1...>&, tuple<_Args2...>&,
              _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
-#endif
+#endif // C++11
     };
 
   /// @relates pair @{
@@ -462,6 +465,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first == __y.first && __x.second == __y.second; }
 
+#if __cpp_lib_three_way_comparison && __cpp_lib_concepts
+  template<typename _T1, typename _T2>
+    constexpr common_comparison_category_t<__detail::__synth3way_t<_T1>,
+					   __detail::__synth3way_t<_T2>>
+    operator<=>(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
+    {
+      if (auto __c = __detail::__synth3way(__x.first, __y.first); __c != 0)
+	return __c;
+      return __detail::__synth3way(__x.second, __y.second);
+    }
+#else
   /** Defines a lexicographical order for pairs.
    *
    * For two pairs of the same type, `P` is ordered before `Q` if
@@ -498,6 +512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX_CONSTEXPR bool
     operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x < __y); }
+#endif // !(three_way_comparison && concepts)
 
 #if __cplusplus >= 201103L
   /** Swap overload for pairs. Calls std::pair::swap().
