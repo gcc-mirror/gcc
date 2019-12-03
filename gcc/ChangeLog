@@ -1,5 +1,12 @@
 2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gimplify.c (gimplify_compound_lval): Don't gimplify and install
+	an array element size if array_element_size is already an invariant.
+	Similarly don't gimplify and install a field offset if
+	component_ref_field_offset is already an invariant.
+
+2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* cfgexpand.c (discover_nonconstant_array_refs_r): If an access
 	with POLY_INT_CST size is made to a fixed-size object, force the
 	object to live in memory.
