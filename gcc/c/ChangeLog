@@ -1,3 +1,11 @@
+2019-12-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Fix bugs relating to flexibly-sized objects in nios2 backend.
+	
+	PR target/92499
+
+	* c-decl.c (flexible_array_type_p): Move to common code.
+
 2019-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
