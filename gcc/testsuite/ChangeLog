@@ -1,5 +1,8 @@
 2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/92734
+	* gcc.dg/tree-ssa/pr92734.c: New test.
+
 	PR target/92744
 	* g++.dg/dfp/pr92744.C: New test.
 
