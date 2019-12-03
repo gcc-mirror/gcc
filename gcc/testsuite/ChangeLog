@@ -1,3 +1,8 @@
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92751
+	* g++.dg/tree-ssa/pr92751.C: New testcase.
+
 2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gfortran.dg/loop_versioning_6.f90: XFAIL the scans for ! lp64.
