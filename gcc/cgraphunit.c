@@ -2274,6 +2274,7 @@ cgraph_node::expand (void)
 
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
 
+  update_ssa (TODO_update_ssa_only_virtuals);
   execute_all_ipa_transforms (false);
 
   /* Perform all tree transforms and optimizations.  */
