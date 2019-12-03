@@ -1,3 +1,8 @@
+2019-12-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88704
+	* gcc.dg/vla-25.c: New test.
+
 2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/lto/inline-crossmodule-1_0.C: Use -fdump-ipa-inline-details

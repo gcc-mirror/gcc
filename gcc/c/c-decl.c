@@ -9394,6 +9394,9 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 		    "old-style function definition");
     }
 
+  if (current_scope->had_vla_unspec)
+    error ("%<[*]%> not allowed in other than function prototype scope");
+
   /* Match each formal parameter name with its declaration.  Save each
      decl in the appropriate TREE_PURPOSE slot of the parmids chain.  */
   for (parm = parmids; parm; parm = TREE_CHAIN (parm))
