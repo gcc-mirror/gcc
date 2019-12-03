@@ -1,5 +1,7 @@
 2019-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_pair.h (pair): Remove stray Doxygen closing marker.
+
 	* testsuite/util/slow_clock.h: Fix copyright date.
 
 2019-12-02  Mike Crowe  <mac@mcrowe.com>
