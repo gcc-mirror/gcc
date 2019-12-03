@@ -2349,19 +2349,27 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special, bool max)
   return new_size;
 }
 
+/* Convert the size expression EXPR to TYPE and fold the result.  */
+
+static tree
+fold_convert_size (tree type, tree expr)
+{
+  /* We assume that size expressions do not wrap around.  */
+  if (TREE_CODE (expr) == MULT_EXPR || TREE_CODE (expr) == PLUS_EXPR)
+    return size_binop (TREE_CODE (expr),
+		       fold_convert_size (type, TREE_OPERAND (expr, 0)),
+		       fold_convert_size (type, TREE_OPERAND (expr, 1)));
+
+  return fold_convert (type, expr);
+}
+
 /* Return the bit position of FIELD, in bits from the start of the record,
    and fold it as much as possible.  This is a tree of type bitsizetype.  */
 
 static tree
 fold_bit_position (const_tree field)
 {
-  tree offset = DECL_FIELD_OFFSET (field);
-  if (TREE_CODE (offset) == MULT_EXPR || TREE_CODE (offset) == PLUS_EXPR)
-    offset = size_binop (TREE_CODE (offset),
-			 fold_convert (bitsizetype, TREE_OPERAND (offset, 0)),
-			 fold_convert (bitsizetype, TREE_OPERAND (offset, 1)));
-  else
-    offset = fold_convert (bitsizetype, offset);
+  tree offset = fold_convert_size (bitsizetype, DECL_FIELD_OFFSET (field));
   return size_binop (PLUS_EXPR, DECL_FIELD_BIT_OFFSET (field),
  		     size_binop (MULT_EXPR, offset, bitsize_unit_node));
 }
