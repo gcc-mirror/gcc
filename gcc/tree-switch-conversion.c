@@ -1829,6 +1829,7 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
     if (clusters[i]->get_type () != SIMPLE_CASE)
       {
 	clusters[i]->m_case_bb = create_empty_bb (bb);
+	clusters[i]->m_case_bb->count = bb->count;
 	clusters[i]->m_case_bb->loop_father = bb->loop_father;
       }
 
