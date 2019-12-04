@@ -1759,10 +1759,14 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
   if (maxsizei > bufsize * BITS_PER_UNIT)
     return (void *)-1;
 
+  bool pd_constant_p = (TREE_CODE (pd.rhs) == CONSTRUCTOR
+			|| CONSTANT_CLASS_P (pd.rhs));
   if (partial_defs.is_empty ())
     {
       /* If we get a clobber upfront, fail.  */
       if (TREE_CLOBBER_P (pd.rhs))
+	return (void *)-1;
+      if (!pd_constant_p)
 	return (void *)-1;
       partial_defs.safe_push (pd);
       first_range.offset = pd.offset;
@@ -1823,6 +1827,9 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
     }
   /* If we get a clobber, fail.  */
   if (TREE_CLOBBER_P (pd.rhs))
+    return (void *)-1;
+  /* Non-constants are OK as long as they are shadowed by a constant.  */
+  if (!pd_constant_p)
     return (void *)-1;
   partial_defs.safe_push (pd);
 
@@ -2653,21 +2660,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
     }
 
   /* 4) Assignment from an SSA name which definition we may be able
-     to access pieces from.  */
+     to access pieces from or we can combine to a larger entity.  */
   else if (known_eq (ref->size, maxsize)
 	   && is_gimple_reg_type (vr->type)
 	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
-	   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
-	   /* A subset of partial defs from non-constants can be handled
-	      by for example inserting a CONSTRUCTOR, a COMPLEX_EXPR or
-	      even a (series of) BIT_INSERT_EXPR hoping for simplifications
-	      downstream, not so much for actually doing the insertion.  */
-	   && data->partial_defs.is_empty ())
+	   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
     {
       tree lhs = gimple_assign_lhs (def_stmt);
       tree base2;
       poly_int64 offset2, size2, maxsize2;
+      HOST_WIDE_INT offset2i, size2i, offseti;
       bool reverse;
       if (lhs_ref_ok)
 	{
@@ -2685,34 +2688,54 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  && known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
 	  && adjust_offsets_for_equal_base_address (base, &offset,
-						    base2, &offset2)
-	  && known_subrange_p (offset, maxsize, offset2, size2)
-	  /* ???  We can't handle bitfield precision extracts without
-	     either using an alternate type for the BIT_FIELD_REF and
-	     then doing a conversion or possibly adjusting the offset
-	     according to endianness.  */
-	  && (! INTEGRAL_TYPE_P (vr->type)
-	      || known_eq (ref->size, TYPE_PRECISION (vr->type)))
-	  && multiple_p (ref->size, BITS_PER_UNIT))
+						    base2, &offset2))
 	{
-	  if (known_eq (ref->size, size2))
-	    return vn_reference_lookup_or_insert_for_pieces
-		(vuse, get_alias_set (lhs), vr->type, vr->operands,
-		 SSA_VAL (def_rhs));
-	  else if (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
-		   || type_has_mode_precision_p (TREE_TYPE (def_rhs)))
+	  if (data->partial_defs.is_empty ()
+	      && known_subrange_p (offset, maxsize, offset2, size2)
+	      /* ???  We can't handle bitfield precision extracts without
+		 either using an alternate type for the BIT_FIELD_REF and
+		 then doing a conversion or possibly adjusting the offset
+		 according to endianness.  */
+	      && (! INTEGRAL_TYPE_P (vr->type)
+		  || known_eq (ref->size, TYPE_PRECISION (vr->type)))
+	      && multiple_p (ref->size, BITS_PER_UNIT))
 	    {
-	      gimple_match_op op (gimple_match_cond::UNCOND,
-				  BIT_FIELD_REF, vr->type,
-				  vn_valueize (def_rhs),
-				  bitsize_int (ref->size),
-				  bitsize_int (offset - offset2));
-	      tree val = vn_nary_build_or_lookup (&op);
-	      if (val
-		  && (TREE_CODE (val) != SSA_NAME
-		      || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+	      if (known_eq (ref->size, size2))
 		return vn_reference_lookup_or_insert_for_pieces
-		    (vuse, get_alias_set (lhs), vr->type, vr->operands, val);
+		    (vuse, get_alias_set (lhs), vr->type, vr->operands,
+		     SSA_VAL (def_rhs));
+	      else if (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
+		       || type_has_mode_precision_p (TREE_TYPE (def_rhs)))
+		{
+		  gimple_match_op op (gimple_match_cond::UNCOND,
+				      BIT_FIELD_REF, vr->type,
+				      SSA_VAL (def_rhs),
+				      bitsize_int (ref->size),
+				      bitsize_int (offset - offset2));
+		  tree val = vn_nary_build_or_lookup (&op);
+		  if (val
+		      && (TREE_CODE (val) != SSA_NAME
+			  || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+		    return vn_reference_lookup_or_insert_for_pieces
+			(vuse, get_alias_set (lhs), vr->type,
+			 vr->operands, val);
+		}
+	    }
+	  else if (maxsize.is_constant (&maxsizei)
+		   && maxsizei % BITS_PER_UNIT == 0
+		   && offset.is_constant (&offseti)
+		   && offseti % BITS_PER_UNIT == 0
+		   && offset2.is_constant (&offset2i)
+		   && offset2i % BITS_PER_UNIT == 0
+		   && size2.is_constant (&size2i)
+		   && size2i % BITS_PER_UNIT == 0
+		   && ranges_known_overlap_p (offset, maxsize, offset2, size2))
+	    {
+	      pd_data pd;
+	      pd.rhs = SSA_VAL (def_rhs);
+	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
+	      pd.size = size2i / BITS_PER_UNIT;
+	      return data->push_partial_def (pd, vuse, maxsizei);
 	    }
 	}
     }

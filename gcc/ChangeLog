@@ -1,3 +1,9 @@
+2019-12-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Handle
+	non-constant defs in the most trivial way.
+	(vn_reference_lookup_3): Also push down SSA partial defs.
+
 2019-12-04  Martin Liska  <mliska@suse.cz>
 
 	* tree-switch-conversion.c (switch_decision_tree::try_switch_expansion):
