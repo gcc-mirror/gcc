@@ -1,3 +1,7 @@
+2019-12-04  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (enum primary_constraint_error): Remove stray comma.
+
 2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* cp-tree.h (CP_AGGREGATE_TYPE_P): Check for gnu_vector_type_p
