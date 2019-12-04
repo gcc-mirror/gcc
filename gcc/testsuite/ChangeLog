@@ -1,3 +1,8 @@
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92756
+	* gfortran.dg/gomp/teams1.f90: New test.
+
 2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/srcloc1.C: New test.

@@ -4858,10 +4858,14 @@ gfc_trans_omp_teams (gfc_code *code, gfc_omp_clauses *clausesa,
       gfc_split_omp_clauses (code, clausesa);
     }
   if (flag_openmp)
-    omp_clauses
-      = chainon (omp_clauses,
-		 gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_TEAMS],
-					code->loc));
+    {
+      omp_clauses
+	= chainon (omp_clauses,
+		   gfc_trans_omp_clauses (&block,
+					  &clausesa[GFC_OMP_SPLIT_TEAMS],
+					  code->loc));
+      pushlevel ();
+    }
   switch (code->op)
     {
     case EXEC_OMP_TARGET_TEAMS:
@@ -4881,6 +4885,7 @@ gfc_trans_omp_teams (gfc_code *code, gfc_omp_clauses *clausesa,
     }
   if (flag_openmp)
     {
+      stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
       stmt = build2_loc (input_location, OMP_TEAMS, void_type_node, stmt,
 			 omp_clauses);
       if (combined)

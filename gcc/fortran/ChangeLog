@@ -1,3 +1,9 @@
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92756
+	* trans-openmp.c (gfc_trans_omp_teams): Wrap OMP_TEAMS body into a
+	BIND_EXPR with a forced BLOCK.
+
 2019-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91783
