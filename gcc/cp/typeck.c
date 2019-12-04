@@ -4547,7 +4547,8 @@ cp_build_binary_op (const op_location_t &location,
 
   /* In case when one of the operands of the binary operation is
      a vector and another is a scalar -- convert scalar to vector.  */
-  if ((code0 == VECTOR_TYPE) != (code1 == VECTOR_TYPE))
+  if ((gnu_vector_type_p (type0) && code1 != VECTOR_TYPE)
+      || (gnu_vector_type_p (type1) && code0 != VECTOR_TYPE))
     {
       enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1,
 						     complain & tf_error);
@@ -4740,7 +4741,7 @@ cp_build_binary_op (const op_location_t &location,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      if (!VECTOR_TYPE_P (type0) && VECTOR_TYPE_P (type1))
+      if (!VECTOR_TYPE_P (type0) && gnu_vector_type_p (type1))
 	{
 	  if (!COMPARISON_CLASS_P (op1))
 	    op1 = cp_build_binary_op (EXPR_LOCATION (op1), NE_EXPR, op1,
@@ -4758,7 +4759,8 @@ cp_build_binary_op (const op_location_t &location,
 	  else
 	    gcc_unreachable ();
 	}
-      if (VECTOR_TYPE_P (type0))
+      if (gnu_vector_type_p (type0)
+	  && (!VECTOR_TYPE_P (type1) || gnu_vector_type_p (type1)))
 	{
 	  if (!COMPARISON_CLASS_P (op0))
 	    op0 = cp_build_binary_op (EXPR_LOCATION (op0), NE_EXPR, op0,
@@ -4791,13 +4793,15 @@ cp_build_binary_op (const op_location_t &location,
 	 Also set SHORT_SHIFT if shifting rightward.  */
 
     case RSHIFT_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == INTEGER_TYPE
-          && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE)
+      if (gnu_vector_type_p (type0)
+	  && code1 == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE)
         {
           result_type = type0;
           converted = 1;
         }
-      else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      else if (gnu_vector_type_p (type0)
+	       && gnu_vector_type_p (type1)
 	       && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	       && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
 	       && known_eq (TYPE_VECTOR_SUBPARTS (type0),
@@ -4837,13 +4841,15 @@ cp_build_binary_op (const op_location_t &location,
       break;
 
     case LSHIFT_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == INTEGER_TYPE
+      if (gnu_vector_type_p (type0)
+	  && code1 == INTEGER_TYPE
           && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE)
         {
           result_type = type0;
           converted = 1;
         }
-      else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      else if (gnu_vector_type_p (type0)
+	       && gnu_vector_type_p (type1)
 	       && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	       && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
 	       && known_eq (TYPE_VECTOR_SUBPARTS (type0),
@@ -4896,7 +4902,7 @@ cp_build_binary_op (const op_location_t &location,
 
     case EQ_EXPR:
     case NE_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+      if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	goto vector_compare;
       if ((complain & tf_warning)
 	  && c_inhibit_evaluation_warnings == 0
@@ -5186,7 +5192,7 @@ cp_build_binary_op (const op_location_t &location,
 			"in unspecified behavior");
 	}
 
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+      if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	{
 	vector_compare:
 	  tree intt;
@@ -5341,7 +5347,7 @@ cp_build_binary_op (const op_location_t &location,
     {
       arithmetic_types_p = 0;
       /* Vector arithmetic is only allowed when both sides are vectors.  */
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+      if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	{
 	  if (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
 	      || !vector_types_compatible_elements_p (type0, type1))
@@ -6435,7 +6441,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
       break;
 
     case TRUTH_NOT_EXPR:
-      if (VECTOR_TYPE_P (TREE_TYPE (arg)))
+      if (gnu_vector_type_p (TREE_TYPE (arg)))
 	return cp_build_binary_op (input_location, EQ_EXPR, arg,
 				   build_zero_cst (TREE_TYPE (arg)), complain);
       arg = perform_implicit_conversion (boolean_type_node, arg,
@@ -7811,9 +7817,9 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 		 "is conditionally-supported");
       return build_nop_reinterpret (type, expr);
     }
-  else if (VECTOR_TYPE_P (type))
+  else if (gnu_vector_type_p (type))
     return convert_to_vector (type, expr);
-  else if (VECTOR_TYPE_P (intype)
+  else if (gnu_vector_type_p (intype)
 	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     return convert_to_integer_nofold (type, expr);
   else

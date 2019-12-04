@@ -5093,7 +5093,8 @@ build_conditional_expr_1 (const op_location_t &loc,
   orig_arg2 = arg2;
   orig_arg3 = arg3;
 
-  if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
+  if (gnu_vector_type_p (TREE_TYPE (arg1))
+      && VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
     {
       tree arg1_type = TREE_TYPE (arg1);
 
@@ -5172,7 +5173,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 	  arg3_type = vtype;
 	}
 
-      if (VECTOR_TYPE_P (arg2_type) != VECTOR_TYPE_P (arg3_type))
+      if ((gnu_vector_type_p (arg2_type) && !VECTOR_TYPE_P (arg3_type))
+	  || (gnu_vector_type_p (arg3_type) && !VECTOR_TYPE_P (arg2_type)))
 	{
 	  enum stv_conv convert_flag =
 	    scalar_to_vector (loc, VEC_COND_EXPR, arg2, arg3,
@@ -5203,7 +5205,9 @@ build_conditional_expr_1 (const op_location_t &loc,
 	    }
 	}
 
-      if (!same_type_p (arg2_type, arg3_type)
+      if (!gnu_vector_type_p (arg2_type)
+	  || !gnu_vector_type_p (arg3_type)
+	  || !same_type_p (arg2_type, arg3_type)
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (arg1_type),
 		       TYPE_VECTOR_SUBPARTS (arg2_type))
 	  || TYPE_SIZE (arg1_type) != TYPE_SIZE (arg2_type))
