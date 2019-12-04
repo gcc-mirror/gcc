@@ -1,3 +1,8 @@
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92734
+	* gcc.dg/tree-ssa/pr92734-2.c: New test.
+
 2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_1.C: New test.
