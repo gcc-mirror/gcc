@@ -2159,20 +2159,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* A - (A +- B)       -> -+ B */
   /* A +- (B -+ A)      ->  +- B */
   (simplify
-    (minus (plus:c @0 @1) @0)
-    @1)
+   (minus (nop_convert (plus:c (nop_convert @0) @1)) @0)
+   (view_convert @1))
   (simplify
-    (minus (minus @0 @1) @0)
-    (negate @1))
+   (minus (nop_convert (minus (nop_convert @0) @1)) @0)
+   (if (!ANY_INTEGRAL_TYPE_P (type)
+	|| TYPE_OVERFLOW_WRAPS (type))
+   (negate (view_convert @1))
+   (view_convert (negate @1))))
   (simplify
-    (plus:c (minus @0 @1) @1)
-    @0)
+   (plus:c (nop_convert (minus @0 (nop_convert @1))) @1)
+   (view_convert @0))
   (simplify
-   (minus @0 (plus:c @0 @1))
-   (negate @1))
+   (minus @0 (nop_convert (plus:c (nop_convert @0) @1)))
+    (if (!ANY_INTEGRAL_TYPE_P (type)
+	 || TYPE_OVERFLOW_WRAPS (type))
+     (negate (view_convert @1))
+     (view_convert (negate @1))))
   (simplify
-   (minus @0 (minus @0 @1))
-   @1)
+   (minus @0 (nop_convert (minus (nop_convert @0) @1)))
+   (view_convert @1))
   /* (A +- B) + (C - A)   -> C +- B */
   /* (A +  B) - (A - C)   -> B + C */
   /* More cases are handled with comparisons.  */

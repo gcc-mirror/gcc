@@ -1,3 +1,9 @@
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92734
+	* match.pd ((A +- B) - A -> +- B, (A +- B) -+ B -> A,
+	A - (A +- B) -> -+ B, A +- (B -+ A) -> +- B): Handle nop_convert.
+
 2019-12-04  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR target/92760
