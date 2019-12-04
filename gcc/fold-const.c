@@ -7727,21 +7727,53 @@ static int
 native_encode_vector_part (const_tree expr, unsigned char *ptr, int len,
 			   int off, unsigned HOST_WIDE_INT count)
 {
-  unsigned HOST_WIDE_INT i;
-  int size, offset;
-  tree itype, elem;
+  tree itype = TREE_TYPE (TREE_TYPE (expr));
+  if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (expr))
+      && TYPE_PRECISION (itype) <= BITS_PER_UNIT)
+    {
+      /* This is the only case in which elements can be smaller than a byte.
+	 Element 0 is always in the lsb of the containing byte.  */
+      unsigned int elt_bits = TYPE_PRECISION (itype);
+      int total_bytes = CEIL (elt_bits * count, BITS_PER_UNIT);
+      if ((off == -1 && total_bytes > len) || off >= total_bytes)
+	return 0;
 
-  offset = 0;
-  itype = TREE_TYPE (TREE_TYPE (expr));
-  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (itype));
-  for (i = 0; i < count; i++)
+      if (off == -1)
+	off = 0;
+
+      /* Zero the buffer and then set bits later where necessary.  */
+      int extract_bytes = MIN (len, total_bytes - off);
+      if (ptr)
+	memset (ptr, 0, extract_bytes);
+
+      unsigned int elts_per_byte = BITS_PER_UNIT / elt_bits;
+      unsigned int first_elt = off * elts_per_byte;
+      unsigned int extract_elts = extract_bytes * elts_per_byte;
+      for (unsigned int i = 0; i < extract_elts; ++i)
+	{
+	  tree elt = VECTOR_CST_ELT (expr, first_elt + i);
+	  if (TREE_CODE (elt) != INTEGER_CST)
+	    return 0;
+
+	  if (ptr && wi::extract_uhwi (wi::to_wide (elt), 0, 1))
+	    {
+	      unsigned int bit = i * elt_bits;
+	      ptr[bit / BITS_PER_UNIT] |= 1 << (bit % BITS_PER_UNIT);
+	    }
+	}
+      return extract_bytes;
+    }
+
+  int offset = 0;
+  int size = GET_MODE_SIZE (SCALAR_TYPE_MODE (itype));
+  for (unsigned HOST_WIDE_INT i = 0; i < count; i++)
     {
       if (off >= size)
 	{
 	  off -= size;
 	  continue;
 	}
-      elem = VECTOR_CST_ELT (expr, i);
+      tree elem = VECTOR_CST_ELT (expr, i);
       int res = native_encode_expr (elem, ptr ? ptr + offset : NULL,
 				    len - offset, off);
       if ((off == -1 && res != size) || res == 0)
@@ -7976,6 +8008,55 @@ native_interpret_complex (tree type, const unsigned char *ptr, int len)
   return build_complex (type, rpart, ipart);
 }
 
+/* Read a vector of type TYPE from the target memory image given by BYTES,
+   which contains LEN bytes.  The vector is known to be encodable using
+   NPATTERNS interleaved patterns with NELTS_PER_PATTERN elements each.
+
+   Return the vector on success, otherwise return null.  */
+
+static tree
+native_interpret_vector_part (tree type, const unsigned char *bytes,
+			      unsigned int len, unsigned int npatterns,
+			      unsigned int nelts_per_pattern)
+{
+  tree elt_type = TREE_TYPE (type);
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && TYPE_PRECISION (elt_type) <= BITS_PER_UNIT)
+    {
+      /* This is the only case in which elements can be smaller than a byte.
+	 Element 0 is always in the lsb of the containing byte.  */
+      unsigned int elt_bits = TYPE_PRECISION (elt_type);
+      if (elt_bits * npatterns * nelts_per_pattern > len * BITS_PER_UNIT)
+	return NULL_TREE;
+
+      tree_vector_builder builder (type, npatterns, nelts_per_pattern);
+      for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+	{
+	  unsigned int bit_index = i * elt_bits;
+	  unsigned int byte_index = bit_index / BITS_PER_UNIT;
+	  unsigned int lsb = bit_index % BITS_PER_UNIT;
+	  builder.quick_push (bytes[byte_index] & (1 << lsb)
+			      ? build_all_ones_cst (elt_type)
+			      : build_zero_cst (elt_type));
+	}
+      return builder.build ();
+    }
+
+  unsigned int elt_bytes = tree_to_uhwi (TYPE_SIZE_UNIT (elt_type));
+  if (elt_bytes * npatterns * nelts_per_pattern > len)
+    return NULL_TREE;
+
+  tree_vector_builder builder (type, npatterns, nelts_per_pattern);
+  for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+    {
+      tree elt = native_interpret_expr (elt_type, bytes, elt_bytes);
+      if (!elt)
+	return NULL_TREE;
+      builder.quick_push (elt);
+      bytes += elt_bytes;
+    }
+  return builder.build ();
+}
 
 /* Subroutine of native_interpret_expr.  Interpret the contents of
    the buffer PTR of length LEN as a VECTOR_CST of type TYPE.
@@ -7984,8 +8065,8 @@ native_interpret_complex (tree type, const unsigned char *ptr, int len)
 static tree
 native_interpret_vector (tree type, const unsigned char *ptr, unsigned int len)
 {
-  tree etype, elem;
-  unsigned int i, size;
+  tree etype;
+  unsigned int size;
   unsigned HOST_WIDE_INT count;
 
   etype = TREE_TYPE (type);
@@ -7994,15 +8075,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, unsigned int len)
       || size * count > len)
     return NULL_TREE;
 
-  tree_vector_builder elements (type, count, 1);
-  for (i = 0; i < count; ++i)
-    {
-      elem = native_interpret_expr (etype, ptr+(i*size), size);
-      if (!elem)
-	return NULL_TREE;
-      elements.quick_push (elem);
-    }
-  return elements.build ();
+  return native_interpret_vector_part (type, ptr, len, count, 1);
 }
 
 
@@ -8064,54 +8137,6 @@ can_native_interpret_type_p (tree type)
     }
 }
 
-/* Read a vector of type TYPE from the target memory image given by BYTES,
-   starting at byte FIRST_BYTE.  The vector is known to be encodable using
-   NPATTERNS interleaved patterns with NELTS_PER_PATTERN elements each,
-   and BYTES is known to have enough bytes to supply NPATTERNS *
-   NELTS_PER_PATTERN vector elements.  Each element of BYTES contains
-   BITS_PER_UNIT bits and the bytes are in target memory order.
-
-   Return the vector on success, otherwise return null.  */
-
-static tree
-native_decode_vector_tree (tree type, vec<unsigned char> bytes,
-			   unsigned int first_byte, unsigned int npatterns,
-			   unsigned int nelts_per_pattern)
-{
-  tree_vector_builder builder (type, npatterns, nelts_per_pattern);
-  tree elt_type = TREE_TYPE (type);
-  unsigned int elt_bits = tree_to_uhwi (TYPE_SIZE (elt_type));
-  if (VECTOR_BOOLEAN_TYPE_P (type) && elt_bits <= BITS_PER_UNIT)
-    {
-      /* This is the only case in which elements can be smaller than a byte.
-	 Element 0 is always in the lsb of the containing byte.  */
-      elt_bits = TYPE_PRECISION (elt_type);
-      for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
-	{
-	  unsigned int bit_index = first_byte * BITS_PER_UNIT + i * elt_bits;
-	  unsigned int byte_index = bit_index / BITS_PER_UNIT;
-	  unsigned int lsb = bit_index % BITS_PER_UNIT;
-	  builder.quick_push (bytes[byte_index] & (1 << lsb)
-			      ? build_all_ones_cst (elt_type)
-			      : build_zero_cst (elt_type));
-	}
-    }
-  else
-    {
-      unsigned int elt_bytes = elt_bits / BITS_PER_UNIT;
-      for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
-	{
-	  tree elt = native_interpret_expr (elt_type, &bytes[first_byte],
-					    elt_bytes);
-	  if (!elt)
-	    return NULL_TREE;
-	  builder.quick_push (elt);
-	  first_byte += elt_bytes;
-	}
-    }
-  return builder.build ();
-}
-
 /* Try to view-convert VECTOR_CST EXPR to VECTOR_TYPE TYPE by operating
    directly on the VECTOR_CST encoding, in a way that works for variable-
    length vectors.  Return the resulting VECTOR_CST on success or null
@@ -8168,8 +8193,8 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 
   /* Reencode the bytes as TYPE.  */
   unsigned int type_npatterns = type_sequence_bits / type_elt_bits;
-  return native_decode_vector_tree (type, buffer, 0, type_npatterns,
-				    nelts_per_pattern);
+  return native_interpret_vector_part (type, &buffer[0], buffer.length (),
+				       type_npatterns, nelts_per_pattern);
 }
 
 /* Fold a VIEW_CONVERT_EXPR of a constant expression EXPR to type

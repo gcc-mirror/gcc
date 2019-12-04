@@ -1,3 +1,13 @@
+2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* fold-const.c (native_encode_vector_part): Handle
+	VECTOR_BOOLEAN_TYPE_Ps that have subbyte precision.
+	(native_decode_vector_tree): Delete, moving the bulk of the code to...
+	(native_interpret_vector_part): ...this new function.  Use a pointer
+	and length instead of a vec<> and start index.
+	(native_interpret_vector): Use native_interpret_vector_part.
+	(fold_view_convert_vector_encoding): Likewise.
+
 2019-12-04  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Handle
