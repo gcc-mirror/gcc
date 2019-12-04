@@ -2441,6 +2441,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	return (void *)-1;
       tree len = gimple_call_arg (def_stmt, 2);
       HOST_WIDE_INT leni, offset2i, offseti;
+      /* Sometimes the above trickery is smarter than alias analysis.  Take
+         advantage of that.  */
+      if (!ranges_maybe_overlap_p (offset, maxsize, offset2,
+				   (wi::to_poly_offset (len)
+				    << LOG2_BITS_PER_UNIT)))
+	return NULL;
       if (data->partial_defs.is_empty ()
 	  && known_subrange_p (offset, maxsize, offset2,
 			       wi::to_poly_offset (len) << LOG2_BITS_PER_UNIT))
@@ -2478,7 +2484,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	       && tree_to_poly_int64 (len).is_constant (&leni)
 	       && offset.is_constant (&offseti)
 	       && offset2.is_constant (&offset2i)
-	       && maxsize.is_constant (&maxsizei))
+	       && maxsize.is_constant (&maxsizei)
+	       && ranges_known_overlap_p (offseti, maxsizei, offset2i, leni))
 	{
 	  pd_data pd;
 	  pd.rhs = build_constructor (NULL_TREE, NULL);
@@ -2534,7 +2541,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		   && offset2.is_constant (&offset2i)
 		   && offset2i % BITS_PER_UNIT == 0
 		   && size2.is_constant (&size2i)
-		   && size2i % BITS_PER_UNIT == 0)
+		   && size2i % BITS_PER_UNIT == 0
+		   && ranges_known_overlap_p (offseti, maxsizei,
+					      offset2i, size2i))
 	    {
 	      /* Let clobbers be consumed by the partial-def tracker
 	         which can choose to ignore them if they are shadowed
