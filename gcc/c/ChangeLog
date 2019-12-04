@@ -1,3 +1,13 @@
+2019-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36941
+	PR c/88827
+	* c-typeck.c (convert_lvalue_to_rvalue): Call
+	require_complete_type for arguments not of void types.
+	(build_indirect_ref): Do not diagnose dereferencing pointers to
+	incomplete types.
+	* c-tree.h (C_TYPE_ERROR_REPORTED): Remove.
+
 2019-12-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/88704

@@ -43,11 +43,12 @@ f6 (void *x)
 void
 f7 (struct S *x)
 {
-  __asm volatile ("" : : "r" (*x));	/* { dg-error "dereferencing pointer to incomplete type" } */
+  __asm volatile ("" : : "r" (*x));	/* { dg-error "invalid use of undefined type" } */
 }
 
 void
 f8 (struct S *x)
 {
-  __asm volatile ("" : "=r" (*x));	/* { dg-error "invalid lvalue in 'asm' output 0" } */
+  __asm volatile ("" : "=r" (*x));	/* { dg-error "impossible constraint in 'asm'" } */
+  /* { dg-error "non-memory output 0 must stay in memory" "memory" { target *-*-* } .-1 } */
 }

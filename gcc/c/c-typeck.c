@@ -2054,6 +2054,8 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
     mark_exp_read (exp.value);
   if (convert_p)
     exp = default_function_array_conversion (loc, exp);
+  if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
+    exp.value = require_complete_type (loc, exp.value);
   if (really_atomic_lvalue (exp.value))
     {
       vec<tree, va_gc> *params;
@@ -2550,16 +2552,6 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 
 	  ref = build1 (INDIRECT_REF, t, pointer);
 
-	  if (!COMPLETE_OR_VOID_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
-	    {
-	      if (!C_TYPE_ERROR_REPORTED (TREE_TYPE (ptr)))
-		{
-		  error_at (loc, "dereferencing pointer to incomplete type "
-			    "%qT", t);
-		  C_TYPE_ERROR_REPORTED (TREE_TYPE (ptr)) = 1;
-		}
-	      return error_mark_node;
-	    }
 	  if (VOID_TYPE_P (t) && c_inhibit_evaluation_warnings == 0)
 	    warning_at (loc, 0, "dereferencing %<void *%> pointer");
 
