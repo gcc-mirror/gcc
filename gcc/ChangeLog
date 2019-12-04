@@ -1,3 +1,16 @@
+2019-12-04  Peter Bergner <bergner@linux.ibm.com>
+
+	PR bootstrap/92661
+	* config/rs6000/rs6000-c.c (struct altivec_builtin_types): Move to
+	rs6000.h.
+	(altivec_overloaded_builtins): Move to rs6000-call.c.
+	* config/rs6000/rs6000.h (struct altivec_builtin_types): Moved from
+	rs6000-c.c.
+	* config/rs6000/rs6000-call.c (rs6000_builtin_info): Make static.
+	(altivec_overloaded_builtins): Moved from rs6000-c.c.
+	(rs6000_common_init_builtins): Do no define builtins that overload
+	builtins that have been disabled.
+
 2019-12-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.c (arm_option_override_internal):
