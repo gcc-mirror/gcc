@@ -915,7 +915,7 @@ static const struct tune_params thunderxt88_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
+  AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
   "8",	/* jump_align.  */
   "8",	/* loop_align.  */
@@ -941,7 +941,7 @@ static const struct tune_params thunderx_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
+  AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
   "8",	/* jump_align.  */
   "8",	/* loop_align.  */
@@ -968,8 +968,8 @@ static const struct tune_params tsv110_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4,    /* memmov_cost  */
   4,    /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH
-   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_ALU_BRANCH
+   | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
   "16", /* function_align.  */
   "4",  /* jump_align.  */
   "8",  /* loop_align.  */
@@ -1103,8 +1103,8 @@ static const struct tune_params thunderx2t99_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
-  (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
-   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
+  (AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_AES_AESMC
+   | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
   "16",	/* function_align.  */
   "8",	/* jump_align.  */
   "16",	/* loop_align.  */
@@ -20396,7 +20396,16 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
         }
     }
 
+  /* Fuse compare (CMP/CMN/TST/BICS) and conditional branch.  */
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_BRANCH)
+      && prev_set && curr_set && any_condjump_p (curr)
+      && GET_CODE (SET_SRC (prev_set)) == COMPARE
+      && SCALAR_INT_MODE_P (GET_MODE (XEXP (SET_SRC (prev_set), 0)))
+      && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
+    return true;
+
+  /* Fuse flag-setting ALU instructions and conditional branch.  */
+  if (aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
       && any_condjump_p (curr))
     {
       unsigned int condreg1, condreg2;
@@ -20420,9 +20429,10 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	}
     }
 
+  /* Fuse ALU instructions and CBZ/CBNZ.  */
   if (prev_set
       && curr_set
-      && aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
+      && aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_CBZ)
       && any_condjump_p (curr))
     {
       /* We're trying to match:

@@ -1,3 +1,13 @@
+2019-12-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c
+	(thunderxt88_tunings): Use AARCH64_FUSE_ALU_BRANCH.
+	(thunderx_tunings): Likewise.
+	(tsv110_tunings): Use AARCH64_FUSE_ALU_BRANCH and AARCH64_FUSE_ALU_CBZ.
+	(thunderx2t99_tunings): Likewise.
+	(aarch_macro_fusion_pair_p): Add support for AARCH64_FUSE_CMP_BRANCH.
+	* config/aarch64/aarch64-fusion-pairs.def: Add ALU_CBZ fusion.
+
 2019-12-04  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Properly guard
