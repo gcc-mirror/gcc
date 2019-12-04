@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
+#include "tm_p.h"
 #include "output.h"
 #include "file-prefix-map.h"
 #include "cgraph.h"
