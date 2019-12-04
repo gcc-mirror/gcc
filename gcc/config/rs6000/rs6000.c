@@ -4917,7 +4917,7 @@ rs6000_preferred_simd_mode (scalar_mode mode)
 {
   opt_machine_mode vmode = mode_for_vector (mode, 16 / GET_MODE_SIZE (mode));
 
-  if (vmode.exists () && !VECTOR_UNIT_NONE_P (vmode.require ()))
+  if (vmode.exists () && !VECTOR_MEM_NONE_P (vmode.require ()))
     return vmode.require ();
 
   return word_mode;
