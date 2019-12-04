@@ -1,5 +1,7 @@
 2019-12-04  Nathan Sidwell  <nathan@acm.org>
 
+	Elrond is dead, long live Elrond!
+
 	gcc/cp/
 	* module.cc (trees_out::decl_node): Refactor, removing duplicate
 	code blocks.

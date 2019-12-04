@@ -98,7 +98,7 @@ along with GCC; see the file COPYING3.  If not see
    the same such namespace.
 
    A module interface compilation produces a Compiled Module Interface
-   (CMI).  The format used is Encapsulated Lazy Records Of Named
+   (CMI).  The format used is Encapsulated Lazy Records Of Numbered
    Declarations, which is essentially ELF's section encapsulation. (As
    all good nerds are aware, Elrond is half Elf.)  Some sections are
    named, and contain information about the module as a whole (indices
