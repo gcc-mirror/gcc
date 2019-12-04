@@ -1,3 +1,8 @@
+2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_1.C: New test.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_2.C: New test.
+
 2019-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92756

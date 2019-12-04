@@ -1,3 +1,18 @@
+2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (CP_AGGREGATE_TYPE_P): Check for gnu_vector_type_p
+	instead of VECTOR_TYPE.
+	* call.c (build_conditional_expr_1): Restrict vector handling
+	to vectors that satisfy gnu_vector_type_p.
+	* cvt.c (ocp_convert): Only allow vectors to be converted
+	to bool if they satisfy gnu_vector_type_p.
+	(build_expr_type_conversion): Only allow conversions from
+	vectors if they satisfy gnu_vector_type_p.
+	* typeck.c (cp_build_binary_op): Only allow binary operators to be
+	applied to vectors if they satisfy gnu_vector_type_p.
+	(cp_build_unary_op): Likewise unary operators.
+	(build_reinterpret_cast_1):
+
 2019-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (enum cp_tree_index): Add CPTI_SOURCE_LOCATION_IMPL.

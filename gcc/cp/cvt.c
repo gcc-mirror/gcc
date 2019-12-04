@@ -836,6 +836,14 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	      return error_mark_node;
 	    }
 
+	  if (VECTOR_TYPE_P (intype) && !gnu_vector_type_p (intype))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "could not convert %qE from %qH to %qI", expr,
+			  TREE_TYPE (expr), type);
+	      return error_mark_node;
+	    }
+
 	  /* We can't implicitly convert a scoped enum to bool, so convert
 	     to the underlying type first.  */
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
@@ -1763,8 +1771,11 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 							    tf_warning_or_error)
 					: NULL_TREE;
 
-      case COMPLEX_TYPE:
       case VECTOR_TYPE:
+	if (!gnu_vector_type_p (basetype))
+	  return NULL_TREE;
+	/* FALLTHROUGH */
+      case COMPLEX_TYPE:
 	if ((desires & WANT_VECTOR_OR_COMPLEX) == 0)
 	  return NULL_TREE;
 	switch (TREE_CODE (TREE_TYPE (basetype)))
