@@ -1,5 +1,9 @@
 2019-12-04  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::decl_node): Refactor, removing duplicate
+	code blocks.
+
 	Delete unreachable code
 	gcc/cp/
 	* module.cc (enum tree_tag): Delete tt_named,

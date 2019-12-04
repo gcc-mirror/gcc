@@ -8198,18 +8198,14 @@ trees_out::decl_node (tree decl, walk_kind ref)
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
   tree tpl = NULL_TREE;
-  tree inst = get_instantiating_module_decl (decl);
-  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
-  if (origin)
-    origin = (*modules)[origin]->remap;
-  bool is_import = origin != 0;
-  const char *kind = NULL;
-  depset *dep = NULL;
-  tree ctx = CP_DECL_CONTEXT (decl);
 
   /* If this is the TEMPLATE_DECL_RESULT of a TEMPLATE_DECL, get the
      TEMPLATE_DECL.  Note TI_TEMPLATE is not a TEMPLATE_DECL for
      (some) friends, so we need to check that.  */
+  // FIXME: should local friend template specializations be by value?
+  // They don't get idents so we'll never know they;re imported, but I
+  // think we can only reach them from the TU that defines the
+  // befriending class?
   if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
       && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
     {
@@ -8231,98 +8227,43 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  // FIXME: The following blocks are all very similar.  Merge once
-  // everything's an entity index.
-  if (TREE_CODE (ctx) == FUNCTION_DECL)
+  tree inst = get_instantiating_module_decl (decl);
+  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
+  if (origin)
+    origin = (*modules)[origin]->remap;
+  bool is_import = origin != 0;
+  const char *kind = NULL;
+  tree ctx = CP_DECL_CONTEXT (decl);
+  depset *dep = NULL;
+  if (streaming_p ())
+    dep = dep_hash->find_dependency (decl);
+  else if (TREE_CODE (ctx) != FUNCTION_DECL
+	   || is_import
+	   || TREE_CODE (decl) == TEMPLATE_DECL
+	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl)))
+    dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
+
+  if (!dep)
     {
-      /* We cannot lookup by name inside a function.  */
-      if (!streaming_p ())
-	{
-	  if (is_import
-	      || TREE_CODE (decl) == TEMPLATE_DECL
-	      || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl)))
-	    dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
-	}
-      else
-	dep = dep_hash->find_dependency (decl);
-
-      if (!dep)
-	{
-	  /* Some (non-mergeable?) internal entity of the function.  Do
-	     by value.  */
-	  decl_value (decl, NULL);
-	  return false;
-	}
-
-      gcc_checking_assert (dep->get_entity_kind () != depset::EK_REDIRECT);
-      if (streaming_p ())
-	goto direct_entity;
-      goto insert;
+      /* Some internal entity of context.  Do by value.  */
+      decl_value (decl, NULL);
+      return false;
     }
 
-  if (use_tpl > 0)
+  if (dep->get_entity_kind () == depset::EK_REDIRECT)
     {
-      /* Some kind of specialization.  Not all specializations are in
-         the table, so we have to query it.  Those that are not there
-         are findable by name, but a specializations in that their
-         definitions can be generated anywhere -- we need to write
-         them out if we did it.  */
-      if (!streaming_p ())
-	dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
-      else
-	dep = dep_hash->find_dependency (decl);
-
-      if (dep->get_entity_kind () == depset::EK_REDIRECT)
-	{
-	  /* The DECL_TEMPLATE_RESULT of a partial specialization.
-	     Write the partial specialization's template.  */
-	  depset *redirect = dep->deps[0];
-	  gcc_checking_assert ((redirect->get_entity_kind ()
-				== depset::EK_SPECIALIZATION)
-			       && redirect->is_partial ());
-	  tpl = redirect->get_entity ();
-	  goto partial_template;
-	}
-
-      if (dep->get_entity_kind () != depset::EK_DECL)
-	{
-	  if (streaming_p ())
-	    goto direct_entity;
-	  goto insert;
-	}
+      /* The DECL_TEMPLATE_RESULT of a partial specialization.
+	 Write the partial specialization's template.  */
+      depset *redirect = dep->deps[0];
+      gcc_checking_assert ((redirect->get_entity_kind ()
+			    == depset::EK_SPECIALIZATION)
+			   && redirect->is_partial ());
+      tpl = redirect->get_entity ();
+      goto partial_template;
     }
 
-  if (TREE_CODE (ctx) == NAMESPACE_DECL)
+  if (streaming_p ())
     {
-      if (!streaming_p ())
-	dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
-      else
-	dep = dep_hash->find_dependency (decl);
-
-      gcc_checking_assert (dep->get_entity_kind () != depset::EK_REDIRECT);
-
-      if (streaming_p ())
-	goto direct_entity;
-      goto insert;
-    }
-
-  gcc_checking_assert (TREE_CODE (ctx) != NAMESPACE_DECL);
-  {
-    if (!streaming_p ())
-      dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
-    else
-      dep = dep_hash->find_dependency (decl);
-
-    gcc_checking_assert (dep->get_entity_kind () != depset::EK_REDIRECT);
-    if (streaming_p ())
-      goto direct_entity;
-    goto insert;
-  }
-
-  if (false) // FIXME: yeah, yeah
-    {
-    direct_entity:
-
       /* Locate the entity.  */
       unsigned entity_num = import_entity_index (decl);
 
@@ -8353,7 +8294,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       u (entity_num);
     }
 
- insert:
   int tag = insert (decl);
   if (streaming_p ())
     dump (dumper::TREE)
