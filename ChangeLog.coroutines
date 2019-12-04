@@ -1,3 +1,9 @@
+2019-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	libiberty/
+	* cp-demangle.c (cplus_demangle_operators): Add the co_await
+	operator.
+
 2019-12-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
