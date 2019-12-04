@@ -1,5 +1,10 @@
 2019-12-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/arm/arm.c (arm_option_override_internal):
+	Use max_cond_insns from CPU tuning unless -mrestrict-it is used.
+
+2019-12-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c
 	(thunderxt88_tunings): Use AARCH64_FUSE_ALU_BRANCH.
 	(thunderx_tunings): Likewise.

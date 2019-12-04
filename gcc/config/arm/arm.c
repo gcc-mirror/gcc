@@ -3044,6 +3044,11 @@ arm_option_override_internal (struct gcc_options *opts,
   if (!TARGET_THUMB2_P (opts->x_target_flags) || !arm_arch_notm)
     opts->x_arm_restrict_it = 0;
 
+  /* Use the IT size from CPU specific tuning unless -mrestrict-it is used.  */
+  if (!opts_set->x_arm_restrict_it
+      && (opts_set->x_arm_cpu_string || opts_set->x_arm_tune_string))
+    opts->x_arm_restrict_it = 0;
+
   /* Enable -munaligned-access by default for
      - all ARMv6 architecture-based processors when compiling for a 32-bit ISA
      i.e. Thumb2 and ARM state only.
