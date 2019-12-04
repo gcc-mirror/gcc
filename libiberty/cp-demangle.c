@@ -1802,6 +1802,7 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "ad", NL ("&"),         1 },
   { "an", NL ("&"),         2 },
   { "at", NL ("alignof "),   1 },
+  { "aw", NL ("co_await "), 1 },
   { "az", NL ("alignof "),   1 },
   { "cc", NL ("const_cast"), 2 },
   { "cl", NL ("()"),        2 },
