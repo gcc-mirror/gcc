@@ -1,3 +1,13 @@
+2019-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36941
+	PR c/88827
+	* gcc.dg/lvalue-9.c, gcc.dg/lvalue-10.c: New tests.
+	* gcc.dg/array-8.c, gcc.dg/enum-incomplete-1.c,
+	gcc.dg/enum-incomplete-3.c, gcc.dg/noncompile/incomplete-3.c,
+	gcc.dg/pr48552-1.c, gcc.dg/pr48552-2.c, gcc.dg/pr63543.c,
+	gcc.dg/pr69796.c: Update expected diagnostics.
+
 2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/whilelt_5.c: New test.
