@@ -4,8 +4,10 @@ export module frob; // { dg-error "failed to write" }
 // { dg-module-cmi !frob }
 
 namespace {
-class X 
-{
+// We shouldn't be complaining about members of internal linkage
+// entities
+class X  // { dg-bogus "internal linkage" "" { xfail *-*-* } }
+{ // { dg-bogus "internal linkage" "" { xfail *-*-* } }
 };
 
 }

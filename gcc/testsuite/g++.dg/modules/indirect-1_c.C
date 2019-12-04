@@ -24,7 +24,7 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::frob'@'bar' section:} module } }
-// { dg-final { scan-lang-dump {>Loading entity foo\[4\] section:4} module } }
+// { dg-final { scan-lang-dump {>Loading entity foo\[14\] section:4} module } }
 // { dg-final { scan-lang-dump {Named:-[0-9]* namespace_decl:'::foo@foo:1'@foo} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo@foo:.::frob@foo:.'@foo} module } }
 
@@ -33,15 +33,15 @@ int main ()
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo@foo:.::X@foo:.'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::Z'@'bar' section:} module } }
-// { dg-final { scan-lang-dump {>Loading entity foo\[2\] section:2} module } }
+// { dg-final { scan-lang-dump {>Loading entity foo\[8\] section:2} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo@foo:.::Y@foo:.'@foo} module } }
 // { dg-final { scan-lang-dump {Read member:-[0-9]* field_decl:'::foo@foo:.::Y@foo:.::_vptr.Y'} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo@foo:.::Y@foo:.::frob'@foo} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo@foo:.::Y@foo:.::frob@foo:.'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::Plain_One'@'bar' section:} module } }
-// { dg-final { scan-lang-dump {>Loading entity foo\[3\] section:3} module } }
+// { dg-final { scan-lang-dump {>Loading entity foo\[13\] section:3} module } }
 // { dg-final { scan-lang-dump {Lazily binding '::bar@bar:.::Scoped_One'@'bar' section} module } }
-// { dg-final { scan-lang-dump {>Loading entity foo\[5\] section:5} module } }
+// { dg-final { scan-lang-dump {>Loading entity foo\[15\] section:5} module } }
 // { dg-final { scan-lang-dump-not {Lazily binding '::foo@foo:.::[ABC]'@'foo' section:} module } }
 // { dg-final { scan-lang-dump-not {Lazily binding '::foo@foo:.::Scoped@\(foo\)::[ABC]'@'foo' section:} module } }
 

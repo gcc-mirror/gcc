@@ -10,6 +10,6 @@ export auto frobber (int i)
 }
 
 // { dg-final { scan-lang-dump {Connecting definition decl type_decl:'::frobber::._anon_0'} module } }
-// { dg-final { scan-lang-dump {Entities 2} module } }
+// { dg-final { scan-lang-dump {Entities 5} module } }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::frobber'\n  \[1\]=decl definition '::frobber::._anon_0'\n  \[2\]=binding '::frobber'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::frobber'\n  \[1\]=decl definition '::frobber::._anon_0'\n(  \[.\]=decl [^\n]*'\n)*  \[.\]=binding '::frobber'} module } }

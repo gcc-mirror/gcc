@@ -2828,6 +2828,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       memcpy ((char *) olddecl + sizeof (struct tree_common),
 	      (char *) newdecl + sizeof (struct tree_common),
 	      sizeof (struct tree_decl_common) - sizeof (struct tree_common));
+
+      if (DECL_LANG_SPECIFIC (olddecl) && DECL_TEMPLATE_INFO (olddecl))
+	{
+	  /* Repropagate the module information to the template.  */
+	  // FIXME: Perhaps this is indicative that we shouldn't be
+	  // duplicating this information?
+	  tree tmpl = DECL_TI_TEMPLATE (olddecl);
+
+	  if (DECL_TEMPLATE_RESULT (tmpl) == olddecl)
+	    {
+	      DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (olddecl);
+	      DECL_MODULE_ORIGIN (tmpl) = DECL_MODULE_ORIGIN (olddecl);
+	    }
+	}
+
       switch (TREE_CODE (newdecl))
 	{
 	case LABEL_DECL:

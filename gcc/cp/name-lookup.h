@@ -375,8 +375,10 @@ extern void insert_late_enum_def_bindings (tree, tree);
 extern tree lookup_all_conversions (tree);
 
 /* Lower level interface for modules. */
-extern tree match_mergeable_decl (tree decl, tree ctx, tree name, bool partition,
-				  tree ret, tree args);
+extern tree mergeable_namespace_entity (tree decl, tree ctx, tree name,
+					bool partition, tree ret, tree args);
+extern tree mergeable_class_member (tree decl, tree ctx, tree name,
+				    tree ret, tree args);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod, bool iface,

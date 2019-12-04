@@ -1,3 +1,48 @@
+2019-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	Class members by index.
+	gcc/cp/
+	* decl.c (duplicate_decls): Repropagate module origin & purview.
+	* friend.c (add_friend): Potential code, so I don't forget it.
+	* module.cc (depset): Delete DB_MERGEABLE_BIT.
+	(find_enum_member): New.
+	(trees_out::decl_value): Separate different mergeable matching
+	cases.  Add new ones.
+	(trees_out::decl_node): Stream class members by index.  Adjust
+	identifier streaming.
+	(trees_in::decl_node): Deal with conv_op_identifier.  Use
+	find_enum_member.
+	(trees_out::get_merge_kind): Add DECL parm, deal with via_ctx and
+	local_friends.
+	(trees_out::key_mergeable): Swap parms, deal with new kinds.
+	(trees_in::key_mergeable): Deal with new kinds.
+	(trees_{in,out}::{read,write}_class_def): Don't stream member
+	definitions.
+	(trees_out::mark_class_def): Don't mark members.
+	(depset::hash::make_dependency): Don't mark as mergeable.
+	(cluster_cmp): Compare by stripped UID.
+	(get_{instantiating,originating}_module_decl): Deal with fields,
+	usings and local friends.
+	* name-lookup.c (enum merge_match): New.
+	(check_mergeable_decl): Add match kind parm.
+	(match_mergeable_decl): Rename to ...
+	(mergeable_namespace_entity): ... here.  Deal with namespace scope
+	entities.
+	(mergeable_class_member): New.
+	(make_namespace_finish): Adjust.
+	* name-lookup.h (match_mergeable_decl): Rename to ...
+	(mergeable_namespace_entity): ... here.
+	(mergeable_class_member): Declare.
+	gcc/testsuite/
+	* g++.dg/modules/friend-1_a.C: Adjust scans.
+	* g++.dg/modules/indirect-[1234]_[bc].C: Likewise.
+	* g++.dg/modules/inst-3_a.C: Likewise.
+	* g++.dg/modules/tpl-friend-[12]_a.C: Likewise.
+	* g++.dg/modules/tpl-spec-[45]_a.C: Likewise.
+	* g++.dg/modules/vmort-2_a.C: Likewise.
+	* g++.dg/modules/internal-1.C: Add xfailed dg-bogus
+	* g++.dg/modules/thunk-1_a.C: Avoid implicit member problem.
+
 2019-12-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -178,6 +178,19 @@ add_friend (tree type, tree decl, bool complain)
   name = DECL_NAME (decl);
   type = TREE_TYPE (typedecl);
 
+#if 0
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_TEMPLATE_INFO (decl)
+      && TREE_CODE (DECL_TI_TEMPLATE (decl)) != TEMPLATE_DECL)
+    {
+      /* Allow us to find the type from the decl.  */
+      // FIXME: Find out if uninstantiated template friends come
+      // through here too.
+      gcc_checking_assert (!DECL_CHAIN (decl));
+      DECL_CHAIN (decl) = type;
+    }
+#endif
+
   while (list)
     {
       if (name == FRIEND_NAME (list))

@@ -15,5 +15,5 @@ template<> struct X<int>
 };
 
 // { dg-final { scan-lang-dump {Dependencies of specialization type_decl:'::X<int>'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::X<int>'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n(  \[.\]=[^\n]*'\n)*  \[.\]=specialization definition '::X<int>'} module } }
 // { dg-final { scan-lang-dump {Specialization '::X<int>' entity:[0-9]* keyed to '::template X' \(2\)} module } }

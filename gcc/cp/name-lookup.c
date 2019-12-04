@@ -3531,18 +3531,23 @@ record_mergeable_decl (tree *slot, tree name, tree decl)
    to duplicate decls to get ODR errors on loading?  We already have
    some special casing for namespaces.  */
 
-static tree
-check_mergeable_decl (tree decl, tree ovl, tree ret, tree args)
-{
-  bool proxied = !DECL_NAME (decl);
+enum merge_match
+  {
+   MM_namespace_scope,
+   MM_anon_enum,
+   MM_class_scope
+  };
 
-  if (proxied)
+static tree
+check_mergeable_decl (merge_match kind, tree decl, tree ovl, tree ret, tree args)
+{
+  if (kind == MM_anon_enum)
     gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 			 && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
 
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
-      gcc_assert (!iter.using_p ());
+      gcc_assert (kind == MM_class_scope || !iter.using_p ());
       tree match = *iter;
 
       tree d_inner = decl;
@@ -3556,7 +3561,7 @@ check_mergeable_decl (tree decl, tree ovl, tree ret, tree args)
 	    /* Namespaces are never overloaded.  */
 	    return match;
 
-	  if (proxied
+	  if (kind == MM_anon_enum
 	      && TREE_CODE (m_inner) == CONST_DECL
 	      && TREE_CODE (TREE_TYPE (m_inner)) == ENUMERAL_TYPE)
 	    {
@@ -3579,8 +3584,10 @@ check_mergeable_decl (tree decl, tree ovl, tree ret, tree args)
 	  break;
 
 	case FUNCTION_DECL:
+	  // FIXME: Perhaps simply !null ret?
 	  if (TREE_TYPE (m_inner)
-	      && (d_inner == decl
+	      && ((d_inner == decl
+		   && !IDENTIFIER_CONV_OP_P (DECL_NAME (d_inner)))
 		  || same_type_p (ret, TREE_TYPE (TREE_TYPE (m_inner))))
 	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (m_inner))))
 	    return match;
@@ -3695,7 +3702,8 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	      args = TYPE_ARG_TYPES (TREE_TYPE (inner));
 	    }
 
-	  if (tree match = check_mergeable_decl (decl, mergeable, ret, args))
+	  if (tree match = check_mergeable_decl
+	      (MM_namespace_scope, decl, mergeable, ret, args))
 	    {
 	      match = duplicate_decls (decl, match, is_friend);
 	      if (TREE_CODE (match) == TYPE_DECL)
@@ -3928,22 +3936,97 @@ pushdecl (tree x, bool is_friend)
    distinguishing features (some of which may be NULL).  Look for an
    existing mergeable that matches and return that if found.
    Otherwise add this DECL into the mergeable list.  */
-
+// FIXME: move anonymous enum key scheme elsewhere or pass in flag
+// that that's happening
 tree
-match_mergeable_decl (tree decl, tree ctx, tree name, bool partition,
-		      tree ret, tree args)
+mergeable_namespace_entity (tree decl, tree ctx, tree name, bool partition,
+			    tree ret, tree args)
 {
   tree *slot = find_namespace_slot (ctx, name, true);
   tree *gslot = get_fixed_binding_slot
     (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
 
-  if (tree match = check_mergeable_decl (decl, *gslot, ret, args))
+  if (tree match = check_mergeable_decl
+      (DECL_NAME (decl) ? MM_namespace_scope : MM_anon_enum,
+       decl, *gslot, ret, args))
     return match;
 
   if (DECL_NAME (decl))
     add_mergeable_decl (gslot, decl);
 
   return NULL_TREE;
+}
+
+tree
+mergeable_class_member (tree decl, tree klass, tree name,
+			tree ret, tree args)
+{
+  gcc_checking_assert (COMPLETE_TYPE_P (klass));
+  tree found = NULL_TREE;
+
+  switch (TREE_CODE (name))
+    {
+    default:
+      /* The CMI is faulty, but don't explode here.  */
+      break;
+
+    case INTEGER_CST:
+      /* An anonymous member type.  */
+      {
+	unsigned ix = TREE_INT_CST_LOW (name);
+	for (tree field = TYPE_FIELDS (klass); field; field = DECL_CHAIN (field))
+	  if (DECL_NAME (field) && IDENTIFIER_ANON_P (DECL_NAME (field))
+	      && !ix--)
+	    {
+	      found = field;
+	      break;
+	    }
+      }
+      break;
+
+    case TYPE_DECL:
+      /* An anonymous or base field for an anonymous member type.  */
+      for (tree field = TYPE_FIELDS (klass); field; field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && TREE_TYPE (field) == TREE_TYPE (name))
+	  {
+	    found = field;
+	    break;
+	  }
+      break;
+
+    case IDENTIFIER_NODE:
+      {
+	gcc_checking_assert (IDENTIFIER_CONV_OP_P (name)
+			     == (name == conv_op_identifier));
+
+	if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
+	  found = member_vec_binary_search (member_vec, name);
+	else
+	  // FIXME: As mentioned elsewhere, perhaps we should force a member
+	  // vector?  In this case that could mean lazily creating it for an
+	  // in-TU class that is being merged.
+	  found = fields_linear_search (klass, name,
+					TREE_CODE (decl) == TYPE_DECL);
+
+	if (found)
+	  {
+	    if (name == conv_op_identifier)
+	      found = OVL_CHAIN (found);
+	    tree inner = decl;
+	    if (TREE_CODE (inner) == TEMPLATE_DECL
+		&& !DECL_MEMBER_TEMPLATE_P (inner))
+	      inner = DECL_TEMPLATE_RESULT (inner);
+	    found = check_mergeable_decl
+	      (MM_class_scope, inner, found, ret, args);
+	    if (found && inner != decl)
+	      found = DECL_TI_TEMPLATE (found);
+	  }
+      }
+      break;
+    }
+
+  return found;
 }
 
 /* Given a namespace-level binding BINDING, extract the current
@@ -8902,7 +8985,7 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
       /* Merge into global slot.  */
       tree *gslot = get_fixed_binding_slot (slot, DECL_NAME (ns),
 					    MODULE_SLOT_GLOBAL, true);
-      if (!check_mergeable_decl (ns, *gslot, NULL, NULL))
+      if (!check_mergeable_decl (MM_namespace_scope, ns, *gslot, NULL, NULL))
 	*gslot = ns;
     }
 
