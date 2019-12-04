@@ -27131,7 +27131,7 @@ enum primary_constraint_error
 {
   pce_ok,
   pce_maybe_operator,
-  pce_maybe_postfix,
+  pce_maybe_postfix
 };
 
 /* Returns true if the token(s) following a primary-expression in a
