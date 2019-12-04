@@ -385,11 +385,8 @@ extern bool set_module_binding (tree ctx, tree name, unsigned mod, bool iface,
 				tree value, tree type, tree visible);
 extern void add_module_decl (tree ctx, tree name, tree decl);
 extern tree extract_module_binding (tree &binding, tree ns, bitmap partitions);
-extern int get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl);
 extern unsigned get_field_ident (tree ctx, tree decl);
 extern tree lookup_field_ident (tree ctx, tree name, unsigned ix);
-extern tree lookup_by_ident (tree ctx, tree name, unsigned mod, int ident);
-extern tree lookup_by_type (tree ctx, tree name, tree type);
 extern tree add_imported_namespace (tree ctx, tree name, int origin,
 				    location_t, bool visible_p, bool inline_p,
 				    tree anon_name);

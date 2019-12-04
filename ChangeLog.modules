@@ -1,5 +1,20 @@
 2019-12-04  Nathan Sidwell  <nathan@acm.org>
 
+	Delete unreachable code
+	gcc/cp/
+	* module.cc (enum tree_tag): Delete tt_named,
+	tt_implicit_template.
+	(trees_out::decl_node): Remove #if'd out code.
+	(trees_in::tree_node): Remove tt_named, tt_implicit_template
+	handling.
+	(trees_out::key_mergeable): Remove unreachable anon-type case.
+	(trees_out::{write,mark}_class_def)  Removed #if'd out code.
+	(trees_in::read_class_def): Likewise.
+	* name-lookup.c (get_binding_or_decl): Delete.
+	(lookup_by_type, lookup_ident, get_lookup_ident): Delete.
+	* name-lookup.h (lookup_by_type, lookup_ident, get_lookup_ident):
+	Don't declare.
+
 	Class members by index.
 	gcc/cp/
 	* decl.c (duplicate_decls): Repropagate module origin & purview.

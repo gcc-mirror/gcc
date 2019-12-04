@@ -2728,8 +2728,6 @@ enum tree_tag {
 
   tt_entity,		/* A extra-cluster entity.  */
 
-  tt_named, 	 	/* Named decl. */
-  tt_implicit_template, /* An implicit member template.  */
   tt_template,		/* The TEMPLATE_RESULT of a template.  */
   tt_friend_template    /* A friend of a template class.  */
 };
@@ -8079,11 +8077,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       }
       break;
 
-#if 0
-    case USING_DECL:
-      gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL);
-      return true;
-#endif
     case VAR_DECL:
       if (DECL_VTABLE_OR_VTT_P (decl))
 	{
@@ -8193,12 +8186,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
     }
 
   /* Everything left should be a thing that is in the entity table.
-     Things that can be defined outside of their (original
+     Mostky things that can be defined outside of their (original
      declaration) context.  */
-  // FIXME: *could* be in the entity table.  I don't get that right
-  // yet.  What about using_decls etc?  They should be like
-  // field_decls, but I moved that above, possibly unnecessarily
-  
   gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
 		       || TREE_CODE (decl) == VAR_DECL
 		       || TREE_CODE (decl) == FUNCTION_DECL
@@ -8217,7 +8206,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
   const char *kind = NULL;
   depset *dep = NULL;
   tree ctx = CP_DECL_CONTEXT (decl);
-
 
   /* If this is the TEMPLATE_DECL_RESULT of a TEMPLATE_DECL, get the
      TEMPLATE_DECL.  Note TI_TEMPLATE is not a TEMPLATE_DECL for
@@ -8318,9 +8306,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       goto insert;
     }
 
-  /* A named decl -> tt_named_decl.  */
   gcc_checking_assert (TREE_CODE (ctx) != NAMESPACE_DECL);
-#if 1
   {
     if (!streaming_p ())
       dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
@@ -8332,48 +8318,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       goto direct_entity;
     goto insert;
   }
-#else
-  if (streaming_p ())
-    {
-      tree name = DECL_NAME (decl);
-      tree proxy = decl;
-      unsigned code = tt_named;
-      if (TREE_CODE (decl) == TEMPLATE_DECL
-	  && (RECORD_OR_UNION_CODE_P (TREE_CODE (ctx))
-	      || TREE_CODE (ctx) == ENUMERAL_TYPE)
-	  && !DECL_MEMBER_TEMPLATE_P (decl))
-	{
-	  /* An implicit member template.  Look for the templated
-	     decl.  */
-	  proxy = DECL_TEMPLATE_RESULT (decl);
-	  code = tt_implicit_template;
-	}
-
-      if (name && IDENTIFIER_ANON_P (name)
-	  && TREE_CODE (ctx) != NAMESPACE_DECL)
-	name = NULL_TREE;
-
-      // FIXME: Fields should get here
-      int ident = get_lookup_ident (ctx, name, origin, proxy);
-      /* Make sure we can find it by name.  */
-      gcc_checking_assert
-	(proxy == lookup_by_ident (ctx, name, origin, ident));
-      kind = is_import ? "import" : "member";
-
-      i (code);
-      tree_node (ctx);
-      tree_node (name);
-      u (origin);
-      i (ident);
-    }
-  else
-    {
-      if (!is_import)
-	tree_node (ctx);
-
-      tree_node (DECL_NAME (decl));
-    }
-#endif
 
   if (false) // FIXME: yeah, yeah
     {
@@ -9457,61 +9401,6 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_named:
-    case tt_implicit_template:
-      /* A named, anonymois or implicit decl.  */
-      {
-	tree ctx = tree_node ();
-	tree name = tree_node ();
-
-	// FIXME: I think owner is only needed for namespace-scope
-	// CTX?  Yup.
-	int origin = u ();
-	origin = state->slurp->remap_module (origin);
-	int ident = i ();
-	if (!get_overrun ()
-	    && (origin >= 0 || TREE_CODE (ctx) != NAMESPACE_DECL))
-	  {
-	    res = lookup_by_ident (ctx, name, origin, ident);
-	    if (!res)
-	      ;
-	    else if (tag == tt_implicit_template)
-	      {
-		int use_tpl = -1;
-		tree ti = node_template_info (res, use_tpl);
-		res = TI_TEMPLATE (ti);
-	      }
-	  }
-
-	if (!res)
-	  {
-	    error_at (state->loc, "failed to find %<%E%s%E%s%s%>",
-		      ctx, &"::"[2 * (ctx == global_namespace)],
-		      name ? name : get_identifier ("<anonymous>"),
-		      origin >= 0 ? "@" : "",
-		      origin >= 0 ? (*modules)[origin]->get_flatname () : "");
-	    set_overrun ();
-	  }
-	else if (TREE_CODE (res) != TYPE_DECL && origin != state->mod)
-	  mark_used (res, tf_none);
-
-	if (res)
-	  {
-	    const char *kind = (origin != state->mod ? "Imported" : "Named");
-	    int tag = insert (res);
-	    dump (dumper::TREE)
-	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
-		       res, (*modules)[origin]);
-
-	    if (!add_indirects (res))
-	      {
-		set_overrun ();
-		res = NULL_TREE;
-	      }
-	  }
-      }
-      break;
-
     case tt_template:
       /* A template.  */
       if (tree tpl = tree_node ())
@@ -10061,7 +9950,7 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 		if (tree ti = DECL_TEMPLATE_INFO (existing))
 		  existing = TI_TEMPLATE (ti);
 	      if (mk & MK_tmpl_both_mask)
-		{} // FIXME: check it's inthe type table too
+		{} // FIXME: check it's in the type table too
 	    }
 	  else
 	    {
@@ -10115,6 +10004,8 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	 index = build_int_cst (unsigned_type_node, ix);
        }
      else
+       gcc_unreachable ();
+#if 0
        {
 	 // FIXME: I don't think this is reachable any more
 	 /* Anonymous types with a typedef name for linkage purposes
@@ -10122,7 +10013,7 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	 name = TYPE_NAME (TREE_TYPE (decl));
 	 gcc_checking_assert (!IDENTIFIER_ANON_P (DECL_NAME (name)));
        }
-
+#endif
      tree_node (name);
      if (index)
        tree_node (index);
@@ -10597,10 +10488,6 @@ trees_out::write_class_def (tree defn)
       if (as_base)
 	as_base = TYPE_NAME (as_base);
       tree_node (as_base);
-#if 0
-      if (as_base && as_base != defn)
-	write_class_def (as_base);
-#endif
       tree vtables = CLASSTYPE_VTABLES (type);
       chained_decls (vtables);
       /* Write the vtable initializers.  */
@@ -10673,20 +10560,6 @@ trees_out::write_class_def (tree defn)
     }
 
   // FIXME: lang->nested_udts
-
-#if 0
-  /* Now define all the members that do not have independent definitions.  */
-  for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
-    if (has_definition (member))
-      if (tree mine = member_owned_by_class (member))
-	{
-	  tree_node (mine);
-	  write_definition (mine);
-	}
-
-  /* End of definitions.  */
-  tree_node (NULL_TREE);
-#endif
 }
 
 void
@@ -10720,11 +10593,6 @@ trees_out::mark_class_def (tree defn)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-#if 0
-      if (tree as_base = CLASSTYPE_AS_BASE (type))
-	if (as_base != type)
-	  mark_declaration (TYPE_NAME (as_base), true);
-#endif
       for (tree vtable = CLASSTYPE_VTABLES (type);
 	   vtable; vtable = TREE_CHAIN (vtable))
 	mark_declaration (vtable, true);
@@ -10744,36 +10612,20 @@ trees_out::mark_class_def (tree defn)
 	{
 	  tree decl = TREE_VALUE (decls);
 
-	  if (TREE_PURPOSE (decls))
-	    {
-#if 0
-	      /* There may be decls here, that are not on the member vector.
-		 for instance forward declarations of member tagged types.  */
-	      if (TYPE_P (decl))
-		/* In spite of its name, non-decls appear :(.  */
-		decl = TYPE_NAME (decl);
-
-	      /* Static asserts are on this chain too.  */
-	      if (DECL_P (decl))
-		{
-		  gcc_assert (DECL_CONTEXT (decl) == type);
-		  // This is wrong, we do not want to mark non-owned members
-		  mark_class_member (decl, false);
-		}
-#endif
-	    }
-	  else if (tree frnd = friend_from_decl_list (decl))
-	    {
-	      if (TREE_CODE (frnd) == TEMPLATE_DECL
-		   && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
-		/* A templated friend declaration that we own.  */
-		mark_declaration (frnd, has_definition (frnd));
-	      else if (DECL_LANG_SPECIFIC (frnd)
-		       && DECL_TEMPLATE_INFO (frnd)
-		       && TREE_CODE (DECL_TI_TEMPLATE (frnd)) != TEMPLATE_DECL)
-		/* A friend declared with a template-id.  */
-		mark_declaration (frnd, false);
-	    }
+	  // FIXME: Perhaps all this marking is not needed?
+	  if (!TREE_PURPOSE (decls))
+	    if (tree frnd = friend_from_decl_list (decl))
+	      {
+		if (TREE_CODE (frnd) == TEMPLATE_DECL
+		    && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
+		  /* A templated friend declaration that we own.  */
+		  mark_declaration (frnd, has_definition (frnd));
+		else if (DECL_LANG_SPECIFIC (frnd)
+			 && DECL_TEMPLATE_INFO (frnd)
+			 && TREE_CODE (DECL_TI_TEMPLATE (frnd)) != TEMPLATE_DECL)
+		  /* A friend declared with a template-id.  */
+		  mark_declaration (frnd, false);
+	      }
 	}
     }
 }
@@ -10891,13 +10743,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       tree as_base = tree_node ();
 
       if (as_base)
-	{
-#if 0
-	  if (as_base != defn)
-	    read_class_def (as_base, as_base);
-#endif
-	  as_base = TREE_TYPE (as_base);
-	}
+	as_base = TREE_TYPE (as_base);
 
       /* Read the vtables.  */
       tree vtables = chained_decls ();
@@ -11001,12 +10847,6 @@ trees_in::read_class_def (tree defn, tree maybe_template)
        already emitted this.  */
     rest_of_type_compilation (type, !LOCAL_CLASS_P (type));
 
-#if 0
-  /* Now define all the members.  */
-  while (tree member = tree_node ())
-    if (!read_definition (member))
-      break;
-#endif
   fields.release ();
 
   return !get_overrun ();
