@@ -1,3 +1,7 @@
+2019-12-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* cp-gimplify.c: Include tm_p.h.
+
 2019-12-04  Marek Polacek  <polacek@redhat.com>
 
 	* parser.c (enum primary_constraint_error): Remove stray comma.
