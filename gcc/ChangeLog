@@ -1,3 +1,9 @@
+2019-12-04  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92760
+	* gcc/config/rs6000/rs6000.c (rs6000_preferred_simd_mode): Use
+	VECTOR_MEM_NONE_P instead of VECTOR_UNIT_NONE_P.
+
 2019-12-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c: Include tree-into-ssa.h.
