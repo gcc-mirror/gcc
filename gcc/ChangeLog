@@ -1,3 +1,7 @@
+2019-12-04  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.h (FIXED_REGISTERS): Make s6/s7 fixed registers.
+
 2019-12-04  Peter Bergner <bergner@linux.ibm.com>
 
 	PR bootstrap/92661
