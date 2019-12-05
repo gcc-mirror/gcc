@@ -4394,8 +4394,22 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rval
 			       stmt, lenrange[2], dstsize))
 		  {
 		    if (decl)
-		      inform (DECL_SOURCE_LOCATION (decl),
-			      "destination object declared here");
+		      {
+			if (TREE_CODE (decl) == SSA_NAME)
+			  {
+			    gimple *stmt = SSA_NAME_DEF_STMT (decl);
+			    if (is_gimple_call (stmt))
+			      {
+				tree allocfn = gimple_call_fndecl (stmt);
+				inform (gimple_location (stmt),
+					"destination region allocated by %qD "
+					"here", allocfn);
+			      }
+			  }
+			else
+			  inform (DECL_SOURCE_LOCATION (decl),
+				  "destination object declared here");
+		      }
 		    gimple_set_no_warning (stmt, true);
 		  }
 	      }

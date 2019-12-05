@@ -2,7 +2,7 @@
    Exercise attribute copy for functions.
    { dg-do compile }
    { dg-require-alias "" }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
 #define Assert(expr)   typedef char AssertExpr[2 * !!(expr) - 1]
 
