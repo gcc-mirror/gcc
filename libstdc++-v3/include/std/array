@@ -253,6 +253,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return std::equal(__one.begin(), __one.end(), __two.begin()); }
 
+#if __cpp_lib_three_way_comparison && __cpp_lib_concepts
+  template<typename _Tp, size_t _Nm>
+    constexpr __detail::__synth3way_t<_Tp>
+    operator<=>(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
+    {
+      if constexpr (_Nm && __is_byte<_Tp>::__value)
+	return __builtin_memcmp(__a.data(), __b.data(), _Nm) <=> 0;
+      else
+	{
+	  for (size_t __i = 0; __i < _Nm; ++__i)
+	    {
+	      auto __c = __detail::__synth3way(__a[__i], __b[__i]);
+	      if (__c != 0)
+		return __c;
+	    }
+	}
+      return strong_ordering::equal;
+    }
+#else
   template<typename _Tp, std::size_t _Nm>
     _GLIBCXX20_CONSTEXPR
     inline bool
@@ -285,6 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline bool
     operator>=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one < __two); }
+#endif // three_way_comparison && concepts
 
   // Specialized algorithms.
   template<typename _Tp, std::size_t _Nm>

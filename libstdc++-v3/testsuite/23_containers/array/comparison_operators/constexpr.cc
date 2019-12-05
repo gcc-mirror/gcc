@@ -31,3 +31,23 @@ static_assert(a1 < a3);
 static_assert(a4 > a1);
 static_assert(a1 <= a3);
 static_assert(a4 >= a1);
+static_assert(std::is_eq(a1 <=> a1));
+static_assert(std::is_neq(a1 <=> a2));
+static_assert(std::is_lt(a1 <=> a3));
+static_assert(std::is_gt(a4 <=> a1));
+
+constexpr std::array<unsigned char, 3> a5{{1, 2, 3}};
+constexpr std::array<unsigned char, 3> a6{{4, 5, 6}};
+constexpr std::array<unsigned char, 3> a7{{1, 2, 4}};
+constexpr std::array<unsigned char, 3> a8{{1, 3, 3}};
+
+static_assert(a5 == a5);
+static_assert(a5 != a6);
+static_assert(a5 < a7);
+static_assert(a8 > a5);
+static_assert(a5 <= a7);
+static_assert(a8 >= a5);
+static_assert(std::is_eq(a5 <=> a5));
+static_assert(std::is_neq(a5 <=> a6));
+static_assert(std::is_lt(a5 <=> a7));
+static_assert(std::is_gt(a8 <=> a5));
