@@ -1,3 +1,8 @@
+2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.target/nios2/hello-pie.C: New.
+	* g++.target/nios2/nios2.exp: New.
+
 2019-12-05  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
