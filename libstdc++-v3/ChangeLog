@@ -1,5 +1,8 @@
 2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter): New printer.
+	* testsuite/libstdc++-prettyprinters/cxx20.cc: New test.
+
 	* include/bits/cpp_type_traits.h (__is_byte<char8_t>): Add
 	specialization.
 	* include/std/array (operator<=>): Likewise.
