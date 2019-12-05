@@ -2500,11 +2500,11 @@ public:
   public:
     depset *find_dependency (tree entity);
     depset *find_binding (tree ctx, tree name);
-    depset *make_dependency (tree decl, entity_kind, bool imported);
+    depset *make_dependency (tree decl, entity_kind);
     void add_dependency (depset *);
 
   public:
-    depset *add_dependency (tree decl, entity_kind, bool imported);
+    depset *add_dependency (tree decl, entity_kind);
 
   private:
     depset *add_partial_redirect (depset *partial);
@@ -3949,24 +3949,6 @@ import_entity_module (unsigned index)
 	}
     }
   gcc_unreachable ();
-}
-
-// FIXME: I think we can eventually just return the entity_index + 1
-// and then store it directly into the depset so we don't have to
-// lookup again?
-// FIXME: see the note in decl_node about marking partition-owned decls.
-static bool
-will_be_import (tree decl)
-{
-  if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
-    {
-      unsigned index = import_entity_index (decl);
-      module_state *import = import_entity_module (index);
-      gcc_checking_assert ((import->remap != 0)
-			   == !DECL_MODULE_PARTITION_P (decl));
-      return import->remap != 0;
-    }
-  return false;
 }
 
 /********************************************************************/
@@ -7917,8 +7899,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 		to_add = NULL_TREE;
 	    }
 	  if (to_add)
-	    dep_hash->add_dependency (to_add, depset::EK_NAMESPACE,
-				      will_be_import (to_add));
+	    dep_hash->add_dependency (to_add, depset::EK_NAMESPACE);
 	}
 
       int tag = insert (decl, ref);
@@ -8223,19 +8204,12 @@ trees_out::decl_node (tree decl, walk_kind ref)
     dep = dep_hash->find_dependency (decl);
   else
     {
-      // FIXME: Maybe push is_import calculation back into
-      // make_dependency?  Then we can populate cluster and section
-      // with locating information of the decl.  To solve the 'is this
-      // a partition' problem, we could add another flag into the DECL
-      // marking it so.  Thus avoiding needing to know is_import at
-      // this point.
-      bool is_import = will_be_import (decl);
-
       if (TREE_CODE (ctx) != FUNCTION_DECL
 	  || TREE_CODE (decl) == TEMPLATE_DECL
-	  || is_import
-	  || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl)))
-	dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
+	  || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
+	  || (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl)
+	      && !DECL_MODULE_PARTITION_P (decl)))
+	dep = dep_hash->add_dependency (decl, depset::EK_DECL);
     }
 
   if (!dep)
@@ -11003,7 +10977,7 @@ depset::hash::find_binding (tree ctx, tree name)
    prevents us wanting to do it anyway.  */
 
 depset *
-depset::hash::make_dependency (tree decl, entity_kind ek, bool imported)
+depset::hash::make_dependency (tree decl, entity_kind ek)
 {
   /* Make sure we're being told consistent information.  */
   gcc_checking_assert ((ek == EK_NAMESPACE)
@@ -11055,7 +11029,13 @@ depset::hash::make_dependency (tree decl, entity_kind ek, bool imported)
 	gcc_checking_assert
 	  (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
 
-      if (imported)
+      if (ek == EK_USING)
+	;
+      else if (DECL_LANG_SPECIFIC (decl)
+	       && DECL_MODULE_IMPORT_P (decl)
+	       && !DECL_MODULE_PARTITION_P (decl))
+	// FIXME: Add the indexing information so we do not have to
+	// recalculate it
 	dep->set_flag_bit<DB_IMPORTED_BIT> ();
       else if (ek == EK_DECL
 	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
@@ -11108,8 +11088,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek, bool imported)
 	      if (!bdep)
 		{
 		  *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
-		  depset *ns_dep = make_dependency (ctx, EK_NAMESPACE,
-						    will_be_import (ctx));
+		  depset *ns_dep = make_dependency (ctx, EK_NAMESPACE);
 		  bdep->deps.safe_push (ns_dep);
 		}
 
@@ -11174,9 +11153,9 @@ depset::hash::add_dependency (depset *dep)
 }
 
 depset *
-depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
+depset::hash::add_dependency (tree decl, entity_kind ek)
 {
-  depset *dep = make_dependency (decl, ek, is_import);
+  depset *dep = make_dependency (decl, ek);
   if (dep->get_entity_kind () != EK_REDIRECT)
     add_dependency (dep);
   return dep;
@@ -11234,7 +11213,6 @@ depset::hash::add_binding (tree ns, tree value)
       bool using_p = iter.using_p ();
       depset::entity_kind ek = depset::EK_FOR_BINDING;
       tree maybe_using = decl;
-      bool is_import = false;
       if (using_p)
 	{
 	  maybe_using = iter.get_using ();
@@ -11253,19 +11231,14 @@ depset::hash::add_binding (tree ns, tree value)
 	    OVL_EXPORT_P (maybe_using) = true;
 	  ek = depset::EK_USING;
 	}
-      else
-	/* An import can turn up on an emitted binding via entity
-	   merging.  */
-	is_import = will_be_import (decl);
 
       if (!binding->deps.length ())
 	{
-	  depset *ns_dep = make_dependency (ns, EK_NAMESPACE,
-					    will_be_import (ns));
+	  depset *ns_dep = make_dependency (ns, EK_NAMESPACE);
 	  binding->deps.safe_push (ns_dep);
 	}
 
-      depset *dep = make_dependency (maybe_using, ek, is_import);
+      depset *dep = make_dependency (maybe_using, ek);
       if (iter.hidden_p ())
 	{
 	  /* It is safe to mark the target decl with the hidden bit,
@@ -11353,8 +11326,7 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
 	  bool not_empty = add_namespace_entities (value, partitions);
 	  if (not_empty || DECL_MODULE_EXPORT_P (value))
 	    {
-	      make_dependency (value, depset::EK_NAMESPACE,
-			       will_be_import (value));
+	      make_dependency (value, depset::EK_NAMESPACE);
 	      count++;
 	    }
 	}
@@ -11581,8 +11553,7 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION,
-				     will_be_import (spec));
+      depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be a friend

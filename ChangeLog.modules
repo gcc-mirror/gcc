@@ -1,6 +1,13 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::{make,add}_dependency): Drop is_import parm,
+	update all callers.
+	(will_be_import): Delete.
+	(trees_out::decl_node): Determine will be import locally.
+	(depset::make_dependency): Likewise.
+
+	gcc/cp/
 	* cp-tree.h (DECL_MODULE_PARTITION_P): New.
 	(lang_decl_base): Add module_partition_p.
 	* decl.c (duplicate_decls): Adjust.
