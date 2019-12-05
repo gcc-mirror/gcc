@@ -1,3 +1,7 @@
+2019-12-05  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gcc.dg/asm-4.c: Skip on target amdgcn-*-*.
+
 2019-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92803
