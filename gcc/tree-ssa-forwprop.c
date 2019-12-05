@@ -2265,9 +2265,12 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	sel.quick_push (elts[i].second + elts[i].first * refnelts);
       /* And fill the tail with "something".  It's really don't care,
          and ideally we'd allow VEC_PERM to have a smaller destination
-	 vector.  */
+	 vector.  As heuristic try to preserve a uniform orig[0] which
+	 facilitates later pattern-matching VEC_PERM_EXPR to a
+	 BIT_INSERT_EXPR.  */
       for (; i < refnelts; ++i)
-	sel.quick_push (i - elts.length ());
+	sel.quick_push ((elts[0].second == 0 && elts[0].first == 0
+			 ? 0 : refnelts) + i);
       vec_perm_indices indices (sel, orig[1] ? 2 : 1, refnelts);
       if (!can_vec_perm_const_p (TYPE_MODE (perm_type), indices))
 	return false;

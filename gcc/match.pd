@@ -6049,7 +6049,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		    break;
 		if (at < encoded_nelts && sel.series_p (at + 1, 1, at + 1, 1))
 		  {
-		    if (known_lt (at, nelts))
+		    if (known_lt (poly_uint64 (sel[at]), nelts))
 		      ins = fold_read_from_vector (cop0, sel[at]);
 		    else
 		      ins = fold_read_from_vector (cop1, sel[at] - nelts);
