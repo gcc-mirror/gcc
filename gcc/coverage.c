@@ -1071,8 +1071,7 @@ build_init_ctor (tree gcov_info_type)
 static void
 build_gcov_exit_decl (void)
 {
-  tree init_fn = build_function_type_list (void_type_node, void_type_node,
-					   NULL);
+  tree init_fn = build_function_type_list (void_type_node, NULL);
   init_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 			get_identifier ("__gcov_exit"), init_fn);
   TREE_PUBLIC (init_fn) = 1;

@@ -1,3 +1,9 @@
+2019-12-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/92817
+	* coverage.c (build_gcov_exit_decl): Remove superfluous
+	void_type_node.
+
 2019-12-05  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.md (cbranch<mode>4): Use
