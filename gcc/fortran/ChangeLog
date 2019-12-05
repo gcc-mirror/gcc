@@ -1,4 +1,4 @@
-2019-12-12  Tobias Burnus  <tobias@codesourcery.com>
+2019-12-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92754
 	* intrinsic.c (gfc_intrinsic_func_interface): Set
