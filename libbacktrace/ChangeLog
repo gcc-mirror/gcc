@@ -1,5 +1,9 @@
 2019-12-04  Ian Lance Taylor  <iant@golang.org>
 
+	* edtest.c (test1): Add noclone attribute.
+
+2019-12-04  Ian Lance Taylor  <iant@golang.org>
+
 	* internal.h (enum dwarf_section): Define.
 	(struct dwarf_sections): Define.
 	(backtrace_dwarf_add): Update declaration to replace specific
