@@ -982,7 +982,7 @@ AC_ARG_WITH(documentation-root-url,
       *)   DOCUMENTATION_ROOT_URL="$withval"
 	   ;;
      esac],
-     DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/gcc/"
+     DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/"
 )
 AC_SUBST(DOCUMENTATION_ROOT_URL)
 
