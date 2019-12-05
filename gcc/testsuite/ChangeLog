@@ -1,3 +1,8 @@
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92768
+	* gcc.dg/pr92768.c: Add -w -Wno-psabi to dg-options.
+
 2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* g++.target/nios2/hello-pie.C: New.
