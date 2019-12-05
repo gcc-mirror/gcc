@@ -2661,7 +2661,7 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_ws_string (pp, "__is_polymorphic");
       break;
     case CPTK_IS_SAME_AS:
-      pp_cxx_ws_string (pp, "__is_same_as");
+      pp_cxx_ws_string (pp, "__is_same");
       break;
     case CPTK_IS_STD_LAYOUT:
       pp_cxx_ws_string (pp, "__is_std_layout");
