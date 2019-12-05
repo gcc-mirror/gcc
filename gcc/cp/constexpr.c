@@ -767,6 +767,10 @@ massage_constexpr_body (tree fun, tree body)
 static bool
 cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 {
+  /* We allow uninitialized bases/fields in C++20.  */
+  if (cxx_dialect >= cxx2a)
+    return false;
+
   unsigned nelts = 0;
   
   if (body)
@@ -815,7 +819,7 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 	    continue;
 	  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	    {
-	      /* Recurse to check the anonummous aggregate member.  */
+	      /* Recurse to check the anonymous aggregate member.  */
 	      bad |= cx_check_missing_mem_inits
 		(TREE_TYPE (field), NULL_TREE, complain);
 	      if (bad && !complain)
@@ -2179,15 +2183,26 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	entry->result = result;
     }
 
-  /* The result of a constexpr function must be completely initialized.  */
-  if (TREE_CODE (result) == CONSTRUCTOR)
+  /* The result of a constexpr function must be completely initialized.
+
+     However, in C++20, a constexpr constructor doesn't necessarily have
+     to initialize all the fields, so we don't clear CONSTRUCTOR_NO_CLEARING
+     in order to detect reading an unitialized object in constexpr instead
+     of value-initializing it.  (reduced_constant_expression_p is expected to
+     take care of clearing the flag.)  */
+  if (TREE_CODE (result) == CONSTRUCTOR
+      && (cxx_dialect < cxx2a
+	  || !DECL_CONSTRUCTOR_P (fun)))
     clear_no_implicit_zero (result);
 
   pop_cx_call_context ();
   return result;
 }
 
-/* FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
+/* Return true if T is a valid constant initializer.  If a CONSTRUCTOR
+   initializes all the members, the CONSTRUCTOR_NO_CLEARING flag will be
+   cleared.
+   FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
 
 bool
 reduced_constant_expression_p (tree t)
@@ -2209,6 +2224,12 @@ reduced_constant_expression_p (tree t)
 	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
 	    /* An initialized vector would have a VECTOR_CST.  */
 	    return false;
+	  else if (cxx_dialect >= cxx2a
+		   /* An ARRAY_TYPE doesn't have any TYPE_FIELDS.  */
+		   && (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
+		       /* A union only initializes one member.  */
+		       || TREE_CODE (TREE_TYPE (t)) == UNION_TYPE))
+	    field = NULL_TREE;
 	  else
 	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
 	}
@@ -2222,14 +2243,20 @@ reduced_constant_expression_p (tree t)
 	    return false;
 	  if (field)
 	    {
-	      if (idx != field)
-		return false;
+	      /* Empty class field may or may not have an initializer.  */
+	      for (; idx != field;
+		   field = next_initializable_field (DECL_CHAIN (field)))
+		if (!is_really_empty_class (TREE_TYPE (field),
+					    /*ignore_vptr*/false))
+		  return false;
 	      field = next_initializable_field (DECL_CHAIN (field));
 	    }
 	}
-      if (field)
-	return false;
-      else if (CONSTRUCTOR_NO_CLEARING (t))
+      /* There could be a non-empty field at the end.  */
+      for (; field; field = next_initializable_field (DECL_CHAIN (field)))
+	if (!is_really_empty_class (TREE_TYPE (field), /*ignore_vptr*/false))
+	  return false;
+      if (CONSTRUCTOR_NO_CLEARING (t))
 	/* All the fields are initialized.  */
 	CONSTRUCTOR_NO_CLEARING (t) = false;
       return true;

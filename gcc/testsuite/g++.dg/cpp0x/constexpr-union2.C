@@ -14,5 +14,5 @@ union bar
   int x;
   short y;
 
-  constexpr bar() = default;	// { dg-error "constexpr" }
+  constexpr bar() = default;	// { dg-error "constexpr" "" { target c++17_down } }
 };

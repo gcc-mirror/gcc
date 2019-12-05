@@ -3,7 +3,7 @@
 template <class T> struct A
 {
   T t;
-  constexpr A() { }		// { dg-error "::t" }
+  constexpr A() { }		// { dg-error "::t" "" { target c++17_down } }
 };
 
 int main()

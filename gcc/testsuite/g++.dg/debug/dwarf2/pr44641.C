@@ -1,5 +1,5 @@
 // Origin: PR 44641
-// { dg-do compile }
+// { dg-do compile { target c++17_down } }
 // { dg-options "-gdwarf-2 -O0 -dA" }
 
 template <class A> struct MisplacedDbg;
@@ -40,3 +40,11 @@ struct MisplacedDbg  // { dg-function-on-line {_ZN12MisplacedDbgI3ArgEC[12]Ev} {
 static MisplacedDbg<Arg> static_var1;
 static MisplacedDbg<Arg*> static_var2;
 static MisplacedDbg<Full> static_var3;
+
+// This test is skipped in C++20 because we consider the default constructor
+// MisplacedDbg() constexpr despite the uninitialized member "int i;".  So
+// the calls to
+//    MisplacedDbg<Arg>::MisplacedDbg()
+//    MisplacedDbg<Full>::MisplacedDbg()
+//    MisplacedDbg<Arg*>::MisplacedDbg()
+// are elided.  (This comment is here not to mess up the line numbers.)
