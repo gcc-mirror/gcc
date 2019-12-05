@@ -1,3 +1,18 @@
+2019-12-05  JeanHeyd "ThePhD" Meneide  <phdofthehouse@gmail.com>
+
+	Implement P1872R0 and P1394R0 for std::span
+	* include/bits/range_access.h (__adl_begin, __adl_end): Remove.
+	(sentinel_t, range_value_t, range_reference_t)
+	(range_rvalue_reference_t, __forwarding_range, disable_sized_range)
+	(output_range, input_range, forward_range, bidirectional_range)
+	(random_access_range, contiguous_range, common_range): Move here from
+	<ranges>, to make this the "ranges lite" internal header.
+	* include/std/ranges: Move basic aliases and concepts to
+	<bits/range_access.h>.
+	* include/std/span: Use concepts and ranges:: calls instead of
+	enable_if and friends.
+	* include/std/type_traits: Add __is_array_convertible trait.
+
 2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
