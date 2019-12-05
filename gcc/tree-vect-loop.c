@@ -3915,7 +3915,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
       /* No extra instructions needed in the prologue.  */
       prologue_cost = 0;
 
-      if (reduction_type == EXTRACT_LAST_REDUCTION || reduc_fn != IFN_LAST)
+      if (reduc_fn != IFN_LAST)
 	/* Count one reduction-like operation per vector.  */
 	inside_cost = record_stmt_cost (cost_vec, ncopies, vec_to_scalar,
 					stmt_info, 0, vect_body);
