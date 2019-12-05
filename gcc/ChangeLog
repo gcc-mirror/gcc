@@ -1,3 +1,9 @@
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): For use_device_ptr/use_derice_addr
+	and Fortran's optional arguments, unconditionally add the is-present
+	condition before the libgomp call.
+
 2019-12-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/92768
