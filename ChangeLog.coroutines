@@ -1,6 +1,21 @@
 2019-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_expander): Handle CALL_EXPR.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: New helper include.
+	* g++.dg/coroutines/torture/call-00-co-aw-arg.C: New test.
+	* g++.dg/coroutines/torture/call-01-multiple-co-aw.C: New test.
+	* g++.dg/coroutines/torture/call-02-temp-co-aw.C: New test.
+	* g++.dg/coroutines/torture/co-ret-11.C: New test.
+	* g++.dg/coroutines/torture/co-ret-12.C: New test.
+	* g++.dg/coroutines/torture/co-yield-05-co-aw.C: New test.
+	* g++.dg/coroutines/torture/co-yield-06-fun-parm.C: New test.
+
+2019-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (create_named_label_with_ctx): Adjust
 	comment.  Don't mark our local labels as used.
 	(transform_await_expr): Update comments.

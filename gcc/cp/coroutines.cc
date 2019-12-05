@@ -1075,6 +1075,7 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
   p_data.from = data->promise_proxy;
   p_data.to = data->real_promise;
   cp_walk_tree (&call, replace_proxy, &p_data, NULL);
+
   /* The types of p.return_void and p.return_value are not explicitly stated
      at least in n4835, it is expected that they will return void.  */
   call = maybe_cleanup_point_expr_void (call);
@@ -1229,6 +1230,12 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
 	{
 	  saved_co_await = r;
 	}
+    }
+  else if (stmt_code == CALL_EXPR)
+    {
+      if (tree r = cp_walk_tree (&stripped_stmt, co_await_find_in_subtree,
+				 &buried_stmt, NULL))
+	saved_co_await = r;
     }
 
   if (!saved_co_await)
@@ -1389,6 +1396,7 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
       break;
     case INIT_EXPR:
     case MODIFY_EXPR:
+    case CALL_EXPR:
       /* Replace the use of co_await by the resume expr.  */
       if (sub_code == CO_AWAIT_EXPR)
 	{
