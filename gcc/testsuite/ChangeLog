@@ -1,3 +1,8 @@
+2019-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92818
+	* gcc.target/i386/pr92818.c: New testcase.
+
 2019-12-05  Frederik Harwath  <frederik@codesourcery.com>
 
 	* gcc.dg/asm-4.c: Skip on target amdgcn-*-*.

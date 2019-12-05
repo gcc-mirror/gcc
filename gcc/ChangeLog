@@ -1,3 +1,10 @@
+2019-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92818
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Improve
+	heuristics on what don't care element to choose.
+	* match.pd (VEC_PERM_EXPR -> BIT_INSERT_EXPR): Fix typo.
+
 2019-12-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/92817
