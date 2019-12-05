@@ -1,3 +1,8 @@
+2019-12-05  Sudakshina Das  <sudi.das@arm.com>
+
+	* tree-vect-loop.c (vect_model_reduction_cost): Remove reduction_type
+	check from if condition.
+
 2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-low.c (lower_omp_target): For use_device_ptr/use_derice_addr
