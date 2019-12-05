@@ -1,3 +1,8 @@
+2019-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92803
+	* gcc.target/i386/pr92803.c: New testcase.
+
 2019-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92781
