@@ -1,3 +1,7 @@
+2019-12-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* cp-gimplify.c: Include memmodel.h.
+
 2019-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck2.c (build_functional_cast): Add location_t parameter
