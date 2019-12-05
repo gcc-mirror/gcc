@@ -1,3 +1,32 @@
+2019-12-04  Ian Lance Taylor  <iant@golang.org>
+
+	* internal.h (enum dwarf_section): Define.
+	(struct dwarf_sections): Define.
+	(backtrace_dwarf_add): Update declaration to replace specific
+	section parameters with dwarf_sections parameter.
+	* dwarf.c (struct dwarf_data): Replace specific section fields
+	with dwarf_sections field.
+	(read_attribute): Use dwarf_sections with altlink.
+	(build_address_map): Replace specific section parameters with
+	dwarf_sections parameter.  Change all callers.
+	(read_line_info): Use dwarf_sections with ddata.
+	(read_referenced_name): Likewise.
+	(add_function_ranges): Likewise.
+	(read_function_entry): Likewise.
+	(read_function_info): Likewise.
+	(build_dwarf_data): Replace specific section parameters with
+	dwarf_sections parameter.  Change all callers.
+	(backtrace_dwarf_add): Likewise.
+	* elf.c (enum debug_section): Remove.
+	(dwarf_section_names): Remove .zdebug names.
+	(elf_add): Track zsections separately.  Build dwarf_sections.
+	* pecoff.c (enum debug_section): Remove.
+	(struct debug_section_info): Remove data field.
+	(coff_add): Build dwarf_sections.
+	* xcoff.c (enum dwarf_section): Remove.  Replace DWSECT_xxx
+	references with DEBUG_xxx references.
+	(xcoff_add): Build dwarf_sections.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.
