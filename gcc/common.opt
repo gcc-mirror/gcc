@@ -2160,6 +2160,10 @@ fprofile-generate=
 Common Joined RejectNegative
 Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir=.
 
+fprofile-partial-training
+Common Report Var(flag_profile_partial_training) Optimization
+Do not assume that functions never executed during the train run are cold
+
 fprofile-use
 Common Var(flag_profile_use)
 Enable common options for performing profile feedback directed optimizations.

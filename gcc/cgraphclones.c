@@ -307,6 +307,22 @@ dump_callgraph_transformation (const cgraph_node *original,
     }
 }
 
+/* Turn profile of N to local profile.   */
+
+static void
+localize_profile (cgraph_node *n)
+{
+  n->count = n->count.guessed_local ();
+  for (cgraph_edge *e = n->callees; e; e=e->next_callee)
+    {
+      e->count = e->count.guessed_local ();
+      if (!e->inline_failed)
+	localize_profile (e->callee);
+    }
+  for (cgraph_edge *e = n->indirect_calls; e; e=e->next_callee)
+    e->count = e->count.guessed_local ();
+}
+
 /* Create node representing clone of N executed COUNT times.  Decrease
    the execution counts from original node too.
    The new clone will have decl set to DECL that may or may not be the same
@@ -340,6 +356,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   cgraph_edge *e;
   unsigned i;
   profile_count old_count = count;
+  bool nonzero = count.ipa ().nonzero_p ();
 
   if (new_inlined_to)
     dump_callgraph_transformation (this, new_inlined_to, "inlining to");
@@ -426,6 +443,15 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 
   if (call_duplication_hook)
     symtab->call_cgraph_duplication_hooks (this, new_node);
+  /* With partial train run we do not want to assume that original's
+     count is zero whenever we redurect all executed edges to clone.
+     Simply drop profile to local one in this case.  */
+  if (update_original
+      && opt_for_fn (decl, flag_profile_partial_training)
+      && nonzero
+      && count.ipa_p ()
+      && !count.ipa ().nonzero_p ())
+    localize_profile (this);
 
   if (!new_inlined_to)
     dump_callgraph_transformation (this, new_node, suffix);

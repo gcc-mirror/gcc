@@ -785,7 +785,8 @@ tree_profiling (void)
       if (flag_branch_probabilities
 	  && !thunk
 	  && flag_profile_values
-	  && flag_value_profile_transformations)
+	  && flag_value_profile_transformations
+	  && profile_status_for_fn (cfun) == PROFILE_READ)
 	gimple_value_profile_transformations ();
 
       /* The above could hose dominator info.  Currently there is
