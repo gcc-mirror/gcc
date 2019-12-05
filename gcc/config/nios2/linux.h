@@ -40,6 +40,12 @@
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
     %{static:-static}}"
 
+/* The nios2 ABI does not have appropriate relocations to support
+   --eh-frame-hdr with PIE, or in shared libraries.  */
+#undef LINK_EH_SPEC
+#define LINK_EH_SPEC \
+  "%{!pie: %{!shared: %{!static:--eh-frame-hdr}}} "
+
 /* This toolchain implements the ABI for Linux Systems documented in the
    Nios II Processor Reference Handbook.  */
 #define TARGET_LINUX_ABI 1
