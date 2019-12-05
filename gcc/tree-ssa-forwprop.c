@@ -2286,24 +2286,28 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       else if (orig[1] == error_mark_node
 	       && one_nonconstant)
 	{
-	  orig[1] = gimple_build_vector_from_val (&stmts, UNKNOWN_LOCATION,
-						  type, one_nonconstant);
 	  /* ???  We can see if we can safely convert to the original
 	     element type.  */
 	  converted_orig1 = conv_code != ERROR_MARK;
+	  orig[1] = gimple_build_vector_from_val (&stmts, UNKNOWN_LOCATION,
+						  converted_orig1
+						  ? type : perm_type,
+						  one_nonconstant);
 	}
       else if (orig[1] == error_mark_node)
 	{
-	  tree_vector_builder vec (type, nelts, 1);
-	  for (unsigned i = 0; i < nelts; ++i)
-	    if (constants[i])
+	  /* ???  See if we can convert the vector to the original type.  */
+	  converted_orig1 = conv_code != ERROR_MARK;
+	  unsigned n = converted_orig1 ? nelts : refnelts;
+	  tree_vector_builder vec (converted_orig1
+				   ? type : perm_type, n, 1);
+	  for (unsigned i = 0; i < n; ++i)
+	    if (i < nelts && constants[i])
 	      vec.quick_push (constants[i]);
 	    else
 	      /* ??? Push a don't-care value.  */
 	      vec.quick_push (one_constant);
 	  orig[1] = vec.build ();
-	  /* ???  See if we can convert the vector to the original type.  */
-	  converted_orig1 = conv_code != ERROR_MARK;
 	}
       tree blend_op2 = NULL_TREE;
       if (converted_orig1)
