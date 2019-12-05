@@ -1,3 +1,13 @@
+2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__is_byte<char8_t>): Add
+	specialization.
+	* include/std/array (operator<=>): Likewise.
+	* testsuite/23_containers/array/comparison_operators/constexpr.cc:
+	Test three-way comparisons and arrays of unsigned char.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+
 2019-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_pair.h [__cpp_lib_three_way_comparison]
