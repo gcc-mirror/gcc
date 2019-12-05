@@ -1700,7 +1700,7 @@ check_constraint_info (tree t)
 
 /* True if this decl was imported.  */
 #define DECL_MODULE_IMPORT_P(NODE) \
-  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_origin)
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_import_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can
    appear at namespace scope (function, var, type, template, const or
@@ -2737,9 +2737,8 @@ struct GTY(()) lang_decl_base {
   unsigned dependent_init_p : 1;	   /* var */
 
   unsigned module_purview_p : 1;	   /* var,fn,type,template,namespace  */
-#define MODULE_BITS (15)
-  unsigned module_origin : MODULE_BITS;     /* var,fn,type,template,namespace */
-  /* No spare bits.  */
+  unsigned module_import_p : 1;     	   /* var,fn,type,template,namespace */
+  /* 14 spare bits.  */
 };
 
 /* True for DECL codes which have template info and access.  */

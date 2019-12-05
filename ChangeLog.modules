@@ -1,5 +1,14 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
+	One Beellion Modules!
+	gcc/cp/
+	* cp-tree.h (lang_decl_base): Replace module_origin field with
+	module_import_p flag.
+	* modules.cc (MODULE_UNKNOWN{,_PARTITION}): Adjust.
+	(MODULE_LIMIT): Delete.
+	(module_state): Make mod & remap unsigneds.
+	(module_state::read): No need to check module overflow.
+
 	gcc/cp/
 	* module.cc (macro_import::slot) Adjust encoding to use fewer
 	bits.

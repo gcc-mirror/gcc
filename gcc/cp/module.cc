@@ -49,23 +49,11 @@ along with GCC; see the file COPYING3.  If not see
    Cross-module references are by (remapped) module number and
    module-local index.
 
-   WARNING: the above is in transition.  Namespaces, namespace-scope,
-   instantiations & voldemort entities behave as above, but class
-   members do not (yet).
-
    Each importable DECL contains 3 flags -- DECL_EXPORT_P,
    DECL_MODULE_PURVIEW_P and DECL_MODULE_IMPORT_P.  The first
    indicates whether it is exported, the second whether it is in the
    module purview (as opposed to the global module fragment), and the
    third indicates whether it was an import or not.
-
-   WARNING: That last description is a lie.  DECL_MODULE_ORIGIN
-   contains the module index of the entity.  It is non-zero for
-   imported entities.  The intent is to change that.
-
-   The originating module determines module ownership of everything
-   within that context, and the permisibility of redefinitions from
-   other TUs.
 
    Header units are module-like.
 
@@ -301,10 +289,8 @@ static inline const_tree identifier (const cpp_hashnode *node)
 int module_dump_id;
 
 /* We have a special module owner.  */
-#define MODULE_UNKNOWN (unsigned short)(~0U)    /* Not yet known.  */
+#define MODULE_UNKNOWN (~0U)    /* Not yet known.  */
 #define MODULE_UNKNOWN_PARTITION (MODULE_UNKNOWN - 1)
-#define MODULE_LIMIT (1 << MODULE_BITS < MODULE_UNKNOWN \
-		      ? 1 << MODULE_BITS : MODULE_UNKNOWN_PARTITION)
 
 /* Prefix for section names.  */
 #define MOD_SNAME_PFX ".gnu.c++"
@@ -3314,11 +3300,13 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* The FROM_LOC is unset until we process a declaration.  */
   location_t from_loc;  /* Location module was imported at.  */
 
-  unsigned short mod;		/* Module owner number.  */
-  unsigned short subst;		/* Mangle subst if !0.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
-  unsigned short remap;		/* Remapping during writing.  */
+  unsigned mod;		/* Module owner number.  */
+  unsigned remap;	/* Remapping during writing.  */
+
+  unsigned short subst;	/* Mangle subst if !0.  */
+
   bool header_p : 1;	/* Is a header import.  */
   bool direct_p : 1;	/* A direct import of TU (includes interface
 			   of implementation for which primary_p).  */
@@ -3546,7 +3534,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
     entity_lwm (0), entity_num (0),
     ordinary_locs (0, 0), macro_locs (0, 0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
+    crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0),
     partition_p (partition)
 {
   header_p = direct_p = primary_p = interface_p = exported_p
@@ -5347,7 +5335,6 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
-  gcc_checking_assert (!(*modules)[lang->u.base.module_origin]->remap);
   WB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
@@ -13260,8 +13247,7 @@ module_state::announce (const char *what) const
 {
   if (noisy_p ())
     {
-      fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
-	       what, get_flatname (), mod);
+      fprintf (stderr, " %s:%s", what, get_flatname ());
       fflush (stderr);
     }
 }
@@ -16797,13 +16783,9 @@ module_state::read (int fd, int e, cpp_reader *reader)
     gcc_checking_assert (mod == MODULE_UNKNOWN);
     gcc_checking_assert (this != (*modules)[0]);
 
+    /* We'll run out of other resources before we run out of module
+       indices.  */
     unsigned ix = modules->length ();
-    if (ix == MODULE_LIMIT)
-      {
-	sorry ("too many modules loaded (limit is %u)", ix);
-	from ()->set_error (elf::E_BAD_IMPORT);
-	goto bail;
-      }
 
     vec_safe_push (modules, this);
     /* We always import and export ourselves. */
