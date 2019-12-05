@@ -3962,6 +3962,8 @@ will_be_import (tree decl)
     {
       unsigned index = import_entity_index (decl);
       module_state *import = import_entity_module (index);
+      gcc_checking_assert ((import->remap != 0)
+			   == !DECL_MODULE_PARTITION_P (decl));
       return import->remap != 0;
     }
   return false;
@@ -7779,6 +7781,12 @@ trees_in::decl_value ()
 	  if (inner_tag)
 	    /* We know there will be a lang_decl in this case.  */
 	    DECL_MODULE_IMPORT_P (inner) = true;
+	  if (state->is_partition ())
+	    {
+	      DECL_MODULE_PARTITION_P (decl) = true;
+	      if (inner_tag)
+		DECL_MODULE_PARTITION_P (inner) = true;
+	    }
 
 	  /* Insert into the entity hash (it cannot already be there).  */
 	  bool existed;
@@ -11018,6 +11026,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek, bool imported)
 			       == DECL_MODULE_PURVIEW_P (res));
 	  gcc_checking_assert ((DECL_MODULE_IMPORT_P (decl)
 				== DECL_MODULE_IMPORT_P (res)));
+	  gcc_checking_assert ((DECL_MODULE_PARTITION_P (decl)
+				== DECL_MODULE_PARTITION_P (res)));
 	}
     }
 
@@ -17211,6 +17221,7 @@ set_instantiating_module (tree decl)
       DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
       /* If this was imported, we'll still be in the entity_hash.  */
       DECL_MODULE_IMPORT_P (decl) = false;
+      DECL_MODULE_PARTITION_P (decl) = false;
     }
 
   int use_tpl = -1;

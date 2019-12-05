@@ -1702,10 +1702,15 @@ check_constraint_info (tree t)
 #define DECL_MODULE_IMPORT_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_import_p)
 
-/* Whether this is an exported DECL.  Held on any decl that can
-   appear at namespace scope (function, var, type, template, const or
-   namespace).  templates copy from their template_result, consts
-   have it for unscoped enums.  */
+/* True if this decl was imported from a partition, or is in the PMF
+   (not implemented).  */
+#define DECL_MODULE_PARTITION_P(NODE) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_partition_p)
+
+/* Whether this is an exported DECL.  Held on any decl that can appear
+   at namespace scope (function, var, type, template, const or
+   namespace).  templates copy from their template_result, consts have
+   it for unscoped enums.  */
 #define DECL_MODULE_EXPORT_P(NODE) TREE_LANG_FLAG_3 (NODE)
 
 
@@ -2736,9 +2741,13 @@ struct GTY(()) lang_decl_base {
   unsigned var_declared_inline_p : 1;	   /* var */
   unsigned dependent_init_p : 1;	   /* var */
 
-  unsigned module_purview_p : 1;	   /* var,fn,type,template,namespace  */
-  unsigned module_import_p : 1;     	   /* var,fn,type,template,namespace */
-  /* 14 spare bits.  */
+  unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
+  unsigned module_import_p : 1;     	   /* from an import */
+  unsigned module_partition_p : 1;	   /* from an imported
+					      partition, or in the
+					      PMF.  */
+
+  /* 13 spare bits.  */
 };
 
 /* True for DECL codes which have template info and access.  */

@@ -1,5 +1,15 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_PARTITION_P): New.
+	(lang_decl_base): Add module_partition_p.
+	* decl.c (duplicate_decls): Adjust.
+	* pt.c (build_template_decl, tsubst_template_decl): Adjust.
+	* module.cc (will_be_import): Assert consistency.
+	(trees_in::decl_value): Set module_partition_p.
+	(depset::hash::make_dependency): Assert consistency.
+	(set_instantiating_module): Clear it.
+
 	One Beellion Modules!
 	gcc/cp/
 	* cp-tree.h (lang_decl_base): Replace module_origin field with
