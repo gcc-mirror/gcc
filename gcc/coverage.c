@@ -1228,7 +1228,7 @@ coverage_init (const char *filename)
       else
 	profile_data_prefix = getpwd ();
     }
-  else
+  else if (profile_data_prefix != NULL)
     {
       /* when filename is a absolute path, we also need to mangle the full
       path of filename to prevent the profiling data being stored into a
