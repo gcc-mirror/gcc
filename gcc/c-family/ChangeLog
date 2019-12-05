@@ -1,3 +1,8 @@
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92271 - make __is_same alias for __is_same_as.
+	* c-common.c: Add __is_same, an alias for __is_same_as.
+
 2019-12-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.

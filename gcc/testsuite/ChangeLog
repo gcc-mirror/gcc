@@ -1,3 +1,8 @@
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92271 - make __is_same alias for __is_same_as.
+	* g++.dg/ext/is_same.C: New test.
+
 2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: Add

@@ -1,3 +1,9 @@
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92271 - make __is_same alias for __is_same_as.
+	* cxx-pretty-print.c (pp_cxx_trait_expression) <case CPTK_IS_SAME_AS>:
+	Print "__is_same".
+
 2019-12-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* cp-gimplify.c: Include memmodel.h.
