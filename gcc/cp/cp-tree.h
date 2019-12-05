@@ -6962,8 +6962,6 @@ extern int get_originating_module (tree, bool for_mangle = false) ATTRIBUTE_PURE
 
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);
-extern tree get_instantiating_module_decl (tree) ATTRIBUTE_PURE;
-extern unsigned get_instantiating_module (tree) ATTRIBUTE_PURE;
 
 extern void mangle_module (int m);
 extern void mangle_module_fini ();

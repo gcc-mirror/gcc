@@ -11556,8 +11556,6 @@ depset::hash::add_specializations (bool decl_p)
 	    }
 	}
 
-      gcc_checking_assert (spec == get_instantiating_module_decl (spec));
-
       bool needs_reaching = false;
       if (use_tpl == 1)
 	/* Implicit instantiations only walked if we reach them.  */
@@ -17078,7 +17076,6 @@ tree
 get_originating_module_decl (tree decl)
 {
   /* An enumeration constant.  */
-  // FIXME: common to here and get_instantiating_module_decl
   if (TREE_CODE (decl) == CONST_DECL
       && DECL_CONTEXT (decl)
       && (TREE_CODE (DECL_CONTEXT (decl)) == ENUMERAL_TYPE))
@@ -17151,71 +17148,6 @@ get_originating_module (tree decl, bool for_mangle)
   if (for_mangle
       && (DECL_MODULE_EXPORT_P (owner) || !DECL_MODULE_PURVIEW_P (owner)))
     return -1;
-
-  return DECL_MODULE_ORIGIN (owner);
-}
-
-tree
-get_instantiating_module_decl (tree decl)
-{
-  if (TREE_CODE (decl) == CONST_DECL
-      && DECL_CONTEXT (decl)
-      && (TREE_CODE (DECL_CONTEXT (decl)) == ENUMERAL_TYPE))
-    decl = TYPE_NAME (DECL_CONTEXT (decl));
-  else if (TREE_CODE (decl) == FIELD_DECL
-	   || TREE_CODE (decl) == USING_DECL)
-    {
-      decl = DECL_CONTEXT (decl);
-      if (TREE_CODE (decl) != FUNCTION_DECL)
-	decl = TYPE_NAME (decl);
-    }
-
-  gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
-		       || TREE_CODE (decl) == FUNCTION_DECL
-		       || TREE_CODE (decl) == TYPE_DECL
-		       || TREE_CODE (decl) == VAR_DECL
-		       || TREE_CODE (decl) == NAMESPACE_DECL);
-
-  for (;;)
-    {
-      /* Uninstantiated template friends are owned by the befriending
-	 class -- not their context.  */
-      if (TREE_CODE (decl) == TEMPLATE_DECL
-	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-	decl = TYPE_NAME (DECL_CHAIN (decl));
-
-      tree ctx = CP_DECL_CONTEXT (decl);
-
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	break;
-
-      int use;
-      node_template_info (decl, use);
-      if (use > 0)
-	break;
-
-      if (TYPE_P (ctx))
-	{
-	  ctx = TYPE_NAME (ctx);
-	  if (!ctx)
-	    /* Always return something, global_namespace is a useful
-	       non-owning decl.  */
-	    return global_namespace;
-	}
-
-      decl = ctx;
-    }
-
-  return decl;
-}
-
-unsigned
-get_instantiating_module (tree decl)
-{
-  tree owner = get_instantiating_module_decl (decl);
-
-  if (!DECL_LANG_SPECIFIC (owner))
-    return 0;
 
   return DECL_MODULE_ORIGIN (owner);
 }

@@ -1,6 +1,13 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (get_instantiating_module_decl): Delete.
+	(get_instantiating_module): Delete.
+	* module.cc (depset::hash::add_specialization): Remove assert.
+	(get_instantiating_module_decl): Delete.
+	(get_instantiating_module): Delete.
+
+	gcc/cp/
 	* module.cc (trees_in::{enum ,get_}{dup,ord}ness): Delete.
 	(trees_in::{odr,is}_duplicate): New.
 	(trees_in::read_{function,var,class,enum}_def): Adjust.
