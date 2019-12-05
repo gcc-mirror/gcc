@@ -8227,21 +8227,36 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  tree inst = get_instantiating_module_decl (decl);
-  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
-  if (origin)
-    origin = (*modules)[origin]->remap;
-  bool is_import = origin != 0;
   const char *kind = NULL;
   tree ctx = CP_DECL_CONTEXT (decl);
   depset *dep = NULL;
   if (streaming_p ())
     dep = dep_hash->find_dependency (decl);
-  else if (TREE_CODE (ctx) != FUNCTION_DECL
-	   || is_import
-	   || TREE_CODE (decl) == TEMPLATE_DECL
-	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl)))
-    dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
+  else
+    {
+      bool is_import = false;
+      // FIXME: Maybe push is_import calculation back into
+      // make_dependency?  Then we can populate cluster and section
+      // with locating information of the decl.  To solve the 'is this
+      // a partition' problem, we could add another flag into the DECL
+      // marking it so.  Thus avoiding needing to know is_import at
+      // this point.
+
+      if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_ORIGIN (decl))
+	{
+	  int origin = DECL_MODULE_ORIGIN (decl);
+	  if (origin)
+	    origin = (*modules)[origin]->remap;
+	  /* A partition could map to zero.  */
+	  is_import = origin != 0;
+	}
+
+      if (TREE_CODE (ctx) != FUNCTION_DECL
+	  || TREE_CODE (decl) == TEMPLATE_DECL
+	  || is_import
+	  || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl)))
+	dep = dep_hash->add_dependency (decl, depset::EK_DECL, is_import);
+    }
 
   if (!dep)
     {
@@ -8250,6 +8265,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
+  bool is_import = dep->is_import ();
   if (dep->get_entity_kind () == depset::EK_REDIRECT)
     {
       /* The DECL_TEMPLATE_RESULT of a partial specialization.
@@ -8262,6 +8278,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       goto partial_template;
     }
 
+  unsigned origin = 0;
   if (streaming_p ())
     {
       /* Locate the entity.  */
@@ -8273,8 +8290,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  // away from that
 	  /* An import.  */
 	  module_state *from = import_entity_module (entity_num);
-	  gcc_checking_assert (from->remap == origin);
 	  entity_num -= from->entity_lwm;
+	  origin = from->remap;
 	  kind = "import";
 	}
       else
@@ -8298,7 +8315,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
-	       origin < 0 ? NULL : (*modules)[origin]);
+	       (*modules)[origin]);
 
   add_indirects (decl);
 
