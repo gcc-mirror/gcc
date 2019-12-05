@@ -1,5 +1,9 @@
 2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-transform.c (inline_call): Fix maintenatnce of comdat_local
+
+2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphclones.c (localize_profile): New function.
 	(cgraph_node::create_clone): Use it for partial profiles.
 	* common.opt (fprofile-partial-training): New flag.
