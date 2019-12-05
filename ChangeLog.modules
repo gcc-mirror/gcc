@@ -1,6 +1,12 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* decl.c (duplicate_decls): Pass the old decl to
+	module_may_redeclare.
+	* module.cc (module_may_redeclare): Expect the decl, not its
+	owner.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Move is_import test into
 	non-streaming block.  Check the decl, not the instantiator.
 

@@ -1983,7 +1983,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     {
       if (DECL_ARTIFICIAL (olddecl))
 	{
-	  gcc_checking_assert (!get_originating_module (olddecl));
+	  gcc_checking_assert (!DECL_LANG_SPECIFIC (olddecl)
+			       || !DECL_MODULE_ORIGIN (olddecl));
 	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  else
@@ -1995,9 +1996,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  // We want to allow specializations when we've not seen one
 	  // from elsewhare, and we want to allow explicit
 	  // instantiations whatever.
-	  tree owner = get_instantiating_module_decl (olddecl);
-
-	  if (!module_may_redeclare (owner))
+	  if (!module_may_redeclare (olddecl))
 	    {
 	      error ("declaration %qD conflicts with import", newdecl);
 	      inform (olddecl_loc, "import declared %q#D here", olddecl);

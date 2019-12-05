@@ -17266,32 +17266,32 @@ get_instantiating_module (tree decl)
   return DECL_MODULE_ORIGIN (owner);
 }
 
-/* Is it permissible to redeclare an entity instantiated by DECL.  */
+/* Is it permissible to redeclare DECL.  */
 // FIXME: This needs extending, see its use in duplicate_decls
 
 bool
-module_may_redeclare (tree inst)
+module_may_redeclare (tree decl)
 {
-  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
-
-  module_state *them = (*modules)[origin];
   module_state *me = (*modules)[0];
+  module_state *them = me;
+  if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_ORIGIN (decl))
+    them = (*modules)[DECL_MODULE_ORIGIN (decl)];
 
   if (them->is_header ())
     /* If it came from a header, it's in the global module.  */
     return (me->is_header ()
 	    || !module_purview_p ());
 
-  if (!origin)
-    return ((DECL_LANG_SPECIFIC (inst) && DECL_MODULE_PURVIEW_P (inst))
+  if (me == them)
+    return ((DECL_LANG_SPECIFIC (decl) && DECL_MODULE_PURVIEW_P (decl))
 	    == module_purview_p ());
 
   if (!me->name)
     me = me->parent;
 
   /* We can't have found a GMF entity from a named module.  */
-  gcc_checking_assert (DECL_LANG_SPECIFIC (inst)
-		       && DECL_MODULE_PURVIEW_P (inst));
+  gcc_checking_assert (DECL_LANG_SPECIFIC (decl)
+		       && DECL_MODULE_PURVIEW_P (decl));
 
   return me && get_primary (them) == get_primary (me);
 }
