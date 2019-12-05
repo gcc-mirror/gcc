@@ -331,6 +331,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   int old_size = 0, new_size = 0;
   struct cgraph_node *to = NULL;
   struct cgraph_edge *curr = e;
+  bool comdat_local = e->callee->comdat_local_p ();
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   bool new_edges_found = false;
 
@@ -502,7 +503,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   if (callee->calls_comdat_local)
     to->calls_comdat_local = true;
-  else if (to->calls_comdat_local && callee->comdat_local_p ())
+  else if (to->calls_comdat_local && comdat_local)
     {
       struct cgraph_edge *se = to->callees;
       for (; se; se = se->next_callee)
