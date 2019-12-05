@@ -11981,8 +11981,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
-	    bool do_optional_check;
-	    do_optional_check = false;
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
 
@@ -12004,10 +12002,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
-	      {
-		var = lang_hooks.decls.omp_array_data (ovar, false);
-		do_optional_check = true;
-	      }
+	      var = lang_hooks.decls.omp_array_data (ovar, false);
 	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 		      && !omp_is_reference (ovar)
 		      && !omp_is_allocatable_or_ptr (ovar))
@@ -12025,16 +12020,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			    && !omp_is_allocatable_or_ptr (ovar))
 			   || (omp_is_reference (ovar)
 			       && omp_is_allocatable_or_ptr (ovar))))
-		      {
-			var = build_simple_mem_ref (var);
-			do_optional_check = true;
-		      }
+		      var = build_simple_mem_ref (var);
 		    var = fold_convert (TREE_TYPE (x), var);
 		  }
 	      }
 	    tree present;
-	    present = (do_optional_check
-		       ? omp_check_optional_argument (ovar, true) : NULL_TREE);
+	    present = omp_check_optional_argument (ovar, true);
 	    if (present)
 	      {
 		tree null_label = create_artificial_label (UNKNOWN_LOCATION);

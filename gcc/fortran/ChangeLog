@@ -1,3 +1,8 @@
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_omp_is_optional_argument,
+	gfc_omp_check_optional_argument): Handle type(c_ptr),value which uses a
+
 2019-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92781

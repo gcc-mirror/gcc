@@ -60,7 +60,8 @@ gfc_omp_is_allocatable_or_ptr (const_tree decl)
 
 /* True if the argument is an optional argument; except that false is also
    returned for arguments with the value attribute (nonpointers) and for
-   assumed-shape variables (decl is a local variable containing arg->data).  */
+   assumed-shape variables (decl is a local variable containing arg->data).
+   Note that pvoid_type_node is for 'type(c_ptr), value.  */
 
 static bool
 gfc_omp_is_optional_argument (const_tree decl)
@@ -68,6 +69,7 @@ gfc_omp_is_optional_argument (const_tree decl)
   return (TREE_CODE (decl) == PARM_DECL
 	  && DECL_LANG_SPECIFIC (decl)
 	  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+	  && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
 	  && GFC_DECL_OPTIONAL_ARGUMENT (decl));
 }
 
@@ -99,9 +101,12 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
       || !GFC_DECL_OPTIONAL_ARGUMENT (decl))
     return NULL_TREE;
 
-  /* For VALUE, the scalar variable is passed as is but a hidden argument
-     denotes the value.  Cf. trans-expr.c.  */
-  if (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE)
+   /* Scalars with VALUE attribute which are passed by value use a hidden
+      argument to denote the present status.  They are passed as nonpointer type
+      with one exception: 'type(c_ptr), value' as 'void*'.  */
+   /* Cf. trans-expr.c's gfc_conv_expr_present.  */
+   if (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
+       || VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
     {
       char name[GFC_MAX_SYMBOL_LEN + 2];
       tree tree_name;
