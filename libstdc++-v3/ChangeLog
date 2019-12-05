@@ -1,5 +1,12 @@
 2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Define for C++20.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/1.cc: New
+	test.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/
+	constexpr.cc: New test.
+
 	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter): New printer.
 	* testsuite/libstdc++-prettyprinters/cxx20.cc: New test.
 
