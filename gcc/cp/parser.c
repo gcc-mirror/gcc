@@ -29268,8 +29268,17 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
       release_tree_vector (vec);
     }
 
-  cast = build_functional_cast (type, expression_list,
+  /* Create a location of the form:
+       float(i)
+       ^~~~~~~~
+     with caret == start at the start of the type name,
+     finishing at the closing paren.  */
+  location_t combined_loc = make_location (start_loc, start_loc,
+					   parser->lexer);
+  cast = build_functional_cast (combined_loc, type, expression_list,
                                 tf_warning_or_error);
+  cast.set_location (combined_loc);
+  
   /* [expr.const]/1: In an integral constant expression "only type
      conversions to integral or enumeration type can be used".  */
   if (TREE_CODE (type) == TYPE_DECL)
@@ -29280,13 +29289,6 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 						     NIC_CONSTRUCTOR))
     return error_mark_node;
 
-  /* Create a location of the form:
-       float(i)
-       ^~~~~~~~
-     with caret == start at the start of the type name,
-     finishing at the closing paren.  */
-  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
-  cast.set_location (combined_loc);
   return cast;
 }
 

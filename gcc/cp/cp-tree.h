@@ -7681,7 +7681,8 @@ extern tree build_scoped_ref			(tree, tree, tree *);
 extern tree build_x_arrow			(location_t, tree,
 						 tsubst_flags_t);
 extern tree build_m_component_ref		(tree, tree, tsubst_flags_t);
-extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
+extern tree build_functional_cast		(location_t, tree, tree,
+						 tsubst_flags_t);
 extern tree add_exception_specifier		(tree, tree, tsubst_flags_t);
 extern tree merge_exception_specifiers		(tree, tree);
 

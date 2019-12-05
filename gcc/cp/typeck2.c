@@ -2228,7 +2228,8 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
 
 tree
-build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
+build_functional_cast (location_t loc, tree exp, tree parms,
+		       tsubst_flags_t complain)
 {
   /* This is either a call to a constructor,
      or a C cast in C++'s `functional' notation.  */
@@ -2254,7 +2255,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       if (complain & tf_error)
-	error ("functional cast to array type %qT", type);
+	error_at (loc, "functional cast to array type %qT", type);
       return error_mark_node;
     }
 
@@ -2263,7 +2264,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       if (!CLASS_PLACEHOLDER_TEMPLATE (anode))
 	{
 	  if (complain & tf_error)
-	    error ("invalid use of %qT", anode);
+	    error_at (loc, "invalid use of %qT", anode);
 	  return error_mark_node;
 	}
       else if (!parms)
@@ -2276,8 +2277,8 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 	  if (type == error_mark_node)
 	    {
 	      if (complain & tf_error)
-		error ("cannot deduce template arguments for %qT from %<()%>",
-		       anode);
+		error_at (loc, "cannot deduce template arguments "
+			  "for %qT from %<()%>", anode);
 	      return error_mark_node;
 	    }
 	}
@@ -2296,7 +2297,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       if (TYPE_REF_P (type) && !parms)
 	{
 	  if (complain & tf_error)
-	    error ("invalid value-initialization of reference type");
+	    error_at (loc, "invalid value-initialization of reference type");
 	  return error_mark_node;
 	}
 
