@@ -1006,8 +1006,7 @@ create_anon_label_with_ctx (location_t loc, tree ctx)
   return lab;
 }
 
-/* We mark our named labels as used, because we want to keep them in place
-   during development.  FIXME: Remove this before integration.  */
+/* Create a named label in the specified context.  */
 static tree
 create_named_label_with_ctx (location_t loc, const char *name, tree ctx)
 {
@@ -1015,7 +1014,6 @@ create_named_label_with_ctx (location_t loc, const char *name, tree ctx)
   tree lab = define_label (loc, lab_id);
   DECL_CONTEXT (lab) = ctx;
   DECL_ARTIFICIAL (lab) = 1;
-  TREE_USED (lab) = 1;
   return lab;
 }
 
@@ -1492,9 +1490,6 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
      and an empty pointer for void return.  */
   TREE_OPERAND (await_expr, 0) = ah;
 
-  /* FIXME: determine if it's better to walk the co_await several times with
-     a quick test, or once with a more complex test.  */
-
   /* Get a reference to the initial suspend var in the frame.  */
   tree as_m
     = lookup_member (coro_frame_type, si->await_field_id,
@@ -1738,7 +1733,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (actor_bind);
   tree actor_body = push_stmt_list ();
 
-  /* FIXME: this is development marker, remove later.  */
+  /* The entry point for the actor code from the ramp.  */
   tree actor_begin_label
     = create_named_label_with_ctx (loc, "actor.begin", actor);
   tree actor_frame = build1_loc (loc, INDIRECT_REF, coro_frame_type, actor_fp);
@@ -2674,10 +2669,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 bool
 morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 {
-  if (!orig || TREE_CODE (orig) != FUNCTION_DECL)
-    return false;
-
-  gcc_assert (orig == current_function_decl);
+  gcc_checking_assert (orig && TREE_CODE (orig) == FUNCTION_DECL);
 
   if (!coro_function_valid_p (orig))
     return false;
@@ -2916,12 +2908,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   BIND_EXPR_BLOCK (ramp_bind) = top_block;
   BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
   BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
-
-  /* FIXME: this is development marker, remove later.  */
-  tree ramp_label
-    = create_named_label_with_ctx (fn_start, "ramp.start", current_scope ());
-  ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
-  add_stmt (ramp_label);
 
   /* The decl_expr for the coro frame pointer, initialize to zero so that we
      can pass it to the IFN_CO_FRAME (since there's no way to pass a type,

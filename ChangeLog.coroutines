@@ -1,3 +1,13 @@
+2019-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (create_named_label_with_ctx): Adjust
+	comment.  Don't mark our local labels as used.
+	(transform_await_expr): Update comments.
+	(build_actor_fn): Likewise.
+	(morph_fn_to_coro): Tidy asserts, and make them checking
+	variety.  Remove development code.
+
 2019-12-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	libiberty/
