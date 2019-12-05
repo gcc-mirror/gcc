@@ -7870,6 +7870,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	{
 	  depset *dep = dep_hash->find_dependency (decl);
 	  gcc_checking_assert (!dep->cluster == dep->is_import ());
+	  gcc_checking_assert (!dep->is_import () || !dep->section);
 	  unsigned entity_index = dep->cluster - 1;
 	  module_state *from = state;
 	  if (dep->is_import ())
@@ -11034,8 +11035,6 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       else if (DECL_LANG_SPECIFIC (decl)
 	       && DECL_MODULE_IMPORT_P (decl)
 	       && !DECL_MODULE_PARTITION_P (decl))
-	// FIXME: Add the indexing information so we do not have to
-	// recalculate it
 	dep->set_flag_bit<DB_IMPORTED_BIT> ();
       else if (ek == EK_DECL
 	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
@@ -11156,7 +11155,8 @@ depset *
 depset::hash::add_dependency (tree decl, entity_kind ek)
 {
   depset *dep = make_dependency (decl, ek);
-  if (dep->get_entity_kind () != EK_REDIRECT)
+  if (dep->get_entity_kind () != EK_REDIRECT
+      && !dep->is_import ())
     add_dependency (dep);
   return dep;
 }
@@ -11816,7 +11816,8 @@ depset::hash::finalize_dependencies ()
 void
 depset::tarjan::connect (depset *v)
 {
-  gcc_checking_assert (v->is_binding () || !v->is_unreached ());
+  gcc_checking_assert (v->is_binding ()
+		       || (!v->is_unreached () && !v->is_import ()));
 
   v->cluster = v->section = ++index;
   stack.safe_push (v);
@@ -11970,7 +11971,10 @@ depset::hash::connect ()
     {
       depset *item = *iter;
 
-      if (item->is_binding () || !item->is_unreached ())
+      if (item->is_binding ()
+	  || !(item->is_unreached ()
+	       || item->is_import ()
+	       || item->get_entity_kind () == EK_REDIRECT))
 	deps.quick_push (item);
     }
 
@@ -16579,14 +16583,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	    break;
 	  base[size]->cluster = base[size]->section = 0;
 
-	  /* Namespaces and imported entities should be their own
-	     clusters.  */
+	  /* Namespaces should be their own clusters.  */
 	  gcc_checking_assert (base[size]->get_entity_kind ()
 			       != depset::EK_NAMESPACE);
-	  gcc_checking_assert (base[size]->get_entity_kind ()
-			       != depset::EK_REDIRECT);
-	  gcc_checking_assert (base[size]->is_binding ()
-			       || !base[size]->is_import ());
 	}
       base[0]->cluster = base[0]->section = 0;
 
@@ -16596,14 +16595,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
       if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)
 	{
-	  /* A namespace decl, these are handled specially.  */
 	  gcc_checking_assert (size == 1);
 	  n_spaces++;
 	}
-      else if (base[0]->get_entity_kind () == depset::EK_REDIRECT)
-	gcc_checking_assert (size == 1);
-      else if (!base[0]->is_binding () && base[0]->is_import ())
-	gcc_checking_assert (size == 1);
       else
 	{
 	  /* Save the size in the first member's cluster slot.  */

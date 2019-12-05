@@ -16,4 +16,5 @@ export auto conduit (int i)
   return frobber (i);
 }
 
-// { dg-final { scan-lang-dump {Cluster import '::frobber@voldy:.::._anon_1@voldy:.'} module } }
+// { dg-final { scan-lang-dump-not {Cluster import } module } }
+// { dg-final { scan-lang-dump-not {onnecting definition decl type_decl:'::frobber@voldy:.::._anon_1@voldy:.'} module } }

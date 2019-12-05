@@ -1,6 +1,15 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_dependency): Do not depend on
+	imports.
+	(depset::tarjen::connect): Assert more.
+	(depset::hash::connect): Add less.
+	(module_state::write): Fewer cases.
+	gcc/testsuite/
+	* g++.dg/modules/vmort-2_b.C: Invert scan test.
+
+	gcc/cp/
 	* module.cc (depset::{make,add}_dependency): Drop is_import parm,
 	update all callers.
 	(will_be_import): Delete.
