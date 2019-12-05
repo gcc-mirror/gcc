@@ -19017,7 +19017,7 @@ tsubst_copy_and_build (tree t,
 	switch (TREE_CODE (t))
 	  {
 	  case CAST_EXPR:
-	    r = build_functional_cast (type, op, complain);
+	    r = build_functional_cast (input_location, type, op, complain);
 	    break;
 	  case REINTERPRET_CAST_EXPR:
 	    r = build_reinterpret_cast (type, op, complain);

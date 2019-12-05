@@ -1,3 +1,8 @@
+2019-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_expression_list_expr): Adjust
+	build_functional_cast call.
+
 2019-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libcp1plugin.cc (plugin_pragma_push_user_expression): Update

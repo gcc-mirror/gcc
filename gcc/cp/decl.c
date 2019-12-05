@@ -6764,7 +6764,8 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      if (CLASS_TYPE_P (type)
 		  && (!init || TREE_CODE (init) == TREE_LIST))
 		{
-		  init = build_functional_cast (type, init, tf_none);
+		  init = build_functional_cast (input_location, type,
+						init, tf_none);
 		  if (TREE_CODE (init) == TARGET_EXPR)
 		    TARGET_EXPR_DIRECT_INIT_P (init) = true;
 		}
