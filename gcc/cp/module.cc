@@ -3922,27 +3922,20 @@ node_template_info (tree decl, int &use)
   return ti;
 }
 
-// FIXME: I think we can eventually just return the entity_index + 1
-// and then store it directly into the depset so we don't have to
-// lookup again?
-static bool
-will_be_import (tree decl)
-{
-  if (unsigned origin
-      = DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0)
-    return (*modules)[origin]->remap != 0;
-  return false;
-}
-
-/* Find the index in entity_ary for an imported DECL.  It must be
-   there.  */
+/* Find the index in entity_ary for an imported DECL.  It should
+   always be there, but bugs can cause it to be missing, and that can
+   crash the crash reporting -- let's not do that!  When streaming
+   out we place entities from this module there too -- with negated
+   indices.  */
 
 static unsigned
-import_entity_index (tree decl)
+import_entity_index (tree decl, bool null_ok = false)
 {
-  unsigned index = *entity_map->get (DECL_UID (decl));
+  if (unsigned *slot = entity_map->get (DECL_UID (decl)))
+    return *slot;
 
-  return index;
+  gcc_checking_assert (null_ok);
+  return ~0u;
 }
 
 /* Find the module for an imported entity at INDEX in the entity ary.
@@ -3968,6 +3961,22 @@ import_entity_module (unsigned index)
 	}
     }
   gcc_unreachable ();
+}
+
+// FIXME: I think we can eventually just return the entity_index + 1
+// and then store it directly into the depset so we don't have to
+// lookup again?
+// FIXME: see the note in decl_node about marking partition-owned decls.
+static bool
+will_be_import (tree decl)
+{
+  if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
+    {
+      unsigned index = import_entity_index (decl);
+      module_state *import = import_entity_module (index);
+      return import->remap != 0;
+    }
+  return false;
 }
 
 /********************************************************************/
@@ -4143,8 +4152,15 @@ dumper::impl::nested_name (tree t)
       if (TREE_CODE (t) == TEMPLATE_DECL)
 	fputs ("template ", stream);
 
-      if (DECL_LANG_SPECIFIC (t) && DECL_MODULE_ORIGIN (t))
-	origin = DECL_MODULE_ORIGIN (t);
+      if (DECL_LANG_SPECIFIC (t) && DECL_MODULE_IMPORT_P (t))
+	{
+	  /* We need to be careful here, so as to not explode on
+	     inconsistent data -- we're probably debugging, because
+	     Something Is Wrong.  */
+	  unsigned index = import_entity_index (t, true);
+	  if (index != ~0u)
+	    origin = import_entity_module (index)->mod;
+	}
 
       name = DECL_NAME (t) ? DECL_NAME (t)
 	: HAS_DECL_ASSEMBLER_NAME_P (t) ? DECL_ASSEMBLER_NAME_RAW (t)
@@ -7772,10 +7788,10 @@ trees_in::decl_value ()
 	  /* Mark the entity as imported and add it to the entity
 	     array and map.  */
 	  retrofit_lang_decl (decl);
-	  DECL_MODULE_ORIGIN (decl) = state->mod;
+	  DECL_MODULE_IMPORT_P (decl) = true;
 	  if (inner_tag)
 	    /* We know there will be a lang_decl in this case.  */
-	    DECL_MODULE_ORIGIN (inner) = state->mod;
+	    DECL_MODULE_IMPORT_P (inner) = true;
 
 	  /* Insert into the entity hash (it cannot already be there).  */
 	  bool existed;
@@ -8212,22 +8228,13 @@ trees_out::decl_node (tree decl, walk_kind ref)
     dep = dep_hash->find_dependency (decl);
   else
     {
-      bool is_import = false;
       // FIXME: Maybe push is_import calculation back into
       // make_dependency?  Then we can populate cluster and section
       // with locating information of the decl.  To solve the 'is this
       // a partition' problem, we could add another flag into the DECL
       // marking it so.  Thus avoiding needing to know is_import at
       // this point.
-
-      if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_ORIGIN (decl))
-	{
-	  int origin = DECL_MODULE_ORIGIN (decl);
-	  if (origin)
-	    origin = (*modules)[origin]->remap;
-	  /* A partition could map to zero.  */
-	  is_import = origin != 0;
-	}
+      bool is_import = will_be_import (decl);
 
       if (TREE_CODE (ctx) != FUNCTION_DECL
 	  || TREE_CODE (decl) == TEMPLATE_DECL
@@ -11022,13 +11029,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek, bool imported)
 	{
 	  gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl)
 			       == DECL_MODULE_PURVIEW_P (res));
-	  // FIXME: in template fns, vars are themselves templates.  But
-	  // are local instantiations, I don't think they can end up in
-	  // the instantiation table, and so we shouldn't depend on them
-	  // here.  See the comment in trees_out::decl_node about having
-	  // to look to see if we can find it there.
-	  gcc_checking_assert ((DECL_MODULE_ORIGIN (decl)
-				== DECL_MODULE_ORIGIN (res)));
+	  gcc_checking_assert ((DECL_MODULE_IMPORT_P (decl)
+				== DECL_MODULE_IMPORT_P (res)));
 	}
     }
 
@@ -11584,9 +11586,6 @@ depset::hash::add_specializations (bool decl_p)
 
       depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION,
 				     will_be_import (spec));
-      gcc_assert (dep->is_import ()
-		  == ((*modules)[DECL_LANG_SPECIFIC (spec)
-				 ? DECL_MODULE_ORIGIN (spec) : 0]->remap != 0));
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be a friend
@@ -14218,8 +14217,13 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       bool public_p = TREE_PUBLIC (ns);
 
       /* We should only be naming public namespaces, or our own
-	 private ones.  */
-      gcc_checking_assert (public_p || !DECL_MODULE_ORIGIN (ns));
+	 private ones.  Internal linkage ones never get to be written
+	 out -- because that means something erroneously referred to a
+	 member.  However, Davis Herring's paper probably changes that
+	 by permitting them to be written out, but then an error if on
+	 touches them.  (Certain cases cannot be detected until that
+	 point.)  */ 
+      gcc_checking_assert (public_p || !DECL_MODULE_IMPORT_P (ns));
       unsigned flags = 0;
       if (export_p)
 	flags |= 1;
@@ -14305,7 +14309,7 @@ module_state::read_namespaces (unsigned num)
       // Have add_imported_namespace return an indicator that WE
       // created the namespace?
       (*entity_ary)[entity_lwm + entity_index] = inner;
-      if (DECL_MODULE_ORIGIN (inner))
+      if (DECL_MODULE_IMPORT_P (inner))
 	{
 	  bool existed;
 	  unsigned *slot = &entity_map->get_or_insert
@@ -14489,13 +14493,16 @@ module_state::write_specializations (elf_out *to, vec<depset *> depsets,
 	{
 	  tree spec = d->get_entity ();
 	  tree key = get_originating_module_decl (spec);
-	  unsigned origin = (DECL_LANG_SPECIFIC (key)
-			     ? DECL_MODULE_ORIGIN (key) : 0);
-	  module_state *import = (*modules)[origin];
+	  module_state *from = (*modules)[0];
+	  if (DECL_LANG_SPECIFIC (key) && DECL_MODULE_IMPORT_P (key))
+	    {
+	      unsigned index = import_entity_index (key);
+	      from = import_entity_module (index);
+	    }
 
 	  unsigned kind = 0;
-	  if (!import->is_header ())
-	    kind = import->is_partition () ? 1 : 2;
+	  if (!from->is_header ())
+	    kind = from->is_partition () ? 1 : 2;
 
 	  tree ctx = CP_DECL_CONTEXT (key);
 	  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
@@ -17149,9 +17156,24 @@ get_originating_module (tree decl, bool for_mangle)
       && (DECL_MODULE_EXPORT_P (owner) || !DECL_MODULE_PURVIEW_P (owner)))
     return -1;
 
-  return DECL_MODULE_ORIGIN (owner);
+  if (!DECL_MODULE_IMPORT_P (owner))
+    return 0;
+
+  return get_importing_module (owner);
 }
 
+unsigned
+get_importing_module (tree decl, bool flexible)
+{
+  unsigned index = import_entity_index (decl, flexible);
+  if (index == ~0u)
+    return -1;
+  module_state *module = import_entity_module (index);
+
+  return module->mod;
+}
+
+// FIXME: I suspect we can get rid of this?
 /* Is it permissible to redeclare DECL.  */
 // FIXME: This needs extending, see its use in duplicate_decls
 
@@ -17160,8 +17182,11 @@ module_may_redeclare (tree decl)
 {
   module_state *me = (*modules)[0];
   module_state *them = me;
-  if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_ORIGIN (decl))
-    them = (*modules)[DECL_MODULE_ORIGIN (decl)];
+  if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
+    {
+      unsigned index = import_entity_index (decl);
+      them = import_entity_module (index);
+    }
 
   if (them->is_header ())
     /* If it came from a header, it's in the global module.  */
@@ -17203,7 +17228,8 @@ set_instantiating_module (tree decl)
   if (DECL_LANG_SPECIFIC (decl))
     {
       DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
-      DECL_MODULE_ORIGIN (decl) = 0;
+      /* If this was imported, we'll still be in the entity_hash.  */
+      DECL_MODULE_IMPORT_P (decl) = false;
     }
 
   int use_tpl = -1;
@@ -17216,7 +17242,7 @@ set_instantiating_module (tree decl)
 
       if (TREE_CODE (ctx) != NAMESPACE_DECL
 	  && DECL_LANG_SPECIFIC (ctx)
-	  && DECL_MODULE_ORIGIN (ctx))
+	  && DECL_MODULE_IMPORT_P (ctx))
 	{
 	  if (ti)
 	    {
@@ -18380,12 +18406,10 @@ finish_module_processing (cpp_reader *reader)
   /* No need to lookup modules anymore.  */
   modules_hash = NULL;
 
-  /* Or entities.  */
-  delete entity_map;
-  entity_map = NULL;
+  /* Or entity array.  We still need the entity map to find import numbers.  */
   delete entity_ary;
   entity_ary = NULL;
-  
+
   /* Or remember any pending specializations.  */
   delete specset::table;
   specset::table = NULL;

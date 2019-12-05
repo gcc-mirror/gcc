@@ -1692,23 +1692,15 @@ check_constraint_info (tree t)
 
 /* Module defines.  */
 // Too many _DECLS: FUNCTION,VAR,TYPE,TEMPLATE,CONCEPT or NAMESPACE
-#define DECL_MODULE_ORIGIN_CHECK(NODE) (NODE)
-
-/* The owning module of a DECL.  Held on any decl that can have
-   independent declaration and definition (function, var, type, or
-   namespace.  templates hold it on their template_result).  */
-#define DECL_MODULE_ORIGIN(N) \
-  (DECL_LANG_SPECIFIC (DECL_MODULE_ORIGIN_CHECK (N))->u.base.module_origin)
+#define DECL_MODULE_CHECK(NODE) (NODE)
 
 /* In the purview of a module (including header unit).  */
 #define DECL_MODULE_PURVIEW_P(N) \
-  (DECL_LANG_SPECIFIC (DECL_MODULE_ORIGIN_CHECK (N))->u.base.module_purview_p)
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_purview_p)
 
-#if 0 // FIXME: Not ready yet
-/* Whether NODE is an import or not.  */
+/* True if this decl was imported.  */
 #define DECL_MODULE_IMPORT_P(NODE) \
-  (DECL_LANG_SPECIFIC (DECL_MODULE_ORIGIN_CHECK (NODE))->u.base.module_origin)
-#endif
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_origin)
 
 /* Whether this is an exported DECL.  Held on any decl that can
    appear at namespace scope (function, var, type, template, const or
@@ -6959,6 +6951,7 @@ extern bool module_may_redeclare (tree decl);
 extern void set_originating_module (tree, bool friend_p = false);
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
 extern int get_originating_module (tree, bool for_mangle = false) ATTRIBUTE_PURE;
+extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);

@@ -1503,29 +1503,33 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		  /* Add fns in the innermost namespace partition of the
 		     type.  */
 		  tree origin = get_originating_module_decl (TYPE_NAME (scope));
-		  unsigned mod = (DECL_LANG_SPECIFIC (origin)
-				  ? DECL_MODULE_ORIGIN (origin) : 0);
-
-		  /* If the module was in the inst path, we'll look at its
-		     namespace partition anyway.  */
-		  if (mod && !(inst_path && bitmap_bit_p (inst_path, mod)))
+		  if (DECL_LANG_SPECIFIC (origin)
+		      && DECL_MODULE_IMPORT_P (origin))
 		    {
-		      tree ns = CP_DECL_CONTEXT (origin);
-		      if (tree *slot = find_namespace_slot (ns, name, false))
-			if (mc_slot *mslot
-			    = search_imported_binding_slot (slot, mod))
-			  {
-			    if (mslot->is_lazy ())
-			      lazy_load_binding (mod, ns, name, mslot);
-			    else if (!deduping)
-			      {
-				deduping = true;
-				lookup_mark (value, true);
-			      }
+		      unsigned module = get_importing_module (origin);
 
-			    if (tree bind = *mslot)
-			      add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (bind)));
-			  }
+		      /* If the module was in the inst path, we'll look at its
+			 namespace partition anyway.  */
+		      if (!(inst_path && bitmap_bit_p (inst_path, module)))
+			{
+			  tree ns = CP_DECL_CONTEXT (origin);
+			  if (tree *slot = find_namespace_slot (ns, name, false))
+			    if (mc_slot *mslot
+				= search_imported_binding_slot (slot, module))
+			      {
+				if (mslot->is_lazy ())
+				  lazy_load_binding (module, ns, name, mslot);
+				else if (!deduping)
+				  {
+				    deduping = true;
+				    lookup_mark (value, true);
+				  }
+
+				if (tree bind = *mslot)
+				  add_fns (ovl_skip_hidden
+					   (MAYBE_STAT_DECL (bind)));
+			      }
+			}
 		    }
 		}
 	    }
@@ -8981,7 +8985,7 @@ add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
   if (!decl)
     {
       decl = make_namespace (ctx, name, loc, inline_p, anon_name);
-      DECL_MODULE_ORIGIN (decl) = origin;
+      DECL_MODULE_IMPORT_P (decl) = true;
       make_namespace_finish (decl, slot, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)

@@ -4859,7 +4859,7 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
       DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
       if (DECL_LANG_SPECIFIC (decl))
 	{
-	  DECL_MODULE_ORIGIN (tmpl) = DECL_MODULE_ORIGIN (decl);
+	  DECL_MODULE_IMPORT_P (tmpl) = DECL_MODULE_IMPORT_P (decl);
 	  DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (decl);
 	}
     }
@@ -13881,7 +13881,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
       DECL_MODULE_EXPORT_P (r) = DECL_MODULE_EXPORT_P (inner);
       if (DECL_LANG_SPECIFIC (inner))
 	{
-	  DECL_MODULE_ORIGIN (r) = DECL_MODULE_ORIGIN (inner);
+	  DECL_MODULE_IMPORT_P (r) = DECL_MODULE_IMPORT_P (inner);
 	  DECL_MODULE_PURVIEW_P (r) = DECL_MODULE_PURVIEW_P (inner);
 	}
     }

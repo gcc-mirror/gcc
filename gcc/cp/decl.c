@@ -1983,8 +1983,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     {
       if (DECL_ARTIFICIAL (olddecl))
 	{
-	  gcc_checking_assert (!DECL_LANG_SPECIFIC (olddecl)
-			       || !DECL_MODULE_ORIGIN (olddecl));
+	  gcc_checking_assert (!(DECL_LANG_SPECIFIC (olddecl)
+				 && DECL_MODULE_IMPORT_P (olddecl)));
 	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  else
@@ -2227,9 +2227,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	}
 
-      DECL_MODULE_ORIGIN (olddecl)
-	= DECL_MODULE_ORIGIN (old_result)
-	= DECL_MODULE_ORIGIN (newdecl);
+      DECL_MODULE_IMPORT_P (olddecl)
+	= DECL_MODULE_IMPORT_P (old_result)
+	= DECL_MODULE_IMPORT_P (newdecl);
 
       return olddecl;
     }
@@ -2831,14 +2831,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       if (DECL_LANG_SPECIFIC (olddecl) && DECL_TEMPLATE_INFO (olddecl))
 	{
 	  /* Repropagate the module information to the template.  */
-	  // FIXME: Perhaps this is indicative that we shouldn't be
-	  // duplicating this information?
 	  tree tmpl = DECL_TI_TEMPLATE (olddecl);
 
 	  if (DECL_TEMPLATE_RESULT (tmpl) == olddecl)
 	    {
 	      DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (olddecl);
-	      DECL_MODULE_ORIGIN (tmpl) = DECL_MODULE_ORIGIN (olddecl);
+	      DECL_MODULE_IMPORT_P (tmpl) = DECL_MODULE_IMPORT_P (olddecl);
 	    }
 	}
 

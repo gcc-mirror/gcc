@@ -1,5 +1,36 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
+	Module index no longer on the decl itself.
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_ORIGIN): Delete.
+	(DECL_MODULE_IMPORT_P): New.
+	(get_importing_module): Declare.
+	* decl.c (duplicate_decls): Replace DECL_MODULE_ORIGIN with
+	DECL_MODULE_IMPORT_P.
+	* decl2.c (no_linkage_error): Likewise.
+	* module.cc
+	(will_be_import):Move later, use import_entity_{index,module}.
+	(import_entity_index): Add null_ok parm.
+	(dumper::impl::nested_name): Use import_entity_{index,module}.
+	(trees_in::decl_value): Set DECL_MODULE_IMPORT_P.
+	(trees_out::decl_node): Use will_be_import.
+	(depset::hash::make_dependency): Check import_p flag.
+	(depset::hash::add_specializations): Delete assert.
+	(module_state::{read,write}_namespaces): Check DECL_MODULE_IMPORT_P.
+	(module_state::write_specializations): Likewise.
+	(get_originating_module): Use get_importing_module.
+	(get_importing_module): New.
+	(module_may_redeclare): Lookup the module index.
+	(set_instantiating_module): Clear DECL_MODULE_IMPORT_P.
+	(finish_module_processing): Leep the entity_map.
+	* name-lookup.c (name_lookup::search_adl): Use
+	get_importing_module.
+	(add_imported_namespace): Set DECL_MODULE_IMPORT_P.
+	* pt.c (build_template_decl): Copy DECL_MODULE_IMPORT_P, not
+	ORIGIN.
+	(tsubst_template_decl): Likewise.
+	* ptree.c (cxx_print_decl): Use get_importing_module.
+
 	gcc/cp/
 	* name-lookup.h (add_imported_namespace): Origin is unsigned.
 	* name-lookup.c (add_imported_namespace): Origin is unsigned and

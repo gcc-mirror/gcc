@@ -63,11 +63,14 @@ cxx_print_decl (FILE *file, tree node, int indent)
       || TREE_CODE (node) == VAR_DECL
       || TREE_CODE (node) == TYPE_DECL
       || TREE_CODE (node) == TEMPLATE_DECL
+      || TREE_CODE (node) == CONCEPT_DECL
       || TREE_CODE (node) == NAMESPACE_DECL)
     {
-      tree d = STRIP_TEMPLATE (node);
-      unsigned m = DECL_LANG_SPECIFIC (d) ? DECL_MODULE_ORIGIN (d) : 0;
-      if (const char *name = module_name (m, true))
+      unsigned m = 0;
+      if (DECL_LANG_SPECIFIC (node) && DECL_MODULE_IMPORT_P (node))
+	m = get_importing_module (node, true);
+
+      if (const char *name = m == ~0u ? "" : module_name (m, true))
 	{
 	  if (need_indent)
 	    indent_to (file, indent + 3);
