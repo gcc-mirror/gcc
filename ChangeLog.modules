@@ -1,6 +1,12 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::{enum ,get_}{dup,ord}ness): Delete.
+	(trees_in::{odr,is}_duplicate): New.
+	(trees_in::read_{function,var,class,enum}_def): Adjust.
+	(module_state::read_cluster): Adjust.
+
+	gcc/cp/
 	* decl.c (duplicate_decls): Pass the old decl to
 	module_may_redeclare.
 	* module.cc (module_may_redeclare): Expect the decl, not its

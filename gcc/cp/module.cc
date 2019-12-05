@@ -2869,29 +2869,19 @@ public:
 
 private:
   uintptr_t *find_duplicate (tree existing);
-
-public:
   void register_duplicate (tree decl, tree existing);
+  /* Mark as an already diagnosed bad duplicate.  */
   void unmatched_duplicate (tree existing)
   {
     *find_duplicate (existing) |= 1;
   }
 
-  enum dupness
+public:
+  bool is_duplicate (tree decl)
   {
-    DUP_new,
-    DUP_dup,
-    DUP_bad
-  };
-  dupness get_dupness (tree decl);
-
-  enum odrness
-  {
-    ODR_new,  /* A new entity, absorb it.  */
-    ODR_check, /* A duplicate entity, check it.  */
-    ODR_ignore /* A duplicate entity, ignore it. */
-  };
-  odrness get_odrness (tree decl, bool has_existing_defn);
+    return find_duplicate (decl) != NULL;
+  }
+  tree odr_duplicate (tree decl, bool has_defn);
 
 public:
   /* Return the next decl to postprocess, or NULL.  */
@@ -2907,7 +2897,7 @@ private:
   }
 
 private:
-  void assert_definition (tree, odrness);
+  void assert_definition (tree, bool installing);
 };
 
 trees_in::trees_in (module_state *state)
@@ -3241,10 +3231,10 @@ static hash_set<tree> *note_defs;
 
 void
 trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
-			     odrness odr ATTRIBUTE_UNUSED)
+			     bool installing ATTRIBUTE_UNUSED)
 {
 #if CHECKING_P
-  if (odr == ODR_new)
+  if (installing)
     {
       /* We must be inserting for the first time.  */
       bool existed = note_defs->add (decl);
@@ -3256,7 +3246,7 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
        should be in the table.  Global module entities could have been
        defined textually in the current TU and so might or might not
        be present.  */
-    gcc_assert (get_dupness (decl) < DUP_dup
+    gcc_assert (!is_duplicate (decl)
 		? !note_defs->contains (decl)
 		: (!DECL_LANG_SPECIFIC (decl)
 		   || !DECL_MODULE_PURVIEW_P (decl)
@@ -6718,18 +6708,6 @@ trees_out::tree_node_bools (tree t)
     {
     case tcc_declaration:
       {
-	/* The only nameable decls we should stream out are those from
-	   this module, a partition or the global module.  All other
-	   decls should be by name.  */
-#if CHECKING_P
-	if (TREE_CODE (t) == TEMPLATE_DECL
-	    || TREE_CODE (t) == FUNCTION_DECL
-	    || TREE_CODE (t) == VAR_DECL
-	    || TREE_CODE (t) == TYPE_DECL
-	    || (TREE_CODE (t) == CONST_DECL && DECL_CONTEXT (t)
-		&& TREE_CODE (DECL_CONTEXT (t)) == ENUMERAL_TYPE))
-	  gcc_checking_assert (!(*modules)[get_instantiating_module (t)]->remap);
-#endif
 	bool specific = DECL_LANG_SPECIFIC (t) != NULL;
 	b (specific);
 	if (specific && VAR_P (t))
@@ -10163,7 +10141,7 @@ trees_in::find_duplicate (tree existing)
   if (!duplicates)
     return NULL;
 
-  return duplicates->get (STRIP_TEMPLATE (existing));
+  return duplicates->get (existing);
 }
 
 /* We're starting to read duplicate DECL.  EXISTING is the already
@@ -10176,57 +10154,35 @@ trees_in::register_duplicate (tree decl, tree existing)
     duplicates = new duplicate_hash_map (40);
 
   bool existed;
-  uintptr_t &slot =
-    duplicates->get_or_insert (STRIP_TEMPLATE (existing), &existed);
+  uintptr_t &slot = duplicates->get_or_insert (existing, &existed);
   gcc_checking_assert (!existed);
-  slot = reinterpret_cast<uintptr_t> (STRIP_TEMPLATE (decl));
+  slot = reinterpret_cast<uintptr_t> (decl);
 }
 
-/* DECL is the controlling mergeable decl of some graph.  Did we find
-   an existing decl, or is it a new decl?  */
+/* We've read a definition of MAYBE_EXISTING.  If not a duplicate,
+   return MAYBE_EXISTING (into which the definition should be
+   installed).  Otherwise return NULL if already known bad, or the
+   duplicate we read (for ODR checking, or extracting addtional merge
+   information).  */
 
-trees_in::dupness
-trees_in::get_dupness (tree maybe_existing)
+tree
+trees_in::odr_duplicate (tree maybe_existing, bool has_defn)
 {
-  if (!CHECKING_P && !duplicates)
-    return DUP_new;
+  tree res = NULL_TREE;
 
-  if (uintptr_t *slot = find_duplicate (maybe_existing))
-    return *slot & 1 ? DUP_bad : DUP_dup;
+  if (uintptr_t *dup = find_duplicate (maybe_existing))
+    {
+      if (!(*dup & 1))
+	res = reinterpret_cast<tree> (*dup);
+    }
+  else
+    res = maybe_existing;
 
-  return DUP_new;
-}
+  assert_definition (maybe_existing, res && !has_defn);
 
-/* DECL is an about-to-be defined decl.  Determine the ODR mergeness.
-   HAVE_DEFN indicates whether we already have a definition for it.  */
-
-trees_in::odrness
-trees_in::get_odrness (tree decl, bool have_defn)
-{
-  if (get_overrun ())
-    return ODR_ignore;
-
-  /* If there's no deduping going on, we want this one.  */
-  if (!duplicates)
-    return ODR_new;
-
-  tree owner = get_instantiating_module_decl (decl);
-  dupness dup = get_dupness (owner);
-
-  if (dup == DUP_bad)
-    return ODR_ignore;
-
-  if (!have_defn)
-    if (dup < DUP_dup || STRIP_TEMPLATE (decl) == owner)
-      return ODR_new;
-
-  if (dup == DUP_dup)
-    // FIXME: it'd be good to be able to locate the thing to check
-    // against and allow checking in all cases
-    return STRIP_TEMPLATE (decl) == owner ? ODR_check : ODR_ignore;
-
-  gcc_unreachable ();
-  return ODR_ignore;
+  // FIXME: We probably need to return the template, so that the
+  // template header can be checked?
+  return res ? STRIP_TEMPLATE (res) : NULL_TREE;
 }
 
 /* The following writer functions rely on the current behaviour of
@@ -10308,11 +10264,11 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   if (get_overrun ())
     return NULL_TREE;
 
-  odrness odr = get_odrness (maybe_template,
-			     DECL_SAVED_TREE (decl) != NULL_TREE);
-  assert_definition (maybe_template, odr);
+  /* Oh for C++20 structured bindings.  */
+  tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
+  bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
 
-  if (odr == ODR_new)
+  if (installing)
     {
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
@@ -10323,7 +10279,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 	register_constexpr_fundef (cexpr);
       post_process (maybe_template);
     }
-  else if (odr == ODR_check)
+  else if (maybe_dup)
     {
       // FIXME: Check matching defn
     }
@@ -10350,13 +10306,13 @@ trees_in::read_var_def (tree decl, tree maybe_template)
   if (get_overrun ())
     return false;
 
-  odrness odr = get_odrness (maybe_template, DECL_INITIAL (decl) != NULL_TREE);
-  assert_definition (maybe_template, odr);
-  if (odr == ODR_new)
+  tree maybe_dup = odr_duplicate (maybe_template, DECL_INITIAL (decl));
+  bool installing = maybe_dup && !DECL_INITIAL (decl);
+  if (installing)
     {
       DECL_INITIAL (decl) = init;
     }
-  else if (odr == ODR_check)
+  else if (maybe_dup)
     {
       // FIXME: Check matching defn
     }
@@ -10648,10 +10604,9 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
   // FIXME: Read more stuff!
   // lang->nested_udts
-
-  odrness odr = get_odrness (maybe_template, TYPE_SIZE (type) != NULL_TREE);
-  assert_definition (maybe_template, odr);
-  if (odr == ODR_new)
+  tree maybe_dup = odr_duplicate (maybe_template, TYPE_SIZE (type));
+  bool installing = maybe_dup && !TYPE_SIZE (type);
+  if (installing)
     {
       TYPE_SIZE (type) = size;
       TYPE_SIZE_UNIT (type) = size_unit;
@@ -10689,7 +10644,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  resort_type_member_vec (member_vec, NULL, nop, NULL);
 	}
     }
-  else if (odr == ODR_check)
+  else if (maybe_dup)
     {
       // FIXME: Check matching defn
     }
@@ -10741,7 +10696,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	}
       decl_list = nreverse (decl_list);
 
-      if (odr == ODR_new)
+      if (installing)
 	{
 	  CLASSTYPE_PRIMARY_BINFO (type) = primary;
 	  CLASSTYPE_AS_BASE (type) = as_base;
@@ -10785,13 +10740,13 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	while (tree vfunc = tree_node ())
 	  {
 	    tree thunks = chained_decls ();
-	    if (odr == ODR_new)
+	    if (installing)
 	      SET_DECL_THUNKS (vfunc, thunks);
 	  }
     }
 
   /* Propagate to all variants.  */
-  if (odr == ODR_new)
+  if (installing)
     fixup_type_variants (type);
 
   /* IS_FAKE_BASE_TYPE is inaccurate at this point, because if this is
@@ -10846,11 +10801,10 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
   if (get_overrun ())
     return false;
 
-  // FIXME: ODR ?
-  odrness odr = get_odrness (defn, TYPE_VALUES (type) != NULL_TREE);
-  assert_definition (maybe_template, odr);
+  tree maybe_dup = odr_duplicate (maybe_template, TYPE_VALUES (type));
+  bool installing = maybe_dup && !TYPE_VALUES (type);
 
-  if (odr == ODR_new)
+  if (installing)
     {
       TYPE_VALUES (type) = values;
       TYPE_MIN_VALUE (type) = min;
@@ -10858,7 +10812,7 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
 
       rest_of_type_compilation (type, DECL_NAMESPACE_SCOPE_P (defn));
     }
-  else if (odr == ODR_check)
+  else if (maybe_dup)
     {
       // FIXME: check odr
     }
@@ -14091,7 +14045,7 @@ module_state::read_cluster (unsigned snum)
 
 	    if (type
 		&& CP_DECL_CONTEXT (type) == ns
-		&& sec.get_dupness (type) < trees_in::DUP_dup)
+		&& !sec.is_duplicate (type))
 	      add_module_decl (ns, name, type);
 
 	    for (ovl_iterator iter (decls); iter; ++iter)
@@ -14099,7 +14053,7 @@ module_state::read_cluster (unsigned snum)
 		{
 		  tree decl = *iter;
 		  if (CP_DECL_CONTEXT (decl) == ns
-		      && sec.get_dupness (decl) < trees_in::DUP_dup)
+		      && !sec.is_duplicate (decl))
 		    add_module_decl (ns, name, decl);
 		}
 	  }
