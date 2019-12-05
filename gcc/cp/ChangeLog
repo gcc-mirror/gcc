@@ -1,4 +1,22 @@
 2019-12-05  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91353 - P1331R2: Allow trivial default init in constexpr contexts.
+	* class.c (trivial_default_constructor_is_constexpr): Return true in
+	C++20.
+	* constexpr.c (cx_check_missing_mem_inits): Allow missing field
+	initializers in C++20.
+	(cxx_eval_call_expression): Don't clear CONSTRUCTOR_NO_CLEARING for
+	constexpr constructors in C++20.
+	(reduced_constant_expression_p): Don't set FIELD for union and array
+	types.  Skip empty class fields without initializers.
+	* decl.c (check_for_uninitialized_const_var): Permit trivial default
+	initialization in constexpr.
+	(next_initializable_field): Don't skip vptr fields.
+	* method.c (walk_field_subobs): Still consider a constructor that
+	doesn't initialize all the members constexpr.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92271 - make __is_same alias for __is_same_as.
 	* cxx-pretty-print.c (pp_cxx_trait_expression) <case CPTK_IS_SAME_AS>:

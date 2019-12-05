@@ -1,4 +1,43 @@
 2019-12-05  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91353 - P1331R2: Allow trivial default init in constexpr contexts.
+	* g++.dg/cpp0x/constexpr-array6.C: Adjust dg-error.
+	* g++.dg/cpp0x/constexpr-ctor.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag4.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-template2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-union2.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Rip out a piece of code ...
+	* g++.dg/cpp0x/lambda/lambda-mangle6.C: ... and put it here.
+	* g++.dg/cpp0x/pr79118.C: Adjust dg-error.
+	* g++.dg/cpp1y/constexpr-83921-3.C: Likewise.
+	* g++.dg/cpp1y/constexpr-neg1.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda12.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Use -std=c++17.
+	* g++.dg/cpp2a/constexpr-init1.C: New test.
+	* g++.dg/cpp2a/constexpr-init2.C: New test.
+	* g++.dg/cpp2a/constexpr-init3.C: New test.
+	* g++.dg/cpp2a/constexpr-init4.C: New test.
+	* g++.dg/cpp2a/constexpr-init5.C: New test.
+	* g++.dg/cpp2a/constexpr-init6.C: New test.
+	* g++.dg/cpp2a/constexpr-init7.C: New test.
+	* g++.dg/cpp2a/constexpr-init8.C: New test.
+	* g++.dg/cpp2a/constexpr-init9.C: New test.
+	* g++.dg/cpp2a/constexpr-init10.C: New test.
+	* g++.dg/cpp2a/constexpr-init11.C: New test.
+	* g++.dg/cpp2a/constexpr-init12.C: New test.
+	* g++.dg/cpp2a/constexpr-init13.C: New test.
+	* g++.dg/cpp2a/constexpr-init14.C: New test.
+	* g++.dg/cpp2a/constexpr-init15.C: New test.
+	* g++.dg/cpp2a/constexpr-try5.C: Adjust dg-error.
+	* g++.dg/cpp2a/feat-cxx2a.C: Test __cpp_constexpr.
+	* g++.dg/cpp2a/lambda-mangle.C: New test.
+	* g++.dg/debug/dwarf2/pr44641.C: Skip for c++2a.
+	* g++.dg/ext/stmtexpr21.C: Adjust dg-error.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92271 - make __is_same alias for __is_same_as.
 	* g++.dg/ext/is_same.C: New test.

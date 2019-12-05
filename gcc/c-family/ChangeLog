@@ -1,4 +1,10 @@
 2019-12-05  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91353 - P1331R2: Allow trivial default init in constexpr contexts.
+	* c-cppbuiltin.c (c_cpp_builtins): Adjust the value of __cpp_constexpr.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92271 - make __is_same alias for __is_same_as.
 	* c-common.c: Add __is_same, an alias for __is_same_as.

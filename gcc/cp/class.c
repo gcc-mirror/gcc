@@ -5288,8 +5288,14 @@ trivial_default_constructor_is_constexpr (tree t)
   /* A defaulted trivial default constructor is constexpr
      if there is nothing to initialize.  */
   gcc_assert (!TYPE_HAS_COMPLEX_DFLT (t));
-  /* A class with a vptr doesn't have a trivial default ctor.  */
-  return is_really_empty_class (t, /*ignore_vptr*/true);
+  /* A class with a vptr doesn't have a trivial default ctor.
+     In C++20, a class can have transient uninitialized members, e.g.:
+
+       struct S { int i; constexpr S() = default; };
+
+     should work.  */
+  return (cxx_dialect >= cxx2a
+	  || is_really_empty_class (t, /*ignore_vptr*/true));
 }
 
 /* Returns true iff class T has a constexpr default constructor.  */

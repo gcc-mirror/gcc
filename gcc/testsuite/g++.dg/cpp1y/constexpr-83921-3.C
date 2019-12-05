@@ -2,4 +2,4 @@
 // { dg-do compile { target c++14 } }
 
 struct Foo { int m; };
-constexpr void test() { Foo f; }  // { dg-error "uninitialized" }
+constexpr void test() { Foo f; }  // { dg-error "uninitialized" "" { target c++17_down } }

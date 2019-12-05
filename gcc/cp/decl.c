@@ -5858,8 +5858,12 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
      7.1.6 */
   if (VAR_P (decl)
       && !TYPE_REF_P (type)
-      && (constexpr_context_p
-	  || CP_TYPE_CONST_P (type) || var_in_constexpr_fn (decl))
+      && (CP_TYPE_CONST_P (type)
+	  /* C++20 permits trivial default initialization in constexpr
+	     context (P1331R2).  */
+	  || (cxx_dialect < cxx2a
+	      && (constexpr_context_p
+		  || var_in_constexpr_fn (decl))))
       && !DECL_NONTRIVIALLY_INITIALIZED_P (decl))
     {
       tree field = default_init_uninitialized_part (type);
@@ -5868,7 +5872,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 
       bool show_notes = true;
 
-      if (!constexpr_context_p)
+      if (!constexpr_context_p || cxx_dialect >= cxx2a)
 	{
 	  if (CP_TYPE_CONST_P (type))
 	    {
@@ -5938,7 +5942,11 @@ next_initializable_field (tree field)
 	 && (TREE_CODE (field) != FIELD_DECL
 	     || DECL_UNNAMED_BIT_FIELD (field)
 	     || (DECL_ARTIFICIAL (field)
-		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field)))))
+		 /* In C++17, don't skip base class fields.  */
+		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field))
+		 /* Don't skip vptr fields.  We might see them when we're
+		    called from reduced_constant_expression_p.  */
+		 && !DECL_VIRTUAL_P (field))))
     field = DECL_CHAIN (field);
 
   return field;
