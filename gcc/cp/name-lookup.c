@@ -8972,16 +8972,16 @@ pop_namespace (void)
 // confused piece.
 
 tree
-add_imported_namespace (tree ctx, tree name, int mod, location_t loc,
+add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
 			bool visible_p, bool inline_p, tree anon_name)
 {
-  gcc_checking_assert (mod >= 0);
+  gcc_checking_assert (origin);
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
   if (!decl)
     {
       decl = make_namespace (ctx, name, loc, inline_p, anon_name);
-      DECL_MODULE_ORIGIN (decl) = mod;
+      DECL_MODULE_ORIGIN (decl) = origin;
       make_namespace_finish (decl, slot, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
@@ -8991,39 +8991,31 @@ add_imported_namespace (tree ctx, tree name, int mod, location_t loc,
       inform (DECL_SOURCE_LOCATION (decl), "namespace introduced here");
     }
 
-  /* Now insert.  */
-  tree *mslot = NULL;
-  if (mod <= 0)
+  if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == MODULE_VECTOR)
     {
-      unsigned fixed = mod ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
-      mslot = get_fixed_binding_slot (slot, name, fixed, true);
-    }
-  else
-    {
-      if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == MODULE_VECTOR)
-	{
-	  /* See if we can extend the final slot.  */
-	  module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
-	  gcc_checking_assert (last->indices[0].span);
-	  unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER;
+      /* See if we can extend the final slot.  */
+      module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
+      gcc_checking_assert (last->indices[0].span);
+      unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER;
 
-	  while (--jx)
-	    if (last->indices[jx].span)
-	      break;
-	  tree final = last->slots[jx];
-	  if (visible_p == !STAT_HACK_P (final)
-	      && MAYBE_STAT_DECL (final) == decl
-	      && last->indices[jx].base + last->indices[jx].span == mod
-	      && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
-		  || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_SLOTS_FIXED
-		      && jx >= MODULE_SLOTS_FIXED)))
-	    {
-	      last->indices[jx].span++;
-	      return decl;
-	    }
+      while (--jx)
+	if (last->indices[jx].span)
+	  break;
+      tree final = last->slots[jx];
+      if (visible_p == !STAT_HACK_P (final)
+	  && MAYBE_STAT_DECL (final) == decl
+	  && last->indices[jx].base + last->indices[jx].span == origin
+	  && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
+	      || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_SLOTS_FIXED
+		  && jx >= MODULE_SLOTS_FIXED)))
+	{
+	  last->indices[jx].span++;
+	  return decl;
 	}
-      mslot = &(tree &)*append_imported_binding_slot (slot, name, mod);
     }
+
+  /* Append a new slot.  */
+  tree *mslot = &(tree &)*append_imported_binding_slot (slot, name, origin);
 
   gcc_assert (!*mslot || (visible_p && *mslot == decl));
   *mslot = visible_p ? decl : stat_hack (decl, NULL_TREE);

@@ -1,6 +1,11 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.h (add_imported_namespace): Origin is unsigned.
+	* name-lookup.c (add_imported_namespace): Origin is unsigned and
+	non-zero.  Elide unreachable code.
+
+	gcc/cp/
 	* cp-tree.h (get_instantiating_module_decl): Delete.
 	(get_instantiating_module): Delete.
 	* module.cc (depset::hash::add_specialization): Remove assert.

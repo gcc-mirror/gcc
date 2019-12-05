@@ -387,7 +387,7 @@ extern void add_module_decl (tree ctx, tree name, tree decl);
 extern tree extract_module_binding (tree &binding, tree ns, bitmap partitions);
 extern unsigned get_field_ident (tree ctx, tree decl);
 extern tree lookup_field_ident (tree ctx, tree name, unsigned ix);
-extern tree add_imported_namespace (tree ctx, tree name, int origin,
+extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
 				    location_t, bool visible_p, bool inline_p,
 				    tree anon_name);
 extern bool note_pending_specializations (tree ns, tree name,
