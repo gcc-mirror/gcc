@@ -1,3 +1,14 @@
+2019-12-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91582
+	* builtins.c (gimple_call_alloc_size): New function.
+	(compute_objsize): Add argument.  Call gimple_call_alloc_size.
+	Handle variable offsets and indices.
+	* builtins.h (gimple_call_alloc_size): Declare.
+	(compute_objsize): Add argument.
+	* gcc/gimple-ssa-warn-restrict.c: Remove assertions.
+	* tree-ssa-strlen.c (handle_store): Handle calls to allocated objects.
+
 2019-12-04  Julian Brown  <julian@codesourcery.com>
 
 	* config/gcn/gcn.h (FIXED_REGISTERS): Make s6/s7 fixed registers.

@@ -133,7 +133,8 @@ extern tree fold_call_stmt (gcall *, bool);
 extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
-extern tree compute_objsize (tree, int, tree * = NULL);
+extern tree gimple_call_alloc_size (gimple *);
+extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL);
 
 extern bool readonly_data_expr (tree exp);
 extern bool init_target_chars (void);
