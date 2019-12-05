@@ -1,3 +1,15 @@
+2019-12-05  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md (cbranch<mode>4): Use
+	msp430_general_dst_nonv_operand instead of nonimmediate_operand for
+	dest operand of CMP instruction.
+	(cbranchpsi4_real): Likewise.
+	(cbranchqi4_real): Likewise.
+	(cbranchhi4_real): Likewise.
+	(cbranchpsi4_reversed): Likewise.
+	(cbranchqi4_reversed): Likewise.
+	(cbranchhi4_reversed): Likewise.
+
 2019-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92803
