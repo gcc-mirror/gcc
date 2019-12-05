@@ -4295,6 +4295,15 @@ update_profiling_info (struct cgraph_node *orig_node,
 
   remainder = orig_node_count.combine_with_ipa_count (orig_node_count.ipa ()
 						      - new_sum.ipa ());
+
+  /* With partial train run we do not want to assume that original's
+     count is zero whenever we redurect all executed edges to clone.
+     Simply drop profile to local one in this case.  */
+  if (remainder.ipa_p () && !remainder.ipa ().nonzero_p ()
+      && orig_node->count.ipa_p () && orig_node->count.ipa ().nonzero_p ()
+      && flag_profile_partial_training)
+    remainder = remainder.guessed_local ();
+
   new_sum = orig_node_count.combine_with_ipa_count (new_sum);
   new_node->count = new_sum;
   orig_node->count = remainder;

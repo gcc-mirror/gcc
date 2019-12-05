@@ -453,8 +453,8 @@ Objective-C and Objective-C++ Dialects}.
 -fpartial-inlining  -fpeel-loops  -fpredictive-commoning @gol
 -fprefetch-loop-arrays @gol
 -fprofile-correction @gol
--fprofile-use  -fprofile-use=@var{path}  -fprofile-values @gol
--fprofile-reorder-functions @gol
+-fprofile-use  -fprofile-use=@var{path} -fprofile-partial-training @gol
+-fprofile-values -fprofile-reorder-functions @gol
 -freciprocal-math  -free  -frename-registers  -freorder-blocks @gol
 -freorder-blocks-algorithm=@var{algorithm} @gol
 -freorder-blocks-and-partition  -freorder-functions @gol
@@ -10633,6 +10633,19 @@ GCC uses heuristics to correct or smooth out such inconsistencies. By
 default, GCC emits an error message when an inconsistent profile is detected.
 
 This option is enabled by @option{-fauto-profile}.
+
+@item -fprofile-partial-training
+@opindex fprofile-use
+With @code{-fprofile-use} all portions of programs not executed during train
+run are optimized agressively for size rather than speed.  In some cases it is
+not practical to train all possible hot paths in the program. (For
+example, program may contain functions specific for a given hardware and
+trianing may not cover all hardware configurations program is run on.)  With
+@code{-fprofile-partial-training} profile feedback will be ignored for all
+functions not executed during the train run leading them to be optimized as if
+they were compiled without profile feedback. This leads to better performance
+when train run is not representative but also leads to significantly bigger
+code.
 
 @item -fprofile-use
 @itemx -fprofile-use=@var{path}

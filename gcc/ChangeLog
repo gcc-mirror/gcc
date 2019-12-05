@@ -1,3 +1,18 @@
+2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphclones.c (localize_profile): New function.
+	(cgraph_node::create_clone): Use it for partial profiles.
+	* common.opt (fprofile-partial-training): New flag.
+	* doc/invoke.texi (-fprofile-partial-training): Document.
+	* ipa-cp.c (update_profiling_info): For partial profiles do not
+	set function profile to zero.
+	* profile.c (compute_branch_probabilities): With partial profile
+	watch if edge count is zero and turn all probabilities to guessed.
+	(compute_branch_probabilities): For partial profiles do not apply
+	profile when entry count is zero.
+	* tree-profile.c (tree_profiling): Only do value_profile_transformations
+	when profile is read.
+
 2019-12-05  Sudakshina Das  <sudi.das@arm.com>
 
 	* tree-vect-loop.c (vect_model_reduction_cost): Remove reduction_type
