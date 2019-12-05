@@ -2938,6 +2938,11 @@ combine_comparisons (location_t loc,
    If OEP_LEXICOGRAPHIC is set, then also handle expressions with side-effects
    such as MODIFY_EXPR, RETURN_EXPR, as well as STATEMENT_LISTs.
 
+   If OEP_BITWISE is set, then require the values to be bitwise identical
+   rather than simply numerically equal.  Do not take advantage of things
+   like math-related flags or undefined behavior; only return true for
+   values that are provably bitwise identical in all circumstances.
+
    Unless OEP_MATCH_SIDE_EFFECTS is set, the function returns false on
    any operand with side effect.  This is unnecesarily conservative in the
    case we know that arg0 and arg1 are in disjoint code paths (such as in
@@ -2965,6 +2970,11 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
   /* Similar, if either does not have a type (like a template id),
      they aren't equal.  */
   if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
+    return false;
+
+  /* Bitwise identity makes no sense if the values have different layouts.  */
+  if ((flags & OEP_BITWISE)
+      && !tree_nop_conversion_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
     return false;
 
   /* We cannot consider pointers to different address space equal.  */
@@ -3099,8 +3109,7 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	if (real_identical (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1)))
 	  return true;
 
-
-	if (!HONOR_SIGNED_ZEROS (arg0))
+	if (!(flags & OEP_BITWISE) && !HONOR_SIGNED_ZEROS (arg0))
 	  {
 	    /* If we do not distinguish between signed and unsigned zero,
 	       consider them equal.  */
@@ -3152,7 +3161,9 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	break;
       }
 
-  if (flags & OEP_ONLY_CONST)
+  /* Don't handle more cases for OEP_BITWISE, since we can't guarantee that
+     two instances of undefined behavior will give identical results.  */
+  if (flags & (OEP_ONLY_CONST | OEP_BITWISE))
     return false;
 
 /* Define macros to test an operand from arg0 and arg1 for equality and a
