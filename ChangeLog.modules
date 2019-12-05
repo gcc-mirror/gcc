@@ -1,5 +1,14 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (macro_import::slot) Adjust encoding to use fewer
+	bits.
+	(macro_import::append): Add defness parm.
+	(macro_import::exported): Always make definition.
+	(maybe_add_macro): Adjust.
+	(module_state::{write,install}_macros): Likewise.
+	(module_state::deferred_macro): Likewise.
+
 	Module index no longer on the decl itself.
 	gcc/cp/
 	* cp-tree.h (DECL_MODULE_ORIGIN): Delete.
