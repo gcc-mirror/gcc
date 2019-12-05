@@ -1,6 +1,18 @@
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_namespace_context): New.
+	(trees_out::decl_node): Use it for namespace.
+	(depset::hash::make_dependency): Likewise for discovered GMF.
+	(depset::hash::add_binding): Use it.
+	(depset::tarjan::connect): Make sure we don't wander into imports.
+	(depset::hash::connect): Don't add imports to the graph.
+	(module_state::write_namespace{,s}): Never meet global namespace.
+	(module_state::write_entries): Handle namespace entries
+	separately.
+	(module_state::write): Reorganize cluster traversals.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_dependency): Do not depend on
 	imports.
 	(depset::tarjen::connect): Assert more.

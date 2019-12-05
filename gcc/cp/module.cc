@@ -2505,6 +2505,7 @@ public:
 
   public:
     depset *add_dependency (tree decl, entity_kind);
+    void add_namespace_context (depset *, tree ns);
 
   private:
     depset *add_partial_redirect (depset *partial);
@@ -7870,7 +7871,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	{
 	  depset *dep = dep_hash->find_dependency (decl);
 	  gcc_checking_assert (!dep->cluster == dep->is_import ());
-	  gcc_checking_assert (!dep->is_import () || !dep->section);
 	  unsigned entity_index = dep->cluster - 1;
 	  module_state *from = state;
 	  if (dep->is_import ())
@@ -7886,7 +7886,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
       else
 	{
-	  tree to_add = decl;
 	  if (ref == WK_value)
 	    {
 	      /* We need to add the global_namespace when it is the
@@ -7895,12 +7894,11 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	         as it's a global tree.  But we need to know to get
 	         the namespace heirarchy.  */
 	      gcc_checking_assert (dep_hash->current->get_entity () == decl);
-	      to_add = CP_DECL_CONTEXT (decl);
-	      if (to_add == decl)
-		to_add = NULL_TREE;
+	      dep_hash->add_namespace_context (dep_hash->current,
+					       CP_DECL_CONTEXT (decl));
 	    }
-	  if (to_add)
-	    dep_hash->add_dependency (to_add, depset::EK_NAMESPACE);
+	  else
+	    dep_hash->add_dependency (decl, depset::EK_NAMESPACE);
 	}
 
       int tag = insert (decl, ref);
@@ -8244,6 +8242,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  // FIXME: Not relying on origin, as we're gonna move
 	  // away from that
 	  /* An import.  */
+	  gcc_checking_assert (!dep->cluster && !dep->section);
 	  module_state *from = import_entity_module (entity_num);
 	  entity_num -= from->entity_lwm;
 	  origin = from->remap;
@@ -11087,8 +11086,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      if (!bdep)
 		{
 		  *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
-		  depset *ns_dep = make_dependency (ctx, EK_NAMESPACE);
-		  bdep->deps.safe_push (ns_dep);
+		  add_namespace_context (bdep, ctx);
 		}
 
 	      bdep->deps.safe_push (dep);
@@ -11159,6 +11157,18 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
       && !dep->is_import ())
     add_dependency (dep);
   return dep;
+}
+
+void
+depset::hash::add_namespace_context (depset *dep, tree ns)
+{
+  depset *ns_dep = make_dependency (ns, depset::EK_NAMESPACE);
+  dep->deps.safe_push (ns_dep);
+
+  /* Mark it as special if imported so we don't walk connect when
+     SCCing.  */
+  if (ns_dep->is_import ())
+    dep->set_special ();
 }
 
 /* VALUE is an overload of decls that is bound in this module.  Create
@@ -11233,10 +11243,7 @@ depset::hash::add_binding (tree ns, tree value)
 	}
 
       if (!binding->deps.length ())
-	{
-	  depset *ns_dep = make_dependency (ns, EK_NAMESPACE);
-	  binding->deps.safe_push (ns_dep);
-	}
+	add_namespace_context (binding, ns);
 
       depset *dep = make_dependency (maybe_using, ek);
       if (iter.hidden_p ())
@@ -11817,7 +11824,7 @@ void
 depset::tarjan::connect (depset *v)
 {
   gcc_checking_assert (v->is_binding ()
-		       || (!v->is_unreached () && !v->is_import ()));
+		       || !(v->is_unreached () || v->is_import ()));
 
   v->cluster = v->section = ++index;
   stack.safe_push (v);
@@ -11827,6 +11834,7 @@ depset::tarjan::connect (depset *v)
     {
       depset *dep = v->deps[ix];
       unsigned lwm = dep->cluster;
+
       if (!dep->cluster)
 	{
 	  /* A new node.  Connect it.  */
@@ -11971,10 +11979,11 @@ depset::hash::connect ()
     {
       depset *item = *iter;
 
-      if (item->is_binding ()
-	  || !(item->is_unreached ()
-	       || item->is_import ()
-	       || item->get_entity_kind () == EK_REDIRECT))
+      entity_kind kind = item->get_entity_kind ();
+      if (kind == EK_BINDING
+	  || !(kind == EK_REDIRECT
+	       || item->is_unreached ()
+	       || item->is_import ()))
 	deps.quick_push (item);
     }
 
@@ -14114,9 +14123,7 @@ module_state::write_namespace (bytes_out &sec, depset *dep)
   unsigned ns_num = 0;
   unsigned ns_import = 0;
 
-  if (!dep)
-    /* Global namespace.  */;
-  else if (dep->is_import ())
+  if (dep->is_import ())
     {
       ns_num = import_entity_index (dep->get_entity ());
       module_state *from = import_entity_module (ns_num);
@@ -14213,7 +14220,7 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 	  gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (ns));
 	  sec.u (to->name (DECL_ASSEMBLER_NAME_RAW (ns)));
 	}
-      write_namespace (sec, b->deps.length () ? b->deps[0] : NULL);
+      write_namespace (sec, b->deps[0]);
 
       /* Don't use bools, because this can be near the end of the
 	 section, and it won't save anything anyway.  */
@@ -14385,21 +14392,24 @@ module_state::write_entities (elf_out *to, vec<depset *> depsets,
     {
       depset *d = depsets[ix];
 
-      if (d->cluster)
+      if (d->get_entity_kind () == depset::EK_NAMESPACE)
+	{
+	  if (!d->is_import () && d->get_entity () != global_namespace)
+	    {
+	      current++;
+	      gcc_checking_assert (d->cluster == current);
+	      sec.u (0);
+	    }
+	}
+      else if (d->cluster)
 	{
 	  current++;
-
 	  gcc_checking_assert (!d->is_unreached ()
 			       && d->cluster == current);
-	  unsigned snum = 0;
-	  if (d->get_entity_kind () != depset::EK_NAMESPACE)
-	    {
-	      snum = d->section;
-	      gcc_checking_assert (snum);
-	    }
-	  sec.u (snum);
+	  gcc_checking_assert (d->section);
+	  sec.u (d->section);
 	}
-      }
+    }
   gcc_assert (count == current);
   sec.end (to, to->name (MOD_SNAME_PFX ".ent"), crc_p);
   dump.outdent ();
@@ -16576,36 +16586,31 @@ module_state::write (elf_out *to, cpp_reader *reader)
     {
       depset **base = &sccs[ix];
 
-      /* Count the members in this cluster.  */
-      for (size = 1; ix + size < sccs.length (); size++)
-	{
-	  if (base[size]->cluster != base[0]->cluster)
-	    break;
-	  base[size]->cluster = base[size]->section = 0;
-
-	  /* Namespaces should be their own clusters.  */
-	  gcc_checking_assert (base[size]->get_entity_kind ()
-			       != depset::EK_NAMESPACE);
-	}
-      base[0]->cluster = base[0]->section = 0;
-
-      /* Sort the cluster.  Later processing makes use of the
-	 ordering.  */
-      qsort (base, size, sizeof (depset *), cluster_cmp);
-
       if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)
 	{
-	  gcc_checking_assert (size == 1);
 	  n_spaces++;
+	  size = 1;
 	}
       else
 	{
-	  /* Save the size in the first member's cluster slot.  */
-	  base[0]->cluster = size;
+	  /* Count the members in this cluster.  */
+	  for (size = 1; ix + size < sccs.length (); size++)
+	    if (base[size]->cluster != base[0]->cluster)
+	      break;
+
+	  /* Sort the cluster.  Later processing makes use of the
+	     ordering.  */
+	  qsort (base, size, sizeof (depset *), cluster_cmp);
 
 	  for (unsigned jx = 0; jx != size; jx++)
-	    /* Set the section number.  */
-	    base[jx]->section = config.sec_range.second;
+	    {
+	      /* Set the section number.  */
+	      base[jx]->cluster = 0;
+	      base[jx]->section = config.sec_range.second;
+	    }
+
+	  /* Save the size in the first member's cluster slot.  */
+	  base[0]->cluster = size;
 
 	  config.sec_range.second++;
 	}
@@ -16622,39 +16627,30 @@ module_state::write (elf_out *to, cpp_reader *reader)
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
-      size = base[0]->cluster;
 
-      if (!size)
+      if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)
 	{
-	  /* A namespace, import or redirect.  */
 	  tree decl = base[0]->get_entity ();
-	  depset::entity_kind ek = base[0]->get_entity_kind ();
-	  const char *kind = "";
-	  if (ek == depset::EK_NAMESPACE)
+	  if (decl == global_namespace)
+	    base[0]->cluster = 0;
+	  else if (!base[0]->is_import ())
 	    {
-	      if (decl != global_namespace && !base[0]->is_import ())
-		{
-		  spaces.quick_push (base[0]);
-		  base[0]->cluster = ++config.num_entities;
-		  config.num_namespaces++;
-		}
-	      kind = "namespace";
+	      base[0]->cluster = ++config.num_entities;
+	      spaces.quick_push (base[0]);
+	      config.num_namespaces++;
+	      dump (dumper::CLUSTER) && dump ("Cluster namespace %N", decl);
 	    }
-	  else if (ek == depset::EK_REDIRECT)
-	    kind = "redirect";
-	  else
-	    {
-	      gcc_checking_assert (base[0]->is_import ());
-	      kind = "import";
-	    }
-
-	  dump (dumper::CLUSTER) && dump ("Cluster %s %N", kind, decl);
 	  size = 1;
 	}
       else
 	{
+	  size = base[0]->cluster;
+
 	  /* Cluster is now used to number entities.  */
 	  base[0]->cluster = 0;
+	  /* Record the section for consistency checking during stream
+	     out -- we don't want to start writing decls in different
+	     sections.  */
 	  table.section = base[0]->section;
 	  bytes
 	    += write_cluster (to, base, size, table, config.num_specializations,
