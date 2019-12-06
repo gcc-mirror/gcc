@@ -15,8 +15,6 @@ template class TPL<int>;  // instantiate
 
 void foo (int, void *);
 
-// { dg-final { scan-lang-dump-not {Connecting declaration decl template_decl:'::template foo'} module } }
-
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::template TPL'\n(  \[.\]=[^\n]*'\n)*  \[.\]=binding '::TPL'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::template TPL'\n(  \[.\]=[^\n]*'\n)*  \[.\]=decl declaration '::template foo'\n(  \[.\]=[^\n]*'\n)*  \[.\]=binding '::TPL'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo<int>'\n  \[.\]=binding '::foo'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL<int>'} module } }

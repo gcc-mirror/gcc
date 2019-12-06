@@ -2716,7 +2716,6 @@ enum tree_tag {
   tt_entity,		/* A extra-cluster entity.  */
 
   tt_template,		/* The TEMPLATE_RESULT of a template.  */
-  tt_friend_template    /* A friend of a template class.  */
 };
 
 enum walk_kind {
@@ -7956,52 +7955,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
     case LABEL_DECL:
       return true;
 
-    case TEMPLATE_DECL:
-      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-	{
-	  /* A (local template) friend of a template.  */
-	  // FIXME: Perhaps this can go when we do everything by index?
-	  if (streaming_p ())
-	    {
-	      i (tt_friend_template);
-	      dump (dumper::TREE) && dump ("Writing friend template %C:%N",
-					   TREE_CODE (decl), decl);
-	    }
-
-	  tree klass = DECL_CHAIN (decl);
-	  tree_node (klass);
-	  int tag = insert (decl);
-
-	  if (streaming_p ())
-	    {
-	      tree decls = CLASSTYPE_DECL_LIST (klass);
-	      for (unsigned ix = 0;; decls = TREE_CHAIN (decls))
-		if (!TREE_PURPOSE (decls))
-		  {
-		    tree frnd = friend_from_decl_list (TREE_VALUE (decls));
-		    if (frnd == decl)
-		      {
-			u (ix);
-			dump (dumper::TREE)
-			  && dump ("Wrote friend:%d %N[%u], %C:%N",
-				   tag, klass, ix, TREE_CODE (decl), decl);
-			break;
-		      }
-
-		    /* Count every friend to make streaming in simpler.  */
-		    ix++;
-		  }
-
-	      /* We must have found it.  */
-	      gcc_checking_assert (decls);
-	    }
-
-	  add_indirects (decl);
-
-	  return false;
-	}
-      break;
-
     case CONST_DECL:
       {
 	/* If I end up cloning enum decls, implementing C++2a using
@@ -9313,39 +9266,6 @@ trees_in::tree_node ()
 	    && dump ("Read template %C:%N", TREE_CODE (res), res);
 	}
       break;
-
-    case tt_friend_template:
-      /* A (local template) friend of a template class.  */
-      if (tree klass = tree_node ())
-	{
-	  unsigned ix = u ();
-	  unsigned u = ix;
-	  for (tree decls = CLASSTYPE_DECL_LIST (klass);
-	       decls; decls = TREE_CHAIN (decls))
-	    if (!TREE_PURPOSE (decls) && !u--)
-	      {
-		res = TREE_VALUE (decls);
-		break;
-	      }
-
-	  if (res)
-	    {
-	      if (TREE_CODE (res) != TEMPLATE_DECL)
-		res = DECL_TI_TEMPLATE (res);
-
-	      int tag = insert (res);
-	      dump (dumper::TREE)
-		&& dump ("Read friend:%d %N[%d] %C:%N",
-			 tag, klass, ix, TREE_CODE (res), res);
-
-	      if (!add_indirects (res))
-		{
-		  set_overrun ();
-		  res = NULL_TREE;
-		}
-	    }
-	}
-      break;
     }
 
   dump.outdent ();
@@ -10402,24 +10322,8 @@ trees_out::write_class_def (tree defn)
       for (tree decls = CLASSTYPE_DECL_LIST (type); decls;
 	   decls = TREE_CHAIN (decls))
 	{
-	  tree decl = TREE_VALUE (decls);
-	  tree_node (decl);
+	  tree_node (TREE_VALUE (decls));
 	  tree_node (TREE_PURPOSE (decls));
-	  if (!TREE_PURPOSE (decls))
-	    if (tree frnd = friend_from_decl_list (decl))
-	      if (TREE_CODE (frnd) == TEMPLATE_DECL
-		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
-		{
-		  gcc_checking_assert (DECL_CHAIN (frnd) == type);
-
-		  bool has_def = has_definition (frnd);
-
-		  if (streaming_p ())
-		    u (has_def);
-
-		  if (has_def)
-		    write_definition (frnd);
-		}
 	}
       /* End of decls.  */
       tree_node (NULL_TREE);
@@ -10487,22 +10391,6 @@ trees_out::mark_class_def (tree defn)
 	    for (tree thunks = DECL_THUNKS (decls);
 		 thunks; thunks = DECL_CHAIN (thunks))
 	      mark_declaration (thunks, false);
-
-      for (tree decls = CLASSTYPE_DECL_LIST (type);
-	   decls; decls = TREE_CHAIN (decls))
-	{
-	  tree decl = TREE_VALUE (decls);
-
-	  // FIXME: Perhaps all this marking is not needed?
-	  if (!TREE_PURPOSE (decls))
-	    if (tree frnd = friend_from_decl_list (decl))
-	      {
-		if (TREE_CODE (frnd) == TEMPLATE_DECL
-		    && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
-		  /* A templated friend declaration that we own.  */
-		  mark_declaration (frnd, has_definition (frnd));
-	      }
-	}
     }
 }
 
@@ -10647,15 +10535,6 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	{
 	  tree purpose = tree_node ();
 	  decl_list = tree_cons (purpose, decl, decl_list);
-
-	  if (!purpose)
-	    if (tree frnd = friend_from_decl_list (decl))
-	      if (TREE_CODE (frnd) == TEMPLATE_DECL
-		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
-		if (u () != 0)
-		  if (!read_definition (frnd))
-		    break;
-
 	}
       decl_list = nreverse (decl_list);
 
@@ -11032,7 +10911,9 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  dep->section = from->remap;
 	}
       else if (ek == EK_DECL
-	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
+	       && !(TREE_CODE (decl) == TEMPLATE_DECL
+		    && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl)))
 	{
 	  tree ctx = CP_DECL_CONTEXT (decl);
 	  tree not_tmpl = STRIP_TEMPLATE (decl);

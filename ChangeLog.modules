@@ -1,6 +1,19 @@
 2019-12-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum tree_tag): Delete tt_friend_template.
+	(trees_out::decl_node): Uninstantiated template friends are not
+	special.
+	(trees_in::tree_node): Delete tt_friend_template handling.
+	(trees_{in,out}::{read,write}_class_def): No need to stream
+	template friends specially.
+	(trees_out::mark_class_def): No need to mark class_def members.
+	(depset::hash::make_dependency): Do not confuse uninstantiated
+	template friends with scope members.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-2_a.C: Adjust scan.
+
+	gcc/cp/
 	* module.cc (trees_out::mark_class_def): No need to mark friend
 	specializations.
 
