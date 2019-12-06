@@ -3058,6 +3058,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 				    complain);
     }
 
+  if (!verify_type_context (input_location, TCTX_ALLOCATION, elt_type,
+			    !(complain & tf_error)))
+    return error_mark_node;
+
   if (variably_modified_type_p (elt_type, NULL_TREE) && (complain & tf_error))
     {
       error ("variably modified type not allowed in new-expression");
@@ -3940,6 +3944,10 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   gcc_assert (TREE_CODE (type) != ARRAY_TYPE);
 
   if (base == error_mark_node || maxindex == error_mark_node)
+    return error_mark_node;
+
+  if (!verify_type_context (input_location, TCTX_DEALLOCATION, type,
+			    !(complain & tf_error)))
     return error_mark_node;
 
   if (!COMPLETE_TYPE_P (type))
@@ -4827,6 +4835,11 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       if (!VOID_TYPE_P (type))
 	{
 	  complete_type (type);
+	  if (deleting
+	      && !verify_type_context (input_location, TCTX_DEALLOCATION, type,
+				       !(complain & tf_error)))
+	    return error_mark_node;
+
 	  if (!COMPLETE_TYPE_P (type))
 	    {
 	      if (complain & tf_warning)
