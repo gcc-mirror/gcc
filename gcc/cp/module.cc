@@ -5344,9 +5344,14 @@ trees_out::lang_decl_bools (tree t)
       WB (lang->u.fn.has_dependent_explicit_spec_p);
       WB (lang->u.fn.immediate_fn_p);
       WB (lang->u.fn.maybe_deleted);
-      /* FALLTHROUGH.  */
+      goto lds_min;
+
+    case lds_decomp:  /* lang_decl_decomp.  */
+      /* No bools.  */
+      goto lds_min;
 
     case lds_min:  /* lang_decl_min.  */
+    lds_min:
       /* No bools.  */
       break;
 
@@ -5404,9 +5409,14 @@ trees_in::lang_decl_bools (tree t)
       RB (lang->u.fn.has_dependent_explicit_spec_p);
       RB (lang->u.fn.immediate_fn_p);
       RB (lang->u.fn.maybe_deleted);
-      /* FALLTHROUGH.  */
+      goto lds_min;
+
+    case lds_decomp:  /* lang_decl_decomp.  */
+      /* No bools.  */
+      goto lds_min;
 
     case lds_min:  /* lang_decl_min.  */
+    lds_min:
       /* No bools.  */
       break;
 
@@ -6491,9 +6501,14 @@ trees_out::lang_decl_vals (tree t)
       if (FNDECL_USED_AUTO (t))
 	WT (lang->u.fn.u.saved_auto_return_type);
 
-      /* FALLTHROUGH.  */
+      goto lds_min;
+
+    case lds_decomp:  /* lang_decl_decomp.  */
+      WT (lang->u.decomp.base);
+      goto lds_min;
 
     case lds_min:  /* lang_decl_min.  */
+    lds_min:
       WT (lang->u.min.template_info);
       WT (lang->u.min.access);
       break;
@@ -6527,37 +6542,40 @@ trees_in::lang_decl_vals (tree t)
       gcc_unreachable ();
 
     case lds_fn:  /* lang_decl_fn.  */
-      {
-	if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
-	  {
-	    unsigned code = u ();
+      if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
+	{
+	  unsigned code = u ();
 
-	    /* Check consistency.  */
-	    if (code >= OVL_OP_MAX
-		|| (ovl_op_info[IDENTIFIER_ASSIGN_OP_P (DECL_NAME (t))][code]
-		    .ovl_op_code) == OVL_OP_ERROR_MARK)
-	      set_overrun ();
-	    else
-	      lang->u.fn.ovl_op_code = code;
-	  }
+	  /* Check consistency.  */
+	  if (code >= OVL_OP_MAX
+	      || (ovl_op_info[IDENTIFIER_ASSIGN_OP_P (DECL_NAME (t))][code]
+		  .ovl_op_code) == OVL_OP_ERROR_MARK)
+	    set_overrun ();
+	  else
+	    lang->u.fn.ovl_op_code = code;
+	}
 
-	if (DECL_CLASS_SCOPE_P (t))
-	  RT (lang->u.fn.context);
+      if (DECL_CLASS_SCOPE_P (t))
+	RT (lang->u.fn.context);
 
-	if (lang->u.fn.thunk_p)
-	  {
-	    RT (lang->u.fn.befriending_classes);
-	    lang->u.fn.u5.fixed_offset = wi ();
-	  }
-	else
-	  RT (lang->u.fn.u5.cloned_function);
+      if (lang->u.fn.thunk_p)
+	{
+	  RT (lang->u.fn.befriending_classes);
+	  lang->u.fn.u5.fixed_offset = wi ();
+	}
+      else
+	RT (lang->u.fn.u5.cloned_function);
 
-	if (FNDECL_USED_AUTO (t))
-	  RT (lang->u.fn.u.saved_auto_return_type);
-      }
-      /* FALLTHROUGH.  */
+      if (FNDECL_USED_AUTO (t))
+	RT (lang->u.fn.u.saved_auto_return_type);
+      goto lds_min;
+
+    case lds_decomp:  /* lang_decl_decomp.  */
+      RT (lang->u.decomp.base);
+      goto lds_min;
 
     case lds_min:  /* lang_decl_min.  */
+    lds_min:
       RT (lang->u.min.template_info);
       RT (lang->u.min.access);
       break;

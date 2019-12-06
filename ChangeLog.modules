@@ -1,5 +1,12 @@
 2019-12-06  Nathan Sidwell  <nathan@acm.org>
 
+	Structured bindings, c++2a libstdc++ is back working
+	gcc/cp/
+	* module.cc (trees_{in,out}::lang_decl_{bools,vals}): Handle
+	lds_decomp.
+	gcc/testsuite/
+	* g++.dg/modules/decomp-1_[ab].C: New.
+
 	Merge trunk r279023.
 	libstdc++ c++2a is now using structured bindings, and those don't
 	work :(
