@@ -23,7 +23,7 @@ extern char d1[1], d2[2], d3[3];
    the attribute without a size operand.  */
 
 RDONLY (1) void
-rd1_int (const int*);       // { dg-message "in a call to function 'rd1_int' declared with attribute 'read_only \\\(1\\\)'" }
+rd1_int (const int32_t*);   // { dg-message "in a call to function 'rd1_int' declared with attribute 'read_only \\\(1\\\)'" }
 
 void test_rd1_int (void)
 {
@@ -192,7 +192,7 @@ void test_pfrd1 (void)
 }
 
 
-WRONLY (4, 3) void (*pfwr4_3)(int, const char*, int, int*);
+WRONLY (4, 3) void (*pfwr4_3)(int, const char*, int, int32_t*);
 
 void test_pfwr4_3 (void)
 {
