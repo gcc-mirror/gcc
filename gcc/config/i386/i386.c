@@ -18959,7 +18959,7 @@ ix86_vec_cost (machine_mode mode, int cost)
       && TARGET_SSE_SPLIT_REGS)
     return cost * 2;
   if (GET_MODE_BITSIZE (mode) > 128
-      && TARGET_AVX128_OPTIMAL)
+      && TARGET_AVX256_SPLIT_REGS)
     return cost * GET_MODE_BITSIZE (mode) / 128;
   return cost;
 }
@@ -19498,6 +19498,15 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 		    + rtx_cost (XEXP (XEXP (x, 0), 0), mode, outer_code,
 				opno, speed)
 		    + rtx_cost (const1_rtx, mode, outer_code, opno, speed));
+	  return true;
+	}
+
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+	  && rtx_equal_p (XEXP (XEXP (x, 0), 0), XEXP (x, 1)))
+	{
+	  /* This is an overflow detection, count it as a normal compare.  */
+	  *total = rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+			     COMPARE, 0, speed);
 	  return true;
 	}
 
@@ -20819,11 +20828,15 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	    {
 	      x = force_reg (dest_mode, const0_rtx);
 
-	      emit_insn (gen_movstrictqi
-			 (gen_lowpart (QImode, x), destqi));
+	      emit_insn (gen_movstrictqi (gen_lowpart (QImode, x), destqi));
 	    }
 	  else
-	    x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
+	    {
+	      x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
+	      if (dest_mode == GET_MODE (dest)
+		  && !register_operand (dest, GET_MODE (dest)))
+		x = force_reg (dest_mode, x);
+	    }
 	}
 
       if (dest_mode != GET_MODE (dest))
@@ -21297,7 +21310,7 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
 	return 1;
 
       /* Account for targets that splits wide vectors into multiple parts.  */
-      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (mode) > 128)
+      if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 128)
 	div = GET_MODE_BITSIZE (mode) / 128;
       else if (TARGET_SSE_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 64)
 	div = GET_MODE_BITSIZE (mode) / 64;
@@ -21384,43 +21397,47 @@ ix86_preferred_simd_mode (scalar_mode mode)
    vectors.  If AVX512F is enabled then try vectorizing with 512bit,
    256bit and 128bit vectors.  */
 
-static void
-ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
+static unsigned int
+ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
     {
-      sizes->safe_push (64);
-      sizes->safe_push (32);
-      sizes->safe_push (16);
+      modes->safe_push (V64QImode);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
     }
   else if (TARGET_AVX512F && all)
     {
-      sizes->safe_push (32);
-      sizes->safe_push (16);
-      sizes->safe_push (64);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V64QImode);
     }
   else if (TARGET_AVX && !TARGET_PREFER_AVX128)
     {
-      sizes->safe_push (32);
-      sizes->safe_push (16);
+      modes->safe_push (V32QImode);
+      modes->safe_push (V16QImode);
     }
   else if (TARGET_AVX && all)
     {
-      sizes->safe_push (16);
-      sizes->safe_push (32);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V32QImode);
     }
   else if (TARGET_MMX_WITH_SSE)
-    sizes->safe_push (16);
+    modes->safe_push (V16QImode);
 
   if (TARGET_MMX_WITH_SSE)
-    sizes->safe_push (8);
+    modes->safe_push (V8QImode);
+
+  return 0;
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
 
 static opt_machine_mode
-ix86_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
+ix86_get_mask_mode (machine_mode data_mode)
 {
+  unsigned vector_size = GET_MODE_SIZE (data_mode);
+  unsigned nunits = GET_MODE_NUNITS (data_mode);
   unsigned elem_size = vector_size / nunits;
 
   /* Scalar mask case.  */
@@ -22950,9 +22967,9 @@ ix86_run_selftests (void)
 #undef TARGET_VECTORIZE_SPLIT_REDUCTION
 #define TARGET_VECTORIZE_SPLIT_REDUCTION \
   ix86_split_reduction
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  ix86_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  ix86_autovectorize_vector_modes
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE ix86_get_mask_mode
 #undef TARGET_VECTORIZE_INIT_COST

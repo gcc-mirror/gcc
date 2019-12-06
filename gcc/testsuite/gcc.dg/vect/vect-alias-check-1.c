@@ -15,3 +15,5 @@ fn1 ()
 }
 
 /* { dg-final { scan-tree-dump "improved number of alias checks from \[0-9\]* to 1" "vect" } } */
+/* { dg-final { scan-tree-dump "using an address-based overlap test" "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-not "using an index-based" "vect" } } */

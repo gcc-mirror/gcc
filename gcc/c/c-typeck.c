@@ -2054,6 +2054,8 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
     mark_exp_read (exp.value);
   if (convert_p)
     exp = default_function_array_conversion (loc, exp);
+  if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
+    exp.value = require_complete_type (loc, exp.value);
   if (really_atomic_lvalue (exp.value))
     {
       vec<tree, va_gc> *params;
@@ -2550,16 +2552,6 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 
 	  ref = build1 (INDIRECT_REF, t, pointer);
 
-	  if (!COMPLETE_OR_VOID_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
-	    {
-	      if (!C_TYPE_ERROR_REPORTED (TREE_TYPE (ptr)))
-		{
-		  error_at (loc, "dereferencing pointer to incomplete type "
-			    "%qT", t);
-		  C_TYPE_ERROR_REPORTED (TREE_TYPE (ptr)) = 1;
-		}
-	      return error_mark_node;
-	    }
 	  if (VOID_TYPE_P (t) && c_inhibit_evaluation_warnings == 0)
 	    warning_at (loc, 0, "dereferencing %<void *%> pointer");
 
@@ -3892,6 +3884,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
   addr_space_t as0 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op0)));
   addr_space_t as1 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op1)));
   tree target_type = TREE_TYPE (TREE_TYPE (op0));
+  tree orig_op0 = op0;
   tree orig_op1 = op1;
 
   /* If the operands point into different address spaces, we need to
@@ -3962,6 +3955,10 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");
+  else if (verify_type_context (loc, TCTX_POINTER_ARITH,
+				TREE_TYPE (TREE_TYPE (orig_op0))))
+    verify_type_context (loc, TCTX_POINTER_ARITH,
+			 TREE_TYPE (TREE_TYPE (orig_op1)));
 
   op1 = c_size_in_bytes (target_type);
 
@@ -4614,6 +4611,9 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 		  pedwarn (location, OPT_Wpointer_arith,
 			   "wrong type argument to decrement");
 	      }
+	    else
+	      verify_type_context (location, TCTX_POINTER_ARITH,
+				   TREE_TYPE (argtype));
 
 	    inc = c_size_in_bytes (TREE_TYPE (argtype));
 	    inc = convert_to_ptrofftype_loc (location, inc);
@@ -5431,7 +5431,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       tree elem_type = TREE_TYPE (vectype);
       tree zero = build_int_cst (elem_type, 0);
       tree zero_vec = build_vector_from_val (vectype, zero);
-      tree cmp_type = build_same_sized_truth_vector_type (vectype);
+      tree cmp_type = truth_type_for (vectype);
       ifexp = build2 (NE_EXPR, cmp_type, ifexp, zero_vec);
     }
 
@@ -11340,7 +11340,7 @@ build_vec_cmp (tree_code code, tree type,
 {
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
-  tree cmp_type = build_same_sized_truth_vector_type (type);
+  tree cmp_type = truth_type_for (type);
   tree cmp = build2 (code, cmp_type, arg0, arg1);
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }

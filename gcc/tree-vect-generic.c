@@ -694,7 +694,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      tree zero, cst, cond, mask_type;
 	      gimple *stmt;
 
-	      mask_type = build_same_sized_truth_vector_type (type);
+	      mask_type = truth_type_for (type);
 	      zero = build_zero_cst (type);
 	      cond = build2 (LT_EXPR, mask_type, op0, zero);
 	      tree_vector_builder vec (type, nunits, 1);
@@ -1697,7 +1697,6 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
   gimple *g;
   tree lhs = gimple_call_lhs (stmt);
   tree arg = gimple_call_arg (stmt, 0);
-  tree decl = NULL_TREE;
   tree ret_type = TREE_TYPE (lhs);
   tree arg_type = TREE_TYPE (arg);
   tree new_rhs, compute_type = TREE_TYPE (arg_type);
@@ -1724,16 +1723,9 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
 
   if (modifier == NONE && (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR))
     {
-      if (supportable_convert_operation (code, ret_type, arg_type, &decl,
-					 &code1))
+      if (supportable_convert_operation (code, ret_type, arg_type, &code1))
 	{
-	  if (code1 == CALL_EXPR)
-	    {
-	      g = gimple_build_call (decl, 1, arg);
-	      gimple_call_set_lhs (g, lhs);
-	    }
-	  else
-	    g = gimple_build_assign (lhs, code1, arg);
+	  g = gimple_build_assign (lhs, code1, arg);
 	  gsi_replace (gsi, g, false);
 	  return;
 	}
@@ -1752,11 +1744,11 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
 	      tree ret1_type = build_vector_type (TREE_TYPE (ret_type), nelts);
 	      tree arg1_type = build_vector_type (TREE_TYPE (arg_type), nelts);
 	      if (supportable_convert_operation (code, ret1_type, arg1_type,
-						 &decl, &code1))
+						 &code1))
 		{
 		  new_rhs = expand_vector_piecewise (gsi, do_vec_conversion,
 						     ret_type, arg1_type, arg,
-						     decl, code1);
+						     NULL_TREE, code1);
 		  g = gimple_build_assign (lhs, new_rhs);
 		  gsi_replace (gsi, g, false);
 		  return;

@@ -512,6 +512,7 @@ bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 machine_mode aarch64_sve_int_mode (machine_mode);
 opt_machine_mode aarch64_sve_pred_mode (unsigned int);
+machine_mode aarch64_sve_pred_mode (machine_mode);
 opt_machine_mode aarch64_sve_data_mode (scalar_mode, poly_uint64);
 bool aarch64_sve_mode_p (machine_mode);
 HOST_WIDE_INT aarch64_fold_sve_cnt_pat (aarch64_svpattern, unsigned int);
@@ -714,6 +715,9 @@ namespace aarch64_sve {
 			   tree, unsigned int, tree *);
   gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
   rtx expand_builtin (unsigned int, tree, rtx);
+#ifdef GCC_TARGET_H
+  bool verify_type_context (location_t, type_context_kind, const_tree, bool);
+#endif
 }
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);
@@ -771,5 +775,7 @@ extern const atomic_ool_names aarch64_ool_ldadd_names;
 extern const atomic_ool_names aarch64_ool_ldset_names;
 extern const atomic_ool_names aarch64_ool_ldclr_names;
 extern const atomic_ool_names aarch64_ool_ldeor_names;
+
+tree aarch64_resolve_overloaded_builtin_general (location_t, tree, void *);
 
 #endif /* GCC_AARCH64_PROTOS_H */

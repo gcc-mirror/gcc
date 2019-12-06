@@ -336,19 +336,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ssize(const _Tp (&)[_Num]) noexcept
     { return _Num; }
 
-  // "why are these in namespace std:: and not __gnu_cxx:: ?"
-  // because if we don't put them here it's impossible to
-  // have implicit ADL with "using std::begin/end/size/data;".
-  template <typename _Container>
-    constexpr auto
-    __adl_begin(_Container& __cont) noexcept(noexcept(begin(__cont)))
-    { return begin(__cont); }
-
-  template <typename _Container>
-    constexpr auto
-    __adl_data(_Container& __cont) noexcept(noexcept(data(__cont)))
-    { return data(__cont); }
-
 #ifdef __cpp_lib_concepts
 namespace ranges
 {
@@ -869,10 +856,70 @@ namespace ranges
   template<typename _Tp>
     concept range = __detail::__range_impl<_Tp&>;
 
+  template<range _Range>
+    using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));
+
+  template<range _Range>
+    using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));
+
+  template<range _Range>
+    using range_value_t = iter_value_t<iterator_t<_Range>>;
+
+  template<range _Range>
+    using range_reference_t = iter_reference_t<iterator_t<_Range>>;
+
+  template<range _Range>
+    using range_rvalue_reference_t
+      = iter_rvalue_reference_t<iterator_t<_Range>>;
+
+  template<range _Range>
+    using range_difference_t = iter_difference_t<iterator_t<_Range>>;
+
+  namespace __detail
+  {
+    template<typename _Tp>
+      concept __forwarding_range = range<_Tp> && __range_impl<_Tp>;
+  } // namespace __detail
+
   /// [range.sized] The sized_range concept.
   template<typename _Tp>
     concept sized_range = range<_Tp>
       && requires(_Tp& __t) { ranges::size(__t); };
+
+  template<typename>
+    inline constexpr bool disable_sized_range = false;
+
+  // [range.refinements]
+  template<typename _Range, typename _Tp>
+    concept output_range
+      = range<_Range> && output_iterator<iterator_t<_Range>, _Tp>;
+
+  template<typename _Tp>
+    concept input_range = range<_Tp> && input_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept forward_range
+      = input_range<_Tp> && forward_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept bidirectional_range
+      = forward_range<_Tp> && bidirectional_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept random_access_range
+      = bidirectional_range<_Tp> && random_access_iterator<iterator_t<_Tp>>;
+
+  template<typename _Tp>
+    concept contiguous_range
+      = random_access_range<_Tp> && contiguous_iterator<iterator_t<_Tp>>
+      && requires(_Tp& __t)
+      {
+	{ ranges::data(__t) } -> same_as<add_pointer_t<range_reference_t<_Tp>>>;
+      };
+
+  template<typename _Tp>
+    concept common_range
+      = range<_Tp> && same_as<iterator_t<_Tp>, sentinel_t<_Tp>>;
 
     // [range.iter.ops] range iterator operations
 
@@ -1007,12 +1054,6 @@ namespace ranges
 	  return __n;
 	}
     }
-
-  template<range _Range>
-    using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));
-
-  template<range _Range>
-    using range_difference_t = iter_difference_t<iterator_t<_Range>>;
 
   template<range _Range>
     constexpr range_difference_t<_Range>

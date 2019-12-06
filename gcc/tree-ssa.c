@@ -1899,6 +1899,11 @@ execute_update_addresses_taken (void)
 		    && bitmap_bit_p (suitable_for_renaming, DECL_UID (sym))
 		    && VECTOR_TYPE_P (TREE_TYPE (sym))
 		    && TYPE_MODE (TREE_TYPE (sym)) != BLKmode
+		    /* If it is a full replacement we can do better below.  */
+		    && maybe_ne (wi::to_poly_offset
+				   (TYPE_SIZE_UNIT (TREE_TYPE (lhs))),
+				 wi::to_poly_offset
+                                   (TYPE_SIZE_UNIT (TREE_TYPE (sym))))
 		    && known_ge (mem_ref_offset (lhs), 0)
 		    && known_gt (wi::to_poly_offset
 				   (TYPE_SIZE_UNIT (TREE_TYPE (sym))),

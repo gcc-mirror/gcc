@@ -865,6 +865,22 @@ next_conversion (conversion *conv)
   return conv->u.next;
 }
 
+/* Strip to the first ck_user, ck_ambig, ck_list, ck_aggr or ck_identity
+   encountered.  */
+
+static conversion *
+strip_standard_conversion (conversion *conv)
+{
+  while (conv
+	 && conv->kind != ck_user
+	 && conv->kind != ck_ambig
+	 && conv->kind != ck_list
+	 && conv->kind != ck_aggr
+	 && conv->kind != ck_identity)
+    conv = next_conversion (conv);
+  return conv;
+}
+
 /* Subroutine of build_aggr_conv: check whether CTOR, a braced-init-list,
    is a valid aggregate initializer for array type ATYPE.  */
 
@@ -3694,6 +3710,10 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%#qD (near match)", msg, fn);
   else if (DECL_DELETED_FN (fn))
     inform (cloc, "%s%#qD (deleted)", msg, fn);
+  else if (candidate->reversed ())
+    inform (cloc, "%s%#qD (reversed)", msg, fn);
+  else if (candidate->rewritten ())
+    inform (cloc, "%s%#qD (rewritten)", msg, fn);
   else
     inform (cloc, "%s%#qD", msg, fn);
   if (fn != candidate->fn)
@@ -4394,7 +4414,7 @@ build_converted_constant_bool_expr (tree expr, tsubst_flags_t complain)
 
 /* Do any initial processing on the arguments to a function call.  */
 
-static vec<tree, va_gc> *
+vec<tree, va_gc> *
 resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 {
   unsigned int ix;
@@ -5073,7 +5093,8 @@ build_conditional_expr_1 (const op_location_t &loc,
   orig_arg2 = arg2;
   orig_arg3 = arg3;
 
-  if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
+  if (gnu_vector_type_p (TREE_TYPE (arg1))
+      && VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
     {
       tree arg1_type = TREE_TYPE (arg1);
 
@@ -5152,7 +5173,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 	  arg3_type = vtype;
 	}
 
-      if (VECTOR_TYPE_P (arg2_type) != VECTOR_TYPE_P (arg3_type))
+      if ((gnu_vector_type_p (arg2_type) && !VECTOR_TYPE_P (arg3_type))
+	  || (gnu_vector_type_p (arg3_type) && !VECTOR_TYPE_P (arg2_type)))
 	{
 	  enum stv_conv convert_flag =
 	    scalar_to_vector (loc, VEC_COND_EXPR, arg2, arg3,
@@ -5183,7 +5205,9 @@ build_conditional_expr_1 (const op_location_t &loc,
 	    }
 	}
 
-      if (!same_type_p (arg2_type, arg3_type)
+      if (!gnu_vector_type_p (arg2_type)
+	  || !gnu_vector_type_p (arg3_type)
+	  || !same_type_p (arg2_type, arg3_type)
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (arg1_type),
 		       TYPE_VECTOR_SUBPARTS (arg2_type))
 	  || TYPE_SIZE (arg1_type) != TYPE_SIZE (arg2_type))
@@ -5198,7 +5222,7 @@ build_conditional_expr_1 (const op_location_t &loc,
 
       if (!COMPARISON_CLASS_P (arg1))
 	{
-	  tree cmp_type = build_same_sized_truth_vector_type (arg1_type);
+	  tree cmp_type = truth_type_for (arg1_type);
 	  arg1 = build2 (NE_EXPR, cmp_type, arg1, build_zero_cst (arg1_type));
 	}
       return build3_loc (loc, VEC_COND_EXPR, arg2_type, arg1, arg2, arg3);
@@ -6219,8 +6243,14 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	  else
 	    {
 	      if (cand->reversed ())
-		/* We swapped these in add_candidate, swap them back now.  */
-		std::swap (cand->convs[0], cand->convs[1]);
+		{
+		  /* We swapped these in add_candidate, swap them back now.  */
+		  std::swap (cand->convs[0], cand->convs[1]);
+		  if (cand->fn == current_function_decl)
+		    warning_at (loc, 0, "in C++20 this comparison calls the "
+				"current function recursively with reversed "
+				"arguments");
+		}
 	      result = build_over_call (cand, LOOKUP_NORMAL, complain);
 	    }
 
@@ -6344,11 +6374,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 		  && (TYPE_MAIN_VARIANT (arg1_type)
 		      != TYPE_MAIN_VARIANT (arg2_type))
 		  && (complain & tf_warning))
-		{
-		  warning (OPT_Wenum_compare,
-			   "comparison between %q#T and %q#T",
-			   arg1_type, arg2_type);
-		}
+		warning_at (loc, OPT_Wenum_compare,
+			    "comparison between %q#T and %q#T",
+			    arg1_type, arg2_type);
 	      break;
 	    default:
 	      break;
@@ -6362,8 +6390,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	  conv = cand->convs[0];
 	  if (conv->user_conv_p)
 	    {
-	      while (conv->kind != ck_user)
-		conv = next_conversion (conv);
+	      conv = strip_standard_conversion (conv);
 	      arg1 = convert_like (conv, arg1, complain);
 	    }
 
@@ -6372,8 +6399,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      conv = cand->convs[1];
 	      if (conv->user_conv_p)
 		{
-		  while (conv->kind != ck_user)
-		    conv = next_conversion (conv);
+		  conv = strip_standard_conversion (conv);
 		  arg2 = convert_like (conv, arg2, complain);
 		}
 	    }
@@ -6383,8 +6409,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      conv = cand->convs[2];
 	      if (conv->user_conv_p)
 		{
-		  while (conv->kind != ck_user)
-		    conv = next_conversion (conv);
+		  conv = strip_standard_conversion (conv);
 		  arg3 = convert_like (conv, arg3, complain);
 		}
 	    }
@@ -6406,7 +6431,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       return cp_build_modify_expr (loc, arg1, code2, arg2, complain);
 
     case INDIRECT_REF:
-      return cp_build_indirect_ref (arg1, RO_UNARY_STAR, complain);
+      return cp_build_indirect_ref (loc, arg1, RO_UNARY_STAR, complain);
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
@@ -6462,8 +6487,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       return cp_build_array_ref (input_location, arg1, arg2, complain);
 
     case MEMBER_REF:
-      return build_m_component_ref (cp_build_indirect_ref (arg1, RO_ARROW_STAR, 
-                                                           complain), 
+      return build_m_component_ref (cp_build_indirect_ref (loc, arg1,
+							   RO_ARROW_STAR,
+                                                           complain),
                                     arg2, complain);
 
       /* The caller will deal with these.  */
@@ -6907,7 +6933,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	      rtype = cv_unqualified (rtype);
 	      rtype = TYPE_POINTER_TO (rtype);
 	      addr = cp_convert (rtype, oaddr, complain);
-	      destroying = build_functional_cast (destroying, NULL_TREE,
+	      destroying = build_functional_cast (input_location,
+						  destroying, NULL_TREE,
 						  complain);
 	    }
 
@@ -7598,7 +7625,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	/* direct_reference_binding might have inserted a ck_qual under
 	   this ck_ref_bind for the benefit of conversion sequence ranking.
 	   Ignore the conversion; we'll create our own below.  */
-	if (next_conversion (convs)->kind == ck_qual)
+	if (next_conversion (convs)->kind == ck_qual
+	    && !convs->need_temporary_p)
 	  {
 	    gcc_assert (same_type_p (TREE_TYPE (expr),
 				     next_conversion (convs)->type));
@@ -9860,8 +9888,11 @@ complain_about_no_candidates_for_method_call (tree instance,
 	  if (const conversion_info *conv
 		= maybe_get_bad_conversion_for_unmatched_call (candidate))
 	    {
+	      tree from_type = conv->from;
+	      if (!TYPE_P (conv->from))
+		from_type = lvalue_type (conv->from);
 	      complain_about_bad_argument (conv->loc,
-					   conv->from, conv->to_type,
+					   from_type, conv->to_type,
 					   candidate->fn, conv->n_arg);
 	      return;
 	    }
@@ -9967,7 +9998,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		     basetype, name))
 	inform (input_location, "for a function-style cast, remove the "
 		"redundant %<::%D%>", name);
-      call = build_functional_cast (basetype, build_tree_list_vec (user_args),
+      call = build_functional_cast (input_location, basetype,
+				    build_tree_list_vec (user_args),
 				    complain);
       return call;
     }
@@ -10098,6 +10130,38 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
   if (!any_viable_p)
     {
+      /* [dcl.init], 17.6.2.2:
+
+	 Otherwise, if no constructor is viable, the destination type is
+	 a (possibly cv-qualified) aggregate class A, and the initializer
+	 is a parenthesized expression-list, the object is initialized as
+	 follows...
+
+	 We achieve this by building up a CONSTRUCTOR, as for list-init,
+	 and setting CONSTRUCTOR_IS_PAREN_INIT to distinguish between
+	 the two.  */
+      if (DECL_CONSTRUCTOR_P (fn)
+	  && !(flags & LOOKUP_ONLYCONVERTING)
+	  && !cp_unevaluated_operand
+	  && cxx_dialect >= cxx2a
+	  && CP_AGGREGATE_TYPE_P (basetype)
+	  && !user_args->is_empty ())
+	{
+	  /* Create a CONSTRUCTOR from ARGS, e.g. {1, 2} from <1, 2>.  */
+	  tree list = build_tree_list_vec (user_args);
+	  tree ctor = build_constructor_from_list (init_list_type_node, list);
+	  CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
+	  CONSTRUCTOR_IS_PAREN_INIT (ctor) = true;
+	  if (is_dummy_object (instance))
+	    return ctor;
+	  else
+	    {
+	      ctor = digest_init (basetype, ctor, complain);
+	      ctor = build2 (INIT_EXPR, TREE_TYPE (instance), instance, ctor);
+	      TREE_SIDE_EFFECTS (ctor) = true;
+	      return ctor;
+	    }
+	}
       if (complain & tf_error)
 	complain_about_no_candidates_for_method_call (instance, candidates,
 						      explicit_targs, basetype,
@@ -10525,17 +10589,8 @@ compare_ics (conversion *ics1, conversion *ics2)
   if (ics1->user_conv_p || ics1->kind == ck_list
       || ics1->kind == ck_aggr || ics2->kind == ck_aggr)
     {
-      conversion *t1;
-      conversion *t2;
-
-      for (t1 = ics1; t1 && t1->kind != ck_user; t1 = next_conversion (t1))
-	if (t1->kind == ck_ambig || t1->kind == ck_aggr
-	    || t1->kind == ck_list)
-	  break;
-      for (t2 = ics2; t2 && t2->kind != ck_user; t2 = next_conversion (t2))
-	if (t2->kind == ck_ambig || t2->kind == ck_aggr
-	    || t2->kind == ck_list)
-	  break;
+      conversion *t1 = strip_standard_conversion (ics1);
+      conversion *t2 = strip_standard_conversion (ics2);
 
       if (!t1 || !t2 || t1->kind != t2->kind)
 	return 0;
@@ -10943,14 +10998,7 @@ compare_ics (conversion *ics1, conversion *ics2)
 static tree
 source_type (conversion *t)
 {
-  for (;; t = next_conversion (t))
-    {
-      if (t->kind == ck_user
-	  || t->kind == ck_ambig
-	  || t->kind == ck_identity)
-	return t->type;
-    }
-  gcc_unreachable ();
+  return strip_standard_conversion (t)->type;
 }
 
 /* Note a warning about preferring WINNER to LOSER.  We do this by storing
@@ -10994,18 +11042,32 @@ joust_maybe_elide_copy (z_candidate *&cand)
   return false;
 }
 
-/* True if cand1 and cand2 represent the same function or function
-   template.  */
+/* True if the defining declarations of the two candidates have equivalent
+   parameters.  */
 
-static bool
-same_fn_or_template (z_candidate *cand1, z_candidate *cand2)
+bool
+cand_parms_match (z_candidate *c1, z_candidate *c2)
 {
-  if (cand1->fn == cand2->fn)
+  tree fn1 = c1->template_decl;
+  tree fn2 = c2->template_decl;
+  if (fn1 && fn2)
+    {
+      fn1 = most_general_template (TI_TEMPLATE (fn1));
+      fn1 = DECL_TEMPLATE_RESULT (fn1);
+      fn2 = most_general_template (TI_TEMPLATE (fn2));
+      fn2 = DECL_TEMPLATE_RESULT (fn2);
+    }
+  else
+    {
+      fn1 = c1->fn;
+      fn2 = c2->fn;
+    }
+  if (fn1 == fn2)
     return true;
-  if (!cand1->template_decl || !cand2->template_decl)
+  if (identifier_p (fn1) || identifier_p (fn2))
     return false;
-  return (most_general_template (TI_TEMPLATE (cand1->template_decl))
-	  == most_general_template (TI_TEMPLATE (cand2->template_decl)));
+  return compparms (TYPE_ARG_TYPES (TREE_TYPE (fn1)),
+		    TYPE_ARG_TYPES (TREE_TYPE (fn2)));
 }
 
 /* Compare two candidates for overloading as described in
@@ -11154,20 +11216,11 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 
 	  if (winner && comp != winner)
 	    {
-	      if (same_fn_or_template (cand1, cand2))
-		{
-		  /* Ambiguity between normal and reversed versions of the
-		     same comparison operator; prefer the normal one.
-		     https://lists.isocpp.org/core/2019/10/7438.php  */
-		  if (cand1->reversed ())
-		    winner = -1;
-		  else
-		    {
-		      gcc_checking_assert (cand2->reversed ());
-		      winner = 1;
-		    }
-		  break;
-		}
+	      /* Ambiguity between normal and reversed comparison operators
+		 with the same parameter types; prefer the normal one.  */
+	      if ((cand1->reversed () != cand2->reversed ())
+		  && cand_parms_match (cand1, cand2))
+		return cand1->reversed () ? -1 : 1;
 
 	      winner = 0;
 	      goto tweak;
@@ -11774,9 +11827,16 @@ perform_direct_initialization_if_possible (tree type,
      If the destination type is a (possibly cv-qualified) class type:
 
      -- If the initialization is direct-initialization ...,
-     constructors are considered. ... If no constructor applies, or
-     the overload resolution is ambiguous, the initialization is
-     ill-formed.  */
+     constructors are considered.
+
+       -- If overload resolution is successful, the selected constructor
+       is called to initialize the object, with the initializer expression
+       or expression-list as its argument(s).
+
+       -- Otherwise, if no constructor is viable, the destination type is
+       a (possibly cv-qualified) aggregate class A, and the initializer is
+       a parenthesized expression-list, the object is initialized as
+       follows...  */
   if (CLASS_TYPE_P (type))
     {
       releasing_vec args (make_tree_vector_single (expr));
@@ -12132,6 +12192,12 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
 	ctor = TARGET_EXPR_INITIAL (ctor);
       if (TREE_CODE (ctor) == CONSTRUCTOR)
 	{
+	  /* [dcl.init] When initializing an aggregate from a parenthesized list
+	     of values... a temporary object bound to a reference does not have
+	     its lifetime extended.  */
+	  if (CONSTRUCTOR_IS_PAREN_INIT (ctor))
+	    return init;
+
 	  if (is_std_init_list (type))
 	    {
 	      /* The temporary array underlying a std::initializer_list

@@ -112,6 +112,7 @@
 #include "cfgcleanup.h"
 #include "bb-reorder.h"
 #include "except.h"
+#include "alloc-pool.h"
 #include "fibonacci_heap.h"
 #include "stringpool.h"
 #include "attribs.h"

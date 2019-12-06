@@ -3343,7 +3343,7 @@ mio_gmp_integer (mpz_t *integer)
 static void
 mio_gmp_real (mpfr_t *real)
 {
-  mp_exp_t exponent;
+  mpfr_exp_t exponent;
   char *p;
 
   if (iomode == IO_INPUT)

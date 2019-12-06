@@ -38,12 +38,6 @@ BEGIN {
     dir_rcall = "short-calls"
     opt_rcall = "mshort-calls"
 
-    dir_double64 = "double64"
-    opt_double64 = "mdouble=64"
-
-    dir_long_double64 = "long-double64"
-    opt_long_double64 = "mlong-double=64"
-
     #    awk Variable         Makefile Variable  
     #  ------------------------------------------
     #    m_options     <->    MULTILIB_OPTIONS
@@ -56,8 +50,23 @@ BEGIN {
     m_required   = "\nMULTILIB_REQUIRED ="
     m_reuse      = "\nMULTILIB_REUSE ="
 
-    have_double_multi = (HAVE_DOUBLE_MULTILIB == "HAVE_DOUBLE_MULTILIB")
-    have_long_double_multi = (HAVE_LONG_DOUBLE_MULTILIB == "HAVE_LONG_DOUBLE_MULTILIB")
+    have_long_double_is_double = (HAVE_LONG_DOUBLE_IS_DOUBLE \
+				  == "HAVE_LONG_DOUBLE_IS_DOUBLE")
+    have_double32 = (HAVE_DOUBLE32 == "HAVE_DOUBLE32")
+    have_double64 = (HAVE_DOUBLE64 == "HAVE_DOUBLE64")
+    have_long_double32 = (HAVE_LONG_DOUBLE32 == "HAVE_LONG_DOUBLE32")
+    have_long_double64 = (HAVE_LONG_DOUBLE64 == "HAVE_LONG_DOUBLE64")
+
+    have_double_multi = (have_double32 && have_double64)
+    have_long_double_multi = (! have_long_double_is_double \
+			      && have_long_double32 && have_long_double64)
+
+    # How to switch away from the default.
+    dir_double = "double"   (96 - with_double)
+    opt_double = "mdouble=" (96 - with_double)
+
+    dir_long_double = "long-double"   (96 - with_long_double)
+    opt_long_double = "mlong-double=" (96 - with_long_double)
 }
 
 ##################################################################
@@ -86,6 +95,26 @@ BEGIN {
     # The first empty line stops copy-pasting the GPL comments
     # from this file to the generated file.
 
+    if (comment)
+    {
+	print
+
+	if (have_double_multi)
+	{
+	    print "# dir_double = " dir_double
+	    print "# opt_double = -" opt_double
+	}
+	else
+	    print "# No multilib for double."
+
+	if (have_long_double_multi)
+	{
+	    print "# dir_long_double = " dir_long_double
+	    print "# opt_long_double = -" opt_long_double
+	}
+	else
+	    print "# No multilib for long double."
+    }
     comment = 0
 }
 
@@ -145,21 +174,30 @@ BEGIN {
 	    m_required = m_required " \\\n\t" opts
 	    if (have_double_multi && have_long_double_multi)
 	    {
-		m_required = m_required " \\\n\t" opts "/" opt_double64
-		m_required = m_required " \\\n\t" opts "/" opt_long_double64
+		m_required = m_required " \\\n\t" opts "/" opt_double
+		m_required = m_required " \\\n\t" opts "/" opt_long_double
 
-		# -mlong-double=64 -mdouble=64 is the same as -mdouble=64,
-		# hence add a respective reuse.
-		d_opts  = opts "/" opt_double64
-		d_reuse = opts "/" opt_double64 "/" opt_long_double64
-		gsub (/=/, ".", d_opts)
-		gsub (/=/, ".", d_reuse)
-		m_reuse = m_reuse " \\\n\t" d_opts "=" d_reuse
+		# We have only 3 different combinations because -mdouble=64
+		# implies -mlong-double=64, and -mlong-double=32 implies
+		# -mdouble=32, hence add respective reuses.  The reuse is
+		# not needed in the case with_double != with_long_double
+		# which means with_double=32 with_long_double=64 because
+		# the driver will rectify combining -mdouble=64 and
+		# -mlong-double=32.
+		if (with_double == with_long_double)
+		{
+		    d_opts = with_double == 32 ? opt_double : opt_long_double
+		    d_opts  = opts "/" d_opts
+		    d_reuse = opts "/" opt_double "/" opt_long_double
+		    gsub (/=/, ".", d_opts)
+		    gsub (/=/, ".", d_reuse)
+		    m_reuse = m_reuse " \\\n\t" d_opts "=" d_reuse
+		}
 	    }
 	    else if (have_double_multi)
-		m_required = m_required " \\\n\t" opts "/" opt_double64
+		m_required = m_required " \\\n\t" opts "/" opt_double
 	    else if (have_long_double_multi)
-		m_required = m_required " \\\n\t" opts "/" opt_long_double64
+		m_required = m_required " \\\n\t" opts "/" opt_long_double
 	}
     }
 }
@@ -177,26 +215,34 @@ END {
 
     if (have_double_multi && have_long_double_multi)
     {
-	print m_options  " " opt_tiny " " opt_rcall " " opt_double64 "/" opt_long_double64
-	print m_dirnames " " dir_tiny " " dir_rcall " " dir_double64 " " dir_long_double64
-	# Notice that the ./double64 and ./long-double64 variants cannot
+	print m_options  " " opt_tiny " " opt_rcall " " opt_double "/" opt_long_double
+	print m_dirnames " " dir_tiny " " dir_rcall " " dir_double " " dir_long_double
+	# Notice that the ./double* and ./long-double* variants cannot
 	# be copied by t-avrlibc because the . default multilib is built
 	# after all the others.
-	m_required = m_required " \\\n\t" opt_double64
-	m_required = m_required " \\\n\t" opt_long_double64
-	m_reuse = m_reuse " \\\n\tmdouble.64=mdouble.64/mlong-double.64"
+	m_required = m_required " \\\n\t" opt_double
+	m_required = m_required " \\\n\t" opt_long_double
+	if (with_double == with_long_double)
+	{
+	    d_opts  = with_double == 32 ? opt_double : opt_long_double
+	    d_reuse = opt_double "/" opt_long_double
+	    gsub (/=/, ".", d_opts)
+	    gsub (/=/, ".", d_reuse)
+	    m_reuse = m_reuse " \\\n\t" d_opts "=" d_reuse
+
+	}
     }
     else if (have_double_multi)
     {
-	print m_options  " " opt_tiny " " opt_rcall " " opt_double64
-	print m_dirnames " " dir_tiny " " dir_rcall " " dir_double64
-	m_required = m_required " \\\n\t" opt_double64
+	print m_options  " " opt_tiny " " opt_rcall " " opt_double
+	print m_dirnames " " dir_tiny " " dir_rcall " " dir_double
+	m_required = m_required " \\\n\t" opt_double
     }
     else if (have_long_double_multi)
     {
-	print m_options  " " opt_tiny " " opt_rcall " " opt_long_double64
-	print m_dirnames " " dir_tiny " " dir_rcall " " dir_long_double64
-	m_required = m_required " \\\n\t" opt_long_double64
+	print m_options  " " opt_tiny " " opt_rcall " " opt_long_double
+	print m_dirnames " " dir_tiny " " dir_rcall " " dir_long_double
+	m_required = m_required " \\\n\t" opt_long_double
     }
     else
     {

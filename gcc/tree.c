@@ -1867,6 +1867,9 @@ make_vector (unsigned log2_npatterns,
 tree
 build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
 {
+  if (vec_safe_length (v) == 0)
+    return build_zero_cst (type);
+
   unsigned HOST_WIDE_INT idx, nelts;
   tree value;
 
@@ -10340,23 +10343,23 @@ build_common_tree_nodes (bool signed_char)
   uint64_type_node = make_or_reuse_type (64, 1);
 
   /* Decimal float types. */
-  dfloat32_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE;
-  SET_TYPE_MODE (dfloat32_type_node, SDmode);
-  layout_type (dfloat32_type_node);
-  dfloat32_ptr_type_node = build_pointer_type (dfloat32_type_node);
+  if (targetm.decimal_float_supported_p ())
+    {
+      dfloat32_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE;
+      SET_TYPE_MODE (dfloat32_type_node, SDmode);
+      layout_type (dfloat32_type_node);
 
-  dfloat64_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat64_type_node) = DECIMAL64_TYPE_SIZE;
-  SET_TYPE_MODE (dfloat64_type_node, DDmode);
-  layout_type (dfloat64_type_node);
-  dfloat64_ptr_type_node = build_pointer_type (dfloat64_type_node);
+      dfloat64_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (dfloat64_type_node) = DECIMAL64_TYPE_SIZE;
+      SET_TYPE_MODE (dfloat64_type_node, DDmode);
+      layout_type (dfloat64_type_node);
 
-  dfloat128_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE;
-  SET_TYPE_MODE (dfloat128_type_node, TDmode);
-  layout_type (dfloat128_type_node);
-  dfloat128_ptr_type_node = build_pointer_type (dfloat128_type_node);
+      dfloat128_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE;
+      SET_TYPE_MODE (dfloat128_type_node, TDmode);
+      layout_type (dfloat128_type_node);
+    }
 
   complex_integer_type_node = build_complex_type (integer_type_node, true);
   complex_float_type_node = build_complex_type (float_type_node, true);
@@ -10882,44 +10885,44 @@ build_vector_type (tree innertype, poly_int64 nunits)
   return make_vector_type (innertype, nunits, VOIDmode);
 }
 
-/* Build truth vector with specified length and number of units.  */
+/* Build a truth vector with NUNITS units, giving it mode MASK_MODE.  */
 
 tree
-build_truth_vector_type (poly_uint64 nunits, poly_uint64 vector_size)
+build_truth_vector_type_for_mode (poly_uint64 nunits, machine_mode mask_mode)
 {
-  machine_mode mask_mode
-    = targetm.vectorize.get_mask_mode (nunits, vector_size).else_blk ();
+  gcc_assert (mask_mode != BLKmode);
 
-  poly_uint64 vsize;
-  if (mask_mode == BLKmode)
-    vsize = vector_size * BITS_PER_UNIT;
-  else
-    vsize = GET_MODE_BITSIZE (mask_mode);
-
+  poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
   unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
-
   tree bool_type = build_nonstandard_boolean_type (esize);
 
   return make_vector_type (bool_type, nunits, mask_mode);
 }
 
-/* Returns a vector type corresponding to a comparison of VECTYPE.  */
+/* Build a vector type that holds one boolean result for each element of
+   vector type VECTYPE.  The public interface for this operation is
+   truth_type_for.  */
 
-tree
-build_same_sized_truth_vector_type (tree vectype)
+static tree
+build_truth_vector_type_for (tree vectype)
 {
-  if (VECTOR_BOOLEAN_TYPE_P (vectype))
-    return vectype;
+  machine_mode vector_mode = TYPE_MODE (vectype);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
-  poly_uint64 size = GET_MODE_SIZE (TYPE_MODE (vectype));
+  machine_mode mask_mode;
+  if (VECTOR_MODE_P (vector_mode)
+      && targetm.vectorize.get_mask_mode (vector_mode).exists (&mask_mode))
+    return build_truth_vector_type_for_mode (nunits, mask_mode);
 
-  if (known_eq (size, 0U))
-    size = tree_to_uhwi (TYPE_SIZE_UNIT (vectype));
+  poly_uint64 vsize = tree_to_poly_uint64 (TYPE_SIZE (vectype));
+  unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
+  tree bool_type = build_nonstandard_boolean_type (esize);
 
-  return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (vectype), size);
+  return make_vector_type (bool_type, nunits, BLKmode);
 }
 
-/* Similarly, but builds a variant type with TYPE_VECTOR_OPAQUE set.  */
+/* Like build_vector_type, but builds a variant type with TYPE_VECTOR_OPAQUE
+   set.  */
 
 tree
 build_opaque_vector_type (tree innertype, poly_int64 nunits)
@@ -11723,8 +11726,7 @@ truth_type_for (tree type)
     {
       if (VECTOR_BOOLEAN_TYPE_P (type))
 	return type;
-      return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (type),
-				      GET_MODE_SIZE (TYPE_MODE (type)));
+      return build_truth_vector_type_for (type);
     }
   else
     return boolean_type_node;
@@ -15012,6 +15014,41 @@ default_is_empty_record (const_tree type)
   return default_is_empty_type (TYPE_MAIN_VARIANT (type));
 }
 
+/* Determine whether TYPE is a structure with a flexible array member,
+   or a union containing such a structure (possibly recursively).  */
+
+bool
+flexible_array_type_p (const_tree type)
+{
+  tree x, last;
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+      last = NULL_TREE;
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = DECL_CHAIN (x))
+	if (TREE_CODE (x) == FIELD_DECL)
+	  last = x;
+      if (last == NULL_TREE)
+	return false;
+      if (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE
+	  && TYPE_SIZE (TREE_TYPE (last)) == NULL_TREE
+	  && TYPE_DOMAIN (TREE_TYPE (last)) != NULL_TREE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (last))) == NULL_TREE)
+	return true;
+      return false;
+    case UNION_TYPE:
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = DECL_CHAIN (x))
+	{
+	  if (TREE_CODE (x) == FIELD_DECL
+	      && flexible_array_type_p (TREE_TYPE (x)))
+	    return true;
+	}
+      return false;
+    default:
+      return false;
+  }
+}
+
 /* Like int_size_in_bytes, but handle empty records specially.  */
 
 HOST_WIDE_INT
@@ -15130,6 +15167,21 @@ max_object_size (void)
 {
   /* To do: Make this a configurable parameter.  */
   return TYPE_MAX_VALUE (ptrdiff_type_node);
+}
+
+/* A wrapper around TARGET_VERIFY_TYPE_CONTEXT that makes the silent_p
+   parameter default to false and that weeds out error_mark_node.  */
+
+bool
+verify_type_context (location_t loc, type_context_kind context,
+		     const_tree type, bool silent_p)
+{
+  if (type == error_mark_node)
+    return true;
+
+  gcc_assert (TYPE_P (type));
+  return (!targetm.verify_type_context
+	  || targetm.verify_type_context (loc, context, type, silent_p));
 }
 
 #if CHECKING_P

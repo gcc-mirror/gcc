@@ -1946,8 +1946,6 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 static void
 handle_builtin_strchr (gimple_stmt_iterator *gsi)
 {
-  int idx;
-  tree src;
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
 
@@ -1957,8 +1955,14 @@ handle_builtin_strchr (gimple_stmt_iterator *gsi)
   if (!integer_zerop (gimple_call_arg (stmt, 1)))
     return;
 
-  src = gimple_call_arg (stmt, 0);
-  idx = get_stridx (src);
+  tree src = gimple_call_arg (stmt, 0);
+
+  /* Avoid folding if the first argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, src))
+    return;
+
+  int idx = get_stridx (src);
   if (idx)
     {
       strinfo *si = NULL;
@@ -3794,11 +3798,11 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
 
   /* For strncmp set to the the value of the third argument if known.  */
   HOST_WIDE_INT bound = -1;
-
+  tree len = NULL_TREE;
   /* Extract the strncmp bound.  */
   if (gimple_call_num_args (stmt) == 3)
     {
-      tree len = gimple_call_arg (stmt, 2);
+      len = gimple_call_arg (stmt, 2);
       if (tree_fits_shwi_p (len))
         bound = tree_to_shwi (len);
 
@@ -3806,6 +3810,12 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
       if (bound < 0)
 	return false;
     }
+
+  /* Avoid folding if either argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, arg1, len)
+      || !check_nul_terminated_array (NULL_TREE, arg2, len))
+    return false;
 
   {
     /* Set to the length of one argument (or its complement if it's
@@ -4290,7 +4300,8 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
 /* Handle a single or multibyte store other than by a built-in function,
    either via a single character assignment or by multi-byte assignment
    either via MEM_REF or via a type other than char (such as in
-   '*(int*)a = 12345').  Return true when handled.  */
+   '*(int*)a = 12345').  Return true to let the caller advance *GSI to
+   the next statement in the basic block and false otherwise.  */
 
 static bool
 handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rvals)
@@ -4383,8 +4394,22 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write, const vr_values *rval
 			       stmt, lenrange[2], dstsize))
 		  {
 		    if (decl)
-		      inform (DECL_SOURCE_LOCATION (decl),
-			      "destination object declared here");
+		      {
+			if (TREE_CODE (decl) == SSA_NAME)
+			  {
+			    gimple *stmt = SSA_NAME_DEF_STMT (decl);
+			    if (is_gimple_call (stmt))
+			      {
+				tree allocfn = gimple_call_fndecl (stmt);
+				inform (gimple_location (stmt),
+					"destination region allocated by %qD "
+					"here", allocfn);
+			      }
+			  }
+			else
+			  inform (DECL_SOURCE_LOCATION (decl),
+				  "destination object declared here");
+		      }
 		    gimple_set_no_warning (stmt, true);
 		  }
 	      }
@@ -4718,8 +4743,8 @@ is_char_type (tree type)
 }
 
 /* Check the built-in call at GSI for validity and optimize it.
-   Return true to let the caller advance *GSI to the statement
-   in the CFG and false otherwise.  */
+   Return true to let the caller advance *GSI to the next statement
+   in the basic block and false otherwise.  */
 
 static bool
 strlen_check_and_optimize_call (gimple_stmt_iterator *gsi,
@@ -4728,16 +4753,13 @@ strlen_check_and_optimize_call (gimple_stmt_iterator *gsi,
 {
   gimple *stmt = gsi_stmt (*gsi);
 
+  /* When not optimizing we must be checking printf calls which
+     we do even for user-defined functions when they are declared
+     with attribute format.  */
   if (!flag_optimize_strlen
       || !strlen_optimize
       || !valid_builtin_call (stmt))
-    {
-      /* When not optimizing we must be checking printf calls which
-	 we do even for user-defined functions when they are declared
-	 with attribute format.  */
-      handle_printf_call (gsi, rvals);
-      return true;
-    }
+    return !handle_printf_call (gsi, rvals);
 
   tree callee = gimple_call_fndecl (stmt);
   switch (DECL_FUNCTION_CODE (callee))
@@ -4796,7 +4818,8 @@ strlen_check_and_optimize_call (gimple_stmt_iterator *gsi,
 	return false;
       break;
     default:
-      handle_printf_call (gsi, rvals);
+      if (handle_printf_call (gsi, rvals))
+	return false;
       break;
     }
 
@@ -4922,7 +4945,8 @@ handle_integral_assign (gimple_stmt_iterator *gsi, bool *cleanup_eh)
 /* Attempt to check for validity of the performed access a single statement
    at *GSI using string length knowledge, and to optimize it.
    If the given basic block needs clean-up of EH, CLEANUP_EH is set to
-   true.  */
+   true.  Return true to let the caller advance *GSI to the next statement
+   in the basic block and false otherwise.  */
 
 static bool
 check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh,
@@ -4963,32 +4987,32 @@ check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh,
 	/* Handle assignment to a character.  */
 	handle_integral_assign (gsi, cleanup_eh);
       else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
-      {
-	tree type = TREE_TYPE (lhs);
-	if (TREE_CODE (type) == ARRAY_TYPE)
-	  type = TREE_TYPE (type);
+	{
+	  tree type = TREE_TYPE (lhs);
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    type = TREE_TYPE (type);
 
-	bool is_char_store = is_char_type (type);
-	if (!is_char_store && TREE_CODE (lhs) == MEM_REF)
-	  {
-	    /* To consider stores into char objects via integer types
-	       other than char but not those to non-character objects,
-	       determine the type of the destination rather than just
-	       the type of the access.  */
-	    tree ref = TREE_OPERAND (lhs, 0);
-	    type = TREE_TYPE (ref);
-	    if (TREE_CODE (type) == POINTER_TYPE)
-	      type = TREE_TYPE (type);
-	    if (TREE_CODE (type) == ARRAY_TYPE)
-	      type = TREE_TYPE (type);
-	    if (is_char_type (type))
-	      is_char_store = true;
-	  }
+	  bool is_char_store = is_char_type (type);
+	  if (!is_char_store && TREE_CODE (lhs) == MEM_REF)
+	    {
+	      /* To consider stores into char objects via integer types
+		 other than char but not those to non-character objects,
+		 determine the type of the destination rather than just
+		 the type of the access.  */
+	      tree ref = TREE_OPERAND (lhs, 0);
+	      type = TREE_TYPE (ref);
+	      if (TREE_CODE (type) == POINTER_TYPE)
+		type = TREE_TYPE (type);
+	      if (TREE_CODE (type) == ARRAY_TYPE)
+		type = TREE_TYPE (type);
+	      if (is_char_type (type))
+		is_char_store = true;
+	    }
 
-	/* Handle a single or multibyte assignment.  */
-	if (is_char_store && !handle_store (gsi, &zero_write, rvals))
-	  return false;
-      }
+	  /* Handle a single or multibyte assignment.  */
+	  if (is_char_store && !handle_store (gsi, &zero_write, rvals))
+	    return false;
+	}
     }
   else if (gcond *cond = dyn_cast<gcond *> (stmt))
     {

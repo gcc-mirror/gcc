@@ -18,4 +18,6 @@ f2 (int *x, long step2, int n)
 
 /* { dg-final { scan-tree-dump {need run-time check that [^\n]*step1[^\n]* is nonzero} "vect" } } */
 /* { dg-final { scan-tree-dump-not {need run-time check that [^\n]*step2[^\n]* is nonzero} "vect" } } */
+/* { dg-final { scan-tree-dump-not "using an address-based" "vect" } } */
+/* { dg-final { scan-tree-dump-not "using an index-based" "vect" } } */
 /* { dg-final { scan-tree-dump-times {LOOP VECTORIZED} 2 "vect" } } */

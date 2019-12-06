@@ -630,6 +630,19 @@ namespace __debug
     { return __x.swap(__y); }
 
 } // namespace __debug
+
+#if __cplusplus > 201703L
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+namespace ranges::__detail
+{
+  template<typename _Tp> extern inline const bool __enable_view_impl;
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline constexpr bool
+      __enable_view_impl<std::__debug::multiset<_Key, _Compare, _Alloc>>
+	= false;
+} // namespace ranges::__detail
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif // C++20
 } // namespace std
 
 #endif

@@ -12,7 +12,7 @@ main()
 {
   // sizeof may not be applied to a bit-field
   foo f;
-  int i = sizeof (f.bit);// { dg-error "" } .*
+  int i = sizeof (f.bit);// { dg-error "21:invalid application" } .*
 
   return 0;
 }

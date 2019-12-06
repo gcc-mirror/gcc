@@ -1475,6 +1475,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #pragma GCC diagnostic pop
 
+  // helper trait for unique_ptr<T[]>, shared_ptr<T[]>, and span<T, N>
+  template<typename _ToElementType, typename _FromElementType>
+    using __is_array_convertible
+      = is_convertible<_FromElementType(*)[], _ToElementType(*)[]>;
+
   // is_nothrow_convertible for C++11
   template<typename _From, typename _To>
     struct __is_nothrow_convertible

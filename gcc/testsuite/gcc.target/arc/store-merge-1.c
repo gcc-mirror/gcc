@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-require-effective-target archs }*/
+/* { dg-options "-O3 -mll64" } */
 
 /* This tests checks if we use st w6,[reg] format.  */
 

@@ -4915,30 +4915,11 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 static machine_mode
 rs6000_preferred_simd_mode (scalar_mode mode)
 {
-  if (TARGET_VSX)
-    switch (mode)
-      {
-      case E_DFmode:
-	return V2DFmode;
-      default:;
-      }
-  if (TARGET_ALTIVEC || TARGET_VSX)
-    switch (mode)
-      {
-      case E_SFmode:
-	return V4SFmode;
-      case E_TImode:
-	return V1TImode;
-      case E_DImode:
-	return V2DImode;
-      case E_SImode:
-	return V4SImode;
-      case E_HImode:
-	return V8HImode;
-      case E_QImode:
-	return V16QImode;
-      default:;
-      }
+  opt_machine_mode vmode = mode_for_vector (mode, 16 / GET_MODE_SIZE (mode));
+
+  if (vmode.exists () && !VECTOR_MEM_NONE_P (vmode.require ()))
+    return vmode.require ();
+
   return word_mode;
 }
 
@@ -13954,42 +13935,6 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 				gen_rtx_COMPARE (comp_mode, op0, op1)));
     }
 
-  /* Some kinds of FP comparisons need an OR operation;
-     under flag_finite_math_only we don't bother.  */
-  if (FLOAT_MODE_P (mode)
-      && (!FLOAT128_IEEE_P (mode) || TARGET_FLOAT128_HW)
-      && !flag_finite_math_only
-      && (code == LE || code == GE
-	  || code == UNEQ || code == LTGT
-	  || code == UNGT || code == UNLT))
-    {
-      enum rtx_code or1, or2;
-      rtx or1_rtx, or2_rtx, compare2_rtx;
-      rtx or_result = gen_reg_rtx (CCEQmode);
-
-      switch (code)
-	{
-	case LE: or1 = LT;  or2 = EQ;  break;
-	case GE: or1 = GT;  or2 = EQ;  break;
-	case UNEQ: or1 = UNORDERED;  or2 = EQ;  break;
-	case LTGT: or1 = LT;  or2 = GT;  break;
-	case UNGT: or1 = UNORDERED;  or2 = GT;  break;
-	case UNLT: or1 = UNORDERED;  or2 = LT;  break;
-	default:  gcc_unreachable ();
-	}
-      validate_condition_mode (or1, comp_mode);
-      validate_condition_mode (or2, comp_mode);
-      or1_rtx = gen_rtx_fmt_ee (or1, SImode, compare_result, const0_rtx);
-      or2_rtx = gen_rtx_fmt_ee (or2, SImode, compare_result, const0_rtx);
-      compare2_rtx = gen_rtx_COMPARE (CCEQmode,
-				      gen_rtx_IOR (SImode, or1_rtx, or2_rtx),
-				      const_true_rtx);
-      emit_insn (gen_rtx_SET (or_result, compare2_rtx));
-
-      compare_result = or_result;
-      code = EQ;
-    }
-
   validate_condition_mode (code, GET_MODE (compare_result));
 
   return gen_rtx_fmt_ee (code, VOIDmode, compare_result, const0_rtx);
@@ -14301,21 +14246,44 @@ rs6000_emit_eqne (machine_mode mode, rtx op1, rtx op2, rtx scratch)
   return scratch;
 }
 
+/* Emit code doing a cror of two CR bits, for FP comparisons with a CODE that
+   requires this.  The result is mode MODE.  */
+rtx
+rs6000_emit_fp_cror (rtx_code code, machine_mode mode, rtx x)
+{
+  rtx cond[2];
+  int n = 0;
+  if (code == LTGT || code == LE || code == UNLT)
+    cond[n++] = gen_rtx_fmt_ee (LT, mode, x, const0_rtx);
+  if (code == LTGT || code == GE || code == UNGT)
+    cond[n++] = gen_rtx_fmt_ee (GT, mode, x, const0_rtx);
+  if (code == LE || code == GE || code == UNEQ)
+    cond[n++] = gen_rtx_fmt_ee (EQ, mode, x, const0_rtx);
+  if (code == UNLT || code == UNGT || code == UNEQ)
+    cond[n++] = gen_rtx_fmt_ee (UNORDERED, mode, x, const0_rtx);
+
+  gcc_assert (n == 2);
+
+  rtx cc = gen_reg_rtx (CCEQmode);
+  rtx logical = gen_rtx_IOR (mode, cond[0], cond[1]);
+  emit_insn (gen_cceq_ior_compare (mode, cc, logical, cond[0], x, cond[1], x));
+
+  return cc;
+}
+
 void
 rs6000_emit_sCOND (machine_mode mode, rtx operands[])
 {
-  rtx condition_rtx;
-  machine_mode op_mode;
-  enum rtx_code cond_code;
-  rtx result = operands[0];
+  rtx condition_rtx = rs6000_generate_compare (operands[1], mode);
+  rtx_code cond_code = GET_CODE (condition_rtx);
 
-  condition_rtx = rs6000_generate_compare (operands[1], mode);
-  cond_code = GET_CODE (condition_rtx);
-
-  if (cond_code == NE
-      || cond_code == GE || cond_code == LE
-      || cond_code == GEU || cond_code == LEU
-      || cond_code == ORDERED || cond_code == UNGE || cond_code == UNLE)
+  if (FLOAT_MODE_P (mode) && HONOR_NANS (mode)
+      && !(FLOAT128_VECTOR_P (mode) && !TARGET_FLOAT128_HW))
+    ;
+  else if (cond_code == NE
+	   || cond_code == GE || cond_code == LE
+	   || cond_code == GEU || cond_code == LEU
+	   || cond_code == ORDERED || cond_code == UNGE || cond_code == UNLE)
     {
       rtx not_result = gen_reg_rtx (CCEQmode);
       rtx not_op, rev_cond_rtx;
@@ -14330,19 +14298,19 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
       condition_rtx = gen_rtx_EQ (VOIDmode, not_result, const0_rtx);
     }
 
-  op_mode = GET_MODE (XEXP (operands[1], 0));
+  machine_mode op_mode = GET_MODE (XEXP (operands[1], 0));
   if (op_mode == VOIDmode)
     op_mode = GET_MODE (XEXP (operands[1], 1));
 
   if (TARGET_POWERPC64 && (op_mode == DImode || FLOAT_MODE_P (mode)))
     {
       PUT_MODE (condition_rtx, DImode);
-      convert_move (result, condition_rtx, 0);
+      convert_move (operands[0], condition_rtx, 0);
     }
   else
     {
       PUT_MODE (condition_rtx, SImode);
-      emit_insn (gen_rtx_SET (result, condition_rtx));
+      emit_insn (gen_rtx_SET (operands[0], condition_rtx));
     }
 }
 
@@ -14351,13 +14319,10 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
 void
 rs6000_emit_cbranch (machine_mode mode, rtx operands[])
 {
-  rtx condition_rtx, loc_ref;
-
-  condition_rtx = rs6000_generate_compare (operands[0], mode);
-  loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-  emit_jump_insn (gen_rtx_SET (pc_rtx,
-			       gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
-						     loc_ref, pc_rtx)));
+  rtx condition_rtx = rs6000_generate_compare (operands[0], mode);
+  rtx loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
+  rtx ite = gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx, loc_ref, pc_rtx);
+  emit_jump_insn (gen_rtx_SET (pc_rtx, ite));
 }
 
 /* Return the string to output a conditional branch to LABEL, which is
@@ -17711,14 +17676,216 @@ get_next_active_insn (rtx_insn *insn, rtx_insn *tail)
   return insn;
 }
 
+/* Move instruction at POS to the end of the READY list.  */
+
+static void
+move_to_end_of_ready (rtx_insn **ready, int pos, int lastpos)
+{
+  rtx_insn *tmp;
+  int i;
+
+  tmp = ready[pos];
+  for (i = pos; i < lastpos; i++)
+    ready[i] = ready[i + 1];
+  ready[lastpos] = tmp;
+}
+
+/* Do Power6 specific sched_reorder2 reordering of ready list.  */
+
+static int
+power6_sched_reorder2 (rtx_insn **ready, int lastpos)
+{
+  /* For Power6, we need to handle some special cases to try and keep the
+     store queue from overflowing and triggering expensive flushes.
+
+     This code monitors how load and store instructions are being issued
+     and skews the ready list one way or the other to increase the likelihood
+     that a desired instruction is issued at the proper time.
+
+     A couple of things are done.  First, we maintain a "load_store_pendulum"
+     to track the current state of load/store issue.
+
+       - If the pendulum is at zero, then no loads or stores have been
+	 issued in the current cycle so we do nothing.
+
+       - If the pendulum is 1, then a single load has been issued in this
+	 cycle and we attempt to locate another load in the ready list to
+	 issue with it.
+
+       - If the pendulum is -2, then two stores have already been
+	 issued in this cycle, so we increase the priority of the first load
+	 in the ready list to increase it's likelihood of being chosen first
+	 in the next cycle.
+
+       - If the pendulum is -1, then a single store has been issued in this
+	 cycle and we attempt to locate another store in the ready list to
+	 issue with it, preferring a store to an adjacent memory location to
+	 facilitate store pairing in the store queue.
+
+       - If the pendulum is 2, then two loads have already been
+	 issued in this cycle, so we increase the priority of the first store
+	 in the ready list to increase it's likelihood of being chosen first
+	 in the next cycle.
+
+       - If the pendulum < -2 or > 2, then do nothing.
+
+       Note: This code covers the most common scenarios.  There exist non
+	     load/store instructions which make use of the LSU and which
+	     would need to be accounted for to strictly model the behavior
+	     of the machine.  Those instructions are currently unaccounted
+	     for to help minimize compile time overhead of this code.
+   */
+  int pos;
+  rtx load_mem, str_mem;
+
+  if (is_store_insn (last_scheduled_insn, &str_mem))
+    /* Issuing a store, swing the load_store_pendulum to the left */
+    load_store_pendulum--;
+  else if (is_load_insn (last_scheduled_insn, &load_mem))
+    /* Issuing a load, swing the load_store_pendulum to the right */
+    load_store_pendulum++;
+  else
+    return cached_can_issue_more;
+
+  /* If the pendulum is balanced, or there is only one instruction on
+     the ready list, then all is well, so return. */
+  if ((load_store_pendulum == 0) || (lastpos <= 0))
+    return cached_can_issue_more;
+
+  if (load_store_pendulum == 1)
+    {
+      /* A load has been issued in this cycle.  Scan the ready list
+	 for another load to issue with it */
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_load_insn (ready[pos], &load_mem))
+	    {
+	      /* Found a load.  Move it to the head of the ready list,
+		 and adjust it's priority so that it is more likely to
+		 stay there */
+	      move_to_end_of_ready (ready, pos, lastpos);
+
+	      if (!sel_sched_p ()
+		  && INSN_PRIORITY_KNOWN (ready[lastpos]))
+		INSN_PRIORITY (ready[lastpos])++;
+	      break;
+	    }
+	  pos--;
+	}
+    }
+  else if (load_store_pendulum == -2)
+    {
+      /* Two stores have been issued in this cycle.  Increase the
+	 priority of the first load in the ready list to favor it for
+	 issuing in the next cycle. */
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_load_insn (ready[pos], &load_mem)
+	      && !sel_sched_p ()
+	      && INSN_PRIORITY_KNOWN (ready[pos]))
+	    {
+	      INSN_PRIORITY (ready[pos])++;
+
+	      /* Adjust the pendulum to account for the fact that a load
+		 was found and increased in priority.  This is to prevent
+		 increasing the priority of multiple loads */
+	      load_store_pendulum--;
+
+	      break;
+	    }
+	  pos--;
+	}
+    }
+  else if (load_store_pendulum == -1)
+    {
+      /* A store has been issued in this cycle.  Scan the ready list for
+	 another store to issue with it, preferring a store to an adjacent
+	 memory location */
+      int first_store_pos = -1;
+
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_store_insn (ready[pos], &str_mem))
+	    {
+	      rtx str_mem2;
+	      /* Maintain the index of the first store found on the
+		 list */
+	      if (first_store_pos == -1)
+		first_store_pos = pos;
+
+	      if (is_store_insn (last_scheduled_insn, &str_mem2)
+		  && adjacent_mem_locations (str_mem, str_mem2))
+		{
+		  /* Found an adjacent store.  Move it to the head of the
+		     ready list, and adjust it's priority so that it is
+		     more likely to stay there */
+		  move_to_end_of_ready (ready, pos, lastpos);
+
+		  if (!sel_sched_p ()
+		      && INSN_PRIORITY_KNOWN (ready[lastpos]))
+		    INSN_PRIORITY (ready[lastpos])++;
+
+		  first_store_pos = -1;
+
+		  break;
+		};
+	    }
+	  pos--;
+	}
+
+      if (first_store_pos >= 0)
+	{
+	  /* An adjacent store wasn't found, but a non-adjacent store was,
+	     so move the non-adjacent store to the front of the ready
+	     list, and adjust its priority so that it is more likely to
+	     stay there. */
+	  move_to_end_of_ready (ready, first_store_pos, lastpos);
+	  if (!sel_sched_p ()
+	      && INSN_PRIORITY_KNOWN (ready[lastpos]))
+	    INSN_PRIORITY (ready[lastpos])++;
+	}
+    }
+  else if (load_store_pendulum == 2)
+    {
+      /* Two loads have been issued in this cycle.  Increase the priority
+	 of the first store in the ready list to favor it for issuing in
+	 the next cycle. */
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_store_insn (ready[pos], &str_mem)
+	      && !sel_sched_p ()
+	      && INSN_PRIORITY_KNOWN (ready[pos]))
+	    {
+	      INSN_PRIORITY (ready[pos])++;
+
+	      /* Adjust the pendulum to account for the fact that a store
+		 was found and increased in priority.  This is to prevent
+		 increasing the priority of multiple stores */
+	      load_store_pendulum++;
+
+	      break;
+	    }
+	  pos--;
+	}
+    }
+
+  return cached_can_issue_more;
+}
+
 /* Do Power9 specific sched_reorder2 reordering of ready list.  */
 
 static int
 power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 {
   int pos;
-  int i;
-  rtx_insn *tmp;
   enum attr_type type, type2;
 
   type = get_attr_type (last_scheduled_insn);
@@ -17738,10 +17905,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 	  if (recog_memoized (ready[pos]) >= 0
 	      && get_attr_type (ready[pos]) == TYPE_DIV)
 	    {
-	      tmp = ready[pos];
-	      for (i = pos; i < lastpos; i++)
-		ready[i] = ready[i + 1];
-	      ready[lastpos] = tmp;
+	      move_to_end_of_ready (ready, pos, lastpos);
 	      break;
 	    }
 	  pos--;
@@ -17784,10 +17948,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 			{
 			  /* Found a vector insn to pair with, move it to the
 			     end of the ready list so it is scheduled next.  */
-			  tmp = ready[pos];
-			  for (i = pos; i < lastpos; i++)
-			    ready[i] = ready[i + 1];
-			  ready[lastpos] = tmp;
+			  move_to_end_of_ready (ready, pos, lastpos);
 			  vec_pairing = 1;
 			  return cached_can_issue_more;
 			}
@@ -17801,10 +17962,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 		{
 		  /* Didn't find a vector to pair with but did find a vecload,
 		     move it to the end of the ready list.  */
-		  tmp = ready[vecload_pos];
-		  for (i = vecload_pos; i < lastpos; i++)
-		    ready[i] = ready[i + 1];
-		  ready[lastpos] = tmp;
+		  move_to_end_of_ready (ready, vecload_pos, lastpos);
 		  vec_pairing = 1;
 		  return cached_can_issue_more;
 		}
@@ -17828,10 +17986,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 			{
 			  /* Found a vecload insn to pair with, move it to the
 			     end of the ready list so it is scheduled next.  */
-			  tmp = ready[pos];
-			  for (i = pos; i < lastpos; i++)
-			    ready[i] = ready[i + 1];
-			  ready[lastpos] = tmp;
+			  move_to_end_of_ready (ready, pos, lastpos);
 			  vec_pairing = 1;
 			  return cached_can_issue_more;
 			}
@@ -17846,10 +18001,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 		{
 		  /* Didn't find a vecload to pair with but did find a vector
 		     insn, move it to the end of the ready list.  */
-		  tmp = ready[vec_pos];
-		  for (i = vec_pos; i < lastpos; i++)
-		    ready[i] = ready[i + 1];
-		  ready[lastpos] = tmp;
+		  move_to_end_of_ready (ready, vec_pos, lastpos);
 		  vec_pairing = 1;
 		  return cached_can_issue_more;
 		}
@@ -17903,198 +18055,9 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
   if (sched_verbose)
     fprintf (dump, "// rs6000_sched_reorder2 :\n");
 
-  /* For Power6, we need to handle some special cases to try and keep the
-     store queue from overflowing and triggering expensive flushes.
-
-     This code monitors how load and store instructions are being issued
-     and skews the ready list one way or the other to increase the likelihood
-     that a desired instruction is issued at the proper time.
-
-     A couple of things are done.  First, we maintain a "load_store_pendulum"
-     to track the current state of load/store issue.
-
-       - If the pendulum is at zero, then no loads or stores have been
-         issued in the current cycle so we do nothing.
-
-       - If the pendulum is 1, then a single load has been issued in this
-         cycle and we attempt to locate another load in the ready list to
-         issue with it.
-
-       - If the pendulum is -2, then two stores have already been
-         issued in this cycle, so we increase the priority of the first load
-         in the ready list to increase it's likelihood of being chosen first
-         in the next cycle.
-
-       - If the pendulum is -1, then a single store has been issued in this
-         cycle and we attempt to locate another store in the ready list to
-         issue with it, preferring a store to an adjacent memory location to
-         facilitate store pairing in the store queue.
-
-       - If the pendulum is 2, then two loads have already been
-         issued in this cycle, so we increase the priority of the first store
-         in the ready list to increase it's likelihood of being chosen first
-         in the next cycle.
-
-       - If the pendulum < -2 or > 2, then do nothing.
-
-       Note: This code covers the most common scenarios.  There exist non
-             load/store instructions which make use of the LSU and which
-             would need to be accounted for to strictly model the behavior
-             of the machine.  Those instructions are currently unaccounted
-             for to help minimize compile time overhead of this code.
-   */
+  /* Do Power6 dependent reordering if necessary.  */
   if (rs6000_tune == PROCESSOR_POWER6 && last_scheduled_insn)
-    {
-      int pos;
-      int i;
-      rtx_insn *tmp;
-      rtx load_mem, str_mem;
-
-      if (is_store_insn (last_scheduled_insn, &str_mem))
-        /* Issuing a store, swing the load_store_pendulum to the left */
-        load_store_pendulum--;
-      else if (is_load_insn (last_scheduled_insn, &load_mem))
-        /* Issuing a load, swing the load_store_pendulum to the right */
-        load_store_pendulum++;
-      else
-        return cached_can_issue_more;
-
-      /* If the pendulum is balanced, or there is only one instruction on
-         the ready list, then all is well, so return. */
-      if ((load_store_pendulum == 0) || (*pn_ready <= 1))
-        return cached_can_issue_more;
-
-      if (load_store_pendulum == 1)
-        {
-          /* A load has been issued in this cycle.  Scan the ready list
-             for another load to issue with it */
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_load_insn (ready[pos], &load_mem))
-                {
-                  /* Found a load.  Move it to the head of the ready list,
-                     and adjust it's priority so that it is more likely to
-                     stay there */
-                  tmp = ready[pos];
-                  for (i=pos; i<*pn_ready-1; i++)
-                    ready[i] = ready[i + 1];
-                  ready[*pn_ready-1] = tmp;
-
-                  if (!sel_sched_p () && INSN_PRIORITY_KNOWN (tmp))
-                    INSN_PRIORITY (tmp)++;
-                  break;
-                }
-              pos--;
-            }
-        }
-      else if (load_store_pendulum == -2)
-        {
-          /* Two stores have been issued in this cycle.  Increase the
-             priority of the first load in the ready list to favor it for
-             issuing in the next cycle. */
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_load_insn (ready[pos], &load_mem)
-                  && !sel_sched_p ()
-		  && INSN_PRIORITY_KNOWN (ready[pos]))
-                {
-                  INSN_PRIORITY (ready[pos])++;
-
-                  /* Adjust the pendulum to account for the fact that a load
-                     was found and increased in priority.  This is to prevent
-                     increasing the priority of multiple loads */
-                  load_store_pendulum--;
-
-                  break;
-                }
-              pos--;
-            }
-        }
-      else if (load_store_pendulum == -1)
-        {
-          /* A store has been issued in this cycle.  Scan the ready list for
-             another store to issue with it, preferring a store to an adjacent
-             memory location */
-          int first_store_pos = -1;
-
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_store_insn (ready[pos], &str_mem))
-                {
-		  rtx str_mem2;
-                  /* Maintain the index of the first store found on the
-                     list */
-                  if (first_store_pos == -1)
-                    first_store_pos = pos;
-
-                  if (is_store_insn (last_scheduled_insn, &str_mem2)
-                      && adjacent_mem_locations (str_mem, str_mem2))
-                    {
-                      /* Found an adjacent store.  Move it to the head of the
-                         ready list, and adjust it's priority so that it is
-                         more likely to stay there */
-                      tmp = ready[pos];
-                      for (i=pos; i<*pn_ready-1; i++)
-                        ready[i] = ready[i + 1];
-                      ready[*pn_ready-1] = tmp;
-
-                      if (!sel_sched_p () && INSN_PRIORITY_KNOWN (tmp))
-                        INSN_PRIORITY (tmp)++;
-
-                      first_store_pos = -1;
-
-                      break;
-                    };
-                }
-              pos--;
-            }
-
-          if (first_store_pos >= 0)
-            {
-              /* An adjacent store wasn't found, but a non-adjacent store was,
-                 so move the non-adjacent store to the front of the ready
-                 list, and adjust its priority so that it is more likely to
-                 stay there. */
-              tmp = ready[first_store_pos];
-              for (i=first_store_pos; i<*pn_ready-1; i++)
-                ready[i] = ready[i + 1];
-              ready[*pn_ready-1] = tmp;
-              if (!sel_sched_p () && INSN_PRIORITY_KNOWN (tmp))
-                INSN_PRIORITY (tmp)++;
-            }
-        }
-      else if (load_store_pendulum == 2)
-       {
-           /* Two loads have been issued in this cycle.  Increase the priority
-              of the first store in the ready list to favor it for issuing in
-              the next cycle. */
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_store_insn (ready[pos], &str_mem)
-                  && !sel_sched_p ()
-		  && INSN_PRIORITY_KNOWN (ready[pos]))
-                {
-                  INSN_PRIORITY (ready[pos])++;
-
-                  /* Adjust the pendulum to account for the fact that a store
-                     was found and increased in priority.  This is to prevent
-                     increasing the priority of multiple stores */
-                  load_store_pendulum++;
-
-                  break;
-                }
-              pos--;
-            }
-        }
-    }
+    return power6_sched_reorder2 (ready, *pn_ready - 1);
 
   /* Do Power9 dependent reordering if necessary.  */
   if (rs6000_tune == PROCESSOR_POWER9 && last_scheduled_insn

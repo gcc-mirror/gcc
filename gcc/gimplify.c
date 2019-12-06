@@ -2405,8 +2405,8 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	      gsi_next (&gsi2);
 	    }
 	  if (!found)
-	    warning_at (loc, 0, "attribute %<fallthrough%> not preceding "
-			"a case label or default label");
+	    pedwarn (loc, 0, "attribute %<fallthrough%> not preceding "
+		     "a case label or default label");
 	}
       break;
     default:
@@ -2428,8 +2428,8 @@ expand_FALLTHROUGH (gimple_seq *seq_p)
   if (wi.callback_result == integer_zero_node)
     /* We've found [[fallthrough]]; at the end of a switch, which the C++
        standard says is ill-formed; see [dcl.attr.fallthrough].  */
-    warning_at (loc, 0, "attribute %<fallthrough%> not preceding "
-		"a case label or default label");
+    pedwarn (loc, 0, "attribute %<fallthrough%> not preceding "
+	     "a case label or default label");
 }
 
 
@@ -2987,17 +2987,18 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	  if (TREE_OPERAND (t, 3) == NULL_TREE)
 	    {
-	      tree elmt_type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0)));
-	      tree elmt_size = unshare_expr (array_ref_element_size (t));
-	      tree factor = size_int (TYPE_ALIGN_UNIT (elmt_type));
-
-	      /* Divide the element size by the alignment of the element
-		 type (above).  */
-	      elmt_size
-		= size_binop_loc (loc, EXACT_DIV_EXPR, elmt_size, factor);
-
+	      tree elmt_size = array_ref_element_size (t);
 	      if (!is_gimple_min_invariant (elmt_size))
 		{
+		  elmt_size = unshare_expr (elmt_size);
+		  tree elmt_type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0)));
+		  tree factor = size_int (TYPE_ALIGN_UNIT (elmt_type));
+
+		  /* Divide the element size by the alignment of the element
+		     type (above).  */
+		  elmt_size = size_binop_loc (loc, EXACT_DIV_EXPR,
+					      elmt_size, factor);
+
 		  TREE_OPERAND (t, 3) = elmt_size;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 3), pre_p,
 					post_p, is_gimple_reg,
@@ -3017,16 +3018,18 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  /* Set the field offset into T and gimplify it.  */
 	  if (TREE_OPERAND (t, 2) == NULL_TREE)
 	    {
-	      tree offset = unshare_expr (component_ref_field_offset (t));
-	      tree field = TREE_OPERAND (t, 1);
-	      tree factor
-		= size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT);
-
-	      /* Divide the offset by its alignment.  */
-	      offset = size_binop_loc (loc, EXACT_DIV_EXPR, offset, factor);
-
+	      tree offset = component_ref_field_offset (t);
 	      if (!is_gimple_min_invariant (offset))
 		{
+		  offset = unshare_expr (offset);
+		  tree field = TREE_OPERAND (t, 1);
+		  tree factor
+		    = size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT);
+
+		  /* Divide the offset by its alignment.  */
+		  offset = size_binop_loc (loc, EXACT_DIV_EXPR,
+					   offset, factor);
+
 		  TREE_OPERAND (t, 2) = offset;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p,
 					post_p, is_gimple_reg,
@@ -3391,7 +3394,10 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   /* Remember the original function pointer type.  */
   fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 
-  if (flag_openmp && fndecl)
+  if (flag_openmp
+      && fndecl
+      && cfun
+      && (cfun->curr_properties & PROP_gimple_any) == 0)
     {
       tree variant = omp_resolve_declare_variant (fndecl);
       if (variant != fndecl)

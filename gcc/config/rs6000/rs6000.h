@@ -2365,6 +2365,18 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_X
 
+/* Mappings for overloaded builtins.  */
+struct altivec_builtin_types
+{
+  enum rs6000_builtins code;
+  enum rs6000_builtins overloaded_code;
+  signed char ret_type;
+  signed char op1;
+  signed char op2;
+  signed char op3;
+};
+extern const struct altivec_builtin_types altivec_overloaded_builtins[];
+
 enum rs6000_builtin_type_index
 {
   RS6000_BTI_NOT_OPAQUE,

@@ -548,7 +548,7 @@ perform_target_ctor (tree init)
 
 /* Return the non-static data initializer for FIELD_DECL MEMBER.  */
 
-static GTY((cache)) tree_cache_map *nsdmi_inst;
+static GTY((cache)) decl_tree_cache_map *nsdmi_inst;
 
 tree
 get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)

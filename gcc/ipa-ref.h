@@ -46,7 +46,7 @@ public:
      function.  */
   bool cannot_lead_to_return ();
 
-  /* Return true if refernece may be used in address compare.  */
+  /* Return true if reference may be used in address compare.  */
   bool address_matters_p ();
 
   /* Return reference list this reference is in.  */

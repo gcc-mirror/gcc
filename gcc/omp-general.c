@@ -516,13 +516,16 @@ omp_max_vf (void)
 	  && global_options_set.x_flag_tree_loop_vectorize))
     return 1;
 
-  auto_vector_sizes sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&sizes, true);
-  if (!sizes.is_empty ())
+  auto_vector_modes modes;
+  targetm.vectorize.autovectorize_vector_modes (&modes, true);
+  if (!modes.is_empty ())
     {
       poly_uint64 vf = 0;
-      for (unsigned int i = 0; i < sizes.length (); ++i)
-	vf = ordered_max (vf, sizes[i]);
+      for (unsigned int i = 0; i < modes.length (); ++i)
+	/* The returned modes use the smallest element size (and thus
+	   the largest nunits) for the vectorization approach that they
+	   represent.  */
+	vf = ordered_max (vf, GET_MODE_NUNITS (modes[i]));
       return vf;
     }
 
@@ -936,6 +939,21 @@ omp_context_selector_matches (tree ctx)
 							    isa);
 		    if (r == 0 || (r == -1 && symtab->state != PARSING))
 		      {
+			/* If isa is valid on the target, but not in the
+			   current function and current function has
+			   #pragma omp declare simd on it, some simd clones
+			   might have the isa added later on.  */
+			if (r == -1
+			    && targetm.simd_clone.compute_vecsize_and_simdlen)
+			  {
+			    tree attrs
+			      = DECL_ATTRIBUTES (current_function_decl);
+			    if (lookup_attribute ("omp declare simd", attrs))
+			      {
+				ret = -1;
+				continue;
+			      }
+			  }
 			/* If we are or might be in a target region or
 			   declare target function, need to take into account
 			   also offloading values.  */
@@ -1352,12 +1370,13 @@ omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
   bool ret = false;
   *score = 1;
   for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
-    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
-      if (tree t3 = TREE_VALUE (t2))
-	if (TREE_PURPOSE (t3)
-	    && strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)), " score") == 0
-	    && TREE_CODE (TREE_VALUE (t3)) == INTEGER_CST)
-	  *score += wi::to_widest (TREE_VALUE (t3));
+    if (TREE_VALUE (t1) != construct)
+      for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	if (tree t3 = TREE_VALUE (t2))
+	  if (TREE_PURPOSE (t3)
+	      && strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)), " score") == 0
+	      && TREE_CODE (TREE_VALUE (t3)) == INTEGER_CST)
+	    *score += wi::to_widest (TREE_VALUE (t3));
   if (construct || has_kind || has_arch || has_isa)
     {
       int scores[12];
@@ -1375,7 +1394,7 @@ omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
 	    {
 	      if (scores[b + n] < 0)
 		{
-		  *score = 0;
+		  *score = -1;
 		  return ret;
 		}
 	      *score += wi::shifted_mask <widest_int> (scores[b + n], 1, false);
@@ -1404,6 +1423,8 @@ omp_resolve_declare_variant (tree base)
 {
   tree variant1 = NULL_TREE, variant2 = NULL_TREE;
   auto_vec <tree, 16> variants;
+  auto_vec <bool, 16> defer;
+  bool any_deferred = false;
   for (tree attr = DECL_ATTRIBUTES (base); attr; attr = TREE_CHAIN (attr))
     {
       attr = lookup_attribute ("omp declare variant base", attr);
@@ -1418,13 +1439,95 @@ omp_resolve_declare_variant (tree base)
 	  break;
 	case -1:
 	  /* Needs to be deferred.  */
-	  return base;
+	  any_deferred = true;
+	  variants.safe_push (attr);
+	  defer.safe_push (true);
+	  break;
 	default:
 	  variants.safe_push (attr);
+	  defer.safe_push (false);
+	  break;
 	}
     }
   if (variants.length () == 0)
     return base;
+
+  if (any_deferred)
+    {
+      widest_int max_score1 = 0;
+      widest_int max_score2 = 0;
+      bool first = true;
+      unsigned int i;
+      tree attr1, attr2;
+      FOR_EACH_VEC_ELT (variants, i, attr1)
+	{
+	  widest_int score1;
+	  widest_int score2;
+	  bool need_two;
+	  tree ctx = TREE_VALUE (TREE_VALUE (attr1));
+	  need_two = omp_context_compute_score (ctx, &score1, false);
+	  if (need_two)
+	    omp_context_compute_score (ctx, &score2, true);
+	  else
+	    score2 = score1;
+	  if (first)
+	    {
+	      first = false;
+	      max_score1 = score1;
+	      max_score2 = score2;
+	      if (!defer[i])
+		{
+		  variant1 = attr1;
+		  variant2 = attr1;
+		}
+	    }
+	  else
+	    {
+	      if (max_score1 == score1)
+		variant1 = NULL_TREE;
+	      else if (score1 > max_score1)
+		{
+		  max_score1 = score1;
+		  variant1 = defer[i] ? NULL_TREE : attr1;
+		}
+	      if (max_score2 == score2)
+		variant2 = NULL_TREE;
+	      else if (score2 > max_score2)
+		{
+		  max_score2 = score2;
+		  variant2 = defer[i] ? NULL_TREE : attr1;
+		}
+	    }
+	}
+
+      /* If there is a clear winner variant with the score which is not
+	 deferred, verify it is not a strict subset of any other context
+	 selector and if it is not, it is the best alternative no matter
+	 whether the others do or don't match.  */
+      if (variant1 && variant1 == variant2)
+	{
+	  tree ctx1 = TREE_VALUE (TREE_VALUE (variant1));
+	  FOR_EACH_VEC_ELT (variants, i, attr2)
+	    {
+	      if (attr2 == variant1)
+		continue;
+	      tree ctx2 = TREE_VALUE (TREE_VALUE (attr2));
+	      int r = omp_context_selector_compare (ctx1, ctx2);
+	      if (r == -1)
+		{
+		  /* The winner is a strict subset of ctx2, can't
+		     decide now.  */
+		  variant1 = NULL_TREE;
+		  break;
+		}
+	    }
+	  if (variant1)
+	    return TREE_PURPOSE (TREE_VALUE (variant1));
+	}
+
+      return base;
+    }
+
   if (variants.length () == 1)
     return TREE_PURPOSE (TREE_VALUE (variants[0]));
 

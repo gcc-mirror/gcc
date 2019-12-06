@@ -70,10 +70,21 @@ int gcn_isa = 3;		/* Default to GCN3.  */
    worker-single mode to worker-partitioned mode), per workgroup.  Global
    analysis could calculate an exact bound, but we don't do that yet.
  
-   We reserve the whole LDS, which also prevents any other workgroup
-   sharing the Compute Unit.  */
+   We want to permit full occupancy, so size accordingly.  */
 
-#define LDS_SIZE 65536
+#define OMP_LDS_SIZE 0x600    /* 0x600 is 1/40 total, rounded down.  */
+#define ACC_LDS_SIZE 32768    /* Half of the total should be fine.  */
+#define OTHER_LDS_SIZE 65536  /* If in doubt, reserve all of it.  */
+
+#define LDS_SIZE (flag_openacc ? ACC_LDS_SIZE \
+		  : flag_openmp ? OMP_LDS_SIZE \
+		  : OTHER_LDS_SIZE)
+
+/* The number of registers usable by normal non-kernel functions.
+   The SGPR count includes any special extra registers such as VCC.  */
+
+#define MAX_NORMAL_SGPR_COUNT	64
+#define MAX_NORMAL_VGPR_COUNT	24
 
 /* }}}  */
 /* {{{ Initialization and options.  */
@@ -191,6 +202,17 @@ static const struct gcn_kernel_arg_type
   {"work_item_id_Z", NULL, V64SImode, FIRST_VGPR_REG + 2}
 };
 
+static const long default_requested_args
+	= (1 << PRIVATE_SEGMENT_BUFFER_ARG)
+	  | (1 << DISPATCH_PTR_ARG)
+	  | (1 << QUEUE_PTR_ARG)
+	  | (1 << KERNARG_SEGMENT_PTR_ARG)
+	  | (1 << PRIVATE_SEGMENT_WAVE_OFFSET_ARG)
+	  | (1 << WORKGROUP_ID_X_ARG)
+	  | (1 << WORK_ITEM_ID_X_ARG)
+	  | (1 << WORK_ITEM_ID_Y_ARG)
+	  | (1 << WORK_ITEM_ID_Z_ARG);
+
 /* Extract parameter settings from __attribute__((amdgpu_hsa_kernel ())).
    This function also sets the default values for some arguments.
  
@@ -201,10 +223,7 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
 				       tree list)
 {
   bool err = false;
-  args->requested = ((1 << PRIVATE_SEGMENT_BUFFER_ARG)
-		     | (1 << QUEUE_PTR_ARG)
-		     | (1 << KERNARG_SEGMENT_PTR_ARG)
-		     | (1 << PRIVATE_SEGMENT_WAVE_OFFSET_ARG));
+  args->requested = default_requested_args;
   args->nargs = 0;
 
   for (int a = 0; a < GCN_KERNEL_ARG_TYPES; a++)
@@ -242,8 +261,6 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
       args->requested |= (1 << a);
       args->order[args->nargs++] = a;
     }
-  args->requested |= (1 << WORKGROUP_ID_X_ARG);
-  args->requested |= (1 << WORK_ITEM_ID_Z_ARG);
 
   /* Requesting WORK_ITEM_ID_Z_ARG implies requesting WORK_ITEM_ID_X_ARG and
      WORK_ITEM_ID_Y_ARG.  Similarly, requesting WORK_ITEM_ID_Y_ARG implies
@@ -252,10 +269,6 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
     args->requested |= (1 << WORK_ITEM_ID_Y_ARG);
   if (args->requested & (1 << WORK_ITEM_ID_Y_ARG))
     args->requested |= (1 << WORK_ITEM_ID_X_ARG);
-
-  /* Always enable this so that kernargs is in a predictable place for
-     gomp_print, etc.  */
-  args->requested |= (1 << DISPATCH_PTR_ARG);
 
   int sgpr_regno = FIRST_SGPR_REG;
   args->nsgprs = 0;
@@ -462,6 +475,9 @@ gcn_regno_reg_class (int regno)
     {
     case SCC_REG:
       return SCC_CONDITIONAL_REG;
+    case VCC_LO_REG:
+    case VCC_HI_REG:
+      return VCC_CONDITIONAL_REG;
     case VCCZ_REG:
       return VCCZ_CONDITIONAL_REG;
     case EXECZ_REG:
@@ -629,7 +645,8 @@ gcn_can_split_p (machine_mode, rtx op)
 static reg_class_t
 gcn_spill_class (reg_class_t c, machine_mode /*mode */ )
 {
-  if (reg_classes_intersect_p (ALL_CONDITIONAL_REGS, c))
+  if (reg_classes_intersect_p (ALL_CONDITIONAL_REGS, c)
+      || c == VCC_CONDITIONAL_REG)
     return SGPR_REGS;
   else
     return NO_REGS;
@@ -1766,7 +1783,6 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 	  /* tmp[:] += zext (mem_base)  */
 	  if (exec)
 	    {
-	      rtx undef_di = gcn_gen_undef (DImode);
 	      emit_insn (gen_addv64si3_vcc_dup_exec (tmplo, mem_base_lo, tmplo,
 						     vcc, undef_v64si, exec));
 	      emit_insn (gen_addcv64si3_exec (tmphi, tmphi, const0_rtx,
@@ -2041,26 +2057,35 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 static void
 gcn_conditional_register_usage (void)
 {
-  int i;
+  if (!cfun || !cfun->machine)
+    return;
 
-  /* FIXME: Do we need to reset fixed_regs?  */
-
-/* Limit ourselves to 1/16 the register file for maximimum sized workgroups.
-   There are enough SGPRs not to limit those.
-   TODO: Adjust this more dynamically.  */
-  for (i = FIRST_VGPR_REG + 64; i <= LAST_VGPR_REG; i++)
-    fixed_regs[i] = 1, call_used_regs[i] = 1;
-
-  if (!cfun || !cfun->machine || cfun->machine->normal_function)
+  if (cfun->machine->normal_function)
     {
-      /* Normal functions can't know what kernel argument registers are
-         live, so just fix the bottom 16 SGPRs, and bottom 3 VGPRs.  */
-      for (i = 0; i < 16; i++)
-	fixed_regs[FIRST_SGPR_REG + i] = 1;
-      for (i = 0; i < 3; i++)
-	fixed_regs[FIRST_VGPR_REG + i] = 1;
+      /* Restrict the set of SGPRs and VGPRs used by non-kernel functions.  */
+      for (int i = SGPR_REGNO (MAX_NORMAL_SGPR_COUNT - 2);
+	   i <= LAST_SGPR_REG; i++)
+	fixed_regs[i] = 1, call_used_regs[i] = 1;
+
+      for (int i = VGPR_REGNO (MAX_NORMAL_VGPR_COUNT);
+	   i <= LAST_VGPR_REG; i++)
+	fixed_regs[i] = 1, call_used_regs[i] = 1;
+
       return;
     }
+
+  /* If the set of requested args is the default set, nothing more needs to
+     be done.  */
+  if (cfun->machine->args.requested == default_requested_args)
+    return;
+
+  /* Requesting a set of args different from the default violates the ABI.  */
+  if (!leaf_function_p ())
+    warning (0, "A non-default set of initial values has been requested, "
+		"which violates the ABI!");
+
+  for (int i = SGPR_REGNO (0); i < SGPR_REGNO (14); i++)
+    fixed_regs[i] = 0;
 
   /* Fix the runtime argument register containing values that may be
      needed later.  DISPATCH_PTR_ARG and FLAT_SCRATCH_* should not be
@@ -2069,10 +2094,10 @@ gcn_conditional_register_usage (void)
     fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]] = 1;
   if (cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
     {
+      /* The upper 32-bits of the 64-bit descriptor are not used, so allow
+	the containing registers to be used for other purposes.  */
       fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]] = 1;
       fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] + 1] = 1;
-      fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] + 2] = 1;
-      fixed_regs[cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] + 3] = 1;
     }
   if (cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG] >= 0)
     {
@@ -2434,6 +2459,8 @@ gcn_init_cumulative_args (CUMULATIVE_ARGS *cum /* Argument info to init */ ,
   cfun->machine->args = cum->args;
   if (!caller && cfun->machine->normal_function)
     gcn_detect_incoming_pointer_arg (fndecl);
+
+  reinit_regs ();
 }
 
 static bool
@@ -2799,15 +2826,6 @@ gcn_expand_prologue ()
 				     cfun->machine->args.
 				     reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]);
 
-      if (TARGET_GCN5_PLUS)
-	{
-	  /* v0 is reserved for constant zero so that "global"
-	     memory instructions can have a nul-offset without
-	     causing reloads.  */
-	  emit_insn (gen_vec_duplicatev64si
-		     (gen_rtx_REG (V64SImode, VGPR_REGNO (0)), const0_rtx));
-	}
-
       if (cfun->machine->args.requested & (1 << FLAT_SCRATCH_INIT_ARG))
 	{
 	  rtx fs_init_lo =
@@ -2862,12 +2880,13 @@ gcn_expand_prologue ()
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
+  /* m0 is initialized for the usual LDS DS and FLAT memory case.
+     The low-part is the address of the topmost addressable byte, which is
+     size-1.  The high-part is an offset and should be zero.  */
   emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-		  gen_int_mode (LDS_SIZE, SImode));
+		  gen_int_mode (LDS_SIZE-1, SImode));
 
   emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
-  if (TARGET_GCN5_PLUS)
-    emit_insn (gen_prologue_use (gen_rtx_REG (SImode, VGPR_REGNO (0))));
 
   if (cfun && cfun->machine && !cfun->machine->normal_function && flag_openmp)
     {
@@ -3193,6 +3212,7 @@ tree
 gcn_emutls_var_init (tree, tree decl, tree)
 {
   sorry_at (DECL_SOURCE_LOCATION (decl), "TLS is not implemented for GCN.");
+  return NULL_TREE;
 }
 
 /* }}}  */
@@ -3816,8 +3836,7 @@ gcn_expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
    a vector.  */
 
 opt_machine_mode
-gcn_vectorize_get_mask_mode (poly_uint64 ARG_UNUSED (nunits),
-			     poly_uint64 ARG_UNUSED (length))
+gcn_vectorize_get_mask_mode (machine_mode)
 {
   /* GCN uses a DImode bit-mask.  */
   return DImode;
@@ -4321,8 +4340,6 @@ gcn_md_reorg (void)
 {
   basic_block bb;
   rtx exec_reg = gen_rtx_REG (DImode, EXEC_REG);
-  rtx exec_lo_reg = gen_rtx_REG (SImode, EXEC_LO_REG);
-  rtx exec_hi_reg = gen_rtx_REG (SImode, EXEC_HI_REG);
   regset_head live;
 
   INIT_REG_SET (&live);
@@ -4905,11 +4922,21 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
   if (!leaf_function_p ())
     {
       /* We can't know how many registers function calls might use.  */
-      if (vgpr < 64)
-	vgpr = 64;
-      if (sgpr + extra_regs < 102)
-	sgpr = 102 - extra_regs;
+      if (vgpr < MAX_NORMAL_VGPR_COUNT)
+	vgpr = MAX_NORMAL_VGPR_COUNT;
+      if (sgpr + extra_regs < MAX_NORMAL_SGPR_COUNT)
+	sgpr = MAX_NORMAL_SGPR_COUNT - extra_regs;
     }
+
+  /* GFX8 allocates SGPRs in blocks of 8.
+     GFX9 uses blocks of 16.  */
+  int granulated_sgprs;
+  if (TARGET_GCN3)
+    granulated_sgprs = (sgpr + extra_regs + 7) / 8 - 1;
+  else if (TARGET_GCN5)
+    granulated_sgprs = 2 * ((sgpr + extra_regs + 15) / 16 - 1);
+  else
+    gcc_unreachable ();
 
   fputs ("\t.align\t256\n", file);
   fputs ("\t.type\t", file);
@@ -4949,7 +4976,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   "\t\tcompute_pgm_rsrc2_excp_en = 0\n",
 	   (vgpr - 1) / 4,
 	   /* Must match wavefront_sgpr_count */
-	   (sgpr + extra_regs + 7) / 8 - 1,
+	   granulated_sgprs,
 	   /* The total number of SGPR user data registers requested.  This
 	      number must match the number of user data registers enabled.  */
 	   cfun->machine->args.nsgprs);
@@ -5204,7 +5231,8 @@ void
 gcn_asm_output_symbol_ref (FILE *file, rtx x)
 {
   tree decl;
-  if ((decl = SYMBOL_REF_DECL (x)) != 0
+  if (cfun
+      && (decl = SYMBOL_REF_DECL (x)) != 0
       && TREE_CODE (decl) == VAR_DECL
       && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
     {
@@ -5219,7 +5247,8 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
     {
       assemble_name (file, XSTR (x, 0));
       /* FIXME: See above -- this condition is unreachable.  */
-      if ((decl = SYMBOL_REF_DECL (x)) != 0
+      if (cfun
+	  && (decl = SYMBOL_REF_DECL (x)) != 0
 	  && TREE_CODE (decl) == VAR_DECL
 	  && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
 	fputs ("@abs32", file);
@@ -5324,9 +5353,9 @@ print_operand_address (FILE *file, rtx mem)
 	      /* The assembler requires a 64-bit VGPR pair here, even though
 	         the offset should be only 32-bit.  */
 	      if (vgpr_offset == NULL_RTX)
-		/* In this case, the vector offset is zero, so we use v0,
-		   which is initialized by the kernel prologue to zero.  */
-		fprintf (file, "v[0:1]");
+		/* In this case, the vector offset is zero, so we use the first
+		   lane of v1, which is initialized to zero.  */
+		fprintf (file, "v[1:2]");
 	      else if (REG_P (vgpr_offset)
 		       && VGPR_REGNO_P (REGNO (vgpr_offset)))
 		{

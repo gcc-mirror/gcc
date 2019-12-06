@@ -47,9 +47,6 @@ void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src, bool preserve_body = false);
 bool recursive_call_p (tree, tree);
 
-/* In ipa-prop.c  */
-void ipa_remove_useless_jump_functions ();
-
 /* In ipa-profile.c  */
 bool ipa_propagate_frequency (struct cgraph_node *node);
 
@@ -249,6 +246,20 @@ odr_type_p (const_tree t)
   gcc_checking_assert (in_lto_p || flag_lto);
   return TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
          && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t));
+}
+
+/* If TYPE has mangled ODR name, return it.  Otherwise return NULL.
+   The function works only when free_lang_data is run.  */
+
+inline const char *
+get_odr_name_for_type (tree type)
+{
+  tree type_name = TYPE_NAME (type);
+  if (type_name == NULL_TREE
+      || !DECL_ASSEMBLER_NAME_SET_P (type_name))
+    return NULL;
+
+  return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (type_name));
 }
 
 #endif  /* GCC_IPA_UTILS_H  */

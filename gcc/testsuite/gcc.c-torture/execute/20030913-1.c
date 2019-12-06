@@ -1,12 +1,12 @@
 /* Assignments via pointers pointing to global variables were being killed
    by SSA-DCE.  Test contributed by Paul Brook <paul@nowt.org>  */
 
-int glob; 
+int g;
  
 void 
 fn2(int ** q) 
 { 
-  *q = &glob; 
+  *q = &g;
 } 
  
 void test() 
@@ -21,6 +21,6 @@ void test()
 int main() 
 { 
   test(); 
-  if (glob != 42) abort(); 
+  if (g != 42) abort();
   exit (0); 
 }

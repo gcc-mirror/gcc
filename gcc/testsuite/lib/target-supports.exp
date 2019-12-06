@@ -2585,6 +2585,26 @@ proc check_effective_target_le { } {
     }]
 }
 
+# Return 1 if we're generating code for only power8 platforms.
+
+proc check_effective_target_p8 {  } {
+  return [check_no_compiler_messages_nocache p8 assembly {
+	#if !(!defined(_ARCH_PWR9) && defined(_ARCH_PWR8))
+	#error NO
+	#endif
+  } ""]
+}
+
+# Return 1 if we're generating code for power9 and future platforms.
+
+proc check_effective_target_p9+ {  } {
+  return [check_no_compiler_messages_nocache p9+ assembly {
+	#if !(defined(_ARCH_PWR9))
+	#error NO
+	#endif
+  } ""]
+}
+
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
 
@@ -3496,8 +3516,8 @@ proc check_effective_target_arm_vfp_ok_nocache { } {
     global et_arm_vfp_flags
     set et_arm_vfp_flags ""
     if { [check_effective_target_arm32] } {
-	foreach flags {"-mfpu=vfp" "-mfpu=vfp -mfloat-abi=softfp" "-mpu=vfp -mfloat-abi=hard"} {
-	    if { [check_no_compiler_messages_nocache arm_fp_ok object {
+	foreach flags {"-mfpu=vfp" "-mfpu=vfp -mfloat-abi=softfp" "-mfpu=vfp -mfloat-abi=hard"} {
+	    if { [check_no_compiler_messages_nocache arm_vfp_ok object {
 		#ifndef __ARM_FP
 		#error __ARM_FP not defined
 		#endif
@@ -5749,6 +5769,37 @@ proc check_effective_target_vect_bswap { } {
 	     || [istarget amdgcn-*-*] }}]
 }
 
+# Return 1 if the target supports comparison of bool vectors for at
+# least one vector length.
+
+proc check_effective_target_vect_bool_cmp { } {
+    return [check_cached_effective_target_indexed vect_bool_cmp {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
+	     || [istarget aarch64*-*-*]
+	     || [is-effective-target arm_neon] }}]
+}
+
+# Return 1 if the target supports addition of char vectors for at least
+# one vector length.
+
+proc check_effective_target_vect_char_add { } {
+    return [check_cached_effective_target_indexed vect_char_add {
+      expr {
+         [istarget i?86-*-*] || [istarget x86_64-*-*]
+         || ([istarget powerpc*-*-*]
+	     && ![istarget powerpc-*-linux*paired*])
+	 || [istarget amdgcn-*-*]
+	 || [istarget ia64-*-*]
+	 || [istarget aarch64*-*-*]
+	 || [is-effective-target arm_neon]
+	 || ([istarget mips*-*-*]
+	     && ([et-is-effective-target mips_loongson_mmi]
+	     || [et-is-effective-target mips_msa]))
+	 || ([istarget s390*-*-*]
+	     && [check_effective_target_s390_vx])
+	}}]
+}
+
 # Return 1 if the target supports hardware vector shift operation for char.
 
 proc check_effective_target_vect_shift_char { } {
@@ -6457,6 +6508,13 @@ proc check_effective_target_vect_natural_alignment { } {
     verbose "check_effective_target_vect_natural_alignment:\
 	     returning $et_vect_natural_alignment" 2
     return $et_vect_natural_alignment
+}
+
+# Return true if the target supports the check_raw_ptrs and check_war_ptrs
+# optabs on vectors.
+
+proc check_effective_target_vect_check_ptrs { } {
+    return [check_effective_target_aarch64_sve2]
 }
 
 # Return true if fully-masked loops are supported.

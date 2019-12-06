@@ -222,7 +222,9 @@ class Gogo
   {
     return (name[0] == '.'
 	    && name[name.length() - 1] == '_'
-	    && name[name.length() - 2] == '.');
+	    && name[name.length() - 2] == '.')
+        || (name[0] == '_'
+            && name.length() == 1);
   }
 
   // Helper used when adding parameters (including receiver param) to the

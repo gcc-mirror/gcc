@@ -1,4 +1,4 @@
-/* { dg-options "-Os -fdump-ipa-inline"  } */
+/* { dg-options "-Os -fdump-ipa-inline-details"  } */
 int foo (void);
 int test(int a)
 {
@@ -20,4 +20,4 @@ main()
   for (int i=0;i<100;i++)
     test(i);
 }
-/* { dg-final { scan-tree-dump "Inlined 1 calls" "inline" } } */
+/* { dg-final { scan-ipa-dump "Inlined 1 calls" "inline" } } */

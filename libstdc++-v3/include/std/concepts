@@ -138,9 +138,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept constructible_from
       = destructible<_Tp> && is_constructible_v<_Tp, _Args...>;
 
-  /// [concept.defaultconstructible], concept default_constructible
+  /// [concept.defaultinitializable], concept default_initializable
   template<typename _Tp>
-    concept default_constructible = constructible_from<_Tp>;
+    concept default_initializable = constructible_from<_Tp>
+      && requires
+      {
+	_Tp{};
+	(void) ::new _Tp;
+      };
 
   /// [concept.moveconstructible], concept move_constructible
   template<typename _Tp>
@@ -249,7 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && assignable_from<_Tp&, const _Tp&>;
 
   template<typename _Tp>
-    concept semiregular = copyable<_Tp> && default_constructible<_Tp>;
+    concept semiregular = copyable<_Tp> && default_initializable<_Tp>;
 
   // [concepts.compare], comparison concepts
 
@@ -334,26 +339,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [concepts.callable], callable concepts
 
-  // [concept.invocable], concept invocable
+  /// [concept.invocable], concept invocable
   template<typename _Fn, typename... _Args>
     concept invocable = is_invocable_v<_Fn, _Args...>;
 
-  // [concept.regularinvocable], concept regular_invocable
+  /// [concept.regularinvocable], concept regular_invocable
   template<typename _Fn, typename... _Args>
     concept regular_invocable = invocable<_Fn, _Args...>;
 
-  // [concept.predicate], concept predicate
+  /// [concept.predicate], concept predicate
   template<typename _Fn, typename... _Args>
     concept predicate = regular_invocable<_Fn, _Args...>
       && boolean<invoke_result_t<_Fn, _Args...>>;
 
-  // [concept.relation], concept relation
+  /// [concept.relation], concept relation
   template<typename _Rel, typename _Tp, typename _Up>
     concept relation
       = predicate<_Rel, _Tp, _Tp> && predicate<_Rel, _Up, _Up>
       && predicate<_Rel, _Tp, _Up> && predicate<_Rel, _Up, _Tp>;
 
-  // [concept.strictweakorder], concept strict_weak_order
+  /// [concept.equiv], concept equivalence_relation
+  template<typename _Rel, typename _Tp, typename _Up>
+    concept equivalence_relation = relation<_Rel, _Tp, _Up>;
+
+  /// [concept.strictweakorder], concept strict_weak_order
   template<typename _Rel, typename _Tp, typename _Up>
     concept strict_weak_order = relation<_Rel, _Tp, _Up>;
 

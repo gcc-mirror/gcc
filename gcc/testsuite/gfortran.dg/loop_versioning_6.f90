@@ -89,5 +89,5 @@ subroutine f9(x, limit, step)
   end do
 end subroutine f9
 
-! { dg-final { scan-tree-dump-times {want to version containing loop} 9 "lversion" } }
-! { dg-final { scan-tree-dump-times {versioned this loop} 9 "lversion" } }
+! { dg-final { scan-tree-dump-times {want to version containing loop} 9 "lversion" { xfail { ! lp64 } } } }
+! { dg-final { scan-tree-dump-times {versioned this loop} 9 "lversion" { xfail { ! lp64 } } } }

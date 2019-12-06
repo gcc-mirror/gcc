@@ -1,3 +1,100 @@
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_omp_is_optional_argument,
+	gfc_omp_check_optional_argument): Handle type(c_ptr),value which uses a
+
+2019-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92781
+	* trans-decl.c (gfc_get_symbol_decl): If sym->backend_decl is
+	current_function_decl, add length to current rather than parent
+	function and expect DECL_CONTEXT (length) to be current_function_decl.
+
+2019-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92754
+	* intrinsic.c (gfc_intrinsic_func_interface): Set
+	sym's flavor, intrinsic and function attribute if
+	unset.
+
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92756
+	* trans-openmp.c (gfc_trans_omp_teams): Wrap OMP_TEAMS body into a
+	BIND_EXPR with a forced BLOCK.
+
+2019-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91783
+	* dependency.c (gfc_dep_resolver): Do not look at _data
+	component if present.
+
+2019-11-28  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io.c (check_format): Allow zero width expoenent with e0.
+
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/91944
+	* simplify.c (gfc_simplify_spread): Check gfc_init_expr_flag instead
+	of gfc_current_ns->sym_root->n.sym->attr.flavor == FL_PARAMETER.
+
+2019-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/92463
+	* arith.c (gfc_check_real_range): Replace mp_exp_t by mpfr_exp_t.
+
+2019-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92629
+	* simplify.c (convert_mpz_to_unsigned): Skip assert for argument
+	range when -fno-range-check is specified.
+
+2019-11-25  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* gfortran.texi: Update Hollerith constants support for character types
+	and use in comparisons.
+	* invoke.texi: Tidy up list of options. Update description of
+	-fdec-char-conversions.
+	* resolve.c (is_character_based): New.
+	(Convert_hollerith_to_character): New.  (convert_to_numeric): New.
+	(resolve_operator): If both sides are character based and -fdec is
+	enabled convert Hollerith to character. If an operand is Hollerith, the
+	other is numeric and -fdec is enabled convert to numeric.
+	(resolve_ordinary_assign): Add check for -fdec-char-conversions for
+	assignment of character literals.2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
+	Revert r269139
+	* simplify.c (norm2_do_sqrt, gfc_simplify_norm2): Use
+	mpfr_regular_p instead of mpfr_number_p && !mpfr_zero_p.
+	(norm2_add_squared): Likewise.  Use mpfr_exp_t rather than
+	mp_exp_t.
+
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
+	* arith.c (gfc_mpfr_to_mpz): Change mp_exp_t to mpfr_exp_t.
+	(gfc_check_real_range): Likewise.
+	* gfortran.h (GFC_RND_MODE): Change GMP_RNDN to MPFR_RNDN.
+	* module.c (mio_gmp_real): Change mp_exp_t to mpfr_exp_t.
+	* simplify.c (degrees_f): Change mp_rnd_t to mpfr_rnd_t.
+	(radians_f): Likewise.
+	(fullprec_erfc_scaled): Change mp_prec_t to mpfr_prec_t.
+	(asympt_erfc_scaled): Likewise.
+	(gfc_simplify_nearest): Change mp_exp_t to mpfr_exp_t, and
+	GMP_RND* to MPFR_RND*.
+
+2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69654
+	* trans-expr.c (gfc_trans_structure_assign): Move assignment to
+	'cm' after treatment of C pointer types and test that the type
+	has been completely built before it. Add an assert that the
+	backend_decl for each component exists.
+
 2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-expr.c (gfc_conv_procedure_call): Fold hidden

@@ -321,11 +321,24 @@ case ${host} in
 *-*-vxworks7*)
   tmake_file=t-vxworks7
   ;;
+*-*-vxworksae*)
+  tmake_file=t-vxworksae
+  ;;
 *-*-vxworks*)
   tmake_file=t-vxworks
   ;;
 *-*-elf)
   extra_parts="crtbegin.o crtend.o"
+  ;;
+esac
+
+# Except on ARM where we do not use DWARF, table based EH on VxWorks
+# relies on specially crafted crtstuff files
+case ${host} in
+arm-*-vxworks*)
+  ;;
+*-*-vxworks*)
+  tmake_file="${tmake_file} t-vxcrtstuff"
   ;;
 esac
 
@@ -379,6 +392,12 @@ aarch64*-*-linux*)
 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	;;
+aarch64*-*-vxworks7*)
+	extra_parts="$extra_parts crtfastmath.o"
+	md_unwind_header=aarch64/aarch64-unwind.h
+	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	;;
 alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee t-crtfm alpha/t-linux"
 	extra_parts="$extra_parts crtfastmath.o"
@@ -419,18 +438,12 @@ arc*-*-linux*)
 	extra_parts="$extra_parts crttls.o"
 	md_unwind_header=arc/linux-unwind.h
 	;;
-arm-wrs-vxworks|arm-wrs-vxworks7)
-	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+arm-wrs-vxworks7*)
+	tmake_file="$tmake_file arm/t-arm arm/t-elf arm/t-bpabi arm/t-vxworks7"
+        tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	tm_file="$tm_file arm/bpabi-lib.h"
+	unwind_header=config/arm/unwind-arm.h
 	extra_parts="$extra_parts crti.o crtn.o"
-	case ${host} in
-	*-*-vxworks7)
-	  # Note that arm/t-bpabi will reset the LIB2ADDEH macro.
-	  # This is intentional.
-	  tmake_file="$tmake_file arm/t-bpabi arm/t-vxworks7"
-	  tm_file="$tm_file arm/bpabi-lib.h"
-	  unwind_header=config/arm/unwind-arm.h
-	  ;;
-	esac
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix arm/t-elf"
@@ -1502,4 +1515,26 @@ aarch64*-*-*)
 	# ILP32 needs an extra header for unwinding
 	tm_file="${tm_file} aarch64/value-unwind.h"
 	;;
+esac
+
+# The vxworks threads implementation relies on a few extra sources,
+# which we arrange to add after everything else:
+
+case ${target_thread_file} in
+vxworks)
+	case ${host} in
+	*-*-vxworksae)
+		tmake_file="${tmake_file} t-gthr-vxworksae"
+		;;
+	*-*-vxworks*)
+		tmake_file="${tmake_file} t-gthr-vxworks"
+		;;
+	esac
+esac
+
+case ${host} in
+*-*-musl*)
+  # The gthr weak references are unsafe with static linking
+  tmake_file="$tmake_file t-gthr-noweak"
+  ;;
 esac

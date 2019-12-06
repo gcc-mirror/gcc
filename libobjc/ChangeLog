@@ -1,3 +1,7 @@
+2019-11-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.in (aclocal_deps): Fix path to cet.m4.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.

@@ -4064,11 +4064,8 @@ omp_clause_aligned_alignment (tree clause)
   /* Otherwise return implementation defined alignment.  */
   unsigned int al = 1;
   opt_scalar_mode mode_iter;
-  auto_vector_sizes sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&sizes, true);
-  poly_uint64 vs = 0;
-  for (unsigned int i = 0; i < sizes.length (); ++i)
-    vs = ordered_max (vs, sizes[i]);
+  auto_vector_modes modes;
+  targetm.vectorize.autovectorize_vector_modes (&modes, true);
   static enum mode_class classes[]
     = { MODE_INT, MODE_VECTOR_INT, MODE_FLOAT, MODE_VECTOR_FLOAT };
   for (int i = 0; i < 4; i += 2)
@@ -4079,17 +4076,16 @@ omp_clause_aligned_alignment (tree clause)
 	machine_mode vmode = targetm.vectorize.preferred_simd_mode (mode);
 	if (GET_MODE_CLASS (vmode) != classes[i + 1])
 	  continue;
-	while (maybe_ne (vs, 0U)
-	       && known_lt (GET_MODE_SIZE (vmode), vs)
-	       && GET_MODE_2XWIDER_MODE (vmode).exists ())
-	  vmode = GET_MODE_2XWIDER_MODE (vmode).require ();
+	machine_mode alt_vmode;
+	for (unsigned int j = 0; j < modes.length (); ++j)
+	  if (related_vector_mode (modes[j], mode).exists (&alt_vmode)
+	      && known_ge (GET_MODE_SIZE (alt_vmode), GET_MODE_SIZE (vmode)))
+	    vmode = alt_vmode;
 
 	tree type = lang_hooks.types.type_for_mode (mode, 1);
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)
 	  continue;
-	poly_uint64 nelts = exact_div (GET_MODE_SIZE (vmode),
-				       GET_MODE_SIZE (mode));
-	type = build_vector_type (type, nelts);
+	type = build_vector_type_for_mode (type, vmode);
 	if (TYPE_MODE (type) != vmode)
 	  continue;
 	if (TYPE_ALIGN_UNIT (type) > al)
@@ -11985,8 +11981,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
-	    bool do_optional_check;
-	    do_optional_check = false;
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
 
@@ -12008,10 +12002,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
-	      {
-		var = lang_hooks.decls.omp_array_data (ovar, false);
-		do_optional_check = true;
-	      }
+	      var = lang_hooks.decls.omp_array_data (ovar, false);
 	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 		      && !omp_is_reference (ovar)
 		      && !omp_is_allocatable_or_ptr (ovar))
@@ -12029,16 +12020,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			    && !omp_is_allocatable_or_ptr (ovar))
 			   || (omp_is_reference (ovar)
 			       && omp_is_allocatable_or_ptr (ovar))))
-		      {
-			var = build_simple_mem_ref (var);
-			do_optional_check = true;
-		      }
+		      var = build_simple_mem_ref (var);
 		    var = fold_convert (TREE_TYPE (x), var);
 		  }
 	      }
 	    tree present;
-	    present = (do_optional_check
-		       ? omp_check_optional_argument (ovar, true) : NULL_TREE);
+	    present = omp_check_optional_argument (ovar, true);
 	    if (present)
 	      {
 		tree null_label = create_artificial_label (UNKNOWN_LOCATION);

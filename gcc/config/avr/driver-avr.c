@@ -114,10 +114,7 @@ avr_devicespecs_file (int argc, const char **argv)
 
 
 /* Re-build the -mdouble= and -mlong-double= options.  This is needed
-   because multilib selection is based on the physical presence of an
-   option on the command line, which is not the case for, say, when the
-   double=64 multilib is to be selected by --with-double=64 but the user
-   does not specify -mdouble=64 explicitly.  */
+   because these options are not independent of each other.  */
 
 const char*
 avr_double_lib (int argc, const char **argv)

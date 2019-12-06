@@ -6653,7 +6653,7 @@ s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
 	case LE:   cc_producer_mode = CCVFHEmode; code = GE; swap_p = true; break;
 	default: gcc_unreachable ();
 	}
-      scratch_mode = mode_for_int_vector (GET_MODE (cmp1)).require ();
+      scratch_mode = related_int_vector_mode (GET_MODE (cmp1)).require ();
 
       if (inv_p)
 	all_p = !all_p;
@@ -6759,7 +6759,7 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
 
   /* We always use an integral type vector to hold the comparison
      result.  */
-  result_mode = mode_for_int_vector (cmp_mode).require ();
+  result_mode = related_int_vector_mode (cmp_mode).require ();
   result_target = gen_reg_rtx (result_mode);
 
   /* We allow vector immediates as comparison operands that

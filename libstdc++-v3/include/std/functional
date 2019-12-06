@@ -1000,6 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class default_searcher
     {
     public:
+      _GLIBCXX20_CONSTEXPR
       default_searcher(_ForwardIterator1 __pat_first,
 		       _ForwardIterator1 __pat_last,
 		       _BinaryPredicate __pred = _BinaryPredicate())
@@ -1007,7 +1008,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       template<typename _ForwardIterator2>
-        pair<_ForwardIterator2, _ForwardIterator2>
+	_GLIBCXX20_CONSTEXPR
+	pair<_ForwardIterator2, _ForwardIterator2>
 	operator()(_ForwardIterator2 __first, _ForwardIterator2 __last) const
 	{
 	  _ForwardIterator2 __first_ret =

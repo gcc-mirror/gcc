@@ -497,6 +497,8 @@ public:
      and their visibility needs to be copied from their "masters" at
      the end of parsing.  */
   unsigned cpp_implicit_alias : 1;
+  /* The alias is a symbol version.  */
+  unsigned symver : 1;
   /* Set once the definition was analyzed.  The list of references and
      other properties are built during analysis.  */
   unsigned analyzed : 1;
@@ -967,6 +969,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 				     ipa_param_adjustments *param_adjustments,
 				     const char * suffix, unsigned num_suffix);
 
+  /* Remove the node from the tree of virtual and inline clones and make it a
+     standalone node - not a clone any more.  */
+  void remove_from_clone_tree ();
+
   /* cgraph node being removed from symbol table; see if its entry can be
    replaced by other inline clone.  */
   cgraph_node *find_replacement (void);
@@ -1429,6 +1435,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   int count_materialization_scale;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
+  /* ID of the translation unit.  */
+  int unit_id;
   /* Time profiler: first run of function.  */
   int tp_first_run;
 
@@ -1465,6 +1473,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned nonfreeing_fn : 1;
   /* True if there was multiple COMDAT bodies merged by lto-symtab.  */
   unsigned merged_comdat : 1;
+  /* True if this def was merged with extern inlines.  */
+  unsigned merged_extern_inline : 1;
   /* True if function was created to be executed in parallel.  */
   unsigned parallelized_function : 1;
   /* True if function is part split out by ipa-split.  */
@@ -2086,7 +2096,7 @@ public:
   edges_count (0), edges_max_uid (1), edges_max_summary_id (0),
   cgraph_released_summary_ids (), edge_released_summary_ids (),
   nodes (NULL), asmnodes (NULL), asm_last_node (NULL),
-  order (0), global_info_ready (false), state (PARSING),
+  order (0), max_unit (0), global_info_ready (false), state (PARSING),
   function_flags_ready (false), cpp_implicit_aliases_done (false),
   section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
   dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
@@ -2350,6 +2360,9 @@ public:
      used so that we can sort the cgraph nodes in order by when we saw
      them, to support -fno-toplevel-reorder.  */
   int order;
+
+  /* Maximal unit ID used.  */
+  int max_unit;
 
   /* Set when whole unit has been analyzed so we can access global info.  */
   bool global_info_ready;

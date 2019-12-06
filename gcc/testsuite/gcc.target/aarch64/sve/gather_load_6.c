@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -ftree-vectorize -fwrapv --save-temps" } */
+/* { dg-options "-O2 -ftree-vectorize -fwrapv --save-temps --param aarch64-sve-compare-costs=0" } */
 
 #include <stdint.h>
 
@@ -8,13 +8,12 @@
 #define INDEX32 int32_t
 #endif
 
-/* Invoked 18 times for each data size.  */
 #define TEST_LOOP(DATA_TYPE, BITS)					\
   void __attribute__ ((noinline, noclone))				\
   f_##DATA_TYPE (DATA_TYPE *restrict dest, DATA_TYPE *restrict src,	\
 		 INDEX##BITS *indices, INDEX##BITS mask, int n)		\
   {									\
-    for (int i = 9; i < n; ++i)						\
+    for (int i = 0; i < n; ++i)						\
       dest[i] = src[(INDEX##BITS) (indices[i] | mask)];			\
   }
 

@@ -79,7 +79,7 @@ namespace std
 }
 
 struct I { };
-template<> constexpr bool std::disable_sized_sentinel<I, I> = true;
+template<> constexpr bool std::disable_sized_sentinel_for<I, I> = true;
 
 namespace __gnu_test
 {
@@ -87,8 +87,8 @@ namespace __gnu_test
   constexpr auto* iter_move = &std::ranges::iter_move;
   constexpr auto* iter_swap = &std::ranges::iter_swap;
   // sized sentinels
-  constexpr bool const* disable_sized_sentinel
-    = &std::disable_sized_sentinel<void, void>;
+  constexpr bool const* disable_sized_sentinel_for
+    = &std::disable_sized_sentinel_for<void, void>;
   // default sentinels
   constexpr std::default_sentinel_t const* default_sentinel
     = &std::default_sentinel;

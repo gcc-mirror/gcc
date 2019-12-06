@@ -16,5 +16,5 @@ void foo() {
     bar();
 }
 
-/* { dg-final { scan-assembler "xldb r\[0-9\]+,\\\[@a_strange_bool\\\]" } } */
-/* { dg-final { scan-assembler "btst_s r\[0-9\]+,7" { target arceb-*-* } } } */
+/* { dg-final { scan-assembler "xldb\\s+r\[0-9\]+,\\\[@a_strange_bool\\\]" } } */
+/* { dg-final { scan-assembler "btst_s\\s+r\[0-9\]+,7" { target arceb-*-* } } } */

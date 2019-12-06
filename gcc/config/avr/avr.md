@@ -399,7 +399,7 @@
    SI CSI SA USA SQ USQ
    DI CDI DA UDA DQ UDQ
    TA UTA
-   SF SC
+   SF DF SC DC
    PSI])
 
 (define_expand "push<mode>1"

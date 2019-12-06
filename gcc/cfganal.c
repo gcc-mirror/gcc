@@ -967,11 +967,8 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
   else
     rev_post_order_num -= NUM_FIXED_BLOCKS;
 
-  /* Allocate bitmap to track nodes that have been visited.  */
-  auto_sbitmap visited (last_basic_block_for_fn (fn));
-
-  /* None of the nodes in the CFG have been visited yet.  */
-  bitmap_clear (visited);
+  /* BB flag to track nodes that have been visited.  */
+  auto_bb_flag visited (fn);
 
   /* Push the first edge on to the stack.  */
   stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (fn)->succs));
@@ -988,10 +985,10 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 
       /* Check if the edge destination has been visited yet.  */
       if (dest != EXIT_BLOCK_PTR_FOR_FN (fn)
-	  && ! bitmap_bit_p (visited, dest->index))
+	  && ! (dest->flags & visited))
 	{
 	  /* Mark that we have visited the destination.  */
-	  bitmap_set_bit (visited, dest->index);
+	  dest->flags |= visited;
 
 	  if (pre_order)
 	    pre_order[pre_order_num] = dest->index;
@@ -1031,6 +1028,12 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
       if (rev_post_order)
 	rev_post_order[rev_post_order_num--] = ENTRY_BLOCK;
     }
+
+  /* Clear the temporarily allocated flag.  */
+  if (!rev_post_order)
+    rev_post_order = pre_order;
+  for (int i = 0; i < pre_order_num; ++i)
+    BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags &= ~visited;
 
   return pre_order_num;
 }
@@ -1326,10 +1329,11 @@ dfs_enumerate_from (basic_block bb, int reverse,
    of the dominance frontiers, no more, no less.
 */
 
-
-static void
-compute_dominance_frontiers_1 (bitmap_head *frontiers)
+void
+compute_dominance_frontiers (bitmap_head *frontiers)
 {
+  timevar_push (TV_DOM_FRONTIERS);
+
   edge p;
   edge_iterator ei;
   basic_block b;
@@ -1337,34 +1341,22 @@ compute_dominance_frontiers_1 (bitmap_head *frontiers)
     {
       if (EDGE_COUNT (b->preds) >= 2)
 	{
+	  basic_block domsb = get_immediate_dominator (CDI_DOMINATORS, b);
 	  FOR_EACH_EDGE (p, ei, b->preds)
 	    {
 	      basic_block runner = p->src;
-	      basic_block domsb;
 	      if (runner == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
-	      domsb = get_immediate_dominator (CDI_DOMINATORS, b);
 	      while (runner != domsb)
 		{
-		  if (!bitmap_set_bit (&frontiers[runner->index],
-				       b->index))
+		  if (!bitmap_set_bit (&frontiers[runner->index], b->index))
 		    break;
-		  runner = get_immediate_dominator (CDI_DOMINATORS,
-						    runner);
+		  runner = get_immediate_dominator (CDI_DOMINATORS, runner);
 		}
 	    }
 	}
     }
-}
-
-
-void
-compute_dominance_frontiers (bitmap_head *frontiers)
-{
-  timevar_push (TV_DOM_FRONTIERS);
-
-  compute_dominance_frontiers_1 (frontiers);
 
   timevar_pop (TV_DOM_FRONTIERS);
 }
@@ -1385,25 +1377,26 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
   unsigned bb_index, i;
   bitmap phi_insertion_points;
 
-  /* Each block can appear at most twice on the work-stack.  */
-  auto_vec<int> work_stack (2 * n_basic_blocks_for_fn (cfun));
   phi_insertion_points = BITMAP_ALLOC (NULL);
 
-  /* Seed the work list with all the blocks in DEF_BLOCKS.  We use
-     vec::quick_push here for speed.  This is safe because we know that
-     the number of definition blocks is no greater than the number of
-     basic blocks, which is the initial capacity of WORK_STACK.  */
-  EXECUTE_IF_SET_IN_BITMAP (def_blocks, 0, bb_index, bi)
-    work_stack.quick_push (bb_index);
+  /* Seed the work set with all the blocks in DEF_BLOCKS.  */
+  auto_bitmap work_set;
+  bitmap_copy (work_set, def_blocks);
+  bitmap_tree_view (work_set);
 
-  /* Pop a block off the worklist, add every block that appears in
+  /* Pop a block off the workset, add every block that appears in
      the original block's DF that we have not already processed to
-     the worklist.  Iterate until the worklist is empty.   Blocks
-     which are added to the worklist are potential sites for
+     the workset.  Iterate until the workset is empty.   Blocks
+     which are added to the workset are potential sites for
      PHI nodes.  */
-  while (work_stack.length () > 0)
+  while (!bitmap_empty_p (work_set))
     {
-      bb_index = work_stack.pop ();
+      /* The dominance frontier of a block is blocks after it so iterating
+         on earlier blocks first is better.
+	 ???  Basic blocks are by no means guaranteed to be ordered in
+	 optimal order for this iteration.  */
+      bb_index = bitmap_first_set_bit (work_set);
+      bitmap_clear_bit (work_set, bb_index);
 
       /* Since the registration of NEW -> OLD name mappings is done
 	 separately from the call to update_ssa, when updating the SSA
@@ -1416,7 +1409,7 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
       EXECUTE_IF_AND_COMPL_IN_BITMAP (&dfs[bb_index], phi_insertion_points,
 	                              0, i, bi)
 	{
-	  work_stack.quick_push (i);
+	  bitmap_set_bit (work_set, i);
 	  bitmap_set_bit (phi_insertion_points, i);
 	}
     }

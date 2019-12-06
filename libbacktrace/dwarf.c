@@ -373,18 +373,8 @@ struct dwarf_data
   struct unit **units;
   /* Number of units in the list.  */
   size_t units_count;
-  /* The unparsed .debug_info section.  */
-  const unsigned char *dwarf_info;
-  size_t dwarf_info_size;
-  /* The unparsed .debug_line section.  */
-  const unsigned char *dwarf_line;
-  size_t dwarf_line_size;
-  /* The unparsed .debug_ranges section.  */
-  const unsigned char *dwarf_ranges;
-  size_t dwarf_ranges_size;
-  /* The unparsed .debug_str section.  */
-  const unsigned char *dwarf_str;
-  size_t dwarf_str_size;
+  /* The unparsed DWARF debug data.  */
+  struct dwarf_sections dwarf_sections;
   /* Whether the data is big-endian or not.  */
   int is_bigendian;
   /* A vector used for function addresses.  We keep this here so that
@@ -871,13 +861,14 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
 	    val->encoding = ATTR_VAL_NONE;
 	    return 1;
 	  }
-	if (offset >= altlink->dwarf_str_size)
+	if (offset >= altlink->dwarf_sections.size[DEBUG_STR])
 	  {
 	    dwarf_buf_error (buf, "DW_FORM_GNU_strp_alt out of range");
 	    return 0;
 	  }
 	val->encoding = ATTR_VAL_STRING;
-	val->u.string = (const char *) altlink->dwarf_str + offset;
+	val->u.string =
+	  (const char *) altlink->dwarf_sections.data[DEBUG_STR] + offset;
 	return 1;
       }
     default:
@@ -1499,10 +1490,7 @@ find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
 
 static int
 build_address_map (struct backtrace_state *state, uintptr_t base_address,
-		   const unsigned char *dwarf_info, size_t dwarf_info_size,
-		   const unsigned char *dwarf_abbrev, size_t dwarf_abbrev_size,
-		   const unsigned char *dwarf_ranges, size_t dwarf_ranges_size,
-		   const unsigned char *dwarf_str, size_t dwarf_str_size,
+		   const struct dwarf_sections *dwarf_sections,
 		   int is_bigendian, struct dwarf_data *altlink,
 		   backtrace_error_callback error_callback, void *data,
 		   struct unit_addrs_vector *addrs,
@@ -1525,9 +1513,9 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
      not sure why.  */
 
   info.name = ".debug_info";
-  info.start = dwarf_info;
-  info.buf = dwarf_info;
-  info.left = dwarf_info_size;
+  info.start = dwarf_sections->data[DEBUG_INFO];
+  info.buf = info.start;
+  info.left = dwarf_sections->size[DEBUG_INFO];
   info.is_bigendian = is_bigendian;
   info.error_callback = error_callback;
   info.data = data;
@@ -1583,7 +1571,9 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 
       memset (&u->abbrevs, 0, sizeof u->abbrevs);
       abbrev_offset = read_offset (&unit_buf, is_dwarf64);
-      if (!read_abbrevs (state, abbrev_offset, dwarf_abbrev, dwarf_abbrev_size,
+      if (!read_abbrevs (state, abbrev_offset,
+			 dwarf_sections->data[DEBUG_ABBREV],
+			 dwarf_sections->size[DEBUG_ABBREV],
 			 is_bigendian, error_callback, data, &u->abbrevs))
 	goto fail;
 
@@ -1610,8 +1600,10 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
       u->function_addrs_count = 0;
 
       if (!find_address_ranges (state, base_address, &unit_buf,
-				dwarf_str, dwarf_str_size,
-				dwarf_ranges, dwarf_ranges_size,
+				dwarf_sections->data[DEBUG_STR],
+				dwarf_sections->size[DEBUG_STR],
+				dwarf_sections->data[DEBUG_RANGES],
+				dwarf_sections->size[DEBUG_RANGES],
 				is_bigendian, altlink, error_callback, data,
 				u, addrs, &unit_tag))
 	goto fail;
@@ -2089,16 +2081,16 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
   memset (hdr, 0, sizeof *hdr);
 
   if (u->lineoff != (off_t) (size_t) u->lineoff
-      || (size_t) u->lineoff >= ddata->dwarf_line_size)
+      || (size_t) u->lineoff >= ddata->dwarf_sections.size[DEBUG_LINE])
     {
       error_callback (data, "unit line offset out of range", 0);
       goto fail;
     }
 
   line_buf.name = ".debug_line";
-  line_buf.start = ddata->dwarf_line;
-  line_buf.buf = ddata->dwarf_line + u->lineoff;
-  line_buf.left = ddata->dwarf_line_size - u->lineoff;
+  line_buf.start = ddata->dwarf_sections.data[DEBUG_LINE];
+  line_buf.buf = ddata->dwarf_sections.data[DEBUG_LINE] + u->lineoff;
+  line_buf.left = ddata->dwarf_sections.size[DEBUG_LINE] - u->lineoff;
   line_buf.is_bigendian = ddata->is_bigendian;
   line_buf.error_callback = error_callback;
   line_buf.data = data;
@@ -2241,7 +2233,7 @@ read_referenced_name (struct dwarf_data *ddata, struct unit *u,
   offset -= u->unit_data_offset;
 
   unit_buf.name = ".debug_info";
-  unit_buf.start = ddata->dwarf_info;
+  unit_buf.start = ddata->dwarf_sections.data[DEBUG_INFO];
   unit_buf.buf = u->unit_data + offset;
   unit_buf.left = u->unit_data_len - offset;
   unit_buf.is_bigendian = ddata->is_bigendian;
@@ -2267,7 +2259,8 @@ read_referenced_name (struct dwarf_data *ddata, struct unit *u,
 
       if (!read_attribute (abbrev->attrs[i].form, &unit_buf,
 			   u->is_dwarf64, u->version, u->addrsize,
-			   ddata->dwarf_str, ddata->dwarf_str_size,
+			   ddata->dwarf_sections.data[DEBUG_STR],
+			   ddata->dwarf_sections.size[DEBUG_STR],
 			   ddata->altlink, &val))
 	return NULL;
 
@@ -2364,16 +2357,16 @@ add_function_ranges (struct backtrace_state *state, struct dwarf_data *ddata,
 {
   struct dwarf_buf ranges_buf;
 
-  if (ranges >= ddata->dwarf_ranges_size)
+  if (ranges >= ddata->dwarf_sections.size[DEBUG_RANGES])
     {
       error_callback (data, "function ranges offset out of range", 0);
       return 0;
     }
 
   ranges_buf.name = ".debug_ranges";
-  ranges_buf.start = ddata->dwarf_ranges;
-  ranges_buf.buf = ddata->dwarf_ranges + ranges;
-  ranges_buf.left = ddata->dwarf_ranges_size - ranges;
+  ranges_buf.start = ddata->dwarf_sections.data[DEBUG_RANGES];
+  ranges_buf.buf = ddata->dwarf_sections.data[DEBUG_RANGES] + ranges;
+  ranges_buf.left = ddata->dwarf_sections.size[DEBUG_RANGES] - ranges;
   ranges_buf.is_bigendian = ddata->is_bigendian;
   ranges_buf.error_callback = error_callback;
   ranges_buf.data = data;
@@ -2479,7 +2472,8 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 
 	  if (!read_attribute (abbrev->attrs[i].form, unit_buf,
 			       u->is_dwarf64, u->version, u->addrsize,
-			       ddata->dwarf_str, ddata->dwarf_str_size,
+			       ddata->dwarf_sections.data[DEBUG_STR],
+			       ddata->dwarf_sections.size[DEBUG_STR],
 			       ddata->altlink, &val))
 	    return 0;
 
@@ -2698,7 +2692,7 @@ read_function_info (struct backtrace_state *state, struct dwarf_data *ddata,
     }
 
   unit_buf.name = ".debug_info";
-  unit_buf.start = ddata->dwarf_info;
+  unit_buf.start = ddata->dwarf_sections.data[DEBUG_INFO];
   unit_buf.buf = u->unit_data;
   unit_buf.left = u->unit_data_len;
   unit_buf.is_bigendian = ddata->is_bigendian;
@@ -3077,16 +3071,7 @@ dwarf_fileline (struct backtrace_state *state, uintptr_t pc,
 static struct dwarf_data *
 build_dwarf_data (struct backtrace_state *state,
 		  uintptr_t base_address,
-		  const unsigned char *dwarf_info,
-		  size_t dwarf_info_size,
-		  const unsigned char *dwarf_line,
-		  size_t dwarf_line_size,
-		  const unsigned char *dwarf_abbrev,
-		  size_t dwarf_abbrev_size,
-		  const unsigned char *dwarf_ranges,
-		  size_t dwarf_ranges_size,
-		  const unsigned char *dwarf_str,
-		  size_t dwarf_str_size,
+		  const struct dwarf_sections *dwarf_sections,
 		  int is_bigendian,
 		  struct dwarf_data *altlink,
 		  backtrace_error_callback error_callback,
@@ -3100,11 +3085,9 @@ build_dwarf_data (struct backtrace_state *state,
   size_t units_count;
   struct dwarf_data *fdata;
 
-  if (!build_address_map (state, base_address, dwarf_info, dwarf_info_size,
-			  dwarf_abbrev, dwarf_abbrev_size, dwarf_ranges,
-			  dwarf_ranges_size, dwarf_str, dwarf_str_size,
-			  is_bigendian, altlink, error_callback, data,
-			  &addrs_vec, &units_vec))
+  if (!build_address_map (state, base_address, dwarf_sections, is_bigendian,
+			  altlink, error_callback, data, &addrs_vec,
+			  &units_vec))
     return NULL;
 
   if (!backtrace_vector_release (state, &addrs_vec.vec, error_callback, data))
@@ -3132,14 +3115,7 @@ build_dwarf_data (struct backtrace_state *state,
   fdata->addrs_count = addrs_count;
   fdata->units = units;
   fdata->units_count = units_count;
-  fdata->dwarf_info = dwarf_info;
-  fdata->dwarf_info_size = dwarf_info_size;
-  fdata->dwarf_line = dwarf_line;
-  fdata->dwarf_line_size = dwarf_line_size;
-  fdata->dwarf_ranges = dwarf_ranges;
-  fdata->dwarf_ranges_size = dwarf_ranges_size;
-  fdata->dwarf_str = dwarf_str;
-  fdata->dwarf_str_size = dwarf_str_size;
+  fdata->dwarf_sections = *dwarf_sections;
   fdata->is_bigendian = is_bigendian;
   memset (&fdata->fvec, 0, sizeof fdata->fvec);
 
@@ -3153,16 +3129,7 @@ build_dwarf_data (struct backtrace_state *state,
 int
 backtrace_dwarf_add (struct backtrace_state *state,
 		     uintptr_t base_address,
-		     const unsigned char *dwarf_info,
-		     size_t dwarf_info_size,
-		     const unsigned char *dwarf_line,
-		     size_t dwarf_line_size,
-		     const unsigned char *dwarf_abbrev,
-		     size_t dwarf_abbrev_size,
-		     const unsigned char *dwarf_ranges,
-		     size_t dwarf_ranges_size,
-		     const unsigned char *dwarf_str,
-		     size_t dwarf_str_size,
+		     const struct dwarf_sections *dwarf_sections,
 		     int is_bigendian,
 		     struct dwarf_data *fileline_altlink,
 		     backtrace_error_callback error_callback,
@@ -3171,10 +3138,7 @@ backtrace_dwarf_add (struct backtrace_state *state,
 {
   struct dwarf_data *fdata;
 
-  fdata = build_dwarf_data (state, base_address, dwarf_info, dwarf_info_size,
-			    dwarf_line, dwarf_line_size, dwarf_abbrev,
-			    dwarf_abbrev_size, dwarf_ranges, dwarf_ranges_size,
-			    dwarf_str, dwarf_str_size, is_bigendian,
+  fdata = build_dwarf_data (state, base_address, dwarf_sections, is_bigendian,
 			    fileline_altlink, error_callback, data);
   if (fdata == NULL)
     return 0;

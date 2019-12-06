@@ -3252,8 +3252,8 @@ check_local_shadow (tree decl)
 		      (now) doing the shadow checking too
 		      early.  */
 		   && !type_uses_auto (TREE_TYPE (decl))
-		   && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
-				   tf_none)))
+		   && can_convert_arg (TREE_TYPE (old), TREE_TYPE (decl),
+				       decl, LOOKUP_IMPLICIT, tf_none)))
 	warning_code = OPT_Wshadow_compatible_local;
       else
 	warning_code = OPT_Wshadow_local;
@@ -7070,6 +7070,8 @@ get_std_name_hint (const char *name)
     {"shared_lock", "<shared_mutex>", cxx14},
     {"shared_mutex", "<shared_mutex>", cxx17},
     {"shared_timed_mutex", "<shared_mutex>", cxx14},
+    /* <source_location>.  */
+    {"source_location", "<source_location>", cxx2a},
     /* <sstream>.  */
     {"basic_stringbuf", "<sstream>", cxx98},
     {"basic_istringstream", "<sstream>", cxx98},

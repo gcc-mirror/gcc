@@ -630,7 +630,8 @@ plugin_pragma_push_user_expression (cpp_reader *)
 	 usable.  */
       tree this_val = lookup_name (get_identifier ("this"));
       current_class_ref = !this_val ? NULL_TREE
-	: cp_build_indirect_ref (this_val, RO_NULL, tf_warning_or_error);
+	: cp_build_indirect_ref (input_location, this_val, RO_NULL,
+				 tf_warning_or_error);
       current_class_ptr = this_val;
     }
 }
@@ -3151,7 +3152,7 @@ plugin_build_expression_list_expr (cc1_plugin::connection *self,
     case CHARS2 ('c', 'v'): // conversion with parenthesized expression list
       gcc_assert (TYPE_P (type));
       args = args_to_tree_list (values_in);
-      result = build_functional_cast (type, args, tf_error);
+      result = build_functional_cast (input_location, type, args, tf_error);
       break;
 
     case CHARS2 ('t', 'l'): // conversion with braced expression list

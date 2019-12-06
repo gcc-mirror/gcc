@@ -1,10 +1,9 @@
-/* { dg-do run } */
-/* { dg-options "-O3 -fdump-tree-slp-all -fno-vect-cost-model" } */
 /* { dg-require-effective-target vect_int } */
 
 #define ARR_SIZE 1000
 
-void foo (int *a, int *b)
+void __attribute__((optimize (0)))
+foo (int *a, int *b)
 {
   int i;
   for (i = 0; i < (ARR_SIZE - 2); ++i)
@@ -56,6 +55,4 @@ int main ()
   return 0;
 
 }
-/* See that we vectorize an SLP instance.  */
-/* { dg-final { scan-tree-dump-times "Found vectorizable constructor" 12 "slp1" } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "slp1" } } */
+/* { dg-final { scan-tree-dump-not "vectorizing stmts using SLP" "slp1" } } */

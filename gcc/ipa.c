@@ -520,9 +520,14 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	     reliably.  */
 	  if (node->alias || node->thunk.thunk_p)
 	    ;
-	  else if (!body_needed_for_clonning.contains (node->decl)
-	      && !node->alias && !node->thunk.thunk_p)
-	    node->release_body ();
+	  else if (!body_needed_for_clonning.contains (node->decl))
+	    {
+	      /* Make the node a non-clone so that we do not attempt to
+		 materialize it later.  */
+	      if (node->clone_of)
+		node->remove_from_clone_tree ();
+	      node->release_body ();
+	    }
 	  else if (!node->clone_of)
 	    gcc_assert (in_lto_p || DECL_RESULT (node->decl));
 	  if (node->definition && !node->alias && !node->thunk.thunk_p)

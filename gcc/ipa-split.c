@@ -168,7 +168,7 @@ test_nonssa_use (gimple *, tree t, tree, void *data)
       || (VAR_P (t)
 	  && auto_var_in_fn_p (t, current_function_decl))
       || TREE_CODE (t) == RESULT_DECL
-	 /* Normal labels are part of CFG and will be handled gratefuly.
+	 /* Normal labels are part of CFG and will be handled gratefully.
 	    Forced labels however can be used directly by statements and
 	    need to stay in one partition along with their uses.  */
       || (TREE_CODE (t) == LABEL_DECL
@@ -455,7 +455,7 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
 	   (param_partial_inlining_entry_probability, 100))))
     {
       /* When profile is guessed, we cannot expect it to give us
-	 realistic estimate on likelyness of function taking the
+	 realistic estimate on likeliness of function taking the
 	 complex path.  As a special case, when tail of the function is
 	 a loop, enable splitting since inlining code skipping the loop
 	 is likely noticeable win.  */

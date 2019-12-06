@@ -18,4 +18,5 @@ uint64_pair_t pair(int num)
   return p ;
 }
 
-/* { dg-final { scan-tree-dump-not "basic block vectorized" "slp2" } } */
+/* See PR92266 for the XFAIL.  */
+/* { dg-final { scan-tree-dump-not "basic block vectorized" "slp2" { xfail ilp32 } } } */

@@ -72,6 +72,9 @@
 #if __cplusplus >= 201103L
 # include <type_traits>
 #endif
+#if __cplusplus > 201703L
+# include <compare>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1455,6 +1458,104 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	(__first1, __last1, __first2, __last2,
 	 __gnu_cxx::__ops::__iter_comp_iter(__comp));
     }
+
+#if __cpp_lib_three_way_comparison
+#if __cpp_lib_concepts
+  // Iter points to a contiguous range of unsigned narrow character type
+  // or std::byte, suitable for comparison by memcmp.
+  template<typename _Iter>
+    concept __is_byte_iter = contiguous_iterator<_Iter>
+      && __is_byte<iter_value_t<_Iter>>::__value != 0
+      && !__gnu_cxx::__numeric_traits<iter_value_t<_Iter>>::__is_signed;
+
+  // Return a struct with two members, initialized to the smaller of x and y
+  // (or x if they compare equal) and the result of the comparison x <=> y.
+  template<typename _Tp>
+    constexpr auto
+    __min_cmp(_Tp __x, _Tp __y)
+    {
+      struct _Res {
+	_Tp _M_min;
+	decltype(__x <=> __y) _M_cmp;
+      };
+      auto __c = __x <=> __y;
+      if (__c > 0)
+	return _Res{__y, __c};
+      return _Res{__x, __c};
+    }
+#endif
+
+  /**
+   *  @brief Performs dictionary comparison on ranges.
+   *  @ingroup sorting_algorithms
+   *  @param  __first1  An input iterator.
+   *  @param  __last1   An input iterator.
+   *  @param  __first2  An input iterator.
+   *  @param  __last2   An input iterator.
+   *  @param  __comp  A @link comparison_functors comparison functor@endlink.
+   *  @return   The comparison category that `__comp(*__first1, *__first2)`
+   *		returns.
+  */
+  template<typename _InputIter1, typename _InputIter2, typename _Comp>
+    constexpr auto
+    lexicographical_compare_three_way(_InputIter1 __first1,
+				      _InputIter1 __last1,
+				      _InputIter2 __first2,
+				      _InputIter2 __last2,
+				      _Comp __comp)
+    -> decltype(__comp(*__first1, *__first2))
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIter1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIter2>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
+
+#if __cpp_lib_concepts && __cpp_lib_is_constant_evaluated
+      using _Cat = decltype(__comp(*__first1, *__first2));
+      static_assert(same_as<common_comparison_category_t<_Cat>, _Cat>);
+
+      if (!std::is_constant_evaluated())
+	if constexpr (same_as<_Comp, __detail::_Synth3way>
+		      || same_as<_Comp, compare_three_way>)
+	  if constexpr (__is_byte_iter<_InputIter1>)
+	    if constexpr (__is_byte_iter<_InputIter2>)
+	      {
+		const auto [__len, __lencmp]
+		  = std::__min_cmp(__last1 - __first1, __last2 - __first2);
+		if (__len)
+		  {
+		    const auto __c
+		      = __builtin_memcmp(&*__first1, &*__first2, __len) <=> 0;
+		    if (__c != 0)
+		      return __c;
+		  }
+		return __lencmp;
+	      }
+#endif // concepts && is_constant_evaluated
+      while (__first1 != __last1 && __first2 != __last2)
+	{
+	  if (auto __cmp = __comp(*__first1, *__first2); __cmp != 0)
+	    return __cmp;
+	  ++__first1;
+	  ++__first2;
+	}
+      return __first1 != __last1 ? strong_ordering::greater
+	: __first2 != __last2 ? strong_ordering::less : strong_ordering::equal;
+    }
+
+  template<typename _InputIter1, typename _InputIter2>
+    constexpr auto
+    lexicographical_compare_three_way(_InputIter1 __first1,
+				      _InputIter1 __last1,
+				      _InputIter2 __first2,
+				      _InputIter2 __last2)
+    {
+      return std::lexicographical_compare_three_way(__first1, __last1,
+						    __first2, __last2,
+						    compare_three_way{});
+    }
+#endif // three_way_comparison
 
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>

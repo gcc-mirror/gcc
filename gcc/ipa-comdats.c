@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This is very simple pass that looks for static symbols that are used
-   exlusively by symbol within one comdat group.  In this case it makes
+   exclusively by symbol within one comdat group.  In this case it makes
    sense to bring the symbol itself into the group to avoid dead code
    that would arrise when the comdat group from current unit is replaced
    by a different copy.  Consider for example:

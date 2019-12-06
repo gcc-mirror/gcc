@@ -1,6 +1,6 @@
 /* PR c++/87541 - ICE using a constant decl as an attribute alloc_size argument
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
 #define ALLOC_SIZE(N)   __attribute__ ((alloc_size (N)))
 

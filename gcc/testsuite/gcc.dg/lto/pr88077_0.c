@@ -1,3 +1,3 @@
 /* { dg-lto-do link } */
 
-int HeaderStr;
+long HeaderStr;

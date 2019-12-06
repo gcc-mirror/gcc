@@ -49,6 +49,7 @@
 #include "tree-ssa.h"
 #include "tree-inline.h"
 #include "cfgloop.h"
+#include "alloc-pool.h"
 #include "fibonacci_heap.h"
 #include "tracer.h"
 

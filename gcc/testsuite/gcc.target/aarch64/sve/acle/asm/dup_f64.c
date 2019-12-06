@@ -118,7 +118,7 @@ TEST_UNIFORM_Z (dup_1_f64_z, svfloat64_t,
 
 /*
 ** dup_0_f64_z:
-**	mov	z0\.d, p0/z, #0
+**	mov	z0\.[bhsd], #0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f64_z, svfloat64_t,

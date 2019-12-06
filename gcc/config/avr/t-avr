@@ -16,8 +16,27 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-HAVE_DOUBLE_MULTILIB = $(findstring HAVE_DOUBLE_MULTILIB, $(tm_defines))
-HAVE_LONG_DOUBLE_MULTILIB = $(findstring HAVE_LONG_DOUBLE_MULTILIB, $(tm_defines))
+HAVE_DOUBLE32 = $(findstring HAVE_DOUBLE32, $(tm_defines))
+HAVE_DOUBLE64 = $(findstring HAVE_DOUBLE64, $(tm_defines))
+HAVE_LONG_DOUBLE32 = $(findstring HAVE_LONG_DOUBLE32, $(tm_defines))
+HAVE_LONG_DOUBLE64 = $(findstring HAVE_LONG_DOUBLE64, $(tm_defines))
+HAVE_LONG_DOUBLE_IS_DOUBLE = $(findstring HAVE_LONG_DOUBLE_IS_DOUBLE, $(tm_defines))
+
+ifeq (WITH_DOUBLE32, $(findstring WITH_DOUBLE32, $(tm_defines)))
+WITH_DOUBLE=32
+endif
+
+ifeq (WITH_DOUBLE64, $(findstring WITH_DOUBLE64, $(tm_defines)))
+WITH_DOUBLE=64
+endif
+
+ifeq (WITH_LONG_DOUBLE32, $(findstring WITH_LONG_DOUBLE32, $(tm_defines)))
+WITH_LONG_DOUBLE=32
+endif
+
+ifeq (WITH_LONG_DOUBLE64, $(findstring WITH_LONG_DOUBLE64, $(tm_defines)))
+WITH_LONG_DOUBLE=64
+endif
 
 PASSES_EXTRA += $(srcdir)/config/avr/avr-passes.def
 
@@ -101,8 +120,13 @@ multilib.h Makefile s-mlib: t-multilib-avr
 
 t-multilib-avr: $(srcdir)/config/avr/genmultilib.awk \
 				 $(AVR_MCUS)
-	$(AWK)	-v HAVE_DOUBLE_MULTILIB=$(HAVE_DOUBLE_MULTILIB) \
-		-v HAVE_LONG_DOUBLE_MULTILIB=$(HAVE_LONG_DOUBLE_MULTILIB) \
+	$(AWK)	-v HAVE_LONG_DOUBLE_IS_DOUBLE=$(HAVE_LONG_DOUBLE_IS_DOUBLE) \
+		-v HAVE_DOUBLE32=$(HAVE_DOUBLE32) 			\
+		-v HAVE_DOUBLE64=$(HAVE_DOUBLE64) 			\
+		-v HAVE_LONG_DOUBLE32=$(HAVE_LONG_DOUBLE32)		\
+		-v HAVE_LONG_DOUBLE64=$(HAVE_LONG_DOUBLE64) 		\
+		-v with_double=$(WITH_DOUBLE) 				\
+		-v with_long_double=$(WITH_LONG_DOUBLE)			\
 		-f $< $< $(AVR_MCUS) > $@
 
 include t-multilib-avr

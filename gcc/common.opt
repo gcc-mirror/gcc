@@ -1131,7 +1131,7 @@ Common Report Var(flag_combine_stack_adjustments) Optimization
 Looks for opportunities to reduce stack adjustments and stack references.
 
 fcommon
-Common Report Var(flag_no_common,0)
+Common Report Var(flag_no_common,0) Init(1)
 Put uninitialized globals in the common section.
 
 fcompare-debug
@@ -2159,6 +2159,10 @@ Enable common options for generating profile info for profile feedback directed 
 fprofile-generate=
 Common Joined RejectNegative
 Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir=.
+
+fprofile-partial-training
+Common Report Var(flag_profile_partial_training) Optimization
+Do not assume that functions never executed during the train run are cold
 
 fprofile-use
 Common Var(flag_profile_use)

@@ -288,7 +288,7 @@ static bool arm_builtin_support_vector_misalignment (machine_mode mode,
 static void arm_conditional_register_usage (void);
 static enum flt_eval_method arm_excess_precision (enum excess_precision_type);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
-static void arm_autovectorize_vector_sizes (vector_sizes *, bool);
+static unsigned int arm_autovectorize_vector_modes (vector_modes *, bool);
 static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
@@ -325,6 +325,9 @@ static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
+static rtx_insn * thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+					vec<const char *> &, vec<rtx> &,
+					HARD_REG_SET &);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -524,9 +527,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_ARRAY_MODE_SUPPORTED_P arm_array_mode_supported_p
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arm_preferred_simd_mode
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  arm_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  arm_autovectorize_vector_modes
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
@@ -2941,6 +2944,11 @@ arm_option_params_internal (void)
   /* For THUMB2, we limit the conditional sequence to one IT block.  */
   if (TARGET_THUMB2)
     max_insns_skipped = MIN (max_insns_skipped, MAX_INSN_PER_IT_BLOCK);
+
+  if (TARGET_THUMB1)
+    targetm.md_asm_adjust = thumb1_md_asm_adjust;
+  else
+    targetm.md_asm_adjust = arm_md_asm_adjust;
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
@@ -3034,6 +3042,11 @@ arm_option_override_internal (struct gcc_options *opts,
 
   /* ARM execution state and M profile don't have [restrict] IT.  */
   if (!TARGET_THUMB2_P (opts->x_target_flags) || !arm_arch_notm)
+    opts->x_arm_restrict_it = 0;
+
+  /* Use the IT size from CPU specific tuning unless -mrestrict-it is used.  */
+  if (!opts_set->x_arm_restrict_it
+      && (opts_set->x_arm_cpu_string || opts_set->x_arm_tune_string))
     opts->x_arm_restrict_it = 0;
 
   /* Enable -munaligned-access by default for
@@ -29015,14 +29028,15 @@ arm_vector_alignment (const_tree type)
   return align;
 }
 
-static void
-arm_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+static unsigned int
+arm_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (!TARGET_NEON_VECTORIZE_DOUBLE)
     {
-      sizes->safe_push (16);
-      sizes->safe_push (8);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V8QImode);
     }
+  return 0;
 }
 
 static bool
@@ -32526,6 +32540,23 @@ arm_run_selftests (void)
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::arm_run_selftests
 #endif /* CHECKING_P */
+
+/* Worker function for TARGET_MD_ASM_ADJUST, while in thumb1 mode.
+   Unlike the arm version, we do NOT implement asm flag outputs.  */
+
+rtx_insn *
+thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
+		      vec<const char *> &constraints,
+		      vec<rtx> &/*clobbers*/, HARD_REG_SET &/*clobbered_regs*/)
+{
+  for (unsigned i = 0, n = outputs.length (); i < n; ++i)
+    if (strncmp (constraints[i], "=@cc", 4) == 0)
+      {
+	sorry ("asm flags not supported in thumb1 mode");
+	break;
+      }
+  return NULL;
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

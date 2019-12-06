@@ -695,9 +695,6 @@ enum tree_index {
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
   TI_DFLOAT128_TYPE,
-  TI_DFLOAT32_PTR_TYPE,
-  TI_DFLOAT64_PTR_TYPE,
-  TI_DFLOAT128_PTR_TYPE,
 
   TI_VOID_LIST_NODE,
 
@@ -888,7 +885,8 @@ enum operand_equal_flag {
   /* Internal within inchash::add_expr:  */
   OEP_HASH_CHECK = 32,
   /* Makes operand_equal_p handle more expressions:  */
-  OEP_LEXICOGRAPHIC = 64
+  OEP_LEXICOGRAPHIC = 64,
+  OEP_BITWISE = 128
 };
 
 /* Enum and arrays used for tree allocation stats.

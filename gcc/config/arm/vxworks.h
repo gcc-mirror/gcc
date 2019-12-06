@@ -35,42 +35,44 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #undef TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()		\
-  do {						\
-    if (TARGET_BIG_END)				\
-      builtin_define ("ARMEB");			\
-    else					\
-      builtin_define ("ARMEL");			\
-						\
-    if (arm_arch_xscale)			\
-      builtin_define ("CPU=XSCALE");		\
-    else if (arm_arch7)				\
-      {						\
-	if (!arm_arch_notm)			\
-	  builtin_define ("CPU=ARMARCH7M");	\
-	else if (TARGET_THUMB)			\
-	  builtin_define ("CPU=ARMARCH7_T2");	\
-	else					\
-	  builtin_define ("CPU=ARMARCH7");	\
-      }						\
-    else if (arm_arch6)				\
-      {						\
-	if (TARGET_THUMB)			\
-	  builtin_define ("CPU=ARMARCH6_T");	\
-	else					\
-	  builtin_define ("CPU=ARMARCH6");	\
-      }						\
+#define TARGET_OS_CPP_BUILTINS()			\
+  do {							\
+    if (TARGET_BIG_END)					\
+      builtin_define ("ARMEB");				\
+    else						\
+      builtin_define ("ARMEL");				\
+							\
+    if (arm_arch_xscale)				\
+      builtin_define ("_VX_CPU=XSCALE");		\
+    if (arm_arch8)					\
+      builtin_define ("_VX_CPU=ARMARCH8A");		\
+    else if (arm_arch7)					\
+      {							\
+	if (!arm_arch_notm)				\
+	  builtin_define ("_VX_CPU=ARMARCH7M");		\
+	else if (TARGET_THUMB)				\
+	  builtin_define ("_VX_CPU=ARMARCH7_T2");	\
+	else						\
+	  builtin_define ("_VX_CPU=ARMARCH7");		\
+      }							\
+    else if (arm_arch6)					\
+      {							\
+	if (TARGET_THUMB)				\
+	  builtin_define ("_VX_CPU=ARMARCH6_T");	\
+	else						\
+	  builtin_define ("_VX_CPU=ARMARCH6");		\
+      }							\
     else if (arm_arch5t)				\
-	builtin_define ("CPU=ARMARCH5_T");	\
-    else if (arm_arch4)				\
-      {						\
-	if (TARGET_THUMB)			\
-	  builtin_define ("CPU=ARMARCH4_T");	\
-	else					\
-	  builtin_define ("CPU=ARMARCH4");	\
-      }						\
-    VXWORKS_OS_CPP_BUILTINS ();			\
-    MAYBE_TARGET_BPABI_CPP_BUILTINS ();		\
+	builtin_define ("_VX_CPU=ARMARCH5_T");		\
+    else if (arm_arch4)					\
+      {							\
+	if (TARGET_THUMB)				\
+	  builtin_define ("_VX_CPU=ARMARCH4_T");	\
+	else						\
+	  builtin_define ("_VX_CPU=ARMARCH4");		\
+      }							\
+    VXWORKS_OS_CPP_BUILTINS ();				\
+    MAYBE_TARGET_BPABI_CPP_BUILTINS ();			\
   } while (0)
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
@@ -82,15 +84,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* .text.hot and .text.unlikely sections are badly handled by the
    VxWorks kernel mode loader for ARM style exceptions.  */
-
-#if ARM_UNWIND_INFO
-#define EXTRA_CC1_SPEC "%{!mrtp:-fno-reorder-functions}"
-#else
-#define EXTRA_CC1_SPEC
-#endif
-
 #undef  CC1_SPEC
-#define CC1_SPEC "" EXTRA_CC1_SPEC
+#define CC1_SPEC VXWORKS_CC1_SPEC " %{!mrtp:-fno-reorder-functions}"
 
 /* Translate an explicit -mbig-endian as an explicit -EB to assembler
    and linker, and pass abi options matching the target expectations
@@ -118,14 +113,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC VXWORKS_ENDFILE_SPEC
-
-/* For exceptions, pre VX7 uses DWARF2 info, VX7 uses ARM unwinding.  */
-#undef  DWARF2_UNWIND_INFO
-#define DWARF2_UNWIND_INFO (!TARGET_VXWORKS7)
-
-#undef ARM_TARGET2_DWARF_FORMAT
-#define ARM_TARGET2_DWARF_FORMAT \
-  (TARGET_VXWORKS_RTP ? (DW_EH_PE_pcrel | DW_EH_PE_indirect) : DW_EH_PE_absptr)
 
 /* There is no default multilib.  */
 #undef MULTILIB_DEFAULTS
@@ -158,3 +145,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Unless overridded by the target options, the default is little-endian.  */
 #define TARGET_ENDIAN_DEFAULT 0
+
+/* The VxWorks environment on ARM is llvm based and we need to link
+   against libllvm.a to resolve __aeabi_memcpy4.  */
+
+#undef VXWORKS_PERSONALITY
+#define VXWORKS_PERSONALITY "llvm"
+
+#undef VXWORKS_EXTRA_LIBS_RTP
+#define VXWORKS_EXTRA_LIBS_RTP "-lllvm"

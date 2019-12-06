@@ -248,6 +248,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     }					\
   while (0)
 
+#define ASM_OUTPUT_SYMVER_DIRECTIVE(FILE, NAME, NAME2)		\
+  do								\
+    {								\
+      fputs ("\t.symver\t", (FILE));				\
+      assemble_name ((FILE), (NAME));				\
+      fputs (", ", (FILE));					\
+      assemble_name ((FILE), (NAME2));				\
+      fputc ('\n', (FILE));					\
+    }								\
+  while (0)
+
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
    expect various different forms for this operand.  The one given here

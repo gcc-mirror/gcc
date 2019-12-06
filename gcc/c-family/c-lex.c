@@ -885,7 +885,12 @@ interpret_float (const cpp_token *token, unsigned int flags,
 
   /* Decode type based on width and properties. */
   if (flags & CPP_N_DFLOAT)
-    if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
+    if (!targetm.decimal_float_supported_p ())
+      {
+	error ("decimal floating-point not supported for this target");
+	return error_mark_node;
+      }
+    else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = dfloat128_type_node;
     else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
       type = dfloat32_type_node;
@@ -1384,7 +1389,9 @@ lex_charconst (const cpp_token *token)
     type = char16_type_node;
   else if (token->type == CPP_UTF8CHAR)
     {
-      if (flag_char8_t)
+      if (!c_dialect_cxx ())
+	type = unsigned_char_type_node;
+      else if (flag_char8_t)
         type = char8_type_node;
       else
         type = char_type_node;

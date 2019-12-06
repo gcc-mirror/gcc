@@ -499,8 +499,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       template<typename _Up, typename... _Args>
 	static _GLIBCXX20_CONSTEXPR void
-	construct(allocator_type& __a, _Up* __p, _Args&&... __args)
-	noexcept(noexcept(::new((void*)__p) _Up(std::forward<_Args>(__args)...)))
+	construct(allocator_type& __a __attribute__((__unused__)), _Up* __p,
+		  _Args&&... __args)
+	noexcept(noexcept(::new((void*)__p) _Up(std::declval<_Args>()...)))
 	{
 #if __cplusplus <= 201703L
 	  __a.construct(__p, std::forward<_Args>(__args)...);
@@ -518,7 +519,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       template<typename _Up>
 	static _GLIBCXX20_CONSTEXPR void
-	destroy(allocator_type& __a, _Up* __p)
+	destroy(allocator_type& __a __attribute__((__unused__)), _Up* __p)
 	noexcept(is_nothrow_destructible<_Up>::value)
 	{
 #if __cplusplus <= 201703L
@@ -534,7 +535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return @c __a.max_size()
       */
       static _GLIBCXX20_CONSTEXPR size_type
-      max_size(const allocator_type& __a) noexcept
+      max_size(const allocator_type& __a __attribute__((__unused__))) noexcept
       {
 #if __cplusplus <= 201703L
 	return __a.max_size();

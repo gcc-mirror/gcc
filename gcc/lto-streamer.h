@@ -296,7 +296,7 @@ typedef void (lto_free_section_data_f) (struct lto_file_decl_data *,
 					size_t);
 
 /* The location cache holds expanded locations for streamed in trees.
-   This is done to reduce memory usage of libcpp linemap that strongly preffers
+   This is done to reduce memory usage of libcpp linemap that strongly prefers
    locations to be inserted in the soruce order.  */
 
 class lto_location_cache
@@ -626,6 +626,8 @@ struct GTY(()) lto_file_decl_data
   lto_section lto_section_header;
 
   int order_base;
+
+  int unit_base;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;

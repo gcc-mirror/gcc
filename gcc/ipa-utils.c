@@ -398,6 +398,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
   tree oldsrcdecl = src->decl;
   struct function *srccfun, *dstcfun;
   bool match = true;
+  bool copy_counts = false;
 
   if (!src->definition
       || !dst->definition)
@@ -429,10 +430,26 @@ ipa_merge_profiles (struct cgraph_node *dst,
     }
   profile_count orig_count = dst->count;
 
-  if (dst->count.initialized_p () && dst->count.ipa () == dst->count)
-    dst->count += src->count.ipa ();
-  else 
-    dst->count = src->count.ipa ();
+  /* Either sum the profiles if both are IPA and not global0, or
+     pick more informative one (that is nonzero IPA if other is
+     uninitialized, guessed or global0).   */
+
+  if ((dst->count.ipa ().nonzero_p ()
+       || src->count.ipa ().nonzero_p ())
+      && dst->count.ipa ().initialized_p ()
+      && src->count.ipa ().initialized_p ())
+    dst->count = dst->count.ipa () + src->count.ipa ();
+  else if (dst->count.ipa ().initialized_p ())
+    ;
+  else if (src->count.ipa ().initialized_p ())
+    {
+      copy_counts = true;
+      dst->count = src->count.ipa ();
+    }
+
+  /* If no updating needed return early.  */
+  if (dst->count == orig_count)
+    return;
 
   /* First handle functions with no gimple body.  */
   if (dst->thunk.thunk_p || dst->alias
@@ -544,6 +561,16 @@ ipa_merge_profiles (struct cgraph_node *dst,
       struct cgraph_edge *e, *e2;
       basic_block srcbb, dstbb;
 
+      /* Function and global profile may be out of sync.  First scale it same
+	 way as fixup_cfg would.  */
+      profile_count srcnum = src->count;
+      profile_count srcden = ENTRY_BLOCK_PTR_FOR_FN (srccfun)->count;
+      bool srcscale = srcnum.initialized_p () && !(srcnum == srcden);
+      profile_count dstnum = orig_count;
+      profile_count dstden = ENTRY_BLOCK_PTR_FOR_FN (dstcfun)->count;
+      bool dstscale = !copy_counts
+		      && dstnum.initialized_p () && !(dstnum == dstden);
+
       /* TODO: merge also statement histograms.  */
       FOR_ALL_BB_FN (srcbb, srccfun)
 	{
@@ -551,15 +578,15 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
 	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
 
-	  /* Either sum the profiles if both are IPA and not global0, or
-	     pick more informative one (that is nonzero IPA if other is
-	     uninitialized, guessed or global0).   */
-	  if (!dstbb->count.ipa ().initialized_p ()
-	      || (dstbb->count.ipa () == profile_count::zero ()
-		  && (srcbb->count.ipa ().initialized_p ()
-		      && !(srcbb->count.ipa () == profile_count::zero ()))))
+	  profile_count srccount = srcbb->count;
+	  if (srcscale)
+	    srccount = srccount.apply_scale (srcnum, srcden);
+	  if (dstscale)
+	    dstbb->count = dstbb->count.apply_scale (dstnum, dstden);
+
+	  if (copy_counts)
 	    {
-	      dstbb->count = srcbb->count;
+	      dstbb->count = srccount;
 	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 		{
 		  edge srce = EDGE_SUCC (srcbb, i);
@@ -568,18 +595,21 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		    dste->probability = srce->probability;
 		}
 	    }	
-	  else if (srcbb->count.ipa ().initialized_p ()
-		   && !(srcbb->count.ipa () == profile_count::zero ()))
+	  else 
 	    {
 	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 		{
 		  edge srce = EDGE_SUCC (srcbb, i);
 		  edge dste = EDGE_SUCC (dstbb, i);
 		  dste->probability = 
-		    dste->probability * dstbb->count.probability_in (dstbb->count + srcbb->count)
-		    + srce->probability * srcbb->count.probability_in (dstbb->count + srcbb->count);
+		    dste->probability * dstbb->count.ipa ().probability_in
+						 (dstbb->count.ipa ()
+						  + srccount.ipa ())
+		    + srce->probability * srcbb->count.ipa ().probability_in
+						 (dstbb->count.ipa ()
+						  + srccount.ipa ());
 		}
-	      dstbb->count += srcbb->count;
+	      dstbb->count = dstbb->count.ipa () + srccount.ipa ();
 	    }
 	}
       push_cfun (dstcfun);

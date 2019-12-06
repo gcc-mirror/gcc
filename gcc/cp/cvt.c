@@ -836,18 +836,27 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	      return error_mark_node;
 	    }
 
+	  if (VECTOR_TYPE_P (intype) && !gnu_vector_type_p (intype))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "could not convert %qE from %qH to %qI", expr,
+			  TREE_TYPE (expr), type);
+	      return error_mark_node;
+	    }
+
 	  /* We can't implicitly convert a scoped enum to bool, so convert
 	     to the underlying type first.  */
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
 	    e = build_nop (ENUM_UNDERLYING_TYPE (intype), e);
 	  if (complain & tf_warning)
-	    return cp_truthvalue_conversion (e);
+	    return cp_truthvalue_conversion (e, complain);
 	  else
 	    {
 	      /* Prevent bogus -Wint-in-bool-context warnings coming
 		 from c_common_truthvalue_conversion down the line.  */
 	      warning_sentinel w (warn_int_in_bool_context);
-	      return cp_truthvalue_conversion (e);
+	      warning_sentinel c (warn_sign_compare);
+	      return cp_truthvalue_conversion (e, complain);
 	    }
 	}
 
@@ -1134,6 +1143,12 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
         error_at (loc, "pseudo-destructor is not called");
       return error_mark_node;
     }
+
+  /* Explicitly evaluate void-converted concept checks since their
+     satisfaction may produce ill-formed programs.  */
+   if (concept_check_p (expr))
+     expr = evaluate_concept_check (expr, tf_warning_or_error);
+
   if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;
   switch (TREE_CODE (expr))
@@ -1756,8 +1771,11 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 							    tf_warning_or_error)
 					: NULL_TREE;
 
-      case COMPLEX_TYPE:
       case VECTOR_TYPE:
+	if (!gnu_vector_type_p (basetype))
+	  return NULL_TREE;
+	/* FALLTHROUGH */
+      case COMPLEX_TYPE:
 	if ((desires & WANT_VECTOR_OR_COMPLEX) == 0)
 	  return NULL_TREE;
 	switch (TREE_CODE (TREE_TYPE (basetype)))

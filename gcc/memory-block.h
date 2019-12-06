@@ -28,12 +28,15 @@ class memory_block_pool
 public:
   /* Blocks have fixed size.  This is necessary for sharing.  */
   static const size_t block_size = 64 * 1024;
+  /* Number of blocks we keep in the freelists.  */
+  static const size_t freelist_size = 1024 * 1024 / block_size;
 
   memory_block_pool ();
 
   static inline void *allocate () ATTRIBUTE_MALLOC;
   static inline void release (void *);
-  void clear_free_list ();
+  static void trim (int nblocks = freelist_size);
+  void reduce_free_list (int);
 
 private:
   /* memory_block_pool singleton instance, defined in memory-block.cc.  */

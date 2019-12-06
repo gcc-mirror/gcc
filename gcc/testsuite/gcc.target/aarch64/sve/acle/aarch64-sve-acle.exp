@@ -45,9 +45,9 @@ if { [check_effective_target_aarch64_sve] } {
 }
 
 # Main loop.
-# FIXME: This should include general/*.c too, but leave that until the
-# C frontend allows initialization of SVE vectors.
-set files [glob -nocomplain $srcdir/$subdir/general-c/*.c]
+set files [glob -nocomplain \
+	       "$srcdir/$subdir/general/*.c" \
+	       "$srcdir/$subdir/general-c/*.c"]
 dg-runtest [lsort $files] "$sve_flags" $DEFAULT_CFLAGS
 
 # All done.

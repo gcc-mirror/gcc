@@ -1051,11 +1051,14 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
 	return build_vector_type_for_mode (inner_type, mode);
     }
 
-  if (mode == TYPE_MODE (dfloat32_type_node))
+  if (dfloat32_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat32_type_node))
     return dfloat32_type_node;
-  if (mode == TYPE_MODE (dfloat64_type_node))
+  if (dfloat64_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat64_type_node))
     return dfloat64_type_node;
-  if (mode == TYPE_MODE (dfloat128_type_node))
+  if (dfloat128_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat128_type_node))
     return dfloat128_type_node;
 
   if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))

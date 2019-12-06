@@ -1,3 +1,126 @@
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Also don't
+	expect dg-output of 'Error termination.' for GCN.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92756
+	* testsuite/libgomp.fortran/teams1.f90: New test.
+	* testsuite/libgomp.fortran/teams2.f90: New test.
+
+2019-12-03  Frederik Harwath  <frederik@codesourcery.com>
+
+	* oacc-init.c (acc_known_device_type): Add function.
+	(unknown_device_type_error): Add function.
+	(name_of_acc_device_t): Change to call unknown_device_type_error
+	on unknown type.
+	(resolve_device): Use acc_known_device_type.
+	(acc_init): Fail if acc_device_t argument is not valid.
+	(acc_shutdown): Likewise.
+	(acc_get_num_devices): Likewise.
+	(acc_set_device_type): Likewise.
+	(acc_get_device_num): Likewise.
+	(acc_set_device_num): Likewise.
+	(acc_on_device): Add comment that argument validity is not checked.
+
+2019-12-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (offload_target_to_openacc_device_type):
+	Recognize amdgcn.
+	(check_effective_target_openacc_amdgcn_accel_present): New proc.
+	(check_effective_target_openacc_amdgcn_accel_selected): New proc.
+	* testsuite/libgomp.oacc-c++/c++.exp: Add support for amdgcn.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+2019-12-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgomp/91938
+	* configure.tgt: Avoid IE tls on *-*-musl*.
+
+2019-11-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Extend by
+	adding a common-block test case.
+
+2019-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60228
+	* testsuite/libgomp.c++/udr-20.C: New test.
+	* testsuite/libgomp.c++/udr-21.C: New test.
+
+2019-11-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_nvptx): New proc.
+	* testsuite/libgomp.fortran/target-print-1.f90: Use it with
+	'dg-skip-if'.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target-print-1-nvptx.f90: New file.
+	* testsuite/libgomp.oacc-fortran/print-1-nvptx.f90: Likewise.
+
+2019-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.c/pr39591-1.c: Rename err to e.
+	* testsuite/libgomp.c/pr39591-2.c: Likewise.
+	* testsuite/libgomp.c/pr39591-3.c: Likewise.
+	* testsuite/libgomp.c/private-1.c: Likewise.
+	* testsuite/libgomp.c/task-1.c: Likewise.
+	* testsuite/libgomp.c/task-5.c: Renamed err to serr.
+
+2019-11-20  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-gcn.c (wait_for_queue_nonfull): Don't lock/unlock
+	aq->mutex here.
+	(queue_push_launch): Lock aq->mutex before calling
+	wait_for_queue_nonfull.
+	(queue_push_callback): Likewise.
+	(queue_push_asyncwait): Likewise.
+	(queue_push_placeholder): Likewise.
+
+2019-11-20  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-gcn.c (hsa_memory_copy_wrapper): New.
+	(copy_data, GOMP_OFFLOAD_host2dev): Use above function.
+	(GOMP_OFFLOAD_dev2host, GOMP_OFFLOAD_dev2dev): Check hsa_memory_copy
+	return code.
+
+2019-11-20  Julian Brown  <julian@codesourcery.com>
+
+	PR libgomp/92511
+
+	* oacc-mem.c (present_create_copy): Fix device pointer return value in
+	case of "present" subarray.  Use tgt->tgt_start instead of tgt->to_free
+	in non-present/create case.
+	(delete_copyout): Change error condition to fail only on copies outside
+	of mapped block.  Adjust error message accordingly.
+	* testsuite/libgomp.oacc-c-c++-common/copyin-devptr-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/copyin-devptr-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Adjust expected error
+	message.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: Allow test to pass now.
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: Likewise.
+
+2019-11-20  Maciej W. Rozycki  <macro@wdc.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Add flags to find
+	libatomic in build-tree testing.
+
+2019-11-18  Maciej W. Rozycki  <macro@wdc.com>
+
+	* testsuite/Makefile.in: Regenerate.
+
+2019-11-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/libgomp.c/target-print-1.c: New file.
+	* testsuite/libgomp.fortran/target-print-1.f90: New file.
+	* testsuite/libgomp.oacc-c/print-1.c: New file.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: New file.
+
 2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>

@@ -93,8 +93,6 @@ extern const char * default_invalid_within_doloop (const rtx_insn *);
 extern tree default_builtin_vectorized_function (unsigned int, tree, tree);
 extern tree default_builtin_md_vectorized_function (tree, tree, tree);
 
-extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
-
 extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 
 extern tree default_builtin_reciprocal (tree);
@@ -113,8 +111,11 @@ default_builtin_support_vector_misalignment (machine_mode mode,
 					     int, bool);
 extern machine_mode default_preferred_simd_mode (scalar_mode mode);
 extern machine_mode default_split_reduction (machine_mode);
-extern void default_autovectorize_vector_sizes (vector_sizes *, bool);
-extern opt_machine_mode default_get_mask_mode (poly_uint64, poly_uint64);
+extern unsigned int default_autovectorize_vector_modes (vector_modes *, bool);
+extern opt_machine_mode default_vectorize_related_mode (machine_mode,
+							scalar_mode,
+							poly_uint64);
+extern opt_machine_mode default_get_mask_mode (machine_mode);
 extern bool default_empty_mask_is_expensive (unsigned);
 extern void *default_init_cost (class loop *);
 extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,

@@ -44,3 +44,4 @@ void test01()
   tuple<Type> t(allocator_arg, a, 1);
 }
 // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
+// { dg-error "no matching function for call" "" { target c++2a } 0 }

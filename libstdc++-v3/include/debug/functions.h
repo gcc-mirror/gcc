@@ -29,7 +29,6 @@
 #ifndef _GLIBCXX_DEBUG_FUNCTIONS_H
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
-#include <bits/move.h>		// for __addressof
 #include <bits/stl_function.h>	// for less
 
 #if __cplusplus >= 201103L
@@ -48,23 +47,6 @@ namespace __gnu_debug
 
   template<typename _Sequence>
     struct _Is_contiguous_sequence : std::__false_type { };
-
-  // An arbitrary iterator pointer is not singular.
-  inline bool
-  __check_singular_aux(const void*) { return false; }
-
-  // We may have an iterator that derives from _Safe_iterator_base but isn't
-  // a _Safe_iterator.
-  template<typename _Iterator>
-    inline bool
-    __check_singular(const _Iterator& __x)
-    { return __check_singular_aux(std::__addressof(__x)); }
-
-  /** Non-NULL pointers are nonsingular. */
-  template<typename _Tp>
-    inline bool
-    __check_singular(const _Tp* __ptr)
-    { return __ptr == 0; }
 
   /* Checks that [first, last) is a valid range, and then returns
    * __first. This routine is useful when we can't use a separate

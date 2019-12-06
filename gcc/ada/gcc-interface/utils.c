@@ -288,7 +288,6 @@ static tree split_plus (tree, tree *);
 static tree float_type_for_precision (int, machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static unsigned int scale_by_factor_of (tree, unsigned int);
-static bool potential_alignment_gap (tree, tree, tree);
 
 /* Linked list used as a queue to defer the initialization of the DECL_CONTEXT
    of ..._DECL nodes and of the TYPE_CONTEXT of ..._TYPE nodes.  */
@@ -2171,7 +2170,6 @@ rest_of_record_type_compilation (tree record_type)
 		     ? UNION_TYPE : TREE_CODE (record_type));
       tree orig_name = TYPE_IDENTIFIER (record_type), new_name;
       tree last_pos = bitsize_zero_node;
-      tree old_field, prev_old_field = NULL_TREE;
 
       new_name
 	= concat_name (orig_name, TREE_CODE (record_type) == QUAL_UNION_TYPE
@@ -2189,7 +2187,8 @@ rest_of_record_type_compilation (tree record_type)
 
       /* Now scan all the fields, replacing each field with a new field
 	 corresponding to the new encoding.  */
-      for (old_field = TYPE_FIELDS (record_type); old_field;
+      for (tree old_field = TYPE_FIELDS (record_type);
+	   old_field;
 	   old_field = DECL_CHAIN (old_field))
 	{
 	  tree field_type = TREE_TYPE (old_field);
@@ -2213,9 +2212,10 @@ rest_of_record_type_compilation (tree record_type)
 	  else
 	    pos = compute_related_constant (curpos, last_pos);
 
-	  if (!pos
-	      && TREE_CODE (curpos) == MULT_EXPR
-	      && tree_fits_uhwi_p (TREE_OPERAND (curpos, 1)))
+	  if (pos)
+	    ;
+	  else if (TREE_CODE (curpos) == MULT_EXPR
+		   && tree_fits_uhwi_p (TREE_OPERAND (curpos, 1)))
 	    {
 	      tree offset = TREE_OPERAND (curpos, 0);
 	      align = tree_to_uhwi (TREE_OPERAND (curpos, 1));
@@ -2223,8 +2223,7 @@ rest_of_record_type_compilation (tree record_type)
 	      last_pos = round_up (last_pos, align);
 	      pos = compute_related_constant (curpos, last_pos);
 	    }
-	  else if (!pos
-		   && TREE_CODE (curpos) == PLUS_EXPR
+	  else if (TREE_CODE (curpos) == PLUS_EXPR
 		   && tree_fits_uhwi_p (TREE_OPERAND (curpos, 1))
 		   && TREE_CODE (TREE_OPERAND (curpos, 0)) == MULT_EXPR
 		   && tree_fits_uhwi_p
@@ -2240,19 +2239,12 @@ rest_of_record_type_compilation (tree record_type)
 	      last_pos = round_up (last_pos, align);
 	      pos = compute_related_constant (curpos, last_pos);
 	    }
-	  else if (potential_alignment_gap (prev_old_field, old_field, pos))
+	  else
 	    {
-	      align = TYPE_ALIGN (field_type);
+	      align = DECL_ALIGN (old_field);
 	      last_pos = round_up (last_pos, align);
 	      pos = compute_related_constant (curpos, last_pos);
 	    }
-
-	  /* If we can't compute a position, set it to zero.
-
-	     ??? We really should abort here, but it's too much work
-	     to get this correct for all cases.  */
-	  if (!pos)
-	    pos = bitsize_zero_node;
 
 	  /* See if this type is variable-sized and make a pointer type
 	     and indicate the indirection if so.  Beware that the debug
@@ -2261,14 +2253,25 @@ rest_of_record_type_compilation (tree record_type)
 	     in this case, if we don't preventively counter that.  */
 	  if (TREE_CODE (DECL_SIZE (old_field)) != INTEGER_CST)
 	    {
-	      field_type = build_pointer_type (field_type);
-	      if (align != 0 && TYPE_ALIGN (field_type) > align)
-		{
-		  field_type = copy_type (field_type);
-		  SET_TYPE_ALIGN (field_type, align);
-		}
+	      field_type = copy_type (build_pointer_type (field_type));
+	      SET_TYPE_ALIGN (field_type, BITS_PER_UNIT);
 	      var = true;
+
+	      /* ??? Kludge to work around a bug in Workbench's debugger.  */
+	      if (align == 0)
+		{
+		  align = DECL_ALIGN (old_field);
+		  last_pos = round_up (last_pos, align);
+		  pos = compute_related_constant (curpos, last_pos);
+		}
 	    }
+
+	  /* If we can't compute a position, set it to zero.
+
+	     ??? We really should abort here, but it's too much work
+	     to get this correct for all cases.  */
+	  if (!pos)
+	    pos = bitsize_zero_node;
 
 	  /* Make a new field name, if necessary.  */
 	  if (var || align != 0)
@@ -2287,6 +2290,16 @@ rest_of_record_type_compilation (tree record_type)
 	  new_field
 	    = create_field_decl (field_name, field_type, new_record_type,
 				 DECL_SIZE (old_field), pos, 0, 0);
+	  /* The specified position is not the actual position of the field
+	     but the gap with the previous field, so the computation of the
+	     bit-field status may be incorrect.  We adjust it manually to
+	     avoid generating useless attributes for the field in DWARF.  */
+	  if (DECL_SIZE (old_field) == TYPE_SIZE (field_type)
+	      && value_factor_p (pos, BITS_PER_UNIT))
+	    {
+	      DECL_BIT_FIELD (new_field) = 0;
+	      DECL_BIT_FIELD_TYPE (new_field) = NULL_TREE;
+	    }
 	  DECL_CHAIN (new_field) = TYPE_FIELDS (new_record_type);
 	  TYPE_FIELDS (new_record_type) = new_field;
 
@@ -2300,7 +2313,6 @@ rest_of_record_type_compilation (tree record_type)
 				  == QUAL_UNION_TYPE)
 				 ? bitsize_zero_node
 				 : DECL_SIZE (old_field));
-	  prev_old_field = old_field;
 	}
 
       TYPE_FIELDS (new_record_type) = nreverse (TYPE_FIELDS (new_record_type));
@@ -2349,19 +2361,27 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special, bool max)
   return new_size;
 }
 
+/* Convert the size expression EXPR to TYPE and fold the result.  */
+
+static tree
+fold_convert_size (tree type, tree expr)
+{
+  /* We assume that size expressions do not wrap around.  */
+  if (TREE_CODE (expr) == MULT_EXPR || TREE_CODE (expr) == PLUS_EXPR)
+    return size_binop (TREE_CODE (expr),
+		       fold_convert_size (type, TREE_OPERAND (expr, 0)),
+		       fold_convert_size (type, TREE_OPERAND (expr, 1)));
+
+  return fold_convert (type, expr);
+}
+
 /* Return the bit position of FIELD, in bits from the start of the record,
    and fold it as much as possible.  This is a tree of type bitsizetype.  */
 
 static tree
 fold_bit_position (const_tree field)
 {
-  tree offset = DECL_FIELD_OFFSET (field);
-  if (TREE_CODE (offset) == MULT_EXPR || TREE_CODE (offset) == PLUS_EXPR)
-    offset = size_binop (TREE_CODE (offset),
-			 fold_convert (bitsizetype, TREE_OPERAND (offset, 0)),
-			 fold_convert (bitsizetype, TREE_OPERAND (offset, 1)));
-  else
-    offset = fold_convert (bitsizetype, offset);
+  tree offset = fold_convert_size (bitsizetype, DECL_FIELD_OFFSET (field));
   return size_binop (PLUS_EXPR, DECL_FIELD_BIT_OFFSET (field),
  		     size_binop (MULT_EXPR, offset, bitsize_unit_node));
 }
@@ -3250,52 +3270,6 @@ scale_by_factor_of (tree expr, unsigned int value)
     factor = 1;
 
   return factor * value;
-}
-
-/* Given two consecutive field decls PREV_FIELD and CURR_FIELD, return true
-   unless we can prove these 2 fields are laid out in such a way that no gap
-   exist between the end of PREV_FIELD and the beginning of CURR_FIELD.  OFFSET
-   is the distance in bits between the end of PREV_FIELD and the starting
-   position of CURR_FIELD. It is ignored if null. */
-
-static bool
-potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
-{
-  /* If this is the first field of the record, there cannot be any gap */
-  if (!prev_field)
-    return false;
-
-  /* If the previous field is a union type, then return false: The only
-     time when such a field is not the last field of the record is when
-     there are other components at fixed positions after it (meaning there
-     was a rep clause for every field), in which case we don't want the
-     alignment constraint to override them. */
-  if (TREE_CODE (TREE_TYPE (prev_field)) == QUAL_UNION_TYPE)
-    return false;
-
-  /* If the distance between the end of prev_field and the beginning of
-     curr_field is constant, then there is a gap if the value of this
-     constant is not null. */
-  if (offset && tree_fits_uhwi_p (offset))
-    return !integer_zerop (offset);
-
-  /* If the size and position of the previous field are constant,
-     then check the sum of this size and position. There will be a gap
-     iff it is not multiple of the current field alignment. */
-  if (tree_fits_uhwi_p (DECL_SIZE (prev_field))
-      && tree_fits_uhwi_p (bit_position (prev_field)))
-    return ((tree_to_uhwi (bit_position (prev_field))
-	     + tree_to_uhwi (DECL_SIZE (prev_field)))
-	    % DECL_ALIGN (curr_field) != 0);
-
-  /* If both the position and size of the previous field are multiples
-     of the current field alignment, there cannot be any gap. */
-  if (value_factor_p (bit_position (prev_field), DECL_ALIGN (curr_field))
-      && value_factor_p (DECL_SIZE (prev_field), DECL_ALIGN (curr_field)))
-    return false;
-
-  /* Fallback, return that there may be a potential gap */
-  return true;
 }
 
 /* Return a LABEL_DECL with NAME.  GNAT_NODE is used for the position of

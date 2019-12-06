@@ -1,3 +1,8 @@
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* d-codegen.cc (build_boolop): Use truth_type_for instead of
+	build_same_sized_truth_vector_type.
+
 2019-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* d-target.cc (define_float_constants): Update call to

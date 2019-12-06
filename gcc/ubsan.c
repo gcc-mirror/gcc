@@ -1860,7 +1860,7 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
 	 representable decimal number greater or equal than
 	 1 << (prec - !uns_p).  */
       mpfr_init2 (m, prec + 2);
-      mpfr_set_ui_2exp (m, 1, prec - !uns_p, GMP_RNDN);
+      mpfr_set_ui_2exp (m, 1, prec - !uns_p, MPFR_RNDN);
       mpfr_snprintf (buf, sizeof buf, "%.*RUe", p - 1, m);
       decimal_real_from_string (&maxval, buf);
       max = build_real (expr_type, maxval);
@@ -1873,8 +1873,8 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
 	  /* Use mpfr_snprintf rounding to compute the largest
 	     representable decimal number less or equal than
 	     (-1 << (prec - 1)) - 1.  */
-	  mpfr_set_si_2exp (m, -1, prec - 1, GMP_RNDN);
-	  mpfr_sub_ui (m, m, 1, GMP_RNDN);
+	  mpfr_set_si_2exp (m, -1, prec - 1, MPFR_RNDN);
+	  mpfr_sub_ui (m, m, 1, MPFR_RNDN);
 	  mpfr_snprintf (buf, sizeof buf, "%.*RDe", p - 1, m);
 	  decimal_real_from_string (&minval, buf);
 	  min = build_real (expr_type, minval);

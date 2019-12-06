@@ -31,5 +31,3 @@ main (int argc, char **argv)
 }
 
 /* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
-/* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] surrounds2 \\\[\[0-9a-fA-FxX\]+,\\\+255\\\]" } */
-/* { dg-shouldfail "" } */

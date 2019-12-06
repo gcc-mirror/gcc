@@ -2605,10 +2605,6 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
       /* Ensure the result is wrapped as a call expression.  */
       result = build_concept_check (tmpl, args, tf_warning_or_error);
-
-      /* Evaluate the check if it is non-dependent.   */
-      if (!uses_template_parms (args))
-	result = evaluate_concept_check (result, complain);
     }
   else if (is_overloaded_fn (fn))
     {
@@ -2933,7 +2929,8 @@ finish_compound_literal (tree type, tree compound_literal,
 	 that it came from T{} rather than T({}).  */
       CONSTRUCTOR_IS_DIRECT_INIT (compound_literal) = 1;
       compound_literal = build_tree_list (NULL_TREE, compound_literal);
-      return build_functional_cast (type, compound_literal, complain);
+      return build_functional_cast (input_location, type,
+				    compound_literal, complain);
     }
 
   if (TREE_CODE (type) == ARRAY_TYPE
@@ -3890,13 +3887,8 @@ finish_id_expression_1 (tree id_expression,
 	}
       else if (concept_check_p (decl))
 	{
-	  /* If this is a standard or variable concept check, potentially
-	     evaluate it. Function concepts need to be called as functions,
-	     so don't try evaluating them here.  */
-	  tree tmpl = TREE_OPERAND (decl, 0);
-	  tree args = TREE_OPERAND (decl, 1);
-	  if (!function_concept_p (tmpl) && !uses_template_parms (args))
-	    decl = evaluate_concept_check (decl, tf_warning_or_error);
+	  /* Nothing more to do. All of the analysis for concept checks
+	     is done by build_conept_id, called from the parser.  */
 	}
       else if (scope)
 	{
@@ -3969,16 +3961,6 @@ finish_id_expression_1 (tree id_expression,
 	    }
 
 	  decl = baselink_for_fns (decl);
-	}
-      else if (concept_check_p (decl))
-	{
-	  /* If this is a standard or variable concept check, potentially
-	     evaluate it. Function concepts need to be called as functions,
-	     so don't try evaluating them here.  */
-	  tree tmpl = TREE_OPERAND (decl, 0);
-	  tree args = TREE_OPERAND (decl, 1);
-	  if (!function_concept_p (tmpl) && !uses_template_parms (args))
-	    decl = evaluate_concept_check (decl, tf_warning_or_error);
 	}
       else
 	{
@@ -4436,7 +4418,9 @@ expand_or_defer_fn_1 (tree fn)
       if (DECL_INTERFACE_KNOWN (fn))
 	/* We've already made a decision as to how this function will
 	   be handled.  */;
-      else if (!at_eof || DECL_IMMEDIATE_FUNCTION_P (fn))
+      else if (!at_eof
+	       || DECL_IMMEDIATE_FUNCTION_P (fn)
+	       || DECL_OMP_DECLARE_REDUCTION_P (fn))
 	tentative_decl_linkage (fn);
       else
 	import_export_decl (fn);
@@ -4448,6 +4432,7 @@ expand_or_defer_fn_1 (tree fn)
       if (DECL_DECLARED_INLINE_P (fn)
 	  && !DECL_REALLY_EXTERN (fn)
 	  && !DECL_IMMEDIATE_FUNCTION_P (fn)
+	  && !DECL_OMP_DECLARE_REDUCTION_P (fn)
 	  && (flag_keep_inline_functions
 	      || (flag_keep_inline_dllexport
 		  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn)))))
@@ -4480,6 +4465,9 @@ expand_or_defer_fn_1 (tree fn)
       TREE_ASM_WRITTEN (fn) = 1;
       return false;
     }
+
+  if (DECL_OMP_DECLARE_REDUCTION_P (fn))
+    return false;
 
   return true;
 }
@@ -7194,7 +7182,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		remove = true;
 	      else
 		{
-		  t = cp_build_indirect_ref (addr, RO_UNARY_STAR,
+		  t = cp_build_indirect_ref (OMP_CLAUSE_LOCATION (c),
+					     addr, RO_UNARY_STAR,
 					     tf_warning_or_error);
 		  if (t == error_mark_node)
 		    remove = true;
@@ -8435,7 +8424,6 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   if (init && EXPR_HAS_LOCATION (init))
     elocus = EXPR_LOCATION (init);
 
-  cond = cp_fully_fold (cond);
   switch (TREE_CODE (cond))
     {
     case GT_EXPR:
@@ -9330,7 +9318,7 @@ finish_omp_depobj (location_t loc, tree depobj,
       if (addr == error_mark_node)
 	depobj = error_mark_node;
       else
-	depobj = cp_build_indirect_ref (addr, RO_UNARY_STAR,
+	depobj = cp_build_indirect_ref (loc, addr, RO_UNARY_STAR,
 					tf_warning_or_error);
     }
 
@@ -9575,6 +9563,9 @@ finish_static_assert (tree condition, tree message, location_t location,
       return;
     }
 
+  /* Save the condition in case it was a concept check.  */
+  tree orig_condition = condition;
+
   /* Fold the expression and convert it to a boolean value. */
   condition = perform_implicit_conversion_flags (boolean_type_node, condition,
 						 complain, LOOKUP_NORMAL);
@@ -9601,6 +9592,10 @@ finish_static_assert (tree condition, tree message, location_t location,
 	  else
             error ("static assertion failed: %s",
 		   TREE_STRING_POINTER (message));
+
+	  /* Actually explain the failure if this is a concept check.  */
+	  if (concept_check_p (orig_condition))
+	    diagnose_constraints (location, orig_condition, NULL_TREE);
 	}
       else if (condition && condition != error_mark_node)
 	{

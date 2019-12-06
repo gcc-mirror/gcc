@@ -30,30 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 
 value_range
-range_intersect (const value_range &r1, const value_range &r2)
-{
-  value_range tmp (r1);
-  tmp.intersect (r2);
-  return tmp;
-}
-
-value_range
-range_invert (const value_range &r1)
-{
-  value_range tmp (r1);
-  tmp.invert ();
-  return tmp;
-}
-
-value_range
-range_union (const value_range &r1, const value_range &r2)
-{
-  value_range tmp (r1);
-  tmp.union_ (r2);
-  return tmp;
-}
-
-value_range
 range_zero (tree type)
 {
   return value_range (build_zero_cst (type), build_zero_cst (type));

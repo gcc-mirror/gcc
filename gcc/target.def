@@ -1797,22 +1797,6 @@ return type of the vectorized function shall be of vector type\n\
  tree, (tree fndecl, tree vec_type_out, tree vec_type_in),
  default_builtin_md_vectorized_function)
 
-/* Returns a function declaration for a builtin that realizes the
-   vector conversion, or NULL_TREE if not available.  */
-DEFHOOK
-(builtin_conversion,
- "This hook should return the DECL of a function that implements conversion of the\n\
-input vector of type @var{src_type} to type @var{dest_type}.\n\
-The value of @var{code} is one of the enumerators in @code{enum tree_code} and\n\
-specifies how the conversion is to be applied\n\
-(truncation, rounding, etc.).\n\
-\n\
-If this hook is defined, the autovectorizer will use the\n\
-@code{TARGET_VECTORIZE_BUILTIN_CONVERSION} target hook when vectorizing\n\
-conversion. Otherwise, it will return @code{NULL_TREE}.",
- tree, (unsigned code, tree dest_type, tree src_type),
- default_builtin_vectorized_conversion)
-
 /* Cost of different vector/scalar statements in vectorization cost
    model. In case of misaligned vector loads and stores the cost depends
    on the data type and misalignment value.  */
@@ -1909,35 +1893,80 @@ reached.  The default is @var{mode} which means no splitting.",
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
    after processing the preferred one derived from preferred_simd_mode.  */
 DEFHOOK
-(autovectorize_vector_sizes,
- "If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not\n\
-the only one that is worth considering, this hook should add all suitable\n\
-vector sizes to @var{sizes}, in order of decreasing preference.  The first\n\
-one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
-If @var{all} is true, add suitable vector sizes even when they are generally\n\
+(autovectorize_vector_modes,
+ "If using the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}\n\
+is not the only approach worth considering, this hook should add one mode to\n\
+@var{modes} for each useful alternative approach.  These modes are then\n\
+passed to @code{TARGET_VECTORIZE_RELATED_MODE} to obtain the vector mode\n\
+for a given element mode.\n\
+\n\
+The modes returned in @var{modes} should use the smallest element mode\n\
+possible for the vectorization approach that they represent, preferring\n\
+integer modes over floating-poing modes in the event of a tie.  The first\n\
+mode should be the @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} for its\n\
+element mode.\n\
+\n\
+If @var{all} is true, add suitable vector modes even when they are generally\n\
 not expected to be worthwhile.\n\
+\n\
+The hook returns a bitmask of flags that control how the modes in\n\
+@var{modes} are used.  The flags are:\n\
+@table @code\n\
+@item VECT_COMPARE_COSTS\n\
+Tells the loop vectorizer to try all the provided modes and pick the one\n\
+with the lowest cost.  By default the vectorizer will choose the first\n\
+mode that works.\n\
+@end table\n\
 \n\
 The hook does not need to do anything if the vector returned by\n\
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant\n\
-for autovectorization.  The default implementation does nothing.",
- void,
- (vector_sizes *sizes, bool all),
- default_autovectorize_vector_sizes)
+for autovectorization.  The default implementation adds no modes and\n\
+returns 0.",
+ unsigned int,
+ (vector_modes *modes, bool all),
+ default_autovectorize_vector_modes)
+
+DEFHOOK
+(related_mode,
+ "If a piece of code is using vector mode @var{vector_mode} and also wants\n\
+to operate on elements of mode @var{element_mode}, return the vector mode\n\
+it should use for those elements.  If @var{nunits} is nonzero, ensure that\n\
+the mode has exactly @var{nunits} elements, otherwise pick whichever vector\n\
+size pairs the most naturally with @var{vector_mode}.  Return an empty\n\
+@code{opt_machine_mode} if there is no supported vector mode with the\n\
+required properties.\n\
+\n\
+There is no prescribed way of handling the case in which @var{nunits}\n\
+is zero.  One common choice is to pick a vector mode with the same size\n\
+as @var{vector_mode}; this is the natural choice if the target has a\n\
+fixed vector size.  Another option is to choose a vector mode with the\n\
+same number of elements as @var{vector_mode}; this is the natural choice\n\
+if the target has a fixed number of elements.  Alternatively, the hook\n\
+might choose a middle ground, such as trying to keep the number of\n\
+elements as similar as possible while applying maximum and minimum\n\
+vector sizes.\n\
+\n\
+The default implementation uses @code{mode_for_vector} to find the\n\
+requested mode, returning a mode with the same size as @var{vector_mode}\n\
+when @var{nunits} is zero.  This is the correct behavior for most targets.",
+ opt_machine_mode,
+ (machine_mode vector_mode, scalar_mode element_mode, poly_uint64 nunits),
+ default_vectorize_related_mode)
 
 /* Function to get a target mode for a vector mask.  */
 DEFHOOK
 (get_mask_mode,
- "A vector mask is a value that holds one boolean result for every element\n\
-in a vector.  This hook returns the machine mode that should be used to\n\
-represent such a mask when the vector in question is @var{length} bytes\n\
-long and contains @var{nunits} elements.  The hook returns an empty\n\
-@code{opt_machine_mode} if no such mode exists.\n\
+ "Return the mode to use for a vector mask that holds one boolean\n\
+result for each element of vector mode @var{mode}.  The returned mask mode\n\
+can be a vector of integers (class @code{MODE_VECTOR_INT}), a vector of\n\
+booleans (class @code{MODE_VECTOR_BOOL}) or a scalar integer (class\n\
+@code{MODE_INT}).  Return an empty @code{opt_machine_mode} if no such\n\
+mask mode exists.\n\
 \n\
-The default implementation returns the mode of an integer vector that\n\
-is @var{length} bytes long and that contains @var{nunits} elements,\n\
-if such a mode exists.",
+The default implementation returns a @code{MODE_VECTOR_INT} with the\n\
+same size and number of elements as @var{mode}, if such a mode exists.",
  opt_machine_mode,
- (poly_uint64 nunits, poly_uint64 length),
+ (machine_mode mode),
  default_get_mask_mode)
 
 /* Function to say whether a masked operation is expensive when the
@@ -5256,6 +5285,22 @@ conversion rules.\n\
 This is currently used only by the C and C++ front ends.",
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
+
+DEFHOOK
+(verify_type_context,
+ "If defined, this hook returns false if there is a target-specific reason\n\
+why type @var{type} cannot be used in the source language context described\n\
+by @var{context}.  When @var{silent_p} is false, the hook also reports an\n\
+error against @var{loc} for invalid uses of @var{type}.\n\
+\n\
+Calls to this hook should be made through the global function\n\
+@code{verify_type_context}, which makes the @var{silent_p} parameter\n\
+default to false and also handles @code{error_mark_node}.\n\
+\n\
+The default implementation always returns true.",
+ bool, (location_t loc, type_context_kind context, const_tree type,
+	bool silent_p),
+ NULL)
 
 DEFHOOK
 (can_change_mode_class,

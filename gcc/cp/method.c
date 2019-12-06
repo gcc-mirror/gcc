@@ -929,7 +929,7 @@ lookup_comparison_result (tree type, const char *name_str,
 	  if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
 	    qualified_name_lookup_error (type, name, decl, input_location);
 	  else
-	    error ("%<%T::%D%> is not a static data member", type, decl);
+	    error ("%qD is not a static data member", decl);
 	  inform (input_location, "determining value of %qs", "operator<=>");
 	}
       return error_mark_node;
@@ -956,7 +956,7 @@ lookup_comparison_category (comp_cat_tag tag,
 	  if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
 	    qualified_name_lookup_error (std_node, name, decl, input_location);
 	  else
-	    error ("%<std::%D%> is not a type", decl);
+	    error ("%qD is not a type", decl);
 	  inform (input_location, "forming type of %qs", "operator<=>");
 	}
       return error_mark_node;
@@ -1990,10 +1990,12 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	  if (bad && deleted_p)
 	    *deleted_p = true;
 
-	  /* For an implicitly-defined default constructor to be constexpr,
-	     every member must have a user-provided default constructor or
-	     an explicit initializer.  */
-	  if (constexpr_p && !CLASS_TYPE_P (mem_type)
+	  /* Before C++20, for an implicitly-defined default constructor to
+	     be constexpr, every member must have a user-provided default
+	     constructor or an explicit initializer.  */
+	  if (constexpr_p
+	      && cxx_dialect < cxx2a
+	      && !CLASS_TYPE_P (mem_type)
 	      && TREE_CODE (DECL_CONTEXT (field)) != UNION_TYPE)
 	    {
 	      *constexpr_p = false;

@@ -607,16 +607,17 @@ arc_preferred_simd_mode (scalar_mode mode)
 }
 
 /* Implements target hook
-   TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
+   TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES.  */
 
-static void
-arc_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+static unsigned int
+arc_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_PLUS_QMACW)
     {
-      sizes->quick_push (8);
-      sizes->quick_push (4);
+      modes->quick_push (V4HImode);
+      modes->quick_push (V2HImode);
     }
+  return 0;
 }
 
 
@@ -726,8 +727,8 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arc_preferred_simd_mode
 
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES arc_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES arc_autovectorize_vector_modes
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P arc_can_use_doloop_p
@@ -961,14 +962,24 @@ const pass_data pass_data_arc_ifcvt =
 
 class pass_arc_ifcvt : public rtl_opt_pass
 {
-public:
-  pass_arc_ifcvt(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_ifcvt, ctxt)
-  {}
+ public:
+ pass_arc_ifcvt (gcc::context *ctxt)
+   : rtl_opt_pass (pass_data_arc_ifcvt, ctxt)
+    {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_arc_ifcvt (m_ctxt); }
-  virtual unsigned int execute (function *) { return arc_ifcvt (); }
+  opt_pass * clone ()
+    {
+      return new pass_arc_ifcvt (m_ctxt);
+    }
+  virtual unsigned int execute (function *)
+  {
+    return arc_ifcvt ();
+  }
+  virtual bool gate (function *)
+  {
+    return (optimize > 1 && !TARGET_NO_COND_EXEC);
+  }
 };
 
 } // anon namespace
@@ -998,16 +1009,20 @@ const pass_data pass_data_arc_predicate_delay_insns =
 
 class pass_arc_predicate_delay_insns : public rtl_opt_pass
 {
-public:
-  pass_arc_predicate_delay_insns(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
-  {}
+ public:
+ pass_arc_predicate_delay_insns(gcc::context *ctxt)
+   : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
+    {}
 
   /* opt_pass methods: */
   virtual unsigned int execute (function *)
-    {
-      return arc_predicate_delay_insns ();
-    }
+  {
+    return arc_predicate_delay_insns ();
+  }
+  virtual bool gate (function *)
+  {
+    return flag_delayed_branch;
+  }
 };
 
 } // anon namespace
@@ -1100,30 +1115,6 @@ arc_init (void)
   arc_punct_chars['&'] = 1;
   arc_punct_chars['+'] = 1;
   arc_punct_chars['_'] = 1;
-
-  if (optimize > 1 && !TARGET_NO_COND_EXEC)
-    {
-      /* There are two target-independent ifcvt passes, and arc_reorg may do
-	 one or more arc_ifcvt calls.  */
-      opt_pass *pass_arc_ifcvt_4 = make_pass_arc_ifcvt (g);
-      struct register_pass_info arc_ifcvt4_info
-	= { pass_arc_ifcvt_4, "dbr", 1, PASS_POS_INSERT_AFTER };
-      struct register_pass_info arc_ifcvt5_info
-	= { pass_arc_ifcvt_4->clone (), "shorten", 1, PASS_POS_INSERT_BEFORE };
-
-      register_pass (&arc_ifcvt4_info);
-      register_pass (&arc_ifcvt5_info);
-    }
-
-  if (flag_delayed_branch)
-    {
-      opt_pass *pass_arc_predicate_delay_insns
-	= make_pass_arc_predicate_delay_insns (g);
-      struct register_pass_info arc_predicate_delay_info
-	= { pass_arc_predicate_delay_insns, "dbr", 1, PASS_POS_INSERT_AFTER };
-
-      register_pass (&arc_predicate_delay_info);
-    }
 }
 
 /* Parse -mirq-ctrl-saved=RegisterRange, blink, lp_copunt.  The

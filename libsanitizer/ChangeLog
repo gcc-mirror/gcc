@@ -1,3 +1,17 @@
+2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Cherry-pick
+	llvm-project revision 947f9692440836dcb8d88b74b69dd379d85974ce.
+	* sanitizer_common/sanitizer_platform_limits_posix.cpp: Likewise.
+
+2019-11-20  Martin Liska  <mliska@suse.cz>
+
+	* libtool-version: Remove.
+	* lsan/libtool-version: Upate comment to not mention libmudflap.
+	* tsan/libtool-version: Likewise.
+	* ubsan/libtool-version: Likewise.
+
 2019-11-13  Andreas Schwab  <schwab@suse.de>
 
 	* configure.tgt (riscv64-*-linux*): Enable build.

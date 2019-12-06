@@ -517,7 +517,7 @@ d_growable_string_callback_adapter (const char *, size_t, void *);
 
 static void
 d_print_init (struct d_print_info *, demangle_callbackref, void *,
-	      const struct demangle_component *);
+	      struct demangle_component *);
 
 static inline void d_print_error (struct d_print_info *);
 
@@ -864,6 +864,7 @@ cplus_demangle_fill_name (struct demangle_component *p, const char *s, int len)
   if (p == NULL || s == NULL || len <= 0)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_NAME;
   p->u.s_name.s = s;
   p->u.s_name.len = len;
@@ -880,6 +881,7 @@ cplus_demangle_fill_extended_operator (struct demangle_component *p, int args,
   if (p == NULL || args < 0 || name == NULL)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_EXTENDED_OPERATOR;
   p->u.s_extended_operator.args = args;
   p->u.s_extended_operator.name = name;
@@ -900,6 +902,7 @@ cplus_demangle_fill_ctor (struct demangle_component *p,
       || (int) kind > gnu_v3_object_ctor_group)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_CTOR;
   p->u.s_ctor.kind = kind;
   p->u.s_ctor.name = name;
@@ -920,6 +923,7 @@ cplus_demangle_fill_dtor (struct demangle_component *p,
       || (int) kind > gnu_v3_object_dtor_group)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_DTOR;
   p->u.s_dtor.kind = kind;
   p->u.s_dtor.name = name;
@@ -937,6 +941,7 @@ d_make_empty (struct d_info *di)
     return NULL;
   p = &di->comps[di->next_comp];
   p->d_printing = 0;
+  p->d_counting = 0;
   ++di->next_comp;
   return p;
 }
@@ -4079,10 +4084,12 @@ d_growable_string_callback_adapter (const char *s, size_t l, void *opaque)
 
 static void
 d_count_templates_scopes (struct d_print_info *dpi,
-			  const struct demangle_component *dc)
+			  struct demangle_component *dc)
 {
-  if (dc == NULL)
+  if (dc == NULL || dc->d_counting > 1 || dpi->recursion > MAX_RECURSION_COUNT)
     return;
+
+  ++ dc->d_counting;
 
   switch (dc->type)
     {
@@ -4213,7 +4220,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
 
 static void
 d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
-	      void *opaque, const struct demangle_component *dc)
+	      void *opaque, struct demangle_component *dc)
 {
   dpi->len = 0;
   dpi->last_char = '\0';

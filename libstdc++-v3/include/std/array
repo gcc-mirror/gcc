@@ -112,11 +112,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // No explicit construct/copy/destroy for aggregate type.
 
       // DR 776.
-      void
+      _GLIBCXX20_CONSTEXPR void
       fill(const value_type& __u)
       { std::fill_n(begin(), size(), __u); }
 
-      void
+      _GLIBCXX20_CONSTEXPR void
       swap(array& __other)
       noexcept(_AT_Type::_Is_nothrow_swappable::value)
       { std::swap_ranges(begin(), end(), __other.begin()); }
@@ -253,6 +253,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return std::equal(__one.begin(), __one.end(), __two.begin()); }
 
+#if __cpp_lib_three_way_comparison && __cpp_lib_concepts
+  template<typename _Tp, size_t _Nm>
+    constexpr __detail::__synth3way_t<_Tp>
+    operator<=>(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
+    {
+      if constexpr (_Nm && __is_byte<_Tp>::__value)
+	return __builtin_memcmp(__a.data(), __b.data(), _Nm) <=> 0;
+      else
+	{
+	  for (size_t __i = 0; __i < _Nm; ++__i)
+	    {
+	      auto __c = __detail::__synth3way(__a[__i], __b[__i]);
+	      if (__c != 0)
+		return __c;
+	    }
+	}
+      return strong_ordering::equal;
+    }
+#else
   template<typename _Tp, std::size_t _Nm>
     _GLIBCXX20_CONSTEXPR
     inline bool
@@ -285,9 +304,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline bool
     operator>=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one < __two); }
+#endif // three_way_comparison && concepts
 
   // Specialized algorithms.
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
     // Constrained free swap overload, see p0185r1
@@ -295,7 +316,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::_Is_swappable::value
     >::type
 #else
-    _GLIBCXX20_CONSTEXPR
     void
 #endif
     swap(array<_Tp, _Nm>& __one, array<_Tp, _Nm>& __two)

@@ -37,7 +37,7 @@ struct uw_ucontext {
 	stack_t		  uc_stack;
 	mcontext_t	  uc_mcontext;
 	unsigned long	  uc_filler[80];
-	__sigset_t	  uc_sigmask;
+	sigset_t	  uc_sigmask;
 };
 
 #define MD_FALLBACK_FRAME_STATE_FOR m68k_fallback_frame_state

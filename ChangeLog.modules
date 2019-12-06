@@ -1,3 +1,9 @@
+2019-12-06  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r279023.
+	libstdc++ c++2a is now using structured bindings, and those don't
+	work :(
+
 2019-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

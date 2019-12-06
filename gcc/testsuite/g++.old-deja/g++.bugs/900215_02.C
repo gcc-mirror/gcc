@@ -41,8 +41,8 @@ void struct0::function_member ()
   i = (this->*fmp) ();		// perfectly legal - for both cfront and g++
   i = this->*dmp;		// perfectly legal - for both cfront and g++
 
-  i = (*fmp) ();		// { dg-error "invalid use of unary '\\\*' on pointer to member" } 
-  i = *dmp;			// { dg-error "invalid use of unary '\\\*' on pointer to member" } 
+  i = (*fmp) ();		// { dg-error "8:invalid use of unary '\\\*' on pointer to member" } 
+  i = *dmp;			// { dg-error "7:invalid use of unary '\\\*' on pointer to member" } 
 }
 
 int main () { return 0; }

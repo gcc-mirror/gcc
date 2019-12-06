@@ -205,11 +205,11 @@ enum vect_cost_model_location {
 class vec_perm_indices;
 
 /* The type to use for lists of vector sizes.  */
-typedef vec<poly_uint64> vector_sizes;
+typedef vec<machine_mode> vector_modes;
 
 /* Same, but can be used to construct local lists that are
    automatically freed.  */
-typedef auto_vec<poly_uint64, 8> auto_vector_sizes;
+typedef auto_vec<machine_mode, 8> auto_vector_modes;
 
 /* First argument of targetm.omp.device_kind_arch_isa.  */
 enum omp_device_kind_arch_isa {
@@ -217,6 +217,43 @@ enum omp_device_kind_arch_isa {
   omp_device_arch,
   omp_device_isa
 };
+
+/* Flags returned by TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES:
+
+   VECT_COMPARE_COSTS
+       Tells the loop vectorizer to try all the provided modes and
+       pick the one with the lowest cost.  By default the vectorizer
+       will choose the first mode that works.  */
+const unsigned int VECT_COMPARE_COSTS = 1U << 0;
+
+/* The contexts in which the use of a type T can be checked by
+   TARGET_VERIFY_TYPE_CONTEXT.  */
+enum type_context_kind {
+  /* Directly measuring the size of T.  */
+  TCTX_SIZEOF,
+
+  /* Directly measuring the alignment of T.  */
+  TCTX_ALIGNOF,
+
+  /* Creating objects of type T with static storage duration.  */
+  TCTX_STATIC_STORAGE,
+
+  /* Creating objects of type T with thread-local storage duration.  */
+  TCTX_THREAD_STORAGE,
+
+  /* Creating a field of type T.  */
+  TCTX_FIELD,
+
+  /* Creating an array with elements of type T.  */
+  TCTX_ARRAY_ELEMENT,
+
+  /* Adding to or subtracting from a pointer to T, or computing the
+     difference between two pointers when one of them is a pointer to T.  */
+  TCTX_POINTER_ARITH
+};
+
+extern bool verify_type_context (location_t, type_context_kind, const_tree,
+				 bool = false);
 
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;

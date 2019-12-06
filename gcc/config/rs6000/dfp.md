@@ -289,6 +289,12 @@
   ]
   "TARGET_P9_MISC"
 {
+  if (<CODE> == UNORDERED && !HONOR_NANS (<MODE>mode))
+    {
+      emit_move_insn (operands[0], const0_rtx);
+      DONE;
+    }
+
   operands[3] = gen_reg_rtx (CCFPmode);
 })
 

@@ -357,8 +357,6 @@ build_typeid (tree exp, tsubst_flags_t complain)
   if (processing_template_decl)
     return build_min (TYPEID_EXPR, const_type_info_type_node, exp);
 
-  /* FIXME when integrating with c_fully_fold, mark
-     resolves_to_fixed_type_p case as a non-constant expression.  */
   if (TYPE_POLYMORPHIC_P (TREE_TYPE (exp))
       && ! resolves_to_fixed_type_p (exp, &nonnull)
       && ! nonnull)
@@ -797,7 +795,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	      tree neq;
 
 	      result = save_expr (result);
-	      neq = cp_truthvalue_conversion (result);
+	      neq = cp_truthvalue_conversion (result, complain);
 	      return cp_convert (type,
 				 build3 (COND_EXPR, TREE_TYPE (result),
 					 neq, result, bad), complain);

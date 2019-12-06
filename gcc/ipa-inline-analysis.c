@@ -148,7 +148,7 @@ free_growth_caches (void)
   node_context_cache_clear = 0;
 }
 
-/* Return hints derrived from EDGE.   */
+/* Return hints derived from EDGE.   */
 
 int
 simple_edge_hints (struct cgraph_edge *edge)
@@ -163,9 +163,7 @@ simple_edge_hints (struct cgraph_edge *edge)
   if (to_scc_no && to_scc_no  == callee_scc_no && !edge->recursive_p ())
     hints |= INLINE_HINT_same_scc;
 
-  if (callee->lto_file_data && edge->caller->lto_file_data
-      && edge->caller->lto_file_data != callee->lto_file_data
-      && !callee->merged_comdat && !callee->icf_merged)
+  if (cross_module_call_p (edge))
     hints |= INLINE_HINT_cross_module;
 
   return hints;
@@ -179,16 +177,16 @@ simple_edge_hints (struct cgraph_edge *edge)
    size, since we always need both metrics eventually.  */
 
 sreal
-do_estimate_edge_time (struct cgraph_edge *edge)
+do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
 {
   sreal time, nonspec_time;
   int size;
   ipa_hints hints;
   struct cgraph_node *callee;
   clause_t clause, nonspec_clause;
-  vec<tree> known_vals;
-  vec<ipa_polymorphic_call_context> known_contexts;
-  vec<ipa_agg_value_set> known_aggs;
+  auto_vec<tree, 32> known_vals;
+  auto_vec<ipa_polymorphic_call_context, 32> known_contexts;
+  auto_vec<ipa_agg_value_set, 32> known_aggs;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
   int min_size = -1;
 
@@ -211,7 +209,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 	  nonspec_time = e->entry.nonspec_time;
 	  hints = e->entry.hints;
 	  if (flag_checking
-	      && !edge->callee->count.ipa_p ())
+	      && !callee->count.ipa_p ())
 	    {
 	      sreal chk_time, chk_nonspec_time;
 	      int chk_size, chk_min_size;
@@ -275,6 +273,8 @@ do_estimate_edge_time (struct cgraph_edge *edge)
       hints |= simple_edge_hints (edge);
       entry->hints = hints + 1;
     }
+  if (ret_nonspec_time)
+    *ret_nonspec_time = nonspec_time;
   return time;
 }
 
@@ -306,9 +306,9 @@ do_estimate_edge_size (struct cgraph_edge *edge)
   int size;
   struct cgraph_node *callee;
   clause_t clause, nonspec_clause;
-  vec<tree> known_vals;
-  vec<ipa_polymorphic_call_context> known_contexts;
-  vec<ipa_agg_value_set> known_aggs;
+  auto_vec<tree, 32> known_vals;
+  auto_vec<ipa_polymorphic_call_context, 32> known_contexts;
+  auto_vec<ipa_agg_value_set, 32> known_aggs;
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
 
@@ -345,9 +345,9 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   ipa_hints hints;
   struct cgraph_node *callee;
   clause_t clause, nonspec_clause;
-  vec<tree> known_vals;
-  vec<ipa_polymorphic_call_context> known_contexts;
-  vec<ipa_agg_value_set> known_aggs;
+  auto_vec<tree, 32> known_vals;
+  auto_vec<ipa_polymorphic_call_context, 32> known_contexts;
+  auto_vec<ipa_agg_value_set, 32> known_aggs;
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
 
