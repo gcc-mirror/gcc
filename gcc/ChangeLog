@@ -1,3 +1,55 @@
+2019-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (VEC_1REG_MODE): Remove V64QI and V64HI.
+	(VEC_1REG_ALT): Likewise.
+	(VEC_ALL1REG_MODE): New mode iterator.
+	(VEC_1REG_INT_MODE): Remove V64QI and V64HI.
+	(VEC_1REG_INT_ALT): Likewise.
+	(VEC_ALL1REG_INT_MODE): New mode interator.
+	(VEC_ALL1REG_INT_ALT): Likewise.
+	(VEC_REG_MODE): Remove V64QI and V64HI.
+	(VEC_ALLREG_MODE): New mode interator.
+	(vec_merge): Change to VEC_ALLREG_MODE.
+	(vec_merge_with_clobber): Likewise.
+	(vec_merge_with_vcc): Likewise.
+	(mov<mode>): Likewise.
+	(mov<mode>_unspec): Likewise.
+	(*mov<mode>): Change to VEC_ALL1REG_MODE.
+	(mov<mode>_exec): Likewise.
+	(*mov<mode>_exec_match): Likewise.
+	(mov<mode>_sgprbase): Likewise.
+	(reload_in<mode>): Change to VEC_ALLREG_MODE.
+	(reload_out<mode>): Likewise.
+	(scalar address splits): Likewise.
+	(*vec_set<mode>): Change to VEC_ALL1REG_MODE.
+	(vec_set<mode>): Change to VEC_ALLREG_MODE.
+	(*vec_set<mode>_1): Change to VEC_ALL1REG_MODE.
+	(vec_duplicate<mode><exec>): Likewise.
+	(vec_extract<mode><scalar_mode>): Likewise.
+	(vec_init<mode><scalar_mode>): Change to VEC_ALLREG_MODE.
+	(gather_load<mode>): Likewise.
+	(gather<mode>_exec): Likewise.
+	(gather<mode>_expr<exec>): Likewise.
+	(gather<mode>_insn_1offset<exec>): Likewise.
+	(gather<mode>_insn_1offset_ds<exec>): Likewise.
+	(gather<mode>_insn_2offsets<exec>): Likewise.
+	(ds_bpermute<mode>): Change to VEC_ALL1REG_MODE.
+	(VEC_INT_MODE): Remove V64QI and V64HI.
+	(vcond_mask_<mode>di): Change to VEC_ALLREG_MODE.
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>): Change to
+	VEC_ALL1REG_MODE.
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>_exec): Likewise.
+	(vcondu<VEC_1REG_MODE:mode><VEC_1REG_INT_ALT:mode>): Likewise.
+	(vcondu<VEC_1REG_MODE:mode><VEC_1REG_INT_ALT:mode>_exec): Likewise.
+	(maskload<mode>di): Change to VEC_ALL1REG_MODE.
+	(maskstore<mode>di): Likewise.
+	(mask_gather_load<mode>): Likewise.
+	(mov_from_lane63_<mode>): Likewise.
+	* config/gcn/gcn.c (gcn_vector_mode_supported_p): Renable V64QImode
+	and V64HImode vectorization.
+	(gcn_related_vector_mode): New function.
+	(TARGET_VECTORIZE_RELATED_MODE): New define.
+
 2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
