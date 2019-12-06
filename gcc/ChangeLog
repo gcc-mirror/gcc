@@ -1,5 +1,10 @@
 2019-12-06  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (gather<mode>_insn_1offset<exec>): Use %o
+	in the asm output.
+
+2019-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (VEC_1REG_MODE): Remove V64QI and V64HI.
 	(VEC_1REG_ALT): Likewise.
 	(VEC_ALL1REG_MODE): New mode iterator.
