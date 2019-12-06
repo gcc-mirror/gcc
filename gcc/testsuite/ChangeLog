@@ -1,5 +1,7 @@
 2019-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp2a/feat-cxx2a.C: Don't test __cpp_consteval for now.
+
 	PR c++/92831 - CWG 1299, not extending temporary lifetime for ?:
 	* g++.dg/cpp0x/temp-extend2.C: New test.
 

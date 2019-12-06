@@ -1,3 +1,8 @@
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Don't define __cpp_consteval for
+	now.
+
 2019-12-05  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
