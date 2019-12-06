@@ -6032,7 +6032,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		|| TREE_CODE (cop1) == VECTOR_CST
 		|| TREE_CODE (cop1) == CONSTRUCTOR))
           {
-	    if (sel.series_p (1, 1, nelts + 1, 1))
+	    bool insert_first_p = sel.series_p (1, 1, nelts + 1, 1);
+	    if (insert_first_p)
 	      {
 	        /* After canonicalizing the first elt to come from the
 		   first vector we only can insert the first elt from
@@ -6041,13 +6042,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		if ((ins = fold_read_from_vector (cop0, sel[0])))
 		  op0 = op1;
 	      }
-	    else
+	    /* The above can fail for two-element vectors which always
+	       appear to insert the first element, so try inserting
+	       into the second lane as well.  For more than two
+	       elements that's wasted time.  */
+	    if (!insert_first_p || (!ins && maybe_eq (nelts, 2u)))
 	      {
 	        unsigned int encoded_nelts = sel.encoding ().encoded_nelts ();
 		for (at = 0; at < encoded_nelts; ++at)
 		  if (maybe_ne (sel[at], at))
 		    break;
-		if (at < encoded_nelts && sel.series_p (at + 1, 1, at + 1, 1))
+		if (at < encoded_nelts
+		    && (known_eq (at + 1, nelts)
+			|| sel.series_p (at + 1, 1, at + 1, 1)))
 		  {
 		    if (known_lt (poly_uint64 (sel[at]), nelts))
 		      ins = fold_read_from_vector (cop0, sel[at]);

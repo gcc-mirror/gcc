@@ -1,3 +1,10 @@
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* match.pd (VEC_PERM_EXPR -> BIT_INSERT_EXPR): Handle inserts
+	into the last lane.  For two-element vectors try inserting
+	into the last lane when inserting into the first fails.
+
 2019-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* common.opt (fprofile-partial-training): Terminate description with
