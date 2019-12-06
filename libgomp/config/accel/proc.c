@@ -39,3 +39,5 @@ omp_get_num_procs (void)
 {
   return gomp_icv (false)->nthreads_var;
 }
+
+ialias (omp_get_num_procs)
