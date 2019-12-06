@@ -1,3 +1,9 @@
+2019-12-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92176
+	* gcc.target/s390/pr92176.c: New test.
+
 2019-12-06  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Wstringop-overflow-23.c: Use the correct argument type.
