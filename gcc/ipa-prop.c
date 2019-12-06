@@ -512,8 +512,6 @@ static void
 ipa_set_jf_unknown (struct ipa_jump_func *jfunc)
 {
   jfunc->type = IPA_JF_UNKNOWN;
-  jfunc->bits = NULL;
-  jfunc->m_vr = NULL;
 }
 
 /* Set JFUNC to be a copy of another jmp (to be used by jump function
@@ -768,8 +766,7 @@ param_type_may_change_p (tree function, tree arg, gimple *call)
 
 /* Detect whether the dynamic type of ARG of COMP_TYPE has changed (before
    callsite CALL) by looking for assignments to its virtual table pointer.  If
-   it is, return true and fill in the jump function JFUNC with relevant type
-   information or set it to unknown.  ARG is the object itself (not a pointer
+   it is, return true.  ARG is the object itself (not a pointer
    to it, unless dereferenced).  BASE is the base of the memory access as
    returned by get_ref_base_and_extent, as is the offset. 
 
@@ -779,7 +776,6 @@ param_type_may_change_p (tree function, tree arg, gimple *call)
 static bool
 detect_type_change_from_memory_writes (ipa_func_body_info *fbi, tree arg,
 				       tree base, tree comp_type, gcall *call,
-				       struct ipa_jump_func *jfunc,
 				       HOST_WIDE_INT offset)
 {
   struct prop_type_change_info tci;
@@ -818,19 +814,17 @@ detect_type_change_from_memory_writes (ipa_func_body_info *fbi, tree arg,
   if (walked >= 0 && !tci.type_maybe_changed)
     return false;
 
-  ipa_set_jf_unknown (jfunc);
   return true;
 }
 
 /* Detect whether the dynamic type of ARG of COMP_TYPE may have changed.
-   If it is, return true and fill in the jump function JFUNC with relevant type
-   information or set it to unknown.  ARG is the object itself (not a pointer
+   If it is, return true.  ARG is the object itself (not a pointer
    to it, unless dereferenced).  BASE is the base of the memory access as
    returned by get_ref_base_and_extent, as is the offset.  */
 
 static bool
 detect_type_change (ipa_func_body_info *fbi, tree arg, tree base,
-		    tree comp_type, gcall *call, struct ipa_jump_func *jfunc,
+		    tree comp_type, gcall *call,
 		    HOST_WIDE_INT offset)
 {
   if (!flag_devirtualize)
@@ -842,7 +836,7 @@ detect_type_change (ipa_func_body_info *fbi, tree arg, tree base,
 				   call))
     return false;
   return detect_type_change_from_memory_writes (fbi, arg, base, comp_type,
-						call, jfunc, offset);
+						call, offset);
 }
 
 /* Like detect_type_change but ARG is supposed to be a non-dereferenced pointer
@@ -851,7 +845,7 @@ detect_type_change (ipa_func_body_info *fbi, tree arg, tree base,
 
 static bool
 detect_type_change_ssa (ipa_func_body_info *fbi, tree arg, tree comp_type,
-			gcall *call, struct ipa_jump_func *jfunc)
+			gcall *call)
 {
   gcc_checking_assert (TREE_CODE (arg) == SSA_NAME);
   if (!flag_devirtualize
@@ -865,7 +859,7 @@ detect_type_change_ssa (ipa_func_body_info *fbi, tree arg, tree comp_type,
 		build_int_cst (ptr_type_node, 0));
 
   return detect_type_change_from_memory_writes (fbi, arg, arg, comp_type,
-						call, jfunc, 0);
+						call, 0);
 }
 
 /* Callback of walk_aliased_vdefs.  Flags that it has been invoked to the
@@ -2611,7 +2605,6 @@ ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
   class ipa_node_params *info = fbi->info;
   if (SSA_NAME_IS_DEFAULT_DEF (obj))
     {
-      struct ipa_jump_func jfunc;
       if (TREE_CODE (SSA_NAME_VAR (obj)) != PARM_DECL)
 	return;
 
@@ -2619,12 +2612,11 @@ ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
       index = ipa_get_param_decl_index (info, SSA_NAME_VAR (obj));
       gcc_assert (index >= 0);
       if (detect_type_change_ssa (fbi, obj, obj_type_ref_class (target),
-				  call, &jfunc))
+				  call))
 	return;
     }
   else
     {
-      struct ipa_jump_func jfunc;
       gimple *stmt = SSA_NAME_DEF_STMT (obj);
       tree expr;
 
@@ -2635,7 +2627,7 @@ ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
 					SSA_NAME_VAR (TREE_OPERAND (expr, 0)));
       gcc_assert (index >= 0);
       if (detect_type_change (fbi, obj, expr, obj_type_ref_class (target),
-			      call, &jfunc, anc_offset))
+			      call, anc_offset))
 	return;
     }
 
