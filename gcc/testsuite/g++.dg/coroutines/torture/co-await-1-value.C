@@ -1,88 +1,12 @@
 //  { dg-do run }
 
+/* The simplest valued co_await we can do.  */
+
 #include "../coro.h"
 
-struct coro1 {
-  struct promise_type;
-  using handle_type = coro::coroutine_handle<coro1::promise_type>;
-  handle_type handle;
-  coro1 () : handle(0) {}
-  coro1 (handle_type _handle)
-    : handle(_handle) {
-        puts("Created coro1 object from handle");
-  }
-  coro1 (const coro1 &) = delete; // no copying
-  coro1 (coro1 &&s) : handle(s.handle) {
-    s.handle = nullptr;
-    PRINT("Moved coro1");
-  }
-  coro1 &operator = (coro1 &&s) {
-    handle = s.handle;
-    s.handle = nullptr;
-    return *this;
-  }
-  ~coro1() {
-    PRINT("Destroyed coro1");
-    if ( handle )
-      handle.destroy();
-  }
+// boiler-plate for tests of codegen
+#include "../coro1-ret-int-yield-int.h"
 
-  struct suspend_never_prt {
-    ~suspend_never_prt() {}
-    bool await_ready() const noexcept { return true; }
-    void await_suspend(handle_type h) const noexcept { PRINT ("susp-never-susp");}
-    void await_resume() const noexcept {PRINT ("susp-never-resume");}
-  };
-
-  struct  suspend_always_prt {
-    int x;
-    bool await_ready() const noexcept { return false; }
-    void await_suspend(handle_type) const noexcept { PRINT ("susp-always-susp");}
-    void await_resume() const noexcept {PRINT ("susp-always-resume");}
-  };
-
-  /* This returns an int.  */
-  struct suspend_always_intprt {
-    int x;
-    suspend_always_intprt() : x(5) {}
-    ~suspend_always_intprt() {}
-    bool await_ready() const noexcept { return false; }
-    void await_suspend(coro::coroutine_handle<>) const noexcept { puts ("susp-always-susp-int");}
-    int await_resume() const noexcept {puts ("susp-always-resume-int"); return x;}
-  };
-
-  struct promise_type {
-  int value;
-  promise_type()  { PRINT ("Created Promise"); }
-  ~promise_type() { PRINT ("Destroyed Promise"); }
-
-  coro1 get_return_object() {
-    PRINT ("get_return_object: from handle from promise");
-    return coro1 (handle_type::from_promise (*this));
-  }
-
-  auto initial_suspend() {
-    PRINT ("get initial_suspend ");
-    return suspend_never_prt{};
-  }
-
-  auto final_suspend() {
-    PRINT ("get final_suspend");
-    return suspend_always_prt{};
-  }
-
-  void return_value (int v) {
-    PRINTF ("return_value () %d\n",v);
-    value = v;
-  }
-
-  int get_value () { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
-  };
-};
-
-/* The simplest valued co_await we can do.  */
 int gX = 1;
 
 coro1
@@ -107,7 +31,9 @@ int main ()
       PRINT ("main: we should not be 'done' [1]");
       abort ();
     }
-  PRINT ("main: resuming [1]");
+  PRINT ("main: resuming [1] initial suspend");
+  f_coro.handle.resume();
+  PRINT ("main: resuming [2] co_await suspend_always_intprt");
   f_coro.handle.resume();
   if (gX != 5)
     {

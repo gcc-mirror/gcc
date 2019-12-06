@@ -1,6 +1,6 @@
 //  { dg-do run }
 
-// boolean return from await_suspend ().
+// test boolean return from await_suspend ().
 
 #include "../coro.h"
 
@@ -49,7 +49,6 @@ struct coro1 {
   void await_resume() const noexcept { PRINT ("susp-always-resume");}
   };
 
-
   struct promise_type {
   promise_type() {  PRINT ("Created Promise"); }
   ~promise_type() { PRINT ("Destroyed Promise"); }
@@ -69,10 +68,8 @@ struct coro1 {
   void return_void () {
     PRINT ("return_void ()");
   }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
-  //int x;
 };
 
 struct coro1
@@ -84,7 +81,6 @@ f () noexcept
 
 int main ()
 {
-  //__builtin_coro_promise ((void*)0, 16, true);
   PRINT ("main: create coro1");
   struct coro1 x = f ();
   auto p = x.handle.promise ();

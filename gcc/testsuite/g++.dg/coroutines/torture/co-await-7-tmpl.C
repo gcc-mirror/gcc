@@ -1,5 +1,7 @@
 //  { dg-do run }
 
+// Check that we correctly operate when the coroutine object is templated.
+
 #include "../coro.h"
 
 template <typename T> 
@@ -42,7 +44,7 @@ struct coro1 {
     void await_resume() const noexcept {PRINT ("susp-always-resume");}
   };
 
-  /* This returns an int.  */
+  /* This returns the int it was constructed with.  */
   struct suspend_always_intprt {
     T x;
     suspend_always_intprt() : x(5) { PRINT ("suspend_always_intprt def ctor"); }
@@ -85,8 +87,7 @@ struct coro1 {
   }
 
   T get_value () { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
 };
 

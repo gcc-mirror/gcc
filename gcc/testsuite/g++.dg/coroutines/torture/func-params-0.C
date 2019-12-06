@@ -1,8 +1,6 @@
 //  { dg-do run }
 
 // Test promise construction from function args list.
-// We will use the promise to contain this to avoid having to include
-// additional C++ headers.
 
 #include "../coro.h"
 
@@ -69,8 +67,8 @@ struct coro1 {
     value = v;
   }
   int get_value (void) { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
 };
 
@@ -100,7 +98,6 @@ int main ()
     {
       PRINT ("main: apparently not done...");
       abort ();
-      //x.handle.resume();
     }
   PRINT ("main: returning");
   return 0;

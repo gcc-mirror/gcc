@@ -2,8 +2,6 @@
 
 #include "coro.h"
 
-namespace coro = std::experimental;
-
 /* Diagose missing return_void() in the promise type.  */
 struct DummyYield {
   coro::coroutine_handle<> handle;

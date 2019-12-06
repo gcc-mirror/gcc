@@ -79,10 +79,8 @@ struct coro1 {
   void return_void () {
     PRINT ("return_void ()");
   }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
-  //int x;
 };
 
 struct coro1
@@ -105,7 +103,6 @@ int main ()
     {
       PRINT ("main: apparently not done...");
       abort ();
-      //x.handle.resume();
     }
   PRINT ("main: returning");
   return 0;

@@ -81,8 +81,7 @@ struct coro1 {
   void return_void () {
     PRINT ("return_void ()");
   }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   static coro1 get_return_object_on_allocation_failure () noexcept;
   }; // promise
 }; // coro1
@@ -113,7 +112,6 @@ int main ()
     {
       PRINT ("main: apparently not done...");
       abort ();
-      //x.handle.resume();
     }
   PRINT ("main: returning");
   return 0;

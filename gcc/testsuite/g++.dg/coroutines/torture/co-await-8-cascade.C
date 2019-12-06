@@ -1,5 +1,7 @@
 //  { dg-do run }
 
+// Check cascaded co_await operations.
+
 #include "../coro.h"
 
 struct coro1 {
@@ -41,7 +43,7 @@ struct coro1 {
     void await_resume() const noexcept {PRINT ("susp-always-resume");}
   };
 
-  /* This returns an int.  */
+  /* This returns the square of the int that it was constructed with.  */
   struct suspend_always_intprt {
     int x;
     suspend_always_intprt() : x(5) { PRINT ("suspend_always_intprt def ctor"); }
@@ -83,8 +85,7 @@ struct coro1 {
   }
 
   int get_value () { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
 };
 

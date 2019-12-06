@@ -1,5 +1,7 @@
 //  { dg-do run }
 
+// Basic check of the co_await operator overload.
+
 #include "../coro.h"
 
 struct coro1 {
@@ -77,8 +79,7 @@ struct coro1 {
   }
 
   int get_value () { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
 
   struct empty {

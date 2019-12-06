@@ -69,8 +69,7 @@ struct coro1 {
     value = v;
   }
   T get_value (void) { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
 };
 

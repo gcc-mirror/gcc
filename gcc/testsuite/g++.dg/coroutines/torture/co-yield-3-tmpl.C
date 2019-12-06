@@ -40,8 +40,7 @@ struct looper {
   
   T get_value (void) { return value; }
 
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
   
   using handle_type = coro::coroutine_handle<looper::promise_type>;

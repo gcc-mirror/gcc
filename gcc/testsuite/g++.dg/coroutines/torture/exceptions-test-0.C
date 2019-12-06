@@ -81,12 +81,11 @@ struct coro1 {
     return 42;//suspend_always_prt{};
   }
   int get_value (void) { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
+
   void unhandled_exception() {
-    PRINT ("unhandled_exception: caught one!");/*exit(1);*/
+    PRINT ("unhandled_exception: caught one!");
     gX = -1;
     // returning from here should end up in final_suspend.
-    //std::terminate ();
     }
   };
 };

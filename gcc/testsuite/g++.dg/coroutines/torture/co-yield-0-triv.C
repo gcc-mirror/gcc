@@ -1,8 +1,11 @@
 //  { dg-do run }
 
 // Test yielding an int.
+
 // We will use the promise to contain this to avoid having to include
 // additional C++ headers.
+
+// Check that we resolve the correct overload for the yield_value method.
 
 #include "../coro.h"
 
@@ -80,8 +83,7 @@ struct coro1 {
     return 42;
   }
   int get_value (void) { return value; }
-  // Placeholder to satisfy parser, not doing exceptions yet.
-  void unhandled_exception() {  /*exit(1);*/ }
+  void unhandled_exception() { PRINT ("** unhandled exception"); }
   };
 };
 
