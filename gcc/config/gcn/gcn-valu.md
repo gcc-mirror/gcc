@@ -716,10 +716,10 @@
     if (AS_FLAT_P (as))
       {
 	if (TARGET_GCN5_PLUS)
-	  sprintf (buf, "flat_load%%s0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0",
+	  sprintf (buf, "flat_load%%o0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0",
 		   glc);
 	else
-	  sprintf (buf, "flat_load%%s0\t%%0, %%1%s\;s_waitcnt\t0", glc);
+	  sprintf (buf, "flat_load%%o0\t%%0, %%1%s\;s_waitcnt\t0", glc);
       }
     else if (AS_GLOBAL_P (as))
       sprintf (buf, "global_load%%s0\t%%0, %%1, off offset:%%2%s\;"
