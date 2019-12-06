@@ -2162,7 +2162,7 @@ Enable common options for generating profile info for profile feedback directed 
 
 fprofile-partial-training
 Common Report Var(flag_profile_partial_training) Optimization
-Do not assume that functions never executed during the train run are cold
+Do not assume that functions never executed during the train run are cold.
 
 fprofile-use
 Common Var(flag_profile_use)
