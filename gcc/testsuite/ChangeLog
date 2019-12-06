@@ -1,3 +1,9 @@
+2019-12-05  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/92829
+	* gcc.dg/Warray-bounds-56.c: Rearrange code to avoid powerpc64*
+	failures.
+
 2019-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92768
