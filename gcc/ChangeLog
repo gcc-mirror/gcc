@@ -1,3 +1,9 @@
+2019-12-05  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92622
+	* tree-vrp.c (vrp_prop::check_array_ref): Avoid using a variable
+	left uninitialized by get_addr_base_and_unit_offset on failure.
+
 2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (ipa_set_jf_unknown): Do not clear bits and m_vr.
@@ -1488,7 +1494,7 @@
 	(ipa_update_overall_fn_summary): Add RESET parameter.
 	* ipa-fnsummary.h (ipa_update_overall_fn_summary): Update prototype.
 	* ipa-inline-transform.c (inline_call): Enable incremental updates.
-	
+
 2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-slp.c (vect_schedule_slp_instance): Restore stmt
