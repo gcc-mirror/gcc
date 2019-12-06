@@ -1,5 +1,8 @@
 2019-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_diagnose_invalid_type_name): Mention
+	that concept is also available with -std=c++2a.
+
 	PR c++/92831 - CWG 1299, not extending temporary lifetime for ?:
 	* cp-tree.h (extend_ref_init_temps): Add a new argument with NULL
 	default arg.
