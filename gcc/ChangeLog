@@ -1,5 +1,10 @@
 2019-12-06  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (c_expr::gen_transform): Emit newlines from line
+	number changes rather than after every semicolon.
+
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/92819
 	* match.pd (VEC_PERM_EXPR -> BIT_INSERT_EXPR): Handle inserts
 	into the last lane.  For two-element vectors try inserting
