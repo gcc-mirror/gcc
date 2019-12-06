@@ -98,8 +98,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (define_operator_list COND_TERNARY
   IFN_COND_FMA IFN_COND_FMS IFN_COND_FNMA IFN_COND_FNMS)
 
-/* As opposed to convert?, this still creates a single pattern, so
-   it is not a suitable replacement for convert? in all cases.  */
+/* With nop_convert? combine convert? and view_convert? in one pattern
+   plus conditionalize on tree_nop_conversion_p conversions.  */
 (match (nop_convert @0)
  (convert @0)
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
@@ -109,9 +109,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && known_eq (TYPE_VECTOR_SUBPARTS (type),
 		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)))
       && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
-/* This one has to be last, or it shadows the others.  */
-(match (nop_convert @0)
- @0)
 
 /* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
    ABSU_EXPR returns unsigned absolute value of the operand and the operand
@@ -1428,7 +1425,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Convert - (~A) to A + 1.  */
 (simplify
- (negate (nop_convert (bit_not @0)))
+ (negate (nop_convert? (bit_not @0)))
  (plus (view_convert @0) { build_each_one_cst (type); }))
 
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
@@ -1455,7 +1452,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Otherwise prefer ~(X ^ Y) to ~X ^ Y as more canonical.  */
 (simplify
- (bit_xor:c (nop_convert:s (bit_not:s @0)) @1)
+ (bit_xor:c (nop_convert?:s (bit_not:s @0)) @1)
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (bit_not (bit_xor (view_convert @0) @1))))
 
@@ -1684,7 +1681,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* For equality, this is also true with wrapping overflow.  */
 (for op (eq ne)
  (simplify
-  (op:c (nop_convert@3 (plus:c@2 @0 (convert1? @1))) (convert2? @1))
+  (op:c (nop_convert?@3 (plus:c@2 @0 (convert1? @1))) (convert2? @1))
   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
@@ -1693,7 +1690,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@1)))
    (op @0 { build_zero_cst (TREE_TYPE (@0)); })))
  (simplify
-  (op:c (nop_convert@3 (pointer_plus@2 (convert1? @0) @1)) (convert2? @0))
+  (op:c (nop_convert?@3 (pointer_plus@2 (convert1? @0) @1)) (convert2? @0))
   (if (tree_nop_conversion_p (TREE_TYPE (@2), TREE_TYPE (@0))
        && tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@0))
        && (CONSTANT_CLASS_P (@1) || (single_use (@2) && single_use (@3))))
@@ -2142,7 +2139,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || !HONOR_SIGN_DEPENDENT_ROUNDING (type)))
    (convert (negate @1))))
  (simplify
-  (negate (nop_convert (negate @1)))
+  (negate (nop_convert? (negate @1)))
   (if (!TYPE_OVERFLOW_SANITIZED (type)
        && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@1)))
    (view_convert @1)))
@@ -2159,25 +2156,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* A - (A +- B)       -> -+ B */
   /* A +- (B -+ A)      ->  +- B */
   (simplify
-   (minus (nop_convert (plus:c (nop_convert @0) @1)) @0)
+   (minus (nop_convert1? (plus:c (nop_convert2? @0) @1)) @0)
    (view_convert @1))
   (simplify
-   (minus (nop_convert (minus (nop_convert @0) @1)) @0)
+   (minus (nop_convert1? (minus (nop_convert2? @0) @1)) @0)
    (if (!ANY_INTEGRAL_TYPE_P (type)
 	|| TYPE_OVERFLOW_WRAPS (type))
    (negate (view_convert @1))
    (view_convert (negate @1))))
   (simplify
-   (plus:c (nop_convert (minus @0 (nop_convert @1))) @1)
+   (plus:c (nop_convert1? (minus @0 (nop_convert2? @1))) @1)
    (view_convert @0))
   (simplify
-   (minus @0 (nop_convert (plus:c (nop_convert @0) @1)))
+   (minus @0 (nop_convert1? (plus:c (nop_convert2? @0) @1)))
     (if (!ANY_INTEGRAL_TYPE_P (type)
 	 || TYPE_OVERFLOW_WRAPS (type))
      (negate (view_convert @1))
      (view_convert (negate @1))))
   (simplify
-   (minus @0 (nop_convert (minus (nop_convert @0) @1)))
+   (minus @0 (nop_convert1? (minus (nop_convert2? @0) @1)))
    (view_convert @1))
   /* (A +- B) + (C - A)   -> C +- B */
   /* (A +  B) - (A - C)   -> B + C */
@@ -2204,7 +2201,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (for inner_op (plus minus)
 	neg_inner_op (minus plus)
     (simplify
-     (outer_op (nop_convert (inner_op @0 CONSTANT_CLASS_P@1))
+     (outer_op (nop_convert? (inner_op @0 CONSTANT_CLASS_P@1))
 	       CONSTANT_CLASS_P@2)
      /* If one of the types wraps, use that one.  */
      (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
@@ -2243,7 +2240,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
    (simplify
-    (outer_op (nop_convert (minus CONSTANT_CLASS_P@1 @0)) CONSTANT_CLASS_P@2)
+    (outer_op (nop_convert? (minus CONSTANT_CLASS_P@1 @0)) CONSTANT_CLASS_P@2)
     /* If one of the types wraps, use that one.  */
     (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
      /* If all 3 captures are CONSTANT_CLASS_P, punt, as we might recurse
@@ -2262,7 +2259,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      Use view_convert because it is safe for vectors and equivalent for
      scalars.  */
   (simplify
-   (minus CONSTANT_CLASS_P@1 (nop_convert (minus CONSTANT_CLASS_P@2 @0)))
+   (minus CONSTANT_CLASS_P@1 (nop_convert? (minus CONSTANT_CLASS_P@2 @0)))
    /* If one of the types wraps, use that one.  */
    (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
     /* If all 3 captures are CONSTANT_CLASS_P, punt, as we might recurse

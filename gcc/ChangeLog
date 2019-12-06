@@ -1,3 +1,8 @@
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (nop_convert): Remove empty match.  Use nop_convert?
+	everywhere.
+
 2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-data-ref.c (prune_runtime_alias_test_list): Exit early
