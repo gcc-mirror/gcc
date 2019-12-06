@@ -1,6 +1,13 @@
 2019-12-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_{node,value}): Remove cluster biasing.
+	(depset::hash::make_dependency): Likewise.
+	(module_state::write_{cluster,{namespace{,s}}): Likewise.
+	(module_state::write_{entities,specializations}): Likewise.
+	(module_state::write): Likewise.
+
+	(gcc/cp/
 	* module.cc (trees_out::decl_value): No need to look for dep again.
 
 	gcc/cp/
