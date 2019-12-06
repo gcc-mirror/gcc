@@ -4501,16 +4501,13 @@ create_dirs (char *path)
 static char *
 maybe_strip_cmi_prefix (char *to)
 {
-  if (cmi_repo)
+  if (cmi_repo
+      && 0 == strncmp (to, cmi_repo, cmi_repo_length)
+      && IS_DIR_SEPARATOR (to[cmi_repo_length]))
     {
-      if (0 == strncmp (to, cmi_repo, cmi_repo_length))
-	{
-	  char *res = to;
-	  for (size_t probe = cmi_repo_length;
-	       IS_DIR_SEPARATOR (to[probe]);)
-	    res = &to[++probe];
-	  to = res;
-	}
+      to += cmi_repo_length + 1;
+      while (IS_DIR_SEPARATOR (*to))
+	to++;
     }
   return to;
 }
