@@ -1,5 +1,5 @@
 2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
-	    Kwok Cheung Yeung <kcy@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-low.c (lower_omp_target): For optional arguments, deref once
 	more to obtain the type.
