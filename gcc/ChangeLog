@@ -1,3 +1,7 @@
+2019-12-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgexpand.c (expand_debug_expr): Do not ICE on SAD_EXPR.
+
 2019-12-06  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (c_expr::gen_transform): Emit newlines from line
