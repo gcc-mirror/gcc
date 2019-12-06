@@ -1,5 +1,10 @@
 2019-12-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraphclones.c (cgraph_node::create_clone): Only localize toplevel
+	functions, not inline clones.
+
+2019-12-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cfgexpand.c (expand_debug_expr): Do not ICE on SAD_EXPR.
 
 2019-12-06  Richard Biener  <rguenther@suse.de>
