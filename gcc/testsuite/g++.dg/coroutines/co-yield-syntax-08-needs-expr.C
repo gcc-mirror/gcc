@@ -1,8 +1,9 @@
 //  { dg-additional-options "-fsyntax-only -w" }
 
+// Check syntax for missing expr in a coroutine context.
+
 #include "coro.h"
 
-/* Diagose missing return_void() in the promise type.  */
 struct DummyYield {
   coro::coroutine_handle<> handle;
   DummyYield () : handle (nullptr) {}
