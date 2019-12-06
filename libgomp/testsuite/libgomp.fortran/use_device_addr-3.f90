@@ -290,6 +290,7 @@ contains
      ff = 66.0_c_double
 
      call test_dummy_opt_callee_1(aa, bb, cc, dd, ee, ff, N)
+     call test_dummy_opt_callee_1_absent(N=N)
      deallocate(ee, ff) ! pointers, only
   end subroutine test_dummy_opt_call_1
 
@@ -335,6 +336,32 @@ contains
      if (any(abs(ee - 55.0_c_double) > 10.0_c_double * epsilon(ee))) stop 1
      if (any(abs(3.0_c_double * ee - ff) > 10.0_c_double * epsilon(ee))) stop 1
   end subroutine test_dummy_opt_callee_1
+
+  subroutine test_dummy_opt_callee_1_absent(aa, bb, cc, dd, ee, ff, N)
+     ! scalars
+     real(c_double), optional, target :: aa(:), bb(:)
+     real(c_double), optional, target, allocatable :: cc(:), dd(:)
+     real(c_double), optional, pointer :: ee(:), ff(:)
+
+     integer, value :: N
+
+     ! All shall be absent
+     if (present(aa) .or. present(bb)) stop 1
+     if (present(cc) .or. present(dd)) stop 1
+     if (present(ee) .or. present(ff)) stop 1
+
+     !$omp target data map(to:aa) map(from:bb) use_device_addr(aa,bb)
+     if (present(aa) .or. present(bb)) stop 1
+     !$omp end target data
+
+     !$omp target data map(to:cc) map(from:dd) use_device_addr(cc,dd)
+     if (present(cc) .or. present(dd)) stop 1
+     !$omp end target data
+
+     !$omp target data map(to:ee) map(from:ff) use_device_addr(ee,ff)
+     if (present(ee) .or. present(ff)) stop 1
+     !$omp end target data
+  end subroutine test_dummy_opt_callee_1_absent
 
   ! Save device ptr - and recall pointer
   subroutine test_dummy_opt_call_2()

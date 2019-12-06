@@ -1,3 +1,11 @@
+2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung <kcy@codesourcery.com>
+
+	* trans-openmp.c (gfc_build_conditional_assign, 
+	gfc_build_conditional_assign_expr): New static functions.
+	(gfc_omp_finish_clause, gfc_trans_omp_clauses): Handle mapping of
+	absent optional arguments and fix mapping of present optional args.
+
 2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.c (gfc_omp_is_optional_argument,
