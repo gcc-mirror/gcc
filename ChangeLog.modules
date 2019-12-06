@@ -1,6 +1,10 @@
 2019-12-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::mark_class_def): No need to mark friend
+	specializations.
+
+	gcc/cp/
 	* decl.c (duplicate_decls): Just zap the template's module info.
 	* pt.c (build_template_decl): No need to copy false module info.
 	(tsubst_tenplate_decl): Just zap the template's module info.

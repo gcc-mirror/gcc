@@ -10501,11 +10501,6 @@ trees_out::mark_class_def (tree defn)
 		    && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
 		  /* A templated friend declaration that we own.  */
 		  mark_declaration (frnd, has_definition (frnd));
-		else if (DECL_LANG_SPECIFIC (frnd)
-			 && DECL_TEMPLATE_INFO (frnd)
-			 && TREE_CODE (DECL_TI_TEMPLATE (frnd)) != TEMPLATE_DECL)
-		  /* A friend declared with a template-id.  */
-		  mark_declaration (frnd, false);
 	      }
 	}
     }
