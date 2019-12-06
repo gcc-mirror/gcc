@@ -1824,7 +1824,14 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
 
   e = mark_type_use (e);
 
-  if (VAR_P (e))
+  if (!verify_type_context (input_location, TCTX_ALIGNOF, TREE_TYPE (e),
+			    !(complain & tf_error)))
+    {
+      if (!(complain & tf_error))
+	return error_mark_node;
+      t = size_one_node;
+    }
+  else if (VAR_P (e))
     t = size_int (DECL_ALIGN_UNIT (e));
   else if (bitfield_p (e))
     {
@@ -5778,6 +5785,13 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
       else
 	return error_mark_node;
     }
+  else if (!verify_type_context (loc, TCTX_POINTER_ARITH,
+				 TREE_TYPE (TREE_TYPE (op0)),
+				 !(complain & tf_error))
+	   || !verify_type_context (loc, TCTX_POINTER_ARITH,
+				    TREE_TYPE (TREE_TYPE (op1)),
+				    !(complain & tf_error)))
+    return error_mark_node;
 
   /* Determine integer type result of the subtraction.  This will usually
      be the same as the result type (ptrdiff_t), but may need to be a wider
@@ -6572,6 +6586,10 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
                 else
                   return error_mark_node;
               }
+	    else if (!verify_type_context (location, TCTX_POINTER_ARITH,
+					   TREE_TYPE (argtype),
+					   !(complain & tf_error)))
+	      return error_mark_node;
 
 	    inc = cxx_sizeof_nowarn (TREE_TYPE (argtype));
 	  }

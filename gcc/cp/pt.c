@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "gcc-rich-location.h"
 #include "selftest.h"
+#include "target.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -11815,6 +11816,9 @@ instantiate_class_template_1 (tree type)
 			      error ("flexible array member %qD in union", r);
 			      TREE_TYPE (r) = error_mark_node;
 			    }
+			  else if (!verify_type_context (input_location,
+							 TCTX_FIELD, rtype))
+			    TREE_TYPE (r) = error_mark_node;
 			}
 
 		      /* If it is a TYPE_DECL for a class-scoped ENUMERAL_TYPE,

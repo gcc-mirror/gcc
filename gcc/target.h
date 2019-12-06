@@ -249,7 +249,19 @@ enum type_context_kind {
 
   /* Adding to or subtracting from a pointer to T, or computing the
      difference between two pointers when one of them is a pointer to T.  */
-  TCTX_POINTER_ARITH
+  TCTX_POINTER_ARITH,
+
+  /* Dynamically allocating objects of type T.  */
+  TCTX_ALLOCATION,
+
+  /* Dynamically deallocating objects of type T.  */
+  TCTX_DEALLOCATION,
+
+  /* Throwing or catching an object of type T.  */
+  TCTX_EXCEPTIONS,
+
+  /* Capturing objects of type T by value in a closure.  */
+  TCTX_CAPTURE_BY_COPY
 };
 
 extern bool verify_type_context (location_t, type_context_kind, const_tree,

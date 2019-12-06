@@ -1,3 +1,10 @@
+2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.h (TCTX_ALLOCATION, TCTX_DEALLOCATION, TCTX_EXCEPTIONS)
+	(TCTX_CAPTURE_BY_COPY): New type_context_kinds.
+	* config/aarch64/aarch64-sve-builtins.cc (verify_type_context):
+	Handle them.
+
 2019-12-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (gather<mode>_insn_1offset<exec>): Use %o

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "intl.h"
 #include "gcc-rich-location.h"
+#include "target.h"
 
 static tree
 process_init_constructor (tree type, tree init, int nested, int flags,
@@ -2401,6 +2402,9 @@ add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
     ok = true;
   else if (processing_template_decl)
     ok = true;
+  else if (!verify_type_context (input_location, TCTX_EXCEPTIONS, core,
+				 !(complain & tf_error)))
+    return error_mark_node;
   else
     {
       ok = true;
