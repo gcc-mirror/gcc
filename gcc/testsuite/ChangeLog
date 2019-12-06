@@ -1,3 +1,9 @@
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* gcc.target/i386/pr92819-1.c: New testcase.
+	* gcc.target/i386/pr92803.c: Adjust.
+
 2019-12-05  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/92829

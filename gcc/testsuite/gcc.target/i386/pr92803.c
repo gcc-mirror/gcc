@@ -31,8 +31,10 @@ barf (v8sf x)
   return (v4sf) { x[4], x[5], 1.0f, 2.0f };
 }
 
-/* We expect all CTORs to turn into permutes, the FP converting ones
+/* For bar we do two inserts, first zero, then convert, then insert *p.  } */
+/* { dg-final { scan-tree-dump-times "BIT_INSERT_EXPR" 2 "forwprop1" } } */
+/* We expect all other CTORs to turn into permutes, the FP converting ones
    to two each with the one with constants possibly elided in the future
    by converting 3.0f and 1.0f "back" to integers.  */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 6 "forwprop1" } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 5 "forwprop1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 4 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 3 "forwprop1" { xfail *-*-* } } } */
