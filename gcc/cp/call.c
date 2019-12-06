@@ -5077,7 +5077,7 @@ build_conditional_expr_1 (const op_location_t &loc,
 	warn_for_omitted_condop (loc, arg1);
 
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
-      if (lvalue_p (arg1))
+      if (glvalue_p (arg1))
 	arg2 = arg1 = cp_stabilize_reference (arg1);
       else
 	arg2 = arg1 = cp_save_expr (arg1);
