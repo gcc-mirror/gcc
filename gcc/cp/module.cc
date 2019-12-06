@@ -7888,18 +7888,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
       if (streaming_p ())
 	{
 	  depset *dep = dep_hash->find_dependency (decl);
-	  gcc_checking_assert (!dep->cluster == dep->is_import ());
-	  unsigned entity_index = dep->cluster - 1;
-	  module_state *from = state;
-	  if (dep->is_import ())
-	    {
-	      entity_index = import_entity_index (decl);
-	      from = import_entity_module (entity_index);
-	      entity_index -= from->entity_lwm;
-	    }
 	  i (tt_entity);
-	  u (from->remap);
-	  i (entity_index);
+	  u (dep->is_import () ? dep->section : 0);
+	  i (dep->cluster - 1);
 	  add_indirects (decl);
 	}
       else
@@ -8214,20 +8205,16 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  const char *kind = NULL;
   tree ctx = CP_DECL_CONTEXT (decl);
   depset *dep = NULL;
   if (streaming_p ())
     dep = dep_hash->find_dependency (decl);
-  else
-    {
-      if (TREE_CODE (ctx) != FUNCTION_DECL
-	  || TREE_CODE (decl) == TEMPLATE_DECL
-	  || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
-	  || (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl)
-	      && !DECL_MODULE_PARTITION_P (decl)))
-	dep = dep_hash->add_dependency (decl, depset::EK_DECL);
-    }
+  else if (TREE_CODE (ctx) != FUNCTION_DECL
+	   || TREE_CODE (decl) == TEMPLATE_DECL
+	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
+	   || (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl)
+	       && !DECL_MODULE_PARTITION_P (decl)))
+    dep = dep_hash->add_dependency (decl, depset::EK_DECL);
 
   if (!dep)
     {
@@ -8236,7 +8223,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  bool is_import = dep->is_import ();
   if (dep->get_entity_kind () == depset::EK_REDIRECT)
     {
       /* The DECL_TEMPLATE_RESULT of a partial specialization.
@@ -8249,45 +8235,40 @@ trees_out::decl_node (tree decl, walk_kind ref)
       goto partial_template;
     }
 
-  unsigned origin = 0;
   if (streaming_p ())
     {
       /* Locate the entity.  */
-      unsigned entity_num = import_entity_index (decl);
+      unsigned index = dep->cluster - 1;
+      unsigned import = 0;
 
-      if (is_import)
-	{
-	  // FIXME: Not relying on origin, as we're gonna move
-	  // away from that
-	  /* An import.  */
-	  gcc_checking_assert (!dep->cluster && !dep->section);
-	  module_state *from = import_entity_module (entity_num);
-	  entity_num -= from->entity_lwm;
-	  origin = from->remap;
-	  kind = "import";
-	}
+      if (dep->is_import ())
+	import = dep->section;
+      else
+	/* It should be what we put there.  */
+	gcc_checking_assert (index == ~import_entity_index (decl));
+
+      i (tt_entity);
+      u (import);
+      u (index);
+    }
+
+  int tag = insert (decl);
+  if (streaming_p () && dump (dumper::TREE))
+    {
+      char const *kind = "import";
+      module_state *from = (*modules)[0];
+      if (dep->is_import ())
+	/* Rediscover the unremapped index.  */
+	from = import_entity_module (import_entity_index (decl));
       else
 	{
-	  /* It should be what we put there.  */
-	  gcc_checking_assert (dep_hash->find_dependency (decl)->cluster
-			       == -entity_num);
-	  entity_num = ~entity_num;
-
 	  tree o = get_originating_module_decl (decl);
 	  kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
 		  ? "purview" : "GMF");
 	}
-
-      i (tt_entity);
-      u (origin);
-      u (entity_num);
+      dump ("Wrote %s:%d %C:%N@%M", kind,
+	    tag, TREE_CODE (decl), decl, from);
     }
-
-  int tag = insert (decl);
-  if (streaming_p ())
-    dump (dumper::TREE)
-      && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
-	       (*modules)[origin]);
 
   add_indirects (decl);
 
@@ -11052,7 +11033,17 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       else if (DECL_LANG_SPECIFIC (decl)
 	       && DECL_MODULE_IMPORT_P (decl)
 	       && !DECL_MODULE_PARTITION_P (decl))
-	dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	{
+	  dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	  /* Store the module number and index in cluster/section, so
+	     we don't have to look them up again.  */
+	  unsigned index = import_entity_index (decl);
+	  module_state *from = import_entity_module (index);
+	  gcc_checking_assert (from->remap);
+	  /* +1 to match internal cross reference behaviour.  */
+	  dep->cluster = index - from->entity_lwm + 1;
+	  dep->section = from->remap;
+	}
       else if (ek == EK_DECL
 	       && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	{
@@ -14138,22 +14129,17 @@ module_state::read_cluster (unsigned snum)
 void
 module_state::write_namespace (bytes_out &sec, depset *dep)
 {
-  unsigned ns_num = 0;
+  unsigned ns_num = dep->cluster;
   unsigned ns_import = 0;
 
   if (dep->is_import ())
     {
-      ns_num = import_entity_index (dep->get_entity ());
-      module_state *from = import_entity_module (ns_num);
-      ns_import = from->remap;
-      gcc_checking_assert (ns_import);
-      ns_num -= from->entity_lwm;
+      ns_num--;
+      ns_import = dep->section;
     }
   else
-    {
-      ns_num = dep->cluster;
-      gcc_checking_assert (ns_num || dep->get_entity () == global_namespace);
-    }
+    gcc_checking_assert (ns_num || dep->get_entity () == global_namespace);
+
   sec.u (ns_import);
   sec.u (ns_num);
 }

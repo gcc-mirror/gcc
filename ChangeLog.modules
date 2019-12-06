@@ -1,5 +1,12 @@
 2019-12-06  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::decl_node): Get entity index & origin from
+	the depset.
+	(depset::hash::make_dependency): Stash the importing index &
+	origin in the depset.
+	(module_state::write_namespace): Get index & origin from the depset.
+
 	Structured bindings, c++2a libstdc++ is back working
 	gcc/cp/
 	* module.cc (trees_{in,out}::lang_decl_{bools,vals}): Handle
