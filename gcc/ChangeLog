@@ -1,3 +1,10 @@
+2019-12-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92176
+	* lra.c (simplify_subreg_regno): Don't permit unconditional
+	changing mode for LRA too.
+
 2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* target.h (TCTX_ALLOCATION, TCTX_DEALLOCATION, TCTX_EXCEPTIONS)
