@@ -1,3 +1,23 @@
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (enum tree_code): Remove CONVERT{0,1,2} and
+	VIEW_CONVERT{0,1,2}.
+	(expr::opt_grp): Add and initialize.
+	(lower_opt_convert): Rename to ...
+	(lower_opt): ... and work on opt_grp, simply switching operations
+	from being optional to being present or not.
+	(has_opt_convert): Rename to ...
+	(has_opt): ... and adjust.
+	(parser::parse_operation): Return the optional opt_grp,
+	remove special-casing of conditional operations and more generally
+	parse [digit]'?'.
+	(parser::parse_expr): Stick on the parsed opt_grp and perform
+	rough verification.
+	(parser::parse_for): Remove now unnecessary code.
+	(main): Likewise.
+	* doc/match-and-simplify.texi: Mention ? now works on all
+	unary operations and also match predicates.
+
 2019-12-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphclones.c (cgraph_node::create_clone): Only localize toplevel
