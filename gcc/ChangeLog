@@ -1,3 +1,11 @@
+2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_set_jf_unknown): Do not clear bits and m_vr.
+	(detect_type_change_from_memory_writes): Remoe parameter JFUNC.
+	(detect_type_change): Likewise.
+	(detect_type_change_ssa): Likewise.
+	(ipa_analyze_virtual_call_uses): Update.
+
 2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/linux.h (LINK_EH_SPEC): Define.
