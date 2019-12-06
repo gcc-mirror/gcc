@@ -2599,9 +2599,21 @@ c_expr::gen_transform (FILE *f, int indent, const char *dest,
     fprintf_indent (f, indent, "%s = ", dest);
 
   unsigned stmt_nr = 1;
+  int prev_line = -1;
   for (unsigned i = 0; i < code.length (); ++i)
     {
       const cpp_token *token = &code[i];
+
+      /* We can't recover from all lexing losses but we can roughly restore line
+         breaks from location info.  */
+      const line_map_ordinary *map;
+      linemap_resolve_location (line_table, token->src_loc,
+				LRK_SPELLING_LOCATION, &map);
+      expanded_location loc = linemap_expand_location (line_table, map,
+						       token->src_loc);
+      if (prev_line != -1 && loc.line != prev_line)
+	fputc ('\n', f);
+      prev_line = loc.line;
 
       /* Replace captures for code-gen.  */
       if (token->type == CPP_ATSIGN)
@@ -2653,11 +2665,11 @@ c_expr::gen_transform (FILE *f, int indent, const char *dest,
       if (token->type == CPP_SEMICOLON)
 	{
 	  stmt_nr++;
-	  fputc ('\n', f);
 	  if (dest && stmt_nr == nr_stmts)
 	    fprintf_indent (f, indent, "%s = ", dest);
 	}
     }
+  fputc ('\n', f);
 }
 
 /* Generate transform code for a capture.  */
