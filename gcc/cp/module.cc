@@ -7350,21 +7350,14 @@ trees_out::decl_value (tree decl, depset *dep)
 
   if (streaming_p ())
     {
+      /* Do not stray outside this section.  */
+      gcc_checking_assert (!dep || dep->section == dep_hash->section);
+
       /* Write the entity index, so we can insert it as soon as we
 	 know this is new.  */
-      // FIXME: The number of dep_hash lookups is too damn high!
-      // We'll eventually end up with everything written here having a
-      // depset.
-      // we got told dep on the way in!
-      dep = dep_hash->find_dependency (decl);
-      if (dep)
-	/* Do not stray outside this section.  */
-	gcc_checking_assert (dep->section == dep_hash->section);
+      u (dep ? dep->cluster : 0);
 
-      unsigned entity_index = dep && dep->cluster ? dep->cluster : 0;
-      u (entity_index);
-
-      if (entity_index)
+      if (CHECKING_P && dep)
 	{
 	  /* Add it to the entity map, such that we can tell it is
 	     part of us.  */
@@ -7374,7 +7367,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	  if (existed)
 	    /* If it existed, it should match.  */
 	    gcc_checking_assert (decl == (*entity_ary)[*slot]);
-	  *slot = -entity_index;
+	  *slot = -dep->cluster;
 	}
     }
 
@@ -8243,7 +8236,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
       if (dep->is_import ())
 	import = dep->section;
-      else
+      else if (CHECKING_P)
 	/* It should be what we put there.  */
 	gcc_checking_assert (index == ~import_entity_index (decl));
 

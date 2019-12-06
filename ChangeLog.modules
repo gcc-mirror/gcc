@@ -1,6 +1,9 @@
 2019-12-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_value): No need to look for dep again.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Get entity index & origin from
 	the depset.
 	(depset::hash::make_dependency): Stash the importing index &
