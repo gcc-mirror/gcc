@@ -472,6 +472,7 @@ contains
      hh = 88.0_c_float
 
      call test_dummy_opt_callee_1(aa, bb, cc, dd, ee, ff, gg, hh, N)
+     call test_dummy_opt_callee_1_absent(N=N)
      deallocate(ee, ff) ! pointers, only
   end subroutine test_dummy_opt_call_1
 
@@ -526,6 +527,41 @@ contains
      if (any(abs(gg - 77.0_c_float) > 10.0_c_float * epsilon(gg))) stop 71
      if (any(abs(3.0_c_float * gg - hh) > 10.0_c_float * epsilon(gg))) stop 72
   end subroutine test_dummy_opt_callee_1
+
+  subroutine test_dummy_opt_callee_1_absent(aa, bb, cc, dd, ee, ff, gg, hh, N)
+     ! scalars
+     real(c_float), optional, target :: aa, bb
+     real(c_float), optional, target, allocatable :: cc, dd
+     real(c_float), optional, pointer :: ee, ff
+
+     ! non-descriptor arrays
+     real(c_float), optional, target :: gg(N), hh(N)
+     integer, value :: N
+
+     integer :: err
+
+     ! All shall be absent
+     if (present(aa) .or. present(bb)) stop 243
+     if (present(cc) .or. present(dd)) stop 244
+     if (present(ee) .or. present(ff)) stop 245
+     if (present(gg) .or. present(hh)) stop 246
+
+     !$omp target data map(to:aa) map(from:bb) use_device_addr(aa,bb)
+     if (present(aa) .or. present(bb)) stop 247
+     !$omp end target data
+
+     !$omp target data map(to:cc) map(from:dd) use_device_addr(cc,dd)
+     if (present(cc) .or. present(dd)) stop 248
+     !$omp end target data
+
+     !$omp target data map(to:ee) map(from:ff) use_device_addr(ee,ff)
+     if (present(ee) .or. present(ff)) stop 249
+     !$omp end target data
+
+     !$omp target data map(to:gg) map(from:hh) use_device_addr(gg,hh)
+     if (present(gg) .or. present(hh)) stop 250
+     !$omp end target data
+  end subroutine test_dummy_opt_callee_1_absent
 
   ! Save device ptr - and recall pointer
   subroutine test_dummy_opt_call_2()

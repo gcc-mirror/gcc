@@ -11817,7 +11817,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		gcc_checking_assert (is_gimple_omp_oacc (ctx->stmt));
 		s = TREE_TYPE (ovar);
-		if (TREE_CODE (s) == REFERENCE_TYPE)
+		if (TREE_CODE (s) == REFERENCE_TYPE
+		    || omp_check_optional_argument (ovar, false))
 		  s = TREE_TYPE (s);
 		s = TYPE_SIZE_UNIT (s);
 	      }
