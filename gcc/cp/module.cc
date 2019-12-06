@@ -9828,15 +9828,7 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
        }
      else
        gcc_unreachable ();
-#if 0
-       {
-	 // FIXME: I don't think this is reachable any more
-	 /* Anonymous types with a typedef name for linkage purposes
-	    are located by that typedef.  */
-	 name = TYPE_NAME (TREE_TYPE (decl));
-	 gcc_checking_assert (!IDENTIFIER_ANON_P (DECL_NAME (name)));
-       }
-#endif
+
      tree_node (name);
      if (index)
        tree_node (index);
