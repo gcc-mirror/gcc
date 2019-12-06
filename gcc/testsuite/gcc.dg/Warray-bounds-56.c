@@ -71,15 +71,17 @@ NOIPA void test_strcpy_flexarray (void)
 NOIPA void test_strcpy_malloc_flexarray (void)
 {
   size_t r_0_1 = UR (0, 1);
-  size_t r_1_2 = UR (1, 2);
-  size_t r_2_3 = UR (2, 3);
 
   T (char, S (0), r_0_1);
   T (char, S (1), r_0_1);       // { dg-warning "\\\[-Warray-bounds" }
 
+  size_t r_1_2 = UR (1, 2);
+
   T (char, S (0), r_1_2);
   T (char, S (1), r_1_2);
   T (char, S (2), r_1_2);       // { dg-warning "\\\[-Warray-bounds" }
+
+  size_t r_2_3 = UR (2, 3);
 
   T (char, S (0), r_2_3);
   T (char, S (2), r_2_3);
