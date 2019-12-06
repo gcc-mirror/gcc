@@ -1,3 +1,8 @@
+2019-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92451
+	* g++.dg/overload/error4.C: New test.
+
 2019-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/feat-cxx2a.C: Don't test __cpp_consteval for now.
