@@ -8,5 +8,5 @@ struct svint8x2_t;
 void
 f (svint8x2_t *a, struct svint8x2_t *b)
 {
-  *a = *b; /* { dg-error {dereferencing pointer to incomplete type} } */
+  *a = *b; /* { dg-error {invalid use of undefined type} } */
 }

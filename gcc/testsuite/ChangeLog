@@ -1,3 +1,10 @@
+2019-12-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c/36941
+	PR c/88827
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_11.c: Update
+	expected diagnostics.
+
 2019-12-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92819
