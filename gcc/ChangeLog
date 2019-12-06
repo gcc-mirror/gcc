@@ -1,3 +1,9 @@
+2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-data-ref.c (prune_runtime_alias_test_list): Exit early
+	for empty vectors.  Avoid using ordered_remove and instead
+	shuffle the vector as we go.
+
 2019-12-06  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (enum tree_code): Remove CONVERT{0,1,2} and
