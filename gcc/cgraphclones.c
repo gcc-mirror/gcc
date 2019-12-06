@@ -450,7 +450,8 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
       && opt_for_fn (decl, flag_profile_partial_training)
       && nonzero
       && count.ipa_p ()
-      && !count.ipa ().nonzero_p ())
+      && !count.ipa ().nonzero_p ()
+      && !inlined_to)
     localize_profile (this);
 
   if (!new_inlined_to)
