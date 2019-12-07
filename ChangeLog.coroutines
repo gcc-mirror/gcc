@@ -1,5 +1,19 @@
 2019-12-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (find_std_experimental): Check for NULL
+	tree return.
+	(find_coro_traits_template_decl): Renamed to...
+	(find_coro_traits_template_class): ...this; revise to use a
+	TYPE_ARGUMENT_PACK for the second param to the traits lookup.
+	Pass the function in instead of assuming we should find it in
+	current_function_decl.
+	(find_coro_handle_type): Show errors or warnings.
+	(find_promise_type): Rename variables. Show errors and warnings.
+	(coro_promise_type_found_p): Revise comments and variable names.
+
+2019-12-07  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Extract
 	awaitable, await_transform and promise CTOR from tests.

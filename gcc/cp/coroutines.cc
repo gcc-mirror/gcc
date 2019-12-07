@@ -249,7 +249,7 @@ find_std_experimental (location_t loc)
   tree exp_name = get_identifier ("experimental");
   tree exp_ns = lookup_qualified_name (std_node, exp_name, 0, false, false);
 
-  if (exp_ns == error_mark_node)
+  if (exp_ns == error_mark_node || exp_ns == NULL_TREE)
     {
       error_at (loc, "std::experimental not found");
       return NULL_TREE;
@@ -258,45 +258,52 @@ find_std_experimental (location_t loc)
 }
 
 /* [coroutine.traits]
-   Lookup the coroutine_traits template decl.
+   Lookup the coroutine_traits template class instance.
    Instantiate that for the function signature.  */
 
 static tree
-find_coro_traits_template_decl (location_t kw)
+find_coro_traits_template_class (tree fndecl, location_t kw)
 {
   tree exp_ns = find_std_experimental (kw);
   if (!exp_ns)
     return NULL_TREE;
 
   /* [coroutine.traits.primary]
-     So now build up a type list for the template <R, ...>.
-     The function arg list length includes a terminating 'void' which we
-     don't want - but we use that slot for the fn return type (which we do
-     list even if it's 'void').  */
-  tree functyp = TREE_TYPE (current_function_decl);
+     So now build up a type list for the template <typename _R, typename...>.
+     The types are the function's arg types and _R is the function return
+     type.  */
+
+  tree functyp = TREE_TYPE (fndecl);
   tree arg_node = TYPE_ARG_TYPES (functyp);
-  tree targ = make_tree_vec (list_length (arg_node));
-  TREE_VEC_ELT (targ, 0) = TYPE_MAIN_VARIANT (TREE_TYPE (functyp));
-  unsigned p = 1;
+  tree argtypes = make_tree_vec (list_length (arg_node)-1);
+  unsigned p = 0;
+
   while (arg_node != NULL_TREE && !VOID_TYPE_P (TREE_VALUE (arg_node)))
     {
-      TREE_VEC_ELT (targ, p++) = TREE_VALUE (arg_node);
+      TREE_VEC_ELT (argtypes, p++) = TREE_VALUE (arg_node);
       arg_node = TREE_CHAIN (arg_node);
     }
 
-  tree traits_decl
+  tree argtypepack = cxx_make_type (TYPE_ARGUMENT_PACK);
+  SET_ARGUMENT_PACK_ARGS (argtypepack, argtypes);
+
+  tree targ = make_tree_vec (2);
+  TREE_VEC_ELT (targ, 0) = TREE_TYPE (functyp);
+  TREE_VEC_ELT (targ, 1) = argtypepack;
+
+  tree traits_class
     = lookup_template_class (coro_traits_identifier, targ,
 			     /* in_decl */ NULL_TREE,
 			     /* context */ exp_ns,
-			     /* entering scope */ false, tf_none);
+			     /* entering scope */ false, tf_warning_or_error);
 
-  if (traits_decl == error_mark_node)
+  if (traits_class == error_mark_node || traits_class == NULL_TREE)
     {
       error_at (kw, "cannot instantiate %<coroutine traits%>");
       return NULL_TREE;
     }
 
-  return traits_decl;
+  return traits_class;
 }
 
 /* [coroutine.handle] */
@@ -314,7 +321,7 @@ find_coro_handle_type (location_t kw, tree promise_type)
     = lookup_template_class (coro_handle_identifier, targ,
 			     /* in_decl */ NULL_TREE,
 			     /* context */ exp_ns,
-			     /* entering scope */ false, tf_none);
+			     /* entering scope */ false, tf_warning_or_error);
 
   if (handle_type == error_mark_node)
     {
@@ -329,11 +336,12 @@ find_coro_handle_type (location_t kw, tree promise_type)
 /* Look for the promise_type in the instantiated.  */
 
 static tree
-find_promise_type (tree handle_type)
+find_promise_type (tree traits_class)
 {
   tree promise_type
-    = lookup_member (handle_type, coro_promise_type_identifier,
+    = lookup_member (traits_class, coro_promise_type_identifier,
 		     /* protect */ 1, /*want_type=*/true, tf_warning_or_error);
+
   if (promise_type)
     promise_type
       = complete_type_or_else (TREE_TYPE (promise_type), promise_type);
@@ -371,11 +379,12 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
   /* If we don't already have a current promise type, try to look it up.  */
   if (coro_info->promise_type == NULL_TREE)
     {
-      /* Get the coroutine traits temple decl for the specified return and
-	 argument type list.  coroutine_traits <R, ...> */
-      tree templ_decl = find_coro_traits_template_decl (loc);
+      /* Get the coroutine traits template class instance for the function
+	 signature we have - coroutine_traits <R, ...>  */
+      tree templ_class = find_coro_traits_template_class (fndecl, loc);
+
       /* Find the promise type for that.  */
-      coro_info->promise_type = find_promise_type (templ_decl);
+      coro_info->promise_type = find_promise_type (templ_class);
 
       /* If we don't find it, punt on the rest.  */
       if (coro_info->promise_type == NULL_TREE)
