@@ -1,3 +1,9 @@
+2019-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/90840
+	* expr.c (expand_assignment): In the case of a CONCAT on the LHS, make
+	sure to pass a valid inner mode in calls to simplify_gen_subreg.
+
 2019-12-07  Tobias Burnus  <tobias@codesourcery.com>
 	    David Malcolm  <dmalcolm@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
