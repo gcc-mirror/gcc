@@ -1,6 +1,21 @@
 2019-12-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (finish_co_await_expr): Check the function args
+	for dependent types as well as the return.
+	(finish_co_yield_expr): Likewise.
+	(finish_co_return_stmt): Likewise.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-await-10-template-fn-arg.C: New test.
+	* g++.dg/coroutines/torture/co-await-11-forwarding.C: New test.
+	* g++.dg/coroutines/torture/co-ret-13-template-2.C: New test.
+	* g++.dg/coroutines/torture/co-ret-14-template-3.C: New test.
+	* g++.dg/coroutines/torture/co-yield-07-template-fn-param.C: New test.
+
+2019-12-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (find_std_experimental): Check for NULL
 	tree return.
 	(find_coro_traits_template_decl): Renamed to...
