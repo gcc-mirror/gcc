@@ -1,3 +1,8 @@
+2019-12-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* texi2pod.pl: Handle @headitems in @multitables, printing them
+	in italics.  Push an empty item code onto the stack.
+
 2019-11-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* download_prerequisites: Use http instead of ftp for downloading.
