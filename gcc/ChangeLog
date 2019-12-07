@@ -1,3 +1,8 @@
+2019-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91678 - wrong error with decltype and location wrapper.
+	* fold-const.c (maybe_lvalue_p): Handle VIEW_CONVERT_EXPR.
+
 2019-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/90840
