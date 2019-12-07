@@ -24,6 +24,8 @@ struct coro1 {
           handle.destroy();
   }
 
+  // Some awaitables to use in tests.
+  // With progress printing for debug.
   struct suspend_never_prt {
   bool await_ready() const noexcept { return true; }
   void await_suspend(handle_type) const noexcept { PRINT ("susp-never-susp");}
@@ -46,10 +48,22 @@ struct coro1 {
     void await_suspend(coro::coroutine_handle<>) const noexcept { PRINT ("susp-always-susp-intprt");}
     int await_resume() const noexcept { PRINT ("susp-always-resume-intprt"); return x;}
   };
+  
+  /* This returns the square of the int that it was constructed with.  */
+  struct suspend_always_longprtsq {
+    long x;
+    suspend_always_longprtsq() : x(12L) { PRINT ("suspend_always_longprtsq def ctor"); }
+    suspend_always_longprtsq(long _x) : x(_x) { PRINTF ("suspend_always_longprtsq ctor with %d\n", x); }
+    ~suspend_always_longprtsq() {}
+    bool await_ready() const noexcept { return false; }
+    void await_suspend(coro::coroutine_handle<>) const noexcept { PRINT ("susp-always-susp-longsq");}
+    long await_resume() const noexcept { PRINT ("susp-always-resume-longsq"); return x * x;}
+  };
 
   struct promise_type {
 
   promise_type() : vv(-1) {  PRINT ("Created Promise"); }
+  promise_type(int __x) : vv(__x) {  PRINTF ("Created Promise with %d\n",__x); }
   ~promise_type() { PRINT ("Destroyed Promise"); }
 
   auto get_return_object () {
@@ -67,10 +81,17 @@ struct coro1 {
   }
 
 #ifdef USE_AWAIT_TRANSFORM
+
   auto await_transform (int v) {
     PRINTF ("await_transform an int () %d\n",v);
     return suspend_always_intprt (v);
   }
+
+  auto await_transform (long v) {
+    PRINTF ("await_transform a long () %ld\n",v);
+    return suspend_always_longprtsq (v);
+  }
+
 #endif
 
   auto yield_value (int v) {

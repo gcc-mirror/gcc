@@ -1,3 +1,12 @@
+2019-12-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Extract
+	awaitable, await_transform and promise CTOR from tests.
+	* g++.dg/coroutines/torture/co-await-8-cascade.C: Use
+	common header.
+	* g++.dg/coroutines/torture/func-params-0.C: Likewise.
+
 2019-12-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/ChangeLog:
