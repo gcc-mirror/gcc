@@ -1,3 +1,11 @@
+2019-12-07  Tobias Burnus  <tobias@codesourcery.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/87488
+	* pretty-print.c (pp_begin_url, pp_end_url, test_urls): Use BEL
+	instead of ST sequence to terminate OSC 8 strings.
+
 2019-12-06  Andreas Krebbel  <krebbel@linux.ibm.com>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 
