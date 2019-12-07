@@ -307,7 +307,7 @@ gfc_build_label_decl (tree label_id)
 void
 gfc_set_decl_location (tree decl, locus * loc)
 {
-  DECL_SOURCE_LOCATION (decl) = loc->lb->location;
+  DECL_SOURCE_LOCATION (decl) = gfc_get_location (loc);
 }
 
 
@@ -1760,7 +1760,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   /* Create the decl for the variable.  */
-  decl = build_decl (sym->declared_at.lb->location,
+  decl = build_decl (gfc_get_location (&sym->declared_at),
 		     VAR_DECL, gfc_sym_identifier (sym), gfc_sym_type (sym));
 
   /* Add attributes to variables.  Functions are handled elsewhere.  */

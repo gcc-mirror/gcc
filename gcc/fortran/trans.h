@@ -658,6 +658,10 @@ void gfc_finish_decl_attrs (tree, symbol_attribute *);
 /* Allocate the lang-specific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
 
+/* Get the location suitable for the ME from a gfortran locus; required to get
+   the column number right.  */
+location_t gfc_get_location (locus *);
+
 /* Advance along a TREE_CHAIN.  */
 tree gfc_advance_chain (tree, int);
 
