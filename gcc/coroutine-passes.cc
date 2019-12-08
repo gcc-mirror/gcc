@@ -489,6 +489,8 @@ execute_early_expand_coro_ifns (void)
 		    continue; /* We already moved to the next insn.  */
 		  }
 	      }
+	    else
+	      break;
 	    gsi_next (&gsi);
 	  }
 

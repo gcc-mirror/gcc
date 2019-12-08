@@ -1,5 +1,11 @@
 2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-passes.cc (execute_early_expand_coro_ifns): Early
+	exit on first non-label.
+
+2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (find_coro_traits_template_class): Use pre-
 	built namespace.
