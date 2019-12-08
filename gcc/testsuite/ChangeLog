@@ -1,5 +1,10 @@
 2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/92780
+	* gfortran.dg/associate_50.f90: New test.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/92764
 	* gfortran.dg/interface_44.f90: New test.
 

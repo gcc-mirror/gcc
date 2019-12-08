@@ -1,5 +1,11 @@
 2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/92780
+	* resolve.c (resolve_assoc_var): Issue error if the associating
+	entity is a program.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/92764
 	* interface.c (gfc_procedure_use): Check for existence of derived
 	component before using (twice).
