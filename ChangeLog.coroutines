@@ -1,5 +1,12 @@
 2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-await-12-operator-2.C: New test.
+	* g++.dg/coroutines/torture/co-await-6-ovl.C: Make the operator
+	result participate in the output.
+
+2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* coroutine-passes.cc (execute_early_expand_coro_ifns): Early
 	exit on first non-label.
