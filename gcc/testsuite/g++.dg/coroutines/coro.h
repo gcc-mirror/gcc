@@ -29,7 +29,8 @@ template<typename _R, typename...> struct coroutine_traits {
 // 21.11.2  coroutine handle
 template <typename Promise = void> struct coroutine_handle;
 
-template <> struct coroutine_handle<void> {
+template <> 
+struct coroutine_handle<void> {
   public:
       // 21.11.2.1 construct/reset
   constexpr coroutine_handle () noexcept

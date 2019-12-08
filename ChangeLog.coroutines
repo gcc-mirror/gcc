@@ -1,3 +1,12 @@
+2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro.h: Just formatting change.
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Add return_void.
+	* g++.dg/coroutines/torture/co-await-7-tmpl.C: Add missing cast.
+	* g++.dg/coroutines/torture/co-ret-5.C: Use boiler-plate header.
+	* g++.dg/coroutines/torture/co-ret-7.C: Likewise.
+
 2019-12-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

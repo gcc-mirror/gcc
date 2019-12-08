@@ -100,11 +100,20 @@ struct coro1 {
     return suspend_always_prt{};
   }
 
+#ifdef RETURN_VOID
+
+  void return_void () {
+    PRINT ("return_void ()");
+  }
+
+#else
+
   void return_value (int v) {
     PRINTF ("return_value (%d)\n", v);
     vv = v;
   }
 
+#endif
   void unhandled_exception() { PRINT ("** unhandled exception"); }
 
   int get_value () { return vv; }

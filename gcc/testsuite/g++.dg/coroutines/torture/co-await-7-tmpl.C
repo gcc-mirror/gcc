@@ -47,7 +47,7 @@ struct coro1 {
   /* This returns the int it was constructed with.  */
   struct suspend_always_intprt {
     T x;
-    suspend_always_intprt() : x(5) { PRINT ("suspend_always_intprt def ctor"); }
+    suspend_always_intprt() : x((T)5) { PRINT ("suspend_always_intprt def ctor"); }
     suspend_always_intprt(T _x) : x(_x)
       { PRINTF ("suspend_always_intprt ctor with %ld\n", (long)x); }
     ~suspend_always_intprt() {}
