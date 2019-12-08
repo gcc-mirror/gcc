@@ -1954,7 +1954,7 @@ cgraph_node::dump (FILE *f)
       count.dump (f);
     }
   if (tp_first_run > 0)
-    fprintf (f, " first_run:%i", tp_first_run);
+    fprintf (f, " first_run:%" PRId64, (int64_t) tp_first_run);
   if (origin)
     fprintf (f, " nested in:%s", origin->asm_name ());
   if (gimple_has_body_p (decl))
