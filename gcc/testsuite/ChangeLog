@@ -1,3 +1,9 @@
+2019-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp0x/gen-attrs-36.C: Update expected diagnostics.
+	* g++.dg/cpp0x/gen-attrs-37.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-8.C: Likewise.
+
 2019-12-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91678 - wrong error with decltype and location wrapper.
