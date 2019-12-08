@@ -2181,7 +2181,7 @@ Common Report Var(profile_report)
 Report on consistency of profile.
 
 fprofile-reorder-functions
-Common Report Var(flag_profile_reorder_functions)
+Common Report Var(flag_profile_reorder_functions) Optimization
 Enable function reordering that improves code placement.
 
 fpatchable-function-entry=
@@ -2586,7 +2586,7 @@ EnumValue
 Enum(tls_model) String(local-exec) Value(TLS_MODEL_LOCAL_EXEC)
 
 ftoplevel-reorder
-Common Report Var(flag_toplevel_reorder) Init(2)
+Common Report Var(flag_toplevel_reorder) Init(2) Optimization
 Reorder top level functions, variables, and asms.
 
 ftracer
