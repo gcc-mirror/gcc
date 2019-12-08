@@ -1,3 +1,12 @@
+2019-12-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Revert:
+
+	2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.target/nios2/hello-pie.C: New.
+	* g++.target/nios2/nios2.exp: New.
+
 2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92780
