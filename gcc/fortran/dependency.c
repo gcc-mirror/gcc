@@ -2098,18 +2098,6 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
   gfc_dependency this_dep;
   bool same_component = false;
 
-  /* The refs might come in mixed, one with a _data component and one
-     without.  Look at their next reference in order to avoid an
-     ICE.  */
-
-  if (lref && lref->type == REF_COMPONENT && lref->u.c.component
-      && strcmp (lref->u.c.component->name, "_data") == 0)
-    lref = lref->next;
-
-  if (rref && rref->type == REF_COMPONENT && rref->u.c.component
-      && strcmp (rref->u.c.component->name, "_data") == 0)
-    rref = rref->next;
-
   this_dep = GFC_DEP_ERROR;
   fin_dep = GFC_DEP_ERROR;
   /* Dependencies due to pointers should already have been identified.
@@ -2117,6 +2105,18 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
 
   while (lref && rref)
     {
+      /* The refs might come in mixed, one with a _data component and one
+	 without.  Look at their next reference in order to avoid an
+	 ICE.  */
+
+      if (lref && lref->type == REF_COMPONENT && lref->u.c.component
+	  && strcmp (lref->u.c.component->name, "_data") == 0)
+	lref = lref->next;
+
+      if (rref && rref->type == REF_COMPONENT && rref->u.c.component
+	  && strcmp (rref->u.c.component->name, "_data") == 0)
+	rref = rref->next;
+
       /* We're resolving from the same base symbol, so both refs should be
 	 the same type.  We traverse the reference chain until we find ranges
 	 that are not equal.  */

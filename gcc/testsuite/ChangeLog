@@ -1,3 +1,8 @@
+2019-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92755
+	* gfortran.dg/dependency_57.f90: New test.
+
 2019-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cpp0x/gen-attrs-36.C: Update expected diagnostics.

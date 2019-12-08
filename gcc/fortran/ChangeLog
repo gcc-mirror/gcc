@@ -1,3 +1,9 @@
+2019-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92755
+	* dependency.c (gfc_dep_resolver):  Move skipping of _data ref
+	into the loop.
+
 2019-12-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92793
@@ -28,7 +34,7 @@
 2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
-	* trans-openmp.c (gfc_build_conditional_assign, 
+	* trans-openmp.c (gfc_build_conditional_assign,
 	gfc_build_conditional_assign_expr): New static functions.
 	(gfc_omp_finish_clause, gfc_trans_omp_clauses): Handle mapping of
 	absent optional arguments and fix mapping of present optional args.
