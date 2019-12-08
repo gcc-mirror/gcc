@@ -1,3 +1,7 @@
+2019-12-08  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/bswap-3.c: New test.
+
 2019-12-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Revert:
