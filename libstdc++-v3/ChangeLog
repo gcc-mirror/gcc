@@ -1,3 +1,8 @@
+2019-12-07  Andrew Pinski  <apinski@marvell.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h: Wrap around with check
+	for little-endian like ext/random is done.
+
 2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/span/lwg3255.cc: Fix test. Constructing a
