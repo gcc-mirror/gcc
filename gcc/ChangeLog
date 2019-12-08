@@ -1,5 +1,9 @@
 2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-split.c (split_function): Preserve 0 tp_first_run.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (do_estimate_edge_time): Silence overactive
 	sanity check.
 
