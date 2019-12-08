@@ -1,5 +1,10 @@
 2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (do_estimate_edge_time): Silence overactive
+	sanity check.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR tree-optimization/92860
 	* common.opt (fprofile-reorder-functions, ftoplevel-reorder): Add
 	Optimization flag.

@@ -209,6 +209,7 @@ do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
 	  nonspec_time = e->entry.nonspec_time;
 	  hints = e->entry.hints;
 	  if (flag_checking
+	      && !opt_for_fn (callee->decl, flag_profile_partial_training)
 	      && !callee->count.ipa_p ())
 	    {
 	      sreal chk_time, chk_nonspec_time;
