@@ -1,5 +1,18 @@
 2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_node::dump): Make tp_first_run 64bit.
+	* cgraph.h (cgrpah_node): Likewise.
+	(tp_first_run_node_cmp): Deeclare.
+	* cgraphunit.c (node_cmp): Rename to ...
+	(tp_first_run_node_cmp): ... this; export; watch for 64bit overflows;
+	clear tp_first_run for no_reorder and !flag_profile_reorder_functions.
+	(expand_all_functions): Collect tp_first_run and normal functions to
+	two vectors so the other functions remain sorted. Do not check for
+	flag_profile_reorder_functions it is function local flag.
+	* profile.c (compute_value_histograms): Update tp_first_run printing.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* opts.c (common_handle_option): Do not clear ipa_reference for
 	-fprofile-use.
 

@@ -874,7 +874,8 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
 	  node->tp_first_run = hist->hvalue.counters[0];
 
           if (dump_file)
-            fprintf (dump_file, "Read tp_first_run: %d\n", node->tp_first_run);
+            fprintf (dump_file, "Read tp_first_run: %" PRId64 "\n",
+		     (int64_t) node->tp_first_run);
         }
     }
 
