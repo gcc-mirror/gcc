@@ -1,5 +1,10 @@
 2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* opts.c (common_handle_option): Do not clear ipa_reference for
+	-fprofile-use.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-split.c (split_function): Preserve 0 tp_first_run.
 
 2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
