@@ -1,5 +1,14 @@
 2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (find_coro_traits_template_class): Use pre-
+	built namespace.
+	(find_coro_handle_type): Likewise.
+	(coro_promise_type_found_p): Initialise namespace and void
+	coro handle trees.
+
+2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/ChangeLog:
 	* coroutines.cc (find_coro_traits_template_decl): Rename forward
 	declaration to...

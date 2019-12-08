@@ -231,6 +231,11 @@ coro_init_identifiers ()
   coro_await_resume_identifier = get_identifier ("await_resume");
 }
 
+/* Trees we only need to set up once.  */
+
+static tree std_experimental; /* Will be removed when we move the header.  */
+static tree void_coro_handle_type;
+
 /* ================= Parse, Semantics and Type checking ================= */
 
 /* This initial set of routines are helper for the parsing and template
@@ -264,10 +269,6 @@ find_std_experimental (location_t loc)
 static tree
 find_coro_traits_template_class (tree fndecl, location_t kw)
 {
-  tree exp_ns = find_std_experimental (kw);
-  if (!exp_ns)
-    return NULL_TREE;
-
   /* [coroutine.traits.primary]
      So now build up a type list for the template <typename _R, typename...>.
      The types are the function's arg types and _R is the function return
@@ -294,7 +295,7 @@ find_coro_traits_template_class (tree fndecl, location_t kw)
   tree traits_class
     = lookup_template_class (coro_traits_identifier, targ,
 			     /* in_decl */ NULL_TREE,
-			     /* context */ exp_ns,
+			     /* context */ std_experimental,
 			     /* entering scope */ false, tf_warning_or_error);
 
   if (traits_class == error_mark_node || traits_class == NULL_TREE)
@@ -310,17 +311,13 @@ find_coro_traits_template_class (tree fndecl, location_t kw)
 static tree
 find_coro_handle_type (location_t kw, tree promise_type)
 {
-  tree exp_ns = find_std_experimental (kw);
-  if (!exp_ns)
-    return NULL_TREE;
-
   /* So now build up a type list for the template, one entry, the promise.  */
   tree targ = make_tree_vec (1);
   TREE_VEC_ELT (targ, 0) = promise_type;
   tree handle_type
     = lookup_template_class (coro_handle_identifier, targ,
 			     /* in_decl */ NULL_TREE,
-			     /* context */ exp_ns,
+			     /* context */ std_experimental,
 			     /* entering scope */ false, tf_warning_or_error);
 
   if (handle_type == error_mark_node)
@@ -369,6 +366,12 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       /* Set up the identifiers we will use.  */
       gcc_checking_assert (coro_traits_identifier == NULL);
       coro_init_identifiers ();
+      /* Trees we only need to create once.  */
+      std_experimental = find_std_experimental (loc);
+      gcc_checking_assert (std_experimental != NULL);
+      /*  coroutine_handle<>  */
+      void_coro_handle_type = find_coro_handle_type (loc, NULL_TREE);
+      gcc_checking_assert (void_coro_handle_type != NULL);
       coro_initialized = true;
     }
 
