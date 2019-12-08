@@ -1369,7 +1369,8 @@ split_function (basic_block return_bb, class split_point *split_point,
 
 
   /* Let's take a time profile for splitted function.  */
-  node->tp_first_run = cur_node->tp_first_run + 1;
+  if (cur_node->tp_first_run)
+    node->tp_first_run = cur_node->tp_first_run + 1;
 
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however cannot expect the part
