@@ -1044,12 +1044,13 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       tree args = TREE_VALUE (attr);
       if (args)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
-      const char* format = (msg ?
-	G_("ignoring return value of %qD, "
-	   "declared with attribute %<nodiscard%>: %<%s%>") :
-	G_("ignoring return value of %qD, "
-	   "declared with attribute %<nodiscard%>%s"));
-      const char* raw_msg = msg ? msg : "";
+      const char *format
+	= (msg
+	   ? G_("ignoring return value of %qD, "
+		"declared with attribute %<nodiscard%>: %<%s%>")
+	   : G_("ignoring return value of %qD, "
+		"declared with attribute %<nodiscard%>%s"));
+      const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result, format, fn, raw_msg))
 	inform (DECL_SOURCE_LOCATION (fn), "declared here");
@@ -1061,12 +1062,13 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       tree args = TREE_VALUE (attr);
       if (args)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
-      const char* format = msg ?
-	G_("ignoring returned value of type %qT, "
-	   "declared with attribute %<nodiscard%>: %<%s%>") :
-	G_("ignoring returned value of type %qT, "
-	   "declared with attribute %<nodiscard%>%s");
-      const char* raw_msg = msg ? msg : "";
+      const char *format
+	= (msg
+	   ? G_("ignoring returned value of type %qT, "
+		"declared with attribute %<nodiscard%>: %<%s%>")
+	   : G_("ignoring returned value of type %qT, "
+		"declared with attribute %<nodiscard%>%s"));
+      const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result, format, rettype, raw_msg))
 	{
