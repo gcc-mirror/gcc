@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "hash-map.h"
 
-static tree find_coro_traits_template_decl (location_t);
+static tree find_coro_traits_template_class (tree, location_t);
 static tree find_coro_handle_type (location_t, tree);
 static tree find_promise_type (tree);
 static bool coro_promise_type_found_p (tree, location_t);
@@ -251,7 +251,7 @@ find_std_experimental (location_t loc)
 
   if (exp_ns == error_mark_node || exp_ns == NULL_TREE)
     {
-      error_at (loc, "std::experimental not found");
+      error_at (loc, "%<std::experimental%> not found");
       return NULL_TREE;
     }
   return exp_ns;

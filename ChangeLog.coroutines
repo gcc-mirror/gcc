@@ -1,5 +1,13 @@
 2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/ChangeLog:
+	* coroutines.cc (find_coro_traits_template_decl): Rename forward
+	declaration to...
+	(find_coro_traits_template_class): ... this.
+	(find_std_experimental): Quote std::experimental.
+
+2019-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/coro.h: Just formatting change.
 	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Add return_void.
