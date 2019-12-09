@@ -121,9 +121,6 @@ acc_malloc (size_t s)
   return res;
 }
 
-/* OpenACC 2.0a (3.2.16) doesn't specify what to do in the event
-   the device address is mapped. We choose to check if it mapped,
-   and if it is, to unmap it. */
 void
 acc_free (void *d)
 {
@@ -152,13 +149,15 @@ acc_free (void *d)
      (unless you got that null from acc_malloc).  */
   if ((k = lookup_dev (acc_dev->openacc.data_environ, d, 1)))
     {
-      void *offset;
-
-      offset = d - k->tgt->tgt_start + k->tgt_offset;
-
+      void *offset = d - k->tgt->tgt_start + k->tgt_offset;
+      void *h = k->host_start + offset;
+      size_t h_size = k->host_end - k->host_start;
       gomp_mutex_unlock (&acc_dev->lock);
-
-      acc_unmap_data ((void *)(k->host_start + offset));
+      /* PR92503 "[OpenACC] Behavior of 'acc_free' if the memory space is still
+	 used in a mapping".  */
+      gomp_fatal ("refusing to free device memory space at %p that is still"
+		  " mapped at [%p,+%d]",
+		  d, h, (int) h_size);
     }
   else
     gomp_mutex_unlock (&acc_dev->lock);

@@ -103,7 +103,10 @@ main (int argc, char **argv)
     if (acc_is_present (&b[0], (N * sizeof (float))))
       abort ();
 
-    acc_free (d);
+    acc_delete (&a[0], N * sizeof (float));
+
+    if (acc_is_present (&a[0], N * sizeof (float)))
+      abort ();
 
     for (i = 0; i < N; i++)
     {
@@ -162,7 +165,7 @@ main (int argc, char **argv)
     if (!acc_is_present (&b[0], (N * sizeof (float))))
       abort ();
 
-    acc_free (d);
+    acc_delete (&b[0], N * sizeof (float));
 
     if (acc_is_present (&b[0], (N * sizeof (float))))
       abort ();
@@ -557,7 +560,10 @@ main (int argc, char **argv)
     if (acc_is_present (&b[0], (N * sizeof (float))))
       abort ();
 
-    acc_free (d);
+    acc_delete (&a[0], N * sizeof (float));
+
+    if (acc_is_present (&a[0], N * sizeof (float)))
+      abort ();
 
     for (i = 0; i < N; i++)
     {
