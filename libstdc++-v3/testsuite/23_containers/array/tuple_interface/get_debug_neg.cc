@@ -27,6 +27,6 @@ int n1 = std::get<1>(a);
 int n2 = std::get<1>(std::move(a));
 int n3 = std::get<1>(ca);
 
-// { dg-error "static assertion failed" "" { target *-*-* } 294 }
-// { dg-error "static assertion failed" "" { target *-*-* } 303 }
-// { dg-error "static assertion failed" "" { target *-*-* } 311 }
+// { dg-error "static assertion failed" "" { target *-*-* } 295 }
+// { dg-error "static assertion failed" "" { target *-*-* } 304 }
+// { dg-error "static assertion failed" "" { target *-*-* } 312 }
