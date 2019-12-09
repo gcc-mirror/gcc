@@ -1,3 +1,10 @@
+2019-12-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Fix static_assert line number.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
 2019-12-07  Andrew Pinski  <apinski@marvell.com>
 
 	* config/cpu/aarch64/opt/ext/opt_random.h: Wrap around with check
