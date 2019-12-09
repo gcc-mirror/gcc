@@ -1,3 +1,12 @@
+2019-12-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (unnamed mfcr define_insn): Name this
+	set<mode>_cc.
+	(unnamed define_insn_and_split): Delete.
+	(unnamed define_insn): Delete.
+	(unnamed define_insn): Delete.
+	(unnamed define_split): Delete.
+
 2019-12-09  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* regstat.c (regstat_bb_compute_calls_crossed): Add a cast to
