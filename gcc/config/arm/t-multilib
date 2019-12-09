@@ -185,6 +185,8 @@ MULTILIB_MATCHES	+= march?armv7=march?armv8.5-a
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_5_a_simd_variants), \
 			     march?armv7+fp=march?armv8.5-a$(ARCH))
 
+endif		# Not APROFILE.
+
 # Use Thumb libraries for everything.
 
 MULTILIB_REUSE		+= mthumb/march.armv7/mfloat-abi.soft=marm/march.armv7/mfloat-abi.soft
@@ -198,4 +200,3 @@ MULTILIB_REUSE		+= $(foreach MODE, arm thumb, \
 			     $(foreach ARCH, armv7, \
 			       mthumb/march.$(ARCH)/mfloat-abi.soft=m$(MODE)/march.$(ARCH)/mfloat-abi.softfp))
 
-endif		# Not APROFILE.
