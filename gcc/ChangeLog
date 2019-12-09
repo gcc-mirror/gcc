@@ -1,3 +1,12 @@
+2019-12-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (build_array_type_1): Add SET_CANONICAL parameter and compute
+	TYPE_CANONICAL from the element type only if it is true.  Remove a few
+	obsolete lines and adjust recursive call.
+	(fld_process_array_type): Adjust call to build_array_type_1.
+	(build_array_type): Likewise.
+	(build_nonshared_array_type): Likewise.
+
 2019-12-09  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (gather<mode>_insn_1offset<exec>): Change
