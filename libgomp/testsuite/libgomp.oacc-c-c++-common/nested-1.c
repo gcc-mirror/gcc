@@ -290,13 +290,15 @@ main (int argc, char **argv)
     if (!acc_is_present (&b[0], (N * sizeof (float))))
       abort ();
 
-    d = (float *) acc_deviceptr (&a[0]);
-    acc_unmap_data (&a[0]);
-    acc_free (d);
+    acc_delete (&a[0], N * sizeof (float));
 
-    d = (float *) acc_deviceptr (&b[0]);
-    acc_unmap_data (&b[0]);
-    acc_free (d);
+    if (acc_is_present (&a[0], N * sizeof (float)))
+      abort ();
+
+    acc_delete (&b[0], N * sizeof (float));
+
+    if (acc_is_present (&b[0], N * sizeof (float)))
+      abort ();
 
 
     for (i = 0; i < N; i++)

@@ -407,7 +407,11 @@ acc_map_data (void *h, void *d, size_t s)
 
       tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
 			   &kinds, true, GOMP_MAP_VARS_OPENACC);
-      tgt->list[0].key->refcount = REFCOUNT_INFINITY;
+      splay_tree_key n = tgt->list[0].key;
+      assert (n->refcount == 1);
+      assert (n->dynamic_refcount == 0);
+      /* Special reference counting behavior.  */
+      n->refcount = REFCOUNT_INFINITY;
 
       if (profiling_p)
 	{
@@ -458,6 +462,18 @@ acc_unmap_data (void *h)
       gomp_mutex_unlock (&acc_dev->lock);
       gomp_fatal ("[%p,%d] surrounds %p",
 		  (void *) n->host_start, (int) host_size, (void *) h);
+    }
+  /* TODO This currently doesn't catch 'REFCOUNT_INFINITY' usage different from
+     'acc_map_data'.  Maybe 'dynamic_refcount' can be used for disambiguating
+     the different 'REFCOUNT_INFINITY' cases, or simply separate
+     'REFCOUNT_INFINITY' values per different usage ('REFCOUNT_ACC_MAP_DATA'
+     etc.)?  */
+  else if (n->refcount != REFCOUNT_INFINITY)
+    {
+      gomp_mutex_unlock (&acc_dev->lock);
+      gomp_fatal ("refusing to unmap block [%p,+%d] that has not been mapped"
+		  " by 'acc_map_data'",
+		  (void *) h, (int) host_size);
     }
 
   /* Mark for removal.  */
