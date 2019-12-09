@@ -1,3 +1,15 @@
+2019-12-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/91226
+	* gcc.dg/dfp/bid-non-canonical-d128-1.c,
+	gcc.dg/dfp/bid-non-canonical-d128-2.c,
+	gcc.dg/dfp/bid-non-canonical-d128-3.c,
+	gcc.dg/dfp/bid-non-canonical-d128-4.c,
+	gcc.dg/dfp/bid-non-canonical-d32-1.c,
+	gcc.dg/dfp/bid-non-canonical-d32-2.c,
+	gcc.dg/dfp/bid-non-canonical-d64-1.c,
+	gcc.dg/dfp/bid-non-canonical-d64-2.c: New tests.
+
 2019-12-09  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	PR middle-end/92410
