@@ -12,6 +12,6 @@ typedef void (S::*MF)(int);
 void
 foo (void)
 {
-  MF p1 = (MF)&S::foo; /* { dg-warning "pointer to member" } */
+  MF p1 = (MF)&S::foo; /* { dg-warning "11:cast between incompatible pointer to member" } */
   MF p2 = (MF)&S::bar; /* { dg-bogus   "pointer to member" } */
 }

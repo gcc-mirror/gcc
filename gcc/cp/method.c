@@ -474,7 +474,8 @@ forward_parm (tree parm)
   if (!TYPE_REF_P (type))
     type = cp_build_reference_type (type, /*rval=*/true);
   warning_sentinel w (warn_useless_cast);
-  exp = build_static_cast (type, exp, tf_warning_or_error);
+  exp = build_static_cast (input_location, type, exp,
+			   tf_warning_or_error);
   if (DECL_PACK_P (parm))
     exp = make_pack_expansion (exp);
   return exp;
@@ -1361,7 +1362,8 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	      if (TREE_CODE (comp) == SPACESHIP_EXPR)
 		TREE_TYPE (comp) = rettype;
 	      else
-		comp = build_static_cast (rettype, comp, complain);
+		comp = build_static_cast (input_location, rettype, comp,
+					  complain);
 	      info.check (comp);
 	      if (info.defining)
 		{
@@ -1395,7 +1397,8 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	    {
 	      tree seql = lookup_comparison_result (cc_strong_ordering,
 						    "equal", complain);
-	      val = build_static_cast (rettype, seql, complain);
+	      val = build_static_cast (input_location, rettype, seql,
+				       complain);
 	    }
 	  finish_return_stmt (val);
 	}

@@ -64,28 +64,28 @@ void f()
 {
   int n; 
 
-  (int)(n);                    // { dg-warning "useless cast" }
-  static_cast<int>(n);         // { dg-warning "useless cast" }
-  reinterpret_cast<int>(n);    // { dg-warning "useless cast" }
+  (int)(n);                    // { dg-warning "3:useless cast" }
+  static_cast<int>(n);         // { dg-warning "3:useless cast" }
+  reinterpret_cast<int>(n);    // { dg-warning "3:useless cast" }
 
-  (int*)(&n);                  // { dg-warning "useless cast" }
-  const_cast<int*>(&n);        // { dg-warning "useless cast" }
-  static_cast<int*>(&n);       // { dg-warning "useless cast" }
-  reinterpret_cast<int*>(&n);  // { dg-warning "useless cast" }
+  (int*)(&n);                  // { dg-warning "3:useless cast" }
+  const_cast<int*>(&n);        // { dg-warning "3:useless cast" }
+  static_cast<int*>(&n);       // { dg-warning "3:useless cast" }
+  reinterpret_cast<int*>(&n);  // { dg-warning "3:useless cast" }
 
   int& m = n;
 
-  (int&)(m);                   // { dg-warning "useless cast" }
-  const_cast<int&>(m);         // { dg-warning "useless cast" }
-  static_cast<int&>(m);        // { dg-warning "useless cast" }
-  reinterpret_cast<int&>(m);   // { dg-warning "useless cast" }
+  (int&)(m);                   // { dg-warning "3:useless cast" }
+  const_cast<int&>(m);         // { dg-warning "3:useless cast" }
+  static_cast<int&>(m);        // { dg-warning "3:useless cast" }
+  reinterpret_cast<int&>(m);   // { dg-warning "3:useless cast" }
 
   tmpl_f1(m);
 
-  (int&)(n);                   // { dg-warning "useless cast" }
-  const_cast<int&>(n);         // { dg-warning "useless cast" }
-  static_cast<int&>(n);        // { dg-warning "useless cast" }
-  reinterpret_cast<int&>(n);   // { dg-warning "useless cast" }
+  (int&)(n);                   // { dg-warning "3:useless cast" }
+  const_cast<int&>(n);         // { dg-warning "3:useless cast" }
+  static_cast<int&>(n);        // { dg-warning "3:useless cast" }
+  reinterpret_cast<int&>(n);   // { dg-warning "3:useless cast" }
 
   tmpl_f2(n);
 
@@ -100,30 +100,30 @@ void f()
 
   A a;
 
-  (A)(a);                     // { dg-warning "useless cast" }
-  static_cast<A>(a);          // { dg-warning "useless cast" }
+  (A)(a);                     // { dg-warning "3:useless cast" }
+  static_cast<A>(a);          // { dg-warning "3:useless cast" }
 
-  (A*)(&a);                   // { dg-warning "useless cast" }
-  const_cast<A*>(&a);         // { dg-warning "useless cast" }
-  static_cast<A*>(&a);        // { dg-warning "useless cast" }
-  reinterpret_cast<A*>(&a);   // { dg-warning "useless cast" }
-  dynamic_cast<A*>(&a);       // { dg-warning "useless cast" }
+  (A*)(&a);                   // { dg-warning "3:useless cast" }
+  const_cast<A*>(&a);         // { dg-warning "3:useless cast" }
+  static_cast<A*>(&a);        // { dg-warning "3:useless cast" }
+  reinterpret_cast<A*>(&a);   // { dg-warning "3:useless cast" }
+  dynamic_cast<A*>(&a);       // { dg-warning "3:useless cast" }
 
   A& b = a;
 
-  (A&)(b);                    // { dg-warning "useless cast" }
-  const_cast<A&>(b);          // { dg-warning "useless cast" }
-  static_cast<A&>(b);         // { dg-warning "useless cast" }     
-  static_cast<A&>(b);         // { dg-warning "useless cast" }
-  dynamic_cast<A&>(b);        // { dg-warning "useless cast" }
+  (A&)(b);                    // { dg-warning "3:useless cast" }
+  const_cast<A&>(b);          // { dg-warning "3:useless cast" }
+  static_cast<A&>(b);         // { dg-warning "3:useless cast" }     
+  static_cast<A&>(b);         // { dg-warning "3:useless cast" }
+  dynamic_cast<A&>(b);        // { dg-warning "3:useless cast" }
 
   tmpl_f3(b);
 
-  (A&)(a);                    // { dg-warning "useless cast" } 
-  const_cast<A&>(a);          // { dg-warning "useless cast" }
-  static_cast<A&>(a);         // { dg-warning "useless cast" }
-  reinterpret_cast<A&>(a);    // { dg-warning "useless cast" }
-  dynamic_cast<A&>(a);        // { dg-warning "useless cast" }
+  (A&)(a);                    // { dg-warning "3:useless cast" } 
+  const_cast<A&>(a);          // { dg-warning "3:useless cast" }
+  static_cast<A&>(a);         // { dg-warning "3:useless cast" }
+  reinterpret_cast<A&>(a);    // { dg-warning "3:useless cast" }
+  dynamic_cast<A&>(a);        // { dg-warning "3:useless cast" }
 
   tmpl_f4(a);
 }

@@ -8,5 +8,5 @@ struct A {
 struct B: public A { };
 
 void bar (A& a) {
-  B* bp = (B*)a;		// { dg-error "" } 
+  B* bp = (B*)a;		// { dg-error "11:invalid cast" } 
 }
