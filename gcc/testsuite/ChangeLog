@@ -1,3 +1,19 @@
+2019-12-09  Hongtao Liu  <hongtao@intel.com>
+
+	* gcc.target/i386/pr92686.inc: New file.
+	* gcc.target/i386/avx512bw-pr92686-vpcmp-1.c: New test.
+	* gcc.target/i386/avx512bw-pr92686-vpcmp-intelasm-1.c: Ditto.
+	* gcc.target/i386/avx512bw-pr92686-vpcmp-2.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-intelasm-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-2.c: Ditto.
+	* gcc.target/i386/avx512bw-pr92686-movcc-1.c: Ditto.
+	* gcc.target/i386/avx512bw-pr92686-movcc-2.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-movcc-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-movcc-2.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88547-1.c: Adjust testcase.
+	* gcc.target/i386/pr88547-1.c: Ditto.
+
 2019-12-08  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.c-torture/execute/bswap-3.c: New test.

@@ -12468,6 +12468,40 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 	  return;
 
+	case 'I':
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    putc ('$', file);
+	  switch (GET_CODE (x))
+	    {
+	    case EQ:
+	      putc ('0', file);
+	      break;
+	    case NE:
+	      putc ('4', file);
+	      break;
+	    case GE:
+	    case GEU:
+	      putc ('5', file);
+	      break;
+	    case GT:
+	    case GTU:
+	      putc ('6', file);
+	      break;
+	    case LE:
+	    case LEU:
+	      putc ('2', file);
+	      break;
+	    case LT:
+	    case LTU:
+	      putc ('1', file);
+	      break;
+	    default:
+	      output_operand_lossage ("operand is not a condition code, "
+				      "invalid operand code 'I'");
+	      return;
+	    }
+	  return;
+
 	case 'Y':
 	  switch (GET_CODE (x))
 	    {

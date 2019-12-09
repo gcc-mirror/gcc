@@ -1,3 +1,22 @@
+2019-12-09  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/92686
+	* config/i386/sse.md
+	(*<avx512>_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>,
+	*<avx512>_cmp<mode>3<mask_scalar_merge_name>,
+	*<avx512>_ucmp<mode>3<mask_scalar_merge_name>,
+	*<avx512>_ucmp<mode>3<mask_scalar_merge_name>): New.
+	* config/i386/i386.c (ix86_print_operand): New operand substitution.
+	* config/i386/i386-expand.c (ix86_valid_mask_cmp_mode):
+	New function.
+	(ix86_expand_sse_cmp): Relax condition for integer mask from
+	512-bit vector to all 128/256/512-bit vector. Delete code gen
+	for avx512f compare patterns since we have generic pattern now.
+	(ix86_expand_sse_movcc): Adjust condition and codegen for
+	maskcmp.
+	(ix86_expand_int_sse_cmp): Don't canonicalize the comparison
+	when corresponding vector compare is available.
+
 2019-12-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Revert:
