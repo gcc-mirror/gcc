@@ -5764,7 +5764,8 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_shift");
-      vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
+      vect_model_simple_cost (stmt_info, ncopies, dt,
+			      scalar_shift_arg ? 1 : ndts, slp_node, cost_vec);
       return true;
     }
 
