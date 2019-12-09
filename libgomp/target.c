@@ -2897,7 +2897,6 @@ gomp_target_init (void)
 		current_device.type = current_device.get_type_func ();
 		current_device.mem_map.root = NULL;
 		current_device.state = GOMP_DEVICE_UNINITIALIZED;
-		current_device.openacc.data_environ = NULL;
 		for (i = 0; i < new_num_devices; i++)
 		  {
 		    current_device.target_id = i;

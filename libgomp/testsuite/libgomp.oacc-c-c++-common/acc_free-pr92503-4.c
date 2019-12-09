@@ -26,7 +26,5 @@ main ()
 }
 
 /* { dg-output "CheCKpOInT(\n|\r\n|\r).*" }
-   TODO PR92877
-   { dg-output "libgomp: cuMemGetAddressRange_v2 error: named symbol not found" { target openacc_nvidia_accel_selected } }
-   { dg-output "refusing to free device memory space at \[0-9a-fA-FxX\]+ that is still mapped at \\\[\[0-9a-fA-FxX\]+,\\\+87\\\]" { xfail *-*-* } }
+   { dg-output "refusing to free device memory space at \[0-9a-fA-FxX\]+ that is still mapped at \\\[\[0-9a-fA-FxX\]+,\\\+87\\\]" }
    { dg-shouldfail "" } */

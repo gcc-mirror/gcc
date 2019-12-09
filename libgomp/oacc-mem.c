@@ -50,43 +50,41 @@ lookup_host (struct gomp_device_descr *dev, void *h, size_t s)
   return key;
 }
 
-/* Return block containing [D->S), or NULL if not contained.
-   The list isn't ordered by device address, so we have to iterate
-   over the whole array.  This is not expected to be a common
-   operation.  The device lock associated with TGT must be locked on entry, and
-   remains locked on exit.  */
+/* Helper for lookup_dev.  Iterate over splay tree.  */
 
 static splay_tree_key
-lookup_dev (struct target_mem_desc *tgt, void *d, size_t s)
+lookup_dev_1 (splay_tree_node node, uintptr_t d, size_t s)
 {
-  int i;
-  struct target_mem_desc *t;
+  splay_tree_key key = &node->key;
+  if (d >= key->tgt->tgt_start && d + s <= key->tgt->tgt_end)
+    return key;
 
-  if (!tgt)
-    return NULL;
+  key = NULL;
+  if (node->left)
+    key = lookup_dev_1 (node->left, d, s);
+  if (!key && node->right)
+    key = lookup_dev_1 (node->right, d, s);
 
-  for (t = tgt; t != NULL; t = t->prev)
-    {
-      if (t->tgt_start <= (uintptr_t) d && t->tgt_end >= (uintptr_t) d + s)
-        break;
-    }
-
-  if (!t)
-    return NULL;
-
-  for (i = 0; i < t->list_count; i++)
-    {
-      void * offset;
-
-      splay_tree_key k = &t->array[i].key;
-      offset = d - t->tgt_start + k->tgt_offset;
-
-      if (k->host_start + offset <= (void *) k->host_end)
-        return k;
-    }
-
-  return NULL;
+  return key;
 }
+
+/* Return block containing [D->S), or NULL if not contained.
+
+   This iterates over the splay tree.  This is not expected to be a common
+   operation.
+
+   The device lock associated with MEM_MAP must be locked on entry, and remains
+   locked on exit.  */
+
+static splay_tree_key
+lookup_dev (splay_tree mem_map, void *d, size_t s)
+{
+  if (!mem_map || !mem_map->root)
+    return NULL;
+
+  return lookup_dev_1 (mem_map->root, (uintptr_t) d, s);
+}
+
 
 /* OpenACC is silent on how memory exhaustion is indicated.  We return
    NULL.  */
@@ -147,7 +145,7 @@ acc_free (void *d)
   /* We don't have to call lazy open here, as the ptr value must have
      been returned by acc_malloc.  It's not permitted to pass NULL in
      (unless you got that null from acc_malloc).  */
-  if ((k = lookup_dev (acc_dev->openacc.data_environ, d, 1)))
+  if ((k = lookup_dev (&acc_dev->mem_map, d, 1)))
     {
       void *offset = d - k->tgt->tgt_start + k->tgt_offset;
       void *h = k->host_start + offset;
@@ -300,7 +298,7 @@ acc_hostptr (void *d)
 
   gomp_mutex_lock (&acc_dev->lock);
 
-  n = lookup_dev (acc_dev->openacc.data_environ, d, 1);
+  n = lookup_dev (&acc_dev->mem_map, d, 1);
 
   if (!n)
     {
@@ -395,7 +393,7 @@ acc_map_data (void *h, void *d, size_t s)
 		      (int)s);
 	}
 
-      if (lookup_dev (thr->dev->openacc.data_environ, d, s))
+      if (lookup_dev (&thr->dev->mem_map, d, s))
         {
 	  gomp_mutex_unlock (&acc_dev->lock);
 	  gomp_fatal ("device address [%p, +%d] is already mapped", (void *)d,
@@ -418,11 +416,6 @@ acc_map_data (void *h, void *d, size_t s)
 	  thr->api_info = NULL;
 	}
     }
-
-  gomp_mutex_lock (&acc_dev->lock);
-  tgt->prev = acc_dev->openacc.data_environ;
-  acc_dev->openacc.data_environ = tgt;
-  gomp_mutex_unlock (&acc_dev->lock);
 }
 
 void
@@ -482,25 +475,11 @@ acc_unmap_data (void *h)
 
   if (t->refcount == 2)
     {
-      struct target_mem_desc *tp;
-
       /* This is the last reference, so pull the descriptor off the
          chain. This avoids gomp_unmap_vars via gomp_unmap_tgt from
          freeing the device memory. */
       t->tgt_end = 0;
       t->to_free = 0;
-
-      for (tp = NULL, t = acc_dev->openacc.data_environ; t != NULL;
-	   tp = t, t = t->prev)
-	if (n->tgt == t)
-	  {
-	    if (tp)
-	      tp->prev = t->prev;
-	    else
-	      acc_dev->openacc.data_environ = t->prev;
-
-	    break;
-	  }
     }
 
   gomp_mutex_unlock (&acc_dev->lock);
@@ -597,13 +576,7 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
       /* Initialize dynamic refcount.  */
       tgt->list[0].key->dynamic_refcount = 1;
 
-      gomp_mutex_lock (&acc_dev->lock);
-
       d = tgt->to_free;
-      tgt->prev = acc_dev->openacc.data_environ;
-      acc_dev->openacc.data_environ = tgt;
-
-      gomp_mutex_unlock (&acc_dev->lock);
     }
 
   if (profiling_p)
@@ -749,21 +722,6 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 
   if (n->refcount == 0)
     {
-      if (n->tgt->refcount == 2)
-	{
-	  struct target_mem_desc *tp, *t;
-	  for (tp = NULL, t = acc_dev->openacc.data_environ; t != NULL;
-	       tp = t, t = t->prev)
-	    if (n->tgt == t)
-	      {
-		if (tp)
-		  tp->prev = t->prev;
-		else
-		  acc_dev->openacc.data_environ = t->prev;
-		break;
-	      }
-	}
-
       if (f & FLAG_COPYOUT)
 	{
 	  goacc_aq aq = get_goacc_asyncqueue (async);
@@ -954,11 +912,6 @@ gomp_acc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
 
   /* Initialize dynamic refcount.  */
   tgt->list[0].key->dynamic_refcount = 1;
-
-  gomp_mutex_lock (&acc_dev->lock);
-  tgt->prev = acc_dev->openacc.data_environ;
-  acc_dev->openacc.data_environ = tgt;
-  gomp_mutex_unlock (&acc_dev->lock);
 }
 
 void
@@ -1009,26 +962,6 @@ gomp_acc_remove_pointer (void *h, size_t s, bool force_copyfrom, int async,
 
   if (n->refcount == 0)
     {
-      if (t->refcount == minrefs)
-	{
-	  /* This is the last reference, so pull the descriptor off the
-	     chain. This prevents gomp_unmap_vars via gomp_unmap_tgt from
-	     freeing the device memory. */
-	  struct target_mem_desc *tp;
-	  for (tp = NULL, t = acc_dev->openacc.data_environ; t != NULL;
-	       tp = t, t = t->prev)
-	    {
-	      if (n->tgt == t)
-		{
-		  if (tp)
-		    tp->prev = t->prev;
-		  else
-		    acc_dev->openacc.data_environ = t->prev;
-		  break;
-		}
-	    }
-	}
-
       /* Set refcount to 1 to allow gomp_unmap_vars to unmap it.  */
       n->refcount = 1;
       t->refcount = minrefs;
