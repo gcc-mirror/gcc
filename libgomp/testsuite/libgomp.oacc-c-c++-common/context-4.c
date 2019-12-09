@@ -176,12 +176,12 @@ main (int argc, char **argv)
         exit (EXIT_FAILURE);
     }
 
+    acc_delete (&h_X[0], N * sizeof (float));
+    acc_delete (&h_Y1[0], N * sizeof (float));
+
     free (h_X);
     free (h_Y1);
     free (h_Y2);
-
-    acc_free (d_X);
-    acc_free (d_Y);
 
     context_check (pctx);
 

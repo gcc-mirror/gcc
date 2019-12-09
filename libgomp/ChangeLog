@@ -1,5 +1,30 @@
 2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/92503
+	* oacc-mem.c (acc_free): Error out instead of 'acc_unmap_data'.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-1.c: New
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-3-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-4-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/clauses-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/context-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-13.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-14.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-91.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/nested-1.c: Likewise.
+
 	PR libgomp/92840
 	* oacc-mem.c (acc_map_data): Clarify reference counting behavior.
 	(acc_unmap_data): Add error case for 'REFCOUNT_INFINITY'.
