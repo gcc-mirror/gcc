@@ -29,12 +29,12 @@ program optional_update_host
 
   call test_array(a_arr, b_arr)
   do i = 1, n
-    if (res_arr(i) .ne. 0) stop 1
+    if (res_arr(i) .ne. 0) stop 3
   end do
 
   call test_array(a_arr, b_arr, res_arr)
   do i = 1, n
-    if (res_arr(i) .ne. a_arr(i) * b_arr(i)) stop 2
+    if (res_arr(i) .ne. a_arr(i) * b_arr(i)) stop 4
   end do
 
   allocate(a_alloc(n))
@@ -49,12 +49,12 @@ program optional_update_host
 
   call test_allocatable(a_alloc, b_alloc)
   do i = 1, n
-    if (res_alloc(i) .ne. 0) stop 1
+    if (res_alloc(i) .ne. 0) stop 5
   end do
 
   call test_allocatable(a_alloc, b_alloc, res_alloc)
   do i = 1, n
-    if (res_alloc(i) .ne. a_alloc(i) * b_alloc(i)) stop 2
+    if (res_alloc(i) .ne. a_alloc(i) * b_alloc(i)) stop 6
   end do
 
   deallocate(a_alloc)
