@@ -1,3 +1,7 @@
+2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_exit_data): Use 'gomp_remove_var'.
+
 2019-12-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/use_device_addr-3.f90: Make 'stop' codes
