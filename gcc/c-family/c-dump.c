@@ -26,6 +26,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Dump any C-specific tree codes and attributes of common codes.  */
 
+static void
+dump_stmt (dump_info_p di, const_tree t)
+{
+  if (EXPR_HAS_LOCATION (t))
+    dump_int (di, "line", EXPR_LINENO (t));
+}
+
 bool
 c_dump_tree (void *dump_info, tree t)
 {
@@ -40,6 +47,37 @@ c_dump_tree (void *dump_info, tree t)
     case FIELD_DECL:
       if (DECL_C_BIT_FIELD (t))
 	dump_string (di, "bitfield");
+      break;
+
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      dump_stmt (di, t);
+      break;
+
+    case DO_STMT:
+      dump_stmt (di, t);
+      dump_child ("body", DO_BODY (t));
+      dump_child ("cond", DO_COND (t));
+      break;
+
+    case FOR_STMT:
+      dump_stmt (di, t);
+      dump_child ("init", FOR_INIT_STMT (t));
+      dump_child ("cond", FOR_COND (t));
+      dump_child ("expr", FOR_EXPR (t));
+      dump_child ("body", FOR_BODY (t));
+      break;
+
+    case SWITCH_STMT:
+      dump_stmt (di, t);
+      dump_child ("cond", SWITCH_STMT_COND (t));
+      dump_child ("body", SWITCH_STMT_BODY (t));
+      break;
+
+    case WHILE_STMT:
+      dump_stmt (di, t);
+      dump_child ("cond", WHILE_COND (t));
+      dump_child ("body", WHILE_BODY (t));
       break;
 
     default:

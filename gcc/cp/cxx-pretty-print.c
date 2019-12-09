@@ -2018,73 +2018,6 @@ cxx_pretty_printer::statement (tree t)
 	}
       break;
 
-    case SWITCH_STMT:
-      pp_cxx_ws_string (this, "switch");
-      pp_space (this);
-      pp_cxx_left_paren (this);
-      expression (SWITCH_STMT_COND (t));
-      pp_cxx_right_paren (this);
-      pp_indentation (this) += 3;
-      pp_needs_newline (this) = true;
-      statement (SWITCH_STMT_BODY (t));
-      pp_newline_and_indent (this, -3);
-      break;
-
-      /* iteration-statement:
-	    while ( expression ) statement
-	    do statement while ( expression ) ;
-	    for ( expression(opt) ; expression(opt) ; expression(opt) ) statement
-	    for ( declaration expression(opt) ; expression(opt) ) statement  */
-    case WHILE_STMT:
-      pp_cxx_ws_string (this, "while");
-      pp_space (this);
-      pp_cxx_left_paren (this);
-      expression (WHILE_COND (t));
-      pp_cxx_right_paren (this);
-      pp_newline_and_indent (this, 3);
-      statement (WHILE_BODY (t));
-      pp_indentation (this) -= 3;
-      pp_needs_newline (this) = true;
-      break;
-
-    case DO_STMT:
-      pp_cxx_ws_string (this, "do");
-      pp_newline_and_indent (this, 3);
-      statement (DO_BODY (t));
-      pp_newline_and_indent (this, -3);
-      pp_cxx_ws_string (this, "while");
-      pp_space (this);
-      pp_cxx_left_paren (this);
-      expression (DO_COND (t));
-      pp_cxx_right_paren (this);
-      pp_cxx_semicolon (this);
-      pp_needs_newline (this) = true;
-      break;
-
-    case FOR_STMT:
-      pp_cxx_ws_string (this, "for");
-      pp_space (this);
-      pp_cxx_left_paren (this);
-      if (FOR_INIT_STMT (t))
-	statement (FOR_INIT_STMT (t));
-      else
-	pp_cxx_semicolon (this);
-      pp_needs_newline (this) = false;
-      pp_cxx_whitespace (this);
-      if (FOR_COND (t))
-	expression (FOR_COND (t));
-      pp_cxx_semicolon (this);
-      pp_needs_newline (this) = false;
-      pp_cxx_whitespace (this);
-      if (FOR_EXPR (t))
-	expression (FOR_EXPR (t));
-      pp_cxx_right_paren (this);
-      pp_newline_and_indent (this, 3);
-      statement (FOR_BODY (t));
-      pp_indentation (this) -= 3;
-      pp_needs_newline (this) = true;
-      break;
-
     case RANGE_FOR_STMT:
       pp_cxx_ws_string (this, "for");
       pp_space (this);
@@ -2105,17 +2038,6 @@ cxx_pretty_printer::statement (tree t)
       pp_newline_and_indent (this, 3);
       statement (FOR_BODY (t));
       pp_indentation (this) -= 3;
-      pp_needs_newline (this) = true;
-      break;
-
-      /* jump-statement:
-	    goto identifier;
-	    continue ;
-	    return expression(opt) ;  */
-    case BREAK_STMT:
-    case CONTINUE_STMT:
-      pp_string (this, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
-      pp_cxx_semicolon (this);
       pp_needs_newline (this) = true;
       break;
 

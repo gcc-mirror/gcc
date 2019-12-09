@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "tree.h"
+#include "tree-iterator.h"
+#include "predict.h"
 #include "gimple.h"
 #include "cgraph.h"
 #include "c-pretty-print.h"
@@ -107,6 +109,404 @@ ubsan_walk_array_refs_r (tree *tp, int *walk_subtrees, void *data)
 
 /* Gimplification of statement trees.  */
 
+/* Local declarations.  */
+
+enum bc_t { bc_break = 0, bc_continue = 1 };
+
+/* Stack of labels which are targets for "break" or "continue",
+   linked through TREE_CHAIN.  */
+static tree bc_label[2];
+
+/* Begin a scope which can be exited by a break or continue statement.  BC
+   indicates which.
+
+   Just creates a label with location LOCATION and pushes it into the current
+   context.  */
+
+static tree
+begin_bc_block (enum bc_t bc, location_t location)
+{
+  tree label = create_artificial_label (location);
+  DECL_CHAIN (label) = bc_label[bc];
+  bc_label[bc] = label;
+  if (bc == bc_break)
+    LABEL_DECL_BREAK (label) = true;
+  else
+    LABEL_DECL_CONTINUE (label) = true;
+  return label;
+}
+
+/* Finish a scope which can be exited by a break or continue statement.
+   LABEL was returned from the most recent call to begin_bc_block.  BLOCK is
+   an expression for the contents of the scope.
+
+   If we saw a break (or continue) in the scope, append a LABEL_EXPR to
+   BLOCK.  Otherwise, just forget the label.  */
+
+static void
+finish_bc_block (tree *block, enum bc_t bc, tree label)
+{
+  gcc_assert (label == bc_label[bc]);
+
+  if (TREE_USED (label))
+    append_to_statement_list (build1 (LABEL_EXPR, void_type_node, label),
+			      block);
+
+  bc_label[bc] = DECL_CHAIN (label);
+  DECL_CHAIN (label) = NULL_TREE;
+}
+
+/* Allow saving and restoring break/continue state.  */
+
+void
+save_bc_state (bc_state_t *state)
+{
+  state->bc_label[bc_break] = bc_label[bc_break];
+  state->bc_label[bc_continue] = bc_label[bc_continue];
+  bc_label[bc_break] = NULL_TREE;
+  bc_label[bc_continue] = NULL_TREE;
+}
+
+void
+restore_bc_state (bc_state_t *state)
+{
+  gcc_assert (bc_label[bc_break] == NULL);
+  gcc_assert (bc_label[bc_continue] == NULL);
+  bc_label[bc_break] = state->bc_label[bc_break];
+  bc_label[bc_continue] = state->bc_label[bc_continue];
+}
+
+/* Get the LABEL_EXPR to represent a break or continue statement
+   in the current block scope.  BC indicates which.  */
+
+static tree
+get_bc_label (enum bc_t bc)
+{
+  tree label = bc_label[bc];
+  gcc_assert (label);
+
+  /* Mark the label used for finish_bc_block.  */
+  TREE_USED (label) = 1;
+  return label;
+}
+
+/* Return the location from EXPR, or OR_LOC if the former is unknown.  */
+
+location_t
+expr_loc_or_loc (const_tree expr, location_t or_loc)
+{
+  tree t = CONST_CAST_TREE (expr);
+  location_t loc = UNKNOWN_LOCATION;
+  if (t)
+    loc = EXPR_LOCATION (t);
+  if (loc == UNKNOWN_LOCATION)
+    loc = or_loc;
+  return loc;
+}
+
+/* Build a generic representation of one of the C loop forms.  COND is the
+   loop condition or NULL_TREE.  BODY is the (possibly compound) statement
+   controlled by the loop.  INCR is the increment expression of a for-loop,
+   or NULL_TREE.  COND_IS_FIRST indicates whether the condition is
+   evaluated before the loop body as in while and for loops, or after the
+   loop body as in do-while loops.  */
+
+static void
+genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
+		   tree incr, bool cond_is_first, int *walk_subtrees,
+		   void *data, walk_tree_fn func, walk_tree_lh lh)
+{
+  tree blab, clab;
+  tree exit = NULL;
+  tree stmt_list = NULL;
+  tree debug_begin = NULL;
+
+  protected_set_expr_location_if_unset (incr, start_locus);
+
+  walk_tree_1 (&cond, func, data, NULL, lh);
+  walk_tree_1 (&incr, func, data, NULL, lh);
+
+  blab = begin_bc_block (bc_break, start_locus);
+  clab = begin_bc_block (bc_continue, start_locus);
+
+  walk_tree_1 (&body, func, data, NULL, lh);
+  *walk_subtrees = 0;
+
+  if (MAY_HAVE_DEBUG_MARKER_STMTS
+      && (!cond || !integer_zerop (cond)))
+    {
+      debug_begin = build0 (DEBUG_BEGIN_STMT, void_type_node);
+      SET_EXPR_LOCATION (debug_begin, expr_loc_or_loc (cond, start_locus));
+    }
+
+  if (cond && TREE_CODE (cond) != INTEGER_CST)
+    {
+      /* If COND is constant, don't bother building an exit.  If it's false,
+	 we won't build a loop.  If it's true, any exits are in the body.  */
+      location_t cloc = expr_loc_or_loc (cond, start_locus);
+      exit = build1_loc (cloc, GOTO_EXPR, void_type_node,
+			 get_bc_label (bc_break));
+      /* FIXME: using fold_build3_loc here causes it to sometimes flip
+	 the conditional and arms of the COND_EXPR.  This confuses the
+	 code to support -Wimplicit-fallthrough and causes failures
+	 in the C testsuite.  Folding optimizations ought to get sorted
+	 out after gimplification anyway, so don't do it here for now.  */
+      exit = build3_loc (cloc, COND_EXPR, void_type_node, cond,
+			 build_empty_stmt (cloc), exit);
+    }
+
+  if (exit && cond_is_first)
+    {
+      append_to_statement_list (debug_begin, &stmt_list);
+      debug_begin = NULL_TREE;
+      append_to_statement_list (exit, &stmt_list);
+    }
+  append_to_statement_list (body, &stmt_list);
+  finish_bc_block (&stmt_list, bc_continue, clab);
+  if (incr)
+    {
+      if (MAY_HAVE_DEBUG_MARKER_STMTS)
+	{
+	  tree d = build0 (DEBUG_BEGIN_STMT, void_type_node);
+	  SET_EXPR_LOCATION (d, expr_loc_or_loc (incr, start_locus));
+	  append_to_statement_list (d, &stmt_list);
+	}
+      append_to_statement_list (incr, &stmt_list);
+    }
+  append_to_statement_list (debug_begin, &stmt_list);
+  if (exit && !cond_is_first)
+    append_to_statement_list (exit, &stmt_list);
+
+  if (!stmt_list)
+    stmt_list = build_empty_stmt (start_locus);
+
+  tree loop;
+  if (cond && integer_zerop (cond))
+    {
+      if (cond_is_first)
+	loop = fold_build3_loc (start_locus, COND_EXPR,
+				void_type_node, cond, stmt_list,
+				build_empty_stmt (start_locus));
+      else
+	loop = stmt_list;
+    }
+  else
+    {
+      location_t loc = start_locus;
+      if (!cond || integer_nonzerop (cond))
+	loc = EXPR_LOCATION (expr_first (body));
+      if (loc == UNKNOWN_LOCATION)
+	loc = start_locus;
+      loop = build1_loc (loc, LOOP_EXPR, void_type_node, stmt_list);
+    }
+
+  stmt_list = NULL;
+  append_to_statement_list (loop, &stmt_list);
+  finish_bc_block (&stmt_list, bc_break, blab);
+  if (!stmt_list)
+    stmt_list = build_empty_stmt (start_locus);
+
+  *stmt_p = stmt_list;
+}
+
+/* Genericize a FOR_STMT node *STMT_P.  */
+
+static void
+genericize_for_stmt (tree *stmt_p, int *walk_subtrees, void *data,
+		     walk_tree_fn func, walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+  tree expr = NULL;
+  tree loop;
+  tree init = FOR_INIT_STMT (stmt);
+
+  if (init)
+    {
+      walk_tree_1 (&init, func, data, NULL, lh);
+      append_to_statement_list (init, &expr);
+    }
+
+  genericize_c_loop (&loop, EXPR_LOCATION (stmt), FOR_COND (stmt),
+		     FOR_BODY (stmt), FOR_EXPR (stmt), 1, walk_subtrees,
+		     data, func, lh);
+  append_to_statement_list (loop, &expr);
+  if (expr == NULL_TREE)
+    expr = loop;
+  *stmt_p = expr;
+}
+
+/* Genericize a WHILE_STMT node *STMT_P.  */
+
+static void
+genericize_while_stmt (tree *stmt_p, int *walk_subtrees, void *data,
+		       walk_tree_fn func, walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+  genericize_c_loop (stmt_p, EXPR_LOCATION (stmt), WHILE_COND (stmt),
+		     WHILE_BODY (stmt), NULL_TREE, 1, walk_subtrees,
+		     data, func, lh);
+}
+
+/* Genericize a DO_STMT node *STMT_P.  */
+
+static void
+genericize_do_stmt (tree *stmt_p, int *walk_subtrees, void *data,
+		    walk_tree_fn func, walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+  genericize_c_loop (stmt_p, EXPR_LOCATION (stmt), DO_COND (stmt),
+		     DO_BODY (stmt), NULL_TREE, 0, walk_subtrees,
+		     data, func, lh);
+}
+
+/* Genericize a SWITCH_STMT node *STMT_P by turning it into a SWITCH_EXPR.  */
+
+static void
+genericize_switch_stmt (tree *stmt_p, int *walk_subtrees, void *data,
+			walk_tree_fn func, walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+  tree break_block, body, cond, type;
+  location_t stmt_locus = EXPR_LOCATION (stmt);
+
+  body = SWITCH_STMT_BODY (stmt);
+  if (!body)
+    body = build_empty_stmt (stmt_locus);
+  cond = SWITCH_STMT_COND (stmt);
+  type = SWITCH_STMT_TYPE (stmt);
+
+  walk_tree_1 (&cond, func, data, NULL, lh);
+
+  break_block = begin_bc_block (bc_break, stmt_locus);
+
+  walk_tree_1 (&body, func, data, NULL, lh);
+  walk_tree_1 (&type, func, data, NULL, lh);
+  *walk_subtrees = 0;
+
+  if (TREE_USED (break_block))
+    SWITCH_BREAK_LABEL_P (break_block) = 1;
+  finish_bc_block (&body, bc_break, break_block);
+  *stmt_p = build2_loc (stmt_locus, SWITCH_EXPR, type, cond, body);
+  SWITCH_ALL_CASES_P (*stmt_p) = SWITCH_STMT_ALL_CASES_P (stmt);
+  gcc_checking_assert (!SWITCH_STMT_NO_BREAK_P (stmt)
+		       || !TREE_USED (break_block));
+}
+
+/* Genericize a CONTINUE_STMT node *STMT_P.  */
+
+static void
+genericize_continue_stmt (tree *stmt_p)
+{
+  tree stmt_list = NULL;
+  tree pred = build_predict_expr (PRED_CONTINUE, NOT_TAKEN);
+  tree label = get_bc_label (bc_continue);
+  location_t location = EXPR_LOCATION (*stmt_p);
+  tree jump = build1_loc (location, GOTO_EXPR, void_type_node, label);
+  append_to_statement_list_force (pred, &stmt_list);
+  append_to_statement_list (jump, &stmt_list);
+  *stmt_p = stmt_list;
+}
+
+/* Genericize a BREAK_STMT node *STMT_P.  */
+
+static void
+genericize_break_stmt (tree *stmt_p)
+{
+  tree label = get_bc_label (bc_break);
+  location_t location = EXPR_LOCATION (*stmt_p);
+  *stmt_p = build1_loc (location, GOTO_EXPR, void_type_node, label);
+}
+
+/* Genericize a OMP_FOR node *STMT_P.  */
+
+static void
+genericize_omp_for_stmt (tree *stmt_p, int *walk_subtrees, void *data,
+			 walk_tree_fn func, walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+  location_t locus = EXPR_LOCATION (stmt);
+  tree clab = begin_bc_block (bc_continue, locus);
+
+  walk_tree_1 (&OMP_FOR_BODY (stmt), func, data, NULL, lh);
+  if (TREE_CODE (stmt) != OMP_TASKLOOP)
+    walk_tree_1 (&OMP_FOR_CLAUSES (stmt), func, data, NULL, lh);
+  walk_tree_1 (&OMP_FOR_INIT (stmt), func, data, NULL, lh);
+  walk_tree_1 (&OMP_FOR_COND (stmt), func, data, NULL, lh);
+  walk_tree_1 (&OMP_FOR_INCR (stmt), func, data, NULL, lh);
+  walk_tree_1 (&OMP_FOR_PRE_BODY (stmt), func, data, NULL, lh);
+  *walk_subtrees = 0;
+
+  finish_bc_block (&OMP_FOR_BODY (stmt), bc_continue, clab);
+}
+
+
+/* Lower structured control flow tree nodes, such as loops.  The
+   STMT_P, WALK_SUBTREES, and DATA arguments are as for the walk_tree_fn
+   type.  FUNC and LH are language-specific functions passed to walk_tree_1
+   for node visiting and traversal, respectively; they are used to do
+   subtree processing in a language-dependent way.  */
+
+tree
+c_genericize_control_stmt (tree *stmt_p, int *walk_subtrees, void *data,
+			   walk_tree_fn func, walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+
+  switch (TREE_CODE (stmt))
+    {
+    case FOR_STMT:
+      genericize_for_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    case WHILE_STMT:
+      genericize_while_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    case DO_STMT:
+      genericize_do_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    case SWITCH_STMT:
+      genericize_switch_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    case CONTINUE_STMT:
+      genericize_continue_stmt (stmt_p);
+      break;
+
+    case BREAK_STMT:
+      genericize_break_stmt (stmt_p);
+      break;
+
+    case OMP_FOR:
+    case OMP_SIMD:
+    case OMP_DISTRIBUTE:
+    case OMP_LOOP:
+    case OMP_TASKLOOP:
+    case OACC_LOOP:
+      genericize_omp_for_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL;
+}
+
+
+/* Wrapper for c_genericize_control_stmt to allow it to be used as a walk_tree
+   callback.  This is appropriate for C; C++ calls c_genericize_control_stmt
+   directly.  */
+
+static tree
+c_genericize_control_r (tree *stmt_p, int *walk_subtrees, void *data)
+{
+  c_genericize_control_stmt (stmt_p, walk_subtrees, data,
+			     c_genericize_control_r, NULL);
+  return NULL;
+}
+
 /* Convert the tree representation of FNDECL from C frontend trees to
    GENERIC.  */
 
@@ -127,6 +527,19 @@ c_genericize (tree fndecl)
   if (warn_duplicated_branches)
     walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
 				  do_warn_duplicated_branches_r, NULL);
+
+  /* Genericize loops and other structured control constructs.  The C++
+     front end has already done this in lang-specific code.  */
+  if (!c_dialect_cxx ())
+    {
+      bc_state_t save_state;
+      push_cfun (DECL_STRUCT_FUNCTION (fndecl));
+      save_bc_state (&save_state);
+      walk_tree (&DECL_SAVED_TREE (fndecl), c_genericize_control_r,
+		 NULL, NULL);
+      restore_bc_state (&save_state);
+      pop_cfun ();
+    }
 
   /* Dump the C-specific tree IR.  */
   dump_orig = get_dump_info (TDI_original, &local_dump_flags);

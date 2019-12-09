@@ -314,13 +314,8 @@ cxx_block_may_fallthru (const_tree stmt)
 	return true;
       return block_may_fallthru (ELSE_CLAUSE (stmt));
 
-    case SWITCH_STMT:
-      return (!SWITCH_STMT_ALL_CASES_P (stmt)
-	      || !SWITCH_STMT_NO_BREAK_P (stmt)
-	      || block_may_fallthru (SWITCH_STMT_BODY (stmt)));
-
     default:
-      return true;
+      return c_block_may_fallthru (stmt);
     }
 }
 
@@ -477,20 +472,14 @@ cp_common_init_ts (void)
   MARK_TS_TYPE_NON_COMMON (TYPE_PACK_EXPANSION);
 
   /* Statements.  */
-  MARK_TS_EXP (BREAK_STMT);
   MARK_TS_EXP (CLEANUP_STMT);
-  MARK_TS_EXP (CONTINUE_STMT);
-  MARK_TS_EXP (DO_STMT);
   MARK_TS_EXP (EH_SPEC_BLOCK);
-  MARK_TS_EXP (FOR_STMT);
   MARK_TS_EXP (HANDLER);
   MARK_TS_EXP (IF_STMT);
   MARK_TS_EXP (OMP_DEPOBJ);
   MARK_TS_EXP (RANGE_FOR_STMT);
-  MARK_TS_EXP (SWITCH_STMT);
   MARK_TS_EXP (TRY_BLOCK);
   MARK_TS_EXP (USING_STMT);
-  MARK_TS_EXP (WHILE_STMT);
 
   /* Random expressions.  */
   MARK_TS_EXP (ADDRESSOF_EXPR);

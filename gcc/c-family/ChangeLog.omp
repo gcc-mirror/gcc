@@ -1,3 +1,44 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-common.c (c_block_may_fallthrough): New, split from
+	cxx_block_may_fallthrough in the cp front end.
+	(c_common_init_ts): Move handling of loop and switch-related
+	statements here from the cp front end.
+	* c-common.def (FOR_STMT, WHILE_STMT, DO_STMT): Move here from
+	cp front end.
+	(BREAK_STMT, CONTINUE_STMT, SWITCH_STMT): Likewise.
+	* c-common.h (c_block_may_fallthru): Declare.
+	(bc_state_t): Move here from cp front end.
+	(save_bc_state, restore_bc_state): Declare.
+	(c_genericize_control_stmt): Declare.
+	(WHILE_COND, WHILE_BODY): Likewise.
+	(DO_COND, DO_BODY): Likewise.
+	(FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, FOR_SCOPE): Likewise.
+	(SWITCH_STMT_COND, SWITCH_STMT_BODY): Likewise.
+	(SWITCH_STMT_TYPE, SWITCH_STMT_SCOPE): Likewise.
+	(SWITCH_STMT_ALL_CASES_P, SWITCH_STMT_NO_BREAK_P): Likewise.
+	(LABEL_DECL_BREAK, LABEL_DECL_CONTINUE): Likewise.
+	* c-dump.c (dump_stmt): Copy from cp front end.
+	(c_dump_tree): Move code to handle structured loop and switch
+	tree nodes here from cp front end.
+	* c-gimplify.c: Adjust includes.
+	(enum bc_t, bc_label, begin_bc_block, finish_bc_block): Move from
+	cp front end.
+	(save_bc_state, restore_bc_state): New functions using old code
+	from cp front end.
+	(get_bc_label, expr_loc_or_loc): Move from cp front end.
+	(genericize_c_loop): Move from cp front end.
+	(genericize_for_stmt, genericize_while_stmt): Likewise.
+	(genericize_do_stmt, genericize_switch_stmt): Likewise.
+	(genericize_continue_stmt, genericize_break_stmt): Likewise.
+	(genericize_omp_for_stmt): Likewise.
+	(c_genericize_control_stmt): New function using code split from
+	cp front end.
+	(c_genericize_control_r): New.
+	(c_genericize): Call walk_tree with c_genericize_control_r.
+	* c-pretty-print.c (c_pretty_printer::statement): Move code to handle
+	structured loop and switch tree nodes here from cp front end.
+
 2019-01-09  Julian Brown  <julian@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Update _OPENACC define to 201711.

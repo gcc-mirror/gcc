@@ -1,3 +1,12 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/generic.texi (Basic Statements): Document SWITCH_EXPR here,
+	not SWITCH_STMT.
+	(Statements for C and C++): Rename node to reflect what
+	the introduction already says about sharing between C and C++
+	front ends.  Copy-edit and correct documentation for structured
+	loops and switch.
+
 2020-03-19  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-offload.c (oacc_loop_auto_partitions): Check for 'omp declare

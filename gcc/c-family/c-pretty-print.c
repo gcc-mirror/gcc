@@ -2354,15 +2354,97 @@ c_pretty_printer::expression (tree e)
 /* Statements.  */
 
 void
-c_pretty_printer::statement (tree stmt)
+c_pretty_printer::statement (tree t)
 {
-  if (stmt == NULL)
+  if (t == NULL)
     return;
 
-  if (pp_needs_newline (this))
-    pp_newline_and_indent (this, 0);
+  switch (TREE_CODE (t))
+    {
 
-  dump_generic_node (this, stmt, pp_indentation (this), TDF_NONE, true);
+    case SWITCH_STMT:
+      pp_c_ws_string (this, "switch");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (SWITCH_STMT_COND (t));
+      pp_c_right_paren (this);
+      pp_indentation (this) += 3;
+      pp_needs_newline (this) = true;
+      statement (SWITCH_STMT_BODY (t));
+      pp_newline_and_indent (this, -3);
+      break;
+
+      /* iteration-statement:
+	    while ( expression ) statement
+	    do statement while ( expression ) ;
+	    for ( expression(opt) ; expression(opt) ; expression(opt) ) statement
+	    for ( declaration expression(opt) ; expression(opt) ) statement  */
+    case WHILE_STMT:
+      pp_c_ws_string (this, "while");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (WHILE_COND (t));
+      pp_c_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (WHILE_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
+      break;
+
+    case DO_STMT:
+      pp_c_ws_string (this, "do");
+      pp_newline_and_indent (this, 3);
+      statement (DO_BODY (t));
+      pp_newline_and_indent (this, -3);
+      pp_c_ws_string (this, "while");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (DO_COND (t));
+      pp_c_right_paren (this);
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
+    case FOR_STMT:
+      pp_c_ws_string (this, "for");
+      pp_space (this);
+      pp_c_left_paren (this);
+      if (FOR_INIT_STMT (t))
+	statement (FOR_INIT_STMT (t));
+      else
+	pp_c_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_c_whitespace (this);
+      if (FOR_COND (t))
+	expression (FOR_COND (t));
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_c_whitespace (this);
+      if (FOR_EXPR (t))
+	expression (FOR_EXPR (t));
+      pp_c_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (FOR_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
+      break;
+
+      /* jump-statement:
+	    goto identifier;
+	    continue ;
+	    return expression(opt) ;  */
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      pp_string (this, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
+    default:
+      if (pp_needs_newline (this))
+	pp_newline_and_indent (this, 0);
+      dump_generic_node (this, t, pp_indentation (this), TDF_NONE, true);
+    }
 }
 
 

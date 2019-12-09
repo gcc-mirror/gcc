@@ -5006,6 +5006,24 @@ c_switch_covers_all_cases_p (splay_tree cases, tree type)
   return true;
 }
 
+/* Return true if stmt can fall through.  Used by block_may_fallthru
+   default case.  */
+
+bool
+c_block_may_fallthru (const_tree stmt)
+{
+  switch (TREE_CODE (stmt))
+    {
+    case SWITCH_STMT:
+      return (!SWITCH_STMT_ALL_CASES_P (stmt)
+	      || !SWITCH_STMT_NO_BREAK_P (stmt)
+	      || block_may_fallthru (SWITCH_STMT_BODY (stmt)));
+
+    default:
+      return true;
+    }
+}
+
 /* Finish an expression taking the address of LABEL (an
    IDENTIFIER_NODE).  Returns an expression for the address.
 
@@ -8015,6 +8033,12 @@ c_common_init_ts (void)
   MARK_TS_EXP (SIZEOF_EXPR);
   MARK_TS_EXP (C_MAYBE_CONST_EXPR);
   MARK_TS_EXP (EXCESS_PRECISION_EXPR);
+  MARK_TS_EXP (BREAK_STMT);
+  MARK_TS_EXP (CONTINUE_STMT);
+  MARK_TS_EXP (DO_STMT);
+  MARK_TS_EXP (FOR_STMT);
+  MARK_TS_EXP (SWITCH_STMT);
+  MARK_TS_EXP (WHILE_STMT);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE
