@@ -109,6 +109,23 @@ struct GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
 public:
   friend class symbol_table;
 
+  /* Constructor.  */
+  explicit symtab_node (symtab_type t)
+    : type (t), resolution (LDPR_UNKNOWN), definition (false), alias (false),
+      transparent_alias (false), weakref (false), cpp_implicit_alias (false),
+      symver (false), analyzed (false), writeonly (false),
+      refuse_visibility_changes (false), externally_visible (false),
+      no_reorder (false), force_output (false), forced_by_abi (false),
+      unique_name (false), implicit_section (false), body_removed (false),
+      used_from_other_partition (false), in_other_partition (false),
+      address_taken (false), in_init_priority_hash (false),
+      need_lto_streaming (false), offloadable (false), ifunc_resolver (false),
+      order (false), next_sharing_asm_name (NULL),
+      previous_sharing_asm_name (NULL), same_comdat_group (NULL), ref_list (),
+      alias_target (NULL), lto_file_data (NULL), aux (NULL),
+      x_comdat_group (NULL_TREE), x_section (NULL)
+  {}
+
   /* Return name.  */
   const char *name () const;
 
@@ -900,6 +917,28 @@ struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 {
   friend class symbol_table;
+
+  /* Constructor.  */
+  explicit cgraph_node (int uid)
+    : symtab_node (SYMTAB_FUNCTION), callees (NULL), callers (NULL),
+      indirect_calls (NULL), origin (NULL), nested (NULL), next_nested (NULL),
+      next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
+      clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
+      simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
+      inlined_to (NULL), rtl (NULL), clone (), thunk (),
+      count (profile_count::uninitialized ()), tp_first_run (false),
+      count_materialization_scale (REG_BR_PROB_BASE), profile_id (0),
+      unit_id (0), used_as_abstract_origin (false),
+      lowered (false), process (false), frequency (NODE_FREQUENCY_NORMAL),
+      only_called_at_startup (false), only_called_at_exit (false),
+      tm_clone (false), dispatcher_function (false), calls_comdat_local (false),
+      icf_merged (false), nonfreeing_fn (false), merged_comdat (false),
+      merged_extern_inline (false), parallelized_function (false),
+      split_part (false), indirect_call_target (false), local (false),
+      versionable (false), can_change_signature (false),
+      redefined_extern_inline (false), tm_may_enter_irr (false),
+      ipcp_clone (false), m_uid (uid), m_summary_id (-1)
+  {}
 
   /* Remove the node from cgraph and all inline clones inlined into it.
      Skip however removal of FORBIDDEN_NODE and return true if it needs to be
@@ -1877,6 +1916,12 @@ private:
 
 struct GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node
 {
+  /* Constructor.  */
+  explicit varpool_node ()
+    : symtab_node (SYMTAB_VARIABLE), output (0), dynamically_initialized (0),
+      tls_model (TLS_MODEL_NONE), used_by_single_function (0)
+  {}
+
   /* Dump given varpool node to F.  */
   void dump (FILE *f);
 
@@ -2389,9 +2434,6 @@ public:
   hash_set <const cgraph_node *> GTY ((skip)) cloned_nodes;
 
 private:
-  /* Allocate new callgraph node.  */
-  inline cgraph_node * allocate_cgraph_symbol (void);
-
   /* Allocate a cgraph_edge structure and fill it with data according to the
      parameters of which only CALLEE can be NULL (when creating an indirect
      call edge).  CLONING_P should be set if properties that are copied from an
@@ -2716,21 +2758,6 @@ symbol_table::release_symbol (cgraph_node *node)
     cgraph_released_summary_ids.safe_push (node->m_summary_id);
   ggc_free (node);
 }
-
-/* Allocate new callgraph node.  */
-
-inline cgraph_node *
-symbol_table::allocate_cgraph_symbol (void)
-{
-  cgraph_node *node;
-
-  node = ggc_cleared_alloc<cgraph_node> ();
-  node->type = SYMTAB_FUNCTION;
-  node->m_summary_id = -1;
-  node->m_uid = cgraph_max_uid++;
-  return node;
-}
-
 
 /* Return first static symbol with definition.  */
 inline symtab_node *

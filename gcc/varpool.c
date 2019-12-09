@@ -133,10 +133,8 @@ symbol_table::call_varpool_insertion_hooks (varpool_node *node)
 
 varpool_node *
 varpool_node::create_empty (void)
-{   
-  varpool_node *node = ggc_cleared_alloc<varpool_node> ();
-  node->type = SYMTAB_VARIABLE;
-  return node;
+{
+  return new (ggc_alloc<varpool_node> ()) varpool_node ();
 }   
 
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
