@@ -283,14 +283,8 @@ symbol_table::initialize (void)
 cgraph_node *
 symbol_table::create_empty (void)
 {
-  cgraph_node *node = allocate_cgraph_symbol ();
-
-  node->type = SYMTAB_FUNCTION;
-  node->frequency = NODE_FREQUENCY_NORMAL;
-  node->count_materialization_scale = REG_BR_PROB_BASE;
   cgraph_count++;
-
-  return node;
+  return new (ggc_alloc<cgraph_node> ()) cgraph_node (cgraph_max_uid++);
 }
 
 /* Register HOOK to be called with DATA on each removed edge.  */
@@ -509,8 +503,6 @@ cgraph_node::create (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   node->decl = decl;
-
-  node->count = profile_count::uninitialized ();
 
   if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
@@ -3750,7 +3742,7 @@ symbol_table_test::symbol_table_test ()
 {
   gcc_assert (saved_symtab == NULL);
   saved_symtab = symtab;
-  symtab = new (ggc_alloc <symbol_table> ()) symbol_table ();
+  symtab = new (ggc_alloc<symbol_table> ()) symbol_table ();
 }
 
 /* Destructor.  Restore the old value of symtab.  */

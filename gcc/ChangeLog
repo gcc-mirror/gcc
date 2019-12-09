@@ -1,3 +1,18 @@
+2019-12-09  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/92737
+	* cgraph.c (symbol_table_test::symbol_table_test): Fix
+	coding style.
+	* cgraph.h (symtab_node::symtab_node): New constructor.
+	(cgraph_node::cgraph_node): Likewise.
+	(varpool_node::varpool_node): Likewise.
+	(symbol_table::allocate_cgraph_symbol): Use newly
+	created constructor.
+	(symbol_table::allocate_cgraph_symbol): Remove.
+	* cgraphunit.c (symtab_terminator): Likewise.
+	* varpool.c (varpool_node::create_empty): Use newly
+	created constructor.
+
 2019-12-09  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/92686

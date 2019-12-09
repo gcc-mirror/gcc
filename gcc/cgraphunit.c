@@ -274,7 +274,7 @@ symtab_node::needed_p (void)
 /* Head and terminator of the queue of nodes to be processed while building
    callgraph.  */
 
-static symtab_node symtab_terminator;
+static symtab_node symtab_terminator (SYMTAB_SYMBOL);
 static symtab_node *queued_nodes = &symtab_terminator;
 
 /* Add NODE to queue starting at QUEUED_NODES. 
