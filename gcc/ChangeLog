@@ -1,3 +1,9 @@
+2019-12-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather<mode>_insn_1offset<exec>): Change
+	%s to %o in asm output.
+	(gather<mode>_insn_2offsets<exec>): Likewise.
+
 2019-12-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/t-multilib: Use arm->thumb multilib reuse rules

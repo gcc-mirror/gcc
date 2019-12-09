@@ -722,7 +722,7 @@
 	  sprintf (buf, "flat_load%%o0\t%%0, %%1%s\;s_waitcnt\t0", glc);
       }
     else if (AS_GLOBAL_P (as))
-      sprintf (buf, "global_load%%s0\t%%0, %%1, off offset:%%2%s\;"
+      sprintf (buf, "global_load%%o0\t%%0, %%1, off offset:%%2%s\;"
 	       "s_waitcnt\tvmcnt(0)", glc);
     else
       gcc_unreachable ();
@@ -780,7 +780,7 @@
 	/* Work around assembler bug in which a 64-bit register is expected,
 	but a 32-bit value would be correct.  */
 	int reg = REGNO (operands[2]) - FIRST_VGPR_REG;
-	sprintf (buf, "global_load%%s0\t%%0, v[%d:%d], %%1 offset:%%3%s\;"
+	sprintf (buf, "global_load%%o0\t%%0, v[%d:%d], %%1 offset:%%3%s\;"
 		      "s_waitcnt\tvmcnt(0)", reg, reg + 1, glc);
       }
     else
