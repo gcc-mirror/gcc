@@ -369,7 +369,7 @@ extern void __cxa_finalize (void *) TARGET_ATTRIBUTE_WEAK;
    This routine does not need to be run if none of the following clauses are
    true, as it will not do anything, so can be removed.  */
 #if defined(CRTSTUFFS_O) || !defined(FINI_ARRAY_SECTION_ASM_OP) \
-  || USE_TM_CLONE_REGISTRY || USE_EH_FRAME_REGISTRY
+  || USE_TM_CLONE_REGISTRY || defined(USE_EH_FRAME_REGISTRY)
 static void __attribute__((used))
 __do_global_dtors_aux (void)
 {
@@ -456,7 +456,7 @@ CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__,
 			  __do_global_dtors_aux_1)
 #endif
 #endif /* defined(CRTSTUFFS_O) || !defined(FINI_ARRAY_SECTION_ASM_OP)
-  || defined(USE_TM_CLONE_REGISTRY) || defined(USE_EH_FRAME_REGISTRY) */
+  || USE_TM_CLONE_REGISTRY || defined(USE_EH_FRAME_REGISTRY) */
 
 #if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* Stick a call to __register_frame_info into the .init section.  For some
