@@ -2662,6 +2662,8 @@ pass_reorder_blocks::execute (function *fun)
       bb->aux = bb->next_bb;
   cfg_layout_finalize ();
 
+  FOR_EACH_BB_FN (bb, fun)
+    df_recompute_luids (bb);
   return 0;
 }
 

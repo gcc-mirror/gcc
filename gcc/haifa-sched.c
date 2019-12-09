@@ -5432,6 +5432,7 @@ reemit_notes (rtx_insn *insn)
 
 	  last = emit_note_before (note_type, last);
 	  remove_note (insn, note);
+	  df_insn_create_insn_record (last);
 	}
     }
 }
