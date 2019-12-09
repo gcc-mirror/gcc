@@ -1,3 +1,7 @@
+2019-12-09  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.dg/vect/vect-shift-5.c: New test.
+
 2019-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92834
