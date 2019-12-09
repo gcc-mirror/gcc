@@ -29,16 +29,19 @@ struct R1
 
   constexpr const int* rbegin() const { return &i; }
   constexpr const int* rend() const { return &i + 1; }
-  friend constexpr const int* rbegin(const R1&& r) { return &r.j; }
-  friend constexpr const int* rend(const R1&& r) { return &r.j + 1; }
+  friend constexpr const int* rbegin(const R1&&); // not defined
+  friend constexpr const int* rend(const R1&&); // not defined
 };
+
+// N.B. this is a lie, rend on an R1 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R1> = true;
 
 void
 test01()
 {
   constexpr R1 r;
   static_assert( std::ranges::rend(r) == &r.i + 1 );
-  static_assert( std::ranges::rend(std::move(r)) == &r.j + 1 );
+  static_assert( std::ranges::rend(std::move(r)) == &r.i + 1 );
 }
 
 struct R2
@@ -52,6 +55,9 @@ struct R2
   friend constexpr const long* begin(const R2&& r) { return r.l; }
   friend constexpr const long* end(const R2&& r) { return r.l + 2; }
 };
+
+// N.B. this is a lie, begin/end on an R2 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R2> = true;
 
 void
 test02()

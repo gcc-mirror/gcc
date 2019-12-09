@@ -33,15 +33,18 @@ struct R1
   friend constexpr const int* rend(const R1&& r) { return &r.j + 1; }
 };
 
+// N.B. this is a lie, rend on an R1 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R1> = true;
+
 void
 test01()
 {
   R1 r;
   const R1& c = r;
   VERIFY( std::ranges::crend(r) == std::ranges::rend(c) );
-  VERIFY( std::ranges::crend(std::move(r)) == std::ranges::rend(std::move(c)) );
   VERIFY( std::ranges::crend(c) == std::ranges::rend(c) );
-  VERIFY( std::ranges::crend(std::move(c)) == std::ranges::rend(std::move(c)) );
+  VERIFY( std::ranges::crend(std::move(r)) == std::ranges::rend(c) );
+  VERIFY( std::ranges::crend(std::move(c)) == std::ranges::rend(c) );
 }
 
 struct R2
@@ -56,14 +59,17 @@ struct R2
   friend const long* end(const R2&& r) { return r.l + 2; }
 };
 
+// N.B. this is a lie, rend on an R2 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R2> = true;
+
 void
 test02()
 {
   R2 r;
   const R2& c = r;
   VERIFY( std::ranges::crend(r) == std::ranges::rend(c) );
-  VERIFY( std::ranges::crend(std::move(r)) == std::ranges::rend(std::move(c)) );
   VERIFY( std::ranges::crend(c) == std::ranges::rend(c) );
+  VERIFY( std::ranges::crend(std::move(r)) == std::ranges::rend(std::move(c)) );
   VERIFY( std::ranges::crend(std::move(c)) == std::ranges::rend(std::move(c)) );
 }
 
@@ -77,6 +83,9 @@ struct R3
   friend const long* rbegin(const R3&) noexcept { return nullptr; }
   friend const int* rend(const R3& r) { return &r.i; }
 };
+
+// N.B. this is a lie, rend on an R3 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R3> = true;
 
 void
 test03()

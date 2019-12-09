@@ -31,25 +31,30 @@ struct R1
   friend constexpr const int* rbegin(const R1&& r) { return &r.j; }
 };
 
+// N.B. this is a lie, rbegin on an R1 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R1> = true;
+
 void
 test01()
 {
   constexpr R1 r;
   static_assert( std::ranges::rbegin(r) == &r.i );
-  static_assert( std::ranges::rbegin(std::move(r)) == &r.j );
+  static_assert( std::ranges::rbegin(std::move(r)) == &r.i );
 }
 
 struct R2
 {
   int a[2] = { };
-  long l[2] = { };
 
   constexpr const int* begin() const { return a; }
   constexpr const int* end() const { return a + 2; }
 
-  friend constexpr const long* begin(const R2&& r) { return r.l; }
-  friend constexpr const long* end(const R2&& r) { return r.l + 2; }
+  friend constexpr const long* begin(const R2&&); // not defined
+  friend constexpr const long* end(const R2&&); // not defined
 };
+
+// N.B. this is a lie, begin/end on an R2 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R2> = true;
 
 void
 test02()

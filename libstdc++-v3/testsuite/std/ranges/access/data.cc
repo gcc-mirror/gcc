@@ -56,15 +56,20 @@ struct R3
   long l = 0;
 
   int* data() const { return nullptr; }
-  friend long* begin(R3&& r) { return &r.l; }
-  friend const long* begin(const R3&& r) { return &r.l + 1; }
+  friend long* begin(R3& r) { return &r.l; }
+  friend const long* begin(const R3& r) { return &r.l + 1; }
 };
+
+// N.B. this is a lie, begin on an R3 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R3> = true;
 
 void
 test03()
 {
   R3 r;
   const R3& c = r;
+  // r.data() can only be used on an lvalue, but ranges::begin(R3&&) is OK
+  // because R3 satisfies ranges::safe_range.
   VERIFY( std::ranges::data(std::move(r)) == std::to_address(std::ranges::begin(std::move(r))) );
   VERIFY( std::ranges::data(std::move(c)) == std::to_address(std::ranges::begin(std::move(c))) );
 }

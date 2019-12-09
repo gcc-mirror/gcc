@@ -691,6 +691,18 @@ namespace experimental
   } // namespace literals
 } // namespace experimental
 
+#if __cpp_lib_concepts
+  namespace ranges
+  {
+    template<typename> extern inline const bool enable_safe_range;
+    // Opt-in to safe_range concept
+    template<typename _CharT, typename _Traits>
+      inline constexpr bool
+	enable_safe_range<experimental::basic_string_view<_CharT, _Traits>>
+	  = true;
+  }
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
