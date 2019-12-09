@@ -1,5 +1,25 @@
 2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/92511
+	* testsuite/libgomp.oacc-c-c++-common/copyin-devptr-1.c: Remove
+	this file...
+	* testsuite/libgomp.oacc-c-c++-common/copyin-devptr-2.c: ..., and
+	this file...
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: ..., and this
+	file...
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: ..., and this
+	file...
+	* testsuite/libgomp.oacc-c-c++-common/subset-subarray-mappings-1-r-p.c:
+	... with their content moved into, and extended in this new file.
+	* testsuite/libgomp.oacc-c-c++-common/subset-subarray-mappings-1-d-a.c:
+	New file.
+	* testsuite/libgomp.oacc-c-c++-common/subset-subarray-mappings-1-d-p.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/subset-subarray-mappings-1-r-a.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/subset-subarray-mappings-2.c:
+	Likewise.
+
 	* testsuite/libgomp.oacc-c-c++-common/map-data-1.c: New file.
 
 	PR libgomp/92854
