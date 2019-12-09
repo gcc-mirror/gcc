@@ -1982,7 +1982,7 @@ gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
 	tree t = gfc_trans_omp_variable (namelist->sym, false);
 	if (t != error_mark_node)
 	  {
-	    tree node = build_omp_clause (gfc_get_location (&where),
+	    tree node = build_omp_clause (gfc_get_location (&namelist->where),
 					  OMP_CLAUSE_REDUCTION);
 	    OMP_CLAUSE_DECL (node) = t;
 	    if (mark_addressable)
