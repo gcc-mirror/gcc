@@ -117,23 +117,26 @@ public:
     ++ndefault;
   }
 
-  hash_map_test_val_t (const hash_map_test_val_t &)
+  hash_map_test_val_t (const hash_map_test_val_t &rhs)
     : ptr (&ptr)
   {
     ++ncopy;
+    gcc_assert (rhs.ptr == &rhs.ptr);
   }
 
-  hash_map_test_val_t& operator= (const hash_map_test_val_t &)
-    {
-     ++nassign;
-     return *this;
-    }
+  hash_map_test_val_t& operator= (const hash_map_test_val_t &rhs)
+  {
+    ++nassign;
+    gcc_assert (ptr == &ptr);
+    gcc_assert (rhs.ptr == &rhs.ptr);
+    return *this;
+  }
 
   ~hash_map_test_val_t ()
-    {
-     gcc_assert (ptr == &ptr);
-     ++ndtor;
-    }
+  {
+    gcc_assert (ptr == &ptr);
+    ++ndtor;
+  }
 
   void *ptr;
 } val_t;
@@ -184,7 +187,6 @@ test_map_of_type_with_ctor_and_dtor ()
     ASSERT_TRUE (nassign == val_t::nassign);
 
     ASSERT_TRUE (&rv1 != pv2);
-    ASSERT_TRUE (pv2->ptr == &pv2->ptr);
   }
 
   ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
@@ -207,7 +209,6 @@ test_map_of_type_with_ctor_and_dtor ()
     ASSERT_TRUE (nassign + 1 == val_t::nassign);
 
     ASSERT_TRUE (&rv1 != pv2);
-    ASSERT_TRUE (pv2->ptr == &pv2->ptr);
   }
 
   ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
