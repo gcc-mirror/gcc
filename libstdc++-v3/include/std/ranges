@@ -89,9 +89,10 @@ namespace ranges
       = range<_Tp> && movable<_Tp> && default_initializable<_Tp>
 	&& enable_view<_Tp>;
 
+  /// A range which can be safely converted to a view.
   template<typename _Tp>
     concept viewable_range = range<_Tp>
-      && (__detail::__forwarding_range<_Tp> || view<decay_t<_Tp>>);
+      && (safe_range<_Tp> || view<decay_t<_Tp>>);
 
   namespace __detail
   {
@@ -295,7 +296,7 @@ namespace ranges
       }
 
       template<__detail::__not_same_as<subrange> _Rng>
-	requires __detail::__forwarding_range<_Rng>
+	requires safe_range<_Rng>
 	  && convertible_to<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
@@ -306,7 +307,7 @@ namespace ranges
 	    _M_size._M_size = ranges::size(__r);
 	}
 
-      template<__detail::__forwarding_range _Rng>
+      template<safe_range _Rng>
 	requires convertible_to<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
@@ -401,12 +402,6 @@ namespace ranges
 	  ranges::advance(_M_begin, __n, _M_end);
 	return *this;
       }
-
-      friend constexpr _It
-      begin(subrange&& __r) { return __r.begin(); }
-
-      friend constexpr _Sent
-      end(subrange&& __r) { return __r.end(); }
     };
 
   template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
@@ -424,14 +419,14 @@ namespace ranges
       -> subrange<tuple_element_t<0, _Pr>, tuple_element_t<1, _Pr>,
 		  subrange_kind::sized>;
 
-  template<__detail::__forwarding_range _Rng>
+  template<safe_range _Rng>
     subrange(_Rng&&)
       -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
 		 (sized_range<_Rng>
 		  || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>)
 		 ? subrange_kind::sized : subrange_kind::unsized>;
 
-  template<__detail::__forwarding_range _Rng>
+  template<safe_range _Rng>
     subrange(_Rng&&,
 	     __detail::__make_unsigned_like_t<range_difference_t<_Rng>>)
       -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>, subrange_kind::sized>;
@@ -457,6 +452,12 @@ namespace ranges
       else
 	return __r.end();
     }
+
+  template<input_or_output_iterator _It, sentinel_for<_It> _Sent,
+	   subrange_kind _Kind>
+    inline constexpr bool
+      enable_safe_range<subrange<_It, _Sent, _Kind>> = true;
+
 } // namespace ranges
 
   using ranges::get;
@@ -471,8 +472,19 @@ namespace ranges
       constexpr dangling(_Args&&...) noexcept { }
   };
 
+  template<range _Range>
+    using safe_iterator_t = conditional_t<safe_range<_Range>,
+					  iterator_t<_Range>,
+					  dangling>;
+
+  template<range _Range>
+    using safe_subrange_t = conditional_t<safe_range<_Range>,
+					  subrange<iterator_t<_Range>>,
+					  dangling>;
+
   template<typename _Tp> requires is_object_v<_Tp>
-    class empty_view : public view_interface<empty_view<_Tp>>
+    class empty_view
+    : public view_interface<empty_view<_Tp>>
     {
     public:
       static constexpr _Tp* begin() noexcept { return nullptr; }
@@ -480,10 +492,10 @@ namespace ranges
       static constexpr _Tp* data() noexcept { return nullptr; }
       static constexpr size_t size() noexcept { return 0; }
       static constexpr bool empty() noexcept { return true; }
-
-      friend constexpr _Tp* begin(empty_view) noexcept { return nullptr; }
-      friend constexpr _Tp* end(empty_view) noexcept { return nullptr; }
     };
+
+  template<typename _Tp>
+    inline constexpr bool enable_safe_range<empty_view<_Tp>> = true;
 
   namespace __detail
   {
@@ -898,6 +910,9 @@ namespace ranges
 	|| (__detail::__is_signed_integer_like<_Winc>
 	    == __detail::__is_signed_integer_like<_Bound>))
     iota_view(_Winc, _Bound) -> iota_view<_Winc, _Bound>;
+
+  template<weakly_incrementable _Winc, semiregular _Bound>
+    inline constexpr bool enable_safe_range<iota_view<_Winc, _Bound>> = true;
 
 namespace views
 {

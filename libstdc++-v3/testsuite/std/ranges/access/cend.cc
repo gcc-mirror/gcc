@@ -49,15 +49,31 @@ struct R
   friend const int* end(const R&& r) noexcept { return r.a + 3; }
 };
 
+struct RV // view on an R
+{
+  R& r;
+
+  friend const int* begin(RV& rv) { return rv.r.begin(); }
+  friend int* end(RV& rv) { return end(rv.r); }
+  friend const int* begin(const RV& rv) noexcept { return rv.r.begin(); }
+  friend const int* end(const RV& rv) noexcept { return end(std::as_const(rv.r)); }
+};
+
+// Allow ranges::end to work with RV&&
+template<> constexpr bool std::ranges::enable_safe_range<RV> = true;
+
 void
 test03()
 {
   R r;
   const R& c = r;
   VERIFY( std::ranges::cend(r) == std::ranges::end(c) );
-  VERIFY( std::ranges::cend(std::move(r)) == std::ranges::end(std::move(c)) );
   VERIFY( std::ranges::cend(c) == std::ranges::end(c) );
-  VERIFY( std::ranges::cend(std::move(c)) == std::ranges::end(std::move(c)) );
+
+  RV v{r};
+  const RV cv{r};
+  VERIFY( std::ranges::cend(std::move(v)) == std::ranges::end(c) );
+  VERIFY( std::ranges::cend(std::move(cv)) == std::ranges::end(c) );
 }
 
 struct RR
@@ -81,15 +97,19 @@ struct RR
   friend const int* end(const RR&& r) noexcept { return r.a + 3; }
 };
 
+// N.B. this is a lie, begin/end on an RR rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<RR> = true;
+
 void
 test04()
 {
   RR r;
   const RR& c = r;
   VERIFY( std::ranges::cend(r) == std::ranges::end(c) );
-  VERIFY( std::ranges::cend(std::move(r)) == std::ranges::end(std::move(c)) );
   VERIFY( std::ranges::cend(c) == std::ranges::end(c) );
-  VERIFY( std::ranges::cend(std::move(c)) == std::ranges::end(std::move(c)) );
+
+  VERIFY( std::ranges::cend(std::move(r)) == std::ranges::end(c) );
+  VERIFY( std::ranges::cend(std::move(c)) == std::ranges::end(c) );
 }
 
 int

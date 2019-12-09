@@ -399,16 +399,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return {this->data() + __offset, __count};
       }
 
-      // observers: range helpers
-
-      friend constexpr iterator
-      begin(span __sp) noexcept
-      { return __sp.begin(); }
-
-      friend constexpr iterator
-      end(span __sp) noexcept
-      { return __sp.end(); }
-
     private:
       [[no_unique_address]] __detail::__extent_storage<extent> _M_extent;
       pointer _M_ptr;
@@ -478,6 +468,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using type = _Type;
     };
 
+  namespace ranges
+  {
+    template<typename> extern inline const bool enable_safe_range;
+    // Opt-in to safe_range concept
+    template<typename _ElementType, size_t _Extent>
+      inline constexpr bool
+	enable_safe_range<span<_ElementType, _Extent>> = true;
+  }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // concepts

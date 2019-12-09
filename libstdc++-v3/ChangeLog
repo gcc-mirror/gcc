@@ -1,5 +1,42 @@
 2019-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/range_access.h (ranges::enable_safe_range): Define.
+	(ranges::begin, ranges::end, ranges::rbegin, ranges::rend): Constrain
+	to only accept types satisfying safe_range and treat argument as an
+	lvalue when calling a member of performing ADL.
+	(ranges::__detail::__range_impl, ranges::__detail::__forwarding_range):
+	Remove.
+	(ranges::range): Adjust definition.
+	(ranges::safe_range): Define.
+	(ranges::iterator_t, ranges::range_difference_t): Reorder definitions
+	to match the synopsis in the working draft.
+	(ranges::disable_sized_range): Remove duplicate definition.
+	* include/experimental/string_view (ranges::enable_safe_range): Add
+	partial specialization for std::experimental::basic_string_view.
+	* include/std/ranges (ranges::viewable_range, ranges::subrange)
+	(ranges::empty_view, ranges::iota_view): Use safe_range. Specialize
+	enable_safe_range.
+	(ranges::safe_iterator_t, ranges::safe_subrange_t): Define.
+	* include/std/span (ranges::enable_safe_range): Add partial
+	specialization for std::span.
+	* include/std/string_view (ranges::enable_safe_range): Likewise for
+	std::basic_string_view.
+	* testsuite/std/ranges/access/begin.cc: Adjust expected results.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/empty_view.cc: Test ranges::begin and
+	ranges::end instead of unqualified calls to begin and end.
+	* testsuite/std/ranges/safe_range.cc: New test.
+	* testsuite/std/ranges/safe_range_types.cc: New test.
+	* testsuite/util/testsuite_iterators.h: Add comment about safe_range.
+
 	* testsuite/27_io/filesystem/path/concat/strings.cc: Test more cases.
 
 	PR libstdc++/92853

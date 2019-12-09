@@ -758,6 +758,11 @@ namespace __gnu_test
   template<typename T>
     using test_output_sized_range
       = test_sized_range<T, output_iterator_wrapper>;
+
+// test_container, test_range and test_sized_range do not own their elements,
+// so they all model std::ranges::safe_range. This file does not define
+// specializations of std::ranges::enable_safe_range, so that individual
+// test can decide whether or not to do so.
 #endif // C++20
 } // namespace __gnu_test
 #endif // _TESTSUITE_ITERATORS

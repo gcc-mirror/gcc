@@ -19,17 +19,23 @@
 // { dg-do compile { target c++2a } }
 
 #include <ranges>
+#include <testsuite_iterators.h>
 
-static_assert(std::ranges::view<std::ranges::empty_view<int>>);
+static_assert( std::ranges::safe_range<int(&)[1]> );
+static_assert( std::ranges::safe_range<const int(&)[1]> );
+static_assert( !std::ranges::safe_range<int[1]> );
+static_assert( !std::ranges::safe_range<int*> );
 
-std::ranges::empty_view<int> e;
-static_assert(std::ranges::empty(e));
-static_assert(0 == e.size());
+using __gnu_test::test_contiguous_range;
 
-static_assert(e.begin() == nullptr);
-static_assert(e.end() == nullptr);
-static_assert(e.data() == nullptr);
-static_assert(e.empty());
+static_assert( !std::ranges::safe_range<test_contiguous_range<int>> );
+static_assert( std::ranges::safe_range<test_contiguous_range<int>&> );
+static_assert( !std::ranges::safe_range<test_contiguous_range<int>&&> );
 
-static_assert(std::ranges::begin(e) == nullptr);
-static_assert(std::ranges::end(e) == nullptr);
+template<>
+constexpr bool
+  std::ranges::enable_safe_range<test_contiguous_range<long>> = true;
+
+static_assert( std::ranges::safe_range<test_contiguous_range<long>> );
+static_assert( std::ranges::safe_range<test_contiguous_range<long>&> );
+static_assert( std::ranges::safe_range<test_contiguous_range<long>&&> );
