@@ -1,5 +1,7 @@
 2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/host_data-6.c: New file.
+
 	* target.c (gomp_exit_data): Use 'gomp_remove_var'.
 
 2019-12-09  Tobias Burnus  <tobias@codesourcery.com>
