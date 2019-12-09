@@ -1,3 +1,11 @@
+2019-12-09  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/49973
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Tweak so that expected output is the same as
+	before the diagnostic-show-locus.c changes.
+	* gcc.dg/cpp/pr66415-1.c: Likewise.
+
 2019-12-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto23.adb: New test.

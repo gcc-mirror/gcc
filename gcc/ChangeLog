@@ -1,3 +1,79 @@
+2019-12-09  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/49973
+	* input.c (location_compute_display_column): New function to help with
+	multibyte awareness in diagnostics.
+	(test_cpp_utf8): New self-test.
+	(input_c_tests): Call the new test.
+	* input.h (location_compute_display_column): Declare.
+	* diagnostic-show-locus.c: Pervasive changes to add multibyte awareness
+	to all classes and functions.
+	(enum column_unit): New enum.
+	(class exploc_with_display_col): New class.
+	(class layout_point): Convert m_column member to array m_columns[2].
+	(layout_range::contains_point): Add col_unit argument.
+	(test_layout_range_for_single_point): Pass new argument.
+	(test_layout_range_for_single_line): Likewise.
+	(test_layout_range_for_multiple_lines): Likewise.
+	(line_bounds::convert_to_display_cols): New function.
+	(layout::get_state_at_point): Add col_unit argument.
+	(make_range): Use empty filename rather than dummy filename.
+	(get_line_width_without_trailing_whitespace): Rename to...
+	(get_line_bytes_without_trailing_whitespace): ...this.
+	(test_get_line_width_without_trailing_whitespace): Rename to...
+	(test_get_line_bytes_without_trailing_whitespace): ...this.
+	(class layout): m_exploc changed to exploc_with_display_col from
+	plain expanded_location.
+	(layout::get_linenum_width): New accessor member function.
+	(layout::get_x_offset_display): Likewise.
+	(layout::calculate_linenum_width): New subroutine for the constuctor.
+	(layout::calculate_x_offset_display): Likewise.
+	(layout::layout): Use the new subroutines. Add multibyte awareness.
+	(layout::print_source_line): Add multibyte awareness.
+	(layout::print_line): Likewise.
+	(layout::print_annotation_line): Likewise.
+	(line_label::line_label): Likewise.
+	(layout::print_any_labels): Likewise.
+	(layout::annotation_line_showed_range_p): Likewise.
+	(get_printed_columns): Likewise.
+	(class line_label): Rename m_length to m_display_width.
+	(get_affected_columns): Rename to...
+	(get_affected_range): ...this; add col_unit argument and multibyte
+	awareness.
+	(class correction): Add m_affected_bytes and m_display_cols
+	members.  Rename m_len to m_byte_length for clarity.  Add multibyte
+	awareness throughout.
+	(correction::insertion_p): Add multibyte awareness.
+	(correction::compute_display_cols): New function.
+	(correction::ensure_terminated): Use new member name m_byte_length.
+	(line_corrections::add_hint): Add multibyte awareness.
+	(layout::print_trailing_fixits): Likewise.
+	(layout::get_x_bound_for_row): Likewise.
+	(test_one_liner_simple_caret_utf8): New self-test analogous to the one
+	with _utf8 suffix removed, testing multibyte awareness.
+	(test_one_liner_caret_and_range_utf8): Likewise.
+	(test_one_liner_multiple_carets_and_ranges_utf8): Likewise.
+	(test_one_liner_fixit_insert_before_utf8): Likewise.
+	(test_one_liner_fixit_insert_after_utf8): Likewise.
+	(test_one_liner_fixit_remove_utf8): Likewise.
+	(test_one_liner_fixit_replace_utf8): Likewise.
+	(test_one_liner_fixit_replace_non_equal_range_utf8): Likewise.
+	(test_one_liner_fixit_replace_equal_secondary_range_utf8): Likewise.
+	(test_one_liner_fixit_validation_adhoc_locations_utf8): Likewise.
+	(test_one_liner_many_fixits_1_utf8): Likewise.
+	(test_one_liner_many_fixits_2_utf8): Likewise.
+	(test_one_liner_labels_utf8): Likewise.
+	(test_diagnostic_show_locus_one_liner_utf8): Likewise.
+	(test_overlapped_fixit_printing_utf8): Likewise.
+	(test_overlapped_fixit_printing): Adapt for changes to
+	get_affected_columns, get_printed_columns and class corrections.
+	(test_overlapped_fixit_printing_2): Likewise.
+	(test_linenum_sep): New constant.
+	(test_left_margin): Likewise.
+	(test_offset_impl): Helper function for new test.
+	(test_layout_x_offset_display_utf8): New test.
+	(diagnostic_show_locus_c_tests): Call new tests.
+
 2019-12-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (build_array_type_1): Add SET_CANONICAL parameter and compute

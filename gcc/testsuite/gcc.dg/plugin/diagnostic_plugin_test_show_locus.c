@@ -174,7 +174,7 @@ test_show_locus (function *fun)
 
   /* Hardcode the "terminal width", to verify the behavior of
      very wide lines.  */
-  global_dc->caret_max_width = 70;
+  global_dc->caret_max_width = 71;
 
   if (0 == strcmp (fnname, "test_simple"))
     {
