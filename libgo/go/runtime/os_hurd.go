@@ -125,7 +125,3 @@ func osinit() {
 		physPageSize = uintptr(getPageSize())
 	}
 }
-
-const (
-	_CLOCK_REALTIME = 0
-)
