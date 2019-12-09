@@ -1,5 +1,7 @@
 2019-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Test more cases.
+
 	PR libstdc++/92853
 	* src/c++17/fs_path.cc (filesystem::path::operator+=(const path&)):
 	Do not process a trailing directory separator twice.
