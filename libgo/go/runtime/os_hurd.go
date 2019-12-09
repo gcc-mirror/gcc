@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This file is derived from os_solaris.go.
+// This file is derived from os_aix.go.
 
 package runtime
 
@@ -37,6 +37,10 @@ func sem_post(sem *_sem_t) int32
 //extern sem_timedwait
 func sem_timedwait(sem *_sem_t, timeout *timespec) int32
 
+//go:noescape
+//extern clock_gettime
+func clock_gettime(clock_id int32, timeout *timespec) int32
+
 //go:nosplit
 func semacreate(mp *m) {
 	if mp.waitsema != 0 {
@@ -60,7 +64,23 @@ func semasleep(ns int64) int32 {
 	_m_ := getg().m
 	if ns >= 0 {
 		var ts timespec
-		ts.setNsec(ns)
+
+		if clock_gettime(_CLOCK_REALTIME, &ts) != 0 {
+			throw("clock_gettime")
+		}
+
+		sec := int64(ts.tv_sec) + ns/1e9
+		nsec := int64(ts.tv_nsec) + ns%1e9
+		if nsec >= 1e9 {
+			sec++
+			nsec -= 1e9
+		}
+		if sec != int64(timespec_sec_t(sec)) {
+			// Handle overflows (timespec_sec_t is 32-bit in 32-bit applications)
+			sec = 1<<31 - 1
+		}
+		ts.tv_sec = timespec_sec_t(sec)
+		ts.tv_nsec = timespec_nsec_t(nsec)
 
 		if sem_timedwait((*_sem_t)(unsafe.Pointer(_m_.waitsema)), &ts) != 0 {
 			err := errno()
@@ -105,3 +125,7 @@ func osinit() {
 		physPageSize = uintptr(getPageSize())
 	}
 }
+
+const (
+	_CLOCK_REALTIME = 0
+)
