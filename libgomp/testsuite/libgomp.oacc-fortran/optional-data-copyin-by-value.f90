@@ -8,7 +8,7 @@ program test
   integer :: res
 
   if (foo(27) .ne. 27) stop 1
-  if (foo(16, 18) .ne. 288) stop 1
+  if (foo(16, 18) .ne. 288) stop 2
 contains
   function foo(x, y)
     integer, value :: x
