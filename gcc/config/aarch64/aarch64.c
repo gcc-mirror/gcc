@@ -915,7 +915,7 @@ static const struct tune_params thunderxt88_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
+  AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
   "8",	/* jump_align.  */
   "8",	/* loop_align.  */
@@ -941,7 +941,7 @@ static const struct tune_params thunderx_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
+  AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
   "8",	/* jump_align.  */
   "8",	/* loop_align.  */
@@ -968,8 +968,8 @@ static const struct tune_params tsv110_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4,    /* memmov_cost  */
   4,    /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH
-   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_ALU_BRANCH
+   | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
   "16", /* function_align.  */
   "4",  /* jump_align.  */
   "8",  /* loop_align.  */
@@ -1103,8 +1103,8 @@ static const struct tune_params thunderx2t99_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
-  (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
-   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
+  (AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_AES_AESMC
+   | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
   "16",	/* function_align.  */
   "8",	/* jump_align.  */
   "16",	/* loop_align.  */
@@ -1471,6 +1471,25 @@ aarch64_err_no_fpadvsimd (machine_mode mode)
     else
       error ("%qs feature modifier is incompatible with the use of"
 	     " vector types", "+nofp");
+}
+
+/* Report when we try to do something that requires SVE when SVE is disabled.
+   This is an error of last resort and isn't very high-quality.  It usually
+   involves attempts to measure the vector length in some way.  */
+static void
+aarch64_report_sve_required (void)
+{
+  static bool reported_p = false;
+
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_p)
+    return;
+
+  error ("this operation requires the SVE ISA extension");
+  inform (input_location, "you can enable SVE using the command-line"
+	  " option %<-march%>, or by using the %<target%>"
+	  " attribute or pragma");
+  reported_p = true;
 }
 
 /* Return true if REGNO is P0-P15 or one of the special FFR-related
@@ -4525,6 +4544,11 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	 folding it into the relocation.  */
       if (!offset.is_constant (&const_offset))
 	{
+	  if (!TARGET_SVE)
+	    {
+	      aarch64_report_sve_required ();
+	      return;
+	    }
 	  if (base == const0_rtx && aarch64_sve_cnt_immediate_p (offset))
 	    emit_insn (gen_rtx_SET (dest, imm));
 	  else
@@ -16864,7 +16888,7 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
   if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
-  if (aarch64_sve_cnt_immediate_p (x))
+  if (TARGET_SVE && aarch64_sve_cnt_immediate_p (x))
     return true;
 
   return aarch64_classify_symbolic_expression (x)
@@ -20372,7 +20396,16 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
         }
     }
 
+  /* Fuse compare (CMP/CMN/TST/BICS) and conditional branch.  */
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_BRANCH)
+      && prev_set && curr_set && any_condjump_p (curr)
+      && GET_CODE (SET_SRC (prev_set)) == COMPARE
+      && SCALAR_INT_MODE_P (GET_MODE (XEXP (SET_SRC (prev_set), 0)))
+      && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
+    return true;
+
+  /* Fuse flag-setting ALU instructions and conditional branch.  */
+  if (aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
       && any_condjump_p (curr))
     {
       unsigned int condreg1, condreg2;
@@ -20396,9 +20429,10 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	}
     }
 
+  /* Fuse ALU instructions and CBZ/CBNZ.  */
   if (prev_set
       && curr_set
-      && aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
+      && aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_CBZ)
       && any_condjump_p (curr))
     {
       /* We're trying to match:

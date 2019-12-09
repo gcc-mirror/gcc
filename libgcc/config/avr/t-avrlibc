@@ -71,9 +71,9 @@ ifneq (,$(findstring avr,$(MULTISUBDIR)))
 # In default dir, copying won'twork because the default multilib is
 # built after all the others.
 
-ifneq (,$(findstring double64,$(MULTISUBDIR)))
+ifneq (,$(findstring double,$(MULTISUBDIR)))
 
-# We are in double64/libgcc or long-double64/libgcc:
+# We are in double{32|64}/libgcc or long-double{32|64}/libgcc:
 # Just copy from the [long ]double=float multilib; we would remove any DFmode
 # bits from this multilib variant, anyway, because the current assumption
 # is that avr-libc hosts *all* the IEEE-double stuff.

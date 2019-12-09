@@ -540,9 +540,10 @@ gfc_conv_shift_descriptor_lbound (stmtblock_t* block, tree desc,
 
 void
 gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
-				     tree *dtype_off, tree *dim_off,
-				     tree *dim_size, tree *stride_suboff,
-				     tree *lower_suboff, tree *upper_suboff)
+				     tree *dtype_off, tree *span_off,
+				     tree *dim_off, tree *dim_size,
+				     tree *stride_suboff, tree *lower_suboff,
+				     tree *upper_suboff)
 {
   tree field;
   tree type;
@@ -552,6 +553,8 @@ gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
   *data_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
   *dtype_off = byte_position (field);
+  field = gfc_advance_chain (TYPE_FIELDS (type), SPAN_FIELD);
+  *span_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DIMENSION_FIELD);
   *dim_off = byte_position (field);
   type = TREE_TYPE (TREE_TYPE (field));
@@ -6364,7 +6367,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   if (flag_stack_arrays)
     {
       gcc_assert (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE);
-      space = build_decl (sym->declared_at.lb->location,
+      space = build_decl (gfc_get_location (&sym->declared_at),
 			  VAR_DECL, create_tmp_var_name ("A"),
 			  TREE_TYPE (TREE_TYPE (decl)));
       gfc_trans_vla_type_sizes (sym, &init);
@@ -6406,7 +6409,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
       tmp = fold_build1_loc (input_location, DECL_EXPR,
 			     TREE_TYPE (space), space);
       gfc_add_expr_to_block (&init, tmp);
-      addr = fold_build1_loc (sym->declared_at.lb->location,
+      addr = fold_build1_loc (gfc_get_location (&sym->declared_at),
 			      ADDR_EXPR, TREE_TYPE (decl), space);
       gfc_add_modify (&init, decl, addr);
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);

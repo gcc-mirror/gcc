@@ -1,3 +1,434 @@
+2019-12-08  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/bswap-3.c: New test.
+
+2019-12-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Revert:
+
+	2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.target/nios2/hello-pie.C: New.
+	* g++.target/nios2/nios2.exp: New.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92780
+	* gfortran.dg/associate_50.f90: New test.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92764
+	* gfortran.dg/interface_44.f90: New test.
+
+2019-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92755
+	* gfortran.dg/dependency_57.f90: New test.
+
+2019-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp0x/gen-attrs-36.C: Update expected diagnostics.
+	* g++.dg/cpp0x/gen-attrs-37.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-8.C: Likewise.
+
+2019-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91678 - wrong error with decltype and location wrapper.
+	* g++.dg/cpp0x/decltype73.C: New test.
+
+2019-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92831
+	* g++.dg/ext/temp-extend1.C: New test.
+
+2019-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92451
+	* g++.dg/overload/error4.C: New test.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/feat-cxx2a.C: Don't test __cpp_consteval for now.
+
+	PR c++/92831 - CWG 1299, not extending temporary lifetime for ?:
+	* g++.dg/cpp0x/temp-extend2.C: New test.
+
+2019-12-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92176
+	* gcc.target/s390/pr92176.c: New test.
+
+2019-12-06  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-23.c: Use the correct argument type.
+	* gcc.dg/Wstringop-overflow-24.c: Same.
+
+2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/ext/sve-sizeless-1.C: New test.
+	* g++.dg/ext/sve-sizeless-2.C: Likewise.
+
+2019-12-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c/36941
+	PR c/88827
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_11.c: Update
+	expected diagnostics.
+
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* gcc.target/i386/pr92819-1.c: New testcase.
+	* gcc.target/i386/pr92803.c: Adjust.
+
+2019-12-05  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/92829
+	* gcc.dg/Warray-bounds-56.c: Rearrange code to avoid powerpc64*
+	failures.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92768
+	* gcc.dg/pr92768.c: Add -w -Wno-psabi to dg-options.
+
+2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.target/nios2/hello-pie.C: New.
+	* g++.target/nios2/nios2.exp: New.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91353 - P1331R2: Allow trivial default init in constexpr contexts.
+	* g++.dg/cpp0x/constexpr-array6.C: Adjust dg-error.
+	* g++.dg/cpp0x/constexpr-ctor.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag4.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-template2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-union2.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Rip out a piece of code ...
+	* g++.dg/cpp0x/lambda/lambda-mangle6.C: ... and put it here.
+	* g++.dg/cpp0x/pr79118.C: Adjust dg-error.
+	* g++.dg/cpp1y/constexpr-83921-3.C: Likewise.
+	* g++.dg/cpp1y/constexpr-neg1.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda12.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Use -std=c++17.
+	* g++.dg/cpp2a/constexpr-init1.C: New test.
+	* g++.dg/cpp2a/constexpr-init2.C: New test.
+	* g++.dg/cpp2a/constexpr-init3.C: New test.
+	* g++.dg/cpp2a/constexpr-init4.C: New test.
+	* g++.dg/cpp2a/constexpr-init5.C: New test.
+	* g++.dg/cpp2a/constexpr-init6.C: New test.
+	* g++.dg/cpp2a/constexpr-init7.C: New test.
+	* g++.dg/cpp2a/constexpr-init8.C: New test.
+	* g++.dg/cpp2a/constexpr-init9.C: New test.
+	* g++.dg/cpp2a/constexpr-init10.C: New test.
+	* g++.dg/cpp2a/constexpr-init11.C: New test.
+	* g++.dg/cpp2a/constexpr-init12.C: New test.
+	* g++.dg/cpp2a/constexpr-init13.C: New test.
+	* g++.dg/cpp2a/constexpr-init14.C: New test.
+	* g++.dg/cpp2a/constexpr-init15.C: New test.
+	* g++.dg/cpp2a/constexpr-try5.C: Adjust dg-error.
+	* g++.dg/cpp2a/feat-cxx2a.C: Test __cpp_constexpr.
+	* g++.dg/cpp2a/lambda-mangle.C: New test.
+	* g++.dg/debug/dwarf2/pr44641.C: Skip for c++2a.
+	* g++.dg/ext/stmtexpr21.C: Adjust dg-error.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92271 - make __is_same alias for __is_same_as.
+	* g++.dg/ext/is_same.C: New test.
+
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: Add
+	'type(c_ptr), value' test case. Conditionally map the per-value
+	passed arguments.
+
+2019-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/92768
+	* gcc.dg/pr92768.c: New test.
+
+2019-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92818
+	* gcc.target/i386/pr92818.c: New testcase.
+
+2019-12-05  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gcc.dg/asm-4.c: Skip on target amdgcn-*-*.
+
+2019-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92803
+	* gcc.target/i386/pr92803.c: New testcase.
+
+2019-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92781
+	* gfortran.dg/pr92781.f90: New test.
+
+2019-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/functional-cast-to-array-type-1.C: New.
+	* g++.dg/cpp0x/auto25.C: Check location(s) too.
+	* g++.dg/cpp0x/auto28.C: Likewise.
+	* g++.dg/init/reference2.C: Likewise.
+	* g++.dg/parse/template2.C: Likewise.
+	* g++.dg/template/error8.C: Likewise.
+	* g++.old-deja/g++.ns/crash3.C: Likewise.
+	* g++.old-deja/g++.ns/template7.C: Likewise.
+	* g++.old-deja/g++.pt/crash8.C: Likewise.
+
+2019-12-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91582
+	* c-c++-common/Wstringop-truncation.c: Remove xfails.
+	* g++.dg/warn/Wstringop-overflow-4.C: New test.
+	* gcc/testsuite/g++.dg/ext/attr-alloc_size.C: Suppress -Warray-bounds.
+	* gcc.dg/Wstringop-overflow-25.c: New test.
+	* gcc/testsuite/gcc.dg/attr-alloc_size.c: Suppress -Warray-bounds.
+	* gcc/testsuite/gcc.dg/attr-copy-2.c: Same.
+	* gcc.dg/builtin-stringop-chk-5.c: Remove xfails.
+	* gcc.dg/builtin-stringop-chk-8.c: Same.  Correct the text of expected
+	warnings.
+	* gcc.target/i386/pr82002-2a.c: Prune expected warning.
+	* gcc.target/i386/pr82002-2b.c: Same.
+
+2019-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36941
+	PR c/88827
+	* gcc.dg/lvalue-9.c, gcc.dg/lvalue-10.c: New tests.
+	* gcc.dg/array-8.c, gcc.dg/enum-incomplete-1.c,
+	gcc.dg/enum-incomplete-3.c, gcc.dg/noncompile/incomplete-3.c,
+	gcc.dg/pr48552-1.c, gcc.dg/pr48552-2.c, gcc.dg/pr63543.c,
+	gcc.dg/pr69796.c: Update expected diagnostics.
+
+2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/whilelt_5.c: New test.
+
+2019-12-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-84.c: New testcase.
+
+2019-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92754
+	gfortran.dg/intrinsic_9.f90: New.
+
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92734
+	* gcc.dg/tree-ssa/pr92734-2.c: New test.
+
+2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_1.C: New test.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_2.C: New test.
+
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92756
+	* gfortran.dg/gomp/teams1.f90: New test.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/srcloc1.C: New test.
+	* g++.dg/cpp2a/srcloc2.C: New test.
+	* g++.dg/cpp2a/srcloc3.C: New test.
+	* g++.dg/cpp2a/srcloc4.C: New test.
+	* g++.dg/cpp2a/srcloc5.C: New test.
+	* g++.dg/cpp2a/srcloc6.C: New test.
+	* g++.dg/cpp2a/srcloc7.C: New test.
+	* g++.dg/cpp2a/srcloc8.C: New test.
+	* g++.dg/cpp2a/srcloc9.C: New test.
+	* g++.dg/cpp2a/srcloc10.C: New test.
+	* g++.dg/cpp2a/srcloc11.C: New test.
+	* g++.dg/cpp2a/srcloc12.C: New test.
+	* g++.dg/cpp2a/srcloc13.C: New test.
+	* g++.dg/cpp2a/srcloc14.C: New test.
+
+2019-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/inconsistent-deduction-1.C: New.
+	* g++.dg/diagnostic/returning-a-value-1.C: Likewise.
+	* g++.dg/cpp0x/decltype3.C: Check location(s) too.
+	* g++.dg/cpp0x/decltype4.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg.C: Likewise.
+	* g++.dg/cpp2a/consteval13.C: Likewise.
+	* g++.dg/expr/pmf-1.C: Likewise.
+	* g++.dg/other/ptrmem2.C: Likewise.
+	* g++.dg/template/ptrmem17.C: Likewise.
+	* g++.old-deja/g++.bugs/900213_03.C: Likewise.
+	* g++.old-deja/g++.other/pmf7.C: Likewise.
+	* g++.old-deja/g++.other/ptrmem7.C: Likewise.
+
+	* g++.dg/diagnostic/main2.C: New.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369
+	* g++.dg/cpp2a/constexpr-new8.C: New test.
+
+2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/struct_1.c: New test.
+
+2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/deref_1.c: New test.
+
+2019-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.
+	* g++.dg/cpp0x/constexpr-99.C: Only expect an error in C++17 and
+	lesser.
+	* g++.dg/cpp0x/explicit7.C: Likewise.
+	* g++.dg/cpp0x/initlist12.C: Adjust dg-error.
+	* g++.dg/cpp0x/pr31437.C: Likewise.
+	* g++.dg/cpp2a/feat-cxx2a.C: Add __cpp_aggregate_paren_init test.
+	* g++.dg/cpp2a/paren-init1.C: New test.
+	* g++.dg/cpp2a/paren-init10.C: New test.
+	* g++.dg/cpp2a/paren-init11.C: New test.
+	* g++.dg/cpp2a/paren-init12.C: New test.
+	* g++.dg/cpp2a/paren-init13.C: New test.
+	* g++.dg/cpp2a/paren-init14.C: New test.
+	* g++.dg/cpp2a/paren-init15.C: New test.
+	* g++.dg/cpp2a/paren-init16.C: New test.
+	* g++.dg/cpp2a/paren-init17.C: New test.
+	* g++.dg/cpp2a/paren-init18.C: New test.
+	* g++.dg/cpp2a/paren-init19.C: New test.
+	* g++.dg/cpp2a/paren-init2.C: New test.
+	* g++.dg/cpp2a/paren-init3.C: New test.
+	* g++.dg/cpp2a/paren-init4.C: New test.
+	* g++.dg/cpp2a/paren-init5.C: New test.
+	* g++.dg/cpp2a/paren-init6.C: New test.
+	* g++.dg/cpp2a/paren-init7.C: New test.
+	* g++.dg/cpp2a/paren-init8.C: New test.
+	* g++.dg/cpp2a/paren-init9.C: New test.
+	* g++.dg/ext/desig10.C: Adjust dg-error.
+	* g++.dg/template/crash107.C: Likewise.
+	* g++.dg/template/crash95.C: Likewise.
+	* g++.old-deja/g++.jason/crash3.C: Likewise.
+	* g++.old-deja/g++.law/ctors11.C: Likewise.
+	* g++.old-deja/g++.law/ctors9.C: Likewise.
+	* g++.old-deja/g++.mike/net22.C: Likewise.
+	* g++.old-deja/g++.niklas/t128.C: Likewise.
+
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* gcc.target/i386/pr92645-5.c: New testcase.
+
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92751
+	* g++.dg/tree-ssa/pr92751.C: New testcase.
+
+2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gfortran.dg/loop_versioning_6.f90: XFAIL the scans for ! lp64.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92734
+	* gcc.dg/tree-ssa/pr92734.c: New test.
+
+	PR target/92744
+	* g++.dg/dfp/pr92744.C: New test.
+
+	PR c++/92732
+	* g++.dg/cpp2a/bitfield3.C: Don't expect narrowing conversion
+	warnings.
+	* g++.dg/cpp2a/bitfield4.C: New test.
+
+	PR c++/92705
+	* g++.dg/conversion/ambig4.C: New test.
+
+	PR c++/92695
+	* g++.dg/cpp2a/constexpr-virtual14.C: New test.
+
+2019-12-03  Luo Xiong Hu  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/pr72804.c: Fix missing space.
+
+2019-12-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88704
+	* gcc.dg/vla-25.c: New test.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/lto/inline-crossmodule-1_0.C: Use -fdump-ipa-inline-details
+	instead of -fdump-ipa-inline.  Use "inline" instead of "inlined" as
+	last argument to scan-wpa-ipa-dump-times, use \\\( and \\\) instead of
+	( and ) in the regex.
+
+2019-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92695
+	* g++.dg/cpp2a/constexpr-virtual15.C: New test.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/92741
+	* gcc.dg/pr92741.c: New test.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/nosve_4.c: New test.
+	* gcc.target/aarch64/sve/acle/general/nosve_5.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/nosve_4.c: Expected a second error
+	for the copy.
+	* gcc.target/aarch64/sve/pcs/nosve_5.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/nosve_6.c: Likewise.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle.exp: Run the
+	general/* tests too.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/eqne_dup_1.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_f16.c (dup_0_f16_z): Expect
+	the call to be folded to zero.
+	* gcc.target/aarch64/sve/acle/asm/dup_f32.c (dup_0_f32_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_f64.c (dup_0_f64_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s8.c (dup_0_s8_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s16.c (dup_0_s16_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s32.c (dup_0_s32_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s64.c (dup_0_s64_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u8.c (dup_0_u8_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u16.c (dup_0_u16_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u32.c (dup_0_u32_z): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u64.c (dup_0_u64_z): Likewise.
+
+2019-12-02  Sudakshina Das  <sudi.das@arm.com>
+
+	* g++.dg/ext/arm-fp16/arm-fp16-ops.h: Remove volatile keyword.
+
+2019-12-02  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/lto/odr-7_0.C: New test.
+	* g++.dg/lto/odr-7_1.C: New test.
+
+2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/inline-crossmodule-1_0.C: fix template.
+
+2019-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92742
+	* gcc.dg/torture/pr92742.c: New testcase.
+
 2019-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92712

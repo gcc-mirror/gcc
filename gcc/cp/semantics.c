@@ -2929,7 +2929,8 @@ finish_compound_literal (tree type, tree compound_literal,
 	 that it came from T{} rather than T({}).  */
       CONSTRUCTOR_IS_DIRECT_INIT (compound_literal) = 1;
       compound_literal = build_tree_list (NULL_TREE, compound_literal);
-      return build_functional_cast (type, compound_literal, complain);
+      return build_functional_cast (input_location, type,
+				    compound_literal, complain);
     }
 
   if (TREE_CODE (type) == ARRAY_TYPE

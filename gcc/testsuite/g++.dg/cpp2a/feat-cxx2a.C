@@ -134,8 +134,8 @@
 
 #ifndef __cpp_constexpr
 #  error "__cpp_constexpr"
-#elif __cpp_constexpr != 201603
-#  error "__cpp_constexpr != 201603"
+#elif __cpp_constexpr != 201907
+#  error "__cpp_constexpr != 201907"
 #endif
 
 #ifndef __cpp_decltype_auto
@@ -460,6 +460,12 @@
 #  error "__cpp_constexpr_dynamic_alloc != 201907"
 #endif
 
+#ifndef __cpp_aggregate_paren_init
+#  error "__cpp_aggregate_paren_init"
+#elif __cpp_aggregate_paren_init != 201902
+#  error "__cpp_aggregate_paren_init != 201902"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)
@@ -520,11 +526,13 @@
 #  error "__cpp_constexpr_in_decltype != 201711"
 #endif
 
+/* Not supported fully yet:
 #ifndef __cpp_consteval
 #  error "__cpp_consteval"
 #elif __cpp_consteval != 201811
 #  error "__cpp_consteval != 201811"
 #endif
+*/
 
 #ifndef __cpp_concepts
 #  error "__cpp_concepts"

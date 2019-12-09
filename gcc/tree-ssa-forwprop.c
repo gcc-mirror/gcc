@@ -2043,8 +2043,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   gcc_checking_assert (TREE_CODE (op) == CONSTRUCTOR
 		       && TREE_CODE (type) == VECTOR_TYPE);
 
-  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts)
-      || uniform_vector_p (op))
+  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
     return false;
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
@@ -2266,9 +2265,12 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	sel.quick_push (elts[i].second + elts[i].first * refnelts);
       /* And fill the tail with "something".  It's really don't care,
          and ideally we'd allow VEC_PERM to have a smaller destination
-	 vector.  */
+	 vector.  As heuristic try to preserve a uniform orig[0] which
+	 facilitates later pattern-matching VEC_PERM_EXPR to a
+	 BIT_INSERT_EXPR.  */
       for (; i < refnelts; ++i)
-	sel.quick_push (i - elts.length ());
+	sel.quick_push ((elts[0].second == 0 && elts[0].first == 0
+			 ? 0 : refnelts) + i);
       vec_perm_indices indices (sel, orig[1] ? 2 : 1, refnelts);
       if (!can_vec_perm_const_p (TYPE_MODE (perm_type), indices))
 	return false;
@@ -2287,24 +2289,28 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       else if (orig[1] == error_mark_node
 	       && one_nonconstant)
 	{
-	  orig[1] = gimple_build_vector_from_val (&stmts, UNKNOWN_LOCATION,
-						  type, one_nonconstant);
 	  /* ???  We can see if we can safely convert to the original
 	     element type.  */
 	  converted_orig1 = conv_code != ERROR_MARK;
+	  orig[1] = gimple_build_vector_from_val (&stmts, UNKNOWN_LOCATION,
+						  converted_orig1
+						  ? type : perm_type,
+						  one_nonconstant);
 	}
       else if (orig[1] == error_mark_node)
 	{
-	  tree_vector_builder vec (type, nelts, 1);
-	  for (unsigned i = 0; i < nelts; ++i)
-	    if (constants[i])
+	  /* ???  See if we can convert the vector to the original type.  */
+	  converted_orig1 = conv_code != ERROR_MARK;
+	  unsigned n = converted_orig1 ? nelts : refnelts;
+	  tree_vector_builder vec (converted_orig1
+				   ? type : perm_type, n, 1);
+	  for (unsigned i = 0; i < n; ++i)
+	    if (i < nelts && constants[i])
 	      vec.quick_push (constants[i]);
 	    else
 	      /* ??? Push a don't-care value.  */
 	      vec.quick_push (one_constant);
 	  orig[1] = vec.build ();
-	  /* ???  See if we can convert the vector to the original type.  */
-	  converted_orig1 = conv_code != ERROR_MARK;
 	}
       tree blend_op2 = NULL_TREE;
       if (converted_orig1)

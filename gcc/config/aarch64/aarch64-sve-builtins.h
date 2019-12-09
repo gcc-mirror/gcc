@@ -488,6 +488,7 @@ public:
   gimple_folder (const function_instance &, tree,
 		 gimple_stmt_iterator *, gcall *);
 
+  tree force_vector (gimple_seq &, tree, tree);
   tree convert_pred (gimple_seq &, tree, unsigned int);
   tree fold_contiguous_base (gimple_seq &, tree);
   tree load_store_cookie (tree);

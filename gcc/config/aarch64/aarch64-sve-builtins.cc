@@ -2234,6 +2234,17 @@ gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
 {
 }
 
+/* VALUE might be a vector of type VECTYPE or a single scalar element.
+   Duplicate it into a vector of type VECTYPE in the latter case, adding any
+   new statements to STMTS.  */
+tree
+gimple_folder::force_vector (gimple_seq &stmts, tree vectype, tree value)
+{
+  if (!VECTOR_TYPE_P (TREE_TYPE (value)))
+    value = gimple_build_vector_from_val (&stmts, vectype, value);
+  return value;
+}
+
 /* Convert predicate argument ARGNO so that it has the type appropriate for
    an operation on VECTYPE.  Add any new statements to STMTS.  */
 tree
@@ -3340,6 +3351,26 @@ verify_type_context (location_t loc, type_context_kind context,
     case TCTX_ARRAY_ELEMENT:
       if (!silent_p)
 	error_at (loc, "array elements cannot have SVE type %qT", type);
+      return false;
+
+    case TCTX_ALLOCATION:
+      if (!silent_p)
+	error_at (loc, "cannot allocate objects with SVE type %qT", type);
+      return false;
+
+    case TCTX_DEALLOCATION:
+      if (!silent_p)
+	error_at (loc, "cannot delete objects with SVE type %qT", type);
+      return false;
+
+    case TCTX_EXCEPTIONS:
+      if (!silent_p)
+	error_at (loc, "cannot throw or catch SVE type %qT", type);
+      return false;
+
+    case TCTX_CAPTURE_BY_COPY:
+      if (!silent_p)
+	error_at (loc, "capture by copy of SVE type %qT", type);
       return false;
     }
   gcc_unreachable ();

@@ -418,6 +418,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
   { "__is_pod",		RID_IS_POD,	D_CXXONLY },
   { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
+  { "__is_same",     RID_IS_SAME_AS, D_CXXONLY },
   { "__is_same_as",     RID_IS_SAME_AS, D_CXXONLY },
   { "__is_standard_layout", RID_IS_STD_LAYOUT, D_CXXONLY },
   { "__is_trivial",     RID_IS_TRIVIAL, D_CXXONLY },

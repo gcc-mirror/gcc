@@ -2043,7 +2043,10 @@ identifier_to_locale (const char *ident)
    >
    > OSC 8 ; ; ST
    >
-   > OSC (operating system command) is typically ESC ].  */
+   > OSC (operating system command) is typically ESC ].
+
+   Use BEL instead of ST, as that is currently rendered better in some
+   terminal emulators that don't support OSC 8, like konsole.  */
 
 /* If URL-printing is enabled, write an "open URL" escape sequence to PP
    for the given URL.  */
@@ -2052,7 +2055,7 @@ void
 pp_begin_url (pretty_printer *pp, const char *url)
 {
   if (pp->show_urls)
-    pp_printf (pp, "\33]8;;%s\33\\", url);
+    pp_printf (pp, "\33]8;;%s\a", url);
 }
 
 /* If URL-printing is enabled, write a "close URL" escape sequence to PP.  */
@@ -2061,7 +2064,7 @@ void
 pp_end_url (pretty_printer *pp)
 {
   if (pp->show_urls)
-    pp_string (pp, "\33]8;;\33\\");
+    pp_string (pp, "\33]8;;\a");
 }
 
 #if CHECKING_P
@@ -2369,7 +2372,7 @@ test_urls ()
     pp_begin_url (&pp, "http://example.com");
     pp_string (&pp, "This is a link");
     pp_end_url (&pp);
-    ASSERT_STREQ ("\33]8;;http://example.com\33\\This is a link\33]8;;\33\\",
+    ASSERT_STREQ ("\33]8;;http://example.com\aThis is a link\33]8;;\a",
 		  pp_formatted_text (&pp));
   }
 }

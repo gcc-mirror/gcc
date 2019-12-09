@@ -1,3 +1,25 @@
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Don't define __cpp_consteval for
+	now.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91353 - P1331R2: Allow trivial default init in constexpr contexts.
+	* c-cppbuiltin.c (c_cpp_builtins): Adjust the value of __cpp_constexpr.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92271 - make __is_same alias for __is_same_as.
+	* c-common.c: Add __is_same, an alias for __is_same_as.
+
+2019-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_aggregate_paren_init=201902 for -std=c++2a.
+
 2019-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-attribs.c (handle_symver_attribute): New function

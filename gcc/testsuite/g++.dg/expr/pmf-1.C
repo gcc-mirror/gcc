@@ -13,7 +13,7 @@ struct A
   void h()
   {
     void (A::*p)() = &A::f;
-    void (A::*q)() = &(A::f);       // { dg-error "parenthesized" }
+    void (A::*q)() = &(A::f);       // { dg-error "27:ISO C\\+\\+ forbids taking the address of an unqualified or parenthesized" }
     foo(&g<int>);                   // { dg-error "cannot convert" }
   }
 };

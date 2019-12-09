@@ -275,7 +275,7 @@ TEST_UNIFORM_Z (dup_m128_s8_z, svint8_t,
 
 /*
 ** dup_0_s8_z:
-**	mov	z0\.b, p0/z, #0
+**	mov	z0\.[bhsd], #0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_s8_z, svint8_t,

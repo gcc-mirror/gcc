@@ -5190,6 +5190,7 @@ expand_debug_expr (tree exp)
     case VEC_PERM_EXPR:
     case VEC_DUPLICATE_EXPR:
     case VEC_SERIES_EXPR:
+    case SAD_EXPR:
       return NULL;
 
     /* Misc codes.  */
@@ -6131,6 +6132,21 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 	    TREE_ADDRESSABLE (t) = 1;
 	}
 
+      *walk_subtrees = 0;
+    }
+  /* References of size POLY_INT_CST to a fixed-size object must go
+     through memory.  It's more efficient to force that here than
+     to create temporary slots on the fly.  */
+  else if ((TREE_CODE (t) == MEM_REF || TREE_CODE (t) == TARGET_MEM_REF)
+	   && TYPE_SIZE (TREE_TYPE (t))
+	   && POLY_INT_CST_P (TYPE_SIZE (TREE_TYPE (t))))
+    {
+      tree base = get_base_address (t);
+      if (base
+	  && DECL_P (base)
+	  && DECL_MODE (base) != BLKmode
+	  && GET_MODE_SIZE (DECL_MODE (base)).is_constant ())
+	TREE_ADDRESSABLE (base) = 1;
       *walk_subtrees = 0;
     }
 

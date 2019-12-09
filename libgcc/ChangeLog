@@ -1,3 +1,8 @@
+2019-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/92055
+	* config/avr/t-avrlibc (MULTISUBDIR): Search for double, not double64.
+
 2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR libgcc/91737

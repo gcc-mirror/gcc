@@ -836,6 +836,14 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	      return error_mark_node;
 	    }
 
+	  if (VECTOR_TYPE_P (intype) && !gnu_vector_type_p (intype))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "could not convert %qE from %qH to %qI", expr,
+			  TREE_TYPE (expr), type);
+	      return error_mark_node;
+	    }
+
 	  /* We can't implicitly convert a scoped enum to bool, so convert
 	     to the underlying type first.  */
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
@@ -1036,12 +1044,13 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       tree args = TREE_VALUE (attr);
       if (args)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
-      const char* format = (msg ?
-	G_("ignoring return value of %qD, "
-	   "declared with attribute %<nodiscard%>: %<%s%>") :
-	G_("ignoring return value of %qD, "
-	   "declared with attribute %<nodiscard%>%s"));
-      const char* raw_msg = msg ? msg : "";
+      const char *format
+	= (msg
+	   ? G_("ignoring return value of %qD, "
+		"declared with attribute %<nodiscard%>: %<%s%>")
+	   : G_("ignoring return value of %qD, "
+		"declared with attribute %<nodiscard%>%s"));
+      const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result, format, fn, raw_msg))
 	inform (DECL_SOURCE_LOCATION (fn), "declared here");
@@ -1053,12 +1062,13 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       tree args = TREE_VALUE (attr);
       if (args)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
-      const char* format = msg ?
-	G_("ignoring returned value of type %qT, "
-	   "declared with attribute %<nodiscard%>: %<%s%>") :
-	G_("ignoring returned value of type %qT, "
-	   "declared with attribute %<nodiscard%>%s");
-      const char* raw_msg = msg ? msg : "";
+      const char *format
+	= (msg
+	   ? G_("ignoring returned value of type %qT, "
+		"declared with attribute %<nodiscard%>: %<%s%>")
+	   : G_("ignoring returned value of type %qT, "
+		"declared with attribute %<nodiscard%>%s"));
+      const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result, format, rettype, raw_msg))
 	{
@@ -1763,8 +1773,11 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 							    tf_warning_or_error)
 					: NULL_TREE;
 
-      case COMPLEX_TYPE:
       case VECTOR_TYPE:
+	if (!gnu_vector_type_p (basetype))
+	  return NULL_TREE;
+	/* FALLTHROUGH */
+      case COMPLEX_TYPE:
 	if ((desires & WANT_VECTOR_OR_COMPLEX) == 0)
 	  return NULL_TREE;
 	switch (TREE_CODE (TREE_TYPE (basetype)))

@@ -1,3 +1,227 @@
+2019-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* cvt.c (maybe_warn_nodiscard): Add workaround for GCC 3.4-4.4 - cast
+	msg to (const char *) in conditional expressions.  Formatting fixes.
+
+2019-12-07  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92831
+	* call.c (build_conditional_expr_1): For ?: with omitted middle
+	operand use cp_stabilize_reference if arg1 is glvalue_p rather than
+	just if it is lvalue_p.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_diagnose_invalid_type_name): Mention
+	that concept is also available with -std=c++2a.
+
+	PR c++/92831 - CWG 1299, not extending temporary lifetime for ?:
+	* cp-tree.h (extend_ref_init_temps): Add a new argument with NULL
+	default arg.
+	* call.c (set_up_extended_ref_temp): Add COND_GUARD argument, pass it
+	down to extend_ref_init_temps.  Before pushing cleanup, if COND_GUARD
+	is non-NULL, create a bool temporary if needed, initialize to false
+	and guard the cleanup with the temporary being true.
+	(extend_ref_init_temps_1): Add COND_GUARD argument, pass it down
+	to recursive calls and set_up_extended_ref_temp.  Handle COND_EXPR.
+	(extend_ref_init_temps): Add COND_GUARD argument, pass it down to
+	recursive calls and to extend_ref_init_temps_1.
+
+2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* decl.c (start_decl_1): Use verify_type_context to check whether
+	the target allows variables of a particular type to have static
+	or thread-local storage duration.
+	(check_array_initializer): Use verify_type_context to check whether
+	the target allows a particular type to be used as an array element.
+	(create_array_type_for_decl): Likewise.
+	(cp_finish_decl): Use verify_type_context to check whether
+	the target allows static member variables of a particular type.
+	(grokdeclarator): Likewise.  Also use verify_type_context to check
+	whether the target allows non-static member variables of a particular
+	type.
+	* except.c: Include target.h.
+	(is_admissible_throw_operand_or_catch_parameter): Use
+	verify_type_context to check whether the target allows particular
+	types to be thrown and caught.
+	* typeck2.c (add_exception_specifier): Likewise.
+	* init.c (build_new_1): Use verify_type_context to check whether
+	the target allows particular types to be dynamically allocated.
+	(build_vec_delete_1, build_delete): Use verify_type_context to check
+	whether the target allows particular types to be deleted.
+	* lambda.c (add_capture): Use verify_type_context to check
+	whether the target allows particular types to be captured by copy.
+	* pt.c: Include target.h.
+	(instantiate_class_template_1): Use verify_type_context to check
+	whether the target allows non-static member variables of a particular
+	type.
+	* typeck.c (cxx_alignof_expr): Use verify_type_context to check
+	whether the target allows the alignment of a particular type
+	to be measured.
+	(pointer_diff, cp_build_unary_op): Use verify_type_context to check
+	whether the target allows arithmetic involving pointers to particular
+	types.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91353 - P1331R2: Allow trivial default init in constexpr contexts.
+	* class.c (trivial_default_constructor_is_constexpr): Return true in
+	C++20.
+	* constexpr.c (cx_check_missing_mem_inits): Allow missing field
+	initializers in C++20.
+	(cxx_eval_call_expression): Don't clear CONSTRUCTOR_NO_CLEARING for
+	constexpr constructors in C++20.
+	(reduced_constant_expression_p): Don't set FIELD for union and array
+	types.  Skip empty class fields without initializers.
+	* decl.c (check_for_uninitialized_const_var): Permit trivial default
+	initialization in constexpr.
+	(next_initializable_field): Don't skip vptr fields.
+	* method.c (walk_field_subobs): Still consider a constructor that
+	doesn't initialize all the members constexpr.
+
+2019-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92271 - make __is_same alias for __is_same_as.
+	* cxx-pretty-print.c (pp_cxx_trait_expression) <case CPTK_IS_SAME_AS>:
+	Print "__is_same".
+
+2019-12-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* cp-gimplify.c: Include memmodel.h.
+
+2019-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck2.c (build_functional_cast): Add location_t parameter
+	and use it.
+	* cp-tree.h: Update declaration.
+	* parser.c (cp_parser_functional_cast): Adjust call.
+	* call.c (build_op_delete_call): Likewise.
+	(build_new_method_call_1): Likewise.
+	* decl.c (check_initializer): Likewise.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_compound_literal): Likewise.
+
+2019-12-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* cp-gimplify.c: Include tm_p.h.
+
+2019-12-04  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (enum primary_constraint_error): Remove stray comma.
+
+2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (CP_AGGREGATE_TYPE_P): Check for gnu_vector_type_p
+	instead of VECTOR_TYPE.
+	* call.c (build_conditional_expr_1): Restrict vector handling
+	to vectors that satisfy gnu_vector_type_p.
+	* cvt.c (ocp_convert): Only allow vectors to be converted
+	to bool if they satisfy gnu_vector_type_p.
+	(build_expr_type_conversion): Only allow conversions from
+	vectors if they satisfy gnu_vector_type_p.
+	* typeck.c (cp_build_binary_op): Only allow binary operators to be
+	applied to vectors if they satisfy gnu_vector_type_p.
+	(cp_build_unary_op): Likewise unary operators.
+	(build_reinterpret_cast_1):
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Add CPTI_SOURCE_LOCATION_IMPL.
+	(source_location_impl): Define.
+	(enum cp_built_in_function): Add CP_BUILT_IN_SOURCE_LOCATION.
+	(fold_builtin_source_location): Declare.
+	* cp-gimplify.c: Include output.h, file-prefix-map.h and cgraph.h.
+	(cp_gimplify_expr, cp_fold): Handle CP_BUILT_IN_SOURCE_LOCATION.
+	Formatting fix.
+	(get_source_location_impl_type): New function.
+	(struct source_location_table_entry,
+	struct source_location_table_entry_hash): New types.
+	(source_location_table, source_location_id): New variables.
+	(fold_builtin_source_location): New function.
+	* constexpr.c (cxx_eval_builtin_function_call): Handle
+	CP_BUILT_IN_SOURCE_LOCATION.
+	* tree.c (builtin_valid_in_constant_expr_p): Likewise.  Formatting
+	fix.
+	* decl.c (cxx_init_decl_processing): Register
+	__builtin_source_location.
+	* name-lookup.c (get_std_name_hint): Add source_location entry.
+
+2019-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_addr_expr_1): Use the cp_expr_loc_or_input_loc
+	location in a few additional diagnostics; tidy.
+	(check_return_expr): Likewise.
+
+	* typeck.c (cp_build_addr_expr_1): Use tree_strip_any_location_wrapper
+	for the address of main pedwarn.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369
+	* constexpr.c (struct constexpr_global_ctx): Add cleanups member,
+	initialize it in the ctor.
+	(cxx_eval_constant_expression) <case TARGET_EXPR>: If TARGET_EXPR_SLOT
+	is already in the values hash_map, don't evaluate it again.  Put
+	TARGET_EXPR_SLOT into hash_map even if not lval, and push it into
+	save_exprs too.  If there is TARGET_EXPR_CLEANUP and not
+	CLEANUP_EH_ONLY, push the cleanup to cleanups vector.
+	<case CLEANUP_POINT_EXPR>: Save outer cleanups, set cleanups to
+	local auto_vec, after evaluating the body evaluate cleanups and
+	restore previous cleanups.
+	<case TRY_CATCH_EXPR>: Don't crash if the first operand is NULL_TREE.
+	(cxx_eval_outermost_constant_expr): Set cleanups to local auto_vec,
+	after evaluating the expression evaluate cleanups.
+
+2019-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91363 - P0960R3: Parenthesized initialization of aggregates.
+	* call.c (build_new_method_call_1): Handle parenthesized initialization
+	of aggregates by building up a CONSTRUCTOR.
+	(extend_ref_init_temps): Do nothing for CONSTRUCTOR_IS_PAREN_INIT.
+	* cp-tree.h (CONSTRUCTOR_IS_PAREN_INIT, LOOKUP_AGGREGATE_PAREN_INIT):
+	Define.
+	* decl.c (grok_reference_init): Handle aggregate initialization from
+	a parenthesized list of values.
+	(reshape_init): Do nothing for CONSTRUCTOR_IS_PAREN_INIT.
+	(check_initializer): Handle initialization of an array from a
+	parenthesized list of values.  Use NULL_TREE instead of NULL.
+	* tree.c (build_cplus_new): Handle BRACE_ENCLOSED_INITIALIZER_P.
+	* typeck2.c (digest_init_r): Set LOOKUP_AGGREGATE_PAREN_INIT if it
+	receives a CONSTRUCTOR with CONSTRUCTOR_IS_PAREN_INIT set.  Allow
+	narrowing when LOOKUP_AGGREGATE_PAREN_INIT.
+	(massage_init_elt): Don't lose LOOKUP_AGGREGATE_PAREN_INIT when passing
+	flags to digest_init_r.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92732
+	* typeck2.c (digest_nsdmi_init): For bitfields, use
+	DECL_BIT_FIELD_TYPE instead of TREE_TYPE.
+
+2019-12-03  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92705
+	* call.c (strip_standard_conversion): New function.
+	(build_new_op_1): Use it for user_conv_p.
+	(compare_ics): Likewise.
+	(source_type): Likewise.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92695
+	* constexpr.c (cxx_bind_parameters_in_call): For virtual calls,
+	adjust the first argument to point to the derived object rather
+	than its base.
+
+2019-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92695
+	* constexpr.c (cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Use
+	STRIP_NOPS before checking for ADDR_EXPR.
+
 2019-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60228

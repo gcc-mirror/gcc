@@ -45,6 +45,7 @@
 #include <bits/stl_iterator.h>
 #include <bits/range_access.h>
 
+#if __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -104,7 +105,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private:
 	size_t _M_extent_value;
       };
-
   } // namespace __detail
 
   template<typename _Type, size_t _Extent = dynamic_extent>
@@ -122,21 +122,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return dynamic_extent;
 	}
 
-      template<typename _Tp>
-	using __is_compatible = is_convertible<_Tp(*)[], _Type(*)[]>;
-
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3255. span's array constructor is too strict
-      template<typename _Tp, size_t _ArrayExtent,
-	       typename = enable_if_t<_Extent == dynamic_extent
-				      || _ArrayExtent == _Extent>>
-	using __is_compatible_array  = __is_compatible<_Tp>;
+      template<typename _Tp, size_t _ArrayExtent>
+	using __is_compatible_array = __and_<
+	  bool_constant<(_Extent == dynamic_extent || _ArrayExtent == _Extent)>,
+	  __is_array_convertible<_Type, _Tp>>;
+
+      template<typename _Iter, typename _Ref = iter_reference_t<_Iter>>
+	using __is_compatible_iterator = __and_<
+	  bool_constant<contiguous_iterator<_Iter>>,
+	  is_lvalue_reference<iter_reference_t<_Iter>>,
+	  is_same<iter_value_t<_Iter>, remove_cvref_t<_Ref>>,
+	  __is_array_convertible<_Type, remove_reference_t<_Ref>>>;
+
+      template<typename _Range>
+	using __is_compatible_range
+	  = __is_compatible_iterator<ranges::iterator_t<_Range>>;
 
     public:
       // member types
       using value_type             = remove_cv_t<_Type>;
       using element_type           = _Type;
-      using index_type             = size_t;
+      using size_type              = size_t;
       using reference              = element_type&;
       using const_reference        = const element_type&;
       using pointer                = _Type*;
@@ -148,168 +156,80 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using reverse_iterator       = std::reverse_iterator<iterator>;
       using const_reverse_iterator = std::reverse_iterator<const_iterator>;
       using difference_type        = ptrdiff_t;
-      // Official wording has no size_type -- why??
-      // using size_type = size_t;
 
       // member constants
       static inline constexpr size_t extent = _Extent;
 
       // constructors
 
-      template<bool _DefaultConstructible = (_Extent + 1u) <= 1u,
-	       enable_if_t<_DefaultConstructible>* = nullptr>
-	constexpr
-	span() noexcept : _M_extent(0), _M_ptr(nullptr)
-	{ }
+      constexpr
+      span() noexcept
+      requires ((_Extent + 1u) <= 1u)
+      : _M_extent(0), _M_ptr(nullptr)
+      { }
 
       constexpr
       span(const span&) noexcept = default;
 
-      template<typename _Tp, size_t _ArrayExtent,
-	       typename = _Require<__is_compatible_array<_Tp, _ArrayExtent>>>
+      template<typename _Tp, size_t _ArrayExtent>
+	requires (__is_compatible_array<_Tp, _ArrayExtent>::value)
 	constexpr
 	span(_Tp (&__arr)[_ArrayExtent]) noexcept
 	: span(static_cast<pointer>(__arr), _ArrayExtent)
 	{ }
 
-      template<typename _Tp, size_t _ArrayExtent,
-	       typename = _Require<__is_compatible_array<_Tp, _ArrayExtent>>>
+      template<typename _Tp, size_t _ArrayExtent>
+	requires (__is_compatible_array<_Tp, _ArrayExtent>::value)
 	constexpr
 	span(array<_Tp, _ArrayExtent>& __arr) noexcept
 	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
-      template<typename _Tp, size_t _ArrayExtent,
-	       typename = _Require<__is_compatible_array<_Tp, _ArrayExtent>>>
+      template<typename _Tp, size_t _ArrayExtent>
+	  requires (__is_compatible_array<const _Tp, _ArrayExtent>::value)
 	constexpr
 	span(const array<_Tp, _ArrayExtent>& __arr) noexcept
 	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
-      // NOTE: when the time comes, and P1394 -
-      // range constructors for std::span - ships in
-      // the standard, delete the #else block and remove
-      // the conditional
-      // if the paper fails, delete #if block
-      // and keep the crappy #else block
-      // and then cry that NB comments failed C++20...
-      // but maybe for C++23?
-#ifdef _GLIBCXX_P1394
-    private:
-      // FIXME: use std::iter_reference_t
-      template<typename _Iterator>
-	using iter_reference_t = decltype(*std::declval<_Iterator&>());
-      // FIXME: use std::ranges::iterator_t
-      // N.B. constraint is needed to prevent a cycle when __adl_begin finds
-      // begin(span) which does overload resolution on span(Range&&).
-      template<typename _Rng,
-	       typename _Rng2 = remove_cvref_t<_Rng>,
-	       typename = enable_if_t<!__detail::__is_std_span<_Rng2>::value>>
-	using iterator_t = decltype(std::__adl_begin(std::declval<_Rng&>()));
-      // FIXME: use std::iter_value_t
-      template<typename _Iter>
-	using iter_value_t = typename iterator_traits<_Iter>::value_type;
-      // FIXME: use std::derived_from concept
-      template<typename _Derived, typename _Base>
-	using derived_from
-	  = __and_<is_base_of<_Base, _Derived>,
-	      is_convertible<const volatile _Derived*, const volatile _Base*>>;
-      // FIXME: require contiguous_iterator<_Iterator>
-      template<typename _Iter,
-	       typename _Ref = iter_reference_t<_Iter>,
-	       typename _Traits = iterator_traits<_Iter>,
-	       typename _Tag = typename _Traits::iterator_category>
-	using __is_compatible_iterator
-	  = __and_<derived_from<_Tag, random_access_iterator_tag>,
-		   is_lvalue_reference<_Ref>,
-		   is_same<iter_value_t<_Iter>, remove_cvref_t<_Ref>>,
-		   __is_compatible<remove_reference_t<_Ref>>>;
-
-      template<typename _Range>
-	using __is_compatible_range
-	  = __is_compatible_iterator<iterator_t<_Range>>;
-
     public:
-      template<typename _Range, typename = _Require<
-	  bool_constant<_Extent == dynamic_extent>,
-	  __not_<__detail::__is_std_span<remove_cvref_t<_Range>>>,
-	  __not_<__detail::__is_std_array<remove_cvref_t<_Range>>>,
-	  __not_<is_array<remove_reference_t<_Range>>>,
-	  __is_compatible_range<_Range>>,
-	  typename = decltype(std::__adl_data(std::declval<_Range&>()))>
+      template<ranges::contiguous_range _Range>
+	requires (_Extent == dynamic_extent)
+	  && (!__detail::__is_std_span<remove_cvref_t<_Range>>::value)
+	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>::value)
+	  && (!is_array_v<remove_reference_t<_Range>>)
+	  && (__is_compatible_range<_Range>::value)
 	constexpr
 	span(_Range&& __range)
-	noexcept(noexcept(::std::__adl_data(__range))
-		  && noexcept(::std::__adl_size(__range)))
-	: span(::std::__adl_data(__range), ::std::__adl_size(__range))
+	noexcept(noexcept(ranges::data(__range))
+		  && noexcept(ranges::size(__range)))
+	: span(ranges::data(__range), ranges::size(__range))
 	{ }
 
-      template<typename _ContiguousIterator, typename _Sentinel, typename
-		= _Require<__not_<is_convertible<_Sentinel, index_type>>,
-			   __is_compatible_iterator<_ContiguousIterator>>>
+      template<contiguous_iterator _ContiguousIterator,
+	sized_sentinel_for<_ContiguousIterator> _Sentinel>
+	  requires (__is_compatible_iterator<_ContiguousIterator>::value)
+	    && (!is_convertible_v<_Sentinel, size_type>)
 	constexpr
 	span(_ContiguousIterator __first, _Sentinel __last)
-	: _M_extent(static_cast<index_type>(__last - __first)),
+	: _M_extent(static_cast<size_type>(__last - __first)),
 	  _M_ptr(std::to_address(__first))
 	{
 	  if (_Extent != dynamic_extent)
 	    __glibcxx_assert((__last - __first) == _Extent);
 	}
 
-      template<typename _ContiguousIterator, typename
-		= _Require<__is_compatible_iterator<_ContiguousIterator>>>
+      template<contiguous_iterator _ContiguousIterator>
+	requires (__is_compatible_iterator<_ContiguousIterator>::value)
 	constexpr
-	span(_ContiguousIterator __first, index_type __count)
+	span(_ContiguousIterator __first, size_type __count)
 	noexcept(noexcept(std::to_address(__first)))
 	: _M_extent(__count), _M_ptr(std::to_address(__first))
 	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
-#else
-    private:
-      template<typename _Container,
-	  typename _DataT = decltype(std::data(std::declval<_Container&>())),
-	  typename _SizeT = decltype(std::size(std::declval<_Container&>()))>
-	using __is_compatible_container
-	  = __is_compatible<remove_pointer_t<_DataT>>;
 
-    public:
-      template<typename _Container, typename = _Require<
-		bool_constant<_Extent == dynamic_extent>,
-		__not_<__detail::__is_std_span<remove_cv_t<_Container>>>,
-		__not_<__detail::__is_std_array<remove_cv_t<_Container>>>,
-		__not_<is_array<_Container>>,
-		__is_compatible_container<_Container>>>
-	constexpr
-	span(_Container& __cont)
-	noexcept(noexcept(std::data(__cont)) && noexcept(std::size(__cont)))
-	: _M_extent(std::size(__cont)), _M_ptr(std::data(__cont))
-	{ }
-
-      template<typename _Container, typename = _Require<
-		bool_constant<_Extent == dynamic_extent>,
-		__not_<__detail::__is_std_span<remove_cv_t<_Container>>>,
-		__not_<__detail::__is_std_array<remove_cv_t<_Container>>>,
-		__not_<is_array<_Container>>,
-		__is_compatible_container<const _Container>>>
-	constexpr
-	span(const _Container& __cont)
-	noexcept(noexcept(std::data(__cont)) && noexcept(std::size(__cont)))
-	: _M_extent(std::size(__cont)), _M_ptr(std::data(__cont))
-	{ }
-
-      constexpr
-      span(pointer __first, index_type __count) noexcept
-      : _M_extent(__count), _M_ptr(__first)
-      { __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
-
-      constexpr
-      span(pointer __first, pointer __last) noexcept
-      : span(__first, static_cast<index_type>(__last - __first))
-      { }
-#endif // P1394
-
-      template<typename _OType, size_t _OExtent, typename = _Require<
-	  __bool_constant<_Extent == dynamic_extent || _Extent == _OExtent>,
-	  is_convertible<_OType(*)[], _Type(*)[]>>>
+      template<typename _OType, size_t _OExtent>
+	requires (_Extent == dynamic_extent || _Extent == _OExtent)
+	  && (__is_array_convertible<_Type, _OType>::value)
 	constexpr
 	span(const span<_OType, _OExtent>& __s) noexcept
 	: _M_extent(__s.size()), _M_ptr(__s.data())
@@ -322,11 +242,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // observers
 
-      constexpr index_type
+      constexpr size_type
       size() const noexcept
       { return this->_M_extent._M_extent(); }
 
-      constexpr index_type
+      constexpr size_type
       size_bytes() const noexcept
       { return this->_M_extent._M_extent() * sizeof(element_type); }
 
@@ -353,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       constexpr reference
-      operator[](index_type __idx) const noexcept
+      operator[](size_type __idx) const noexcept
       {
 	static_assert(extent != 0);
 	__glibcxx_assert(__idx < size());
@@ -412,7 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       constexpr span<element_type, dynamic_extent>
-      first(index_type __count) const noexcept
+      first(size_type __count) const noexcept
       {
 	__glibcxx_assert(__count <= size());
 	return { this->data(), __count };
@@ -430,7 +350,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       constexpr span<element_type, dynamic_extent>
-      last(index_type __count) const noexcept
+      last(size_type __count) const noexcept
       {
 	__glibcxx_assert(__count <= size());
 	return { this->data() + (this->size() - __count), __count };
@@ -465,7 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       constexpr span<element_type, dynamic_extent>
-      subspan(index_type __offset, index_type __count = dynamic_extent) const
+      subspan(size_type __offset, size_type __count = dynamic_extent) const
       noexcept
       {
 	__glibcxx_assert(__offset <= size());
@@ -505,27 +425,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     span(const array<_Type, _ArrayExtent>&)
       -> span<const _Type, _ArrayExtent>;
 
-#ifdef _GLIBCXX_P1394
-
-  template<typename _ContiguousIterator, typename _Sentinel>
-    span(_ContiguousIterator, _Sentinel)
-      -> span<remove_reference_t<
-	typename iterator_traits<_ContiguousIterator>::reference>>;
+  template<contiguous_iterator _Iter, typename _Sentinel>
+    span(_Iter, _Sentinel)
+      -> span<remove_reference_t<ranges::range_reference_t<_Iter>>>;
 
   template<typename _Range>
     span(_Range &&)
-      -> span<remove_reference_t<typename iterator_traits<
-	  decltype(std::__adl_begin(::std::declval<_Range&>()))>::reference>>;
-
-#else
-
-  template<typename _Container>
-    span(_Container&) -> span<typename _Container::value_type>;
-
-  template<typename _Container>
-    span(const _Container&) -> span<const typename _Container::value_type>;
-
-#endif // P1394
+      -> span<remove_reference_t<ranges::range_reference_t<_Range&>>>;
 
   template<typename _Type, size_t _Extent>
     inline
@@ -574,6 +480,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
+#endif // concepts
 #endif // C++20
 #endif // _GLIBCXX_SPAN

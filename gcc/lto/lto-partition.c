@@ -372,38 +372,9 @@ lto_max_map (void)
     new_partition ("empty");
 }
 
-/* Helper function for qsort; sort nodes by order. noreorder functions must have
-   been removed earlier.  */
-static int
-node_cmp (const void *pa, const void *pb)
-{
-  const struct cgraph_node *a = *(const struct cgraph_node * const *) pa;
-  const struct cgraph_node *b = *(const struct cgraph_node * const *) pb;
-
-  /* Profile reorder flag enables function reordering based on first execution
-     of a function. All functions with profile are placed in ascending
-     order at the beginning.  */
-
-  if (flag_profile_reorder_functions)
-  {
-    /* Functions with time profile are sorted in ascending order.  */
-    if (a->tp_first_run && b->tp_first_run)
-      return a->tp_first_run != b->tp_first_run
-	? a->tp_first_run - b->tp_first_run
-        : a->order - b->order;
-
-    /* Functions with time profile are sorted before the functions
-       that do not have the profile.  */
-    if (a->tp_first_run || b->tp_first_run)
-      return b->tp_first_run - a->tp_first_run;
-  }
-
-  return b->order - a->order;
-}
-
 /* Helper function for qsort; sort nodes by order.  */
 static int
-varpool_node_cmp (const void *pa, const void *pb)
+node_cmp (const void *pa, const void *pb)
 {
   const symtab_node *a = *static_cast<const symtab_node * const *> (pa);
   const symtab_node *b = *static_cast<const symtab_node * const *> (pb);
@@ -418,7 +389,7 @@ add_sorted_nodes (vec<symtab_node *> &next_nodes, ltrans_partition partition)
   unsigned i;
   symtab_node *node;
 
-  next_nodes.qsort (varpool_node_cmp);
+  next_nodes.qsort (node_cmp);
   FOR_EACH_VEC_ELT (next_nodes, i, node)
     if (!symbol_partitioned_p (node))
       add_symbol_to_partition (partition, node);
@@ -537,17 +508,17 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
      unit tends to import a lot of global trees defined there.  We should
      get better about minimizing the function bounday, but until that
      things works smoother if we order in source order.  */
-  order.qsort (node_cmp);
+  order.qsort (tp_first_run_node_cmp);
   noreorder.qsort (node_cmp);
 
   if (dump_file)
     {
       for (unsigned i = 0; i < order.length (); i++)
-	fprintf (dump_file, "Balanced map symbol order:%s:%u\n",
-		 order[i]->name (), order[i]->tp_first_run);
+	fprintf (dump_file, "Balanced map symbol order:%s:%" PRId64 "\n",
+		 order[i]->name (), (int64_t) order[i]->tp_first_run);
       for (unsigned i = 0; i < noreorder.length (); i++)
-	fprintf (dump_file, "Balanced map symbol no_reorder:%s:%u\n",
-		 noreorder[i]->name (), noreorder[i]->tp_first_run);
+	fprintf (dump_file, "Balanced map symbol no_reorder:%s:%" PRId64 "\n",
+		 noreorder[i]->name (), (int64_t) noreorder[i]->tp_first_run);
     }
 
   /* Collect all variables that should not be reordered.  */
@@ -556,7 +527,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	&& vnode->no_reorder)
       varpool_order.safe_push (vnode);
   n_varpool_nodes = varpool_order.length ();
-  varpool_order.qsort (varpool_node_cmp);
+  varpool_order.qsort (node_cmp);
 
   /* Compute partition size and create the first partition.  */
   if (param_min_partition_size > max_partition_size)

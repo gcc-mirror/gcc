@@ -26,21 +26,22 @@
 #include <system_error>
 #include <testsuite_hooks.h>
 
-int main()
+template <typename clock_type>
+void test()
 {
   typedef std::timed_mutex mutex_type;
   typedef std::unique_lock<mutex_type> lock_type;
-  typedef std::chrono::system_clock clock_type;
 
   try 
     {
       mutex_type m;
       lock_type l(m, std::defer_lock);
-      clock_type::time_point t = clock_type::now() + std::chrono::seconds(1);
+      const typename clock_type::time_point t = clock_type::now()
+	+ std::chrono::seconds(1);
 
       try
 	{
-	  l.try_lock_until(t);
+	  VERIFY( l.try_lock_until(t) );
 	}
       catch(const std::system_error&)
 	{
@@ -61,6 +62,11 @@ int main()
     {
       VERIFY( false );
     }
+}
 
+int main()
+{
+  test<std::chrono::system_clock>();
+  test<std::chrono::steady_clock>();
   return 0;
 }

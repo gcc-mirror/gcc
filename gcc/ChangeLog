@@ -1,3 +1,505 @@
+2019-12-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Revert:
+
+	2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/linux.h (LINK_EH_SPEC): Define.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::dump): Make tp_first_run 64bit.
+	* cgraph.h (cgrpah_node): Likewise.
+	(tp_first_run_node_cmp): Deeclare.
+	* cgraphunit.c (node_cmp): Rename to ...
+	(tp_first_run_node_cmp): ... this; export; watch for 64bit overflows;
+	clear tp_first_run for no_reorder and !flag_profile_reorder_functions.
+	(expand_all_functions): Collect tp_first_run and normal functions to
+	two vectors so the other functions remain sorted. Do not check for
+	flag_profile_reorder_functions it is function local flag.
+	* profile.c (compute_value_histograms): Update tp_first_run printing.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* opts.c (common_handle_option): Do not clear ipa_reference for
+	-fprofile-use.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-split.c (split_function): Preserve 0 tp_first_run.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (do_estimate_edge_time): Silence overactive
+	sanity check.
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/92860
+	* common.opt (fprofile-reorder-functions, ftoplevel-reorder): Add
+	Optimization flag.
+
+2019-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91678 - wrong error with decltype and location wrapper.
+	* fold-const.c (maybe_lvalue_p): Handle VIEW_CONVERT_EXPR.
+
+2019-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/90840
+	* expr.c (expand_assignment): In the case of a CONCAT on the LHS, make
+	sure to pass a valid inner mode in calls to simplify_gen_subreg.
+
+2019-12-07  Tobias Burnus  <tobias@codesourcery.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/87488
+	* pretty-print.c (pp_begin_url, pp_end_url, test_urls): Use BEL
+	instead of ST sequence to terminate OSC 8 strings.
+
+2019-12-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92176
+	* lra.c (simplify_subreg_regno): Don't permit unconditional
+	changing mode for LRA too.
+
+2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.h (TCTX_ALLOCATION, TCTX_DEALLOCATION, TCTX_EXCEPTIONS)
+	(TCTX_CAPTURE_BY_COPY): New type_context_kinds.
+	* config/aarch64/aarch64-sve-builtins.cc (verify_type_context):
+	Handle them.
+
+2019-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather<mode>_insn_1offset<exec>): Use %o
+	in the asm output.
+
+2019-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (VEC_1REG_MODE): Remove V64QI and V64HI.
+	(VEC_1REG_ALT): Likewise.
+	(VEC_ALL1REG_MODE): New mode iterator.
+	(VEC_1REG_INT_MODE): Remove V64QI and V64HI.
+	(VEC_1REG_INT_ALT): Likewise.
+	(VEC_ALL1REG_INT_MODE): New mode interator.
+	(VEC_ALL1REG_INT_ALT): Likewise.
+	(VEC_REG_MODE): Remove V64QI and V64HI.
+	(VEC_ALLREG_MODE): New mode interator.
+	(vec_merge): Change to VEC_ALLREG_MODE.
+	(vec_merge_with_clobber): Likewise.
+	(vec_merge_with_vcc): Likewise.
+	(mov<mode>): Likewise.
+	(mov<mode>_unspec): Likewise.
+	(*mov<mode>): Change to VEC_ALL1REG_MODE.
+	(mov<mode>_exec): Likewise.
+	(*mov<mode>_exec_match): Likewise.
+	(mov<mode>_sgprbase): Likewise.
+	(reload_in<mode>): Change to VEC_ALLREG_MODE.
+	(reload_out<mode>): Likewise.
+	(scalar address splits): Likewise.
+	(*vec_set<mode>): Change to VEC_ALL1REG_MODE.
+	(vec_set<mode>): Change to VEC_ALLREG_MODE.
+	(*vec_set<mode>_1): Change to VEC_ALL1REG_MODE.
+	(vec_duplicate<mode><exec>): Likewise.
+	(vec_extract<mode><scalar_mode>): Likewise.
+	(vec_init<mode><scalar_mode>): Change to VEC_ALLREG_MODE.
+	(gather_load<mode>): Likewise.
+	(gather<mode>_exec): Likewise.
+	(gather<mode>_expr<exec>): Likewise.
+	(gather<mode>_insn_1offset<exec>): Likewise.
+	(gather<mode>_insn_1offset_ds<exec>): Likewise.
+	(gather<mode>_insn_2offsets<exec>): Likewise.
+	(ds_bpermute<mode>): Change to VEC_ALL1REG_MODE.
+	(VEC_INT_MODE): Remove V64QI and V64HI.
+	(vcond_mask_<mode>di): Change to VEC_ALLREG_MODE.
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>): Change to
+	VEC_ALL1REG_MODE.
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>_exec): Likewise.
+	(vcondu<VEC_1REG_MODE:mode><VEC_1REG_INT_ALT:mode>): Likewise.
+	(vcondu<VEC_1REG_MODE:mode><VEC_1REG_INT_ALT:mode>_exec): Likewise.
+	(maskload<mode>di): Change to VEC_ALL1REG_MODE.
+	(maskstore<mode>di): Likewise.
+	(mask_gather_load<mode>): Likewise.
+	(mov_from_lane63_<mode>): Likewise.
+	* config/gcn/gcn.c (gcn_vector_mode_supported_p): Renable V64QImode
+	and V64HImode vectorization.
+	(gcn_related_vector_mode): New function.
+	(TARGET_VECTORIZE_RELATED_MODE): New define.
+
+2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): For optional arguments, deref once
+	more to obtain the type.
+
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (nop_convert): Remove empty match.  Use nop_convert?
+	everywhere.
+
+2019-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-data-ref.c (prune_runtime_alias_test_list): Exit early
+	for empty vectors.  Avoid using ordered_remove and instead
+	shuffle the vector as we go.
+
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (enum tree_code): Remove CONVERT{0,1,2} and
+	VIEW_CONVERT{0,1,2}.
+	(expr::opt_grp): Add and initialize.
+	(lower_opt_convert): Rename to ...
+	(lower_opt): ... and work on opt_grp, simply switching operations
+	from being optional to being present or not.
+	(has_opt_convert): Rename to ...
+	(has_opt): ... and adjust.
+	(parser::parse_operation): Return the optional opt_grp,
+	remove special-casing of conditional operations and more generally
+	parse [digit]'?'.
+	(parser::parse_expr): Stick on the parsed opt_grp and perform
+	rough verification.
+	(parser::parse_for): Remove now unnecessary code.
+	(main): Likewise.
+	* doc/match-and-simplify.texi: Mention ? now works on all
+	unary operations and also match predicates.
+
+2019-12-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphclones.c (cgraph_node::create_clone): Only localize toplevel
+	functions, not inline clones.
+
+2019-12-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgexpand.c (expand_debug_expr): Do not ICE on SAD_EXPR.
+
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (c_expr::gen_transform): Emit newlines from line
+	number changes rather than after every semicolon.
+
+2019-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92819
+	* match.pd (VEC_PERM_EXPR -> BIT_INSERT_EXPR): Handle inserts
+	into the last lane.  For two-element vectors try inserting
+	into the last lane when inserting into the first fails.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (fprofile-partial-training): Terminate description with
+	full stop.
+
+2019-12-05  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92622
+	* tree-vrp.c (vrp_prop::check_array_ref): Avoid using a variable
+	left uninitialized by get_addr_base_and_unit_offset on failure.
+
+2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_set_jf_unknown): Do not clear bits and m_vr.
+	(detect_type_change_from_memory_writes): Remoe parameter JFUNC.
+	(detect_type_change): Likewise.
+	(detect_type_change_ssa): Likewise.
+	(ipa_analyze_virtual_call_uses): Update.
+
+2019-12-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/linux.h (LINK_EH_SPEC): Define.
+
+2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c (inline_call): Fix maintenatnce of comdat_local
+
+2019-12-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphclones.c (localize_profile): New function.
+	(cgraph_node::create_clone): Use it for partial profiles.
+	* common.opt (fprofile-partial-training): New flag.
+	* doc/invoke.texi (-fprofile-partial-training): Document.
+	* ipa-cp.c (update_profiling_info): For partial profiles do not
+	set function profile to zero.
+	* profile.c (compute_branch_probabilities): With partial profile
+	watch if edge count is zero and turn all probabilities to guessed.
+	(compute_branch_probabilities): For partial profiles do not apply
+	profile when entry count is zero.
+	* tree-profile.c (tree_profiling): Only do value_profile_transformations
+	when profile is read.
+
+2019-12-05  Sudakshina Das  <sudi.das@arm.com>
+
+	* tree-vect-loop.c (vect_model_reduction_cost): Remove reduction_type
+	check from if condition.
+
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): For use_device_ptr/use_derice_addr
+	and Fortran's optional arguments, unconditionally add the is-present
+	condition before the libgomp call.
+
+2019-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/92768
+	* tree-core.h (OEP_BITWISE): New flag.
+	* fold-const.c (operand_compare::operand_equal_p): Handle it.
+	* tree-vector-builder.h (tree_vector_builder::equal_p): Pass it.
+
+2019-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92818
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Improve
+	heuristics on what don't care element to choose.
+	* match.pd (VEC_PERM_EXPR -> BIT_INSERT_EXPR): Fix typo.
+
+2019-12-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/92817
+	* coverage.c (build_gcov_exit_decl): Remove superfluous
+	void_type_node.
+
+2019-12-05  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md (cbranch<mode>4): Use
+	msp430_general_dst_nonv_operand instead of nonimmediate_operand for
+	dest operand of CMP instruction.
+	(cbranchpsi4_real): Likewise.
+	(cbranchqi4_real): Likewise.
+	(cbranchhi4_real): Likewise.
+	(cbranchpsi4_reversed): Likewise.
+	(cbranchqi4_reversed): Likewise.
+	(cbranchhi4_reversed): Likewise.
+
+2019-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92803
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Fix
+	invariant vector construction.
+
+2019-12-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/91971
+	* coverage.c (coverage_init): Mangle full path
+	only when -fprofile-dir is used.
+
+2019-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92791
+	* config/i386/i386.md (movstrict<mode>): Move test for
+	TARGET_PARTIAL_REG_STALL and not optimizing for size from
+	expander's condition to the body - FAIL; in that case.
+
+2019-12-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91582
+	* builtins.c (gimple_call_alloc_size): New function.
+	(compute_objsize): Add argument.  Call gimple_call_alloc_size.
+	Handle variable offsets and indices.
+	* builtins.h (gimple_call_alloc_size): Declare.
+	(compute_objsize): Add argument.
+	* gcc/gimple-ssa-warn-restrict.c: Remove assertions.
+	* tree-ssa-strlen.c (handle_store): Handle calls to allocated objects.
+
+2019-12-04  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.h (FIXED_REGISTERS): Make s6/s7 fixed registers.
+
+2019-12-04  Peter Bergner <bergner@linux.ibm.com>
+
+	PR bootstrap/92661
+	* config/rs6000/rs6000-c.c (struct altivec_builtin_types): Move to
+	rs6000.h.
+	(altivec_overloaded_builtins): Move to rs6000-call.c.
+	* config/rs6000/rs6000.h (struct altivec_builtin_types): Moved from
+	rs6000-c.c.
+	* config/rs6000/rs6000-call.c (rs6000_builtin_info): Make static.
+	(altivec_overloaded_builtins): Moved from rs6000-c.c.
+	(rs6000_common_init_builtins): Do no define builtins that overload
+	builtins that have been disabled.
+
+2019-12-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (arm_option_override_internal):
+	Use max_cond_insns from CPU tuning unless -mrestrict-it is used.
+
+2019-12-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c
+	(thunderxt88_tunings): Use AARCH64_FUSE_ALU_BRANCH.
+	(thunderx_tunings): Likewise.
+	(tsv110_tunings): Use AARCH64_FUSE_ALU_BRANCH and AARCH64_FUSE_ALU_CBZ.
+	(thunderx2t99_tunings): Likewise.
+	(aarch_macro_fusion_pair_p): Add support for AARCH64_FUSE_CMP_BRANCH.
+	* config/aarch64/aarch64-fusion-pairs.def: Add ALU_CBZ fusion.
+
+2019-12-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Properly guard
+	empty CTOR and memset partial-def registering.  Take advantage
+	of fancy offset analysis in memset handling.
+
+2019-12-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* fold-const.c (native_encode_vector_part): Handle
+	VECTOR_BOOLEAN_TYPE_Ps that have subbyte precision.
+	(native_decode_vector_tree): Delete, moving the bulk of the code to...
+	(native_interpret_vector_part): ...this new function.  Use a pointer
+	and length instead of a vec<> and start index.
+	(native_interpret_vector): Use native_interpret_vector_part.
+	(fold_view_convert_vector_encoding): Likewise.
+
+2019-12-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Handle
+	non-constant defs in the most trivial way.
+	(vn_reference_lookup_3): Also push down SSA partial defs.
+
+2019-12-04  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.c (switch_decision_tree::try_switch_expansion):
+	Initialize count of newly created BB.
+
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92734
+	* match.pd ((A +- B) - A -> +- B, (A +- B) -+ B -> A,
+	A - (A +- B) -> -+ B, A +- (B -+ A) -> +- B): Handle nop_convert.
+
+2019-12-04  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/92760
+	* gcc/config/rs6000/rs6000.c (rs6000_preferred_simd_mode): Use
+	VECTOR_MEM_NONE_P instead of VECTOR_UNIT_NONE_P.
+
+2019-12-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c: Include tree-into-ssa.h.
+	(compute_fn_summary): Call update_ssa.
+
+2019-12-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::verify_node): Check that calls_comdat_local
+	is set only for symbol in comdat group.
+	* symtab.c (symtab_node::dissolve_same_comdat_group_1): Clear it.
+
+2019-12-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c: Include tree-into-ssa.h
+	(cgraph_node::get_body): Call update_ssa.
+	* cgraphunit.c (cgraph_node::expand): Likewise.
+	* lto-streamer-in.c (input_function): Do not call update_ssa.
+
+2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimplify.c (gimplify_compound_lval): Don't gimplify and install
+	an array element size if array_element_size is already an invariant.
+	Similarly don't gimplify and install a field offset if
+	component_ref_field_offset is already an invariant.
+
+2019-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgexpand.c (discover_nonconstant_array_refs_r): If an access
+	with POLY_INT_CST size is made to a fixed-size object, force the
+	object to live in memory.
+
+2019-12-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md: Change "vcondu" patterns to use VEC_1REG_MODE
+	for the data mode.
+
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92758
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Restore
+	operation on uniform vectors.
+
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Fold memcpy
+	from or to a properly aligned register variable.
+
+2019-12-03  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (SOURCES): Add doc/lto-dump.1.
+	(install-man): Add $(LTO_DUMP_INSTALL_NAME)$(man1ext).
+	($(LTO_DUMP_INSTALL_NAME)$(man1ext): New.
+
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92751
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Fail
+	when a clobber ends up in the partial-def vector.
+	(vn_reference_lookup_3): Let clobbers be handled by the
+	assignment from CTOR handling.
+
+2019-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92734
+	* match.pd ((CST1 - A) +- CST2 -> CST3 - A,
+	CST1 - (CST2 - A) -> CST3 + A): Handle nop casts around
+	inner subtraction.
+
+2019-12-03  Uroš Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92744
+	* config/i386/i386.md (peephole2 for *swap<mode>): Use
+	general_reg_operand predicates instead of register_operand.
+
+2019-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* tree-ssa.c (execute_update_addresses_taken): Avoid representing
+	a full def of a vector via a BIT_INSERT_EXPR.
+
+2019-12-02  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_invalid_builtin): Make
+	static.
+	* config/rs6000/rs6000-internal.h (rs6000_invalid_builtin): Remove
+	decl.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/92741
+	* fold-const.c (fold_convertible_p): Check vector types more
+	thoroughly.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_report_sve_required): New function.
+	(aarch64_expand_mov_immediate): Use it when attempting to measure
+	the length of an SVE vector.
+	(aarch64_mov_operand_p): Only allow SVE CNT immediates when
+	SVE is enabled.
+
+2019-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(gimple_folder::force_vector): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::force_vector): New function.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svcmp_impl::fold): Likewise.
+	(svdup_impl::fold): Handle svdup_z too.
+
+2019-12-02  Martin Liska  <mliska@suse.cz>
+
+	* ipa-devirt.c (warn_types_mismatch): Use get_odr_name_for_type
+	function.
+	(debug_tree_odr_name): New.
+	* ipa-utils.h (get_odr_name_for_type): New.
+
+2019-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92742
+	* tree-vect-loop.c (vect_fixup_reduc_chain): Do not
+	touch the def-type but verify it is consistent with the
+	original stmts.
+
 2019-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92712
@@ -1186,7 +1688,7 @@
 	(ipa_update_overall_fn_summary): Add RESET parameter.
 	* ipa-fnsummary.h (ipa_update_overall_fn_summary): Update prototype.
 	* ipa-inline-transform.c (inline_call): Enable incremental updates.
-	
+
 2019-11-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-slp.c (vect_schedule_slp_instance): Restore stmt

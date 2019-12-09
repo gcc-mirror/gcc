@@ -1,3 +1,150 @@
+2019-12-07  Andrew Pinski  <apinski@marvell.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h: Wrap around with check
+	for little-endian like ext/random is done.
+
+2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/span/lwg3255.cc: Fix test. Constructing a
+	span of non-const elements should not be possible from a const array
+	or an array of const elements.
+
+2019-12-05  JeanHeyd "ThePhD" Meneide  <phdofthehouse@gmail.com>
+
+	Implement P1872R0 and P1394R0 for std::span
+	* include/bits/range_access.h (__adl_begin, __adl_end): Remove.
+	(sentinel_t, range_value_t, range_reference_t)
+	(range_rvalue_reference_t, __forwarding_range, disable_sized_range)
+	(output_range, input_range, forward_range, bidirectional_range)
+	(random_access_range, contiguous_range, common_range): Move here from
+	<ranges>, to make this the "ranges lite" internal header.
+	* include/std/ranges: Move basic aliases and concepts to
+	<bits/range_access.h>.
+	* include/std/span: Use concepts and ranges:: calls instead of
+	enable_if and friends.
+	* include/std/type_traits: Add __is_array_convertible trait.
+
+2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Define for C++20.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/1.cc: New
+	test.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/
+	constexpr.cc: New test.
+
+	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter): New printer.
+	* testsuite/libstdc++-prettyprinters/cxx20.cc: New test.
+
+	* include/bits/cpp_type_traits.h (__is_byte<char8_t>): Add
+	specialization.
+	* include/std/array (operator<=>): Likewise.
+	* testsuite/23_containers/array/comparison_operators/constexpr.cc:
+	Test three-way comparisons and arrays of unsigned char.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+
+2019-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h [__cpp_lib_three_way_comparison]
+	(operator<=>): Define for C++20.
+	* libsupc++/compare (__cmp2way_res_t): Rename to __cmp3way_res_t,
+	move into __detail namespace. Do not turn argument types into lvalues.
+	(__cmp3way_helper): Rename to __cmp3way_res_impl, move into __detail
+	namespace. Constrain with concepts instead of using void_t.
+	(compare_three_way_result): Adjust name of base class.
+	(compare_three_way_result_t): Use __cmp3way_res_impl directly.
+	(__detail::__3way_cmp_with): Add workaround for PR 91073.
+	(compare_three_way): Use workaround.
+	(__detail::__synth3way, __detail::__synth3way_t): Define new helpers
+	implementing synth-three-way and synth-three-way-result semantics.
+	* testsuite/20_util/pair/comparison_operators/constexpr_c++20.cc: New
+	test.
+
+	* include/bits/stl_pair.h (pair): Remove stray Doxygen closing marker.
+
+	* testsuite/util/slow_clock.h: Fix copyright date.
+
+2019-12-02  Mike Crowe  <mac@mcrowe.com>
+
+	Fix try_lock_until and try_lock_shared_until on arbitrary clock
+	* include/std/shared_mutex (shared_timed_mutex::try_lock_until)
+	(shared_timed_mutex::try_lock_shared_until): Loop until the absolute
+	timeout time is reached as measured against the appropriate clock.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
+	file. Test try_lock_until and try_lock_shared_until timeouts against
+	various clocks.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
+	file. Test try_lock_until and try_lock_shared_until timeouts against
+	various clocks.
+
+	Add full steady_clock support to shared_timed_mutex
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK): Define
+	to check for the presence of both pthread_rwlock_clockrdlock and
+	pthread_rwlock_clockwrlock.
+	* config.h.in: Regenerate.
+	* configure.ac: Call GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK.
+	* configure: Regenerate.
+	* include/std/shared_mutex (shared_timed_mutex): Define __clock_t as
+	the best clock to use for relative waits.
+	(shared_timed_mutex::try_lock_for) Round up wait duration if necessary.
+	(shared_timed_mutex::try_lock_shared_for): Likewise.
+	(shared_timed_mutex::try_lock_until): Use existing try_lock_until
+	implementation for system_clock (which matches __clock_t when
+	_GLIBCCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK is not defined). Add new
+	overload for steady_clock that uses pthread_rwlock_clockwrlock if it
+	is available. Simplify overload for non-standard clock to just call
+	try_lock_for with a relative timeout.
+	(shared_timed_mutex::try_lock_shared_until): Likewise.
+
+	PR libstdc++/91906 Fix timed_mutex::try_lock_until on arbitrary clock
+	* include/std/mutex (__timed_mutex_impl::_M_try_lock_until): Loop
+	until the absolute timeout time is reached as measured against the
+	appropriate clock.
+	* testsuite/util/slow_clock.h: New file. Move implementation of
+	slow_clock test class.
+	* testsuite/30_threads/condition_variable/members/2.cc: Include
+	slow_clock from header.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/3.cc: Convert
+	existing test to templated function so that it can be called with
+	both system_clock and steady_clock.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: Also run test
+	using slow_clock to test above fix.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/4.cc: Add
+	new test that try_lock_until behaves as try_lock if the timeout has
+	already expired or exactly matches the current time.
+
+	PR libstdc++/78237 Add full steady_clock support to timed_mutex
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK): Define to
+	detect presence of pthread_mutex_clocklock function.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK.
+	* include/std/mutex (__timed_mutex_impl): Remove unnecessary __clock_t.
+	(__timed_mutex_impl::_M_try_lock_for): Use best clock to turn relative
+	timeout into absolute timeout.
+	(__timed_mutex_impl::_M_try_lock_until): Keep existing implementation
+	for system_clock. Add new implementation for steady_clock that calls
+	_M_clocklock. Modify overload for user-defined clock to use a relative
+	wait so that it automatically uses the best clock.
+	[_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK] (timed_mutex::_M_clocklock):
+	New member function.
+	(recursive_timed_mutex::_M_clocklock): Likewise.
+
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	New test. Ensure that timed_mutex::try_lock_until actually times out
+	after the specified time when using both system_clock and
+	steady_clock.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: New test.
+	Likewise but for recursive_timed_mutex.
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Template
+	test functions and use them to test both steady_clock and system_clock.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise. Wrap call
+	to timed_mutex::try_lock_until in VERIFY macro to check its return
+	value.
+
 2019-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Enable by default for
@@ -68,7 +215,7 @@
 	PR libstdc++/91997
 	* python/libstdcxx/v6/printers.py (find_type): Fail more gracefully
 	if we run out of base classes to look at.
-	(llokup_templ_spec, lookup_node_type): New utilities to find node
+	(lookup_templ_spec, lookup_node_type): New utilities to find node
 	types for node-based containers.
 	(StdListPrinter.children, NodeIteratorPrinter.__init__)
 	(NodeIteratorPrinter.to_string, StdSlistPrinter.children)

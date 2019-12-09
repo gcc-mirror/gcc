@@ -445,7 +445,9 @@ builtin_valid_in_constant_expr_p (const_tree decl)
   if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
     {
       if (fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-			   BUILT_IN_FRONTEND))
+			     BUILT_IN_FRONTEND)
+	  || fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
+				BUILT_IN_FRONTEND))
 	return true;
       /* Not a built-in.  */
       return false;
@@ -669,6 +671,15 @@ build_aggr_init_expr (tree type, tree init)
 tree
 build_cplus_new (tree type, tree init, tsubst_flags_t complain)
 {
+  /* This function should cope with what build_special_member_call
+     can produce.  When performing parenthesized aggregate initialization,
+     it can produce a { }.  */
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    {
+      gcc_assert (cxx_dialect >= cxx2a);
+      return finish_compound_literal (type, init, complain);
+    }
+
   tree rval = build_aggr_init_expr (type, init);
   tree slot;
 
@@ -1684,10 +1695,10 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
       else
 	result = TYPE_MAIN_VARIANT (t);
     }
-  gcc_assert (!typedef_variant_p (result)
+  /*gcc_assert (!typedef_variant_p (result)
 	      || dependent_alias_template_spec_p (result, nt_opaque)
 	      || ((flags & STF_USER_VISIBLE)
-		  && !user_facing_original_type_p (result)));
+		  && !user_facing_original_type_p (result)));*/
 
   if (COMPLETE_TYPE_P (result) && !COMPLETE_TYPE_P (t))
   /* If RESULT is complete and T isn't, it's likely the case that T

@@ -411,6 +411,15 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
     };
 #endif // C++17
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct __is_byte<char8_t>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
   //
   // Move iterator type
   //

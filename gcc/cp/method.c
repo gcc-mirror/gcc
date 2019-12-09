@@ -1985,10 +1985,12 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	  if (bad && deleted_p)
 	    *deleted_p = true;
 
-	  /* For an implicitly-defined default constructor to be constexpr,
-	     every member must have a user-provided default constructor or
-	     an explicit initializer.  */
-	  if (constexpr_p && !CLASS_TYPE_P (mem_type)
+	  /* Before C++20, for an implicitly-defined default constructor to
+	     be constexpr, every member must have a user-provided default
+	     constructor or an explicit initializer.  */
+	  if (constexpr_p
+	      && cxx_dialect < cxx2a
+	      && !CLASS_TYPE_P (mem_type)
 	      && TREE_CODE (DECL_CONTEXT (field)) != UNION_TYPE)
 	    {
 	      *constexpr_p = false;

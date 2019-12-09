@@ -869,7 +869,7 @@ TEST_UNIFORM_Z (dup_m8000_s16_z, svint16_t,
 
 /*
 ** dup_0_s16_z:
-**	mov	z0\.h, p0/z, #0
+**	mov	z0\.[bhsd], #0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_s16_z, svint16_t,

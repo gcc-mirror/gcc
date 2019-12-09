@@ -2550,10 +2550,6 @@ common_handle_option (struct gcc_options *opts,
       SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_values, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_inline_functions, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_bit_cp, value);
-      /* FIXME: Instrumentation we insert makes ipa-reference bitmaps
-	 quadratic.  Disable the pass until better memory representation
-	 is done.  */
-      SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_reference, false);
       break;
 
     case OPT_fpatchable_function_entry_:

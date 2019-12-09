@@ -286,22 +286,36 @@ extern int backtrace_initialize (struct backtrace_state *state,
 				 void *data,
 				 fileline *fileline_fn);
 
+/* An enum for the DWARF sections we care about.  */
+
+enum dwarf_section
+{
+  DEBUG_INFO,
+  DEBUG_LINE,
+  DEBUG_ABBREV,
+  DEBUG_RANGES,
+  DEBUG_STR,
+
+  DEBUG_MAX
+};
+
+/* Data for the DWARF sections we care about.  */
+
+struct dwarf_sections
+{
+  const unsigned char *data[DEBUG_MAX];
+  size_t size[DEBUG_MAX];
+};
+
+/* DWARF data read from a file, used for .gnu_debugaltlink.  */
+
 struct dwarf_data;
 
 /* Add file/line information for a DWARF module.  */
 
 extern int backtrace_dwarf_add (struct backtrace_state *state,
 				uintptr_t base_address,
-				const unsigned char* dwarf_info,
-				size_t dwarf_info_size,
-				const unsigned char *dwarf_line,
-				size_t dwarf_line_size,
-				const unsigned char *dwarf_abbrev,
-				size_t dwarf_abbrev_size,
-				const unsigned char *dwarf_ranges,
-				size_t dwarf_range_size,
-				const unsigned char *dwarf_str,
-				size_t dwarf_str_size,
+				const struct dwarf_sections *dwarf_sections,
 				int is_bigendian,
 				struct dwarf_data *fileline_altlink,
 				backtrace_error_callback error_callback,

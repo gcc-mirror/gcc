@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "selftest.h"
+#include "tree-into-ssa.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1953,7 +1954,7 @@ cgraph_node::dump (FILE *f)
       count.dump (f);
     }
   if (tp_first_run > 0)
-    fprintf (f, " first_run:%i", tp_first_run);
+    fprintf (f, " first_run:%" PRId64, (int64_t) tp_first_run);
   if (origin)
     fprintf (f, " nested in:%s", origin->asm_name ());
   if (gimple_has_body_p (decl))
@@ -3093,6 +3094,11 @@ cgraph_node::verify_node (void)
       error ("inline clone is forced to output");
       error_found = true;
     }
+  if (calls_comdat_local && !same_comdat_group)
+    {
+      error ("calls_comdat_local is set outside of a comdat group");
+      error_found = true;
+    }
   for (e = indirect_calls; e; e = e->next_callee)
     {
       if (e->aux)
@@ -3599,6 +3605,8 @@ cgraph_node::get_body (void)
       set_dump_file (NULL);
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
+
+      update_ssa (TODO_update_ssa_only_virtuals);
       execute_all_ipa_transforms (true);
       cgraph_edge::rebuild_edges ();
       free_dominance_info (CDI_DOMINATORS);

@@ -1,3 +1,81 @@
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92780
+	* resolve.c (resolve_assoc_var): Issue error if the associating
+	entity is a program.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92764
+	* interface.c (gfc_procedure_use): Check for existence of derived
+	component before using (twice).
+
+2019-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92755
+	* dependency.c (gfc_dep_resolver):  Move skipping of _data ref
+	into the loop.
+
+2019-12-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92793
+	* trans.c (gfc_get_location): Declare.
+	* trans.c (gfc_get_location): Define; returns column-corrected location.
+	(trans_runtime_error_vararg, gfc_trans_runtime_check,
+	gfc_generate_module_code): Use new function.
+	* trans-array.c (gfc_trans_auto_array_allocation): Likewise.
+	* trans-common.c (build_field, get_init_field, create_common): Likewise.
+	* trans-decl.c (gfc_build_label_decl, gfc_get_symbol_decl): Likewise.
+	* trans-openmp.c (gfc_trans_omp_reduction_list, gfc_trans_omp_clauses):
+	Likewise.
+	* trans-stmt.c (gfc_trans_if_1): Likewise.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92775
+	* trans.h (struct lang_type, struct lang_decl): Remove span member.
+	(GFC_DECL_SPAN, GFC_TYPE_ARRAY_SPAN): Remove macros.
+	* trans-array.h (gfc_get_descriptor_offsets_for_info): Add another
+	argument.
+	* trans-array.c (gfc_get_descriptor_offsets_for_info): Add SPAN_OFF
+	argument and initialize *SPAN_OFF to the offset of span field.
+	* trans-types.c (gfc_get_array_descr_info): Adjust
+	gfc_get_descriptor_offsets_for_info caller.  Compute elem_size
+	as base->span instead of TYPE_SIZE_UNIT (etype) constant.
+
+2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-openmp.c (gfc_build_conditional_assign,
+	gfc_build_conditional_assign_expr): New static functions.
+	(gfc_omp_finish_clause, gfc_trans_omp_clauses): Handle mapping of
+	absent optional arguments and fix mapping of present optional args.
+
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_omp_is_optional_argument,
+	gfc_omp_check_optional_argument): Handle type(c_ptr),value which uses a
+
+2019-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92781
+	* trans-decl.c (gfc_get_symbol_decl): If sym->backend_decl is
+	current_function_decl, add length to current rather than parent
+	function and expect DECL_CONTEXT (length) to be current_function_decl.
+
+2019-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92754
+	* intrinsic.c (gfc_intrinsic_func_interface): Set
+	sym's flavor, intrinsic and function attribute if
+	unset.
+
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92756
+	* trans-openmp.c (gfc_trans_omp_teams): Wrap OMP_TEAMS body into a
+	BIND_EXPR with a forced BLOCK.
+
 2019-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91783

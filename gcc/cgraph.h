@@ -1430,6 +1430,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
+  /* Time profiler: first run of function.  */
+  gcov_type tp_first_run;
   /* How to scale counts at materialization time; used to merge
      LTO units with different number of profile runs.  */
   int count_materialization_scale;
@@ -1437,8 +1439,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned int profile_id;
   /* ID of the translation unit.  */
   int unit_id;
-  /* Time profiler: first run of function.  */
-  int tp_first_run;
 
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
@@ -2463,6 +2463,7 @@ cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
 /* In cgraphunit.c  */
 void cgraphunit_c_finalize (void);
+int tp_first_run_node_cmp (const void *pa, const void *pb);
 
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */

@@ -4839,9 +4839,9 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 match
 gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 {
+  gfc_symbol *sym;
   gfc_intrinsic_sym *isym, *specific;
   gfc_actual_arglist *actual;
-  const char *name;
   int flag;
 
   if (expr->value.function.isym != NULL)
@@ -4857,15 +4857,15 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       flag |= (actual->expr->ts.type != BT_INTEGER
 	       && actual->expr->ts.type != BT_CHARACTER);
 
-  name = expr->symtree->n.sym->name;
+  sym = expr->symtree->n.sym;
 
-  if (expr->symtree->n.sym->intmod_sym_id)
+  if (sym->intmod_sym_id)
     {
-      gfc_isym_id id = gfc_isym_id_by_intmod_sym (expr->symtree->n.sym);
+      gfc_isym_id id = gfc_isym_id_by_intmod_sym (sym);
       isym = specific = gfc_intrinsic_function_by_id (id);
     }
   else
-    isym = specific = gfc_find_function (name);
+    isym = specific = gfc_find_function (sym->name);
 
   if (isym == NULL)
     {
@@ -4879,7 +4879,7 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
        || isym->id == GFC_ISYM_SNGL || isym->id == GFC_ISYM_DFLOAT)
       && gfc_init_expr_flag
       && !gfc_notify_std (GFC_STD_F2003, "Function %qs as initialization "
-			  "expression at %L", name, &expr->where))
+			  "expression at %L", sym->name, &expr->where))
     {
       if (!error_flag)
 	gfc_pop_suppress_errors ();
@@ -4898,7 +4898,7 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 	  && id != GFC_ISYM_TRANSFER && id != GFC_ISYM_TRIM
 	  && !gfc_notify_std (GFC_STD_F2003, "Transformational function %qs "
 			      "at %L is invalid in an initialization "
-			      "expression", name, &expr->where))
+			      "expression", sym->name, &expr->where))
 	{
 	  if (!error_flag)
 	    gfc_pop_suppress_errors ();
@@ -4956,9 +4956,6 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 
 got_specific:
   expr->value.function.isym = specific;
-  if (!expr->symtree->n.sym->module)
-    gfc_intrinsic_symbol (expr->symtree->n.sym);
-
   if (!error_flag)
     gfc_pop_suppress_errors ();
 
@@ -4979,6 +4976,16 @@ got_specific:
 			  "initialization expression with non-integer/non-"
 			  "character arguments at %L", &expr->where))
     return MATCH_ERROR;
+
+  if (sym->attr.flavor == FL_UNKNOWN)
+    {
+      sym->attr.function = 1;
+      sym->attr.intrinsic = 1;
+      sym->attr.flavor = FL_PROCEDURE;
+    }
+
+  if (!sym->module)
+    gfc_intrinsic_symbol (sym);
 
   return MATCH_YES;
 }

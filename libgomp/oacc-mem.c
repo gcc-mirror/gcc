@@ -829,6 +829,12 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
   if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     return;
 
+  /* Fortran optional arguments that are non-present result in a
+     NULL host address here.  This can safely be ignored as it is
+     not possible to 'update' a non-present optional argument.  */
+  if (h == NULL)
+    return;
+
   acc_prof_info prof_info;
   acc_api_info api_info;
   bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
@@ -898,6 +904,9 @@ gomp_acc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
   struct target_mem_desc *tgt;
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
+
+  if (*hostaddrs == NULL)
+    return;
 
   if (acc_is_present (*hostaddrs, *sizes))
     {

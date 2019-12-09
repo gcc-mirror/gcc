@@ -1,3 +1,8 @@
+2019-12-06  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* make-relative-prefix.c (split_directories):
+	Return early on empty 'name'
+
 2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
 
 	* cp-demangle.c (d_print_init): Remove const from 4th param.

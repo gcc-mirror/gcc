@@ -3375,7 +3375,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	inform (location, "C++20 %<constinit%> only available with "
 		"%<-std=c++2a%> or %<-std=gnu++2a%>");
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
-	inform (location, "%<concept%> only available with %<-fconcepts%>");
+	inform (location, "%<concept%> only available with %<-std=c++2a%> or "
+		"%<-fconcepts%>");
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{
@@ -27205,7 +27206,7 @@ enum primary_constraint_error
 {
   pce_ok,
   pce_maybe_operator,
-  pce_maybe_postfix,
+  pce_maybe_postfix
 };
 
 /* Returns true if the token(s) following a primary-expression in a
@@ -29342,8 +29343,17 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
       release_tree_vector (vec);
     }
 
-  cast = build_functional_cast (type, expression_list,
+  /* Create a location of the form:
+       float(i)
+       ^~~~~~~~
+     with caret == start at the start of the type name,
+     finishing at the closing paren.  */
+  location_t combined_loc = make_location (start_loc, start_loc,
+					   parser->lexer);
+  cast = build_functional_cast (combined_loc, type, expression_list,
                                 tf_warning_or_error);
+  cast.set_location (combined_loc);
+  
   /* [expr.const]/1: In an integral constant expression "only type
      conversions to integral or enumeration type can be used".  */
   if (TREE_CODE (type) == TYPE_DECL)
@@ -29354,13 +29364,6 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 						     NIC_CONSTRUCTOR))
     return error_mark_node;
 
-  /* Create a location of the form:
-       float(i)
-       ^~~~~~~~
-     with caret == start at the start of the type name,
-     finishing at the closing paren.  */
-  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
-  cast.set_location (combined_loc);
   return cast;
 }
 

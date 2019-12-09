@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
+/* { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" } */
 
 extern void abort (void);
 

@@ -1425,6 +1425,20 @@ class StdPairPrinter:
     def to_string(self):
         return None
 
+class StdCmpCatPrinter:
+    "Print a comparison category object"
+
+    def __init__ (self, typename, val):
+        self.typename = typename[typename.rfind(':')+1:]
+        self.val = val['_M_value']
+
+    def to_string (self):
+        if self.typename == 'strong_ordering' and self.val == 0:
+            name = 'equal'
+        else:
+            names = {-127:'unordered', -1:'less', 0:'equivalent', 1:'greater'}
+            name = names[int(self.val)]
+        return 'std::{}::{}'.format(self.typename, name)
 
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
@@ -1927,6 +1941,11 @@ def build_libstdcxx_dictionary ():
                                   'variant', StdVariantPrinter)
     libstdcxx_printer.add_version('std::',
                                   '_Node_handle', StdNodeHandlePrinter)
+
+    # C++20 components
+    libstdcxx_printer.add_version('std::', 'partial_ordering', StdCmpCatPrinter)
+    libstdcxx_printer.add_version('std::', 'weak_ordering', StdCmpCatPrinter)
+    libstdcxx_printer.add_version('std::', 'strong_ordering', StdCmpCatPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)
