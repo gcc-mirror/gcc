@@ -1,4 +1,19 @@
 2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	PR libgomp/92116
+	PR libgomp/92877
+
+	* oacc-mem.c (lookup_dev): Reimplement.  Adjust all users.
+	* libgomp.h (struct acc_dispatch_t): Remove 'data_environ' member.
+	Adjust all users.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-4-2.c:
+	Remove XFAIL.
+	* testsuite/libgomp.oacc-c-c++-common/acc_free-pr92503-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr92877-1.c: New file.
+
+2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/92503
 	* oacc-mem.c (acc_free): Error out instead of 'acc_unmap_data'.
