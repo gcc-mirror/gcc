@@ -2265,3 +2265,106 @@ cpp_string_location_reader::get_next ()
     m_loc += m_offset_per_column;
   return result;
 }
+
+/* Helper for cpp_byte_column_to_display_column and its inverse.  Given a
+   pointer to a UTF-8-encoded character, compute its display width.  *INBUFP
+   points on entry to the start of the UTF-8 encoding of the character, and
+   is updated to point just after the last byte of the encoding.  *INBYTESLEFTP
+   contains on entry the remaining size of the buffer into which *INBUFP
+   points, and this is also updated accordingly.  If *INBUFP does not
+   point to a valid UTF-8-encoded sequence, then it will be treated as a single
+   byte with display width 1.  */
+
+static inline int
+compute_next_display_width (const uchar **inbufp, size_t *inbytesleftp)
+{
+  cppchar_t c;
+  if (one_utf8_to_cppchar (inbufp, inbytesleftp, &c) != 0)
+    {
+      /* Input is not convertible to UTF-8.  This could be fine, e.g. in a
+	 string literal, so don't complain.  Just treat it as if it has a width
+	 of one.  */
+      ++*inbufp;
+      --*inbytesleftp;
+      return 1;
+    }
+
+  /*  one_utf8_to_cppchar() has updated inbufp and inbytesleftp for us.  */
+  return cpp_wcwidth (c);
+}
+
+/*  For the string of length DATA_LENGTH bytes that begins at DATA, compute
+    how many display columns are occupied by the first COLUMN bytes.  COLUMN
+    may exceed DATA_LENGTH, in which case the phantom bytes at the end are
+    treated as if they have display width 1.  */
+
+int
+cpp_byte_column_to_display_column (const char *data, int data_length,
+				   int column)
+{
+  int display_col = 0;
+  const uchar *udata = (const uchar *) data;
+  const int offset = MAX (0, column - data_length);
+  size_t inbytesleft = column - offset;
+  while (inbytesleft)
+    display_col += compute_next_display_width (&udata, &inbytesleft);
+  return display_col + offset;
+}
+
+/*  For the string of length DATA_LENGTH bytes that begins at DATA, compute
+    the least number of bytes that will result in at least DISPLAY_COL display
+    columns.  The return value may exceed DATA_LENGTH if the entire string does
+    not occupy enough display columns.  */
+
+int
+cpp_display_column_to_byte_column (const char *data, int data_length,
+				   int display_col)
+{
+  int column = 0;
+  const uchar *udata = (const uchar *) data;
+  size_t inbytesleft = data_length;
+  while (column < display_col && inbytesleft)
+      column += compute_next_display_width (&udata, &inbytesleft);
+  return data_length - inbytesleft + MAX (0, display_col - column);
+}
+
+/* Our own version of wcwidth().  We don't use the actual wcwidth() in glibc,
+   because that will inspect the user's locale, and in particular in an ASCII
+   locale, it will not return anything useful for extended characters.  But GCC
+   in other respects (see e.g. _cpp_default_encoding()) behaves as if
+   everything is UTF-8.  We also make some tweaks that are useful for the way
+   GCC needs to use this data, e.g. tabs and other control characters should be
+   treated as having width 1.  The lookup tables are generated from
+   contrib/unicode/gen_wcwidth.py and were made by simply calling glibc
+   wcwidth() on all codepoints, then applying the small tweaks.  These tables
+   are not highly optimized, but for the present purpose of outputting
+   diagnostics, they are sufficient.  */
+
+#include "generated_cpp_wcwidth.h"
+int cpp_wcwidth (cppchar_t c)
+{
+  if (__builtin_expect (c <= wcwidth_range_ends[0], true))
+    return wcwidth_widths[0];
+
+  /* Binary search the tables.  */
+  int begin = 1;
+  static const int end
+      = sizeof wcwidth_range_ends / sizeof (*wcwidth_range_ends);
+  int len = end - begin;
+  do
+    {
+      int half = len/2;
+      int middle = begin + half;
+      if (c > wcwidth_range_ends[middle])
+	{
+	  begin = middle + 1;
+	  len -= half + 1;
+	}
+      else
+	len = half;
+    } while (len);
+
+  if (__builtin_expect (begin != end, true))
+    return wcwidth_widths[begin];
+  return 1;
+}
