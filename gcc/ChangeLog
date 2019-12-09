@@ -1,3 +1,8 @@
+2019-12-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-multilib: Use arm->thumb multilib reuse rules
+	on a-profile.
+
 2019-12-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (unnamed mfcr define_insn): Name this
