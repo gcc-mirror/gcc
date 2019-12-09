@@ -1,5 +1,17 @@
 2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/92840
+	* oacc-mem.c (acc_map_data): Clarify reference counting behavior.
+	(acc_unmap_data): Add error case for 'REFCOUNT_INFINITY'.
+	* testsuite/libgomp.oacc-c-c++-common/acc_unmap_data-pr92840-1.c:
+	New file.
+	* testsuite/libgomp.oacc-c-c++-common/acc_unmap_data-pr92840-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_unmap_data-pr92840-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/clauses-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/nested-1.c: Adjust.
+
 	PR libgomp/92511
 	* testsuite/libgomp.oacc-c-c++-common/copyin-devptr-1.c: Remove
 	this file...
