@@ -1,5 +1,7 @@
 2019-12-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/map-data-1.c: New file.
+
 	PR libgomp/92854
 	* testsuite/libgomp.oacc-c-c++-common/pr92854-1.c: New file.
 
