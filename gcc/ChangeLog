@@ -1,3 +1,10 @@
+2019-12-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/89007
+	* tree-vect-patterns.c (vect_recog_average_pattern): If there is no
+	target support available, generate code to distribute rshift over plus
+	and add a carry.
+
 2019-12-09  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/92737
