@@ -1,3 +1,13 @@
+2019-12-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR middle-end/92410
+	* bb-reorder.c (pass_reorder_blocks::execute): Recompute
+	dataflow luids once basic blocks have been reordered.
+	* haifa-sched.c (reemit_notes): Create df insn record for each
+	new note.
+	* regstat.c (regstat_bb_compute_calls_crossed): Assert every
+	insn has an insn record before trying to use it.
+
 2019-12-09  Hongtao Liu  <hongtao.liu@intel.com>
 
     * gcc/common/config/i386/i386-common.c

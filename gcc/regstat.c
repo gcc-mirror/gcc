@@ -324,6 +324,7 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
+      gcc_assert (INSN_UID (insn) < DF_INSN_SIZE ());
       struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       unsigned int regno;
 
