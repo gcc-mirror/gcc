@@ -1,3 +1,8 @@
+2019-12-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c (__do_global_dtors_aux): Wrap in #if so it's only defined
+	if it will have contents.
+
 2019-12-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/92055
