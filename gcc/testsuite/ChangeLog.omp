@@ -1,3 +1,7 @@
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/gomp/block-7.c: Update expected error message wording.
+
 2020-03-19  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/routine-level-of-parallelism-2.c (g_1): Add

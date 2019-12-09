@@ -1,5 +1,46 @@
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* c-decl.c (c_break_label, c_cont_label): Delete, and replace
+	with...
+	(in_statement): New.
+	(start_function): Adjust for above change.
+	(c_push_function_context, c_pop_function_context): Likewise.
+	* c-lang.h (struct language_function): Likewise.
+	* c-objc-common.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Define.
+	* c-parser.c (objc_foreach_break_label, objc_foreach_continue_label):
+	New.
+	(c_parser_statement_after_labels): Adjust calls to c_finish_bc_stmt.
+	(c_parser_switch_statement): Adjust break/switch context handling
+	and calls to renamed functions.
+	(c_parser_while_statement): Adjust break/switch context handling and
+	build a WHILE_STMT.
+	(c_parser_do_statement): Ditto, with DO_STMT respectively.
+	(c_parser_for_statement): Ditto, with FOR_STMT respectively.
+	(c_parser_omp_for_loop): Adjust break/switch context handling.
+	* c-tree.h (c_break_label, c_cont_label): Delete.
+	(IN_SWITCH_STMT, IN_ITERATION_STMT): Define.
+	(IN_OMP_BLOCK, IN_OMP_FOR, IN_OBJC_FOREACH): Define.
+	(in_statement, switch_statement_break_seen_p): Declare.
+	(c_start_case, c_finish_case): Renamed to...
+	(c_start_switch, c_finish_switch).
+	(c_finish_bc_stmt): Adjust arguments.
+	* c-typeck.c (build_function_call_vec): Don't try to print
+	statements with %qE format.
+	(struct c_switch):  Rename switch_expr field to switch_stmt.
+	Add break_stmt_seen_p field.
+	(c_start_case): Rename to c_start_switch.  Build a SWITCH_STMT
+	instead of a SWITCH_EXPR.  Update for changes to struct c_switch.
+	(do_case): Update for changes to struct c_switch.
+	(c_finish_case): Rename to c_finish_switch.  Update for changes to
+	struct c_switch and change of representation from SWITCH_EXPR to
+	SWITCH_STMT.
+	(c_finish_loop): Delete.
+	(c_finish_bc_stmt): Update to reflect changes to break/continue
+	state representation.  Build a BREAK_STMT or CONTINUE_STMT instead
+	of a GOTO_EXPR except for objc foreach loops.
+
+2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* c-common.c (c_block_may_fallthrough): New, split from
 	cxx_block_may_fallthrough in the cp front end.
 	(c_common_init_ts): Move handling of loop and switch-related

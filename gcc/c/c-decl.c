@@ -112,9 +112,9 @@ struct obstack parser_obstack;
 
 static GTY(()) struct stmt_tree_s c_stmt_tree;
 
-/* State saving variables.  */
-tree c_break_label;
-tree c_cont_label;
+/* Zero if we are not in an iteration or switch statement, otherwise
+   a bitmask.  See bitmask definitions in c-tree.h.  */
+unsigned char in_statement;
 
 /* A list of decls to be made automatically visible in each file scope.  */
 static GTY(()) tree visible_builtins;
@@ -9129,10 +9129,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   warn_about_return_type = 0;
   c_switch_stack = NULL;
 
-  /* Indicate no valid break/continue context by setting these variables
-     to some non-null, non-label value.  We'll notice and emit the proper
-     error message in c_finish_bc_stmt.  */
-  c_break_label = c_cont_label = size_zero_node;
+  /* Indicate no valid break/continue context.  */
+  in_statement = 0;
 
   decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, true, NULL,
 			  &attributes, NULL, NULL, DEPRECATED_NORMAL);
@@ -10126,8 +10124,7 @@ c_push_function_context (void)
 
   p->base.x_stmt_tree = c_stmt_tree;
   c_stmt_tree.x_cur_stmt_list = vec_safe_copy (c_stmt_tree.x_cur_stmt_list);
-  p->x_break_label = c_break_label;
-  p->x_cont_label = c_cont_label;
+  p->x_in_statement = in_statement;
   p->x_switch_stack = c_switch_stack;
   p->arg_info = current_function_arg_info;
   p->returns_value = current_function_returns_value;
@@ -10166,8 +10163,7 @@ c_pop_function_context (void)
 
   c_stmt_tree = p->base.x_stmt_tree;
   p->base.x_stmt_tree.x_cur_stmt_list = NULL;
-  c_break_label = p->x_break_label;
-  c_cont_label = p->x_cont_label;
+  in_statement = p->x_in_statement;
   c_switch_stack = p->x_switch_stack;
   current_function_arg_info = p->arg_info;
   current_function_returns_value = p->returns_value;

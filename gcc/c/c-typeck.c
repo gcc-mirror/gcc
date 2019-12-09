@@ -3073,7 +3073,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   if (!(TREE_CODE (fntype) == POINTER_TYPE
 	&& TREE_CODE (TREE_TYPE (fntype)) == FUNCTION_TYPE))
     {
-      if (!flag_diagnostics_show_caret)
+      if (!flag_diagnostics_show_caret && !STATEMENT_CLASS_P (function))
 	error_at (loc,
 		  "called object %qE is not a function or function pointer",
 		  function);
@@ -10733,8 +10733,8 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 }
 
 struct c_switch {
-  /* The SWITCH_EXPR being built.  */
-  tree switch_expr;
+  /* The SWITCH_STMT being built.  */
+  tree switch_stmt;
 
   /* The original type of the testing expression, i.e. before the
      default conversion is applied.  */
@@ -10750,6 +10750,9 @@ struct c_switch {
   /* The bindings at the point of the switch.  This is used for
      warnings crossing decls when branching to a case label.  */
   struct c_spot_bindings *bindings;
+
+  /* Whether the switch includes any break statements.  */
+  bool break_stmt_seen_p;
 
   /* The next node on the stack.  */
   struct c_switch *next;
@@ -10768,14 +10771,14 @@ struct c_switch {
 struct c_switch *c_switch_stack;
 
 /* Start a C switch statement, testing expression EXP.  Return the new
-   SWITCH_EXPR.  SWITCH_LOC is the location of the `switch'.
+   SWITCH_STMT.  SWITCH_LOC is the location of the `switch'.
    SWITCH_COND_LOC is the location of the switch's condition.
    EXPLICIT_CAST_P is true if the expression EXP has an explicit cast.  */
 
 tree
-c_start_case (location_t switch_loc,
-	      location_t switch_cond_loc,
-	      tree exp, bool explicit_cast_p)
+c_start_switch (location_t switch_loc,
+		location_t switch_cond_loc,
+		tree exp, bool explicit_cast_p)
 {
   tree orig_type = error_mark_node;
   bool bool_cond_p = false;
@@ -10825,18 +10828,19 @@ c_start_case (location_t switch_loc,
 	}
     }
 
-  /* Add this new SWITCH_EXPR to the stack.  */
+  /* Add this new SWITCH_STMT to the stack.  */
   cs = XNEW (struct c_switch);
-  cs->switch_expr = build2 (SWITCH_EXPR, orig_type, exp, NULL_TREE);
-  SET_EXPR_LOCATION (cs->switch_expr, switch_loc);
+  cs->switch_stmt = build_stmt (switch_loc, SWITCH_STMT, exp,
+				NULL_TREE, orig_type, NULL_TREE);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->bindings = c_get_switch_bindings ();
+  cs->break_stmt_seen_p = false;
   cs->bool_cond_p = bool_cond_p;
   cs->next = c_switch_stack;
   c_switch_stack = cs;
 
-  return add_stmt (cs->switch_expr);
+  return add_stmt (cs->switch_stmt);
 }
 
 /* Process a case label at location LOC.  */
@@ -10872,12 +10876,12 @@ do_case (location_t loc, tree low_value, tree high_value)
     }
 
   if (c_check_switch_jump_warnings (c_switch_stack->bindings,
-				    EXPR_LOCATION (c_switch_stack->switch_expr),
+				    EXPR_LOCATION (c_switch_stack->switch_stmt),
 				    loc))
     return NULL_TREE;
 
   label = c_add_case_label (loc, c_switch_stack->cases,
-			    SWITCH_COND (c_switch_stack->switch_expr),
+			    SWITCH_STMT_COND (c_switch_stack->switch_stmt),
 			    low_value, high_value);
   if (label == error_mark_node)
     label = NULL_TREE;
@@ -10888,20 +10892,22 @@ do_case (location_t loc, tree low_value, tree high_value)
    controlling expression of the switch, or NULL_TREE.  */
 
 void
-c_finish_case (tree body, tree type)
+c_finish_switch (tree body, tree type)
 {
   struct c_switch *cs = c_switch_stack;
   location_t switch_location;
 
-  SWITCH_BODY (cs->switch_expr) = body;
+  SWITCH_STMT_BODY (cs->switch_stmt) = body;
 
   /* Emit warnings as needed.  */
-  switch_location = EXPR_LOCATION (cs->switch_expr);
+  switch_location = EXPR_LOCATION (cs->switch_stmt);
   c_do_switch_warnings (cs->cases, switch_location,
-			type ? type : TREE_TYPE (cs->switch_expr),
-			SWITCH_COND (cs->switch_expr), cs->bool_cond_p);
-  if (c_switch_covers_all_cases_p (cs->cases, TREE_TYPE (cs->switch_expr)))
-    SWITCH_ALL_CASES_P (cs->switch_expr) = 1;
+			type ? type : SWITCH_STMT_TYPE (cs->switch_stmt),
+			SWITCH_STMT_COND (cs->switch_stmt), cs->bool_cond_p);
+  if (c_switch_covers_all_cases_p (cs->cases,
+				   SWITCH_STMT_TYPE (cs->switch_stmt)))
+    SWITCH_STMT_ALL_CASES_P (cs->switch_stmt) = 1;
+  SWITCH_STMT_NO_BREAK_P (cs->switch_stmt) = !cs->break_stmt_seen_p;
 
   /* Pop the stack.  */
   c_switch_stack = cs->next;
@@ -10925,110 +10931,9 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
   add_stmt (stmt);
 }
 
-/* Emit a general-purpose loop construct.  START_LOCUS is the location of
-   the beginning of the loop.  COND is the loop condition.  COND_IS_FIRST
-   is false for DO loops.  INCR is the FOR increment expression.  BODY is
-   the statement controlled by the loop.  BLAB is the break label.  CLAB is
-   the continue label.  Everything is allowed to be NULL.
-   COND_LOCUS is the location of the loop condition, INCR_LOCUS is the
-   location of the FOR increment expression.  */
-
-void
-c_finish_loop (location_t start_locus, location_t cond_locus, tree cond,
-	       location_t incr_locus, tree incr, tree body, tree blab,
-	       tree clab, bool cond_is_first)
-{
-  tree entry = NULL, exit = NULL, t;
-
-  /* If the condition is zero don't generate a loop construct.  */
-  if (cond && integer_zerop (cond))
-    {
-      if (cond_is_first)
-	{
-	  t = build_and_jump (&blab);
-	  SET_EXPR_LOCATION (t, start_locus);
-	  add_stmt (t);
-	}
-    }
-  else
-    {
-      tree top = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
-
-      /* If we have an exit condition, then we build an IF with gotos either
-	 out of the loop, or to the top of it.  If there's no exit condition,
-	 then we just build a jump back to the top.  */
-      exit = build_and_jump (&LABEL_EXPR_LABEL (top));
-
-      if (cond && !integer_nonzerop (cond))
-	{
-	  /* Canonicalize the loop condition to the end.  This means
-	     generating a branch to the loop condition.  Reuse the
-	     continue label, if possible.  */
-	  if (cond_is_first)
-	    {
-	      if (incr || !clab)
-		{
-		  entry = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
-		  t = build_and_jump (&LABEL_EXPR_LABEL (entry));
-		}
-	      else
-		t = build1 (GOTO_EXPR, void_type_node, clab);
-	      SET_EXPR_LOCATION (t, start_locus);
-	      add_stmt (t);
-	    }
-
-	  t = build_and_jump (&blab);
-	  exit = fold_build3_loc (cond_is_first ? start_locus : input_location,
-				  COND_EXPR, void_type_node, cond, exit, t);
-	}
-      else
-	{
-	  /* For the backward-goto's location of an unconditional loop
-	     use the beginning of the body, or, if there is none, the
-	     top of the loop.  */
-	  location_t loc = EXPR_LOCATION (expr_first (body));
-	  if (loc == UNKNOWN_LOCATION)
-	    loc = start_locus;
-	  SET_EXPR_LOCATION (exit, loc);
-	}
-
-      add_stmt (top);
-    }
-
-  if (body)
-    add_stmt (body);
-  if (clab)
-    add_stmt (build1 (LABEL_EXPR, void_type_node, clab));
-  if (incr)
-    {
-      if (MAY_HAVE_DEBUG_MARKER_STMTS && incr_locus != UNKNOWN_LOCATION)
-	{
-	  t = build0 (DEBUG_BEGIN_STMT, void_type_node);
-	  SET_EXPR_LOCATION (t, incr_locus);
-	  add_stmt (t);
-	}
-      add_stmt (incr);
-    }
-  if (entry)
-    add_stmt (entry);
-  if (MAY_HAVE_DEBUG_MARKER_STMTS && cond_locus != UNKNOWN_LOCATION)
-    {
-      t = build0 (DEBUG_BEGIN_STMT, void_type_node);
-      SET_EXPR_LOCATION (t, cond_locus);
-      add_stmt (t);
-    }
-  if (exit)
-    add_stmt (exit);
-  if (blab)
-    add_stmt (build1 (LABEL_EXPR, void_type_node, blab));
-}
-
 tree
-c_finish_bc_stmt (location_t loc, tree *label_p, bool is_break)
+c_finish_bc_stmt (location_t loc, tree label, bool is_break)
 {
-  bool skip;
-  tree label = *label_p;
-
   /* In switch statements break is sometimes stylistically used after
      a return statement.  This can lead to spurious warnings about
      control reaching the end of a non-void function when it is
@@ -11036,47 +10941,55 @@ c_finish_bc_stmt (location_t loc, tree *label_p, bool is_break)
      language specific tree nodes; this works because
      block_may_fallthru returns true when given something it does not
      understand.  */
-  skip = !block_may_fallthru (cur_stmt_list);
+  bool skip = !block_may_fallthru (cur_stmt_list);
 
-  if (!label)
-    {
-      if (!skip)
-	*label_p = label = create_artificial_label (loc);
-    }
-  else if (TREE_CODE (label) == LABEL_DECL)
-    ;
-  else switch (TREE_INT_CST_LOW (label))
-    {
-    case 0:
-      if (is_break)
+  if (is_break)
+    switch (in_statement)
+      {
+      case 0:
 	error_at (loc, "break statement not within loop or switch");
-      else
+	return NULL_TREE;
+      case IN_OMP_BLOCK:
+	error_at (loc, "invalid exit from OpenMP structured block");
+	return NULL_TREE;
+      case IN_OMP_FOR:
+	error_at (loc, "break statement used with OpenMP for loop");
+	return NULL_TREE;
+      case IN_ITERATION_STMT:
+      case IN_OBJC_FOREACH:
+	break;
+      default:
+	gcc_assert (in_statement & IN_SWITCH_STMT);
+	c_switch_stack->break_stmt_seen_p = true;
+	break;
+      }
+  else
+    switch (in_statement & ~IN_SWITCH_STMT)
+      {
+      case 0:
 	error_at (loc, "continue statement not within a loop");
-      return NULL_TREE;
-
-    case 1:
-      gcc_assert (is_break);
-      error_at (loc, "break statement used with OpenMP for loop");
-      return NULL_TREE;
-
-    case 2:
-      if (is_break) 
-	error ("break statement within %<#pragma simd%> loop body");
-      else 
-	error ("continue statement within %<#pragma simd%> loop body");
-      return NULL_TREE;
-
-    default:
-      gcc_unreachable ();
-    }
+	return NULL_TREE;
+      case IN_OMP_BLOCK:
+	error_at (loc, "invalid exit from OpenMP structured block");
+	return NULL_TREE;
+      case IN_ITERATION_STMT:
+      case IN_OMP_FOR:
+      case IN_OBJC_FOREACH:
+	break;
+      default:
+	gcc_unreachable ();
+      }
 
   if (skip)
     return NULL_TREE;
-
-  if (!is_break)
-    add_stmt (build_predict_expr (PRED_CONTINUE, NOT_TAKEN));
-
-  return add_stmt (build1 (GOTO_EXPR, void_type_node, label));
+  else if (in_statement & IN_OBJC_FOREACH)
+    {
+      /* The foreach expander produces low-level code using gotos instead
+	 of a structured loop construct.  */
+      gcc_assert (label);
+      return add_stmt (build_stmt (loc, GOTO_EXPR, label));
+    }
+  return add_stmt (build_stmt (loc, (is_break ? BREAK_STMT : CONTINUE_STMT)));
 }
 
 /* A helper routine for c_process_expr_stmt and c_finish_stmt_expr.  */

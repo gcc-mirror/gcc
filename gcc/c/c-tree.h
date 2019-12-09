@@ -547,8 +547,19 @@ extern void gen_aux_info_record (tree, int, int, int);
 struct c_spot_bindings;
 class c_struct_parse_info;
 extern struct obstack parser_obstack;
-extern tree c_break_label;
-extern tree c_cont_label;
+/* Set to IN_ITERATION_STMT if parsing an iteration-statement,
+   to IN_OMP_BLOCK if parsing OpenMP structured block and
+   IN_OMP_FOR if parsing OpenMP loop.  If parsing a switch statement,
+   this is bitwise ORed with IN_SWITCH_STMT, unless parsing an
+   iteration-statement, OpenMP block or loop within that switch.  */
+#define IN_SWITCH_STMT		1
+#define IN_ITERATION_STMT	2
+#define IN_OMP_BLOCK		4
+#define IN_OMP_FOR		8
+#define IN_OBJC_FOREACH		16
+extern unsigned char in_statement;
+
+extern bool switch_statement_break_seen_p;
 
 extern bool global_bindings_p (void);
 extern tree pushdecl (tree);
@@ -713,8 +724,8 @@ extern void process_init_element (location_t, struct c_expr, bool,
 extern tree build_compound_literal (location_t, tree, tree, bool,
 				    unsigned int);
 extern void check_compound_literal_type (location_t, struct c_type_name *);
-extern tree c_start_case (location_t, location_t, tree, bool);
-extern void c_finish_case (tree, tree);
+extern tree c_start_switch (location_t, location_t, tree, bool);
+extern void c_finish_switch (tree, tree);
 extern tree build_asm_expr (location_t, tree, tree, tree, tree, tree, bool,
 			    bool);
 extern tree build_asm_stmt (bool, tree);
@@ -729,7 +740,7 @@ extern tree c_finish_stmt_expr (location_t, tree);
 extern tree c_process_expr_stmt (location_t, tree);
 extern tree c_finish_expr_stmt (location_t, tree);
 extern tree c_finish_return (location_t, tree, tree);
-extern tree c_finish_bc_stmt (location_t, tree *, bool);
+extern tree c_finish_bc_stmt (location_t, tree, bool);
 extern tree c_finish_goto_label (location_t, tree);
 extern tree c_finish_goto_ptr (location_t, tree);
 extern tree c_expr_to_decl (tree, bool *, bool *);

@@ -2050,10 +2050,8 @@ objc_start_method_definition (bool is_class_method, tree decl, tree attributes,
     return false;
 
 #ifndef OBJCPLUS
-  /* Indicate no valid break/continue context by setting these variables
-     to some non-null, non-label value.  We'll notice and emit the proper
-     error message in c_finish_bc_stmt.  */
-  c_break_label = c_cont_label = size_zero_node;
+  /* Indicate no valid break/continue context.  */
+  in_statement = 0;
 #endif
 
   if (attributes)
