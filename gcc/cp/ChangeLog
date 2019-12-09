@@ -1,3 +1,42 @@
+2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (check_for_casting_away_constness): Add location_t
+	parameter and use it.
+	(maybe_warn_about_useless_cast): Likewise.
+	(maybe_warn_about_cast_ignoring_quals): Likewise.
+	(build_static_cast_1): Likewise.
+	(build_static_cast): Likewise; sets the location of the returned tree.
+	(build_reinterpret_cast_1): Likewise.
+	(build_reinterpret_cast): Likewise; sets the location of the returned
+	tree.
+	(build_const_cast_1): Likewise.
+	(build_const_cast): Likewise; sets the location of the returned tree.
+	(cp_build_c_cast): Likewise.
+	(build_c_cast): Adjust.
+	(build_ptrmemfunc): Adjust calls.
+	(cp_build_unary_op): Pass the location to invert_truthvalue_loc.
+	* rtti.c (build_dynamic_cast_1): Add location_t parameter and
+	use it.
+	(build_dynamic_cast): Likewise.
+	* cp-tree.h: Adjust declarations.
+	* parser.c (cp_parser_postfix_expression): Pass cp_cast_loc to
+	the various build_*_cast functions.
+	(get_cast_suggestion): Adjust calls.
+	(cp_parser_builtin_offsetof): Likewise.
+	* decl.c (reshape_init): Adjust call.
+	* method.c (forward_parm): Likewise.
+	(build_comparison_op): Likewise.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_omp_reduction_clause): Likewise.
+	(cp_omp_finish_iterators): Likewise.
+	* tree.c (cp_stabilize_reference): Likewise.
+	(move): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+
+	* typeck2.c (build_functional_cast_1): New.
+	(build_functional_cast_1): Calls the latter and sets the location
+	of the returned tree.
+
 2019-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* cvt.c (maybe_warn_nodiscard): Add workaround for GCC 3.4-4.4 - cast

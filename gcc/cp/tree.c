@@ -425,7 +425,8 @@ cp_stabilize_reference (tree ref)
 	  /* This inhibits warnings in, eg, cxx_mark_addressable
 	     (c++/60955).  */
 	  warning_sentinel s (extra_warnings);
-	  ref = build_static_cast (type, ref, tf_error);
+	  ref = build_static_cast (input_location, type, ref,
+				   tf_error);
 	}
     }
 
@@ -1222,7 +1223,8 @@ move (tree expr)
   tree type = TREE_TYPE (expr);
   gcc_assert (!TYPE_REF_P (type));
   type = cp_build_reference_type (type, /*rval*/true);
-  return build_static_cast (type, expr, tf_warning_or_error);
+  return build_static_cast (input_location, type, expr,
+			    tf_warning_or_error);
 }
 
 /* Used by the C++ front end to build qualified array types.  However,

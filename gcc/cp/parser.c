@@ -6896,36 +6896,38 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    break;
 	  }
 
-	switch (keyword)
-	  {
-	  case RID_DYNCAST:
-	    postfix_expression
-	      = build_dynamic_cast (type, expression, tf_warning_or_error);
-	    break;
-	  case RID_STATCAST:
-	    postfix_expression
-	      = build_static_cast (type, expression, tf_warning_or_error);
-	    break;
-	  case RID_REINTCAST:
-	    postfix_expression
-	      = build_reinterpret_cast (type, expression,
-                                        tf_warning_or_error);
-	    break;
-	  case RID_CONSTCAST:
-	    postfix_expression
-	      = build_const_cast (type, expression, tf_warning_or_error);
-	    break;
-	  default:
-	    gcc_unreachable ();
-	  }
-
 	/* Construct a location e.g. :
 	     reinterpret_cast <int *> (expr)
 	     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	   ranging from the start of the "*_cast" token to the final closing
 	   paren, with the caret at the start.  */
 	location_t cp_cast_loc = make_location (start_loc, start_loc, end_loc);
-	postfix_expression.set_location (cp_cast_loc);
+
+	switch (keyword)
+	  {
+	  case RID_DYNCAST:
+	    postfix_expression
+	      = build_dynamic_cast (cp_cast_loc, type, expression,
+				    tf_warning_or_error);
+	    break;
+	  case RID_STATCAST:
+	    postfix_expression
+	      = build_static_cast (cp_cast_loc, type, expression,
+				   tf_warning_or_error);
+	    break;
+	  case RID_REINTCAST:
+	    postfix_expression
+	      = build_reinterpret_cast (cp_cast_loc, type, expression,
+                                        tf_warning_or_error);
+	    break;
+	  case RID_CONSTCAST:
+	    postfix_expression
+	      = build_const_cast (cp_cast_loc, type, expression,
+				  tf_warning_or_error);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
       }
       break;
 
@@ -9151,17 +9153,18 @@ get_cast_suggestion (tree dst_type, tree orig_expr)
     return NULL;
 
   /* First try const_cast.  */
-  trial = build_const_cast (dst_type, orig_expr, tf_none);
+  trial = build_const_cast (input_location, dst_type, orig_expr, tf_none);
   if (trial != error_mark_node)
     return "const_cast";
 
   /* If that fails, try static_cast.  */
-  trial = build_static_cast (dst_type, orig_expr, tf_none);
+  trial = build_static_cast (input_location, dst_type, orig_expr, tf_none);
   if (trial != error_mark_node)
     return "static_cast";
 
   /* Finally, try reinterpret_cast.  */
-  trial = build_reinterpret_cast (dst_type, orig_expr, tf_none);
+  trial = build_reinterpret_cast (input_location, dst_type, orig_expr,
+				  tf_none);
   if (trial != error_mark_node)
     return "reinterpret_cast";
 
@@ -10149,8 +10152,8 @@ cp_parser_builtin_offsetof (cp_parser *parser)
 
   /* Build the (type *)null that begins the traditional offsetof macro.  */
   tree object_ptr
-    = build_static_cast (build_pointer_type (type), null_pointer_node,
-			 tf_warning_or_error);
+    = build_static_cast (input_location, build_pointer_type (type),
+			 null_pointer_node, tf_warning_or_error);
 
   /* Parse the offsetof-member-designator.  We begin as if we saw "expr->".  */
   expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DEREF, object_ptr,
@@ -29278,7 +29281,6 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 					   parser->lexer);
   cast = build_functional_cast (combined_loc, type, expression_list,
                                 tf_warning_or_error);
-  cast.set_location (combined_loc);
   
   /* [expr.const]/1: In an integral constant expression "only type
      conversions to integral or enumeration type can be used".  */

@@ -1,3 +1,57 @@
+2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-c++-common/Wcast-align.c: Check location(s) too.
+	* c-c++-common/Wcast-function-type.c: Likewise.
+	* c-c++-common/Wint-to-pointer-cast-1.c: Likewise.
+	* c-c++-common/Wint-to-pointer-cast-2.c: Likewise.
+	* c-c++-common/Wint-to-pointer-cast-3.c: Likewise.
+	* g++.dg/Wcast-function-type.C: Likewise.
+	* g++.dg/addr_builtin-1.C: Likewise.
+	* g++.dg/conversion/const2.C: Likewise.
+	* g++.dg/conversion/dynamic1.C: Likewise.
+	* g++.dg/conversion/ptrmem2.C: Likewise.
+	* g++.dg/conversion/ptrmem3.C: Likewise.
+	* g++.dg/conversion/qual3.C: Likewise.
+	* g++.dg/conversion/reinterpret3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-cast.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-conv11.C: Likewise.
+	* g++.dg/cpp0x/nullptr04.C: Likewise.
+	* g++.dg/cpp0x/reinterpret_cast2.C: Likewise.
+	* g++.dg/cpp0x/rv-cast2.C: Likewise.
+	* g++.dg/cpp1y/lambda-conv1.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type7.C: Likewise.
+	* g++.dg/cpp2a/array-conv9.C: Likewise.
+	* g++.dg/expr/cast11.C: Likewise.
+	* g++.dg/expr/static_cast8.C: Likewise.
+	* g++.dg/ext/vector6.C: Likewise.
+	* g++.dg/other/conversion1.C: Likewise.
+	* g++.dg/parse/pr26997.C: Likewise.
+	* g++.dg/rtti/no-rtti.C: Likewise.
+	* g++.dg/tc1/dr137.C: Likewise.
+	* g++.dg/template/cast4.C: Likewise.
+	* g++.dg/warn/Wcast-qual1.C: Likewise.
+	* g++.dg/warn/Wcast-qual2.C: Likewise.
+	* g++.dg/warn/Wconditionally-supported-1.C: Likewise.
+	* g++.dg/warn/Wuseless-cast.C: Likewise.
+	* g++.dg/warn/pr35711.C: Likewise.
+	* g++.old-deja/g++.bugs/900227_01.C: Likewise.
+	* g++.old-deja/g++.bugs/900404_07.C: Likewise.
+	* g++.old-deja/g++.jason/overload1.C: Likewise.
+	* g++.old-deja/g++.jason/rfg26.C: Likewise.
+	* g++.old-deja/g++.jason/rvalue3.C: Likewise.
+	* g++.old-deja/g++.jason/warning2.C: Likewise.
+	* g++.old-deja/g++.mike/dyncast4.C: Likewise.
+	* g++.old-deja/g++.mike/dyncast6.C: Likewise.
+	* g++.old-deja/g++.mike/p11482.C: Likewise.
+	* g++.old-deja/g++.mike/p2573.C: Likewise.
+	* g++.old-deja/g++.mike/p2855.C: Likewise.
+	* g++.old-deja/g++.mike/p7476.C: Likewise.
+	* g++.old-deja/g++.mike/p8039.C: Likewise.
+	* g++.old-deja/g++.other/cast2.C: Likewise.
+	* g++.old-deja/g++.other/cast3.C: Likewise.
+	* g++.old-deja/g++.other/dcast1.C: Likewise.
+	* g++.old-deja/g++.other/dcast2.C: Likewise.
+
 2019-12-09  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/49973

@@ -6490,7 +6490,8 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
 	{
 	  warning_sentinel w (warn_useless_cast);
 	  warning_sentinel w2 (warn_ignored_qualifiers);
-	  return cp_build_c_cast (type, elt, tf_warning_or_error);
+	  return cp_build_c_cast (input_location, type, elt,
+				  tf_warning_or_error);
 	}
       else
 	return error_mark_node;

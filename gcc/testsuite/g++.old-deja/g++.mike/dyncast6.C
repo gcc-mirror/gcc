@@ -9,5 +9,5 @@ public:
 class B : public A { };
      
 void x (A& a) {
-  const B& b1 = dynamic_cast<B&>((const A&)a);	// { dg-error "" } opps
+  const B& b1 = dynamic_cast<B&>((const A&)a);	// { dg-error "17:cannot .dynamic_cast." } opps
 }

@@ -5918,9 +5918,11 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
 	      if (need_static_cast)
 		{
 		  tree rtype = build_reference_type (atype);
-		  omp_out = build_static_cast (rtype, omp_out,
+		  omp_out = build_static_cast (input_location,
+					       rtype, omp_out,
 					       tf_warning_or_error);
-		  omp_in = build_static_cast (rtype, omp_in,
+		  omp_in = build_static_cast (input_location,
+					      rtype, omp_in,
 					      tf_warning_or_error);
 		  if (omp_out == error_mark_node || omp_in == error_mark_node)
 		    return true;
@@ -5955,9 +5957,11 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
 		      return true;
 		    }
 		  tree rtype = build_reference_type (atype);
-		  omp_priv = build_static_cast (rtype, omp_priv,
+		  omp_priv = build_static_cast (input_location,
+						rtype, omp_priv,
 						tf_warning_or_error);
-		  omp_orig = build_static_cast (rtype, omp_orig,
+		  omp_orig = build_static_cast (input_location,
+						rtype, omp_orig,
 						tf_warning_or_error);
 		  if (omp_priv == error_mark_node
 		      || omp_orig == error_mark_node)
@@ -6138,13 +6142,16 @@ cp_omp_finish_iterators (tree iter)
       begin = mark_rvalue_use (begin);
       end = mark_rvalue_use (end);
       step = mark_rvalue_use (step);
-      begin = cp_build_c_cast (type, begin, tf_warning_or_error);
-      end = cp_build_c_cast (type, end, tf_warning_or_error);
+      begin = cp_build_c_cast (input_location, type, begin,
+			       tf_warning_or_error);
+      end = cp_build_c_cast (input_location, type, end,
+			     tf_warning_or_error);
       orig_step = step;
       if (!processing_template_decl)
 	step = orig_step = save_expr (step);
       tree stype = POINTER_TYPE_P (type) ? sizetype : type;
-      step = cp_build_c_cast (stype, step, tf_warning_or_error);
+      step = cp_build_c_cast (input_location, stype, step,
+			      tf_warning_or_error);
       if (POINTER_TYPE_P (type) && !processing_template_decl)
 	{
 	  begin = save_expr (begin);
