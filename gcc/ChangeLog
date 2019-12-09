@@ -1,5 +1,10 @@
 2019-12-09  Matthew Malcomson  <matthew.malcomson@arm.com>
 
+	* regstat.c (regstat_bb_compute_calls_crossed): Add a cast to
+	avoid a warning.
+
+2019-12-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
 	PR middle-end/92410
 	* bb-reorder.c (pass_reorder_blocks::execute): Recompute
 	dataflow luids once basic blocks have been reordered.
