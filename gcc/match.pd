@@ -2697,6 +2697,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
   (comb (cmp @0 @2) (cmp @1 @2))))
 
+/* Undo fancy way of writing max/min or other ?: expressions,
+   like a - ((a - b) & -(a < b)), in this case into (a < b) ? b : a.
+   People normally use ?: and that is what we actually try to optimize.  */
+(for cmp (simple_comparison)
+ (simplify
+  (minus @0 (bit_and:c (minus @0 @1)
+		       (convert? (negate@4 (convert? (cmp@5 @2 @3))))))
+  (if (INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@4))
+       && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
+       && INTEGRAL_TYPE_P (TREE_TYPE (@5))
+       && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
+	   || !TYPE_UNSIGNED (TREE_TYPE (@4))))
+   (cond (cmp @2 @3) @1 @0)))
+ (simplify
+  (plus:c @0 (bit_and:c (minus @1 @0)
+			(convert? (negate@4 (convert? (cmp@5 @2 @3))))))
+  (if (INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@4))
+       && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
+       && INTEGRAL_TYPE_P (TREE_TYPE (@5))
+       && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
+	   || !TYPE_UNSIGNED (TREE_TYPE (@4))))
+   (cond (cmp @2 @3) @1 @0))))
+
 /* Simplifications of shift and rotates.  */
 
 (for rotate (lrotate rrotate)
