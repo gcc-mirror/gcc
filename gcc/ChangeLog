@@ -1,3 +1,14 @@
+2019-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92761
+	PR middle-end/92762
+	* hash-map-tests.c (test_map_of_type_with_ctor_and_dtor): Tighten
+	up tests.
+	* hash-table.h (hash_table::expand): Use placement new to copy
+	construct objects in uninitialized storage.
+	(hash_table::empty_slow): Avoid invoking copy assignment on
+	uninitialized objects.
+
 2019-12-09  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/49973
