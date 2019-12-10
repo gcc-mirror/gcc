@@ -2376,13 +2376,9 @@ loop_only_exit_p (const class loop *loop, basic_block *body, const_edge exit)
     return false;
 
   for (i = 0; i < loop->num_nodes; i++)
-    {
-      for (bsi = gsi_start_bb (body[i]); !gsi_end_p (bsi); gsi_next (&bsi))
-	if (stmt_can_terminate_bb_p (gsi_stmt (bsi)))
-	  {
-	    return true;
-	  }
-    }
+    for (bsi = gsi_start_bb (body[i]); !gsi_end_p (bsi); gsi_next (&bsi))
+      if (stmt_can_terminate_bb_p (gsi_stmt (bsi)))
+	return false;
 
   return true;
 }
