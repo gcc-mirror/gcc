@@ -926,9 +926,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
       simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
       inlined_to (NULL), rtl (NULL), clone (), thunk (),
-      count (profile_count::uninitialized ()), tp_first_run (false),
+      count (profile_count::uninitialized ()),
       count_materialization_scale (REG_BR_PROB_BASE), profile_id (0),
-      unit_id (0), used_as_abstract_origin (false),
+      unit_id (0), tp_first_run (0), used_as_abstract_origin (false),
       lowered (false), process (false), frequency (NODE_FREQUENCY_NORMAL),
       only_called_at_startup (false), only_called_at_exit (false),
       tm_clone (false), dispatcher_function (false), calls_comdat_local (false),
@@ -1469,8 +1469,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
-  /* Time profiler: first run of function.  */
-  gcov_type tp_first_run;
   /* How to scale counts at materialization time; used to merge
      LTO units with different number of profile runs.  */
   int count_materialization_scale;
@@ -1478,6 +1476,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned int profile_id;
   /* ID of the translation unit.  */
   int unit_id;
+  /* Time profiler: first run of function.  */
+  int tp_first_run;
 
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
