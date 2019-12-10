@@ -1,3 +1,7 @@
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/lto/tag-1_0.c, gcc.dg/lto/tag-1_1.c: New test.
+
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512f-vmovntpd-2.c: Ensure res is 64-byte aligned.
