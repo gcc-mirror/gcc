@@ -3217,16 +3217,15 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
   basic_block bb = e->src;
   FOR_EACH_EDGE (e2, ei, bb->succs)
     if (e2->dest != e->src && e2->dest != e->dest
-	&& !unlikely_executed_edge_p (e)
+	&& !unlikely_executed_edge_p (e2)
 	&& !dominated_by_p (CDI_POST_DOMINATORS, e->src, e2->dest))
       {
 	has_nonloop_edge = true;
 	break;
       }
+
   if (!has_nonloop_edge)
-    {
-      predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
-    }
+    predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
   else
     predict_edge_def (e, pred, taken);
 }

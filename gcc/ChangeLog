@@ -1,3 +1,10 @@
+2019-12-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92862
+	* predict.c (predict_paths_leading_to_edge): Fix typo from e to e2.
+	* tree-ssa-loop-niter.c (loop_only_exit_p): Return false
+	instead of true;
+
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-rich-location.c
