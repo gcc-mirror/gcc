@@ -1,5 +1,10 @@
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vectorizable_reduction): Don't use
+	EXTRACT_LAST_REDUCTION for chained reductions.
+
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ipa-utils.h (get_odr_name_for_type): Check for a TYPE_DECL.
 	* ipa-devirt.c (warn_types_mismatch): Don't call xstrdup for the
 	second demangled name.
