@@ -210,6 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    && (!is_convertible_v<_Sentinel, size_type>)
 	constexpr
 	span(_ContiguousIterator __first, _Sentinel __last)
+	noexcept(noexcept(__last - __first))
 	: _M_extent(static_cast<size_type>(__last - __first)),
 	  _M_ptr(std::to_address(__first))
 	{
@@ -221,7 +222,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires (__is_compatible_iterator<_ContiguousIterator>::value)
 	constexpr
 	span(_ContiguousIterator __first, size_type __count)
-	noexcept(noexcept(std::to_address(__first)))
+	noexcept
 	: _M_extent(__count), _M_ptr(std::to_address(__first))
 	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
 

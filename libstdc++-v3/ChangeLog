@@ -1,3 +1,10 @@
+2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	(span(ContiguousIterator, Sentinel)): Add conditional noexcept.
+	* include/std/span (span(ContiguousIterator, size_type)): Change
+	noexcept to be unconditionally true.
+	* testsuite/23_containers/span/nothrow_cons.cc: New test.
+
 2019-12-10  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algobase.h
