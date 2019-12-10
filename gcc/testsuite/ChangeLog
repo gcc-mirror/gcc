@@ -1,3 +1,8 @@
+2019-12-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92872
+	* gfortran.dg/bind_c_optional-1.f90: New.
+
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/lto/tag-1_0.c, gcc.dg/lto/tag-1_1.c: New test.

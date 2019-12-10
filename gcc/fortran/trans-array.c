@@ -882,7 +882,7 @@ get_CFI_desc (gfc_symbol *sym, gfc_expr *expr,
   else
     tmp = sym->backend_decl;
 
-  if (tmp && DECL_LANG_SPECIFIC (tmp))
+  if (tmp && DECL_LANG_SPECIFIC (tmp) && GFC_DECL_SAVED_DESCRIPTOR (tmp))
     tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
 
   *desc = tmp;
