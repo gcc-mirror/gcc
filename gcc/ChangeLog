@@ -1,3 +1,13 @@
+2019-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::register_replacement): Fix comment typo
+	- accross -> across.
+	* ipa-sra.c (propagate_used_across_scc_edge, ipa_sra_analysis):
+	Likewise.
+	(param_splitting_across_edge): Fix typo in dump message - accross
+	-> across.
+
 2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::verify_node): Verify tp_first_run.
