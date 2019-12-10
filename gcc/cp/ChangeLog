@@ -1,5 +1,11 @@
 2019-12-10  Jason Merrill  <jason@redhat.com>
 
+	Fix C++20 structural type vs. private base.
+	* class.c (build_base_field_1): Take access parameter.
+	(build_base_field): Likewise.
+	(build_base_fields, layout_virtual_bases): Pass it.
+	* tree.c (structural_type_p): Improve private base diagnostic.
+
 	PR c++/92560 - ICE with decltype and rewritten operator.
 	* call.c (build_new_op_1): Clear tf_decltype on inner call.
 
