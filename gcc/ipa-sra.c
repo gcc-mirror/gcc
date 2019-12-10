@@ -3167,7 +3167,7 @@ isra_mark_caller_param_used (isra_func_summary *from_ifs, int input_idx,
 
 
 /* Propagate information that any parameter is not used only locally within a
-   SCC accross CS to the caller, which must be in the same SCC as the
+   SCC across CS to the caller, which must be in the same SCC as the
    callee. Push any callers that need to be re-processed to STACK.  */
 
 static void
@@ -3397,7 +3397,7 @@ param_splitting_across_edge (cgraph_edge *cs)
        : 0);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Splitting accross %s->%s:\n",
+    fprintf (dump_file, "Splitting across %s->%s:\n",
 	     cs->caller->dump_name (), callee->dump_name ());
 
   unsigned i;
@@ -3876,9 +3876,9 @@ ipa_sra_analysis (void)
 	      param_removal_cross_scc_edge (cs);
 	}
 
-      /* Look at edges within the current SCC and propagate used-ness accross
-          them, pushing onto the stack all notes which might need to be
-          revisited.  */
+      /* Look at edges within the current SCC and propagate used-ness across
+	 them, pushing onto the stack all notes which might need to be
+	 revisited.  */
       FOR_EACH_VEC_ELT (cycle_nodes, j, v)
 	v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
 					       &stack, true);
