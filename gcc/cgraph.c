@@ -3066,6 +3066,11 @@ cgraph_node::verify_node (void)
       inlined_to->count.debug ();
       error_found = true;
     }
+  if (tp_first_run < 0)
+    {
+      error ("tp_first_run must be non-negative");
+      error_found = true;
+    }
   if (!definition && !in_other_partition && local)
     {
       error ("local symbols must be defined");

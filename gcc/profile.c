@@ -871,11 +871,18 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
       if (hist->type == HIST_TYPE_TIME_PROFILE)
         {
 	  node = cgraph_node::get (hist->fun->decl);
-	  node->tp_first_run = hist->hvalue.counters[0];
+	  if (hist->hvalue.counters[0] >= 0
+	      && hist->hvalue.counters[0] < INT_MAX / 2)
+	    node->tp_first_run = hist->hvalue.counters[0];
+	  else
+	    {
+	      if (flag_profile_correction)
+		error ("corrupted profile info: invalid time profile");
+	      node->tp_first_run = 0;
+	    }
 
           if (dump_file)
-            fprintf (dump_file, "Read tp_first_run: %" PRId64 "\n",
-		     (int64_t) node->tp_first_run);
+            fprintf (dump_file, "Read tp_first_run: %d\n", node->tp_first_run);
         }
     }
 

@@ -2364,8 +2364,8 @@ tp_first_run_node_cmp (const void *pa, const void *pb)
 {
   const cgraph_node *a = *(const cgraph_node * const *) pa;
   const cgraph_node *b = *(const cgraph_node * const *) pb;
-  gcov_type tp_first_run_a = a->tp_first_run;
-  gcov_type tp_first_run_b = b->tp_first_run;
+  unsigned int tp_first_run_a = a->tp_first_run;
+  unsigned int tp_first_run_b = b->tp_first_run;
 
   if (!opt_for_fn (a->decl, flag_profile_reorder_functions)
       || a->no_reorder)
@@ -2378,14 +2378,10 @@ tp_first_run_node_cmp (const void *pa, const void *pb)
     return a->order - b->order;
 
   /* Functions with time profile must be before these without profile.  */
-  if (!tp_first_run_a || !tp_first_run_b)
-    return tp_first_run_b ? 1 : -1;
+  tp_first_run_a = (tp_first_run_a - 1) & INT_MAX;
+  tp_first_run_b = (tp_first_run_b - 1) & INT_MAX;
 
-  /* Watch for overlflow - tp_first_run is 64bit.  */
-  if (tp_first_run_a > tp_first_run_b)
-    return 1;
-  else
-    return -1;
+  return tp_first_run_a - tp_first_run_b;
 }
 
 /* Expand all functions that must be output.
@@ -2425,20 +2421,7 @@ expand_all_functions (void)
           order[new_order_pos++] = order[i];
       }
 
-  /* Output functions in RPO so callers get optimized before callees.  This
-     makes ipa-ra and other propagators to work.
-     FIXME: This is far from optimal code layout.  */
-  for (i = new_order_pos - 1; i >= 0; i--)
-    {
-      node = order[i];
-
-      if (node->process)
-	{
-	  expanded_func_count++;
-	  node->process = 0;
-	  node->expand ();
-	}
-    }
+  /* First output functions with time profile in specified order.  */
   qsort (tp_first_run_order, tp_first_run_order_pos,
 	 sizeof (cgraph_node *), tp_first_run_node_cmp);
   for (i = 0; i < tp_first_run_order_pos; i++)
@@ -2452,16 +2435,31 @@ expand_all_functions (void)
 
 	  if (symtab->dump_file)
 	    fprintf (symtab->dump_file,
-		     "Time profile order in expand_all_functions:%s:%" PRId64
-		     "\n", node->asm_name (), (int64_t) node->tp_first_run);
+		     "Time profile order in expand_all_functions:%s:%d\n",
+		     node->asm_name (), node->tp_first_run);
 	  node->process = 0;
 	  node->expand ();
 	}
     }
 
-    if (dump_file)
-      fprintf (dump_file, "Expanded functions with time profile (%s):%u/%u\n",
-               main_input_filename, profiled_func_count, expanded_func_count);
+  /* Output functions in RPO so callees get optimized before callers.  This
+     makes ipa-ra and other propagators to work.
+     FIXME: This is far from optimal code layout.  */
+  for (i = new_order_pos - 1; i >= 0; i--)
+    {
+      node = order[i];
+
+      if (node->process)
+	{
+	  expanded_func_count++;
+	  node->process = 0;
+	  node->expand ();
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "Expanded functions with time profile (%s):%u/%u\n",
+	     main_input_filename, profiled_func_count, expanded_func_count);
 
   if (symtab->dump_file && tp_first_run_order_pos)
     fprintf (symtab->dump_file, "Expanded functions with time profile:%u/%u\n",
