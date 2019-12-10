@@ -679,6 +679,7 @@ default_diagnostic_finalizer (diagnostic_context *context,
 {
   char *saved_prefix = pp_take_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
+  pp_newline (context->printer);
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   pp_set_prefix (context->printer, saved_prefix);
   pp_flush (context->printer);
@@ -1173,6 +1174,7 @@ diagnostic_append_note (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   pp_destroy_prefix (context->printer);
   pp_set_prefix (context->printer, saved_prefix);
+  pp_newline (context->printer);
   diagnostic_show_locus (context, &richloc, DK_NOTE);
   va_end (ap);
 }

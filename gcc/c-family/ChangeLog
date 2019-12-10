@@ -1,3 +1,10 @@
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (selftest::test_type_mismatch_range_labels): Remove
+	initial newline from expected outputs.
+	* c-opts.c (c_diagnostic_finalizer): Add pp_newline call before
+	call to diagnostic_show_locus.
+
 2019-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Don't define __cpp_consteval for

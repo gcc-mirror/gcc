@@ -137,6 +137,7 @@ custom_diagnostic_finalizer (diagnostic_context *context,
     pp_show_color (context->printer) = true;
   char *saved_prefix = pp_take_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
+  pp_newline (context->printer);
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   pp_show_color (context->printer) = old_show_color;
   pp_set_prefix (context->printer, saved_prefix);
