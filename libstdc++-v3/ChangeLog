@@ -1,5 +1,8 @@
 2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/span: Do not include <tuple> and <utility>.
+	(tuple_size, tuple_element): Declare.
+
 	* include/bits/iterator_concepts.h (indirect_result_t): Do not apply
 	iter_reference_t to parameter pack.
 	* testsuite/24_iterators/indirect_callable/projected.cc: New test.
