@@ -1,5 +1,10 @@
 2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/complex (__cpp_lib_constexpr_complex): Define.
+	* include/std/version (__cpp_lib_constexpr_complex): Likewise.
+	* testsuite/26_numerics/complex/1.cc: New test.
+	* testsuite/26_numerics/complex/2.cc: New test.
+
 	* include/std/span: Do not include <tuple> and <utility>.
 	(tuple_size, tuple_element): Declare.
 
