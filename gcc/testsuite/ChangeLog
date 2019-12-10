@@ -1,5 +1,8 @@
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/92882
+	* gfortran.dg/pr92882.f: New test.
+
 	PR ipa/92883
 	* gcc.dg/ipa/pr92883.c: New test.
 
