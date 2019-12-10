@@ -340,12 +340,12 @@ label_text
 range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 {
   if (m_labelled_type == NULL_TREE)
-    return label_text (NULL, false);
+    return label_text::borrow (NULL);
 
   c_pretty_printer cpp;
   bool quoted = false;
   print_type (&cpp, m_labelled_type, &quoted);
-  return label_text (xstrdup (pp_formatted_text (&cpp)), true);
+  return label_text::take (xstrdup (pp_formatted_text (&cpp)));
 }
 
 

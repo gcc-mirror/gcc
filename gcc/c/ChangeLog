@@ -1,3 +1,8 @@
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c (range_label_for_type_mismatch::get_text):
+	Replace label_text ctor calls.
+
 2019-12-04  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/36941
