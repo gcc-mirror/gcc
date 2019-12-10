@@ -1,5 +1,9 @@
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/mixed_size_7.c: New test.
+
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/mixed_size_6.c: New test.
 
 2019-12-10  Frederik Harwath  <frederik@codesourcery.com>
