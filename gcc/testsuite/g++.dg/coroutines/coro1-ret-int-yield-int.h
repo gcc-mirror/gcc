@@ -53,7 +53,7 @@ struct coro1 {
   struct suspend_always_longprtsq {
     long x;
     suspend_always_longprtsq() : x(12L) { PRINT ("suspend_always_longprtsq def ctor"); }
-    suspend_always_longprtsq(long _x) : x(_x) { PRINTF ("suspend_always_longprtsq ctor with %d\n", x); }
+    suspend_always_longprtsq(long _x) : x(_x) { PRINTF ("suspend_always_longprtsq ctor with %ld\n", x); }
     ~suspend_always_longprtsq() {}
     bool await_ready() const noexcept { return false; }
     void await_suspend(coro::coroutine_handle<>) const noexcept { PRINT ("susp-always-susp-longsq");}
