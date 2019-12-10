@@ -1888,17 +1888,23 @@ asan_decl_phase_3 (size_t i)
 }
 
 /* Ensure that variables in different stack protection phases conflict
-   so that they are not merged and share the same stack slot.  */
+   so that they are not merged and share the same stack slot.
+   Return true if there are any address taken variables.  */
 
-static void
+static bool
 add_stack_protection_conflicts (void)
 {
   size_t i, j, n = stack_vars_num;
   unsigned char *phase;
+  bool ret = false;
 
   phase = XNEWVEC (unsigned char, n);
   for (i = 0; i < n; ++i)
-    phase[i] = stack_protect_decl_phase (stack_vars[i].decl);
+    {
+      phase[i] = stack_protect_decl_phase (stack_vars[i].decl);
+      if (TREE_ADDRESSABLE (stack_vars[i].decl))
+	ret = true;
+    }
 
   for (i = 0; i < n; ++i)
     {
@@ -1909,6 +1915,7 @@ add_stack_protection_conflicts (void)
     }
 
   XDELETEVEC (phase);
+  return ret;
 }
 
 /* Create a decl for the guard at the top of the stack frame.  */
@@ -1993,50 +2000,6 @@ estimated_stack_frame_size (struct cgraph_node *node)
   return estimated_poly_value (size);
 }
 
-/* Helper routine to check if a record or union contains an array field. */
-
-static int
-record_or_union_type_has_array_p (const_tree tree_type)
-{
-  tree fields = TYPE_FIELDS (tree_type);
-  tree f;
-
-  for (f = fields; f; f = DECL_CHAIN (f))
-    if (TREE_CODE (f) == FIELD_DECL)
-      {
-	tree field_type = TREE_TYPE (f);
-	if (RECORD_OR_UNION_TYPE_P (field_type)
-	    && record_or_union_type_has_array_p (field_type))
-	  return 1;
-	if (TREE_CODE (field_type) == ARRAY_TYPE)
-	  return 1;
-      }
-  return 0;
-}
-
-/* Check if the current function has local referenced variables that
-   have their addresses taken, contain an array, or are arrays.  */
-
-static bool
-stack_protect_decl_p ()
-{
-  unsigned i;
-  tree var;
-
-  FOR_EACH_LOCAL_DECL (cfun, i, var)
-    if (!is_global_var (var))
-      {
-	tree var_type = TREE_TYPE (var);
-	if (VAR_P (var)
-	    && (TREE_CODE (var_type) == ARRAY_TYPE
-		|| TREE_ADDRESSABLE (var)
-		|| (RECORD_OR_UNION_TYPE_P (var_type)
-		    && record_or_union_type_has_array_p (var_type))))
-	  return true;
-      }
-  return false;
-}
-
 /* Check if the current function has calls that use a return slot.  */
 
 static bool
@@ -2103,8 +2066,7 @@ expand_used_vars (void)
     }
 
   if (flag_stack_protect == SPCT_FLAG_STRONG)
-      gen_stack_protect_signal
-	= stack_protect_decl_p () || stack_protect_return_slot_p ();
+    gen_stack_protect_signal = stack_protect_return_slot_p ();
 
   /* At this point all variables on the local_decls with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
@@ -2180,6 +2142,8 @@ expand_used_vars (void)
 
   if (stack_vars_num > 0)
     {
+      bool has_addressable_vars = false;
+
       add_scope_conflicts ();
 
       /* If stack protection is enabled, we don't share space between
@@ -2189,7 +2153,10 @@ expand_used_vars (void)
 	      || (flag_stack_protect == SPCT_FLAG_EXPLICIT
 		  && lookup_attribute ("stack_protect",
 				       DECL_ATTRIBUTES (current_function_decl)))))
-	add_stack_protection_conflicts ();
+	has_addressable_vars = add_stack_protection_conflicts ();
+
+      if (flag_stack_protect == SPCT_FLAG_STRONG && has_addressable_vars)
+	gen_stack_protect_signal = true;
 
       /* Now that we have collected all stack variables, and have computed a
 	 minimal interference graph, attempt to save some stack space.  */
@@ -2206,14 +2173,16 @@ expand_used_vars (void)
 
     case SPCT_FLAG_STRONG:
       if (gen_stack_protect_signal
-	  || cfun->calls_alloca || has_protected_decls
+	  || cfun->calls_alloca
+	  || has_protected_decls
 	  || lookup_attribute ("stack_protect",
 			       DECL_ATTRIBUTES (current_function_decl)))
 	create_stack_guard ();
       break;
 
     case SPCT_FLAG_DEFAULT:
-      if (cfun->calls_alloca || has_protected_decls
+      if (cfun->calls_alloca
+	  || has_protected_decls
 	  || lookup_attribute ("stack_protect",
 			       DECL_ATTRIBUTES (current_function_decl)))
 	create_stack_guard ();
@@ -2224,8 +2193,9 @@ expand_used_vars (void)
 			    DECL_ATTRIBUTES (current_function_decl)))
 	create_stack_guard ();
       break;
+
     default:
-      ;
+      break;
     }
 
   /* Assign rtl to each variable based on these partitions.  */
