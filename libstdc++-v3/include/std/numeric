@@ -229,12 +229,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @addtogroup numeric_ops
   /// @{
 
-  /// @cond undocumented
-  template<typename _It, typename _Cat = __iterator_category_t<_It>>
-    using __is_random_access_iter
-      = is_base_of<random_access_iterator_tag, _Cat>;
-  /// @endcond
-
   /**
    *  @brief  Calculate reduction of values in a range.
    *

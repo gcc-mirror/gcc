@@ -56,6 +56,9 @@ namespace std
 namespace __gnu_debug
 {
   using namespace std::__debug;
+
+  template<typename _Ite, typename _Seq, typename _Cat>
+    struct _Safe_iterator;
 }
 
 #ifndef _GLIBCXX_DEBUG
