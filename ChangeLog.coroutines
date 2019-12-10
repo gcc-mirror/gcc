@@ -1,5 +1,11 @@
 2019-12-10  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* constexpr.c (potential_constant_expression_1): Add
+	CO_RETURN_EXPR to the list of coroutine exclusions.
+
+2019-12-10  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Use long
 	format for long data.
