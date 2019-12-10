@@ -8,7 +8,7 @@ void static
 avx512f_test (void)
 {
   union512 s;
-  float res[16];
+  float res[16] __attribute__((aligned (64)));
 
   s.x = _mm512_set_ps (-39578.467285, 4294967295.1, -7856.342941, 0,
 		       85632.783567, 1234.9999, 47563.234215, -1.07,
