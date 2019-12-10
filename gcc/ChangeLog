@@ -1,3 +1,18 @@
+2019-12-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92796
+	* lra-int.h (lra_risky_transformations_p): Rename to
+	check_and_force_assignment_correctness_p.
+	* lra-assigns.c: Ditto.
+	(lra_assign): Reset check_and_force_assignment_correctness_p.
+	* lra-constraints.c (lra_risky_transformations_p): Rename to
+	check_and_force_assignment_correctness_p.
+	(lra_constraints): Set up check_and_force_assignment_correctness_p
+	only for the 1st sub-pass.
+	* lra-eliminations.c (process_insn_for_elimination): Set up
+	check_and_force_assignment_correctness_p if the insn chnaged its
+	code.
+
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/92882

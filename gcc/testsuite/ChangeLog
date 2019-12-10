@@ -1,3 +1,8 @@
+2019-12-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/92796
+	* gcc.target/powerpc/pr92796.c: New test.
+
 2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91643
