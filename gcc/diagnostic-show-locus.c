@@ -2530,8 +2530,6 @@ diagnostic_show_locus (diagnostic_context * context,
 		       rich_location *richloc,
 		       diagnostic_t diagnostic_kind)
 {
-  pp_newline (context->printer);
-
   location_t loc = richloc->get_loc ();
   /* Do nothing if source-printing has been disabled.  */
   if (!context->show_caret)
@@ -2766,7 +2764,7 @@ test_diagnostic_show_locus_unknown_location ()
   test_diagnostic_context dc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n", pp_formatted_text (dc.printer));
+  ASSERT_STREQ ("", pp_formatted_text (dc.printer));
 }
 
 /* Verify that diagnostic_show_locus works sanely for various
@@ -2788,8 +2786,7 @@ test_one_liner_simple_caret ()
   location_t caret = linemap_position_for_column (line_table, 10);
   rich_location richloc (line_table, caret);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"          ^\n",
 		pp_formatted_text (dc.printer));
 }
@@ -2806,8 +2803,7 @@ test_one_liner_caret_and_range ()
   location_t loc = make_location (caret, start, finish);
   rich_location richloc (line_table, loc);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"       ~~~^~~~~~\n",
 		pp_formatted_text (dc.printer));
 }
@@ -2840,8 +2836,7 @@ test_one_liner_multiple_carets_and_ranges ()
   richloc.add_range (bar, SHOW_RANGE_WITH_CARET);
   richloc.add_range (field, SHOW_RANGE_WITH_CARET);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		" ~A~   ~B~ ~~C~~\n",
 		pp_formatted_text (dc.printer));
 }
@@ -2856,8 +2851,7 @@ test_one_liner_fixit_insert_before ()
   rich_location richloc (line_table, caret);
   richloc.add_fixit_insert_before ("&");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"       ^\n"
 		"       &\n",
 		pp_formatted_text (dc.printer));
@@ -2875,8 +2869,7 @@ test_one_liner_fixit_insert_after ()
   rich_location richloc (line_table, foo);
   richloc.add_fixit_insert_after ("[0]");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		" ^~~\n"
 		"    [0]\n",
 		pp_formatted_text (dc.printer));
@@ -2899,8 +2892,7 @@ test_one_liner_fixit_remove ()
   {
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  "          ^~~~~~\n"
 		  "          ------\n",
 		  pp_formatted_text (dc.printer));
@@ -2912,8 +2904,7 @@ test_one_liner_fixit_remove ()
     pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "TEST PREFIX: foo = bar.field;\n"
+    ASSERT_STREQ ("TEST PREFIX: foo = bar.field;\n"
 		  "TEST PREFIX:          ^~~~~~\n"
 		  "TEST PREFIX:          ------\n",
 		  pp_formatted_text (dc.printer));
@@ -2925,8 +2916,7 @@ test_one_liner_fixit_remove ()
     dc.show_ruler_p = true;
     dc.caret_max_width = 104;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "          0         0         0         0         0         0         0         0         0         1    \n"
+    ASSERT_STREQ ("          0         0         0         0         0         0         0         0         0         1    \n"
 		  "          1         2         3         4         5         6         7         8         9         0    \n"
 		  " 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234\n"
 		  " foo = bar.field;\n"
@@ -2943,8 +2933,7 @@ test_one_liner_fixit_remove ()
     pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "TEST PREFIX:          1         2         3         4         5\n"
+    ASSERT_STREQ ("TEST PREFIX:          1         2         3         4         5\n"
 		  "TEST PREFIX: 12345678901234567890123456789012345678901234567890\n"
 		  "TEST PREFIX: foo = bar.field;\n"
 		  "TEST PREFIX:          ^~~~~~\n"
@@ -2961,8 +2950,7 @@ test_one_liner_fixit_remove ()
     pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "TEST PREFIX:      |          1         2         3         4         5\n"
+    ASSERT_STREQ ("TEST PREFIX:      |          1         2         3         4         5\n"
 		  "TEST PREFIX:      | 12345678901234567890123456789012345678901234567890\n"
 		  "TEST PREFIX:    1 | foo = bar.field;\n"
 		  "TEST PREFIX:      |          ^~~~~~\n"
@@ -2983,8 +2971,7 @@ test_one_liner_fixit_replace ()
   rich_location richloc (line_table, field);
   richloc.add_fixit_replace ("m_field");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"           ^~~~~\n"
 		"           m_field\n",
 		pp_formatted_text (dc.printer));
@@ -3008,8 +2995,7 @@ test_one_liner_fixit_replace_non_equal_range ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   /* The replacement range is not indicated in the annotation line, so
      it should be indicated via an additional underline.  */
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		"           -----\n"
 		"           m_field\n",
@@ -3034,8 +3020,7 @@ test_one_liner_fixit_replace_equal_secondary_range ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   /* The replacement range is indicated in the annotation line,
      so it shouldn't be indicated via an additional underline.  */
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^     ~~~~~\n"
 		"           m_field\n",
 		pp_formatted_text (dc.printer));
@@ -3068,8 +3053,7 @@ test_one_liner_fixit_validation_adhoc_locations ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       test\n",
 		  pp_formatted_text (dc.printer));
@@ -3085,8 +3069,7 @@ test_one_liner_fixit_validation_adhoc_locations ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       -----------------------------------------\n",
 		  pp_formatted_text (dc.printer));
@@ -3102,8 +3085,7 @@ test_one_liner_fixit_validation_adhoc_locations ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       test\n",
 		  pp_formatted_text (dc.printer));
@@ -3122,8 +3104,7 @@ test_one_liner_many_fixits_1 ()
     richloc.add_fixit_insert_before ("a");
   ASSERT_EQ (1, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		"     aaaaaaaaaaaaaaaaaaa\n",
 		pp_formatted_text (dc.printer));
@@ -3145,8 +3126,7 @@ test_one_liner_many_fixits_2 ()
     }
   ASSERT_EQ (19, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
+  ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		"a a a a a a a a a a a a a a a a a a a\n",
 		pp_formatted_text (dc.printer));
@@ -3182,8 +3162,7 @@ test_one_liner_labels ()
     {
       test_diagnostic_context dc;
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-      ASSERT_STREQ ("\n"
-		    " foo = bar.field;\n"
+      ASSERT_STREQ (" foo = bar.field;\n"
 		    " ^~~   ~~~ ~~~~~\n"
 		    " |     |   |\n"
 		    " 0     1   2\n",
@@ -3195,8 +3174,7 @@ test_one_liner_labels ()
       test_diagnostic_context dc;
       dc.show_labels_p = false;
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-      ASSERT_STREQ ("\n"
-		    " foo = bar.field;\n"
+      ASSERT_STREQ (" foo = bar.field;\n"
 		    " ^~~   ~~~ ~~~~~\n",
 		    pp_formatted_text (dc.printer));
     }
@@ -3213,8 +3191,7 @@ test_one_liner_labels ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  " ^~~   ~~~ ~~~~~\n"
 		  " |     |   |\n"
 		  " |     |   label 2\n"
@@ -3235,8 +3212,7 @@ test_one_liner_labels ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  " ^~~   ~~~ ~~~~~\n"
 		  " |     |   |\n"
 		  " |     |   c\n"
@@ -3255,8 +3231,7 @@ test_one_liner_labels ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  " ~~~   ~~~ ^~~~~\n"
 		  " |     |   |\n"
 		  " 2     1   0\n",
@@ -3275,8 +3250,7 @@ test_one_liner_labels ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~\n"
 		  "       |\n"
 		  "       label 0\n"
@@ -3311,8 +3285,7 @@ test_one_liner_labels ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  " ~~~   ~~~ ^~~~~\n"
 		  " |     |   |\n"
 		  " |     |   label 0a\n"
@@ -3335,8 +3308,7 @@ test_one_liner_labels ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " foo = bar.field;\n"
+    ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~\n",
 		  pp_formatted_text (dc.printer));
    }
@@ -3415,8 +3387,7 @@ test_one_liner_simple_caret_utf8 ()
   location_t caret = linemap_position_for_column (line_table, 18);
   rich_location richloc (line_table, caret);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3436,8 +3407,7 @@ test_one_liner_caret_and_range_utf8 ()
   location_t loc = make_location (caret, start, finish);
   rich_location richloc (line_table, loc);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3473,8 +3443,7 @@ test_one_liner_multiple_carets_and_ranges_utf8 ()
   richloc.add_range (bar, SHOW_RANGE_WITH_CARET);
   richloc.add_range (field, SHOW_RANGE_WITH_CARET);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3493,8 +3462,7 @@ test_one_liner_fixit_insert_before_utf8 ()
   rich_location richloc (line_table, caret);
   richloc.add_fixit_insert_before ("&");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3516,8 +3484,7 @@ test_one_liner_fixit_insert_after_utf8 ()
   rich_location richloc (line_table, foo);
   richloc.add_fixit_insert_after ("[0]");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3539,8 +3506,7 @@ test_one_liner_fixit_remove_utf8 ()
   rich_location richloc (line_table, dot);
   richloc.add_fixit_remove ();
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3562,8 +3528,7 @@ test_one_liner_fixit_replace_utf8 ()
   rich_location richloc (line_table, field);
   richloc.add_fixit_replace ("m_\xf0\x9f\x98\x82_field\xcf\x80");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3592,8 +3557,7 @@ test_one_liner_fixit_replace_non_equal_range_utf8 ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   /* The replacement range is not indicated in the annotation line, so
      it should be indicated via an additional underline.  */
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3623,8 +3587,7 @@ test_one_liner_fixit_replace_equal_secondary_range_utf8 ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   /* The replacement range is indicated in the annotation line,
      so it shouldn't be indicated via an additional underline.  */
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3662,8 +3625,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " \xf0\x9f\x98\x82"
+    ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
@@ -3683,8 +3645,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " \xf0\x9f\x98\x82"
+    ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
@@ -3704,8 +3665,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " \xf0\x9f\x98\x82"
+    ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
@@ -3728,8 +3688,7 @@ test_one_liner_many_fixits_1_utf8 ()
     richloc.add_fixit_insert_before (i & 1 ? "@" : "\xcf\x80");
   ASSERT_EQ (1, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3760,8 +3719,7 @@ test_one_liner_many_fixits_2_utf8 ()
 
   ASSERT_EQ (nlocs, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" \xf0\x9f\x98\x82"
+  ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
@@ -3811,8 +3769,7 @@ test_one_liner_labels_utf8 ()
     {
       test_diagnostic_context dc;
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-      ASSERT_STREQ ("\n"
-		    " \xf0\x9f\x98\x82"
+      ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		       "_foo = \xcf\x80"
 			       "_bar.\xf0\x9f\x98\x82"
 				      "_field\xcf\x80"
@@ -3840,8 +3797,7 @@ test_one_liner_labels_utf8 ()
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
 
-    ASSERT_STREQ ("\n"
-		  " \xf0\x9f\x98\x82"
+    ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
@@ -3866,8 +3822,7 @@ test_one_liner_labels_utf8 ()
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " \xf0\x9f\x98\x82"
+    ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
@@ -3973,8 +3928,7 @@ test_add_location_if_nearby (const line_table_case &case_)
     ASSERT_EQ (2, richloc.get_num_locations ());
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " struct same_line { double x; double y; ;\n"
+    ASSERT_STREQ (" struct same_line { double x; double y; ;\n"
 		  "                  ~                    ^\n",
 		  pp_formatted_text (dc.printer));
   }
@@ -4038,8 +3992,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     richloc.add_fixit_insert_before (x, ".");
     richloc.add_fixit_replace (colon, "=");
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " struct point origin = {x: 0.0,\n"
+    ASSERT_STREQ (" struct point origin = {x: 0.0,\n"
 		  "                         ^\n"
 		  "                        .=\n",
 		  pp_formatted_text (dc.printer));
@@ -4059,8 +4012,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     richloc.add_fixit_insert_before (y, ".");
     richloc.add_fixit_replace (colon, "=");
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "FILENAME:3:24:\n"
+    ASSERT_STREQ ("FILENAME:3:24:\n"
 		  "                        y\n"
 		  "                        .\n"
 		  "FILENAME:6:25:\n"
@@ -4083,8 +4035,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     test_diagnostic_context dc;
     dc.show_line_numbers_p = true;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "    3 |                        y\n"
+    ASSERT_STREQ ("    3 |                        y\n"
 		  "      |                        .\n"
 		  "......\n"
 		  "    6 |                         : 0.0};\n"
@@ -4294,8 +4245,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     richloc.add_fixit_insert_after (")");
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   foo *f = (foo *)ptr->field;\n"
+    ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -----------------\n"
 		  "            const_cast<foo *> (ptr->field)\n",
@@ -4361,8 +4311,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     richloc.add_fixit_insert_after (")");
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   foo *f = (foo *)ptr->field;\n"
+    ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -\n"
 		  "            CAST (-\n"
@@ -4379,8 +4328,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     richloc.add_fixit_insert_after (")");
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   foo *f = (foo *)ptr->field;\n"
+    ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -\n"
 		  "            CST ( -\n"
@@ -4401,8 +4349,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   foo *f = (foo *)ptr->field;\n"
+    ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -------\n"
 		  "            (bar *)\n",
@@ -4422,8 +4369,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
 
     /* But the corrections are.  */
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   foo *f = (foo *)ptr->field;\n"
+    ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -----------------\n"
 		  "            (longer *)(foo *)\n",
@@ -4441,8 +4387,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
        it would overlap with the second.
        Verify that they are printed as a single replacement.  */
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   foo *f = (foo *)ptr->field;\n"
+    ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -------\n"
 		  "            LONGER THAN THE CAST(foo *)TEST\n",
@@ -4507,8 +4452,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     richloc.add_fixit_insert_after (")");
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   f\xf0\x9f\x98\x82"
+    ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
 						";\n"
@@ -4580,8 +4524,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     richloc.add_fixit_insert_after (")");
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   f\xf0\x9f\x98\x82"
+    ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
 						";\n"
@@ -4601,8 +4544,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     richloc.add_fixit_insert_after (")");
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   f\xf0\x9f\x98\x82"
+    ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
 						";\n"
@@ -4626,8 +4568,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   f\xf0\x9f\x98\x82"
+    ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
 						";\n"
@@ -4651,8 +4592,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 
     /* But the corrections are.  */
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   f\xf0\x9f\x98\x82"
+    ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
 						";\n"
@@ -4676,8 +4616,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
        it would overlap with the second.
        Verify that they are printed as a single replacement.  */
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "   f\xf0\x9f\x98\x82"
+    ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
 						";\n"
@@ -4748,8 +4687,7 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
     /* Verify that they're printed correctly.  */
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " int a5[][0][0] = { 1, 2 };\n"
+    ASSERT_STREQ (" int a5[][0][0] = { 1, 2 };\n"
 		  "                    ^\n"
 		  "                     } {\n",
 		  pp_formatted_text (dc.printer));
@@ -4771,8 +4709,7 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
     richloc.add_fixit_insert_before (col_1, "{");
     richloc.add_fixit_insert_before (col_25, "}");
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  " int a5[][0][0] = { 1, 2 };\n"
+    ASSERT_STREQ (" int a5[][0][0] = { 1, 2 };\n"
 		  "                    ^\n"
 		  " {                  -----\n"
 		  "                    {{1}}}}, {{{2 }}\n",
@@ -4815,8 +4752,7 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
     {
       test_diagnostic_context dc;
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-      ASSERT_STREQ ("\n"
-		    "       x = a;\n"
+      ASSERT_STREQ ("       x = a;\n"
 		    "+      break;\n"
 		    "     case 'b':\n"
 		    "     ^~~~~~~~~\n",
@@ -4828,8 +4764,7 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
       test_diagnostic_context dc;
       dc.show_line_numbers_p = true;
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-      ASSERT_STREQ ("\n"
-		    "    2 |       x = a;\n"
+      ASSERT_STREQ ("    2 |       x = a;\n"
 		    "  +++ |+      break;\n"
 		    "    3 |     case 'b':\n"
 		    "      |     ^~~~~~~~~\n",
@@ -4845,8 +4780,7 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
     ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "     case 'b':\n"
+    ASSERT_STREQ ("     case 'b':\n"
 		  "     ^~~~~~~~~\n",
 		  pp_formatted_text (dc.printer));
   }
@@ -4894,8 +4828,7 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
   {
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "FILENAME:1:1:\n"
+    ASSERT_STREQ ("FILENAME:1:1:\n"
 		  "+#include <stdio.h>\n"
 		  " test (int ch)\n"
 		  "FILENAME:3:2:\n"
@@ -4910,8 +4843,7 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
     test_diagnostic_context dc;
     dc.show_line_numbers_p = true;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "  +++ |+#include <stdio.h>\n"
+    ASSERT_STREQ ("  +++ |+#include <stdio.h>\n"
 		  "    1 | test (int ch)\n"
 		  "    2 | {\n"
 		  "    3 |  putchar (ch);\n"
@@ -4954,8 +4886,7 @@ test_fixit_replace_containing_newline (const line_table_case &case_)
 
   test_diagnostic_context dc;
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar ();\n"
+  ASSERT_STREQ (" foo = bar ();\n"
 		"             ^\n",
 		pp_formatted_text (dc.printer));
 }
@@ -4999,8 +4930,7 @@ test_fixit_deletion_affecting_newline (const line_table_case &case_)
 
   test_diagnostic_context dc;
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar (\n"
+  ASSERT_STREQ (" foo = bar (\n"
 		"          ~^\n"
 		"       );\n"
 		"       ~    \n",
@@ -5043,8 +4973,7 @@ test_line_numbers_multiline_range ()
   dc.min_margin_width = 0;
   gcc_rich_location richloc (loc);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" 9 | this is line 9\n"
+  ASSERT_STREQ (" 9 | this is line 9\n"
 		"   |         ~~~~~~\n"
 		"10 | this is line 10\n"
 		"   | ~~~~~^~~~~~~~~~\n"
