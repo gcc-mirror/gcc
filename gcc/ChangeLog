@@ -1,5 +1,15 @@
 2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_node::verify_node): Verify tp_first_run.
+	* cgraph.h (cgrpah_node): Turn tp_first_run back to int.
+	* cgraphunit.c (tp_first_run_node_cmp): Do not watch for overflows.
+	(expand_all_functions): First expand ordered section and then
+	unordered.
+	* profile.c (compute_value_histograms): Error on out of range
+	tp_first_runs.
+
+2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* predict.c (compute_function_frequency): Check for presence of IPA
 	profile.
 
