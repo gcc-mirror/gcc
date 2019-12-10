@@ -1,5 +1,9 @@
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/92883
+	* ipa-cp.c (propagate_vr_across_jump_function): Pass jvr rather
+	than *jfunc->m_vr to intersect.  Formatting fix.
+
 	PR middle-end/92825
 	* cfgexpand.c (add_stack_protection_conflicts): Change return type
 	from void to bool, return true if at least one stack_vars[i].decl
