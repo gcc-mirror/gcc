@@ -1,5 +1,18 @@
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/92825
+	* cfgexpand.c (add_stack_protection_conflicts): Change return type
+	from void to bool, return true if at least one stack_vars[i].decl
+	is addressable.
+	(record_or_union_type_has_array_p, stack_protect_decl_p): Remove.
+	(expand_used_vars): Don't call stack_protect_decl_p, instead for
+	-fstack-protector-strong set gen_stack_protect_signal to true
+	if add_stack_protection_conflicts returned true.  Formatting fixes.
+	* doc/invoke.texi (-fstack-protector-strong): Clarify that optimized
+	out variables or variables not living on the stack don't count.
+	(-fstack-protector): Likewise.  Clarify it affects >= 8 byte arrays
+	rather than > 8 byte.
+
 	* ipa-param-manipulation.c
 	(ipa_param_body_adjustments::register_replacement): Fix comment typo
 	- accross -> across.
