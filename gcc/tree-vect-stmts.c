@@ -1779,9 +1779,10 @@ vect_finish_stmt_generation_1 (stmt_vec_info stmt_info, gimple *vec_stmt)
 stmt_vec_info
 vect_finish_replace_stmt (stmt_vec_info stmt_info, gimple *vec_stmt)
 {
-  gcc_assert (gimple_get_lhs (stmt_info->stmt) == gimple_get_lhs (vec_stmt));
+  gimple *scalar_stmt = vect_orig_stmt (stmt_info)->stmt;
+  gcc_assert (gimple_get_lhs (scalar_stmt) == gimple_get_lhs (vec_stmt));
 
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt_info->stmt);
+  gimple_stmt_iterator gsi = gsi_for_stmt (scalar_stmt);
   gsi_replace (&gsi, vec_stmt, true);
 
   return vect_finish_stmt_generation_1 (stmt_info, vec_stmt);
@@ -10324,20 +10325,21 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
 	  if (reduction_type == EXTRACT_LAST_REDUCTION)
 	    {
+	      gimple *old_stmt = vect_orig_stmt (stmt_info)->stmt;
+	      tree lhs = gimple_get_lhs (old_stmt);
 	      gcall *new_stmt = gimple_build_call_internal
 		(IFN_FOLD_EXTRACT_LAST, 3, else_clause, vec_compare,
 		 vec_then_clause);
-	      gimple_call_set_lhs (new_stmt, scalar_dest);
-	      SSA_NAME_DEF_STMT (scalar_dest) = new_stmt;
-	      if (stmt_info->stmt == gsi_stmt (*gsi))
+	      gimple_call_set_lhs (new_stmt, lhs);
+	      SSA_NAME_DEF_STMT (lhs) = new_stmt;
+	      if (old_stmt == gsi_stmt (*gsi))
 		new_stmt_info = vect_finish_replace_stmt (stmt_info, new_stmt);
 	      else
 		{
 		  /* In this case we're moving the definition to later in the
 		     block.  That doesn't matter because the only uses of the
 		     lhs are in phi statements.  */
-		  gimple_stmt_iterator old_gsi
-		    = gsi_for_stmt (stmt_info->stmt);
+		  gimple_stmt_iterator old_gsi = gsi_for_stmt (old_stmt);
 		  gsi_remove (&old_gsi, true);
 		  new_stmt_info
 		    = vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
