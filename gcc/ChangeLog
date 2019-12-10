@@ -1,3 +1,8 @@
+2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varasm.c (default_function_section): Fix confused tests for
+	tp_first_run reordering.
+
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Don't
