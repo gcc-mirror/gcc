@@ -9912,6 +9912,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
        vect_unknown_def_type, vect_unknown_def_type};
   int ndts = 4;
   int ncopies;
+  int vec_num;
   enum tree_code code, cond_code, bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   stmt_vec_info prev_stmt_info = NULL;
   int i, j;
@@ -9969,9 +9970,15 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
 
   if (slp_node)
-    ncopies = 1;
+    {
+      ncopies = 1;
+      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+    }
   else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
+    {
+      ncopies = vect_get_num_copies (loop_vinfo, vectype);
+      vec_num = 1;
+    }
 
   gcc_assert (ncopies >= 1);
   if (for_reduction && ncopies > 1)
@@ -10093,6 +10100,12 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		return false;
 	    }
 	}
+
+      if (loop_vinfo
+	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
+	  && reduction_type == EXTRACT_LAST_REDUCTION)
+	vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
+			       ncopies * vec_num, vectype, NULL);
 
       vect_cost_for_stmt kind = vector_stmt;
       if (reduction_type == EXTRACT_LAST_REDUCTION)

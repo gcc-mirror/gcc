@@ -1,5 +1,10 @@
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_condition): Record the loop
+	masks required for extract-last reductions.
+
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vect_finish_replace_stmt): Always use the
 	original scalar statement rather than a pattern statement.
 	(vectorizable_condition): Likewise, in the handling of extract-last
