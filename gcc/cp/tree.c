@@ -4447,7 +4447,13 @@ structural_type_p (tree t, bool explain)
       if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
 	{
 	  if (explain)
-	    inform (location_of (m), "%qD is not public", m);
+	    {
+	      if (DECL_FIELD_IS_BASE (m))
+		inform (location_of (m), "base class %qT is not public",
+			TREE_TYPE (m));
+	      else
+		inform (location_of (m), "%qD is not public", m);
+	    }
 	  return false;
 	}
       if (!structural_type_p (TREE_TYPE (m)))
