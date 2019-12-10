@@ -945,31 +945,28 @@ function_addrs_search (const void *vkey, const void *ventry)
     return 0;
 }
 
-/* Add a new compilation unit address range to a vector.  Returns 1 on
-   success, 0 on failure.  */
+/* Add a new compilation unit address range to a vector.  This is
+   called via add_ranges.  Returns 1 on success, 0 on failure.  */
 
 static int
-add_unit_addr (struct backtrace_state *state, uintptr_t base_address,
-	       struct unit_addrs addrs,
+add_unit_addr (struct backtrace_state *state, void *rdata,
+	       uint64_t lowpc, uint64_t highpc,
 	       backtrace_error_callback error_callback, void *data,
-	       struct unit_addrs_vector *vec)
+	       void *pvec)
 {
+  struct unit *u = (struct unit *) rdata;
+  struct unit_addrs_vector *vec = (struct unit_addrs_vector *) pvec;
   struct unit_addrs *p;
-
-  /* Add in the base address of the module here, so that we can look
-     up the PC directly.  */
-  addrs.low += base_address;
-  addrs.high += base_address;
 
   /* Try to merge with the last entry.  */
   if (vec->count > 0)
     {
       p = (struct unit_addrs *) vec->vec.base + (vec->count - 1);
-      if ((addrs.low == p->high || addrs.low == p->high + 1)
-	  && addrs.u == p->u)
+      if ((lowpc == p->high || lowpc == p->high + 1)
+	  && u == p->u)
 	{
-	  if (addrs.high > p->high)
-	    p->high = addrs.high;
+	  if (highpc > p->high)
+	    p->high = highpc;
 	  return 1;
 	}
     }
@@ -980,8 +977,12 @@ add_unit_addr (struct backtrace_state *state, uintptr_t base_address,
   if (p == NULL)
     return 0;
 
-  *p = addrs;
+  p->low = lowpc;
+  p->high = highpc;
+  p->u = u;
+
   ++vec->count;
+
   return 1;
 }
 
@@ -1262,29 +1263,122 @@ lookup_abbrev (struct abbrevs *abbrevs, uint64_t code,
   return (const struct abbrev *) p;
 }
 
-/* Add non-contiguous address ranges for a compilation unit.  Returns
-   1 on success, 0 on failure.  */
+/* This struct is used to gather address range information while
+   reading attributes.  We use this while building a mapping from
+   address ranges to compilation units and then again while mapping
+   from address ranges to function entries.  Normally either
+   lowpc/highpc is set or ranges is set.  */
+
+struct pcrange {
+  uint64_t lowpc;		/* The low PC value.  */
+  int have_lowpc;		/* Whether a low PC value was found.  */
+  uint64_t highpc;		/* The high PC value.  */
+  int have_highpc;		/* Whether a high PC value was found.  */
+  int highpc_is_relative;	/* Whether highpc is relative to lowpc.  */
+  uint64_t ranges;		/* Offset in ranges section.  */
+  int have_ranges;		/* Whether ranges is valid.  */
+};
+
+/* Update PCRANGE from an attribute value.  */
+
+static void
+update_pcrange (const struct attr* attr, const struct attr_val* val,
+		struct pcrange *pcrange)
+{
+  switch (attr->name)
+    {
+    case DW_AT_low_pc:
+      if (val->encoding == ATTR_VAL_ADDRESS)
+	{
+	  pcrange->lowpc = val->u.uint;
+	  pcrange->have_lowpc = 1;
+	}
+      break;
+
+    case DW_AT_high_pc:
+      if (val->encoding == ATTR_VAL_ADDRESS)
+	{
+	  pcrange->highpc = val->u.uint;
+	  pcrange->have_highpc = 1;
+	}
+      else if (val->encoding == ATTR_VAL_UINT)
+	{
+	  pcrange->highpc = val->u.uint;
+	  pcrange->have_highpc = 1;
+	  pcrange->highpc_is_relative = 1;
+	}
+      break;
+
+    case DW_AT_ranges:
+      if (val->encoding == ATTR_VAL_UINT
+	  || val->encoding == ATTR_VAL_REF_SECTION)
+	{
+	  pcrange->ranges = val->u.uint;
+	  pcrange->have_ranges = 1;
+	}
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Call ADD_RANGE for each lowpc/highpc pair in PCRANGE.  RDATA is
+   passed to ADD_RANGE, and is either a struct unit * or a struct
+   function *.  VEC is the vector we are adding ranges to, and is
+   either a struct unit_addrs_vector * or a struct function_vector *.
+   Returns 1 on success, 0 on error.  */
 
 static int
-add_unit_ranges (struct backtrace_state *state, uintptr_t base_address,
-		 struct unit *u, uint64_t ranges, uint64_t base,
-		 int is_bigendian, const unsigned char *dwarf_ranges,
-		 size_t dwarf_ranges_size,
-		 backtrace_error_callback error_callback, void *data,
-		 struct unit_addrs_vector *addrs)
+add_ranges (struct backtrace_state *state,
+	    const struct dwarf_sections *dwarf_sections,
+	    uintptr_t base_address, int is_bigendian,
+	    struct unit *u, uint64_t base, const struct pcrange *pcrange,
+	    int (*add_range) (struct backtrace_state *state, void *rdata, 
+			      uint64_t lowpc, uint64_t highpc,
+			      backtrace_error_callback error_callback,
+			      void *data, void *vec),
+	    void *rdata,
+	    backtrace_error_callback error_callback, void *data,
+	    void *vec)
 {
   struct dwarf_buf ranges_buf;
 
-  if (ranges >= dwarf_ranges_size)
+  if (pcrange->have_lowpc && pcrange->have_highpc)
+    {
+      uint64_t lowpc;
+      uint64_t highpc;
+
+      lowpc = pcrange->lowpc;
+      highpc = pcrange->highpc;
+      if (pcrange->highpc_is_relative)
+	highpc += lowpc;
+
+      /* Add in the base address of the module when recording PC
+	 values, so that we can look up the PC directly.  */
+      lowpc += base_address;
+      highpc += base_address;
+
+      return add_range (state, rdata, lowpc, highpc, error_callback, data,
+			vec);
+    }
+
+  if (!pcrange->have_ranges)
+    {
+      /* Did not find any address ranges to add.  */
+      return 1;
+    }
+
+  if (pcrange->ranges >= dwarf_sections->size[DEBUG_RANGES])
     {
       error_callback (data, "ranges offset out of range", 0);
       return 0;
     }
 
   ranges_buf.name = ".debug_ranges";
-  ranges_buf.start = dwarf_ranges;
-  ranges_buf.buf = dwarf_ranges + ranges;
-  ranges_buf.left = dwarf_ranges_size - ranges;
+  ranges_buf.start = dwarf_sections->data[DEBUG_RANGES];
+  ranges_buf.buf = dwarf_sections->data[DEBUG_RANGES] + pcrange->ranges;
+  ranges_buf.left = dwarf_sections->size[DEBUG_RANGES] - pcrange->ranges;
   ranges_buf.is_bigendian = is_bigendian;
   ranges_buf.error_callback = error_callback;
   ranges_buf.data = data;
@@ -1308,13 +1402,10 @@ add_unit_ranges (struct backtrace_state *state, uintptr_t base_address,
 	base = high;
       else
 	{
-	  struct unit_addrs a;
-
-	  a.low = low + base;
-	  a.high = high + base;
-	  a.u = u;
-	  if (!add_unit_addr (state, base_address, a, error_callback, data,
-			      addrs))
+	  if (!add_range (state, rdata, 
+			  low + base + base_address,
+			  high + base + base_address,
+			  error_callback, data, vec))
 	    return 0;
 	}
     }
@@ -1332,9 +1423,7 @@ add_unit_ranges (struct backtrace_state *state, uintptr_t base_address,
 static int
 find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
 		     struct dwarf_buf *unit_buf,
-		     const unsigned char *dwarf_str, size_t dwarf_str_size,
-		     const unsigned char *dwarf_ranges,
-		     size_t dwarf_ranges_size,
+		     const struct dwarf_sections *dwarf_sections,
 		     int is_bigendian, struct dwarf_data *altlink,
 		     backtrace_error_callback error_callback, void *data,
 		     struct unit *u, struct unit_addrs_vector *addrs,
@@ -1344,13 +1433,7 @@ find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
     {
       uint64_t code;
       const struct abbrev *abbrev;
-      uint64_t lowpc;
-      int have_lowpc;
-      uint64_t highpc;
-      int have_highpc;
-      int highpc_is_relative;
-      uint64_t ranges;
-      int have_ranges;
+      struct pcrange pcrange;
       size_t i;
 
       code = read_uleb128 (unit_buf);
@@ -1364,53 +1447,22 @@ find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
       if (unit_tag != NULL)
 	*unit_tag = abbrev->tag;
 
-      lowpc = 0;
-      have_lowpc = 0;
-      highpc = 0;
-      have_highpc = 0;
-      highpc_is_relative = 0;
-      ranges = 0;
-      have_ranges = 0;
+      memset (&pcrange, 0, sizeof pcrange);
       for (i = 0; i < abbrev->num_attrs; ++i)
 	{
 	  struct attr_val val;
 
 	  if (!read_attribute (abbrev->attrs[i].form, unit_buf,
 			       u->is_dwarf64, u->version, u->addrsize,
-			       dwarf_str, dwarf_str_size, altlink, &val))
+			       dwarf_sections->data[DEBUG_STR],
+			       dwarf_sections->size[DEBUG_STR],
+			       altlink, &val))
 	    return 0;
 
 	  switch (abbrev->attrs[i].name)
 	    {
-	    case DW_AT_low_pc:
-	      if (val.encoding == ATTR_VAL_ADDRESS)
-		{
-		  lowpc = val.u.uint;
-		  have_lowpc = 1;
-		}
-	      break;
-
-	    case DW_AT_high_pc:
-	      if (val.encoding == ATTR_VAL_ADDRESS)
-		{
-		  highpc = val.u.uint;
-		  have_highpc = 1;
-		}
-	      else if (val.encoding == ATTR_VAL_UINT)
-		{
-		  highpc = val.u.uint;
-		  have_highpc = 1;
-		  highpc_is_relative = 1;
-		}
-	      break;
-
-	    case DW_AT_ranges:
-	      if (val.encoding == ATTR_VAL_UINT
-		  || val.encoding == ATTR_VAL_REF_SECTION)
-		{
-		  ranges = val.u.uint;
-		  have_ranges = 1;
-		}
+	    case DW_AT_low_pc: case DW_AT_high_pc: case DW_AT_ranges:
+	      update_pcrange (&abbrev->attrs[i], &val, &pcrange);
 	      break;
 
 	    case DW_AT_stmt_list:
@@ -1440,43 +1492,25 @@ find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
       if (abbrev->tag == DW_TAG_compile_unit
 	  || abbrev->tag == DW_TAG_subprogram)
 	{
-	  if (have_ranges)
-	    {
-	      if (!add_unit_ranges (state, base_address, u, ranges, lowpc,
-				    is_bigendian, dwarf_ranges,
-				    dwarf_ranges_size, error_callback,
-				    data, addrs))
-		return 0;
-	    }
-	  else if (have_lowpc && have_highpc)
-	    {
-	      struct unit_addrs a;
-
-	      if (highpc_is_relative)
-		highpc += lowpc;
-	      a.low = lowpc;
-	      a.high = highpc;
-	      a.u = u;
-
-	      if (!add_unit_addr (state, base_address, a, error_callback, data,
-				  addrs))
-		return 0;
-	    }
+	  if (!add_ranges (state, dwarf_sections, base_address,
+			   is_bigendian, u, pcrange.lowpc, &pcrange,
+			   add_unit_addr, (void *) u, error_callback, data,
+			   (void *) addrs))
+	    return 0;
 
 	  /* If we found the PC range in the DW_TAG_compile_unit, we
 	     can stop now.  */
 	  if (abbrev->tag == DW_TAG_compile_unit
-	      && (have_ranges || (have_lowpc && have_highpc)))
+	      && (pcrange.have_ranges
+		  || (pcrange.have_lowpc && pcrange.have_highpc)))
 	    return 1;
 	}
 
       if (abbrev->has_children)
 	{
 	  if (!find_address_ranges (state, base_address, unit_buf,
-				    dwarf_str, dwarf_str_size,
-				    dwarf_ranges, dwarf_ranges_size,
-				    is_bigendian, altlink, error_callback, data,
-				    u, addrs, NULL))
+				    dwarf_sections, is_bigendian, altlink,
+				    error_callback, data, u, addrs, NULL))
 	    return 0;
 	}
     }
@@ -1599,11 +1633,7 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
       u->function_addrs = NULL;
       u->function_addrs_count = 0;
 
-      if (!find_address_ranges (state, base_address, &unit_buf,
-				dwarf_sections->data[DEBUG_STR],
-				dwarf_sections->size[DEBUG_STR],
-				dwarf_sections->data[DEBUG_RANGES],
-				dwarf_sections->size[DEBUG_RANGES],
+      if (!find_address_ranges (state, base_address, &unit_buf, dwarf_sections,
 				is_bigendian, altlink, error_callback, data,
 				u, addrs, &unit_tag))
 	goto fail;
@@ -2304,25 +2334,22 @@ read_referenced_name (struct dwarf_data *ddata, struct unit *u,
   return ret;
 }
 
-/* Add a single range to U that maps to function.  Returns 1 on
-   success, 0 on error.  */
+/* Add a range to a unit that maps to a function.  This is called via
+   add_ranges.  Returns 1 on success, 0 on error.  */
 
 static int
-add_function_range (struct backtrace_state *state, struct dwarf_data *ddata,
-		    struct function *function, uint64_t lowpc, uint64_t highpc,
-		    backtrace_error_callback error_callback,
-		    void *data, struct function_vector *vec)
+add_function_range (struct backtrace_state *state, void *rdata,
+		    uint64_t lowpc, uint64_t highpc,
+		    backtrace_error_callback error_callback, void *data,
+		    void *pvec)
 {
+  struct function *function = (struct function *) rdata;
+  struct function_vector *vec = (struct function_vector *) pvec;
   struct function_addrs *p;
-
-  /* Add in the base address here, so that we can look up the PC
-     directly.  */
-  lowpc += ddata->base_address;
-  highpc += ddata->base_address;
 
   if (vec->count > 0)
     {
-      p = (struct function_addrs *) vec->vec.base + vec->count - 1;
+      p = (struct function_addrs *) vec->vec.base + (vec->count - 1);
       if ((lowpc == p->high || lowpc == p->high + 1)
 	  && function == p->function)
 	{
@@ -2341,63 +2368,8 @@ add_function_range (struct backtrace_state *state, struct dwarf_data *ddata,
   p->low = lowpc;
   p->high = highpc;
   p->function = function;
+
   ++vec->count;
-  return 1;
-}
-
-/* Add PC ranges to U that map to FUNCTION.  Returns 1 on success, 0
-   on error.  */
-
-static int
-add_function_ranges (struct backtrace_state *state, struct dwarf_data *ddata,
-		     struct unit *u, struct function *function,
-		     uint64_t ranges, uint64_t base,
-		     backtrace_error_callback error_callback, void *data,
-		     struct function_vector *vec)
-{
-  struct dwarf_buf ranges_buf;
-
-  if (ranges >= ddata->dwarf_sections.size[DEBUG_RANGES])
-    {
-      error_callback (data, "function ranges offset out of range", 0);
-      return 0;
-    }
-
-  ranges_buf.name = ".debug_ranges";
-  ranges_buf.start = ddata->dwarf_sections.data[DEBUG_RANGES];
-  ranges_buf.buf = ddata->dwarf_sections.data[DEBUG_RANGES] + ranges;
-  ranges_buf.left = ddata->dwarf_sections.size[DEBUG_RANGES] - ranges;
-  ranges_buf.is_bigendian = ddata->is_bigendian;
-  ranges_buf.error_callback = error_callback;
-  ranges_buf.data = data;
-  ranges_buf.reported_underflow = 0;
-
-  while (1)
-    {
-      uint64_t low;
-      uint64_t high;
-
-      if (ranges_buf.reported_underflow)
-	return 0;
-
-      low = read_address (&ranges_buf, u->addrsize);
-      high = read_address (&ranges_buf, u->addrsize);
-
-      if (low == 0 && high == 0)
-	break;
-
-      if (is_highest_address (low, u->addrsize))
-	base = high;
-      else
-	{
-	  if (!add_function_range (state, ddata, function, low + base,
-				   high + base, error_callback, data, vec))
-	    return 0;
-	}
-    }
-
-  if (ranges_buf.reported_underflow)
-    return 0;
 
   return 1;
 }
@@ -2421,13 +2393,7 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
       struct function *function;
       struct function_vector *vec;
       size_t i;
-      uint64_t lowpc;
-      int have_lowpc;
-      uint64_t highpc;
-      int have_highpc;
-      int highpc_is_relative;
-      uint64_t ranges;
-      int have_ranges;
+      struct pcrange pcrange;
       int have_linkage_name;
 
       code = read_uleb128 (unit_buf);
@@ -2458,13 +2424,7 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 	  memset (function, 0, sizeof *function);
 	}
 
-      lowpc = 0;
-      have_lowpc = 0;
-      highpc = 0;
-      have_highpc = 0;
-      highpc_is_relative = 0;
-      ranges = 0;
-      have_ranges = 0;
+      memset (&pcrange, 0, sizeof pcrange);
       have_linkage_name = 0;
       for (i = 0; i < abbrev->num_attrs; ++i)
 	{
@@ -2549,35 +2509,8 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 		    }
 		  break;
 
-		case DW_AT_low_pc:
-		  if (val.encoding == ATTR_VAL_ADDRESS)
-		    {
-		      lowpc = val.u.uint;
-		      have_lowpc = 1;
-		    }
-		  break;
-
-		case DW_AT_high_pc:
-		  if (val.encoding == ATTR_VAL_ADDRESS)
-		    {
-		      highpc = val.u.uint;
-		      have_highpc = 1;
-		    }
-		  else if (val.encoding == ATTR_VAL_UINT)
-		    {
-		      highpc = val.u.uint;
-		      have_highpc = 1;
-		      highpc_is_relative = 1;
-		    }
-		  break;
-
-		case DW_AT_ranges:
-		  if (val.encoding == ATTR_VAL_UINT
-		      || val.encoding == ATTR_VAL_REF_SECTION)
-		    {
-		      ranges = val.u.uint;
-		      have_ranges = 1;
-		    }
+		case DW_AT_low_pc: case DW_AT_high_pc: case DW_AT_ranges:
+		  update_pcrange (&abbrev->attrs[i], &val, &pcrange);
 		  break;
 
 		default:
@@ -2597,18 +2530,14 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 
       if (is_function)
 	{
-	  if (have_ranges)
+	  if (pcrange.have_ranges
+	      || (pcrange.have_lowpc && pcrange.have_highpc))
 	    {
-	      if (!add_function_ranges (state, ddata, u, function, ranges,
-					base, error_callback, data, vec))
-		return 0;
-	    }
-	  else if (have_lowpc && have_highpc)
-	    {
-	      if (highpc_is_relative)
-		highpc += lowpc;
-	      if (!add_function_range (state, ddata, function, lowpc, highpc,
-				       error_callback, data, vec))
+	      if (!add_ranges (state, &ddata->dwarf_sections,
+			       ddata->base_address, ddata->is_bigendian,
+			       u, base, &pcrange, add_function_range,
+			       (void *) function, error_callback, data,
+			       (void *) vec))
 		return 0;
 	    }
 	  else
