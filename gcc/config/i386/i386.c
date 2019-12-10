@@ -14411,10 +14411,10 @@ distance_agu_use (unsigned int regno0, rtx_insn *insn)
 }
 
 /* Define this macro to tune LEA priority vs ADD, it take effect when
-   there is a dilemma of choicing LEA or ADD
+   there is a dilemma of choosing LEA or ADD
    Negative value: ADD is more preferred than LEA
-   Zero: Netrual
-   Positive value: LEA is more preferred than ADD*/
+   Zero: Neutral
+   Positive value: LEA is more preferred than ADD.  */
 #define IX86_LEA_PRIORITY 0
 
 /* Return true if usage of lea INSN has performance advantage
