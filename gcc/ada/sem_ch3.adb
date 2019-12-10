@@ -22550,18 +22550,10 @@ package body Sem_Ch3 is
               ("non-static expression used for integer type bound!", Expr);
             Errs := True;
 
-         --  The bounds are folded into literals, and we set their type to be
-         --  universal, to avoid typing difficulties: we cannot set the type
-         --  of the literal to the new type, because this would be a forward
-         --  reference for the back end,  and if the original type is user-
-         --  defined this can lead to spurious semantic errors (e.g. 2928-003).
+         --  Otherwise the bounds are folded into literals
 
-         else
-            if Is_Entity_Name (Expr) then
-               Fold_Uint (Expr, Expr_Value (Expr), True);
-            end if;
-
-            Set_Etype (Expr, Universal_Integer);
+         elsif Is_Entity_Name (Expr) then
+            Fold_Uint (Expr, Expr_Value (Expr), True);
          end if;
       end Check_Bound;
 
@@ -22583,6 +22575,7 @@ package body Sem_Ch3 is
       if Hi = Error or else Lo = Error then
          Base_Typ := Any_Integer;
          Set_Error_Posted (T, True);
+         Errs := True;
 
       --  Here both bounds are OK expressions
 
@@ -22625,6 +22618,17 @@ package body Sem_Ch3 is
             Hi := Type_High_Bound (Standard_Long_Long_Integer);
             Lo := Type_Low_Bound (Standard_Long_Long_Integer);
          end if;
+      end if;
+
+      --  Set the type of the bounds to the implicit base: we cannot set it to
+      --  the new type, because this would be a forward reference for the code
+      --  generator and, if the original type is user-defined, this could even
+      --  lead to spurious semantic errors. Furthermore we do not set it to be
+      --  universal, because this could make it much larger than needed here.
+
+      if not Errs then
+         Set_Etype (Lo, Implicit_Base);
+         Set_Etype (Hi, Implicit_Base);
       end if;
 
       --  Complete both implicit base and declared first subtype entities. The
