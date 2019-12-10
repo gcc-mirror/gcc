@@ -1,3 +1,8 @@
+2019-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512f-vmovntpd-2.c: Ensure res is 64-byte aligned.
+	* gcc.target/i386/avx512f-vmovntps-2.c: Likewise.
+
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
