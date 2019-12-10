@@ -1,3 +1,13 @@
+2019-12-10  Kewen Lin  <linkw@gcc.gnu.org>
+
+	Backport from mainline
+	2019-11-27  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/91790
+	* gcc/tree-vect-stmts.c (vectorizable_load): Use the adjusted DR for
+	vect_setup_realignment when first_stmt_info is different from
+	first_stmt_info_for_drptr.
+
 2019-12-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (build_array_type_1): Add SET_CANONICAL parameter and compute
