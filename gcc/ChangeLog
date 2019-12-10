@@ -1,5 +1,12 @@
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vect_finish_replace_stmt): Always use the
+	original scalar statement rather than a pattern statement.
+	(vectorizable_condition): Likewise, in the handling of extract-last
+	reductions.
+
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vectorizable_reduction): Don't use
 	EXTRACT_LAST_REDUCTION for chained reductions.
 
