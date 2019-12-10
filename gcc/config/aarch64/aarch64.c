@@ -2019,9 +2019,11 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 
   if (GP_REGNUM_P (regno))
     {
+      if (vec_flags & VEC_ANY_SVE)
+	return false;
       if (known_le (GET_MODE_SIZE (mode), 8))
 	return true;
-      else if (known_le (GET_MODE_SIZE (mode), 16))
+      if (known_le (GET_MODE_SIZE (mode), 16))
 	return (regno & 1) == 0;
     }
   else if (FP_REGNUM_P (regno))

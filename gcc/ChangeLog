@@ -1,5 +1,10 @@
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Don't
+	allow SVE modes in GPRs.
+
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (vccore): New iterator.
 	* config/aarch64/aarch64-sve.md (vec_series<mode>): Use it instead
 	of vwcore.
