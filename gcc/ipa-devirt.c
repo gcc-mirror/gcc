@@ -1042,7 +1042,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
     {
       const int opts = DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES;
       char *name1 = xstrdup (cplus_demangle (odr1, opts));
-      char *name2 = xstrdup (cplus_demangle (odr2, opts));
+      char *name2 = cplus_demangle (odr2, opts);
       if (name1 && name2 && strcmp (name1, name2))
 	{
 	  inform (loc_t1,
