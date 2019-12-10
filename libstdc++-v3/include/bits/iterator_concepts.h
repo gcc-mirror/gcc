@@ -474,18 +474,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __iter_common_ref
       : common_reference<iter_reference_t<_Tp>, iter_value_t<_Tp>&>
       { };
-
-    // FIXME: needed due to PR c++/67704
-    template<typename _Fn, typename... _Is>
-      struct __indirect_result
-      { };
-
-    template<typename _Fn, typename... _Is>
-      requires (readable<_Is> && ...)
-	&& invocable<_Fn, iter_reference_t<_Is>...>
-      struct __indirect_result<_Fn, _Is...>
-      : invoke_result<_Fn, iter_reference_t<_Is>...>
-      { };
   } // namespace __detail
 
   template<typename _Tp>
@@ -653,15 +641,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && strict_weak_order<_Fn&, iter_common_reference_t<_I1>,
 			   iter_common_reference_t<_I2>>;
 
+  namespace __detail
+  {
+    // FIXME: needed due to PR c++/67704
+    template<typename _Fn, typename... _Is>
+      struct __indirect_result
+      { };
+
+    template<typename _Fn, typename... _Is>
+      requires (readable<_Is> && ...)
+	&& invocable<_Fn, iter_reference_t<_Is>...>
+      struct __indirect_result<_Fn, _Is...>
+      : invoke_result<_Fn, iter_reference_t<_Is>...>
+      { };
+  } // namespace __detail
+
   template<typename _Fn, typename... _Is>
     using indirect_result_t = typename
-      __detail::__indirect_result<_Fn, iter_reference_t<_Is>...>::type;
+      __detail::__indirect_result<_Fn, _Is...>::type;
 
   /// [projected], projected
   template<readable _Iter, indirectly_regular_unary_invocable<_Iter> _Proj>
     struct projected
     {
       using value_type = remove_cvref_t<indirect_result_t<_Proj&, _Iter>>;
+
       indirect_result_t<_Proj&, _Iter> operator*() const; // not defined
     };
 
