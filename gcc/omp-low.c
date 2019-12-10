@@ -2473,7 +2473,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 	      tree_code outer_op = OMP_CLAUSE_REDUCTION_CODE (outer_clause);
 	      if (outer_var == local_var && outer_op != local_op)
 		{
-		  warning_at (gimple_location (stmt), 0,
+		  warning_at (OMP_CLAUSE_LOCATION (local_clause), 0,
 			      "conflicting reduction operations for %qE",
 			      local_var);
 		  inform (OMP_CLAUSE_LOCATION (outer_clause),
