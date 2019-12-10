@@ -1,5 +1,10 @@
 2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (compute_function_frequency): Check for presence of IPA
+	profile.
+
+2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* varasm.c (default_function_section): Fix confused tests for
 	tp_first_run reordering.
 
