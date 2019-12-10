@@ -1,3 +1,8 @@
+2019-12-10  Frederik Harwath  <frederik@codesourcery.com>
+
+	* c-c++-common/goacc/clause-locations.c: New test.
+	* gfortran.dg/goacc/clause-locations.f90: New test.
+
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/debug_4.c: New test.
