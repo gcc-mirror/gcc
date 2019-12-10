@@ -1,3 +1,8 @@
+2019-12-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92872
+	* trans-array.c (get_CFI_desc): Fix cond whether saved desc exists.
+
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_diagnostic_starter): Add pp_newline call before
