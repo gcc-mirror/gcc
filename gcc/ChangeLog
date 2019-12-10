@@ -1,5 +1,11 @@
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): When
+	handling direct_slp_reduc, allow the PHI arguments to have
+	a different type from the vector elements.
+
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_condition): Record the loop
 	masks required for extract-last reductions.
 

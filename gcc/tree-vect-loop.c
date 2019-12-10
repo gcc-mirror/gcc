@@ -5054,6 +5054,8 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	      tree scalar_value
 		= PHI_ARG_DEF_FROM_EDGE (orig_phis[i]->stmt,
 					 loop_preheader_edge (loop));
+	      scalar_value = gimple_convert (&seq, TREE_TYPE (vectype),
+					     scalar_value);
 	      vector_identity = gimple_build_vector_from_val (&seq, vectype,
 							      scalar_value);
 	    }
