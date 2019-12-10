@@ -3932,13 +3932,11 @@ compute_function_frequency (void)
   if (DECL_STATIC_DESTRUCTOR (current_function_decl))
     node->only_called_at_exit = true;
 
-  if (profile_status_for_fn (cfun) != PROFILE_READ)
+  if (!ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ())
     {
       int flags = flags_from_decl_or_type (current_function_decl);
-      if ((ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ()
-	   && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa() == profile_count::zero ())
-	  || lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
-	     != NULL)
+      if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
+	  != NULL)
 	{
           node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
 	  warn_function_cold (current_function_decl);
