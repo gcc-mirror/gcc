@@ -3755,7 +3755,7 @@ gimple_call_alloc_size (gimple *stmt)
     return NULL_TREE;
 
   if (argidx2 > nargs && TREE_CODE (size) == INTEGER_CST)
-    return size;
+    return fold_convert (sizetype, size);
 
   /* To handle ranges do the math in wide_int and return the product
      of the upper bounds as a constant.  Ignore anti-ranges.  */
