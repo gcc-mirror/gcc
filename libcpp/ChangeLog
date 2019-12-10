@@ -1,3 +1,10 @@
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (label_text::label_text): Make private.
+	(label_text::borrow): New.
+	(label_text::take): New.
+	(label_text::take_or_copy): New.
+
 2019-12-09  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/49973

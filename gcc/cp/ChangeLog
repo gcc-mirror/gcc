@@ -1,3 +1,8 @@
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (range_label_for_type_mismatch::get_text): Replace
+	label_text ctor calls with label_text::borrow.
+
 2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (check_for_casting_away_constness): Add location_t

@@ -1,5 +1,10 @@
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-format.c (range_label_for_format_type_mismatch::get_text):
+	Replace label_text ctor called with true with label_text::take.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-format.c (selftest::test_type_mismatch_range_labels): Remove
 	initial newline from expected outputs.
 	* c-opts.c (c_diagnostic_finalizer): Add pp_newline call before

@@ -111,7 +111,7 @@ class text_range_label : public range_label
 
   label_text get_text (unsigned /*range_idx*/) const FINAL OVERRIDE
   {
-    return label_text (const_cast <char *> (m_text), false);
+    return label_text::borrow (m_text);
   }
 
  private:

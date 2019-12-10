@@ -1,5 +1,13 @@
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc-rich-location.c
+	(maybe_range_label_for_tree_type_mismatch::get_text): Replace
+	label_text ctor call with label_text::borrow.
+	* gcc-rich-location.h (text_range_label::get_text): Replace
+	label_text ctor called with false with label_text::borrow.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-show-locus.c (diagnostic_show_locus): Remove initial
 	newline.
 	(selftest::test_diagnostic_show_locus_unknown_location): Remove
