@@ -1,5 +1,10 @@
 2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* dwarf2out.c (loc_descriptor): Punt for MODE_VECTOR_BOOL.
+	(add_const_value_attribute): Likewise.
+
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): When
 	handling direct_slp_reduc, allow the PHI arguments to have
 	a different type from the vector elements.
