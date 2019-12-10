@@ -1,5 +1,10 @@
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/92882
+	* regstat.c (regstat_bb_compute_calls_crossed): Don't check
+	INSN_UID against DF_INSN_SIZE or use DF_INSN_INFO_GET unless
+	NONDEBUG_INSN_P.
+
 	PR ipa/92883
 	* ipa-cp.c (propagate_vr_across_jump_function): Pass jvr rather
 	than *jfunc->m_vr to intersect.  Formatting fix.
