@@ -1,5 +1,8 @@
 2019-12-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92847 - C++20 comparison ambiguity with class template.
+	* call.c (cand_parms_match): Handle all templated functions.
+
 	Fix C++20 structural type vs. private base.
 	* class.c (build_base_field_1): Take access parameter.
 	(build_base_field): Likewise.
