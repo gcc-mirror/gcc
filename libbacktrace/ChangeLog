@@ -1,3 +1,18 @@
+2019-12-08  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (struct pcrange): Define.
+	(update_pcrange, add_ranges): New static functions.
+	(add_unit_addr): Change signature to work with add_ranges.  Don't
+	add base_address here.
+	(add_unit_ranges): Remove.
+	(find_address_ranges): Replace str/ranges parameters with
+	dwarf_sections.  Use update_pcrange and add_ranges.  Change all
+	callers.
+	(add_function_range): Change signature to work with add_ranges.
+	Don't add base_address here.
+	(add_function_ranges): Remove.
+	(read_function_entry): Use update_pcrange and add_ranges.
+
 2019-12-04  Ian Lance Taylor  <iant@golang.org>
 
 	* edtest.c (test1): Add noclone attribute.
