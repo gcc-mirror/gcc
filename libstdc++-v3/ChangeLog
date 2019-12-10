@@ -1,5 +1,8 @@
 2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/92886
+	* include/bits/ios_base.h (std::ios_base::trunc): Fix comment.
+
 	* include/std/complex (__cpp_lib_constexpr_complex): Define.
 	* include/std/version (__cpp_lib_constexpr_complex): Likewise.
 	* testsuite/26_numerics/complex/1.cc: New test.
