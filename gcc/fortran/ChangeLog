@@ -1,3 +1,9 @@
+2019-12-10  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/92874
+	* dependency.c (gfc_dep_compare_expr): Bail out
+	when one of the arguments is null.
+
 2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92863
