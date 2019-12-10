@@ -6242,6 +6242,10 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    result = error_mark_node;
 	  else
 	    {
+	      tsubst_flags_t ocomplain = complain;
+	      if (cand->rewritten ())
+		/* We'll wrap this call in another one.  */
+		ocomplain &= ~tf_decltype;
 	      if (cand->reversed ())
 		{
 		  /* We swapped these in add_candidate, swap them back now.  */
@@ -6251,7 +6255,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 				"current function recursively with reversed "
 				"arguments");
 		}
-	      result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	      result = build_over_call (cand, LOOKUP_NORMAL, ocomplain);
 	    }
 
 	  if (trivial_fn_p (cand->fn))
