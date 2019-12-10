@@ -2369,12 +2369,10 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 
       value_range vr;
       if (TREE_CODE_CLASS (operation) == tcc_unary)
-	{
-	  ipa_vr_operation_and_type_effects (&vr,
-					     &src_lats->m_value_range.m_vr,
-					     operation, param_type,
-					     operand_type);
-	}
+	ipa_vr_operation_and_type_effects (&vr,
+					   &src_lats->m_value_range.m_vr,
+					   operation, param_type,
+					   operand_type);
       /* A crude way to prevent unbounded number of value range updates
 	 in SCC components.  We should allow limited number of updates within
 	 SCC, too.  */
@@ -2400,7 +2398,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 						     NOP_EXPR,
 						     param_type,
 						     jfunc->m_vr->type ()))
-		vr.intersect (*jfunc->m_vr);
+		vr.intersect (jvr);
 	    }
 	  return dest_lat->meet_with (&vr);
 	}
