@@ -1,3 +1,8 @@
+2019-12-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92560 - ICE with decltype and rewritten operator.
+	* call.c (build_new_op_1): Clear tf_decltype on inner call.
+
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (range_label_for_type_mismatch::get_text): Replace
