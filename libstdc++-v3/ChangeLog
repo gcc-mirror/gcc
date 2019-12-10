@@ -1,3 +1,107 @@
+2019-12-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algobase.h
+	(__copy_move_a1<>(_II, _II, _OI)): New.
+	(__copy_move_a1<>(_Deque_iterator<>, _Deque_iterator<>, _OI)): New.
+	(__copy_move_a1<>(_Deque_iterator<>, _Deque_iterator<>,
+	_Deque_iterator<>)): New.
+	(__copy_move_a1<>(_II, _II, _Deque_iterator<>)): New.
+	(__copy_move_a<>(_II, _II, _OI)): Adapt, call __copy_move_a1<>.
+	(__copy_move_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	_OI)): New.
+	(__copy_move_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	 const _Safe_iterator<>&)): New.
+	(__copy_move_a<>(_II, _II, const _Safe_iterator<>&)): New.
+	(copy, move): Adapt, call __copy_move_a.
+	(__copy_move_backward_a1<>(_II, _II, _OI)): New,
+	call __copy_move_backward_a2.
+	(__copy_move_backward_a1<>(_Deque_iterator<>, _Deque_iterator<>, _OI)): New.
+	(__copy_move_backward_a1<>(_Deque_iterator<>, _Deque_iterator<>,
+	_Deque_iterator<>)): New.
+	(__copy_move_backward_a1<>(_II, _II, _Deque_iterator<>)): New.
+	(__copy_move_backward_a<>(_II, _II, _OI)): Adapt, call
+	__copy_move_backward_a1<>.
+	(__copy_move_backward_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	_OI)): New.
+	(__copy_move_backward_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	 const _Safe_iterator<>&)): New.
+	(__copy_move_backward_a<>(_II, _II, const _Safe_iterator<>&)): New.
+	(copy_backward, move_backward): Adapt, call __copy_move_backward_a<>.
+	(__fill_a): Rename into...
+	(__fill_a1): ... this.
+	(__fill_a1(__normal_iterator<>, __normal_iterator<>, const _Tp&)): New.
+	(__fill_a1(const _Deque_iterator<>&, const _Deque_iterator<>&, _VTp)):
+	New.
+	(__fill_a(_FIte, _FIte, const _Tp&)): New, call __fill_a1.
+	(__fill_a(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	const _Tp&)): New.
+	(fill): Adapt, remove __niter_base usage.
+	(__fill_n_a): Rename into...
+	(__fill_n_a1): ...this.
+	(__fill_n_a(const _Safe_iterator<>&, _Size, const _Tp&,
+	input_iterator_tag)): New.
+	(__fill_n_a(_OI, _Size, const _Tp&, output_iterator_tag)): New, call
+	__fill_n_a1.
+	(__fill_n_a(_OI, _Size, const _Tp&, random_access_iterator_tag)): New,
+	call __fill_a.
+	(__equal_aux): Rename into...
+	(__equal_aux1): ...this.
+	(__equal_aux1(_Deque_iterator<>, _Deque_iterator<>, _OI)): New.
+	(__equal_aux1(_Deque_iterator<>, _Deque_iterator<>,
+	_Deque_iterator<>)): New.
+	(__equal_aux1(_II, _II, _Deque_iterator<>)): New.
+	(__equal_aux(_II1, _II1, _II2)): New, call __equal_aux1.
+	(__equal_aux(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	_OI)): New.
+	(__equal_aux(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	 const _Safe_iterator<>&)): New.
+	(__equal_aux(_II, _II, const _Safe_iterator<>&)): New.
+	(equal(_II1, _II1, _II2)): Adapt.
+	* include/bits/stl_deque.h
+	(fill, copy, copy_backward, move, move_backward): Remove.
+	* include/bits/deque.tcc: Include <bits/stl_algobase.h>.
+	(__fill_a1): New.
+	(__copy_move_dit): New.
+	(__copy_move_a1): New, use latter.
+	(__copy_move_a1(_II, _II, _Deque_iterator<>)): New.
+	(__copy_move_backward_dit): New.
+	(__copy_move_backward_a1): New, use latter.
+	(__copy_move_backward_a1(_II, _II, _Deque_iterator<>)): New.
+	(__equal_dit): New.
+	(__equal_aux1): New, use latter.
+	(__equal_aux1(_II, _II, _Deque_iterator<>)): New.
+	* include/std/numeric (__is_random_access_iter): Move...
+	* include/bits/stl_iterator_base_types.h (__is_random_access_iter): ...
+	here. Provide pre-C++11 definition.
+	* include/debug/debug.h (_Safe_iterator<>): New declaration.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_can_advance): Add
+	__strict parameter.
+	* include/debug/safe_iterator.tcc: Include <bits/stl_algobase.h>.
+	(_Safe_iterator<>::_M_can_advance): Adapt.
+	(std::__copy_move_a, std::__copy_move_backward_a, __fill_a): New.
+	(__fill_n_a, __equal_aux): New.
+	* include/debug/stl_iterator.h (__niter_base): Remove.
+	* include/debug/vector (__niter_base): Remove.
+	* testsuite/performance/25_algorithms/copy_backward_deque_iterators.cc:
+	Include <vector> and <list>. Add benches.
+	* testsuite/performance/25_algorithms/copy_deque_iterators.cc: Likewise.
+	* testsuite/performance/25_algorithms/equal_deque_iterators.cc: Likewise.
+	* testsuite/25_algorithms/copy/debug/1_neg.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/2.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/31.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/32.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/33.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/41.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/42.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/43.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc (test02):
+	New.
+	* testsuite/25_algorithms/copy_backward/deque_iterators/2.cc: New.
+	* testsuite/25_algorithms/equal/deque_iterators/1.cc: New.
+	* testsuite/25_algorithms/fill/deque_iterators/1.cc: New.
+	* testsuite/25_algorithms/move/deque_iterators/2.cc: New.
+	* testsuite/25_algorithms/move_backward/deque_iterators/2.cc: New.
+
 2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/92886

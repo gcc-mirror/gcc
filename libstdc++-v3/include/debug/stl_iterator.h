@@ -115,17 +115,4 @@ namespace __gnu_debug
 #endif
 }
 
-namespace std
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Iterator, typename _Container, typename _Sequence>
-    _Iterator
-    __niter_base(const __gnu_debug::_Safe_iterator<
-		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
-		 _Sequence, std::random_access_iterator_tag>&);
-
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-
 #endif

@@ -16,6 +16,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <deque>
+#include <vector>
+#include <list>
+
 #include <testsuite_performance.h>
 
 int main()
@@ -34,7 +37,71 @@ int main()
     for (int j = 0; j < 3000; ++j)
       std::copy_backward(data.begin(), data.begin() + j, d.end());
   stop_counters(time, resource);
-  report_performance(__FILE__, "", time, resource);
+  report_performance(__FILE__, "deque 2 deque", time, resource);
+  clear_counters(time, resource);
+
+  std::vector<int> v(3000, 1);
+
+  start_counters(time, resource);
+  for (int i = 0; i < 1000; ++i)
+    for (int j = 0; j < 3000; ++j)
+      std::copy_backward(data.begin(), data.begin() + j, v.end());
+  stop_counters(time, resource);
+  report_performance(__FILE__, "deque 2 vector", time, resource);
+  clear_counters(time, resource);
+
+  d.assign(3000, 1);
+
+  start_counters(time, resource);
+  for (int i = 0; i < 1000; ++i)
+    for (int j = 0; j < 3000; ++j)
+      std::copy_backward(v.begin(), v.begin() + j, d.end());
+  stop_counters(time, resource);
+  report_performance(__FILE__, "vector 2 deque", time, resource);
+  clear_counters(time, resource);
+
+  std::vector<char> cv(3000, 1);
+
+  start_counters(time, resource);
+  for (int i = 0; i < 1000; ++i)
+    for (int j = 0; j < 3000; ++j)
+      std::copy_backward(data.begin(), data.begin() + j, cv.end());
+  stop_counters(time, resource);
+  report_performance(__FILE__, "int deque 2 char vector", time, resource);
+  clear_counters(time, resource);
+
+  d.assign(3000, 1);
+
+  start_counters(time, resource);
+  for (int i = 0; i < 1000; ++i)
+    for (int j = 0; j < 3000; ++j)
+      std::copy_backward(cv.begin(), cv.begin() + j, d.end());
+  stop_counters(time, resource);
+  report_performance(__FILE__, "char vector 2 int deque", time, resource);
+  clear_counters(time, resource);
+
+  std::list<int> l(3000, 1);
+
+  start_counters(time, resource);
+  for (int i = 0; i < 1000; ++i)
+    for (int j = 0; j < 3000; ++j)
+      std::copy_backward(data.begin(), data.begin() + j, l.end());
+  stop_counters(time, resource);
+  report_performance(__FILE__, "deque 2 list", time, resource);
+  clear_counters(time, resource);
+
+  d.assign(3000, 1);
+
+  std::list<int>::iterator lit;
+  start_counters(time, resource);
+  for (int i = 0; i < 200; ++i)
+    {
+      lit = l.begin();
+      for (int j = 0; j < 3000; ++j, ++lit)
+	std::copy_backward(l.begin(), lit, d.end());
+    }
+  stop_counters(time, resource);
+  report_performance(__FILE__, "list 2 deque", time, resource);
 
   return 0;
 }
