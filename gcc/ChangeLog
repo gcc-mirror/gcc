@@ -1,3 +1,10 @@
+2019-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (vccore): New iterator.
+	* config/aarch64/aarch64-sve.md (vec_series<mode>): Use it instead
+	of vwcore.
+	(*vec_series<mode>_plus): Likewise.
+
 2019-12-10  Frederik Harwath  <frederik@codesourcery.com>
 
 	* omp-low.c (scan_omp_for): Use clause location in warning.
