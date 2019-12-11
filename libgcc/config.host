@@ -1045,7 +1045,8 @@ moxie-*-elf | moxie-*-moxiebox* | moxie-*-uclinux* | moxie-*-rtems*)
 	;;
 msp430*-*-elf)
 	tmake_file="$tm_file t-crtstuff t-fdpbit msp430/t-msp430"
-        extra_parts="$extra_parts libmul_none.a libmul_16.a libmul_32.a libmul_f5.a"
+	extra_parts="$extra_parts crtbegin_no_eh.o crtend_no_eh.o"
+	extra_parts="$extra_parts libmul_none.a libmul_16.a libmul_32.a libmul_f5.a"
 	;;
 nds32*-linux*)
 	# Basic makefile fragment and extra_parts for crt stuff.
