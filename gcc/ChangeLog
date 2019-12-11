@@ -1,3 +1,10 @@
+2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92723
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): If dt is not
+	vect_internal_def, use oprnd1 as is, without trying to cast it.
+	Formatting fix.
+
 2019-12-11  Martin Sebor  <msebor@redhat.com>
 
 	* builtins.c (compute_objsize): Add an argument and set it to offset
