@@ -3,7 +3,6 @@
 ! for.  The tests are based on those in reduction-1.f90.
 
 ! { dg-do run }
-! { dg-additional-options "-w" }
 
 program optional_reduction
   implicit none
