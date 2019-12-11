@@ -1,5 +1,13 @@
 2019-12-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-parallel.c (find_pointer, GOACC_enter_exit_data): Move...
+	* oacc-mem.c: ... here.
+	(gomp_acc_insert_pointer, gomp_acc_remove_pointer): Rename to
+	'goacc_insert_pointer', 'goacc_remove_pointer', and make 'static'.
+	* libgomp.h (gomp_acc_insert_pointer, gomp_acc_remove_pointer):
+	Remove.
+	* libgomp_g.h: Update.
+
 	* oacc-parallel.c (GOACC_wait, goacc_wait): Move...
 	* oacc-async.c: ... here.
 	* oacc-int.h (goacc_wait): Declare.
