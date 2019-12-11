@@ -1,3 +1,9 @@
+2019-12-11 Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92897
+	* array.c (gfc_set_array_spec):  Remove invalid assert() triggered
+	by invalid Fortran code.
+ 
 2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91643
