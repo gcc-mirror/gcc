@@ -120,9 +120,13 @@ main (int argc, char **argv)
 
   for (i = 0; i < N; i++)
     {
-      acc_copyout (a[i], nbytes);
+      acc_memcpy_from_device (a[i], d_a[i], nbytes);
       if (*a[i] != i)
 	abort ();
+
+      acc_unmap_data (a[i]);
+
+      acc_free (d_a[i]);
     }
 
   free (streams);
