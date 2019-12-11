@@ -469,7 +469,9 @@ main (int argc, char **argv)
     if (!acc_is_present (c, (N * sizeof (float))))
       abort ();
 
-    acc_copyout (b, N * sizeof (float));
+    d = (float *) acc_deviceptr (b);
+
+    acc_memcpy_from_device (b, d, N * sizeof (float));
 
     for (i = 0; i < N; i++)
     {
@@ -485,9 +487,21 @@ main (int argc, char **argv)
     if (acc_is_present (a, N * sizeof (float)))
       abort ();
 
+    d = (float *) acc_deviceptr (b);
+
+    acc_unmap_data (b);
+
+    if (acc_is_present (b, N * sizeof (float)))
+      abort ();
+
+    acc_free (d);
+
     d = (float *) acc_deviceptr (c);
 
     acc_unmap_data (c);
+
+    if (acc_is_present (c, N * sizeof (float)))
+      abort ();
 
     acc_free (d);
 

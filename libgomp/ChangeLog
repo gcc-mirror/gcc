@@ -1,5 +1,15 @@
 2019-12-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/92843
+	* oacc-mem.c (present_create_copy, delete_copyout): Fix dynamic
+	reference counting for structured 'REFCOUNT_INFINITY'.  Add some
+	assertions.
+	(goacc_insert_pointer, goacc_remove_pointer): Adjust accordingly.
+	* testsuite/libgomp.oacc-c-c++-common/pr92843-1.c: New file.
+	* testsuite/libgomp.oacc-c-c++-common/clauses-1.c: Fix OpenACC.
+	* testsuite/libgomp.oacc-c-c++-common/lib-82.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/nested-1.c: Likewise.
+
 	* oacc-parallel.c (find_pointer, GOACC_enter_exit_data): Move...
 	* oacc-mem.c: ... here.
 	(gomp_acc_insert_pointer, gomp_acc_remove_pointer): Rename to
