@@ -11,5 +11,5 @@ int main()
 {
   new X;    // OK
   new X();  // OK
-  new X{};  // ERROR
+  new X{};  // { dg-bogus "" }
 }
