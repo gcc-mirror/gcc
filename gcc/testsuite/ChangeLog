@@ -1,3 +1,7 @@
+2019-12-11  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92865-1.c: New test.
+
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92891

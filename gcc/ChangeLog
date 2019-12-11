@@ -1,3 +1,9 @@
+2019-12-11  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/92865
+	* config/i386/i386-expand.c (ix86_valid_mask_cmp_mode): Enable
+	integer mask cmov when available even with TARGET_XOP.
+
 2019-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92891
