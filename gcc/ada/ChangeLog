@@ -1,3 +1,8 @@
+2020-05-25  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Obj_Accessibility): Use original
+	node to avoid looking at expansion done in GNATprove mode.
+
 2020-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Add new local variable
