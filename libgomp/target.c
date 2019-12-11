@@ -1334,6 +1334,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_table[i].start;
       k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       k->link_key = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -1366,6 +1367,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_var->start;
       k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       k->link_key = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -2627,6 +2629,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
       k->tgt = tgt;
       k->tgt_offset = (uintptr_t) device_ptr + device_offset;
       k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
