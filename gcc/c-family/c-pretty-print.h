@@ -51,6 +51,7 @@ class c_pretty_printer : public pretty_printer
 {
 public:
   c_pretty_printer ();
+  pretty_printer *clone () const OVERRIDE;
 
   // Format string, possibly translated.
   void translate_string (const char *);

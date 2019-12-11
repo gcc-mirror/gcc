@@ -1,5 +1,14 @@
 2019-12-11  David Malcolm  <dmalcolm@redhat.com>
 
+	* pretty-print.c (pretty_printer::pretty_printer): New copy-ctor.
+	(pretty_printer::clone): New vfunc implementation.
+	* pretty-print.h (format_postprocessor::clone): New pure vfunc
+	decl.
+	(pretty_printer::pretty_printer): New copy-ctor decl.
+	(pretty_printer::clone): New vfunc decl.
+
+2019-12-11  David Malcolm  <dmalcolm@redhat.com>
+
 	* function-tests.c (selftest::make_fndecl): Make non-static.
 	* selftest.h (selftest::make_fndecl): New decl.
 

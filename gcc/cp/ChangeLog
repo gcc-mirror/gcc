@@ -1,3 +1,10 @@
+2019-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* cxx-pretty-print.c (cxx_pretty_printer::clone): New vfunc
+	implementation.
+	* cxx-pretty-print.h (cxx_pretty_printer::clone): New vfunc decl.
+	* error.c (cxx_format_postprocessor::clone): New vfunc.
+
 2019-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92869

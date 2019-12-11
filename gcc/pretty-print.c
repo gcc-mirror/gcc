@@ -1590,6 +1590,32 @@ pretty_printer::pretty_printer (int maximum_length)
   pp_set_prefix (this, NULL);
 }
 
+/* Copy constructor for pretty_printer.  */
+
+pretty_printer::pretty_printer (const pretty_printer &other)
+: buffer (new (XCNEW (output_buffer)) output_buffer ()),
+  prefix (),
+  padding (other.padding),
+  maximum_length (other.maximum_length),
+  indent_skip (other.indent_skip),
+  wrapping (other.wrapping),
+  format_decoder (other.format_decoder),
+  m_format_postprocessor (NULL),
+  emitted_prefix (other.emitted_prefix),
+  need_newline (other.need_newline),
+  translate_identifiers (other.translate_identifiers),
+  show_color (other.show_color),
+  show_urls (other.show_urls)
+{
+  pp_line_cutoff (this) = maximum_length;
+  /* By default, we emit prefixes once per message.  */
+  pp_prefixing_rule (this) = pp_prefixing_rule (&other);
+  pp_set_prefix (this, NULL);
+
+  if (other.m_format_postprocessor)
+    m_format_postprocessor = other.m_format_postprocessor->clone ();
+}
+
 pretty_printer::~pretty_printer ()
 {
   if (m_format_postprocessor)
@@ -1597,6 +1623,14 @@ pretty_printer::~pretty_printer ()
   buffer->~output_buffer ();
   XDELETE (buffer);
   free (prefix);
+}
+
+/* Base class implementation of pretty_printer::clone vfunc.  */
+
+pretty_printer *
+pretty_printer::clone () const
+{
+  return new pretty_printer (*this);
 }
 
 /* Append a string delimited by START and END to the output area of

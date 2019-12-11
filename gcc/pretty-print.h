@@ -192,6 +192,7 @@ class format_postprocessor
 {
  public:
   virtual ~format_postprocessor () {}
+  virtual format_postprocessor *clone() const = 0;
   virtual void handle (pretty_printer *) = 0;
 };
 
@@ -221,8 +222,11 @@ public:
   /* Default construct a pretty printer with specified
      maximum line length cut off limit.  */
   explicit pretty_printer (int = 0);
+  explicit pretty_printer (const pretty_printer &other);
 
   virtual ~pretty_printer ();
+
+  virtual pretty_printer *clone () const;
 
   /* Where we print external representation of ENTITY.  */
   output_buffer *buffer;
