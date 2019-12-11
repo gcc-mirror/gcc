@@ -1,3 +1,10 @@
+2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92869
+	* class.c (finish_struct): For C++17 and earlier, check
+	type_has_user_provided_or_explicit_constructor rather than
+	TYPE_HAS_USER_CONSTRUCTOR whether to set CLASSTYPE_NON_AGGREGATE.
+
 2019-12-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92878 - Parenthesized init of aggregates in new-expression.
