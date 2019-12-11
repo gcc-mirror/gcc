@@ -1337,7 +1337,7 @@ initialize_env (void)
     ignore = true;
   /* Make sure OMP_PLACES and GOMP_CPU_AFFINITY env vars are always
      parsed if present in the environment.  If OMP_PROC_BIND was set
-     explictly to false, don't populate places list though.  If places
+     explicitly to false, don't populate places list though.  If places
      list was successfully set from OMP_PLACES, only parse but don't process
      GOMP_CPU_AFFINITY.  If OMP_PROC_BIND was not set in the environment,
      default to OMP_PROC_BIND=true if OMP_PLACES or GOMP_CPU_AFFINITY

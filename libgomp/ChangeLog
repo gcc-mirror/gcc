@@ -1,5 +1,25 @@
 2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
 
+	* omp_lib.h.in: Fix spelling of function declaration
+	omp_get_cancell(l)ation.
+	* libgomp.texi (acc_is_present, acc_async_test, acc_async_test_all):
+	Fix typos.
+	* env.c: Fix comment typos.
+	* oacc-host.c: Likewise.
+	* ordered.c: Likewise.
+	* task.c: Likewise.
+	* team.c: Likewise.
+	* config/gcn/task.c: Likewise.
+	* config/gcn/team.c: Likewise.
+	* config/nvptx/task.c: Likewise.
+	* config/nvptx/team.c: Likewise.
+	* plugin/plugin-gcn.c: Likewise.
+	* testsuite/libgomp.fortran/jacobi.f: Likewise.
+	* testsuite/libgomp.hsa.c/tiling-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/enter_exit-lib.c: Likewise.
+
+2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
 	* testsuite/libgomp.oacc-fortran/optional-cache.f95: Add 'dg-do run'.
 	* testsuite/libgomp.oacc-fortran/optional-reduction.f90: Remove
 	unnecessary 'dg-additional-options "-w"'.
@@ -1235,7 +1255,7 @@
 	(host_openacc_async_construct): New function.
 	(host_openacc_async_destruct): New function.
 	(struct gomp_device_descr host_dispatch): Remove initialization of old
-	interface, add intialization of new async sub-struct.
+	interface, add initialization of new async sub-struct.
 	* oacc-init.c (acc_shutdown_1): Adjust to use gomp_fini_device.
 	(goacc_attach_host_thread_to_device): Remove old async code usage.
 	* oacc-int.h (goacc_init_asyncqueues): New declaration.
@@ -6373,7 +6393,7 @@
 	* libgomp_g.h (GOACC_parallel): Remove.
 	(GOACC_parallel_keyed): Declare.
 	* plugin/plugin-nvptx.c (struct targ_fn_launch): New struct.
-	(stuct targ_gn_descriptor): Replace name field with launch field.
+	(struct targ_gn_descriptor): Replace name field with launch field.
 	(nvptx_exec): Lose separate geometry args, take array.  Process
 	dynamic dimensions and adjust.
 	(struct nvptx_tdata): Replace fn_names field with fn_descs.
@@ -6394,7 +6414,7 @@
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-	* testsuite/libgomp.graphite/bounds.c (int foo): Modifed test case to
+	* testsuite/libgomp.graphite/bounds.c (int foo): Modified test case to
 	match o/p.
 	* testsuite/libgomp.graphite/force-parallel-1.c (void parloop): Same.
 	* testsuite/libgomp.graphite/force-parallel-4.c: Same.
@@ -6671,7 +6691,7 @@
 	* target.c (struct offload_image_descr): Constify target_data.
 	(gomp_offload_image_to_device): Likewise.
 	(GOMP_offload_register): Likewise.
-	(GOMP_offload_unrefister): Likewise.
+	(GOMP_offload_unregister): Likewise.
 	* plugin/plugin-host.c (GOMP_OFFLOAD_load_image,
 	GOMP_OFFLOAD_unload_image): Constify target data.
 	* plugin/plugin-nvptx.c (struct ptx_image_data): Constify target data.
@@ -7997,7 +8017,7 @@
 2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* testsuite/lib/libgomp.exp: Load target-utils.exp.
-	Move load of target-supportes.exp earlier.
+	Move load of target-supports.exp earlier.
 
 2014-12-10  Ilya Verbin  <ilya.verbin@intel.com>
 
@@ -8484,7 +8504,7 @@
 
 2013-12-17  Andreas Tobler  <andreast@gcc.gnu.org>
 
-	* testsuite/libgomp.c/affinity-1.c: Remove alloca.h inlcude. Replace
+	* testsuite/libgomp.c/affinity-1.c: Remove alloca.h include. Replace
 	alloca () with __builtin_alloca ().
 	* testsuite/libgomp.c/icv-2.c: Add FreeBSD coverage.
 	* testsuite/libgomp.c/lock-3.c: Likewise.
@@ -8644,7 +8664,7 @@
 	(gomp_team_end): Use gomp_managed_threads_lock instead of
 	gomp_remaining_threads_lock.  Use gomp_team_barrier_wait_final instead
 	of gomp_team_barrier_wait.  If team->team_cancelled, call
-	gomp_fini_worshare on ws chain starting at team->work_shares_to_free
+	gomp_fini_workshare on ws chain starting at team->work_shares_to_free
 	rather than thr->ts.work_share.
 	(initialize_team): Don't call gomp_sem_init here.
 	* sections.c (GOMP_parallel_sections_start): Adjust gomp_team_start
@@ -12019,7 +12039,7 @@
 
 	* configure.ac: Determine whether -pthread or -lpthread is needed.
 	* Makefile.am (libgomp_la_LDFLAGS): Remove explicit -lpthread.
-	* Makefine.in, configure: Rebuild.
+	* Makefile.in, configure: Rebuild.
 
 2005-09-28  Richard Henderson  <rth@redhat.com>
 

@@ -1887,7 +1887,7 @@ acceleration device.
                                 host address.
 * acc_hostptr::                 Get host pointer associated with specific
                                 device address.
-* acc_is_present::              Indiciate whether host variable / array is
+* acc_is_present::              Indicate whether host variable / array is
                                 present on device.
 * acc_memcpy_to_device::        Copy host memory to device memory.
 * acc_memcpy_from_device::      Copy device memory to host memory.
@@ -2042,10 +2042,10 @@ region.
 @section @code{acc_async_test} -- Test for completion of a specific asynchronous operation.
 @table @asis
 @item @emph{Description}
-This function tests for completion of the asynchrounous operation specified
+This function tests for completion of the asynchronous operation specified
 in @var{arg}. In C/C++, a non-zero value will be returned to indicate
 the specified asynchronous operation has completed. While Fortran will return
-a @code{true}. If the asynchrounous operation has not completed, C/C++ returns
+a @code{true}. If the asynchronous operation has not completed, C/C++ returns
 a zero and Fortran returns a @code{false}.
 
 @item @emph{C/C++}:
@@ -2071,7 +2071,7 @@ a zero and Fortran returns a @code{false}.
 @section @code{acc_async_test_all} -- Tests for completion of all asynchronous operations.
 @table @asis
 @item @emph{Description}
-This function tests for completion of all asynchrounous operations.
+This function tests for completion of all asynchronous operations.
 In C/C++, a non-zero value will be returned to indicate all asynchronous
 operations have completed. While Fortran will return a @code{true}. If
 any asynchronous operation has not completed, C/C++ returns a zero and
@@ -2255,7 +2255,7 @@ This function shuts down the runtime for the device type specified in
 @item @emph{Description}:
 This function returns whether the program is executing on a particular
 device specified in @var{devicetype}. In C/C++ a non-zero value is
-returned to indicate the device is execiting on the specified device type.
+returned to indicate the device is executing on the specified device type.
 In Fortran, @code{true} will be returned. If the program is not executing
 on the specified device type C/C++ will return a zero, while Fortran will
 return @code{false}.
