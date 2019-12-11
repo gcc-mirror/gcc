@@ -1,3 +1,7 @@
+2019-12-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-epilogues.c: Remove xfail for arm.
+
 2019-12-11  Frederik Harwath  <frederik@codesourcery.com>
 
 	PR other/92901
