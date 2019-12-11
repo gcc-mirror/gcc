@@ -11,7 +11,7 @@
 * Author:   Joseph Robicheaux, Kuck and Associates, Inc. (KAI), 1998
 * 
 * Directives are used in this code to achieve paralleism. 
-* All do loops are parallized with default 'static' scheduling.
+* All do loops are parallelized with default 'static' scheduling.
 * 
 * Input :  n - grid dimension in x direction 
 *          m - grid dimension in y direction
@@ -70,7 +70,7 @@
       subroutine driver ( ) 
 *************************************************************
 * Subroutine driver () 
-* This is where the arrays are allocated and initialzed. 
+* This is where the arrays are allocated and initialized.
 *
 * Working varaibles/arrays 
 *     dx  - grid spacing in x direction 
@@ -119,7 +119,7 @@
       dx = 2.0 / (n-1)
       dy = 2.0 / (m-1)
 
-* Initilize initial condition and RHS
+* Initialize initial condition and RHS
 
 !$omp parallel do private(xx,yy)
       do j = 1,m
