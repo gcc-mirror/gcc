@@ -1,3 +1,8 @@
+2019-12-11  Frederik Harwath  <frederik@codesourcery.com>
+
+	PR other/92901
+	* c-c++-common/clause-locations.c: Adjust test expectation for C++.
+
 2019-12-11  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr92865-1.c: New test.
