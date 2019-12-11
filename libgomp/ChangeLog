@@ -1,3 +1,11 @@
+2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.h.in: Fix spelling of function declaration
+	omp_get_cancell(l)ation.
+
 2019-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
