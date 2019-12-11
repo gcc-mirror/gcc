@@ -21183,7 +21183,7 @@ static bool
 deducible_expression (tree expr)
 {
   /* Strip implicit conversions.  */
-  while (CONVERT_EXPR_P (expr))
+  while (CONVERT_EXPR_P (expr) || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
   return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
 }
