@@ -1,5 +1,10 @@
 2020-05-25  Yannick Moy  <moy@adacore.com>
 
+	* sem_util.adb (Check_No_Hidden_State): Stop propagation at
+	first block/task/entry.
+
+2020-05-25  Yannick Moy  <moy@adacore.com>
+
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Document
 	changes to pragmas Compile_Time_Error/Compile_Time_Warning.
 	* gnat_rm.texi: Regenerate.
