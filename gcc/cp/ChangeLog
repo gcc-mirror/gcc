@@ -1,5 +1,8 @@
 2019-12-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92859 - ADL and bit-field.
+	* name-lookup.c: Use unlowered_expr_type.
+
 	PR c++/92446 - deduction of class NTTP.
 	* pt.c (deducible_expression): Look through VIEW_CONVERT_EXPR.
 
