@@ -4799,6 +4799,116 @@ decode_ieee_half (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     }
 }
 
+/* Encode arm_bfloat types.  */
+static void
+encode_arm_bfloat_half (const struct real_format *fmt, long *buf,
+		    const REAL_VALUE_TYPE *r)
+{
+  unsigned long image, sig, exp;
+  unsigned long sign = r->sign;
+  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+
+  image = sign << 15;
+  sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 8)) & 0x7f;
+
+  switch (r->cl)
+    {
+    case rvc_zero:
+      break;
+
+    case rvc_inf:
+      if (fmt->has_inf)
+	image |= 255 << 7;
+      else
+	image |= 0x7fff;
+      break;
+
+    case rvc_nan:
+      if (fmt->has_nans)
+	{
+	  if (r->canonical)
+	    sig = (fmt->canonical_nan_lsbs_set ? (1 << 6) - 1 : 0);
+	  if (r->signalling == fmt->qnan_msb_set)
+	    sig &= ~(1 << 6);
+	  else
+	    sig |= 1 << 6;
+	  if (sig == 0)
+	    sig = 1 << 5;
+
+	  image |= 255 << 7;
+	  image |= sig;
+	}
+      else
+	image |= 0x7fff;
+      break;
+
+    case rvc_normal:
+      if (denormal)
+	exp = 0;
+      else
+      exp = REAL_EXP (r) + 127 - 1;
+      image |= exp << 7;
+      image |= sig;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  buf[0] = image;
+}
+
+/* Decode arm_bfloat types.  */
+static void
+decode_arm_bfloat_half (const struct real_format *fmt, REAL_VALUE_TYPE *r,
+		    const long *buf)
+{
+  unsigned long image = buf[0] & 0xffff;
+  bool sign = (image >> 15) & 1;
+  int exp = (image >> 7) & 0xff;
+
+  memset (r, 0, sizeof (*r));
+  image <<= HOST_BITS_PER_LONG - 8;
+  image &= ~SIG_MSB;
+
+  if (exp == 0)
+    {
+      if (image && fmt->has_denorm)
+	{
+	  r->cl = rvc_normal;
+	  r->sign = sign;
+	  SET_REAL_EXP (r, -126);
+	  r->sig[SIGSZ-1] = image << 1;
+	  normalize (r);
+	}
+      else if (fmt->has_signed_zero)
+	r->sign = sign;
+    }
+  else if (exp == 255 && (fmt->has_nans || fmt->has_inf))
+    {
+      if (image)
+	{
+	  r->cl = rvc_nan;
+	  r->sign = sign;
+	  r->signalling = (((image >> (HOST_BITS_PER_LONG - 2)) & 1)
+			   ^ fmt->qnan_msb_set);
+	  r->sig[SIGSZ-1] = image;
+	}
+      else
+	{
+	  r->cl = rvc_inf;
+	  r->sign = sign;
+	}
+    }
+  else
+    {
+      r->cl = rvc_normal;
+      r->sign = sign;
+      SET_REAL_EXP (r, exp - 127 + 1);
+      r->sig[SIGSZ-1] = image | SIG_MSB;
+    }
+}
+
 /* Half-precision format, as specified in IEEE 754R.  */
 const struct real_format ieee_half_format =
   {
@@ -4848,6 +4958,33 @@ const struct real_format arm_half_format =
     false,
     "arm_half"
   };
+
+/* ARM Bfloat half-precision format.  This format resembles a truncated
+   (16-bit) version of the 32-bit IEEE 754 single-precision floating-point
+   format.  */
+const struct real_format arm_bfloat_half_format =
+  {
+    encode_arm_bfloat_half,
+    decode_arm_bfloat_half,
+    2,
+    8,
+    8,
+    -125,
+    128,
+    15,
+    15,
+    0,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    "arm_bfloat_half"
+  };
+
 
 /* A synthetic "format" for internal arithmetic.  It's the size of the
    internal significand minus the two bits needed for proper rounding.

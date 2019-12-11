@@ -1,3 +1,9 @@
+2019-12-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* real.c (struct arm_bfloat_half_format,
+	encode_arm_bfloat_half, decode_arm_bfloat_half): New.
+	* real.h (arm_bfloat_half_format): New.
+
 2019-12-11  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/92865
