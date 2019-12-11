@@ -1,3 +1,8 @@
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c: Declare __dso_handle only if DEFAULT_USE_CXA_ATEXIT is
+	true.
+
 2019-12-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* crtstuff.c (__do_global_dtors_aux): Check if USE_EH_FRAME_REGISTRY is
