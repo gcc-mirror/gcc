@@ -1,5 +1,9 @@
 2019-12-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57082 - new X{} and private destructor.
+	* init.c (build_new_1): Also pass tf_no_cleanup to
+	build_special_member_call.
+
 	PR c++/92774 - ICE with implicitly deleted operator<=>.
 	* method.c (comp_info::~comp_info): Factor out of...
 	(build_comparison_op): Here.  Handle error return from build_new_op.

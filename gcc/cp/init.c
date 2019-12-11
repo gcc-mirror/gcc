@@ -3591,7 +3591,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 						     complete_ctor_identifier,
 						     init, elt_type,
 						     LOOKUP_NORMAL,
-                                                     complain);
+						     complain|tf_no_cleanup);
 	    }
 	  else if (explicit_value_init_p)
 	    {
