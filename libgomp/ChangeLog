@@ -1,4 +1,20 @@
 2019-12-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/92854
+	* testsuite/libgomp.oacc-c-c++-common/acc_map_data-device_already-1.c:
+	New file.
+	* testsuite/libgomp.oacc-c-c++-common/acc_map_data-device_already-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_map_data-device_already-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_map_data-host_already-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_map_data-host_already-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_map_data-host_already-3.c:
+	Likewise.
+
+2019-12-11  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
 	* target.c (gomp_load_image_to_device, omp_target_associate_ptr):
