@@ -1,3 +1,14 @@
+2019-12-11  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR 91853
+	* pretty-print.c (pp_quoted_string): Avoid hex-escaping valid
+	multibyte input.  Fix off-by-one-bug printing the last byte before a
+	hex-escaped output.
+	(pp_character): Don't apply line wrapping in the middle of multibyte
+	characters.
+	(test_utf8): New test.
+	(pretty_print_c_tests): Call the new test.
+
 2019-12-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm-cpus.in (ALL_SIMD_EXTERNAL): New fgroup.
