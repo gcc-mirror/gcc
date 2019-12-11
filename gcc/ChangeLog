@@ -1,3 +1,19 @@
+2019-12-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (ALL_SIMD_EXTERNAL): New fgroup.
+	(ALL_SIMD): Use it.
+	(ALL_FPU_EXTERNAL): New fgroup.
+	(ALL_FP): Use it.
+	(cortex-a55, cortex-a75, cortex-a76, cortex-a76ae): Remove redundant
+	+simd from architecture specification.
+	(cortex-a77, neoverse-n1, cortex-a75.cortex-a55): Likewise.
+	* config/arm/arm.c (isa_all_fpubits, fpu_bitlist): Rename to ...
+	(isa_all_fpubits_internal, fpu_bitlist_internal): ... these.
+	(isa_all_fpbits): New bitmap.
+	(arm_option_override): Initialize it.
+	(arm_configure_build_target): If the target isa does not have any
+	FP enabled, do not warn about mismatches in FP-related feature bits.
+
 2019-12-11  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* real.c (struct arm_bfloat_half_format,
