@@ -3387,10 +3387,14 @@ package body Sem_Util is
             return;
 
          --  Objects and states that appear immediately within a subprogram or
-         --  inside a construct nested within a subprogram do not introduce a
-         --  hidden state. They behave as local variable declarations.
+         --  entry inside a construct nested within a subprogram do not
+         --  introduce a hidden state. They behave as local variable
+         --  declarations. The same is true for elaboration code inside a block
+         --  or a task.
 
-         elsif Is_Subprogram (Context) then
+         elsif Is_Subprogram_Or_Entry (Context)
+           or else Ekind_In (Context, E_Block, E_Task_Type)
+         then
             return;
 
          --  When examining a package body, use the entity of the spec as it
