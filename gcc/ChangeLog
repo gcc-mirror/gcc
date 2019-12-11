@@ -1,5 +1,10 @@
 2019-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* opts.c (default_options_table): Move -ftree-loop-distribute-patterns
+	entry from -O3 or later section to -O2 or later section.
+	* doc/invoke.texi (-ftree-loop-distribute-patterns): Mention the
+	option is enabled by default at -O2+ rather than just at -O3.
+
 	PR target/92723
 	* tree-vect-patterns.c (vect_recog_rotate_pattern): If dt is not
 	vect_internal_def, use oprnd1 as is, without trying to cast it.

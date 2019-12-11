@@ -9782,8 +9782,8 @@ It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 @item -ftree-loop-distribute-patterns
 @opindex ftree-loop-distribute-patterns
 Perform loop distribution of patterns that can be code generated with
-calls to a library.  This flag is enabled by default at @option{-O3}, and
-by @option{-fprofile-use} and @option{-fauto-profile}.
+calls to a library.  This flag is enabled by default at @option{-O2} and
+higher, and by @option{-fprofile-use} and @option{-fauto-profile}.
 
 This pass distributes the initialization loops and generates a call to
 memset zero.  For example, the loop
