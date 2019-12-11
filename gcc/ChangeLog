@@ -1,3 +1,17 @@
+2019-12-11  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (compute_objsize): Add an argument and set it to offset
+	into destination.
+	* builtins.h (compute_objsize): Add an argument.
+	* tree-object-size.c (addr_object_size): Add an argument and set it
+	to offset into destination.
+	(compute_builtin_object_size): Same.
+	* tree-object-size.h (compute_builtin_object_size): Add an argument.
+	* tree-ssa-strlen.c (get_addr_stridx): Add an argument and set it
+	to offset into destination.
+	(maybe_warn_overflow): New function.
+	(handle_store): Call maybe_warn_overflow to issue warnings.
+
 2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.h (STARTFILE_SPEC) [!fexceptions]: Use

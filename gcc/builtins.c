@@ -3817,7 +3817,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */,
   /* Only the two least significant bits are meaningful.  */
   ostype &= 3;
 
-  if (compute_builtin_object_size (dest, ostype, &size, pdecl))
+  if (compute_builtin_object_size (dest, ostype, &size, pdecl, poff))
     return build_int_cst (sizetype, size);
 
   if (TREE_CODE (dest) == SSA_NAME)
@@ -3924,7 +3924,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */,
 	  if (integer_zerop (size)
 	      && *pdecl && DECL_P (*pdecl)
 	      && *poff && integer_zerop (*poff))
-	    return integer_zero_node;
+	    return size_zero_node;
 
 	  /* A valid offset into a declared object cannot be negative.  */
 	  if (tree_int_cst_sgn (*poff) < 0)

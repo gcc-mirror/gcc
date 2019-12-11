@@ -22,6 +22,12 @@
 
 2019-12-11  Martin Sebor  <msebor@redhat.com>
 
+	* c-c++-common/Wstringop-overflow-2.c: Adjust text of expected messages.
+	* g++.dg/warn/Wstringop-overflow-3.C: Same.
+	* gcc.dg/Wstringop-overflow-17.c: Same.
+
+2019-12-11  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/79221
 	* gcc.dg/Wstringop-overflow-26.c: New test.
 
