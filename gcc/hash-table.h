@@ -713,8 +713,9 @@ hash_table<Descriptor, Lazy,
     nentries = ::ggc_cleared_vec_alloc<value_type> (n PASS_MEM_STAT);
 
   gcc_assert (nentries != NULL);
-  for (size_t i = 0; i < n; i++)
-    mark_empty (nentries[i]);
+  if (!Descriptor::empty_zero_p)
+    for (size_t i = 0; i < n; i++)
+      mark_empty (nentries[i]);
 
   return nentries;
 }
@@ -867,8 +868,11 @@ hash_table<Descriptor, Lazy, Allocator>::empty_slow ()
       m_size = nsize;
       m_size_prime_index = nindex;
     }
-  else
+  else if (Descriptor::empty_zero_p)
     memset ((void *) entries, 0, size * sizeof (value_type));
+  else
+    for (size_t i = 0; i < size; i++)
+      mark_empty (entries[i]);
 
   m_n_deleted = 0;
   m_n_elements = 0;

@@ -1,3 +1,39 @@
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* attribs.c (excl_hash_traits::empty_zero_p): New static constant.
+	* gcov.c (function_start_pair_hash::empty_zero_p): Likewise.
+	* graphite.c (struct sese_scev_hash::empty_zero_p): Likewise.
+	* hash-map-tests.c (selftest::test_nonzero_empty_key): New selftest.
+	(selftest::hash_map_tests_c_tests): Call it.
+	* hash-map-traits.h (simple_hashmap_traits::empty_zero_p):
+	New static constant, using the value of = H::empty_zero_p.
+	(unbounded_hashmap_traits::empty_zero_p): Likewise, using the value
+	from default_hash_traits <Value>.
+	* hash-map.h (hash_map::empty_zero_p): Likewise, using the value
+	from Traits.
+	* hash-set-tests.c (value_hash_traits::empty_zero_p): Likewise.
+	* hash-table.h (hash_table::alloc_entries): Guard the loop of
+	calls to mark_empty with !Descriptor::empty_zero_p.
+	(hash_table::empty_slow): Conditionalize the memset call with a
+	check that Descriptor::empty_zero_p; otherwise, loop through the
+	entries calling mark_empty on them.
+	* hash-traits.h (int_hash::empty_zero_p): New static constant.
+	(pointer_hash::empty_zero_p): Likewise.
+	(pair_hash::empty_zero_p): Likewise.
+	* ipa-devirt.c (default_hash_traits <type_pair>::empty_zero_p):
+	Likewise.
+	* ipa-prop.c (ipa_bit_ggc_hash_traits::empty_zero_p): Likewise.
+	(ipa_vr_ggc_hash_traits::empty_zero_p): Likewise.
+	* profile.c (location_triplet_hash::empty_zero_p): Likewise.
+	* sanopt.c (sanopt_tree_triplet_hash::empty_zero_p): Likewise.
+	(sanopt_tree_couple_hash::empty_zero_p): Likewise.
+	* tree-hasher.h (int_tree_hasher::empty_zero_p): Likewise.
+	* tree-ssa-sccvn.c (vn_ssa_aux_hasher::empty_zero_p): Likewise.
+	* tree-vect-slp.c (bst_traits::empty_zero_p): Likewise.
+	* tree-vectorizer.h
+	(default_hash_traits<scalar_cond_masked_key>::empty_zero_p):
+	Likewise.
+
 2020-01-14  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* cfgloopanal.c (average_num_loop_insns): Free bbs when early return,

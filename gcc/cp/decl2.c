@@ -120,6 +120,7 @@ struct mangled_decl_hash : ggc_remove <tree>
     return candidate == name;
   }
 
+  static const bool empty_zero_p = true;
   static inline void mark_empty (value_type &p) {p = NULL_TREE;}
   static inline bool is_empty (value_type p) {return !p;}
 

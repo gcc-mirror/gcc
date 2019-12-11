@@ -150,6 +150,7 @@ struct default_hash_traits <type_pair>
   {
     return TYPE_UID (p.first) ^ TYPE_UID (p.second);
   }
+  static const bool empty_zero_p = true;
   static bool
   is_empty (type_pair p)
   {

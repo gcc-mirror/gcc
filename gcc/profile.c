@@ -932,6 +932,8 @@ struct location_triplet_hash : typed_noop_remove <location_triplet>
     ref.lineno = -1;
   }
 
+  static const bool empty_zero_p = false;
+
   static void
   mark_empty (location_triplet &ref)
   {

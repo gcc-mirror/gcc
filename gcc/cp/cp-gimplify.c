@@ -3045,6 +3045,8 @@ struct source_location_table_entry_hash
     ref.var = NULL_TREE;
   }
 
+  static const bool empty_zero_p = true;
+
   static void
   mark_empty (source_location_table_entry &ref)
   {

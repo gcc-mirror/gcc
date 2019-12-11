@@ -900,6 +900,7 @@ struct named_decl_hash : ggc_remove <tree>
   inline static hashval_t hash (const value_type decl);
   inline static bool equal (const value_type existing, compare_type candidate);
 
+  static const bool empty_zero_p = true;
   static inline void mark_empty (value_type &p) {p = NULL_TREE;}
   static inline bool is_empty (value_type p) {return !p;}
 
@@ -1870,6 +1871,7 @@ struct named_label_hash : ggc_remove <named_label_entry *>
   inline static hashval_t hash (value_type);
   inline static bool equal (const value_type, compare_type);
 
+  static const bool empty_zero_p = true;
   inline static void mark_empty (value_type &p) {p = NULL;}
   inline static bool is_empty (value_type p) {return !p;}
 

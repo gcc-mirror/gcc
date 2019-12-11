@@ -1,3 +1,11 @@
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-gimplify.c (source_location_table_entry_hash::empty_zero_p):
+	New static constant.
+	* cp-tree.h (named_decl_hash::empty_zero_p): Likewise.
+	(struct named_label_hash::empty_zero_p): Likewise.
+	* decl2.c (mangled_decl_hash::empty_zero_p): Likewise.
+
 2020-01-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92594 - ICE with inherited trivial default ctor.
