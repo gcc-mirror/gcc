@@ -213,15 +213,18 @@ define fgroup ALL_CRYPTO	crypto
 # strip off 32 D-registers, but does not remove support for
 # double-precision FP.
 define fgroup ALL_SIMD_INTERNAL	fp_d32 neon ALL_CRYPTO
-define fgroup ALL_SIMD	ALL_SIMD_INTERNAL dotprod fp16fml
+define fgroup ALL_SIMD_EXTERNAL dotprod fp16fml
+define fgroup ALL_SIMD	ALL_SIMD_INTERNAL ALL_SIMD_EXTERNAL
 
 # List of all FPU bits to strip out if -mfpu is used to override the
 # default.  fp16 is deliberately missing from this list.
 define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_INTERNAL
-
 # Similarly, but including fp16 and other extensions that aren't part of
 # -mfpu support.
-define fgroup ALL_FP	fp16 ALL_FPU_INTERNAL
+define fgroup ALL_FPU_EXTERNAL fp16
+
+# Everything related to the FPU extensions (FP or SIMD).
+define fgroup ALL_FP	ALL_FPU_EXTERNAL ALL_FPU_INTERNAL ALL_SIMD
 
 define fgroup ARMv4       armv4 notm
 define fgroup ARMv4t      ARMv4 thumb
@@ -1301,7 +1304,7 @@ begin cpu cortex-a55
  cname cortexa55
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8.2-a+fp16+dotprod+simd
+ architecture armv8.2-a+fp16+dotprod
  option crypto add FP_ARMv8 CRYPTO
  option nofp remove ALL_FP
  costs cortex_a53
@@ -1313,7 +1316,7 @@ begin cpu cortex-a75
  cname cortexa75
  tune for cortex-a57
  tune flags LDSCHED
- architecture armv8.2-a+fp16+dotprod+simd
+ architecture armv8.2-a+fp16+dotprod
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
  vendor 41
@@ -1324,7 +1327,7 @@ begin cpu cortex-a76
  cname cortexa76
  tune for cortex-a57
  tune flags LDSCHED
- architecture armv8.2-a+fp16+dotprod+simd
+ architecture armv8.2-a+fp16+dotprod
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a57
  vendor 41
@@ -1336,7 +1339,7 @@ begin cpu neoverse-n1
  alias !ares
  tune for cortex-a57
  tune flags LDSCHED
- architecture armv8.2-a+fp16+dotprod+simd
+ architecture armv8.2-a+fp16+dotprod
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a57
  vendor 41
@@ -1348,7 +1351,7 @@ begin cpu cortex-a75.cortex-a55
  cname cortexa75cortexa55
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8.2-a+fp16+dotprod+simd
+ architecture armv8.2-a+fp16+dotprod
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
 end cpu cortex-a75.cortex-a55
@@ -1357,7 +1360,7 @@ begin cpu cortex-a76.cortex-a55
  cname cortexa76cortexa55
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8.2-a+fp16+dotprod+simd
+ architecture armv8.2-a+fp16+dotprod
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a57
 end cpu cortex-a76.cortex-a55
