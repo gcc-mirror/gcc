@@ -699,6 +699,8 @@ mingw_ansi_fputs (const char *str, FILE *fp)
 
 #endif /* __MINGW32__ */
 
+static int
+decode_utf8_char (const unsigned char *, size_t len, unsigned int *);
 static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
 
 /* Overwrite the given location/range within this text_info's rich_location.
@@ -1689,6 +1691,8 @@ void
 pp_character (pretty_printer *pp, int c)
 {
   if (pp_is_wrapping_line (pp)
+      /* If printing UTF-8, don't wrap in the middle of a sequence.  */
+      && (((unsigned int) c) & 0xC0) != 0x80
       && pp_remaining_character_count_for_line (pp) <= 0)
     {
       pp_newline (pp);
@@ -1729,8 +1733,22 @@ pp_quoted_string (pretty_printer *pp, const char *str, size_t n /* = -1 */)
       if (ISPRINT (*ps))
 	  continue;
 
+      /* Don't escape a valid UTF-8 extended char.  */
+      const unsigned char *ups = (const unsigned char *) ps;
+      if (*ups & 0x80)
+	{
+	  unsigned int extended_char;
+	  const int valid_utf8_len = decode_utf8_char (ups, n, &extended_char);
+	  if (valid_utf8_len > 0)
+	    {
+	      ps += valid_utf8_len - 1;
+	      n -= valid_utf8_len - 1;
+	      continue;
+	    }
+	}
+
       if (last < ps)
-	pp_maybe_wrap_text (pp, last, ps - 1);
+	pp_maybe_wrap_text (pp, last, ps);
 
       /* Append the hexadecimal value of the character.  Allocate a buffer
 	 that's large enough for a 32-bit char plus the hex prefix.  */
@@ -2377,6 +2395,46 @@ test_urls ()
   }
 }
 
+/* Test multibyte awareness.  */
+static void test_utf8 ()
+{
+
+  /* Check that pp_quoted_string leaves valid UTF-8 alone.  */
+  {
+    pretty_printer pp;
+    const char *s = "\xf0\x9f\x98\x82";
+    pp_quoted_string (&pp, s);
+    ASSERT_STREQ (pp_formatted_text (&pp), s);
+  }
+
+  /* Check that pp_quoted_string escapes non-UTF-8 nonprintable bytes.  */
+  {
+    pretty_printer pp;
+    pp_quoted_string (&pp, "\xf0!\x9f\x98\x82");
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "\\xf0!\\x9f\\x98\\x82");
+  }
+
+  /* Check that pp_character will line-wrap at the beginning of a UTF-8
+     sequence, but not in the middle.  */
+  {
+      pretty_printer pp (3);
+      const char s[] = "---\xf0\x9f\x98\x82";
+      for (int i = 0; i != sizeof (s) - 1; ++i)
+	pp_character (&pp, s[i]);
+      pp_newline (&pp);
+      for (int i = 1; i != sizeof (s) - 1; ++i)
+	pp_character (&pp, s[i]);
+      pp_character (&pp, '-');
+      ASSERT_STREQ (pp_formatted_text (&pp),
+		    "---\n"
+		    "\xf0\x9f\x98\x82\n"
+		    "--\xf0\x9f\x98\x82\n"
+		    "-");
+  }
+
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2386,6 +2444,7 @@ pretty_print_c_tests ()
   test_pp_format ();
   test_prefixes_and_wrapping ();
   test_urls ();
+  test_utf8 ();
 }
 
 } // namespace selftest
