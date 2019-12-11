@@ -495,6 +495,10 @@ begin
    Write_Line ("        C*   turn off warnings for constant conditional");
    Write_Line ("        .c+  turn on warnings for unrepped components");
    Write_Line ("        .C*  turn off warnings for unrepped components");
+   Write_Line ("        _c*  turn on warnings for unknown " &
+                                                 "Compile_Time_Warning");
+   Write_Line ("        _C   turn off warnings for unknown " &
+                                                 "Compile_Time_Warning");
    Write_Line ("        d    turn on warnings for implicit dereference");
    Write_Line ("        D*   turn off warnings for implicit dereference");
    Write_Line ("        .d   turn on tagging of warnings with -gnatw switch");
@@ -571,6 +575,8 @@ begin
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r+  turn on warnings for object renaming function");
    Write_Line ("        .R*  turn off warnings for object renaming function");
+   Write_Line ("        _r   turn on warnings for components out of order");
+   Write_Line ("        _R   turn off warnings for components out of order");
    Write_Line ("        s    suppress all info/warnings");
    Write_Line ("        .s   turn on warnings for overridden size clause");
    Write_Line ("        .S*  turn off warnings for overridden size clause");
