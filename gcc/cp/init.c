@@ -3608,10 +3608,22 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      tree ie;
 
 	      /* We are processing something like `new int (10)', which
-		 means allocate an int, and initialize it with 10.  */
+		 means allocate an int, and initialize it with 10.
 
-	      ie = build_x_compound_expr_from_vec (*init, "new initializer",
-						   complain);
+		 In C++20, also handle `new A(1, 2)'.  */
+	      if (cxx_dialect >= cxx2a
+		  && AGGREGATE_TYPE_P (type)
+		  && (*init)->length () > 1)
+		{
+		  ie = build_tree_list_vec (*init);
+		  ie = build_constructor_from_list (init_list_type_node, ie);
+		  CONSTRUCTOR_IS_DIRECT_INIT (ie) = true;
+		  CONSTRUCTOR_IS_PAREN_INIT (ie) = true;
+		  ie = digest_init (type, ie, complain);
+		}
+	      else
+		ie = build_x_compound_expr_from_vec (*init, "new initializer",
+						     complain);
 	      init_expr = cp_build_modify_expr (input_location, init_expr,
 						INIT_EXPR, ie, complain);
 	    }
