@@ -6,4 +6,4 @@ template<int> struct A
   static int i;
 };
 
-template<int N> int A<N>::i(decltype (A::i;	// { dg-error "expected primary-expression before" }
+template<int N> int A<N>::i(decltype (A::i;	// { dg-error "expected" }

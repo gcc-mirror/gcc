@@ -1,5 +1,9 @@
 2019-12-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92105 - decltype(decltype) error cascade.
+	* parser.c (cp_parser_decltype_expr): Don't tentative_firewall here.
+	(cp_parser_decltype): Do it here.  Remember a non-tentative error.
+
 	PR c++/57082 - new X{} and private destructor.
 	* init.c (build_new_1): Also pass tf_no_cleanup to
 	build_special_member_call.

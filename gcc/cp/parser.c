@@ -14637,11 +14637,6 @@ cp_parser_decltype_expr (cp_parser *parser,
   cp_token *id_expr_start_token;
   tree expr;
 
-  /* Since we're going to preserve any side-effects from this parse, set up a
-     firewall to protect our callers from cp_parser_commit_to_tentative_parse
-     in the expression.  */
-  tentative_firewall firewall (parser);
-
   /* First, try parsing an id-expression.  */
   id_expr_start_token = cp_lexer_peek_token (parser->lexer);
   cp_parser_parse_tentatively (parser);
@@ -14733,9 +14728,6 @@ cp_parser_decltype_expr (cp_parser *parser,
          expression.  */
       cp_parser_abort_tentative_parse (parser);
 
-      /* Commit to the tentative_firewall so we get syntax errors.  */
-      cp_parser_commit_to_tentative_parse (parser);
-
       /* Parse a full expression.  */
       expr = cp_parser_expression (parser, /*pidk=*/NULL, /*cast_p=*/false,
 				   /*decltype_p=*/true);
@@ -14772,6 +14764,17 @@ cp_parser_decltype (cp_parser *parser)
   matching_parens parens;
   if (!parens.require_open (parser))
     return error_mark_node;
+
+  /* Since we're going to preserve any side-effects from this parse, set up a
+     firewall to protect our callers from cp_parser_commit_to_tentative_parse
+     in the expression.  */
+  tentative_firewall firewall (parser);
+
+  /* If in_declarator_p, a reparse as an expression might succeed (60361).
+     Otherwise, commit now for better diagnostics.  */
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+      && !parser->in_declarator_p)
+    cp_parser_commit_to_topmost_tentative_parse (parser);
 
   push_deferring_access_checks (dk_deferred);
 
@@ -14833,10 +14836,16 @@ cp_parser_decltype (cp_parser *parser)
     }
 
   /* Parse to the closing `)'.  */
-  if (!parens.require_close (parser))
+  if (expr == error_mark_node || !parens.require_close (parser))
     {
       cp_parser_skip_to_closing_parenthesis (parser, true, false,
 					     /*consume_paren=*/true);
+      expr = error_mark_node;
+    }
+
+  /* If we got a parse error while tentative, bail out now.  */
+  if (cp_parser_error_occurred (parser))
+    {
       pop_deferring_access_checks ();
       return error_mark_node;
     }
@@ -14859,6 +14868,11 @@ cp_parser_decltype (cp_parser *parser)
   start_token->u.tree_check_value->value = expr;
   start_token->u.tree_check_value->checks = get_deferred_access_checks ();
   start_token->keyword = RID_MAX;
+
+  location_t loc = start_token->location;
+  loc = make_location (loc, loc, parser->lexer);
+  start_token->location = loc;
+
   cp_lexer_purge_tokens_after (parser->lexer, start_token);
 
   pop_to_parent_deferring_access_checks ();
