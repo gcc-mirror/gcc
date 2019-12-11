@@ -1,3 +1,9 @@
+2019-12-10  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/pstl/glue_numeric_defs.h: Restore enable_if lost during original
+	import of pstl.
+	* include/pstl/glue_numeric_impl.h: Likewise.
+
 2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	(span(ContiguousIterator, Sentinel)): Add conditional noexcept.
