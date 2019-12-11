@@ -96,8 +96,8 @@
       external omp_in_final
       logical(4) omp_in_final
 
-      external omp_get_cancelllation
-      logical(4) omp_get_cancelllation
+      external omp_get_cancellation
+      logical(4) omp_get_cancellation
 
       external omp_get_proc_bind
       integer(omp_proc_bind_kind) omp_get_proc_bind
