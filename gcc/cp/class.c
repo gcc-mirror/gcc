@@ -7474,7 +7474,13 @@ finish_struct (tree t, tree attributes)
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
 
-      if (TYPE_HAS_USER_CONSTRUCTOR (t))
+      if (cxx_dialect < cxx2a)
+	{
+	  if (!CLASSTYPE_NON_AGGREGATE (t)
+	      && type_has_user_provided_or_explicit_constructor (t))
+	    CLASSTYPE_NON_AGGREGATE (t) = 1;
+	}
+      else if (TYPE_HAS_USER_CONSTRUCTOR (t))
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
       /* Fix up any variants we've already built.  */
