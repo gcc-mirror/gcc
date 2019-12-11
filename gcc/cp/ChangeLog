@@ -1,5 +1,9 @@
 2019-12-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92774 - ICE with implicitly deleted operator<=>.
+	* method.c (comp_info::~comp_info): Factor out of...
+	(build_comparison_op): Here.  Handle error return from build_new_op.
+
 	PR c++/92859 - ADL and bit-field.
 	* name-lookup.c: Use unlowered_expr_type.
 

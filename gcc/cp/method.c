@@ -1244,6 +1244,21 @@ struct comp_info
     if (noex && !expr_noexcept_p (expr, tf_none))
       noex = false;
   }
+
+  ~comp_info ()
+  {
+    if (first_time)
+      {
+	DECL_DECLARED_CONSTEXPR_P (fndecl) = constexp || was_constexp;
+	tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fndecl));
+	if (!raises || UNEVALUATED_NOEXCEPT_SPEC_P (raises))
+	  {
+	    raises = noex ? noexcept_true_spec : noexcept_false_spec;
+	    TREE_TYPE (fndecl) = build_exception_variant (TREE_TYPE (fndecl),
+							  raises);
+	  }
+      }
+  }
 };
 
 /* Build up the definition of a defaulted comparison operator.  Unlike other
@@ -1282,6 +1297,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
       if (complain & tf_error)
 	inform (info.loc, "cannot default compare union %qT", ctype);
       DECL_DELETED_FN (fndecl) = true;
+      return;
     }
 
   tree compound_stmt = NULL_TREE;
@@ -1335,6 +1351,11 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 				 NULL_TREE);
 	  tree comp = build_new_op (info.loc, code, flags, lhs_mem, rhs_mem,
 				    NULL_TREE, NULL, complain);
+	  if (comp == error_mark_node)
+	    {
+	      DECL_DELETED_FN (fndecl) = true;
+	      continue;
+	    }
 	  comps.safe_push (comp);
 	}
       if (code == SPACESHIP_EXPR && is_auto (rettype))
@@ -1430,18 +1451,6 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
     finish_compound_stmt (compound_stmt);
   else
     --cp_unevaluated_operand;
-
-  if (info.first_time)
-    {
-      DECL_DECLARED_CONSTEXPR_P (fndecl) = info.constexp || info.was_constexp;
-      tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fndecl));
-      if (!raises || UNEVALUATED_NOEXCEPT_SPEC_P (raises))
-	{
-	  raises = info.noex ? noexcept_true_spec : noexcept_false_spec;
-	  TREE_TYPE (fndecl) = build_exception_variant (TREE_TYPE (fndecl),
-							raises);
-	}
-    }
 }
 
 /* Synthesize FNDECL, a non-static member function.   */
