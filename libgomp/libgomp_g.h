@@ -357,6 +357,10 @@ extern void GOMP_teams (unsigned int, unsigned int);
 extern void GOMP_teams_reg (void (*) (void *), void *, unsigned, unsigned,
 			    unsigned);
 
+/* oacc-async.c */
+
+extern void GOACC_wait (int, int, ...);
+
 /* oacc-parallel.c */
 
 extern void GOACC_parallel_keyed (int, void (*) (void *), size_t,
@@ -370,7 +374,6 @@ extern void GOACC_enter_exit_data (int, size_t, void **,
 				   size_t *, unsigned short *, int, int, ...);
 extern void GOACC_update (int, size_t, void **, size_t *,
 			  unsigned short *, int, int, ...);
-extern void GOACC_wait (int, int, ...);
 extern int GOACC_get_num_threads (void);
 extern int GOACC_get_thread_num (void);
 extern void GOACC_declare (int, size_t, void **, size_t *, unsigned short *);
