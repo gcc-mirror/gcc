@@ -1,5 +1,11 @@
 2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config.host (msp430*-*-elf): Add crt{begin,end}_no_eh.o to
+	"extra_parts".
+	* config/msp430/t-msp430: Add rules to build crt{begin,end}_no_eh.o.
+
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* crtstuff.c: Declare __dso_handle only if DEFAULT_USE_CXA_ATEXIT is
 	true.
 

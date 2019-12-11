@@ -2274,6 +2274,10 @@ Target has packed layout of structure members by default.
 @item exceptions
 Target supports exceptions.
 
+@item exceptions_enabled
+Target supports exceptions and they are enabled in the current
+testing configuration.
+
 @item fgraphite
 Target supports Graphite optimizations.
 

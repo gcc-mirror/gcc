@@ -8990,6 +8990,24 @@ proc check_effective_target_exceptions {} {
     return 1
 }
 
+# Used to check if the testing configuration supports exceptions.
+# Returns 0 if exceptions are unsupported or disabled (e.g. by passing
+# -fno-exceptions). Returns 1 if exceptions are enabled.
+proc check_effective_target_exceptions_enabled {} {
+    return [check_cached_effective_target exceptions_enabled {
+	if { [check_effective_target_exceptions] } {
+	    return [check_no_compiler_messages exceptions_enabled assembly {
+		void foo (void)
+		{
+		    throw 1;
+		}
+	    }]
+	} else {
+	    # If exceptions aren't supported, then they're not enabled.
+	    return 0
+	}
+    }]
+}
 
 proc check_effective_target_tiny {} {
     return [check_cached_effective_target tiny {

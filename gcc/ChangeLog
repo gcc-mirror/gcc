@@ -1,3 +1,18 @@
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.h (STARTFILE_SPEC) [!fexceptions]: Use
+	crtbegin_no_eh.o if building for the C language.
+	[fno-exceptions]: Use crtbegin_no_eh.o if building for any language
+	except C.
+	(ENDFILE_SPEC) [!fexceptions]: Use crtend_no_eh.o if building for 
+	the C language.
+	[fno-exceptions]: Use crtend_no_eh.o if building for any language
+	except C.
+	* config/msp430/t-msp430: Add -fno-exceptions multilib.
+	* doc/install.texi: Document --disable-no-exceptions multilib configure
+	option.
+	* doc/sourcebuild.texi: Document exceptions_enabled effective target.
+
 2019-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* pretty-print.c (pretty_printer::pretty_printer): New copy-ctor.

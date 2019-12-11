@@ -1,3 +1,10 @@
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* lib/gcc-dg.exp: Add dg-prune messages for when exception handling is
+	disabled.
+	* lib/target-supports.exp (check_effective_target_exceptions_enabled):
+	New.
+
 2019-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92869

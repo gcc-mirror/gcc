@@ -44,13 +44,20 @@ extern bool msp430x;
     }						\
   while (0)
 
+/* For the "c" language where exceptions are implicitly disabled, use
+   crt*_no_eh.o unless -fexceptions is passed.  For other languages, only use
+   crt*_no_eh.o if -fno-exceptions is explicitly passed.  */
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}" \
-  "%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} %{!minrt:crtbegin.o%s}"
+  "%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} " \
+  "%{!minrt:%{,c:%{!fexceptions:crtbegin_no_eh.o%s; :crtbegin.o%s}; " \
+    ":%{fno-exceptions:crtbegin_no_eh.o%s; :crtbegin.o%s}}}"
 
 /* -lgcc is included because crtend.o needs __mspabi_func_epilog_1.  */
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!minrt:crtend.o%s} " \
+#define ENDFILE_SPEC \
+  "%{!minrt:%{,c:%{!fexceptions:crtend_no_eh.o%s; :crtend.o%s}; " \
+    ":%{fno-exceptions:crtend_no_eh.o%s; :crtend.o%s}}} " \
   "%{minrt:%:if-exists(crtn-minrt.o%s)}%{!minrt:%:if-exists(crtn.o%s)} -lgcc"
 
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
