@@ -1,3 +1,9 @@
+2019-12-11  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* target.c (gomp_load_image_to_device, omp_target_associate_ptr):
+	Initialize 'dynamic_refcount' whenever we initialize 'refcount'.
+
 2019-12-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp_lib.h.in: Fix spelling of function declaration
