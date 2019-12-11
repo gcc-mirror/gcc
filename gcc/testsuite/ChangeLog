@@ -1,3 +1,8 @@
+2019-12-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/79221
+	* gcc.dg/Wstringop-overflow-26.c: New test.
+
 2019-12-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.dg/vect/vect-epilogues.c: Remove xfail for arm.
