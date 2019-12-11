@@ -325,11 +325,14 @@ register_tm_clones (void)
 
 #ifdef OBJECT_FORMAT_ELF
 
+#if DEFAULT_USE_CXA_ATEXIT
 /* Declare the __dso_handle variable.  It should have a unique value
    in every shared-object; in a main program its value is zero.  The
    object should in any case be protected.  This means the instance
    in one DSO or the main program is not used in another object.  The
-   dynamic linker takes care of this.  */
+   dynamic linker takes care of this.
+   If __cxa_atexit is not being used, __dso_handle will not be used and
+   doesn't need to be defined.  */
 
 #ifdef TARGET_LIBGCC_SDATA_SECTION
 extern void *__dso_handle __attribute__ ((__section__ (TARGET_LIBGCC_SDATA_SECTION)));
@@ -342,6 +345,7 @@ void *__dso_handle = &__dso_handle;
 #else
 void *__dso_handle = 0;
 #endif
+#endif /* DEFAULT_USE_CXA_ATEXIT */
 
 /* The __cxa_finalize function may not be available so we use only a
    weak declaration.  */
