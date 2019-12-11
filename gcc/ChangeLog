@@ -1,3 +1,8 @@
+2019-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* function-tests.c (selftest::make_fndecl): Make non-static.
+	* selftest.h (selftest::make_fndecl): New decl.
+
 2019-12-11  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR 91853
