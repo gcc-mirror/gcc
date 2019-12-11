@@ -55,7 +55,7 @@ static const unsigned HOST_WIDE_INT unknown[4] = {
 static tree compute_object_offset (const_tree, const_tree);
 static bool addr_object_size (struct object_size_info *,
 			      const_tree, int, unsigned HOST_WIDE_INT *,
-			      tree * = NULL);
+			      tree * = NULL, tree * = NULL);
 static unsigned HOST_WIDE_INT alloc_object_size (const gcall *, int);
 static tree pass_through_call (const gcall *);
 static void collect_object_sizes_for (struct object_size_info *, tree);
@@ -174,13 +174,15 @@ compute_object_offset (const_tree expr, const_tree var)
 static bool
 addr_object_size (struct object_size_info *osi, const_tree ptr,
 		  int object_size_type, unsigned HOST_WIDE_INT *psize,
-		  tree *pdecl /* = NULL */)
+		  tree *pdecl /* = NULL */, tree *poff /* = NULL */)
 {
   tree pt_var, pt_var_size = NULL_TREE, var_size, bytes;
 
-  tree dummy;
+  tree dummy_decl, dummy_off = size_zero_node;
   if (!pdecl)
-    pdecl = &dummy;
+    pdecl = &dummy_decl;
+  if (!poff)
+    poff = &dummy_off;
 
   gcc_assert (TREE_CODE (ptr) == ADDR_EXPR);
 
@@ -201,7 +203,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	  || TREE_CODE (TREE_OPERAND (pt_var, 0)) != SSA_NAME)
 	{
 	  compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
-				       object_size_type & ~1, &sz, pdecl);
+				       object_size_type & ~1, &sz, pdecl, poff);
 	}
       else
 	{
@@ -376,6 +378,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	    bytes = size_zero_node;
 	  else
 	    bytes = size_binop (MINUS_EXPR, var_size, bytes);
+	  *poff = bytes;
 	}
       if (var != pt_var
 	  && pt_var_size
@@ -390,6 +393,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 		bytes2 = size_zero_node;
 	      else
 		bytes2 = size_binop (MINUS_EXPR, pt_var_size, bytes2);
+	      *poff = size_binop (PLUS_EXPR, *poff, bytes2);
 	      bytes = size_binop (MIN_EXPR, bytes, bytes2);
 	    }
 	}
@@ -496,9 +500,15 @@ pass_through_call (const gcall *call)
 bool
 compute_builtin_object_size (tree ptr, int object_size_type,
 			     unsigned HOST_WIDE_INT *psize,
-			     tree *pdecl /* = NULL */)
+			     tree *pdecl /* = NULL */, tree *poff /* = NULL */)
 {
   gcc_assert (object_size_type >= 0 && object_size_type <= 3);
+
+  tree dummy_decl, dummy_off = size_zero_node;
+  if (!pdecl)
+    pdecl = &dummy_decl;
+  if (!poff)
+    poff = &dummy_off;
 
   /* Set to unknown and overwrite just before returning if the size
      could be determined.  */
@@ -508,7 +518,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
     init_offset_limit ();
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
-    return addr_object_size (NULL, ptr, object_size_type, psize, pdecl);
+    return addr_object_size (NULL, ptr, object_size_type, psize, pdecl, poff);
 
   if (TREE_CODE (ptr) != SSA_NAME
       || !POINTER_TYPE_P (TREE_TYPE (ptr)))
@@ -533,11 +543,12 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 
 	      if (tree_fits_shwi_p (offset)
 		  && compute_builtin_object_size (ptr, object_size_type,
-						  psize, pdecl))
+						  psize, pdecl, poff))
 		{
 		  /* Return zero when the offset is out of bounds.  */
 		  unsigned HOST_WIDE_INT off = tree_to_shwi (offset);
 		  *psize = off < *psize ? *psize - off : 0;
+		  *poff = offset;
 		  return true;
 		}
 	    }
