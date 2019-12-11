@@ -1138,8 +1138,6 @@ enum gomp_map_vars_kind
   GOMP_MAP_VARS_ENTER_DATA
 };
 
-extern void gomp_acc_insert_pointer (size_t, void **, size_t *, void *, int);
-extern void gomp_acc_remove_pointer (void *, size_t, bool, int, int, int);
 extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
 				       unsigned short *);
 struct gomp_coalesce_buf;
