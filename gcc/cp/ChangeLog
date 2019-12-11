@@ -1,3 +1,8 @@
+2019-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92446 - deduction of class NTTP.
+	* pt.c (deducible_expression): Look through VIEW_CONVERT_EXPR.
+
 2019-12-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92847 - C++20 comparison ambiguity with class template.
