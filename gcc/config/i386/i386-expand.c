@@ -3428,7 +3428,7 @@ static bool
 ix86_valid_mask_cmp_mode (machine_mode mode)
 {
   /* XOP has its own vector conditional movement.  */
-  if (TARGET_XOP)
+  if (TARGET_XOP && !TARGET_AVX512F)
     return false;
 
   /* AVX512F is needed for mask operation.  */
