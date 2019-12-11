@@ -7750,22 +7750,59 @@ package body Sem_Prag is
       procedure Process_Compile_Time_Warning_Or_Error is
          P : Node_Id := Parent (N);
          Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
+
       begin
-         --  In GNATprove mode, pragmas Compile_Time_Error and
-         --  Compile_Time_Warning are ignored, as the analyzer may not have the
-         --  same information as the compiler (in particular regarding size of
-         --  objects decided in gigi) so it makes no sense to issue an error or
-         --  warning in GNATprove.
-
-         if GNATprove_Mode then
-            Rewrite (N, Make_Null_Statement (Loc));
-            return;
-         end if;
-
          Check_Arg_Count (2);
          Check_No_Identifiers;
          Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
+
+         --  In GNATprove mode, pragma Compile_Time_Error is translated as
+         --  a Check pragma in GNATprove mode, handled as an assumption in
+         --  GNATprove. This is correct as the compiler will issue an error
+         --  if the condition cannot be statically evaluated to False.
+         --  Compile_Time_Warning are ignored, as the analyzer may not have the
+         --  same information as the compiler (in particular regarding size of
+         --  objects decided in gigi) so it makes no sense to issue a warning
+         --  in GNATprove.
+
+         if GNATprove_Mode then
+            if Prag_Id = Pragma_Compile_Time_Error then
+               declare
+                  New_Args : List_Id;
+               begin
+                  --  Implement Compile_Time_Error by generating
+                  --  a corresponding Check pragma:
+
+                  --    pragma Check (name, condition);
+
+                  --  where name is the identifier matching the pragma name. So
+                  --  rewrite pragma in this manner and analyze the result.
+
+                  New_Args := New_List
+                    (Make_Pragma_Argument_Association
+                       (Loc,
+                        Expression => Make_Identifier (Loc, Pname)),
+                     Make_Pragma_Argument_Association
+                       (Sloc (Arg1x),
+                        Expression => Arg1x));
+
+                  --  Rewrite as Check pragma
+
+                  Rewrite (N,
+                           Make_Pragma (Loc,
+                             Chars                        => Name_Check,
+                             Pragma_Argument_Associations => New_Args));
+
+                  Analyze (N);
+               end;
+
+            else
+               Rewrite (N, Make_Null_Statement (Loc));
+            end if;
+
+            return;
+         end if;
 
          --  If the condition is known at compile time (now), validate it now.
          --  Otherwise, register the expression for validation after the back
@@ -31687,6 +31724,9 @@ package body Sem_Prag is
       Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
       Arg2  : constant Node_Id := Next (Arg1);
 
+      Pname   : constant Name_Id   := Pragma_Name_Unmapped (N);
+      Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
+
    begin
       Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
@@ -31700,8 +31740,6 @@ package body Sem_Prag is
 
             declare
                Cent    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
-               Pname   : constant Name_Id   := Pragma_Name_Unmapped (N);
-               Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
                Str     : constant String_Id :=
                            Strval (Expr_Value_S (Get_Pragma_Arg (Arg2)));
                Str_Len : constant Nat       := String_Length (Str);
@@ -31787,10 +31825,14 @@ package body Sem_Prag is
             end;
          end if;
 
-      --  Arg1x is not known at compile time, so issue a warning. This can
-      --  happen only if the pragma's processing was deferred until after the
-      --  back end is run (see Process_Compile_Time_Warning_Or_Error).
-      --  Note that the warning control switch applies to both pragmas.
+      --  Arg1x is not known at compile time, so possibly issue an error
+      --  or warning. This can happen only if the pragma's processing
+      --  was deferred until after the back end is run (see
+      --  Process_Compile_Time_Warning_Or_Error). Note that the warning
+      --  control switch applies to only the warning case.
+
+      elsif Prag_Id = Pragma_Compile_Time_Error then
+         Error_Msg_N ("condition is not known at compile time", Arg1x);
 
       elsif Warn_On_Unknown_Compile_Time_Warning then
          Error_Msg_N ("?condition is not known at compile time", Arg1x);
