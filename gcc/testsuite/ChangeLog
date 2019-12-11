@@ -1,3 +1,8 @@
+2019-12-11 Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92897
+	* gfortran.dg/pr92897.f90: New test.
+
 2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* lib/gcc-dg.exp: Add dg-prune messages for when exception handling is
