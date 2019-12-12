@@ -1,3 +1,11 @@
+2019-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Find_Unique_Type): A call to the universal
+	access equality operator requires one operand to be a universal
+	access, and the other to be an access type. There is no
+	requirement, as previously implied by this routine, that
+	pool-specific access types were illegal in this context.
+
 2019-12-12  Steve Baird  <baird@adacore.com>
 
 	* sem_ch6.adb
