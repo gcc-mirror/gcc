@@ -13448,6 +13448,14 @@ package body Sem_Ch13 is
         and then Base_Type (T1) = Full_View (Base_Type (T2))
       then
          return True;
+
+      --  If T2 is a generic actual it is declared as a subtype, so
+      --  check against its base type.
+
+      elsif Is_Generic_Actual_Type (T1)
+        and then Same_Representation (Base_Type (T1), T2)
+      then
+         return True;
       end if;
 
       --  Tagged types always have the same representation, because it is not
