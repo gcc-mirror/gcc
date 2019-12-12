@@ -1,3 +1,13 @@
+2019-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Add support for some more AVR devices from avrxmega3 family.
+
+	* config/avr/avr-mcus.def (attiny1604, attiny1606, attiny1607)
+	(attiny402, attiny404, attiny406)
+	(attiny804, attiny806, attiny807)
+	(attiny202, attiny204): Add AVR_MCU lines to support them.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2019-12-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (read_ipcp_transformation_info): Fix undefined ordering
