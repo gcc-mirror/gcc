@@ -291,10 +291,10 @@ package body SPARK_Specific is
 
       procedure Create_Heap is
       begin
-         Name_Len := Name_Of_Heap_Variable'Length;
-         Name_Buffer (1 .. Name_Len) := Name_Of_Heap_Variable;
-
-         Heap := Make_Defining_Identifier (Standard_Location, Name_Enter);
+         Heap :=
+           Make_Defining_Identifier
+             (Standard_Location,
+              Name_Enter (Name_Of_Heap_Variable));
 
          Set_Ekind       (Heap, E_Variable);
          Set_Is_Internal (Heap, True);
