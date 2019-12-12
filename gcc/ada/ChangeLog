@@ -1,3 +1,14 @@
+2019-12-12  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Added null case for
+	'Loop_Entry, 'Old, and 'Result when calculating whether to
+	create extra accessibility parameters.
+	* sem_util.adb (Dynamic_Accessibility_Level): Added null case
+	for 'Loop_Entry, 'Old, and 'Result when  calculating
+	accessibility level based on access-valued attributes.  Also
+	added special handling for uses of 'Loop_Entry when used in its
+	indexed component form.
+
 2019-12-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* raise-gcc.c: Remove references to VMS

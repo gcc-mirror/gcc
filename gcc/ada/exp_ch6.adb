@@ -3389,6 +3389,15 @@ package body Exp_Ch6 is
                case Nkind (Prev_Orig) is
                   when N_Attribute_Reference =>
                      case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
+                        --  Ignore 'Result, 'Loop_Entry, and 'Old as they can
+                        --  be used to identify access objects and do not have
+                        --  an effect on accessibility level.
+
+                        when Attribute_Loop_Entry
+                           | Attribute_Old
+                           | Attribute_Result
+                        =>
+                           null;
 
                         --  For X'Access, pass on the level of the prefix X
 
