@@ -1,3 +1,8 @@
+2019-12-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92898
+	* gfortran.dg/pr92898.f90: New test.
+
 2019-12-12  Sudakshina Das  <sudi.das@arm.com>
 
 	PR testsuite/92870
