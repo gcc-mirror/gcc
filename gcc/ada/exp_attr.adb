@@ -7455,8 +7455,6 @@ package body Exp_Attr is
       --  All other cases are handled by the back end
 
       else
-         Apply_Universal_Integer_Attribute_Checks (N);
-
          --  If Size is applied to a formal parameter that is of a packed
          --  array subtype, then apply Size to the actual subtype.
 
@@ -7489,9 +7487,7 @@ package body Exp_Attr is
          --  System.Unsigned_Types.Packed_Byte for code generation purposes so
          --  the size is always rounded up in the back end.
 
-         elsif Nkind (Original_Node (Pref)) = N_Slice
-           and then Is_Bit_Packed_Array (Ptyp)
-         then
+         elsif Nkind (Pref) = N_Slice and then Is_Bit_Packed_Array (Ptyp) then
             Rewrite (N,
               Make_Op_Multiply (Loc,
                 Make_Attribute_Reference (Loc,
@@ -7503,6 +7499,9 @@ package body Exp_Attr is
             Analyze_And_Resolve (N, Typ);
          end if;
 
+         --  Apply the required checks last, after rewriting has taken place
+
+         Apply_Universal_Integer_Attribute_Checks (N);
          return;
       end if;
 

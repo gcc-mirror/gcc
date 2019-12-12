@@ -11013,7 +11013,8 @@ package body Exp_Ch4 is
 
       --    5. Prefix of an address attribute (this is an error which is caught
       --       elsewhere, and the expansion would interfere with generating the
-      --       error message).
+      --       error message) or of a size attribute (because 'Size may change
+      --       when applied to the temporary instead of the slice directly).
 
       if not Is_Packed (Typ) then
 
@@ -11039,7 +11040,8 @@ package body Exp_Ch4 is
          return;
 
       elsif Nkind (Parent (N)) = N_Attribute_Reference
-        and then Attribute_Name (Parent (N)) = Name_Address
+        and then (Attribute_Name (Parent (N)) = Name_Address
+                   or else Attribute_Name (Parent (N)) = Name_Size)
       then
          return;
 
