@@ -7852,6 +7852,8 @@ package body Sem_Attr is
 
       --  is legal, since here this expression appears in a statically
       --  unevaluated position, so it does not actually raise an exception.
+      --
+      --  T'Descriptor_Size is never static, even if T is static.
 
       if Is_Scalar_Type (P_Entity)
         and then (not Is_Generic_Type (P_Entity))
@@ -7865,6 +7867,7 @@ package body Sem_Attr is
           (No (E2)
             or else (Is_Static_Expression (E2)
                       and then Is_Scalar_Type (Etype (E1))))
+        and then Id /= Attribute_Descriptor_Size
       then
          Static := True;
          Set_Is_Static_Expression (N, True);

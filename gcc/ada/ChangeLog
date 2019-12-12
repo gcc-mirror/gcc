@@ -1,3 +1,10 @@
+2019-12-12  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Never mark T'Descriptor_Size as
+	static, even if T is a static subtype, because otherwise we will
+	request the value of the attribute, which will crash because we
+	have not evaluated it.
+
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Assognment_Statement): Extend the
