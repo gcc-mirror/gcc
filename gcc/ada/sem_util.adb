@@ -1200,15 +1200,15 @@ package body Sem_Util is
       function Build_Access_Record_Constraint (C : List_Id) return List_Id;
       --  If the record component is a constrained access to the current
       --  record, the subtype has not been constructed during analysis of
-      --  the enclosing record type (see Analyze_Access). In that case build
-      --  a constrainted access subtype after replacing references to the
-      --  enclosing discriminants by the corresponding discriminant values
+      --  the enclosing record type (see Analyze_Access). In that case, build
+      --  a constrained access subtype after replacing references to the
+      --  enclosing discriminants with the corresponding discriminant values
       --  of the prefix.
 
       function Build_Actual_Array_Constraint return List_Id;
       --  If one or more of the bounds of the component depends on
       --  discriminants, build  actual constraint using the discriminants
-      --  of the prefx, as above.
+      --  of the prefix, as above.
 
       function Build_Actual_Record_Constraint return List_Id;
       --  Similar to previous one, for discriminated components constrained
@@ -1306,7 +1306,7 @@ package body Sem_Util is
          D_Val       : Node_Id;
 
       begin
-         --  Retrieve the constraint from the compomnent declaration, because
+         --  Retrieve the constraint from the component declaration, because
          --  the component subtype has not been constructed and the component
          --  type is an unconstrained access.
 
@@ -1319,13 +1319,13 @@ package body Sem_Util is
                Set_Expression (D_Val,
                  Make_Selected_Component (Loc,
                    Prefix => New_Copy_Tree (P),
-                  Selector_Name =>
+                   Selector_Name =>
                      New_Occurrence_Of (Entity (Expression (D)), Loc)));
 
             elsif Denotes_Discriminant (D) then
                D_Val := Make_Selected_Component (Loc,
                  Prefix => New_Copy_Tree (P),
-                Selector_Name => New_Occurrence_Of (Entity (D), Loc));
+                 Selector_Name => New_Occurrence_Of (Entity (D), Loc));
 
             else
                D_Val := New_Copy_Tree (D);
@@ -1342,7 +1342,7 @@ package body Sem_Util is
 
    begin
       --  The subtype does not need to be created for a selected component
-      --  in a Spec_Expression,
+      --  in a Spec_Expression.
 
       if In_Spec_Expression then
          return Empty;
@@ -1373,7 +1373,7 @@ package body Sem_Util is
          end if;
 
       elsif Nkind (N) = N_Selected_Component then
-         --  THe entity of the selected compomnent allows us to retrieve
+         --  The entity of the selected component allows us to retrieve
          --  the original constraint from its component declaration.
 
          Sel := Entity (Selector_Name (N));

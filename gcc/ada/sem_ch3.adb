@@ -12973,9 +12973,9 @@ package body Sem_Ch3 is
       then
          --  If this is a constrained access definition for a record
          --  component, we leave the type as an unconstrained access,
-         --  and mark the component so that its actual type is build
-         --  at a point of use (e.g an assignment statement). THis is
-         --  handled in sem_util, Build_Actual_Subtype_Of_Component.
+         --  and mark the component so that its actual type is built
+         --  at a point of use (e.g., an assignment statement). This
+         --  is handled in Sem_Util.Build_Actual_Subtype_Of_Component.
 
          if Desig_Type = Current_Scope
            and then No (Def_Id)
@@ -12986,10 +12986,9 @@ package body Sem_Ch3 is
             Set_Ekind (Desig_Subtype, E_Record_Subtype);
             Def_Id := Entity (Subtype_Mark (S));
 
-            --  We indicate that the component has a pet-object
-            --  constraint for uniform treatment at a point of use,
-            --  even though the constraint may be independent of
-            --  discriminants of enclosing type.
+            --  We indicate that the component has a per-object constraint
+            --  for treatment at a point of use, even though the constraint
+            --  may be independent of discriminants of the enclosing type.
 
             if Nkind (Related_Nod) = N_Component_Declaration then
                Set_Has_Per_Object_Constraint
@@ -13003,7 +13002,6 @@ package body Sem_Ch3 is
             Constrain_Discriminated_Type
               (Desig_Subtype, S, Related_Nod, For_Access => True);
             return;
-
          end if;
 
          --  Enforce rule that the constraint is illegal if there is an
