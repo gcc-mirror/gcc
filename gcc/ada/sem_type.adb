@@ -2286,12 +2286,13 @@ package body Sem_Type is
       --  ration "type P is access Integer" and an anonymous access to Integer,
       --  P is convertible to "access Integer" by 4.6 (24.11-24.15), but there
       --  is no rule in 4.6 that allows "access Integer" to be converted to P.
+      --  Note that this does not preclude one operand to be a pool-specific
+      --  access type, as a previous version of this code enforced.
 
       elsif Ada_Version >= Ada_2005
         and then Ekind_In (Etype (L), E_Anonymous_Access_Type,
                                       E_Anonymous_Access_Subprogram_Type)
         and then Is_Access_Type (Etype (R))
-        and then Ekind (Etype (R)) /= E_Access_Type
       then
          return Etype (L);
 
@@ -2299,7 +2300,6 @@ package body Sem_Type is
         and then Ekind_In (Etype (R), E_Anonymous_Access_Type,
                                       E_Anonymous_Access_Subprogram_Type)
         and then Is_Access_Type (Etype (L))
-        and then Ekind (Etype (L)) /= E_Access_Type
       then
          return Etype (R);
 
