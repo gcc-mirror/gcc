@@ -14,7 +14,7 @@ package body Subp_Inst_Pkg is
       function Convert is new Ada.Unchecked_Conversion
          (T_Access, System.Address);
    begin
-      return System.Address_Image (Convert (Val));
+      return System.Address_Image (Convert (T_Access (Val)));
    end T_Image;
 
 end Subp_Inst_Pkg;
