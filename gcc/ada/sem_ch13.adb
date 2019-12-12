@@ -10862,6 +10862,8 @@ package body Sem_Ch13 is
                   end if;
 
                   --  Outer level of record definition, check discriminants
+                  --  but be careful not to flag a non-girder discriminant
+                  --  and the girder discriminant it renames as overlapping.
 
                   if Nkind_In (Clist, N_Full_Type_Declaration,
                                       N_Private_Type_Declaration)
@@ -10870,7 +10872,9 @@ package body Sem_Ch13 is
                         C2_Ent :=
                           First_Discriminant (Defining_Identifier (Clist));
                         while Present (C2_Ent) loop
-                           exit when C1_Ent = C2_Ent;
+                           exit when
+                             Original_Record_Component (C1_Ent) =
+                               Original_Record_Component (C2_Ent);
                            Check_Component_Overlap (C1_Ent, C2_Ent);
                            Next_Discriminant (C2_Ent);
                         end loop;
