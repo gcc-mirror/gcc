@@ -1580,7 +1580,7 @@ package body Sem_Ch13 is
       --  Local variables
 
       Aspect : Node_Id;
-      Aitem  : Node_Id;
+      Aitem  : Node_Id := Empty;
       Ent    : Node_Id;
 
       L : constant List_Id := Aspect_Specifications (N);
@@ -10136,8 +10136,8 @@ package body Sem_Ch13 is
       Rectype : Entity_Id;
       Fent    : Entity_Id;
       CC      : Node_Id;
-      Fbit    : Uint;
-      Lbit    : Uint;
+      Fbit    : Uint := No_Uint;
+      Lbit    : Uint := No_Uint;
       Hbit    : Uint := Uint_0;
       Comp    : Entity_Id;
       Pcomp   : Entity_Id;
@@ -10485,6 +10485,7 @@ package body Sem_Ch13 is
                Nbit := Sbit;
                for J in 1 .. Ncomps loop
                   CEnt := Comps (J);
+                  pragma Annotate (CodePeer, Modified, CEnt);
 
                   declare
                      CBO : constant Uint := Component_Bit_Offset (CEnt);

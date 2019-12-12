@@ -5239,7 +5239,7 @@ package body Exp_Aggr is
       --  specifically optimized for the target.
 
       function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
-         Csiz      : Uint;
+         Csiz      : Uint := No_Uint;
          Ctyp      : Entity_Id;
          Expr      : Node_Id;
          High      : Node_Id;
@@ -5336,6 +5336,8 @@ package body Exp_Aggr is
          --  Scalar types are OK if their size is a multiple of Storage_Unit
 
          elsif Is_Scalar_Type (Ctyp) then
+            pragma Assert (Csiz /= No_Uint);
+
             if Csiz mod System_Storage_Unit /= 0 then
                return False;
             end if;

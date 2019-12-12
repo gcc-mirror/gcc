@@ -240,6 +240,8 @@ package body System.Generic_Array_Operations is
          for J in N'Range (2) loop
             N (Row - M'First (1) + N'First (1), J) :=
               N (Row - M'First (1) + N'First (1), J) / Scale;
+            pragma Annotate
+              (CodePeer, False_Positive, "divide by zero", "Scale /= 0");
          end loop;
       end Divide_Row;
 
@@ -602,6 +604,9 @@ package body System.Generic_Array_Operations is
          end if;
 
       elsif X > Real'Base'Last then
+         pragma Annotate
+           (CodePeer, Intentional,
+            "test always false", "test for infinity");
 
          --  X is infinity, which is its own square root
 
@@ -627,6 +632,8 @@ package body System.Generic_Array_Operations is
       --  of precision.
 
       for J in 1 .. 8 loop
+         pragma Assert (Root /= 0.0);
+
          Next := (Root + X / Root) / 2.0;
          exit when Root = Next;
          Root := Next;

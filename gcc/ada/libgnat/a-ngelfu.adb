@@ -680,6 +680,8 @@ is
       Z := G * G;
       P := G * ((P2 * Z + P1) * Z + P0);
       Q := ((Q3 * Z + Q2) * Z + Q1) * Z + Q0;
+
+      pragma Assert (Q /= P);
       R := 0.5 + P / (Q - P);
 
       R := Float_Type'Base'Scaling (R, Integer (XN) + 1);

@@ -435,18 +435,14 @@ is
       if End_T < Leap_Second_Times (1) then
          Elapsed_Leaps := 0;
          Next_Leap     := Leap_Second_Times (1);
-         return;
 
       elsif Start_T > Leap_Second_Times (Leap_Seconds_Count) then
          Elapsed_Leaps := 0;
          Next_Leap     := End_Of_Time;
-         return;
-      end if;
 
-      --  Perform the calculations only if the start date is within the leap
-      --  second occurrences table.
-
-      if Start_T <= Leap_Second_Times (Leap_Seconds_Count) then
+      else
+         --  Perform the calculations only if the start date is within the leap
+         --  second occurrences table.
 
          --    1    2                  N - 1   N
          --  +----+----+--  . . .  --+-------+---+
@@ -480,9 +476,6 @@ is
          end if;
 
          Elapsed_Leaps := End_Index - Start_Index;
-
-      else
-         Elapsed_Leaps := 0;
       end if;
    end Cumulative_Leap_Seconds;
 
@@ -763,6 +756,7 @@ is
         (Secs_T'Unchecked_Access,
          Flag'Unchecked_Access,
          Offset'Unchecked_Access);
+      pragma Annotate (CodePeer, Modified, Offset);
 
       return Long_Integer (Offset);
    end UTC_Time_Offset;

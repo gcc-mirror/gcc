@@ -30079,7 +30079,7 @@ package body Sem_Prag is
       --  explicit contract.
 
       Prags        : constant Node_Id := Contract (Parent_Subp);
-      In_Spec_Expr : Boolean;
+      In_Spec_Expr : Boolean := In_Spec_Expression;
       Installed    : Boolean;
       Prag         : Node_Id;
       New_Prag     : Node_Id;

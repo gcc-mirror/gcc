@@ -494,6 +494,9 @@ procedure XOSCons is
       Value1 := Get_Value (Slice (Sline, 2));
       Value2 := Get_Value (Slice (Sline, 4));
 
+      pragma Annotate (CodePeer, Modified, Value1);
+      pragma Annotate (CodePeer, Modified, Value2);
+
       if Slice (Sline, 3) = ">" then
          Res := Cond and (Value1 > Value2);
 
@@ -619,7 +622,7 @@ procedure XOSCons is
    Current_Line : Integer;
    Current_Info : Integer;
    In_Comment   : Boolean;
-   In_Template  : Boolean;
+   In_Template  : Boolean := False;
 
 --  Start of processing for XOSCons
 

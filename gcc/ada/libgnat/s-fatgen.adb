@@ -219,6 +219,10 @@ package body System.Fat_Gen is
                   Ax := Ax * R_Power (Expbits'Last);
                   Ex := Ex - Log_Power (Expbits'Last);
                end loop;
+               pragma Annotate
+                 (CodePeer, Intentional,
+                  "test always false",
+                  "expected for some instantiations");
 
                --  Rad ** -64 <= Ax < 1
 

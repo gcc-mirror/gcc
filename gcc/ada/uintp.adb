@@ -1294,6 +1294,7 @@ package body Uintp is
                   Discard_Int : Int;
                   pragma Warnings (Off, Discard_Int);
                begin
+                  pragma Assert (D /= Int'(0));
                   UI_Div_Vector
                     (Dividend (Dividend'Last - R_Length + 1 .. Dividend'Last),
                      D,

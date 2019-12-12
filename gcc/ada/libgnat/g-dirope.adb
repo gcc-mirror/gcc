@@ -352,6 +352,8 @@ package body GNAT.Directory_Operations is
       begin
          K := K + 1;
 
+         pragma Annotate (CodePeer, Modified, P);
+
          if P = '%' or else Path (K) = '{' then
 
             --  Set terminator character

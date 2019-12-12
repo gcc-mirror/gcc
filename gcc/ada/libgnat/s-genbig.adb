@@ -733,6 +733,7 @@ package body System.Generic_Bignums is
             ND := 0;
             for J in 1 .. X.Len loop
                ND := Base * ND + DD (X.D (J));
+               pragma Assert (Div /= 0);
                Result (J) := SD (ND / Div);
                ND := ND rem Div;
             end loop;

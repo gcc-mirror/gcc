@@ -8740,8 +8740,7 @@ package body Checks is
 
             else
                declare
-                  Rtype    : Entity_Id;
-                  pragma Warnings (Off, Rtype);
+                  Rtype    : Entity_Id := Empty;
                   New_Alts : List_Id;
                   New_Exp  : Node_Id;
 
@@ -8771,6 +8770,7 @@ package body Checks is
                       Expression   => Expression (N),
                       Alternatives => New_Alts));
 
+                  pragma Assert (Present (Rtype));
                   Reanalyze (Rtype, Suppress => True);
                end;
             end if;

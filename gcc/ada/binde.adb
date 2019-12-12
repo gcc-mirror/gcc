@@ -1056,6 +1056,8 @@ package body Binde is
       --  becomes zero, then add to no-predecessor list.
 
       S := UNR.Table (Chosen).Successors;
+      pragma Annotate (CodePeer, Modified, S);
+
       while S /= No_Successor loop
          U := Succ.Table (S).After;
          UNR.Table (U).Num_Pred := UNR.Table (U).Num_Pred - 1;
@@ -2390,6 +2392,8 @@ package body Binde is
    begin
       if ST.Reason in Elab_All .. Elab_All_Desirable then
          L := ST.Elab_All_Link;
+         pragma Annotate (CodePeer, Modified, L);
+
          while L /= No_Elab_All_Link loop
             Nam := Elab_All_Entries.Table (L).Needed_By;
             Error_Msg_Unit_1 := Nam;
