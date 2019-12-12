@@ -1,3 +1,11 @@
+2019-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (common_comparison_category): Define without using
+	concepts and optimise for compilation time.
+	(__detail::__cmp_cat_ids): Remove.
+	(__detail::__common_cmp_cat): Replace class template and
+	specializations with constexpr function.
+
 2019-12-12  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/tr1/cctype: Add _GLIBCXX_BEGIN_VERSION_NAMESPACE and
