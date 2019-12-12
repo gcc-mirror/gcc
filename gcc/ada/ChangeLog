@@ -1,5 +1,14 @@
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch5.adb: (Analyze_Iterator_Specification): If the
+	iteration is over a slice, complete the resolution of its
+	bounds, which may be aebitrary expressions. The previous
+	pre-analysis may have created itypes for the slice but has not
+	performed the expansion that for example may introduce actions
+	that specify explicit dereferences and run-time checks.
+
+2019-12-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch8.adb: Improve error message for dispatching subprogram
 	formals.
 
