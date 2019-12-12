@@ -38,4 +38,5 @@ VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
 
 /* FPU condition flags.  */
 CC_MODE (CC_FPU);
+CC_MODE (CC_FPUE);
 CC_MODE (CC_FPU_UNEQ);
