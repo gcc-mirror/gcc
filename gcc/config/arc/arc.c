@@ -1445,6 +1445,7 @@ get_arc_condition_code (rtx comparison)
 	default : gcc_unreachable ();
 	}
     case E_CC_FPUmode:
+    case E_CC_FPUEmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ	       : return ARC_CC_EQ;
@@ -1567,11 +1568,13 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
       case UNLE:
       case UNGT:
       case UNGE:
+	return CC_FPUmode;
+
       case LT:
       case LE:
       case GT:
       case GE:
-	return CC_FPUmode;
+	return CC_FPUEmode;
 
       case LTGT:
       case UNEQ:
@@ -1725,7 +1728,7 @@ arc_init_reg_tables (void)
 	  if (i == (int) CCmode || i == (int) CC_ZNmode || i == (int) CC_Zmode
 	      || i == (int) CC_Cmode
 	      || i == CC_FP_GTmode || i == CC_FP_GEmode || i == CC_FP_ORDmode
-	      || i == CC_FPUmode || i == CC_FPU_UNEQmode)
+	      || i == CC_FPUmode || i == CC_FPUEmode || i == CC_FPU_UNEQmode)
 	    arc_mode_class[i] = 1 << (int) C_MODE;
 	  else
 	    arc_mode_class[i] = 0;
@@ -8233,6 +8236,7 @@ arc_reorg (void)
 
 	  /* Avoid FPU instructions.  */
 	  if ((GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPUmode)
+	      || (GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPUEmode)
 	      || (GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPU_UNEQmode))
 	    continue;
 
