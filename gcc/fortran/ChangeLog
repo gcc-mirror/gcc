@@ -1,3 +1,10 @@
+2019-12-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from mainline
+	PR fortran/92898
+	* check.c (gfc_check_is_contiguous): Simplify check to handle
+	arbitrary NULL() argument.
+
 2019-12-11 Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/92897

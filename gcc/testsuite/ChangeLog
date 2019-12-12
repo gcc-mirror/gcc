@@ -1,3 +1,9 @@
+2019-12-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from mainline
+	PR fortran/92898
+	* gfortran.dg/pr92898.f90: New test.
+
 2019-12-11 Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/92897
@@ -10,7 +16,7 @@
 2019-12-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Fix bugs relating to flexibly-sized objects in nios2 backend.
-	
+
 	PR target/92499
 	* gcc.target/nios2/pr92499-1.c: New.
 	* gcc.target/nios2/pr92499-2.c: New.
