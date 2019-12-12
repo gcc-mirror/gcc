@@ -5513,10 +5513,10 @@ package body Sem_Attr is
                --  Prefix is a name, as for other attributes.
 
                --  If the object is a function we asume that it is not
-               --  overloaded. AI12-242 does not suggest an name resulution
-               --  rule for that case, but can suppose that the expected
-               --  type of the reduction is the expected type of the
-               --  component of the prefix.
+               --  overloaded. AI12-242 does not suggest a name resolution
+               --  rule for that case, but we can suppose that the expected
+               --  type of the reduction is the expected type of the component
+               --  of the prefix.
 
                Analyze_And_Resolve (Stream);
                Typ := Etype (Stream);

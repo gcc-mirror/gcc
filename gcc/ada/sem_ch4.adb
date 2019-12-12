@@ -8290,8 +8290,8 @@ package body Sem_Ch4 is
       --  the Controlled types. The code below is motivated by containers that
       --  are derived from other types with a Reference aspect.
       --  Note as well that we need to examine the base type, given that
-      --  the container object may be a constrained subtype or itype which
-      --  does not have an explicit declaration,
+      --  the container object may be a constrained subtype or itype that
+      --  does not have an explicit declaration.
 
       elsif Is_Derived_Type (C_Type)
         and then Etype (First_Formal (Entity (Func_Name))) /= Pref_Typ

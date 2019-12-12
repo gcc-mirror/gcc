@@ -1838,7 +1838,7 @@ package Sinfo is
    --      Test_Case
 
    --  Is_Homogeneous_Aggregate (Flag14)
-   --    A flag set on an Ada2020 aggregate that uses square brackets as
+   --    A flag set on an Ada 2020 aggregate that uses square brackets as
    --    delimiters, and thus denotes an array or container aggregate, or
    --    the prefix of a reduction attribute.
 
