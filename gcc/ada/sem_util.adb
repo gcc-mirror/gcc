@@ -6488,7 +6488,7 @@ package body Sem_Util is
 
       --  Local variables
 
-      Expr : constant Node_Id := Original_Node (N);
+      Expr : Node_Id := Original_Node (N);
       --  Expr references the original node because at this stage N may be the
       --  reference to a variable internally created by the frontend to remove
       --  side effects of an expression.
@@ -6516,6 +6516,21 @@ package body Sem_Util is
       --  Unimplemented: Ptr.all'Access, where Ptr has Extra_Accessibility ???
 
       case Nkind (Expr) is
+         --  It may be possible that we have an access object denoted by an
+         --  attribute reference for 'Loop_Entry which may, in turn, have an
+         --  indexed component representing a loop identifier.
+
+         --  In this case we must climb up the indexed component and set expr
+         --  to the attribute reference so the rest of the machinery can
+         --  operate as expected.
+
+         when N_Indexed_Component =>
+            if Nkind (Prefix (Expr)) = N_Attribute_Reference
+              and then Get_Attribute_Id (Attribute_Name (Prefix (Expr)))
+                         = Attribute_Loop_Entry
+            then
+               Expr := Prefix (Expr);
+            end if;
 
          --  For access discriminant, the level of the enclosing object
 
@@ -6529,6 +6544,13 @@ package body Sem_Util is
 
          when N_Attribute_Reference =>
             case Get_Attribute_Id (Attribute_Name (Expr)) is
+
+               --  Ignore 'Loop_Entry, 'Result, and 'Old as they can be used to
+               --  identify access objects and do not have an effect on
+               --  accessibility level.
+
+               when Attribute_Loop_Entry | Attribute_Old | Attribute_Result =>
+                  null;
 
                --  For X'Access, the level of the prefix X
 
