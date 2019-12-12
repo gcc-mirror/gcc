@@ -1,3 +1,10 @@
+2019-12-12  Steve Baird  <baird@adacore.com>
+
+	* sem_ch10.adb (Install_With_Clause): Check for the case of a
+	circular dependency involving a predefined (or GNAT-defined)
+	unit and handle that case by generating an appropropriate error
+	message.
+
 2019-12-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch4.adb, sem_res.adb: Minor reformatting.

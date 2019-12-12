@@ -5336,6 +5336,20 @@ package body Sem_Ch10 is
             Error_Msg_N
               ("instantiation depends on itself", Name (With_Clause));
 
+         elsif not Analyzed (Uname)
+           and then Is_Internal_Unit (Current_Sem_Unit)
+           and then not Is_Visible_Lib_Unit (Uname)
+           and then No (Scope (Uname))
+         then
+            if Is_Predefined_Unit (Current_Sem_Unit) then
+               Error_Msg_N
+                 ("predefined unit depends on itself", Name (With_Clause));
+            else
+               Error_Msg_N
+                 ("GNAT-defined unit depends on itself", Name (With_Clause));
+            end if;
+            return;
+
          elsif not Is_Visible_Lib_Unit (Uname) then
 
             --  Abandon processing in case of previous errors
