@@ -1,3 +1,19 @@
+2019-12-12  Steve Baird  <baird@adacore.com>
+
+	* sem_ch6.adb
+	(New_Overloaded_Entity.Check_Conforming_Paramters): Add new
+	Conformance_Type parameter. With the value of
+	Subtype_Conformant, the behavior of Check_Conforming_Parameters
+	is unchanged.  The call in Matching_Entry_Or_Subprogram to
+	instead passes in Type_Conformant. This corresponds to the use
+	of "type conformant" in Ada RM 9.4(11.4/3).
+	(New_Overloaded_Entity.Has_Matching_Entry_Or_Subprogram): Add
+	new Normalized_First_Parameter_Type function to help in ignoring
+	the distinction between protected and access-to-protected first
+	parameters when checking prefixed-view profile matching. Replace
+	computations of the type of the first parameter with calls to
+	this function as appropriate.
+
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb: (Analyze_Iterator_Specification): If the
