@@ -4812,16 +4812,15 @@ package body Sem_Ch4 is
                      Set_Etype (N, Etype (Comp));
 
                   else
-                     --  Component type depends on discriminants. Enter the
-                     --  main attributes of the subtype.
+                     --  If discriminants were present in the component
+                     --  declaration, they have been replaced by the
+                     --  actual values in the prefix object.
 
                      declare
                         Subt : constant Entity_Id :=
                                  Defining_Identifier (Act_Decl);
-
                      begin
                         Set_Etype (Subt, Base_Type (Etype (Comp)));
-                        Set_Ekind (Subt, Ekind (Etype (Comp)));
                         Set_Etype (N, Subt);
                      end;
                   end if;

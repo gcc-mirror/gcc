@@ -1,3 +1,7 @@
+2019-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn24.adb: Remove expected warning.
+
 2019-12-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/subp_inst_pkg.adb: Remove implicit anonymous access
