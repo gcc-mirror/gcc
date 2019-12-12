@@ -1,3 +1,8 @@
+2019-12-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++11/random.cc: Include <cctype>.
+	(random_devise::_M_init_pretr1): Qualify isdigit call.
+
 2019-12-10  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/pstl/glue_numeric_defs.h: Restore enable_if lost during
