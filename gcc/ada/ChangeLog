@@ -1,5 +1,9 @@
 2019-12-12  Piotr Trojanek  <trojanek@adacore.com>
 
+	* libgnarl/a-dispat.ads (Yield): Update Global contract.
+
+2019-12-12  Piotr Trojanek  <trojanek@adacore.com>
+
 	* libgnat/g-altive.ads: Fix typo in comment.
 	* bindo-graphs.adb: Fix repeated words in comment.
 	* exp_ch4.adb: Likewise.
