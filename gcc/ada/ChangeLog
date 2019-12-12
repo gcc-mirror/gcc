@@ -1,3 +1,7 @@
+2019-12-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* raise-gcc.c: Remove references to VMS
+
 2019-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* atree.ads, comperr.ads, debug.ads, einfo.ads, elists.ads,
