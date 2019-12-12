@@ -3453,9 +3453,14 @@ package body Sem_Ch8 is
                   if Old_S_Ctrl_Type /= New_S_Ctrl_Type
                     or else No (New_S_Ctrl_Type)
                   then
-                     Error_Msg_NE
-                       ("actual must be dispatching subprogram for type&",
-                        Nam, New_S_Ctrl_Type);
+                     if No (New_S_Ctrl_Type) then
+                        Error_Msg_N
+                          ("actual must be dispatching subprogram", Nam);
+                     else
+                        Error_Msg_NE
+                          ("actual must be dispatching subprogram for type&",
+                           Nam, New_S_Ctrl_Type);
+                     end if;
 
                   else
                      Set_Is_Dispatching_Operation (New_S);
