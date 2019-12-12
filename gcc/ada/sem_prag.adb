@@ -32303,6 +32303,64 @@ package body Sem_Prag is
       Generate_Reference (Entity (With_Item), N, Set_Ref => False);
    end Set_Elab_Unit_Name;
 
+   -----------------------
+   -- Set_Overflow_Mode --
+   -----------------------
+
+   procedure Set_Overflow_Mode (N : Node_Id) is
+
+      function Get_Overflow_Mode (Arg : Node_Id) return Overflow_Mode_Type;
+      --  Function to process one pragma argument, Arg
+
+      -----------------------
+      -- Get_Overflow_Mode --
+      -----------------------
+
+      function Get_Overflow_Mode (Arg : Node_Id) return Overflow_Mode_Type is
+         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+
+      begin
+         if Chars (Argx) = Name_Strict then
+            return Strict;
+
+         elsif Chars (Argx) = Name_Minimized then
+            return Minimized;
+
+         elsif Chars (Argx) = Name_Eliminated then
+            return Eliminated;
+
+         else
+            raise Program_Error;
+         end if;
+      end Get_Overflow_Mode;
+
+      --  Local variables
+
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg2 : constant Node_Id := Next (Arg1);
+
+   --  Start of processing for Set_Overflow_Mode
+
+   begin
+      --  Process first argument
+
+      Scope_Suppress.Overflow_Mode_General :=
+        Get_Overflow_Mode (Arg1);
+
+      --  Case of only one argument
+
+      if No (Arg2) then
+         Scope_Suppress.Overflow_Mode_Assertions :=
+           Scope_Suppress.Overflow_Mode_General;
+
+      --  Case of two arguments present
+
+      else
+         Scope_Suppress.Overflow_Mode_Assertions  :=
+           Get_Overflow_Mode (Arg2);
+      end if;
+   end Set_Overflow_Mode;
+
    -------------------
    -- Test_Case_Arg --
    -------------------
@@ -32399,9 +32457,9 @@ package body Sem_Prag is
       return Empty;
    end Test_Case_Arg;
 
-   -----------------------------------------
+   --------------------------------------------
    -- Defer_Compile_Time_Warning_Error_To_BE --
-   -----------------------------------------
+   --------------------------------------------
 
    procedure Defer_Compile_Time_Warning_Error_To_BE (N : Node_Id) is
       Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
