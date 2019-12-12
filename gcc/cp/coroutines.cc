@@ -562,11 +562,14 @@ coro_function_valid_p (tree fndecl)
 	      && get_coroutine_promise_type (fndecl) != NULL_TREE);
 
   if (current_function_returns_value || current_function_returns_null)
-    /* TODO: record or extract positions of returns (and the first coro
-       keyword) so that we can add notes to the diagnostic about where
-       the bad keyword is and what made the function into a coro.  */
-    error_at (f_loc, "a %<return%> statement is not allowed in coroutine;"
-		     " did you mean %<co_return%>?");
+    {
+       /* TODO: record or extract positions of returns (and the first coro
+	  keyword) so that we can add notes to the diagnostic about where
+	  the bad keyword is and what made the function into a coro.  */
+      error_at (f_loc, "a %<return%> statement is not allowed in coroutine;"
+			" did you mean %<co_return%>?");
+      return false;
+    }
 
   return true;
 }

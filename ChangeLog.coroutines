@@ -1,3 +1,11 @@
+2019-12-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (coro_function_valid_p): Return false if we
+	find inconsistent return information.
+	* decl.c (finish_function): If the morph fails, assume that
+	we have nothing interesting in the function body.
+
 2019-12-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/

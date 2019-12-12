@@ -16860,6 +16860,7 @@ finish_function (bool inline_p)
 	{
 	  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
 	  poplevel (1, 0, 1);
+	  DECL_SAVED_TREE (fndecl) = error_mark_node;
 	  return fndecl;
 	}
 
