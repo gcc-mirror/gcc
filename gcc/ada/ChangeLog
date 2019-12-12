@@ -1,5 +1,12 @@
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch13.adb (Same_Reprewentation): if the actual in a call is
+	a generic actual type, use its bsae type to determine whether a
+	change of representastion may be necessary for proper parameter
+	passing.
+
+2019-12-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_type.adb (Find_Unique_Type): A call to the universal
 	access equality operator requires one operand to be a universal
 	access, and the other to be an access type. There is no
