@@ -1,3 +1,8 @@
+2019-12-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (read_ipcp_transformation_info): Fix undefined ordering
+	of execution of function call parameters.
+
 2019-12-12  Vineet Gupta  <vgupta@synopsys.com>
 
 	* config/arc/arc-modes.def (CC_FPUE): New Mode CC_FPUE which
