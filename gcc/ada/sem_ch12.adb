@@ -10364,7 +10364,7 @@ package body Sem_Ch12 is
       --  such as a parent generic within the body of a generic child.
 
       if not Is_Entity_Name (Actual)
-        or else not Ekind_In (Entity (Actual), E_Generic_Package, E_Package)
+        or else not Is_Package_Or_Generic_Package (Entity (Actual))
       then
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);

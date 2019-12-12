@@ -1383,7 +1383,7 @@ package body Sem_Type is
       begin
          return In_Same_List (Parent (Typ), Op_Decl)
            or else
-             (Ekind_In (Scop, E_Package, E_Generic_Package)
+             (Is_Package_Or_Generic_Package (Scop)
                and then List_Containing (Op_Decl) =
                               Visible_Declarations (Parent (Scop))
                and then List_Containing (Parent (Typ)) =

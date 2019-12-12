@@ -5950,7 +5950,7 @@ package body Sem_Ch8 is
 
                   --  Package or generic package is always a simple reference
 
-                  if Ekind_In (E, E_Package, E_Generic_Package) then
+                  if Is_Package_Or_Generic_Package (E) then
                      Generate_Reference (E, N, 'r');
 
                   --  Else see if we have a left hand side
@@ -8779,7 +8779,7 @@ package body Sem_Ch8 is
 
       --  Set Default_Storage_Pool field of the library unit if necessary
 
-      if Ekind_In (S, E_Package, E_Generic_Package)
+      if Is_Package_Or_Generic_Package (S)
         and then
           Nkind (Parent (Unit_Declaration_Node (S))) = N_Compilation_Unit
       then
@@ -8949,7 +8949,7 @@ package body Sem_Ch8 is
 
       if Is_Child_Unit (S)
         and then Present (E)
-        and then Ekind_In (E, E_Package, E_Generic_Package)
+        and then Is_Package_Or_Generic_Package (E)
         and then
           Nkind (Parent (Unit_Declaration_Node (E))) = N_Compilation_Unit
       then

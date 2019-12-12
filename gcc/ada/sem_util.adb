@@ -3407,7 +3407,7 @@ package body Sem_Util is
          --  Stop the traversal when a package subject to a null abstract state
          --  has been found.
 
-         if Ekind_In (Context, E_Generic_Package, E_Package)
+         if Is_Package_Or_Generic_Package (Context)
            and then Has_Null_Abstract_State (Context)
          then
             exit;
@@ -12978,7 +12978,7 @@ package body Sem_Util is
 
       begin
          if Present (Pkg)
-           and then Ekind_In (Pkg, E_Generic_Package, E_Package)
+           and then Is_Package_Or_Generic_Package (Pkg)
          then
             while Nkind (Pkg_Decl) /= N_Package_Specification loop
                Pkg_Decl := Parent (Pkg_Decl);
@@ -25283,7 +25283,7 @@ package body Sem_Util is
               or else
                 (Present (Scope (Val))
                   and then Is_Implementation_Defined (Scope (Val))))
-           and then not (Ekind_In (Val, E_Package, E_Generic_Package)
+           and then not (Is_Package_Or_Generic_Package (Val)
                           and then Is_Library_Level_Entity (Val))
          then
             Check_Restriction (No_Implementation_Identifiers, Post_Node);
